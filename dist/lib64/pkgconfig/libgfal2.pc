@@ -1,0 +1,9 @@
+prefix=/usr
+includedir=${prefix}/include
+libdir=${prefix}/lib64
+
+Name:  libgfal2
+Description: The grid file access library in version 2.0 
+Version: 2.0.0
+Cflags: -I${includedir}/gfal2/
+Libs: -L${libdir} -lgfal2

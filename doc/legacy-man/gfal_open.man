@@ -1,0 +1,108 @@
+.\" @(#)$RCSfile: gfal_open.man,v $ $Revision: 1.1.1.1 $ $Date: 2003/11/19 12:56:29 $ CERN Jean-Philippe Baud
+.\" Copyright (C) 2003 by CERN
+.\" All rights reserved
+.\"
+.TH GFAL_OPEN 3 "$Date: 2003/11/19 12:56:29 $" GFAL "Library Functions"
+.SH NAME
+gfal_open \- open a file
+.SH SYNOPSIS
+\fB#include "gfal_api.h"\fR
+.sp
+.BI "int gfal_open (const char *" filename ,
+.BI "int " flags ,
+.BI "mode_t " mode );
+.sp
+Under Linux, for large files:
+.br
+.B #define _LARGEFILE64_SOURCE
+.br
+\fB#include "gfal_api.h"\fR
+.sp
+.BI "int gfal_open64 (const char *" filename ,
+.BI "int " flags ,
+.BI "mode_t " mode );
+.sp
+For large files, under other systems:
+.br
+\fB#include "gfal_api.h"\fR
+.sp
+.BI "int gfal_open64 (const char *" filename ,
+.BI "int " flags ,
+.BI "mode_t " mode );
+.SH DESCRIPTION
+.B gfal_open
+opens a file according to the value of
+.I flags.
+.TP
+.I filename
+specifies the file name: either a logical file name, a guid, an SURL or a TURL.
+.TP 
+.I flags
+value is built by OR'ing the bits defined in
+.RB < fcntl.h >
+but one and only one of the first three flags below must be used:
+.RS 
+.TP 1.2i
+.B O_RDONLY
+open for reading only
+.TP
+.B O_WRONLY
+open for writing only
+.TP
+.B O_RDWR
+open for reading and writing
+.TP
+.B O_CREAT
+If the file exists already and
+.B O_EXCL
+is also set,
+.B gfal_open
+will fail.
+.TP
+.B O_LARGEFILE
+allows files whose sizes cannot be represented in 31 bits to be opened.
+.RE
+.TP
+.I mode
+is used only if the file is created.
+.SH RETURN VALUE
+This routine returns the file descriptor if the operation was successful or -1
+if the operation failed. In the latter case,
+.B errno
+is set appropriately.
+.SH ERRORS
+.TP 1.3i
+.B ENOENT
+The named file does not exist.
+.TP
+.B EACCES
+Search permission is denied on a component of the
+.I filename
+prefix or the file does not exist and write permission on the parent directory
+is denied or the file exists and
+.I flags
+permission on the file itself is denied.
+.TP
+.B EFAULT
+.I filename
+is a NULL pointer.
+.TP
+.B EBUSY
+Device or resource busy. Happens if you try to open in write mode a CASTOR file that is in an active migration stream.
+.TP
+.B ENOTDIR
+A component of
+.I filename
+prefix is not a directory.
+.TP
+.B EINVAL
+.I filename
+has an invalid syntax.
+.TP
+.B ECOMM
+Communication error.
+.TP
+.B EPROTONOSUPPORT
+Access method not supported.
+.SH SEE ALSO
+.B gfal(3)

@@ -1,0 +1,103 @@
+.\" @(#)$RCSfile: gfal_get_ids_python.man,v $ $Revision: 1.6 $ $Date: 2008/12/18 13:19:12 $ CERN Remi Mollon
+.\" Copyright (C) 2007 by CERN
+.\" All rights reserved
+.\"
+.TH GFAL_GET_IDS 3 "$Date: 2008/12/18 13:19:12 $" GFAL "Library Functions"
+
+.SH NAME
+gfal_get_ids \- Extracts the SRM file/request ids from the 'gfal_internal' object
+
+.SH SYNOPSIS
+\fBimport gfal\fR
+.sp
+.BI "(int " nbfiles ,
+.BI "gfal_internal " gfal ,
+.BI "int " srm_reqid ,
+.BI "listOfInt " srm_fileids ,
+.BI "string " srmv2_reqtoken
+.BI ") gfal_get_ids (gfal_internal " gfal
+.B )
+.sp
+.BI "(int " nbfiles ,
+.BI "gfal_internal " gfal ,
+.BI "string" setype ,
+.BI "int " srm_reqid ,
+.BI "listOfInt " srm_fileids ,
+.BI "string " srmv2_reqtoken
+.BI ") gfal_get_ids_setype (gfal_internal " gfal
+.B )
+
+.SH DESCRIPTION
+.B gfal_get_ids
+Extracts the SRM file/request ids of the last called GFAL function from the 
+.B gfal_internal
+object.
+
+.TP
+.I gfal
+.B gfal_internal
+object generated from user parameters.
+.TP
+.I setype
+The SE type which has been used to get the TURL. Possible values are: TYPE_SRM, TYPE_SRMv2, TYPE_SE.
+.TP
+.I srm_reqid
+The request id returned by a SRMv1 SE.
+.TP
+.I srm_fileids
+The table of file ids returned by a SRMv1 SE.
+.TP
+.I srmv2_reqtoken
+The request token returned by a SRMv2 SE.
+
+.SH RETURN VALUE
+This routine returns the number of files (useful if srm_fileids is not NULL) on a success,
+or -1 in case of error. Note that in case of SRMv2.2, number of files isn't relevant, so 0
+is returned.
+
+.SH SEE ALSO
+.BR gfal_python (3) ,
+.BR gfal_init_python (3) ,
+.BR gfal_internal_free_python (3) ,
+.BR gfal_deletesurls_python (3) ,
+.BR gfal_removedir_python (3) ,
+.BR gfal_get_python (3) ,
+.BR gfal_getstatus_python (3) ,
+.BR gfal_ls_python (3) ,
+.BR gfal_pin_python (3) ,
+.BR gfal_prestage_python (3) ,
+.BR gfal_prestagestatus_python (3) ,
+.BR gfal_release_python (3) ,
+.BR gfal_abortrequest_python (3) ,
+.BR gfal_abortfiles_python (3) ,
+.BR gfal_set_xfer_done_python (3) ,
+.BR gfal_set_xfer_running_python (3) ,
+.BR gfal_turlsfromsurls_python (3) ,
+.BR gfal_get_ids_python (3) ,
+.BR gfal_set_ids_python (3) ,
+.BR gfal_get_results_python (3) ,
+.BR gfal_access_python (3) ,
+.BR gfal_chmod_python (3) ,
+.BR gfal_close_python (3) ,
+.BR gfal_closedir_python (3) ,
+.BR gfal_creat_python (3) ,
+.BR gfal_get_timeout_connect_python (3) ,
+.BR gfal_get_timeout_sendreceive_python (3) ,
+.BR gfal_get_timeout_bdii_python (3) ,
+.BR gfal_get_timeout_srm_python (3) ,
+.BR gfal_set_timeout_connect_python (3) ,
+.BR gfal_set_timeout_sendreceive_python (3) ,
+.BR gfal_set_timeout_bdii_python (3) ,
+.BR gfal_set_timeout_srm_python (3) ,
+.BR gfal_lseek_python (3) ,
+.BR gfal_mkdir_python (3) ,
+.BR gfal_open_python (3) ,
+.BR gfal_opendir_python (3) ,
+.BR gfal_read_python (3) ,
+.BR gfal_rename_python (3) ,
+.BR gfal_rmdir_python (3) ,
+.BR gfal_stat_python (3) ,
+.BR gfal_unlink_python (3) ,
+.BR gfal_write_python (3) ,
+.BR gfal_set_verbose_python (3) ,
+.BR gfal_get_errno_python (3) ,
