@@ -17,10 +17,16 @@ SET(COPY_DST "${CMAKE_CURRENT_BINARY_DIR}/")
 IF (FUNCTIONAL_TESTS)
 
 
+
 	include_directories( "${CMAKE_SOURCE_DIR}/src "  "${CMAKE_SOURCE_DIR}/src/posix/" ${GLIB2_PKG_INCLUDE_DIRS} )
 
 	add_executable(gfal_stat	${src_gfalstat} )
 	target_link_libraries(gfal_stat ${OUTPUT_NAME_MAIN} )
+	
+	FUNCTION(stat_test_all name valid)
+		add_test(gfal_stat_${name} gfal_stat ${valid})
+	ENDFUNCTION(stat_test_all valid)
+	
 	
 	add_executable(gfal_read	${src_gfalread} )
 	target_link_libraries(gfal_read ${OUTPUT_NAME_MAIN} )
@@ -37,12 +43,18 @@ IF (FUNCTIONAL_TESTS)
 	add_executable(gfal_createdir	${src_gfaltestcreatedir} )
 	target_link_libraries(gfal_createdir ${OUTPUT_NAME_MAIN} )
 	
-	add_executable(gfal_copyfile ${src_gfaltcopy} )
-	target_link_libraries(gfal_copyfile ${OUTPUT_NAME_TRANSFER} )
 
+	
+	IF (MAIN_TRANSFER)
 
-	copy_files(${COPY_SRC} ${COPY_DST})
-	add_test(functional_copyfile gfal2_copyfile.sh)
-	add_test(functional_copyfile_srm gfal2_copyfile_srm.sh)
+		add_executable(gfal_copyfile ${src_gfaltcopy} )
+		target_link_libraries(gfal_copyfile ${OUTPUT_NAME_TRANSFER} )
+
+		copy_files(${COPY_SRC} ${COPY_DST})
+		add_test(functional_copyfile gfal2_copyfile.sh)
+		add_test(functional_copyfile_srm gfal2_copyfile_srm.sh)
+	ENDIF (MAIN_TRANSFER)	
+
+	include(functional-test-parameters.cmake)	
 	
 ENDIF  (FUNCTIONAL_TESTS)

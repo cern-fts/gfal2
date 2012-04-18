@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-
+#include <memory>
 #include <transfer/corelayer.h>
 #include <transfer/plugininterface.h>
 

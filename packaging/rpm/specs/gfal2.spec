@@ -1,6 +1,6 @@
 Name:				gfal2
 Version:			2.0.0
-Release:			5beta1%{?dist}
+Release:			0.6.beta%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -37,10 +37,10 @@ Requires:			%{name}-core = %{version}
 Requires:			%{name}-transfer = %{version}
 
 %description
-GFAL 2.0 provides a unified interface for POSIX-like file interaction \
-and file transfer operations for a set of file access protocols. \
-Designed for the wlcg data management, It offers an extensible \
-plugin systems able to support new protocols. 
+GFAL 2.0 offers an a single, simple and portable API \
+for the file operations in grids environments \
+and cloud environments. The set of supported protocols \
+depends of the %{name} plugins installation.
 
 %package core
 Summary:			Core of the Grid File access Library 2.0
@@ -48,7 +48,8 @@ Group:				Applications/Internet
 Requires:			openldap%{?_isa}
 
 %description core
-Core and main files of %{name}
+The main library of %{name}. \
+the %{name} protocol support relies on a plugin system.
 
 %package transfer
 Summary:			File Transfer logic of %{name}
@@ -56,9 +57,9 @@ Group:				Applications/Internet
 Requires:			%{name}-core%{?_isa} = %{version}
 
 %description transfer
-File transfer functions of %{name}. gfal-transfer provides the \
-third party transfer support and a high level interface to manage files \
-transfers.
+%{name}-transfer is the high level API for file transfer operations \
+in %{name}. Transfer monitoring and third party transfers \
+are supported.
 
 %package devel
 Summary:			Development files of %{name}
@@ -77,7 +78,6 @@ Summary:			Documentation for %{name}
 Group:				Applications/Internet
 Requires:			%{name}-core%{?_isa} = %{version}
 
-
 %description doc
 Doxygen documentation of %{name} .
 
@@ -87,7 +87,9 @@ Group:				Applications/Internet
 Requires:			%{name}-core%{?_isa} = %{version}
 
 %description plugin-lfc
-Provide the lfc support (lfn :// ) for %{name}, lfc plugin 
+Provide the lfc support (lfn://) for %{name}.
+The LFC plugin allows read-only POSIX operations \ 
+for the LFC catalog.
 
 %package plugin-rfio
 Summary:			Provide the rfio support for %{name}
@@ -96,8 +98,10 @@ Requires:			%{name}-core%{?_isa} = %{version}
 Requires:			dpm-libs%{?_isa}
 
 %description plugin-rfio
-Provide the rfio support (rfio:// ) for %{name}, the rfio plugin \
-is able to use both of the dpm and castor rfio libraries
+Provide the rfio support (rfio://) for %{name}. \
+The rfio plugin provides the POSIX operations for \
+the rfio URLs, the rfio protocol is used on the DPM \
+and on the Castor storage systems.
 
 %package plugin-dcap
 Summary:			Provide the support access for %{name}
@@ -106,8 +110,9 @@ Requires:			%{name}-core%{?_isa} = %{version}
 Requires:			dcap-tunnel-gsi%{?_isa}
 
 %description plugin-dcap
-Provide the dcap access (gsidcap://, dcap:// ) for %{name}, \
-the dcap plugin can be use to interact with the dCache storage systems.
+Provide the dcap support (gsidcap://, dcap://) for %{name}. \
+The dcap plugin provides the POSIX operations for the dcap \
+URLs, the dcap protocol is used on the dCache storage system.
 
 %package plugin-srm
 Summary:			Provide the srm access for %{name}
@@ -115,7 +120,9 @@ Group:				Applications/Internet
 Requires:			%{name}-core%{?_isa} = %{version}
 
 %description plugin-srm
-Provide the srm support (srm:// ) for %{name}, srm plugin
+Provide the srm support (srm://) for %{name}. \
+The srm plugin provides the POSIX operations and \
+the third party transfer support on the SRM URLs.
 
 %package plugin-gridftp
 Summary:			Provide the gridftp support for %{name}
@@ -123,17 +130,9 @@ Group:				Applications/Internet
 Requires:			%{name}-core%{?_isa} = %{version}
 
 %description plugin-gridftp
-Provide the gridftp support (gsiftp:// , ftp:// ) for %{name}, \
-The gridftp plugin allow to do third party transfer with the gsiftp \
-protocols in addition of the POSIX file access.
-
-%package plugin-devel
-Summary:			Development files for GFAL 2.0 plugin development
-Group:				Applications/Internet
-Requires:			%{name}-core%{?_isa} = %{version}
-
-%description plugin-devel
-Provide the headers files for %{name} 's plugin development
+Provide the gridftp support (gsiftp://) for %{name}. \
+The gridftp plugin provides the POSIX operations and \
+the third party transfer support on the gsiftp URLs.
 
 %package all
 Summary:			Meta package for gfal 2.0 global install
@@ -188,11 +187,12 @@ make DESTDIR=$RPM_BUILD_ROOT install
 %files transfer
 %defattr (-,root,root)
 %{_libdir}/libgfal_transfer.so.*
+%{_docdir}/%{name}-%{version}/README_TRANSFER
 
 %files devel
 %defattr (-,root,root)
 %{_includedir}/gfal2/gfal_api.h
-%{_includedir}/gfal2/common/gfal_constants.h
+%{_includedir}/gfal2/common/*
 %{_includedir}/gfal2/posix/gfal_posix_api.h
 %{_includedir}/gfal2/global/*.h*
 %{_includedir}/gfal2/transfer/*.h*
@@ -212,40 +212,39 @@ make DESTDIR=$RPM_BUILD_ROOT install
 %{_libdir}/%{name}-plugins/libgfal_plugin_lfc.so*
 %config(noreplace) %{_sysconfdir}/profile.d/gfal_plugin_lfc.csh
 %config(noreplace) %{_sysconfdir}/profile.d/gfal_plugin_lfc.sh
+%{_docdir}/%{name}-%{version}/README_PLUGIN_LFC
 
 %files plugin-rfio
 %defattr (-,root,root)
 %{_libdir}/%{name}-plugins/libgfal_plugin_rfio.so*
 %config(noreplace) %{_sysconfdir}/profile.d/gfal_plugin_rfio.csh
 %config(noreplace) %{_sysconfdir}/profile.d/gfal_plugin_rfio.sh
+%{_docdir}/%{name}-%{version}/README_PLUGIN_RFIO
 
 %files plugin-dcap
 %defattr (-,root,root)
 %{_libdir}/%{name}-plugins/libgfal_plugin_dcap.so*
 %config(noreplace) %{_sysconfdir}/profile.d/gfal_plugin_dcap.csh
 %config(noreplace) %{_sysconfdir}/profile.d/gfal_plugin_dcap.sh
+%{_docdir}/%{name}-%{version}/README_PLUGIN_DCAP
 
 %files plugin-srm
 %defattr (-,root,root)
 %{_libdir}/%{name}-plugins/libgfal_plugin_srm.so*
 %config(noreplace) %{_sysconfdir}/profile.d/gfal_plugin_srm.csh
 %config(noreplace) %{_sysconfdir}/profile.d/gfal_plugin_srm.sh
+%{_docdir}/%{name}-%{version}/README_PLUGIN_SRM
 
 %files plugin-gridftp
 %defattr (-,root,root)
 %{_libdir}/%{name}-plugins/libgfal_plugin_gridftp.so*
+%{_docdir}/%{name}-%{version}/README_PLUGIN_GRIDFTP
 
 %files all
 %defattr (-,root,root)
 %{_docdir}/%{name}-%{version}/README
 
-%files plugin-devel
-%defattr (-,root,root)
-%{_includedir}/gfal2/common/gfal_common_plugin_interface.h
-%{_includedir}/gfal2/common/gfal_prototypes.h
-%{_includedir}/gfal2/common/gfal_types.h
-%{_includedir}/gfal2/common/gfal_common_plugin.h
 
 %changelog
-* Mon Dec 12 2011 Adrien Devress <adevress at cern.ch> - 2.0.0-5beta1
+* Mon Dec 12 2011 Adrien Devress <adevress at cern.ch> - 2.0.0-0.6.beta%{?dist}
  - Initial gfal 2.0 preview release

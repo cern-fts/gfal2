@@ -151,6 +151,9 @@ set_target_properties(plugin_lfc	 	PROPERTIES
 install(TARGETS		plugin_lfc
 	    LIBRARY		DESTINATION ${PLUGIN_INSTALL_DIR} )
 install(FILES ${lfc_scripts} DESTINATION ${SYSCONF_INSTALL_DIR}/profile.d/ )
+
+install(FILES  "common/lfc/README_PLUGIN_LFC"
+		DESTINATION ${DOC_INSTALL_DIR})	
 	    
 ENDIF(PLUGIN_LFC)
 
@@ -177,6 +180,9 @@ install(TARGETS		plugin_srm
 
 install(FILES ${srm_scripts} DESTINATION ${SYSCONF_INSTALL_DIR}/profile.d/ )
 
+install(FILES  "common/srm/README_PLUGIN_SRM"
+		DESTINATION ${DOC_INSTALL_DIR})	
+
 ENDIF(PLUGIN_SRM)
 
 
@@ -200,7 +206,10 @@ set_target_properties(plugin_rfio	 	PROPERTIES
 install(TARGETS		plugin_rfio
 	    LIBRARY		DESTINATION ${PLUGIN_INSTALL_DIR} )
 install(FILES ${rfio_scripts} DESTINATION ${SYSCONF_INSTALL_DIR}/profile.d/ )
-
+  	
+install(FILES  "common/rfio/README_PLUGIN_RFIO"
+		DESTINATION ${DOC_INSTALL_DIR})	
+		
 ENDIF(PLUGIN_RFIO)
 
 
@@ -225,6 +234,9 @@ set_target_properties(plugin_dcap	 	PROPERTIES
 install(TARGETS		plugin_dcap
 	    LIBRARY		DESTINATION ${PLUGIN_INSTALL_DIR} )
 install(FILES ${dcap_scripts} DESTINATION ${SYSCONF_INSTALL_DIR}/profile.d/ )
+
+install(FILES  "common/dcap/README_PLUGIN_DCAP"
+		DESTINATION ${DOC_INSTALL_DIR})	
 
 ENDIF(PLUGIN_DCAP)
 

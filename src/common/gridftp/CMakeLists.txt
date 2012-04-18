@@ -36,6 +36,9 @@ set_target_properties(plugin_gridftp	 	PROPERTIES
 
 install(TARGETS		plugin_gridftp
 	    LIBRARY		DESTINATION ${PLUGIN_INSTALL_DIR} )
+	    
+install(FILES		"README_PLUGIN_GRIDFTP"
+		DESTINATION ${DOC_INSTALL_DIR})	    
 #install(FILES ${dcap_scripts} DESTINATION ${SYSCONF_INSTALL_DIR}/profile.d/ )
 
 ENDIF(PLUGIN_GRIDFTP)
