@@ -1,0 +1,113 @@
+.\" @(#)$RCSfile: gfal_creat_python.man,v $ $Revision: 1.1 $ $Date: 2008/12/18 13:19:12 $ CERN Remi Mollon
+.\" Copyright (C) 2009 by CERN
+.\" All rights reserved
+.\"
+.TH GFAL_CREAT 3 "$Date: 2008/12/18 13:19:12 $" GFAL "Library Functions"
+
+.SH NAME
+gfal_creat \- create a new file or truncate an existing one
+
+.SH SYNOPSIS
+\fBimport gfal\fR
+.sp
+.BI "int gfal_creat (string " filename ,
+.BI "int " mode );
+.sp
+.BI "int gfal_creat64 (string " filename ,
+.BI "int " mode );
+
+.SH DESCRIPTION
+.B gfal_creat
+creates a new file or truncates an existing one.
+.TP
+.I filename
+specifies the file name: either a logical file name, a guid, an SURL or a TURL.
+.TP
+.I mode
+is used only if the file is created.
+.LP
+gfal_creat (filename, mode) is equivalent to:
+
+	gfal_open(filename, O_WRONLY | O_CREAT | O_TRUNC, mode)
+
+.SH RETURN VALUE
+This routine returns a write-only file descriptor if the operation was successful
+or -1 if the operation failed. In the latter case,
+.B errno
+is set appropriately.
+.SH ERRORS
+.TP 1.3i
+.B EACCES
+Search permission is denied on a component of the
+.I filename
+prefix or the file does not exist and write permission on the parent directory
+is denied or the file exists and write permission on the file itself is denied.
+.TP
+.B EFAULT
+.I filename
+is a NULL pointer.
+.TP
+.B EBUSY
+Device or resource busy. Happens if you try to open in write mode a CASTOR file that is in an active migration stream.
+.TP
+.B ENOTDIR
+A component of
+.I filename
+prefix is not a directory.
+.TP
+.B EINVAL
+.I filename
+has an invalid syntax.
+.TP
+.B ECOMM
+Communication error.
+.TP
+.B EPROTONOSUPPORT
+Access method not supported.
+
+.SH SEE ALSO
+.BR gfal_python (3) ,
+.BR gfal_init_python (3) ,
+.BR gfal_internal_free_python (3) ,
+.BR gfal_deletesurls_python (3) ,
+.BR gfal_removedir_python (3) ,
+.BR gfal_get_python (3) ,
+.BR gfal_getstatus_python (3) ,
+.BR gfal_ls_python (3) ,
+.BR gfal_pin_python (3) ,
+.BR gfal_prestage_python (3) ,
+.BR gfal_prestagestatus_python (3) ,
+.BR gfal_release_python (3) ,
+.BR gfal_abortrequest_python (3) ,
+.BR gfal_abortfiles_python (3) ,
+.BR gfal_set_xfer_done_python (3) ,
+.BR gfal_set_xfer_running_python (3) ,
+.BR gfal_turlsfromsurls_python (3) ,
+.BR gfal_get_ids_python (3) ,
+.BR gfal_set_ids_python (3) ,
+.BR gfal_get_results_python (3) ,
+.BR gfal_access_python (3) ,
+.BR gfal_chmod_python (3) ,
+.BR gfal_close_python (3) ,
+.BR gfal_closedir_python (3) ,
+.BR gfal_creat_python (3) ,
+.BR gfal_get_timeout_connect_python (3) ,
+.BR gfal_get_timeout_sendreceive_python (3) ,
+.BR gfal_get_timeout_bdii_python (3) ,
+.BR gfal_get_timeout_srm_python (3) ,
+.BR gfal_set_timeout_connect_python (3) ,
+.BR gfal_set_timeout_sendreceive_python (3) ,
+.BR gfal_set_timeout_bdii_python (3) ,
+.BR gfal_set_timeout_srm_python (3) ,
+.BR gfal_lseek_python (3) ,
+.BR gfal_mkdir_python (3) ,
+.BR gfal_open_python (3) ,
+.BR gfal_opendir_python (3) ,
+.BR gfal_read_python (3) ,
+.BR gfal_rename_python (3) ,
+.BR gfal_rmdir_python (3) ,
+.BR gfal_stat_python (3) ,
+.BR gfal_unlink_python (3) ,
+.BR gfal_write_python (3) ,
+.BR gfal_set_verbose_python (3) ,
+.BR gfal_get_errno_python (3) ,

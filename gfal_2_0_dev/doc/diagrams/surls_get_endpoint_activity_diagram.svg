@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="75cm" height="53cm" viewBox="42 -188 1496 1043" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <ellipse style="fill: #000000" cx="824" cy="-104" rx="10" ry="10"/>
+  <g>
+    <polygon style="fill: #ffffff" points="793,185 813,165 833,185 813,205 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="793,185 813,165 833,185 813,205 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:28.2222;font-family:sanserif;font-style:normal;font-weight:700" x="488" y="-161">
+    <tspan x="488" y="-161">Activity Diagram of the SRM resolution SYSTEM :</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="219" y="234" width="217.1" height="36" rx="20" ry="20"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="219" y="234" width="217.1" height="36" rx="20" ry="20"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="327.55" y="255.9">
+      <tspan x="327.55" y="255.9">Extract endpoint from first surl</tspan>
+    </text>
+  </g>
+  <g>
+    <polygon style="fill: #ffffff" points="304,388 324,368 344,388 324,408 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="304,388 324,368 344,388 324,408 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="813,205 813,219.5 327.55,219.5 327.55,229.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="322.55,221.764 327.55,231.764 332.55,221.764 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="557" y="209.5">{first url contain a full endpoint}</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="793,185 793,184 150.05,184 150.05,599.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="145.05,591.764 150.05,601.764 155.05,591.764 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="564" y="160">{no bdii option specified and no full endpoint}</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="324,272 324,272 324,363.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="319,355.764 324,365.764 329,355.764 "/>
+  </g>
+  <ellipse style="fill: #000000" cx="165" cy="712" rx="10" ry="10"/>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="304,388 263.55,388 263.55,622 227.572,622 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="235.336,617 225.336,622 235.336,627 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="432" y="531">{ unable to extract the endpoint from the first surl}</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="349,387 349,400 496.95,400 496.95,416.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="491.95,408.764 496.95,418.764 501.95,408.764 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="453.475" y="384">{successfull get endpoint}</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="408" y="421" width="177.9" height="36" rx="20" ry="20"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="408" y="421" width="177.9" height="36" rx="20" ry="20"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="496.95" y="442.9">
+      <tspan x="496.95" y="442.9">Force Srm type to srmv2</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="1052" y="273" width="206.4" height="36" rx="20" ry="20"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1052" y="273" width="206.4" height="36" rx="20" ry="20"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="1155.2" y="294.9">
+      <tspan x="1155.2" y="294.9">Request bdii to get endpoint </tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="77" y="604" width="146.1" height="36" rx="20" ry="20"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="77" y="604" width="146.1" height="36" rx="20" ry="20"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="150.05" y="625.9">
+      <tspan x="150.05" y="625.9">set Error and return</tspan>
+    </text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="77,622 57,622 57,712 149.522,712 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="141.759,717 151.759,712 141.759,707 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="773" y="-42.5" width="94.1" height="36" rx="20" ry="20"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="773" y="-42.5" width="94.1" height="36" rx="20" ry="20"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="820.05" y="-20.6">
+      <tspan x="820.05" y="-20.6">parse surls </tspan>
+    </text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="824,-94 824,-68.25 820.05,-68.25 820.05,-46.9721 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="815.05,-54.7361 820.05,-44.7361 825.05,-54.7361 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="875" y="130.5">
+    <tspan x="875" y="130.5"></tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="752" y="103.5" width="125.05" height="36" rx="20" ry="20"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="752" y="103.5" width="125.05" height="36" rx="20" ry="20"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="814.525" y="125.4">
+      <tspan x="814.525" y="125.4">Search Endpoint</tspan>
+    </text>
+  </g>
+  <g>
+    <polygon style="fill: #ffffff" points="797,42.5 817,22.5 837,42.5 817,62.5 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="797,42.5 817,22.5 837,42.5 817,62.5 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="817,-4.5 817,-4.5 817,18.0279 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="812,10.2639 817,20.2639 822,10.2639 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="817,62.5 817,83.5 814.525,83.5 814.525,99.0279 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="809.525,91.2639 814.525,101.264 819.525,91.2639 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="870.5" y="78.5">{ url is valid }</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="814.525,139.5 814.525,153.75 813,153.75 813,160.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="808,152.764 813,162.764 818,152.764 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="797,42.5 151,42.5 151,604 154.522,604 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="142.286,609 152.286,604 142.286,599 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="282" y="67">{ url is not a surl or surl is empty }</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="710" y="630" width="238" height="36" rx="20" ry="20"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="710" y="630" width="238" height="36" rx="20" ry="20"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="829" y="651.9">
+      <tspan x="829" y="651.9">Execute SRM to TURLS convertion</tspan>
+    </text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="833,185 1155.2,185 1155.2,268.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1150.2,260.764 1155.2,270.764 1160.2,260.764 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="1025.6" y="163">bdii allowed and no full endpoint found in surl</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="1390" y="506" width="146.1" height="36" rx="20" ry="20"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1390" y="506" width="146.1" height="36" rx="20" ry="20"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="1463.05" y="527.9">
+      <tspan x="1463.05" y="527.9">set Error and return</tspan>
+    </text>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="1432" y="528">
+    <tspan x="1432" y="528"></tspan>
+  </text>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1258.4,291 1463.05,291 1463.05,501.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1458.05,493.764 1463.05,503.764 1468.05,493.764 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="1350.72" y="261">{ no response or bad response}</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="833,663.5 833,749 840,749 840,830.028 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="835,822.264 840,832.264 845,822.264 "/>
+  </g>
+  <ellipse style="fill: #000000" cx="840" cy="844.5" rx="10" ry="10"/>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="585.9,439 829,439 829,625.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="824,617.764 829,627.764 834,617.764 "/>
+  </g>
+  <g>
+    <polygon style="fill: #ffffff" points="948,356 968,336 988,356 968,376 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="948,356 968,336 988,356 968,376 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="948,356 766.95,356 766.95,421 590.372,421 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="598.136,416 588.136,421 598.136,426 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="751" y="344">{ se_types contain se_default type specified ( srmv2)}</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1052,291 968,291 968,331.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="963,323.764 968,333.764 973,323.764 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="1016" y="401" width="151.9" height="36" rx="20" ry="20"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1016" y="401" width="151.9" height="36" rx="20" ry="20"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="1091.95" y="422.9">
+      <tspan x="1091.95" y="422.9">Force SRM tp SRMv1</tspan>
+    </text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="988,356 1091.95,356 1091.95,396.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1086.95,388.764 1091.95,398.764 1096.95,388.764 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="1039" y="346">{else }</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1016,419 982,419 982,630 952.472,630 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="960.236,625 950.236,630 960.236,635 "/>
+  </g>
+</svg>

@@ -1,0 +1,63 @@
+.\" @(#)$RCSfile: gfal_rename.man,v $ $Revision: 1.1.1.1 $ $Date: 2003/11/19 12:56:29 $ CERN Jean-Philippe Baud
+.\" Copyright (C) 2003 by CERN
+.\" All rights reserved
+.\"
+.TH GFAL_RENAME 3 "$Date: 2003/11/19 12:56:29 $" GFAL "Library Functions"
+.SH NAME
+gfal_rename \- rename a file or a directory
+.SH SYNOPSIS
+\fB#include "gfal_api.h"\fR
+.sp
+.BI "int gfal_rename (const char *" old_name ,
+.BI "const char *" new_name ");"
+.SH DESCRIPTION
+.B gfal_rename
+renames a file or a directory
+.LP
+.I old_name
+and
+.I new_name
+specify the old and new file names (this can only be a TURL in the current implementation).
+.SH RETURN VALUE
+This routine returns 0 if the operation was successful or -1 if the operation
+failed. In the latter case,
+.B errno
+is set appropriately.
+.SH ERRORS
+.TP 1.3i
+.B ENOENT
+A component of
+.I old_name
+prefix does not exist.
+.TP
+.B EACCES
+Search permission is denied on a component of the file prefixes or
+write permission on the parent directories is denied or
+.I old_name 
+is a directory and write permission is denied on
+.I old_name
+or
+.IR new_name .
+.TP
+.B EFAULT
+.I old_name
+or
+.I new_name
+is a NULL pointer.
+.TP
+.B ENOTDIR
+A component of the file prefixes is not a directory.
+.TP
+.B EINVAL
+.I old_name
+or
+.I new_name
+has an invalid syntax.
+.TP
+.B ECOMM
+Communication error.
+.TP
+.B EPROTONOSUPPORT
+Access method not supported.
+.SH SEE ALSO
+.B gfal(3)

@@ -1,0 +1,39 @@
+#!/usr/bin/python
+##
+# Example builind script
+# @author : Devresse Adrien
+# @version : v0.2
+# @date 21/03/2011
+
+Import('*')	# import SConstruct exported var
+import os
+import random
+import shutil
+import commands
+
+src = ['example/gfal_testrw.c']
+src2 = ['example/gfal_testread.c']
+src3 = ['example/gfal_testdir.c']
+src4 = ['example/gfal_testchmod.c']
+src5 = ['example/gfal_testcreatedir.c']
+src6 = ['example/gfal_teststat.c']
+src7 = ['example/gfal_testget.c']
+
+old_suffix=""
+env_testing = env.Clone()
+if ARGUMENTS.get('old_mode','0') =='yes':
+	env_testing.Append(LIBS="gfal")
+	env_testing.Append(CFLAGS="-D_GFAL_1_X")	
+	env_testing["CPPPATH"] = old_gfal_header
+	old_suffix="_old"
+else:	
+	env_testing.Append(LIBS="gfal2")
+
+env_testing.Program("build/gfal_testrw"+old_suffix, src)
+env_testing.Program("build/gfal_testread"+old_suffix, src2)
+env_testing.Program("build/gfal_testdir"+old_suffix, src3)
+env_testing.Program("build/gfal_testchmod"+old_suffix, src4)	
+env_testing.Program("build/gfal_testcreatedir"+old_suffix, src5)	
+env_testing.Program("build/gfal_teststat"+old_suffix, src6)	
+env_testing.Program("build/gfal_testget"+old_suffix, src7)	
+

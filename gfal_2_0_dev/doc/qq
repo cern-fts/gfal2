@@ -1,0 +1,43 @@
+GFAL_RENAME(3)                 Library Functions                GFAL_RENAME(3)
+
+
+
+NNAAMMEE
+       gfal_rename - rename a file or a directory
+
+SSYYNNOOPPSSIISS
+       ##iinncclluuddee ""ggffaall__aappii..hh""
+
+       iinntt ggffaall__rreennaammee ((ccoonnsstt cchhaarr **_o_l_d___n_a_m_e,, ccoonnsstt cchhaarr **_n_e_w___n_a_m_e));;
+
+DDEESSCCRRIIPPTTIIOONN
+       ggffaall__rreennaammee renames a file or a directory
+
+       _o_l_d___n_a_m_e and _n_e_w___n_a_m_e specify the old and new file names (this can only be a TURL in the current implementation).
+
+RREETTUURRNN VVAALLUUEE
+       This routine returns 0 if the operation was successful or -1 if the operation failed. In the latter case, eerrrrnnoo is set appropriately.
+
+EERRRROORRSS
+       EENNOOEENNTT       A component of _o_l_d___n_a_m_e prefix does not exist.
+
+       EEAACCCCEESS       Search  permission is denied on a component of the file prefixes or write permission on the parent directories is denied or _o_l_d___n_a_m_e is a directory and write
+                    permission is denied on _o_l_d___n_a_m_e or _n_e_w___n_a_m_e.
+
+       EEFFAAUULLTT       _o_l_d___n_a_m_e or _n_e_w___n_a_m_e is a NULL pointer.
+
+       EENNOOTTDDIIRR      A component of the file prefixes is not a directory.
+
+       EEIINNVVAALL       _o_l_d___n_a_m_e or _n_e_w___n_a_m_e has an invalid syntax.
+
+       EECCOOMMMM        Communication error.
+
+       EEPPRROOTTOONNOOSSUUPPPPOORRTT
+                    Access method not supported.
+
+SSEEEE AALLSSOO
+       ggffaall((33))
+
+
+
+GFAL                     $Date: 2003/11/19 12:56:29 $           GFAL_RENAME(3)

@@ -1,0 +1,181 @@
+POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 598
+Connection: close
+SOAPAction: "Mkdir"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmMkdir><srmMkdirRequest><SURL>srm://grid-cert-03.roma1.infn.it/dpm/roma1.infn.it/home/dteam/generated</SURL></srmMkdirRequest></srm2:srmMkdir></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 1148
+Connection: close
+SOAPAction: "PrepareToPut"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmPrepareToPut><srmPrepareToPutRequest><arrayOfFileRequests><requestArray><targetSURL>srm://grid-cert-03.roma1.infn.it/dpm/roma1.infn.it/home/dteam/generated/test1</targetSURL><expectedFileSize>1024</expectedFileSize></requestArray></arrayOfFileRequests><desiredTotalRequestTime>60</desiredTotalRequestTime><desiredFileStorageType>PERMANENT</desiredFileStorageType><transferParameters><arrayOfTransferProtocols><stringArray>file</stringArray><stringArray>rfio</stringArray><stringArray>dcap</stringArray><stringArray>gsidcap</stringArray><stringArray>kdcap</stringArray><stringArray></stringArray></arrayOfTransferProtocols></transferParameters></srmPrepareToPutRequest></srm2:srmPrepareToPut></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 631
+Connection: close
+SOAPAction: "StatusOfPutRequest"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmStatusOfPutRequest><srmStatusOfPutRequestRequest><requestToken>0775634b-2291-4dbe-ac94-5f0d4ff005e2</requestToken></srmStatusOfPutRequestRequest></srm2:srmStatusOfPutRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 714
+Connection: close
+SOAPAction: "PutDone"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmPutDone><srmPutDoneRequest><requestToken>0775634b-2291-4dbe-ac94-5f0d4ff005e2</requestToken><arrayOfSURLs><urlArray>srm://grid-cert-03.roma1.infn.it/dpm/roma1.infn.it/home/dteam/generated/test1</urlArray></arrayOfSURLs></srmPutDoneRequest></srm2:srmPutDone></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 1107
+Connection: close
+SOAPAction: "PrepareToGet"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmPrepareToGet><srmPrepareToGetRequest><arrayOfFileRequests><requestArray><sourceSURL>srm://grid-cert-03.roma1.infn.it/dpm/roma1.infn.it/home/dteam/generated/test1</sourceSURL></requestArray></arrayOfFileRequests><desiredFileStorageType>PERMANENT</desiredFileStorageType><desiredTotalRequestTime>60</desiredTotalRequestTime><transferParameters><arrayOfTransferProtocols><stringArray>file</stringArray><stringArray>rfio</stringArray><stringArray>dcap</stringArray><stringArray>gsidcap</stringArray><stringArray>kdcap</stringArray><stringArray></stringArray></arrayOfTransferProtocols></transferParameters></srmPrepareToGetRequest></srm2:srmPrepareToGet></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 631
+Connection: close
+SOAPAction: "StatusOfPutRequest"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmStatusOfGetRequest><srmStatusOfGetRequestRequest><requestToken>15b958bd-ffb2-45a9-a001-27a3648ad7e3</requestToken></srmStatusOfGetRequestRequest></srm2:srmStatusOfGetRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 734
+Connection: close
+SOAPAction: "ReleaseFiles"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmReleaseFiles><srmReleaseFilesRequest><requestToken>15b958bd-ffb2-45a9-a001-27a3648ad7e3</requestToken><arrayOfSURLs><urlArray>srm://grid-cert-03.roma1.infn.it/dpm/roma1.infn.it/home/dteam/generated/test1</urlArray></arrayOfSURLs></srmReleaseFilesRequest></srm2:srmReleaseFiles></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 598
+Connection: close
+SOAPAction: "Mkdir"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmMkdir><srmMkdirRequest><SURL>srm://grid-cert-03.roma1.infn.it/dpm/roma1.infn.it/home/dteam/generated</SURL></srmMkdirRequest></srm2:srmMkdir></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 1148
+Connection: close
+SOAPAction: "PrepareToPut"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmPrepareToPut><srmPrepareToPutRequest><arrayOfFileRequests><requestArray><targetSURL>srm://grid-cert-03.roma1.infn.it/dpm/roma1.infn.it/home/dteam/generated/test1</targetSURL><expectedFileSize>1024</expectedFileSize></requestArray></arrayOfFileRequests><desiredTotalRequestTime>60</desiredTotalRequestTime><desiredFileStorageType>PERMANENT</desiredFileStorageType><transferParameters><arrayOfTransferProtocols><stringArray>file</stringArray><stringArray>rfio</stringArray><stringArray>dcap</stringArray><stringArray>gsidcap</stringArray><stringArray>kdcap</stringArray><stringArray></stringArray></arrayOfTransferProtocols></transferParameters></srmPrepareToPutRequest></srm2:srmPrepareToPut></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 631
+Connection: close
+SOAPAction: "StatusOfPutRequest"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmStatusOfPutRequest><srmStatusOfPutRequestRequest><requestToken>804ffc99-b590-410e-993a-05511f1bb202</requestToken></srmStatusOfPutRequestRequest></srm2:srmStatusOfPutRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 598
+Connection: close
+SOAPAction: "Mkdir"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmMkdir><srmMkdirRequest><SURL>srm://grid-cert-03.roma1.infn.it/dpm/roma1.infn.it/home/dteam/generated</SURL></srmMkdirRequest></srm2:srmMkdir></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 1148
+Connection: close
+SOAPAction: "PrepareToPut"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmPrepareToPut><srmPrepareToPutRequest><arrayOfFileRequests><requestArray><targetSURL>srm://grid-cert-03.roma1.infn.it/dpm/roma1.infn.it/home/dteam/generated/test1</targetSURL><expectedFileSize>1024</expectedFileSize></requestArray></arrayOfFileRequests><desiredTotalRequestTime>60</desiredTotalRequestTime><desiredFileStorageType>PERMANENT</desiredFileStorageType><transferParameters><arrayOfTransferProtocols><stringArray>file</stringArray><stringArray>rfio</stringArray><stringArray>dcap</stringArray><stringArray>gsidcap</stringArray><stringArray>kdcap</stringArray><stringArray></stringArray></arrayOfTransferProtocols></transferParameters></srmPrepareToPutRequest></srm2:srmPrepareToPut></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 631
+Connection: close
+SOAPAction: "StatusOfPutRequest"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmStatusOfPutRequest><srmStatusOfPutRequestRequest><requestToken>c997f747-ae8f-4903-beda-c69c972b4612</requestToken></srmStatusOfPutRequestRequest></srm2:srmStatusOfPutRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 598
+Connection: close
+SOAPAction: "Mkdir"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmMkdir><srmMkdirRequest><SURL>srm://grid-cert-03.roma1.infn.it/dpm/roma1.infn.it/home/dteam/generated</SURL></srmMkdirRequest></srm2:srmMkdir></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 1149
+Connection: close
+SOAPAction: "PrepareToPut"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmPrepareToPut><srmPrepareToPutRequest><arrayOfFileRequests><requestArray><targetSURL>srm://grid-cert-03.roma1.infn.it/dpm/roma1.infn.it/home/dteam/generated/test10</targetSURL><expectedFileSize>1024</expectedFileSize></requestArray></arrayOfFileRequests><desiredTotalRequestTime>60</desiredTotalRequestTime><desiredFileStorageType>PERMANENT</desiredFileStorageType><transferParameters><arrayOfTransferProtocols><stringArray>file</stringArray><stringArray>rfio</stringArray><stringArray>dcap</stringArray><stringArray>gsidcap</stringArray><stringArray>kdcap</stringArray><stringArray></stringArray></arrayOfTransferProtocols></transferParameters></srmPrepareToPutRequest></srm2:srmPrepareToPut></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 631
+Connection: close
+SOAPAction: "StatusOfPutRequest"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmStatusOfPutRequest><srmStatusOfPutRequestRequest><requestToken>e63b7bc6-7427-41d4-893c-f16ec3299ef9</requestToken></srmStatusOfPutRequestRequest></srm2:srmStatusOfPutRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 715
+Connection: close
+SOAPAction: "PutDone"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmPutDone><srmPutDoneRequest><requestToken>e63b7bc6-7427-41d4-893c-f16ec3299ef9</requestToken><arrayOfSURLs><urlArray>srm://grid-cert-03.roma1.infn.it/dpm/roma1.infn.it/home/dteam/generated/test10</urlArray></arrayOfSURLs></srmPutDoneRequest></srm2:srmPutDone></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 1108
+Connection: close
+SOAPAction: "PrepareToGet"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmPrepareToGet><srmPrepareToGetRequest><arrayOfFileRequests><requestArray><sourceSURL>srm://grid-cert-03.roma1.infn.it/dpm/roma1.infn.it/home/dteam/generated/test10</sourceSURL></requestArray></arrayOfFileRequests><desiredFileStorageType>PERMANENT</desiredFileStorageType><desiredTotalRequestTime>60</desiredTotalRequestTime><transferParameters><arrayOfTransferProtocols><stringArray>file</stringArray><stringArray>rfio</stringArray><stringArray>dcap</stringArray><stringArray>gsidcap</stringArray><stringArray>kdcap</stringArray><stringArray></stringArray></arrayOfTransferProtocols></transferParameters></srmPrepareToGetRequest></srm2:srmPrepareToGet></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 631
+Connection: close
+SOAPAction: "StatusOfPutRequest"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmStatusOfGetRequest><srmStatusOfGetRequestRequest><requestToken>4a5f612d-efe5-4411-8b2a-12f329c2c85a</requestToken></srmStatusOfGetRequestRequest></srm2:srmStatusOfGetRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>POST /srm/managerv2 HTTP/1.1
+Host: grid-cert-03.roma1.infn.it:8446
+User-Agent: gSOAP/2.7
+Content-Type: text/xml; charset=utf-8
+Content-Length: 735
+Connection: close
+SOAPAction: "ReleaseFiles"
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:srm2="http://srm.lbl.gov/StorageResourceManager"><SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><srm2:srmReleaseFiles><srmReleaseFilesRequest><requestToken>4a5f612d-efe5-4411-8b2a-12f329c2c85a</requestToken><arrayOfSURLs><urlArray>srm://grid-cert-03.roma1.infn.it/dpm/roma1.infn.it/home/dteam/generated/test10</urlArray></arrayOfSURLs></srmReleaseFilesRequest></srm2:srmReleaseFiles></SOAP-ENV:Body></SOAP-ENV:Envelope>

@@ -1,0 +1,20 @@
+How to compile GFAL 2.0 ?
+
+
+- install glib2, openldap in development version
+- install all the plugin development files that you need ( lfc-dev, dcap-dev, etc...)
+
+compilation :
+cd [src_dir]
+mkdir build
+cd build
+cmake ../
+ccmake ../ # configure the plugin that you need : default = all !
+make -j 8
+
+- installation
+make install 
+
+
+
+

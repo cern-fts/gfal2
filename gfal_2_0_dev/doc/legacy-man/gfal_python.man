@@ -1,0 +1,189 @@
+.\" @(#)$RCSfil $ $Revision $ $Date $ CERN Remi MOLLON
+.\" Copyright (C) 2004-2006 by CERN
+.\" All rights reserved
+.\" 
+.TH GFAL_PYTHON 3 "$Date: 2008/12/18 13:19:12 $" GFAL "Library Functions"
+.SH NAME
+gfal - Grid File Access Library
+
+.SH SYNOPSIS
+import gfal 
+
+import gfalthr 
+
+.BI "( string " version
+.B ) gfal_version ()
+
+.BI "( int " returncode ,
+.BI "gfal_internal " gfal ,
+.BI "string " errmsg
+.BI ") gfal_init ( dict " req
+.B )
+
+.BI "( int " returncode ,
+.BI "gfal_internal " gfal ,
+.BI "int " srm_reqid ,
+.BI "listOfInt " srm_fileids ,
+.BI "string " srmv2_reqtoken
+.BI ") gfal_get_ids ( gfal_internal " gfal
+.B )
+
+.BI "( int " returncode ,
+.BI "gfal_internal " gfal ,
+.BI "listOfDict " filestatuses
+.BI ") gfal_get_results ( gfal_internal " gfal
+.B )
+
+.BI "(void) gfal_internal_free ( gfal_internal " gfal
+.B )
+
+.BI "( int " returncode ,
+.BI "gfal_internal " gfal ,
+.BI "string " errmsg
+.BI ") gfal_deletesurls ( gfal_internal " gfal
+.B )
+
+.BI "( int " returncode ,
+.BI "gfal_internal " gfal ,
+.BI "string " errmsg
+.BI ") gfal_get ( gfal_internal " gfal
+.B )
+
+.BI "( int " returncode ,
+.BI "gfal_internal " gfal ,
+.BI "string " errmsg
+.BI ") gfal_getstatus ( gfal_internal " gfal
+.B )
+
+.BI "( int " returncode ,
+.BI "gfal_internal " gfal ,
+.BI "string " errmsg
+.BI ") gfal_ls ( gfal_internal " gfal
+.B )
+
+.BI "( int " returncode ,
+.BI "gfal_internal " gfal ,
+.BI "string " errmsg
+.BI ") gfal_prestage ( gfal_internal " gfal
+.B )
+
+.BI "( int " returncode ,
+.BI "gfal_internal " gfal ,
+.BI "string " errmsg
+.BI ") gfal_pin ( gfal_internal " gfal
+.B )
+
+.BI "( int " returncode ,
+.BI "gfal_internal " gfal ,
+.BI "string " errmsg
+.BI ") gfal_prestagestatus ( gfal_internal " gfal
+.B )
+
+.BI "( int " returncode ,
+.BI "gfal_internal " gfal ,
+.BI "string " errmsg
+.BI ") gfal_release ( gfal_internal " gfal
+.B )
+
+.BI "( int " returncode ,
+.BI "gfal_internal " gfal ,
+.BI "string " errmsg
+.BI ") gfal_set_xfer_done ( gfal_internal " gfal
+.B )
+
+.BI "( int " returncode ,
+.BI "gfal_internal " gfal ,
+.BI "string " errmsg
+.BI ") gfal_set_xfer_running ( gfal_internal " gfal
+.B )
+
+.BI "( int " returncode ,
+.BI "gfal_internal " gfal ,
+.BI "string " errmsg
+.BI ") gfal_turlsfromsurls ( gfal_internal " gfal
+.B )
+
+.SH USAGE
+Due to the 'gfal_internal' object used by GFAL functions, using this API requires to follow a few steps.
+
+First of all, you have to create a
+.BR request , 
+in which you will be able to set your parameters :
+
+    import gfal
+
+    gfalreq = {}
+    gfalreq["surls"] = ["srm://lxdpm102.cern.ch/dpm/cern.ch/home/dteam/file.test"]
+    ...
+
+To see the meaning of each parameter, have a look to the documentation of
+.BR gfal_init_python (3).
+Once, you have set all the desired parameters in this request, you have to generate the internal gfal object like this :
+
+    returnCode, gfalObj, errMsg = gfal.gfal_init (gfalreq)
+
+.B DO NOT MODIFY
+this object by hand. If you need other parameters, just make a new request and run gfal_init again on it.
+
+Then, you just have to pass this internal object
+.B gfalObj
+to gfal functions :
+
+    returnCode, gfalObj, errMsg = gfal.gfal_turlsfromsurls (gfalObj)
+
+Finally, you have to call a specific function to get the results :
+
+    returnCode, gfalObj, statuses = gfal.gfal_get_results (gfalObj)
+
+It is recommended to keep the same 'gfal_internal' object for making requests on same SURLs.
+
+Once the 'gfal_internal' object is not needed anymore, it must be freed:
+
+    gfal.gfal_internal_free (gfalObj);
+
+.SH SEE ALSO
+.BR gfal_python (3) ,
+.BR gfal_init_python (3) ,
+.BR gfal_internal_free_python (3) ,
+.BR gfal_deletesurls_python (3) ,
+.BR gfal_removedir_python (3) ,
+.BR gfal_get_python (3) ,
+.BR gfal_getstatus_python (3) ,
+.BR gfal_ls_python (3) ,
+.BR gfal_pin_python (3) ,
+.BR gfal_prestage_python (3) ,
+.BR gfal_prestagestatus_python (3) ,
+.BR gfal_release_python (3) ,
+.BR gfal_abortrequest_python (3) ,
+.BR gfal_abortfiles_python (3) ,
+.BR gfal_set_xfer_done_python (3) ,
+.BR gfal_set_xfer_running_python (3) ,
+.BR gfal_turlsfromsurls_python (3) ,
+.BR gfal_get_ids_python (3) ,
+.BR gfal_set_ids_python (3) ,
+.BR gfal_get_results_python (3) ,
+.BR gfal_access_python (3) ,
+.BR gfal_chmod_python (3) ,
+.BR gfal_close_python (3) ,
+.BR gfal_closedir_python (3) ,
+.BR gfal_creat_python (3) ,
+.BR gfal_get_timeout_connect_python (3) ,
+.BR gfal_get_timeout_sendreceive_python (3) ,
+.BR gfal_get_timeout_bdii_python (3) ,
+.BR gfal_get_timeout_srm_python (3) ,
+.BR gfal_set_timeout_connect_python (3) ,
+.BR gfal_set_timeout_sendreceive_python (3) ,
+.BR gfal_set_timeout_bdii_python (3) ,
+.BR gfal_set_timeout_srm_python (3) ,
+.BR gfal_lseek_python (3) ,
+.BR gfal_mkdir_python (3) ,
+.BR gfal_open_python (3) ,
+.BR gfal_opendir_python (3) ,
+.BR gfal_read_python (3) ,
+.BR gfal_rename_python (3) ,
+.BR gfal_rmdir_python (3) ,
+.BR gfal_stat_python (3) ,
+.BR gfal_unlink_python (3) ,
+.BR gfal_write_python (3) ,
+.BR gfal_set_verbose_python (3) ,
+.BR gfal_get_errno_python (3) ,

@@ -1,0 +1,77 @@
+.\" @(#)$RCSfile: gfal_removedir.man,v $ $Revision: 1.1 $ $Date: 2008/06/06 10:57:49 $ CERN Remi Mollon
+.\" Copyright (C) 2008 by CERN
+.\" All rights reserved
+.\"
+.TH GFAL_REMOVEDIR 3 "$Date: 2008/06/06 10:57:49 $" GFAL "Library Functions"
+.SH NAME
+gfal_removedir \- delete a directory SURL from a SE
+.SH SYNOPSIS
+\fB#include "gfal_api.h"\fR
+.sp
+.BI "int gfal_removedir (gfal_internal gfal, char *errbuf, int errbufsz);
+.SH DESCRIPTION
+.B gfal_removedir
+delete a directory SURL from a SE (only a single directory can be deleted at a time).
+
+See 
+.I gfal_get_results(3)
+to be able to access results.
+
+.TP
+.I gfal
+.B gfal_internal
+object generated from user parameters.
+.TP
+.I errbuf
+allocated 
+.B char *
+pointer in which a detailed error message may be stored.
+.TP
+.I errbufsz
+size allocated ofr the pointer 
+.I errbuf
+
+.SH RETURN VALUE
+This routine returns 0 on a success, or -1 in case of error. In the latter case,
+.B errno
+is set appropriately. Moreover, you can get an error message from
+.I errbuf
+, if specified.
+.SH ERRORS
+.B errno
+indicates the type of error, but for detailled error message, you have to look into
+.IR errbuf .
+.TP 1.3i
+.B EINVAL
+The 
+.B gfal_internal
+object is incorrect. It may be caused by freeing a user parameter which was in use in it, or by modifying this object by hand.
+.TP
+.B EPROTONOSUPPORT
+You try to make an action with a protocol which is not supported by the system.
+.TP
+.B ENOMEM
+Not enough free memory.
+
+.SH SEE ALSO
+.BR gfal (3),
+.BR gfal_request_new (3),
+.BR gfal_internal_free (3),
+.BR gfal_init (3),
+.BR gfal_deletesurls (3),
+.BR gfal_removedir (3),
+.BR gfal_turlsfromsurls (3),
+.BR gfal_ls (3),
+.BR gfal_get (3),
+.BR gfal_getstatus (3),
+.BR gfal_prestage (3),
+.BR gfal_prestagestatus (3),
+.BR gfal_pin (3),
+.BR gfal_release (3),
+.BR gfal_abortrequest (3),
+.BR gfal_abortfiles (3),
+.BR gfal_set_xfer_done (3),
+.BR gfal_set_xfer_running (3),
+.BR gfal_get_ids (3),
+.BR gfal_set_ids (3),
+.BR gfal_get_results (3),

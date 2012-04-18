@@ -1,0 +1,216 @@
+.\" @(#)$RCSfile: gfal_init.man,v $ $Revision: 1.4 $ $Date: 2009/04/16 13:56:37 $ CERN Remi Mollon
+.\" Copyright (C) 2007 by CERN
+.\" All rights reserved
+.\"
+.TH GFAL_INIT 3 "$Date: 2009/04/16 13:56:37 $" GFAL "Library Functions"
+.SH NAME
+gfal_init \- generates a 'gfal_internal' object
+.SH SYNOPSIS
+\fB#include "gfal_api.h"\fR
+.sp
+.BI "int gfal_init (gfal_request req, gfal_internal &gfal, char *errbuf, int errbufsz);
+.SH DESCRIPTION
+.B gfal_init
+generates a 
+.B gfal_internal
+object from user parameters stored in a 
+.B gfal_request
+object. It is important to note that user parameters must not be freed while
+.I gfal
+is needed. Once it is not needed anymore, you can free user parameters, and you have to free the object with
+.BR gfal_internal_free() .
+This object can/should be used several times for requests on same files.
+
+It is very important to not modify such an object by hand, it have to be seen as a black box.
+
+.TP
+.I req
+.B gfal_request
+object in which there are all user parameters.
+.TP
+.I gfal
+non-allocated pointer to a
+.B gfal_internal
+object in which the real object will be stored.
+.TP
+.I errbuf
+allocated 
+.B char *
+pointer in which a detailed error message may be stored.
+.TP
+.I errbufsz
+size allocated ofr the pointer 
+.I errbuf
+
+.SH PARAMETERS IN GFAL_REQUEST
+.TP
+.B int nbfiles
+Specifies the number of files in the request. It can be either the number of file names in
+.I surls
+, or the number of file names you want to generate (see
+.I generatesurls
+parameter). It is mandatory in all cases.
+.TP
+.B char **surls
+Is the list of SURLs on which you want to do actions. It is mandatory in all cases, except
+when you want to generate new file names (to create new file on a SE) (see
+.I generatesurls
+parameter).
+.TP
+.B int generatesurls
+If set to '1' and
+.I surls
+is set to NULL,
+.B gfal_init()
+will generate 
+.I nbfiles
+file names. It is useful when you want to put new files on a SE, and you don't want a specific file name.
+But in this case, the parameter
+.I endpoint
+must be set to the SE host name on which you want to create files, when to set
+.I generatesurls
+to '1'. In all other cases, it is ignored. Moreover, to generate file names, BDII is required
+to get the root path, so it is not compatible with
+.I no_bdii_check
+parameter.
+.TP
+.B char *relative_path
+Is used during file name generation (
+.I generatesurls
+is set to '1'), to specify the default sub-directory (in the root path) in which to put files.
+In all other cases, it is ignored.
+.TP
+.B int oflag
+Allows to specify if it is a 
+.B get
+or a 
+.B put
+action. It is only used by
+.B gfal_turlsfromsurls()
+function. By default, the function considers it is a
+.B get
+request.
+.TP
+.B GFAL_LONG64 *filesizes
+It is only used and mandatory when 
+.I oflag
+is set to '1'. It is a table of size
+.I nbfiles
+in which there are the sizes of the files what will be put on the SE.
+.TP
+.B enum se_type defaultsetype
+Allows to specify the default type of the given SE to be used. The possible values are
+.BR TYPE_NONE ,
+.BR TYPE_SE ,
+.BR TYPE_SRM ,
+.BR TYPE_SRMv2 .
+They respectively correspond to no default type, Classic SE, SRM v1, SRMv2. If BDII calls are not disabled,
+and there no entry for the given SE with this type, but for another type, the latter will be used. By default,
+it is set to 
+.BR TYPE_NONE .
+.TP
+.B enum se_type setype
+Allows to specify the type of the given SE to be used. The possible values are
+.BR TYPE_NONE ,
+.BR TYPE_SE ,
+.BR TYPE_SRM ,
+.BR TYPE_SRMv2 .
+They respectively correspond to no default type, Classic SE, SRM v1, SRMv2. If BDII calls are not disabled,
+and there no entry for the given SE with this type, it will fails. By default,
+it is set to 
+.BR TYPE_NONE .
+.TP
+.B int no_bdii_check
+Disables call to BDII. So the SE type cannot be get from there, what means that you have to specify it either with
+.I defaultsetype
+or with 
+.IR setype .
+Moreover, as BDII can't be used to get SE parameters (port number, service path), at least the first SURLs has to
+contain the full endpoint (eg. srm://lxdpm104.cern.ch:8446/srm/managerv2?SFN=/dpm/cern.ch/home/dteam/file.test).
+It is not compatible with 
+.IR generatesurls .
+.TP
+.B int timeout
+Specifies the time before which remote servers are considered as down. By default, there is no timeout.
+.TP
+.B char **protocols
+Specifies the list of protocols to use to communicate with the SE. By defaut, it will be set to all protocols
+understandable by the system (the system has the corresponding library).
+.TP
+.B NOTE
+The following parameters are SRMv2-specific, what means that specifying them will force the type of the SE to SRMv2.
+So it is not compatible with setting 
+.I setype
+to another value than 
+.B TYPE_NONE
+or 
+.BR TYPE_SRMv2 .
+
+.TP
+.B char *srmv2_spacetokendesc
+Specifies the space token to used with the given SE.
+.TP
+.B int srmv2_desiredpintime
+Specifies the desired pin life time for files on the given SE. It is only used by
+.BR gfal_pin() ,
+.BR gfal_turlsfromsurls ,
+.BR gfal_get .
+.TP
+.B int srmv2_lslevels
+It is only used by 
+.BR gfal_ls .
+Specifies the number of levels of recursion. Possible values are only '0' (no directory listing) or '1' (one level of directory listing). 
+.TP
+.B int srmv2_lsoffset
+It is only used by 
+.BR gfal_ls .
+Specifies the offset from which the listing must begin. In other words, it is the number of file entries to skip.
+.TP
+.B int srmv2_lscount
+It is only used by 
+.BR gfal_ls .
+Specifies the maximum number of files to get. Keep in mind that SEs have also a maximum limit, so whatever you specify here, the number
+of files will never be higher than the SE limit.
+
+.SH RETURN VALUE
+This routine returns 0 on a success, or -1 in case of error. In the latter case,
+.B errno
+is set appropriately. Moreover, you can get an error message from
+.I errbuf
+, if specified.
+
+.SH ERRORS
+.B errno
+indicates the type of error, but for detailled error message, you have to look into
+.IR errbuf .
+.TP 1.3i
+.B EINVAL
+One or more parameter in 
+.I req
+have a wrong value.
+.TP
+.B ENOMEM
+Not enough free memory.
+
+.SH SEE ALSO
+.BR gfal (3),
+.BR gfal_request_new (3),
+.BR gfal_internal_free (3),
+.BR gfal_init (3),
+.BR gfal_deletesurls (3),
+.BR gfal_removedir (3),
+.BR gfal_turlsfromsurls (3),
+.BR gfal_ls (3),
+.BR gfal_get (3),
+.BR gfal_getstatus (3),
+.BR gfal_prestage (3),
+.BR gfal_prestagestatus (3),
+.BR gfal_pin (3),
+.BR gfal_release (3),
+.BR gfal_abortrequest (3),
+.BR gfal_abortfiles (3),
+.BR gfal_set_xfer_done (3),
+.BR gfal_set_xfer_running (3),
+.BR gfal_get_ids (3),
+.BR gfal_set_ids (3),
+.BR gfal_get_results (3),

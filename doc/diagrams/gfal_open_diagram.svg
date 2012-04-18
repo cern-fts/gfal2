@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="62cm" height="51cm" viewBox="170 60 1224 1017" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <ellipse style="fill: #000000" cx="710" cy="123" rx="10" ry="10"/>
+  <text style="fill: #000000;text-anchor:start;font-size:28.2218;font-family:sanserif;font-style:normal;font-weight:normal" x="532" y="87">
+    <tspan x="532" y="87">Gfal_open activity Diagram</tspan>
+  </text>
+  <g>
+    <polygon style="fill: #ffffff" points="694,266 714,246 734,266 714,286 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="694,266 714,246 734,266 714,286 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="710,133 714,133 714,150 709.903,150 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="722.139,145 712.139,150 722.139,155 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="694,266 674,266 674,231 384.875,231 384.875,246.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="379.875,238.764 384.875,248.764 389.875,238.764 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="664" y="218.5">{ not exist }</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="323" y="251" width="123.75" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="323" y="251" width="123.75" height="36" rx="10" ry="10"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="384.875" y="272.9">
+      <tspan x="384.875" y="272.9">Must be created</tspan>
+    </text>
+  </g>
+  <g>
+    <polygon style="fill: #ffffff" points="940,357 960,337 980,357 960,377 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="940,357 960,337 980,357 960,377 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="384.875,287 384.875,347 238.5,347 238.5,402.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="233.5,394.764 238.5,404.764 243.5,394.764 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="330" y="436" width="161.55" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="330" y="436" width="161.55" height="36" rx="10" ry="10"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="410.775" y="457.9">
+      <tspan x="410.775" y="457.9">Resolve SURL to TURL</tspan>
+    </text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="960,377 960,406.5 410.775,406.5 410.775,431.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="405.775,423.764 410.775,433.764 415.775,423.764 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="675.388" y="376.5">{srm url }</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="193" y="713" width="204.9" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="193" y="713" width="204.9" height="36" rx="10" ry="10"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="295.45" y="734.9">
+      <tspan x="295.45" y="734.9">create fil descriptor from turl</tspan>
+    </text>
+  </g>
+  <g>
+    <polygon style="fill: #ffffff" points="275,546 295,526 315,546 295,566 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="275,546 295,526 315,546 295,566 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="410.775,472 410.775,499 295,499 295,521.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="290,513.764 295,523.764 300,513.764 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="295,566 295,639.5 295.45,639.5 295.45,708.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="290.45,700.764 295.45,710.764 300.45,700.764 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="249.225" y="615.5">{ valid turl }</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="649" y="599" width="97.55" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="649" y="599" width="97.55" height="36" rx="10" ry="10"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="697.775" y="620.9">
+      <tspan x="697.775" y="620.9">Report error</tspan>
+    </text>
+  </g>
+  <ellipse style="fill: #000000" cx="732" cy="744" rx="10" ry="10"/>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="697.775,635 697.775,684.5 732,684.5 732,729.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="727,721.764 732,731.764 737,721.764 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="315,546 482,546 482,617 644.528,617 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="636.764,622 646.764,617 636.764,612 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="544" y="595">{ invalid turl}</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="295.45,749 295.45,959 611.528,959 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="603.764,964 613.764,959 603.764,954 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="616" y="941" width="151.5" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="616" y="941" width="151.5" height="36" rx="10" ry="10"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="691.75" y="962.9">
+      <tspan x="691.75" y="962.9">return file descriptor</tspan>
+    </text>
+  </g>
+  <ellipse style="fill: #000000" cx="695" cy="1066" rx="10" ry="10"/>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="691.75,977 691.75,1016.5 695,1016.5 695,1051.53 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="690,1043.76 695,1053.76 700,1043.76 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="1126" y="464" width="124.3" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1126" y="464" width="124.3" height="36" rx="10" ry="10"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="1188.15" y="485.9">
+      <tspan x="1188.15" y="485.9">Resolve to SURL</tspan>
+    </text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="980,357 1188.15,357 1188.15,459.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1183.15,451.764 1188.15,461.764 1193.15,451.764 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="1167" y="348">{ Catalog URL }</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="632,506 561.775,506 561.775,454 496.022,454 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="503.786,449 493.786,454 503.786,459 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="601" y="498.5">{reussite}</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="1224" y="282" width="169.4" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1224" y="282" width="169.4" height="36" rx="10" ry="10"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="1308.7" y="303.9">
+      <tspan x="1308.7" y="303.9">Resolve to Catalog URL</tspan>
+    </text>
+  </g>
+  <g>
+    <polygon style="fill: #ffffff" points="632,506 652,486 672,506 652,526 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="632,506 652,486 672,506 652,526 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1188.15,500 1188.15,520 920.075,520 920.075,466 652,466 652,481.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="647,473.764 652,483.764 657,473.764 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="652,526 652,561.995 697.775,561.995 697.775,593.519 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="692.775,585.755 697.775,595.755 702.775,585.755 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="668" y="550">{echec}</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="980,357 1025,357 1025,300 1219.53,300 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1211.76,305 1221.76,300 1211.76,295 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="1162" y="279">{guid}</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1310,405 1310,482 1254.77,482 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1262.54,477 1252.54,482 1262.54,487 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="1264" y="425">{valid url}</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="734,266 960,266 960,332.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="955,324.764 960,334.764 965,324.764 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="837" y="236">{exist}</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="657" y="150" width="114.75" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="657" y="150" width="114.75" height="36" rx="10" ry="10"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="714.375" y="171.9">
+      <tspan x="714.375" y="171.9">test if file exist</tspan>
+    </text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="714.375,186 714.375,216 714,216 714,241.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="709,233.764 714,243.764 719,233.764 "/>
+  </g>
+  <g>
+    <polygon style="fill: #ffffff" points="1290,385 1310,365 1330,385 1310,405 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1290,385 1310,365 1330,385 1310,405 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1308.7,318 1308.7,341.5 1310,341.5 1310,360.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1305,352.764 1310,362.764 1315,352.764 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1330,385 1350,385 1350,617 751.022,617 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="758.786,612 748.786,617 758.786,622 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="1278" y="597">{ invalid surl}</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="172" y="407" width="133" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="172" y="407" width="133" height="36" rx="10" ry="10"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="238.5" y="428.9">
+      <tspan x="238.5" y="428.9">put SURL to TURL</tspan>
+    </text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="238.5,443 238.5,578 193,578 193,708.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="188,700.764 193,710.764 198,700.764 "/>
+  </g>
+</svg>
