@@ -19,6 +19,8 @@
  * limitations under the License.
  */
 
+#include <memory>
+
 #include <exceptions/gfalcoreexception.hpp>
 #include <common/gfal_types.h>
 #include <common/gfal_constants.h>
