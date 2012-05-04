@@ -66,7 +66,7 @@ gfal_file_handle GridftpModule::opendir(const char* path)
 int gridftp_readdir_desc_parser(GridFTP_Dir_desc* desc){
 	const char * c_list = desc->list.c_str();
 	char* p,*p1;
-	if( (p = strchr(c_list, '\n')) == NULL)
+	if( (p = strchr((char*) c_list, '\n')) == NULL)
 		return 0; // no new entry, c'est la fin des haricots
 	p1 = (char*)mempcpy(desc->dir.d_name, c_list, std::min((long int)NAME_MAX-1, p-c_list));
 	*p1 = '\0';

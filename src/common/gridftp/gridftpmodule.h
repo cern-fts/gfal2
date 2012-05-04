@@ -19,6 +19,7 @@
  * limitations under the License.
  */
 
+#include <algorithm>
 #include <memory>
 
 #include <exceptions/gfalcoreexception.hpp>
