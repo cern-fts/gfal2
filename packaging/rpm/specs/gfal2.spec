@@ -251,10 +251,10 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
-* Fri May 04 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-0.7.2012050413snap%{?dist}
+* Fri May 04 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-0.7.2012050413snap
  - Improve gridftp plugin with severals other calls
  - Correct dcap/rfio/srm bugs related to error report
  - big work on  the documentation
 
-* Mon Dec 12 2011 Adrien Devress <adevress at cern.ch> - 2.0.0-0.6.2012041515snap%{?dist}
+* Mon Dec 12 2011 Adrien Devresse <adevress at cern.ch> - 2.0.0-0.6.2012041515snap
  - Initial gfal 2.0 preview release
