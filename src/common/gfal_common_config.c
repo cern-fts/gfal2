@@ -26,12 +26,10 @@ static const char* boolean_id = "boolean";
 static const char* string_id = "string";
 
 
-/**
- * @file gfal_common_config.c
- * @brief Utility fonctions for config management
- * @author Devresse Adrien
- * @version 1.0
- * @date 04/11/2011
+/*
+ * gfal_common_config.c
+ * Utility fonctions for config management
+ * author Devresse Adrien
  * */
 
 void gfal_config_container_init(gfal_handle  handle){

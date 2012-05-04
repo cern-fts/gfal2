@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_write.c
  * @brief file for the internal write function for the posix interface
  * @author Devresse Adrien
@@ -36,7 +36,7 @@
 #include "gfal_posix_local_file.h"
 
 
-/**
+/*
  *  map the file handle to the correct call
  */ 
 int gfal_posix_gfalfilehandle_write(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, GError** err){
@@ -55,7 +55,7 @@ int gfal_posix_gfalfilehandle_write(gfal_handle handle, gfal_file_handle fh, voi
 }
 
 
-/**
+/*
  * Implementation of the write call
  * 
  */
@@ -88,7 +88,7 @@ int gfal_posix_internal_write(int fd, void* buff, size_t s_buff){
 
 
 
-/**
+/*
  *  map the file handle to the correct call for pwrite
  */ 
 int gfal_posix_gfalfilehandle_pwrite(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, off_t offset, GError** err){
@@ -108,10 +108,7 @@ int gfal_posix_gfalfilehandle_pwrite(gfal_handle handle, gfal_file_handle fh, vo
 
 
 
-/**
- * Implementation of the pwrite call
- * 
- */
+// Implementation of the pwrite call
 ssize_t gfal_posix_internal_pwrite(int fd, void* buff, size_t s_buff, off_t offset){
 	 GError* tmp_err=NULL;
 	 gfal_handle handle;

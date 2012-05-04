@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_stat.h
  * @brief header file for the stat function on the srm url type
  * @author Devresse Adrien
@@ -25,7 +25,9 @@
  * */
 
 #include <glib.h>
-#include "../gfal_types.h" 
+#include <common/gfal_types.h>
+
+int gfal_statG_srmv2_internal(gfal_srmv2_opt* opts, struct stat* buf, const char* endpoint, const char* surl, GError** err);
 
 int gfal_srm_statG(plugin_handle handle, const char* surl, struct stat* buf, GError** err); 
 

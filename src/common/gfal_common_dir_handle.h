@@ -16,12 +16,10 @@
  * limitations under the License.
  */
 
-/**
- * @file gfal_common_dir_handle.h
- * @brief file for the directory handle management
- * @author Devresse Adrien
- * @version 2.0
- * @date 25/05/2011
+/*
+ *  gfal_common_dir_handle.h
+ * file for the directory handle management
+ * author Devresse Adrien
  * */
 
 

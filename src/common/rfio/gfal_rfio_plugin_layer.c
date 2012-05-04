@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_rfio_plugin_layer.c
  * @brief file for the external call, abstraction layer for mock purpose
  * @author Devresse Adrien

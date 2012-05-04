@@ -65,21 +65,26 @@ int plugin_url_check_with_gerror(plugin_handle handle, const char* src, plugin_m
 	return plugin_url_check(handle, src, check);
 }
 
-int plugin_url_check(plugin_handle handle, const char* src, plugin_mode check){
-	return FALSE;
+gboolean plugin_url_check(plugin_handle handle, const char* src, plugin_mode check){
+	gboolean res = FALSE;
+	if(gridftp_check_url(src) == true){
+		switch(check){
+			case GFAL_PLUGIN_STAT:
+			case GFAL_PLUGIN_LSTAT:
+			case GFAL_PLUGIN_MKDIR:
+			case GFAL_PLUGIN_CHMOD:
+			case GFAL_PLUGIN_RMDIR:
+			case GFAL_PLUGIN_OPENDIR:
+			case GFAL_PLUGIN_UNLINK:
+				res = TRUE;
+				break;
+			default:
+				break;
+			
+		}
+	}
+	return res;
 	
-}
-
-
-
-
-
-/**
- * return if url is  a gridFTP url or not
- * 
- *  */
-gboolean plugin_check_url(plugin_handle handle, const char* url,  plugin_mode mode){
-	return false;
 }
 
 

@@ -17,34 +17,25 @@
 
 
 
-
-#include <glib.h>
-
-
-#include <common/gfal_constants.h>
-#include <common/gfal_types.h>
-#include <common/gfal_common_errverbose.h>
-#include <libcpp/gerror_to_cpp.h>
-#include <libcpp/cpp_to_gerror.hpp>
-
 #include "gridftpmodule.h"
 
 #include "gridftp_plugin_main.h"
-#include "gridftp_plugin_loader.h"
+#include "gridftp_stat_module.h"
+
 
 
 
 extern "C"{
-
-
-
-
+	
 plugin_handle plugin_load(gfal_handle handle, GError ** err){
 	GError * tmp_err=NULL;
 	plugin_handle h = NULL;
 	CPP_GERROR_TRY
-		 h = static_cast<plugin_handle>(new GridFTPFileCopyModule( new GridftpModule( new GridFTPWrapper(handle) )));
-	
+		gfal_print_verbose(GFAL_VERBOSE_TRACE, " -> [gridftp_plugin] try to load ..");	
+		 h = static_cast<plugin_handle>(
+					new GridftpModule( new GridFTPFactory(handle) )
+			);
+		gfal_print_verbose(GFAL_VERBOSE_TRACE, " -> [gridftp_plugin] loaded ..");	
 	CPP_GERROR_CATCH(&tmp_err);
 	
 	G_RETURN_ERR(h, tmp_err, err);
@@ -55,7 +46,7 @@ plugin_handle plugin_load(gfal_handle handle, GError ** err){
 void plugin_unload(plugin_handle handle){
 	if(handle){
 		try{
-			delete (static_cast<GridFTPFileCopyModule*>(handle));
+			delete (static_cast<GridftpModule*>(handle));
 		}catch(...){
 			gfal_print_verbose(GFAL_VERBOSE_NORMAL, " bug found plugin gridFTP throws error while loading");
 		}
@@ -83,14 +74,26 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	memset(&ret, 0, sizeof(gfal_plugin_interface));
 	plugin_handle r = plugin_load(handle, &tmp_err);
 
-	ret.handle = r;
+	ret.plugin_data = r;
 	ret.check_plugin_url = &plugin_url_check_with_gerror;
 	ret.plugin_delete = &plugin_unload;
 	ret.getName = &plugin_name;
+	ret.statG = & gfal_gridftp_statG;
+	ret.lstatG = &gfal_gridftp_statG;
+	ret.unlinkG = &gfal_gridftp_unlinkG;
+	ret.mkdirpG = &gfal_gridftp_mkdirG;
+	ret.chmodG = &gfal_gridftp_chmodG;
+	ret.rmdirG = &gfal_gridftp_rmdirG;
+	ret.opendirG = &gfal_gridftp_opendirG;
+	ret.readdirG = &gfal_gridftp_readdirG;
+	ret.closedirG = &gfal_gridftp_closedirG;
 	G_RETURN_ERR(ret, tmp_err, err);
 }
 
-
-
+/*  --> desactivated temporary -> responsible of segfault with globus 2.5 thread problem
+__attribute__((destructor)) 
+static void gridftp_destructor(){ // try to unload globus
+	globus_module_deactivate_all();
+}*/
 
 }

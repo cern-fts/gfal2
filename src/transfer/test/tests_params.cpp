@@ -28,7 +28,7 @@
 
 
 using namespace Gfal::Transfer;
-using namespace Utilpp;
+
 
 int get_locked_errcode(){
 	return EBUSY;

@@ -219,6 +219,7 @@ IF(PLUGIN_DCAP)
 find_package(DCAP REQUIRED)
 FILE(GLOB dcap_scripts "../dist/scripts/gfal_plugin_dcap/*sh")
 
+add_definitions( -D_REENTRANT)
 add_library(plugin_dcap  SHARED ${src_dcap} ${src_gsimplecache} )
 
 target_link_libraries(plugin_dcap ${gfal2_link} ${DCAP_LIBRARIES})

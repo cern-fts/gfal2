@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_open.c
  * @brief file for the internal open function for the posix interface
  * @author Devresse Adrien
@@ -41,10 +41,10 @@
 
 
 
-/**
+/*
  *  store a gfal_file_handle in the base, in a key/value model
- *  @return the key, else 0 if error occured and err is set correctly
- * */
+ *  the key, else 0 if error occured and err is set correctly
+ */
 static int gfal_posix_file_handle_store(gfal_handle handle, gfal_file_handle fhandle, GError** err){
 	g_return_val_err_if_fail( handle && fhandle, -1, err, "[gfal_posix_file_handle_store] invalid args");
 	GError* tmp_err=NULL;
@@ -59,10 +59,8 @@ static int gfal_posix_file_handle_store(gfal_handle handle, gfal_file_handle fha
 
 
 
-/**
- * 
+/*
  *  Implementation of gfal_open
- * 
  * */
 int gfal_posix_internal_open(const char* path, int flag, mode_t mode){
 	GError* tmp_err=NULL;

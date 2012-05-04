@@ -17,7 +17,7 @@
 #include "gridftpinterface.h"
 
 
-GridFTPInterface::GridFTPInterface()
+GridFTPFactoryInterface::GridFTPFactoryInterface()
 {
 	
 }
@@ -25,7 +25,7 @@ GridFTPInterface::GridFTPInterface()
 
 
 
-GridFTPInterface::~GridFTPInterface()
+GridFTPFactoryInterface::~GridFTPFactoryInterface()
 {
 	
 }

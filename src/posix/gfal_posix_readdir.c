@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_posix_readdir.c
  * @brief file for the readdir posix func
  * @author Devresse Adrien
@@ -40,7 +40,7 @@
 #include "gfal_posix_local_file.h"
 
 
-/**
+/*
  *  map the file handle to the correct call
  */ 
 inline static struct dirent* gfal_posix_gfalfilehandle_readdir(gfal_handle handle, gfal_file_handle fh, GError** err){
@@ -58,7 +58,7 @@ inline static struct dirent* gfal_posix_gfalfilehandle_readdir(gfal_handle handl
 	return ret;		
 }
 
-/**
+/*
  * Implementation of the readdir functions
  * 
  */

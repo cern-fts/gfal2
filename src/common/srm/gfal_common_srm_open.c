@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common.c
  * @brief file for the open/read/write srm
  * @author Devresse Adrien
@@ -63,7 +63,7 @@ static void gfal_srm_file_handle_delete(gfal_file_handle fh){
 	gfal_file_handle_delete(fh);
 }
 
-/**
+/*
  * open function for the srm  plugin
  */
 gfal_file_handle gfal_srm_openG(plugin_handle ch, const char* path, int flag, mode_t mode, GError** err){
@@ -99,7 +99,7 @@ gfal_file_handle gfal_srm_openG(plugin_handle ch, const char* path, int flag, mo
 	
 }
 
-/**
+/*
  * read function for the srm  plugin
  */
 int gfal_srm_readG(plugin_handle ch, gfal_file_handle fd, void* buff, size_t count, GError** err){
@@ -111,7 +111,7 @@ int gfal_srm_readG(plugin_handle ch, gfal_file_handle fd, void* buff, size_t cou
 	return ret;		
 }
 
-/**
+/*
  * pread function for the srm  plugin
  */
 ssize_t gfal_srm_preadG(plugin_handle ch, gfal_file_handle fd, void* buff, size_t count, off_t offset, GError** err){
@@ -123,7 +123,7 @@ ssize_t gfal_srm_preadG(plugin_handle ch, gfal_file_handle fd, void* buff, size_
 	return ret;		
 }
 
-/**
+/*
  * write function for the srm  plugin
  */
 int gfal_srm_writeG(plugin_handle ch, gfal_file_handle fd, void* buff, size_t count, GError** err){
@@ -135,7 +135,7 @@ int gfal_srm_writeG(plugin_handle ch, gfal_file_handle fd, void* buff, size_t co
 	return ret;	
 }
 
-/**
+/*
  * lseek function for the srm  plugin
  */
 int gfal_srm_lseekG(plugin_handle ch, gfal_file_handle fd, off_t offset, int whence, GError** err){

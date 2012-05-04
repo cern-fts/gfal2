@@ -17,13 +17,10 @@
  */
 
  
- /**
-  * 
-  @file lfc_ifce_ng.h
-  @brief internal header of the lfc plugin module
-  @author Adrien Devresse
-  @version 0.0.1
-  @date 02/05/2011
+ /*
+  * lfc_ifce_ng.h
+  * internal header of the lfc plugin module
+  * author Adrien Devresse
  */
  
 #define GFAL_MAX_LFCHOST_LEN 1024

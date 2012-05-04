@@ -17,12 +17,10 @@
  
  
  
-/**
- * @file gfal_common_filedescriptor.c
- * @brief file for the file descriptor management
- * @author Devresse Adrien
- * @version 2.0
- * @date 22/05/2011
+/*
+ * gfal_common_filedescriptor.c
+ * @file for the file descriptor management
+ * author Devresse Adrien
  * */
 
 #include <unistd.h>
@@ -33,10 +31,8 @@
 #include "gfal_types.h"
 #include "gfal_common_filedescriptor.h"
 
-/**
- * 
- * generate a new unique key
- * */
+
+// generate a new unique key
 static int gfal_file_key_generatorG(gfal_fdesc_container_handle fhandle, GError** err){
 	g_return_val_err_if_fail(fhandle, 0, err, "[gfal_file_descriptor_generatorG] Invalid  arg file handle");
 	int ret= rand();
@@ -52,10 +48,10 @@ static int gfal_file_key_generatorG(gfal_fdesc_container_handle fhandle, GError*
 	return ret;
 }
 
-/**
+/*
  * Add the given file handle to the and return a file descriptor
- * @return return the associated key if success else 0 and set err 
- * */
+ * return the associated key if success else 0 and set err 
+ */
 int gfal_add_new_file_desc(gfal_fdesc_container_handle fhandle, gpointer pfile, GError** err){
 	g_return_val_err_if_fail(fhandle && pfile, 0, err, "[gfal_add_new_file_desc] Invalid  arg fhandle and/or pfile");
 	pthread_mutex_lock(&(fhandle->m_container));
@@ -72,9 +68,7 @@ int gfal_add_new_file_desc(gfal_fdesc_container_handle fhandle, gpointer pfile, 
 	return key;
 }
 
-/**
- *  return the associated file handle for the given file descriptor or NULL if the key is not present and err is set
- * */
+//return the associated file handle for the given file descriptor or NULL if the key is not present and err is set
 gpointer gfal_get_file_desc(gfal_fdesc_container_handle fhandle, int key, GError** err){
 	pthread_mutex_lock(&(fhandle->m_container));
 	GHashTable* c = fhandle->container;	
@@ -85,10 +79,8 @@ gpointer gfal_get_file_desc(gfal_fdesc_container_handle fhandle, int key, GError
 	return p;
 }
 
-/**
- * remove the associated file handle associated with the given file descriptor
- * return true if success else false
- * */
+// remove the associated file handle associated with the given file descriptor
+// return true if success else false
 gboolean gfal_remove_file_desc(gfal_fdesc_container_handle fhandle, int key, GError** err){
 	pthread_mutex_lock(&(fhandle->m_container));
 	GHashTable* c = fhandle->container;	
@@ -100,9 +92,8 @@ gboolean gfal_remove_file_desc(gfal_fdesc_container_handle fhandle, int key, GEr
  }
  
  
- /***
-  * create a new file descriptor container with the given destroyer function to an element of the container
-  */
+
+//create a new file descriptor container with the given destroyer function to an element of the container
  gfal_fdesc_container_handle gfal_file_descriptor_handle_create(GDestroyNotify destroyer){
 	  gfal_fdesc_container_handle d = calloc(1, sizeof(struct _gfal_file_descriptor_container));
 	  d->container = g_hash_table_new_full(NULL, NULL, NULL, destroyer);
@@ -111,7 +102,7 @@ gboolean gfal_remove_file_desc(gfal_fdesc_container_handle fhandle, int key, GEr
  }
  
  
- /***
+ /*
  *  Create a new gfal_file_handle
  *  a gfal_handle is a rich file handle with additional information for the internal purpose
  *  @param id_module : id of the module which create the handle ( <10 -> gfal internal module, >=10 : plugin, plugin, external module ( ex : lfc )
@@ -127,7 +118,8 @@ gfal_file_handle gfal_file_handle_new(const char*  module_name, gpointer fdesc){
 	f->ext_data = NULL;
 	return f;
 }
-/**
+
+/*
  * same than gfal_file_handle but with external data storage support
  */
 gfal_file_handle gfal_file_handle_ext_new(const char*  module_name, gpointer fdesc, gpointer ext_data){
@@ -136,7 +128,7 @@ gfal_file_handle gfal_file_handle_ext_new(const char*  module_name, gpointer fde
 	return f;
 }
  
- /**
+ /*
  * 
  * return the file handle associated with the file_desc
  * @warning does not free the handle
@@ -164,10 +156,7 @@ void gfal_file_handle_unlock(gfal_file_handle fh){
 }
 
 
-/**
- *  Delete a gfal_file handle 
- * 
- *  * */
+//  Delete a gfal_file handle 
 void gfal_file_handle_delete(gfal_file_handle fh){
 	if(fh){
 		g_mutex_free(fh->lock);	

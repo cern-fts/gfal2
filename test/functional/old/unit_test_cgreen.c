@@ -68,7 +68,6 @@ TestSuite * plugin_suite (void)
 {
 	TestSuite *s2 = create_test_suite();
 	// verbose test case /
-	add_test(s2, gfal2_test_get_cat_type);
 	add_test(s2, gfal2_test_plugin_access_file);
 	add_test(s2, gfal2_test_plugin_url_checker);
 	add_test(s2, gfal2_test__plugin_stat);

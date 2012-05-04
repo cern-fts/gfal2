@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_getxattr_status.c
  * @brief file for the getxattr function  for status ( ONLINE, ... ) )on the srm url type
  * @author Devresse Adrien
@@ -86,7 +86,7 @@ ssize_t gfal_srm_status_internal(plugin_handle handle, const char* path, void* b
 	G_RETURN_ERR(ret, tmp_err, err);		
 }
 
-/**
+/*
  * main implementation of the srm status -> getxattr
  */
 ssize_t gfal_srm_status_getxattrG(plugin_handle handle, const char* path, const char* name , void* buff, size_t s_buff, GError** err){

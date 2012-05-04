@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_internal_ls.c
  * @brief srm ls operation concentrator
  * @author Devresse Adrien

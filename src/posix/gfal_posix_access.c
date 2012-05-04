@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_access.c
  * @brief file for the internal access func of the posix interface
  * @author Devresse Adrien

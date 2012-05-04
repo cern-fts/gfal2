@@ -16,13 +16,11 @@
  * limitations under the License.
  */
 
-/**
- * @file gfal_common_srm.h
- * @brief the header file with the main srm funcs of the common API
- * @author Devresse Adrien
- * @version 2.0
- * @date 12/04/2011
- * */
+/*
+ * gfal_common_srm.h
+ * the header file with the main srm funcs of the common API
+ * author Devresse Adrien
+ */
 
 #include <string.h>
 #include <regex.h>
@@ -48,10 +46,10 @@ enum se_type {TYPE_NONE = 0, TYPE_SRM, TYPE_SRMv2, TYPE_SE};
 enum gfal_srm_proto {PROTO_SRM=0, PROTO_SRMv2, PROTO_ERROR_UNKNOW};
 
 
- /**
-  * the state of the last request -> depreciated
-  *  needed to get the response
-  */ 
+/*
+ * the state of the last request -> depreciated
+ *  needed to get the response
+ */ 
 typedef struct _gfal_request_state{
 	char *						srmv2_token;
 	struct srmv2_filestatus *	srmv2_statuses;
@@ -64,9 +62,9 @@ typedef struct _gfal_request_state{
 
 
  
-/**
-  * @struct structure for the srmv2 option management
-  *  set to 0 by default
+/*
+ * @struct structure for the srmv2 option management
+ *  set to 0 by default
  */
 typedef struct _gfal_srmv2_opt{
 	enum gfal_srm_proto srm_proto_type;		// default protocol version

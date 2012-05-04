@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_checksum.c
  * @brief funtion to get the checksum of a file
  * @author Devresse Adrien
@@ -83,7 +83,7 @@ static int gfal_checksumG_srmv2_internal(gfal_srmv2_opt* opts, const char* endpo
 	return ret;	
 }
 
-/**
+/*
  * get checksum from a remote SRM URL
  * 
  * */

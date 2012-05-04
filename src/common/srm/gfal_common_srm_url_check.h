@@ -21,7 +21,7 @@
 
 #include "gfal_common_srm.h"
 
-/**
+/*
  * 
  * implementation of the plugi_url_transfer_check for the srm plugin
  * Check if the srm plugin is able to handle a given type of URL.

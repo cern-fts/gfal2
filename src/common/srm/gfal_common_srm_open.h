@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_comm_srm_open.h
  * @brief header for open/read/write srm
  * @author Devresse Adrien
@@ -46,7 +46,7 @@ int gfal_srm_writeG(plugin_handle, gfal_file_handle fd, void* buff, size_t count
 
 int gfal_srm_closeG(plugin_handle, gfal_file_handle fd, GError **);
 
-/**
+/*
  * lseek function for the srm  plugin
  */
 int gfal_srm_lseekG(plugin_handle ch, gfal_file_handle fd, off_t offset, int whence, GError** err);

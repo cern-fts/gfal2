@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_getxattr.c
  * @brief file for the internal function of the getxattr function
  * @author Devresse Adrien
@@ -36,7 +36,7 @@
 #include "gfal_posix_local_file.h"
  
 
-/**
+/*
  *  list the extended attribute of a file, internal call
  * */ 
 ssize_t gfal_posix_internal_listxattr (const char *path, char *list, size_t size){

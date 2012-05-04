@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_readlink.c
  * @brief file for the internal function of the POSIX readlink functions
  * @author Devresse Adrien
@@ -30,11 +30,11 @@
 #include <errno.h>
 #include <glib.h>
 #include "gfal_posix_internal.h"
-#include "../common/gfal_types.h"
+#include <common/gfal_types.h>
 #include "gfal_posix_local_file.h"
 #include "gfal_common_plugin.h"
 
- /**
+ /*
   *  internal implementation of gfal_readlink
   * */
 inline ssize_t gfal_posix_internal_readlink(const char* path, char* buf, size_t buffsiz){

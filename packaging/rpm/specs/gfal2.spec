@@ -1,13 +1,13 @@
-%define checkout_tag 2012041515snap
+%define checkout_tag 2012050413snap
 
 Name:				gfal2
 Version:			2.0.0
-Release:			0.6.%{checkout_tag}%{?dist}
+Release:			0.7.%{checkout_tag}%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
 URL:				https://svnweb.cern.ch/trac/lcgutil/wiki/gfal2
-# svn export http://svn.cern.ch/guest/lcgutil/gfal/branches/gfal_2_0_main gfal2
+# svn export http://svn.cern.ch/guest/lcgutil/gfal2/trunk gfal2
 Source0:			http://grid-deployment.web.cern.ch/grid-deployment/dms/lcgutil/tar/%{name}/%{name}-%{version}-%{checkout_tag}.tar.gz 
 BuildRoot:			%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
@@ -39,9 +39,9 @@ Requires:			%{name}-core = %{version}-%{release}
 Requires:			%{name}-transfer = %{version}-%{release}
 
 %description
-GFAL 2.0 offers an a single and simple POSIX-like API \
-for the file operations in grids and cloud environments. \
-The set of supported protocols depends \
+GFAL 2.0 offers an a single and simple POSIX-like API 
+for the file operations in grids and cloud environments. 
+The set of supported protocols depends 
 of the %{name} plugin install.
 
 %package core
@@ -90,7 +90,7 @@ Requires:			%{name}-core%{?_isa} = %{version}-%{release}
 
 %description plugin-lfc
 Provide the lfc support (LFN://) for %{name}.
-The LFC plugin allows read-only POSIX operations \ 
+The LFC plugin allows read-only POSIX operations 
 for the LFC catalog.
 
 %package plugin-rfio
@@ -100,9 +100,9 @@ Requires:			%{name}-core%{?_isa} = %{version}-%{release}
 Requires:			dpm-libs%{?_isa}
 
 %description plugin-rfio
-Provide the rfio support (RFIO://) for %{name}. \
-The rfio plugin provides the POSIX operations for \
-the rfio URLs, the rfio protocol is used on the DPM \
+Provide the rfio support (RFIO://) for %{name}. 
+The rfio plugin provides the POSIX operations for 
+the rfio URLs, the rfio protocol is used on the DPM 
 and on the Castor storage systems.
 
 %package plugin-dcap
@@ -112,9 +112,9 @@ Requires:			%{name}-core%{?_isa} = %{version}-%{release}
 Requires:			dcap-tunnel-gsi%{?_isa}
 
 %description plugin-dcap
-Provide the dcap support (GSIDCAP://, DCAP://) for %{name}. \
+Provide the dcap support (GSIDCAP://, DCAP://) for %{name}. 
 The dcap plugin provides the POSIX operations for the dcap \
-URLs, the dcap protocol is used on the DCACHE storage system.
+URLs, the dcap protocol is used on the DCACHE storage system
 
 %package plugin-srm
 Summary:			Provide the srm access for %{name}
@@ -122,8 +122,8 @@ Group:				Applications/Internet
 Requires:			%{name}-core%{?_isa} = %{version}-%{release} 
 
 %description plugin-srm
-Provide the srm support (SRM://) for %{name}. \
-The srm plugin provides the POSIX operations and \
+Provide the srm support (SRM://) for %{name}. 
+The srm plugin provides the POSIX operations and 
 the third party transfer support on the SRM URLs.
 
 %package plugin-gridftp
@@ -152,7 +152,7 @@ Meta-package for complete install of GFAL 2.0 \
 with all the protocol plugins.
 
 %clean
-rm -rf "$RPM_BUILD_ROOT";
+rm -rf %{buildroot};
 make clean
 
 %prep
@@ -164,8 +164,9 @@ make %{?_smp_mflags}
 make doc
 
 %install
-rm -rf "$RPM_BUILD_ROOT"
-make DESTDIR=$RPM_BUILD_ROOT install
+rm -rf %{buildroot}
+make DESTDIR=%{buildroot} install
+
 
 %post core -p /sbin/ldconfig
 
@@ -250,5 +251,10 @@ make DESTDIR=$RPM_BUILD_ROOT install
 
 
 %changelog
+* Fri May 04 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-0.7.2012050413snap%{?dist}
+ - Improve gridftp plugin with severals other calls
+ - Correct dcap/rfio/srm bugs related to error report
+ - big work on  the documentation
+
 * Mon Dec 12 2011 Adrien Devress <adevress at cern.ch> - 2.0.0-0.6.2012041515snap%{?dist}
  - Initial gfal 2.0 preview release

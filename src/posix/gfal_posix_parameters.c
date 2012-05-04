@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_posix_parameters.c
  * @brief new file for the parameters management
  * @author Devresse Adrien
@@ -35,7 +35,7 @@
 #include "gfal_posix_internal.h"
 
 
-/**
+/*
  * Internal wrapper for posix api to set parameter boolean
  * */
 int gfal_set_parameter_boolean_internal(const char* namespace, const char* key, int value){
@@ -64,7 +64,7 @@ int gfal_set_parameter_boolean_internal(const char* namespace, const char* key, 
 	return ret;	
 }
 
-/**
+/*
  * Internal wrapper for posix api to set parameter string
  * */
 int gfal_set_parameter_string_internal(const char* namespace, const char* key, const char* value){
@@ -94,7 +94,7 @@ int gfal_set_parameter_string_internal(const char* namespace, const char* key, c
 }
 
 
-/**
+/*
  * Internal wrapper for posix api to set parameter string
  * */
 char* gfal_get_parameter_string_internal(const char* namespace, const char* key){
@@ -124,7 +124,7 @@ char* gfal_get_parameter_string_internal(const char* namespace, const char* key)
 }
 
 
-/**
+/*
  * Internal wrapper for posix api to get parameter boolean
  * */
 int gfal_get_parameter_boolean_internal(const char* namespace, const char* key){

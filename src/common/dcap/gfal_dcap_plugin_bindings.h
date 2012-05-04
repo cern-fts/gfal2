@@ -16,22 +16,22 @@
  */
 
 
-/**
- * @file gfal_dcap_plugin_main.c
- * @brief headers for bindings for dcap funcs
- * @author Devresse Adrien
+/*
+ * gfal_dcap_plugin_main.c
+ * headers for bindings for dcap funcs
+ * Devresse Adrien
  * 
- **/
+ */
 
 
 #include <regex.h>
 #include <time.h> 
 #include <glib.h>
-#include "../gfal_common_internal.h"
-#include "../gfal_common_errverbose.h"
-#include "../gfal_common_plugin.h"
-#include "../gfal_common_filedescriptor.h"
-#include "../gfal_types.h"
+#include <common/gfal_common_internal.h>
+#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_plugin.h>
+#include <common/gfal_common_filedescriptor.h>
+#include <common/gfal_types.h>
 
 gfal_file_handle gfal_dcap_openG(plugin_handle handle , const char* path, int flag, mode_t mode, GError** err);
 
@@ -52,5 +52,15 @@ int gfal_dcap_statG(plugin_handle handle, const char* name, struct stat* buff, G
 int gfal_dcap_lstatG(plugin_handle handle, const char* name, struct stat* buff, GError ** err);
 
 int gfal_dcap_mkdirG(plugin_handle handle, const char* name, mode_t mode, gboolean pflag, GError** err);
+
+int gfal_dcap_chmodG(plugin_handle handle, const char* name, mode_t mode,  GError** err);
+
+int gfal_dcap_rmdirG(plugin_handle handle, const char* name, GError** err);
+
+gfal_file_handle gfal_dcap_opendirG(plugin_handle handle, const char* path, GError ** err);
+
+int gfal_dcap_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err);
+
+struct dirent* gfal_dcap_readdirG(plugin_handle handle, gfal_file_handle fh, GError** err);
 
 const char* gfal_dcap_getName();

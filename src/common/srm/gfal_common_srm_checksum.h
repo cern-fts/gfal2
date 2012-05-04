@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_checksum.h
  * @brief header funtion to get the checksum of a file
  * @author Devresse Adrien

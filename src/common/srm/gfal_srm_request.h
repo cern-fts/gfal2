@@ -19,7 +19,7 @@
 #include <glib.h>
 #include "gfal_common_srm.h"
 
-/** 
+/* 
  * Next gen request srm system for gfal 2.0
  * Come with srm-ifce 2.0
  * */

@@ -16,13 +16,11 @@
  */
 
 
-/**
- * @file gfal_dcap_plugin_main.h
- * @brief header for the external dcap plugin for gfal ( based on the old dcap part in gfal legacy )
- * @author Devresse Adrien
- * @date 20/07/2011
- * 
- **/
+/*
+ * gfal_dcap_plugin_main.h
+ * header for the external dcap plugin for gfal ( based on the old dcap part in gfal legacy )
+ * author Devresse Adrien
+ */
 
 #include <regex.h>
 #include "../gfal_common_internal.h"
@@ -37,9 +35,8 @@ typedef struct _gfal_plugin_dcap_handle{
 }* gfal_plugin_dcap_handle;
 
 
-/**
- * Init function, called before all
- * */
+
+// Entry point of the plugin
 gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err);
 
 

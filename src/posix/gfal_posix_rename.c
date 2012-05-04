@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_rename.c
  * @brief file for the internal rename func
  * @author Devresse Adrien

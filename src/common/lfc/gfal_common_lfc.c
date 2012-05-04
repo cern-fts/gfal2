@@ -17,13 +17,13 @@
 
 #define _GNU_SOURCE
  
- /**
+ /*
   * 
-  @file gfal_common_lfc.c
-  @brief file for the lfc plugin module
-  @author Adrien Devresse
-  @version 0.0.1
-  @date 06/07/2011
+   file gfal_common_lfc.c
+   brief file for the lfc plugin module
+   author Adrien Devresse
+   version 0.0.1
+   date 06/07/2011
  */
 
 #include <regex.h>
@@ -54,14 +54,15 @@ typedef struct _lfc_opendir_handle{
 } *lfc_opendir_handle;
 
 static char* file_xattr[] = { GFAL_XATTR_GUID, GFAL_XATTR_REPLICA, GFAL_XATTR_COMMENT,  NULL }; //GFAL_XATTR_CHKSUM_TYPE, GFAL_XATTR_CHKSUM_VALUE removed attributes, no checksum is correctly set on LFC
-/**
+
+/*
  * just return the name of the layer
  */
 const char* lfc_getName(){
 	return "lfc_plugin";
 }
 
-/**
+/*
  * convert the lfn url for internal usage
  * result must be free
  */
@@ -103,7 +104,7 @@ static char* url_converter(plugin_handle handle, const char * url,GError** err){
 
 
 
-/**
+/*
  *  Deleter to unload the lfc part
  * */
 static void lfc_destroyG(plugin_handle handle){
@@ -115,7 +116,8 @@ static void lfc_destroyG(plugin_handle handle){
 		free(ops);
 	}
 }
-/**
+
+/*
  * Implementation of the chmod function with the LFC plugin
  * return 0 or the errno if error, or set GError if serious error
  */
@@ -143,7 +145,7 @@ int lfc_chmodG(plugin_handle handle, const char* path, mode_t mode, GError** err
 	return ret;
 }
 
-/**
+/*
  * 
  * implementation of the access call with the lfc plugin
  *  return 0 or -1 if error and report GError** with error code and message
@@ -172,7 +174,7 @@ int lfc_accessG(plugin_handle handle, const char* lfn, int mode, GError** err){
 
 
 
-/**
+/*
  * Implementation of the rename call for the lfc plugin
  * return 0 if success else -1 if error and set GError
  * 
@@ -200,7 +202,7 @@ int lfc_renameG(plugin_handle handle, const char* oldpath, const char* newpath, 
 }
 
 
-/**
+/*
  * Implementation of the symlinkG call for the lfc plugin
  * return 0 if success else -1 if error and set GError
  * 
@@ -225,7 +227,7 @@ int lfc_symlinkG(plugin_handle handle, const char* oldpath, const char* newpath,
 	return ret;	
 }
 
-/**
+/*
  * execute a posix stat request on the lfc
  * return 0 and set struct if correct answer, else return negative value and set GError
  * 
@@ -251,7 +253,7 @@ int lfc_statG(plugin_handle handle, const char* path, struct stat* st, GError** 
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
 	return ret;
 }
-/**
+/*
  * execute a posix lstat request on the lfc ( stat request with link information)
  *  return 0 if success and set the struct buf else return negative value and set GError
  */
@@ -287,10 +289,10 @@ static int lfc_lstatG(plugin_handle handle, const char* path, struct stat* st, G
 	free(lfn);
 	return ret;
 }
-/**
+
+/*
  *  Execute a posix mkdir on the lfc
- *  @return 0 on success else -1 and err is set with the correct value
- * 
+ *  return 0 on success else -1 and err is set with the correct value
  * */
  static int lfc_mkdirpG(plugin_handle handle, const char* path, mode_t mode, gboolean pflag, GError** err){
 	g_return_val_err_if_fail(handle && path , -1, err, "[lfc_mkdirpG] Invalid value in args handle/path");	
@@ -310,9 +312,9 @@ static int lfc_lstatG(plugin_handle handle, const char* path, struct stat* st, G
 	return ret; 
  }
  
-/**
+/*
  * Execute a rmdir on the lfc
- * @return 0 on success else -1 and err is set with the correct value
+ *  return 0 on success else -1 and err is set with the correct value
  * */
  static int lfc_rmdirG(plugin_handle handle, const char* path, GError** err){
 	g_return_val_err_if_fail( handle && path , -1, err, "[lfc_rmdirG] Invalid value in args handle/path");	
@@ -335,7 +337,7 @@ static int lfc_lstatG(plugin_handle handle, const char* path, struct stat* st, G
 	return ret;	 
  }
  
-/**
+/*
  * execute an opendir func to the lfc
  * */
 static gfal_file_handle lfc_opendirG(plugin_handle handle, const char* name, GError** err){
@@ -386,7 +388,7 @@ static struct dirent* lfc_convert_dirent_struct(struct lfc_ops *ops , struct dir
 	return dir;
 }
 
-/**
+/*
  * Execute a readdir func on the lfc
  * */
 static struct dirent* lfc_readdirG(plugin_handle handle, gfal_file_handle fh, GError** err){
@@ -404,7 +406,7 @@ static struct dirent* lfc_readdirG(plugin_handle handle, gfal_file_handle fh, GE
 	return ret;
 }
 
-/**
+/*
  * execute an closedir func on the lfc
  * */
 static int lfc_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err){
@@ -416,13 +418,13 @@ static int lfc_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err
 		int sav_errno = gfal_lfc_get_errno(ops);
 		g_set_error(err,0, sav_errno, "[%s] Error report from LFC %s", __func__, gfal_lfc_get_strerror(ops) );
 	}else{
-		free(fh->ext_data);
-		free(fh);
+		g_free(fh->ext_data);
+		g_free(fh);
 	}
 	return ret;		
 }
 
-/**
+/*
  * resolve the lfc link to the surls
  */
 char ** lfc_getSURLG(plugin_handle handle, const char * path, GError** err){
@@ -441,7 +443,7 @@ char ** lfc_getSURLG(plugin_handle handle, const char * path, GError** err){
 	return resu;
 }
 
-/**
+/*
  * lfc getxattr for the path -> surls resolution
  * */
 ssize_t lfc_getxattr_getsurl(plugin_handle handle, const char* path, void* buff, size_t size, GError** err){
@@ -459,7 +461,7 @@ ssize_t lfc_getxattr_getsurl(plugin_handle handle, const char* path, void* buff,
 }
 
 
-/**
+/*
  * lfc getxattr for the path -> guid resolution
  * */
 ssize_t lfc_getxattr_getguid(plugin_handle handle, const char* path, void* buff, size_t size, GError** err){
@@ -486,7 +488,7 @@ ssize_t lfc_getxattr_getguid(plugin_handle handle, const char* path, void* buff,
 	return res;
 }
 
-/**
+/*
  * lfc getxattr for path -> comment resolution
  * 
  * */
@@ -504,7 +506,7 @@ ssize_t lfc_getxattr_getguid(plugin_handle handle, const char* path, void* buff,
 	return res;	 
  }
 
-/**
+/*
  * lfc getxattr implem 
  * */
 ssize_t lfc_getxattrG(plugin_handle handle, const char* path, const char* name, void* buff, size_t size, GError** err){
@@ -528,7 +530,7 @@ ssize_t lfc_getxattrG(plugin_handle handle, const char* path, const char* name, 
 	return res;
 }
 
-/**
+/*
  * lfc getxattr implem 
  * */
 ssize_t lfc_listxattrG(plugin_handle handle, const char* path, char* list, size_t size, GError** err){
@@ -556,7 +558,7 @@ ssize_t lfc_listxattrG(plugin_handle handle, const char* path, char* list, size_
 	return res;
 }
 
-/**
+/*
  * setxattr function special for comments
  * */
 int lfc_setxattr_comment(plugin_handle handle, const char* path, const char* name,
@@ -573,7 +575,7 @@ int lfc_setxattr_comment(plugin_handle handle, const char* path, const char* nam
 }
 
 
-/**
+/*
  * lfc setxattr implem
  * */
 int lfc_setxattrG(plugin_handle handle, const char *path, const char *name,
@@ -593,7 +595,7 @@ int lfc_setxattrG(plugin_handle handle, const char *path, const char *name,
 	return res;	
 }
 
-/**
+/*
  * Convert a guid to a plugin url if possible
  *  return the link in a plugin's url string or err and NULL if not found
  */
@@ -634,7 +636,7 @@ static int lfc_unlinkG(plugin_handle handle, const char* path, GError** err){
 	return ret;
 }
   
-/**
+/*
  * execute a posix readlink request on the lfc 
  *  return size of the buffer if success and set the struct buf else return negative value and set GError
  */
@@ -665,7 +667,7 @@ static ssize_t lfc_readlinkG(plugin_handle handle, const char* path, char* buff,
 	return ret;
 }
 
-/**
+/*
  *  signals the lfc parameters :
  *   - LFC_HOST : (lfc, host)
  * */
@@ -677,7 +679,7 @@ int lfc_is_used_parameter(plugin_handle handle, const char* namespace, const cha
 	return 0;
 }
 
-/**
+/*
  * Receive notification of a change in the parameter, take care of it
  */
 void lfc_notify_change_parameter(plugin_handle handle, const char* namespace, const char* key){
@@ -701,7 +703,7 @@ static void internal_stat_copy(gpointer original, gpointer copy){
 	memcpy(copy, original, sizeof(struct stat));
 }
 
-/**
+/*
  * Map function for the lfc interface
  * this function provide the generic PLUGIN interface for the LFC plugin.
  * lfc_initG do : liblfc shared library load, sym resolve, endpoint check, and plugin function map.
@@ -730,8 +732,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	ops->handle = handle;
 	ops->cache_stat = gsimplecache_new(50000000,&internal_stat_copy, sizeof(struct stat) );
 	gfal_lfc_regex_compile(&(ops->rex), err);
-	gfal_print_verbose(GFAL_VERBOSE_VERBOSE, "[gfal][lfc] lfc endpoint : %s", endpoint);
-	lfc_plugin.handle = (void*) ops;
+	lfc_plugin.plugin_data = (void*) ops;
 	lfc_plugin.check_plugin_url= &gfal_lfc_check_lfn_url;
 	lfc_plugin.plugin_delete = &lfc_destroyG;
 	lfc_plugin.accessG = &lfc_accessG;
@@ -766,7 +767,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 }
 
 
- /**
+ /*
  * parse a guid to check the validity
  */
 gboolean gfal_checker_guid(const char* guid, GError** err){
@@ -775,7 +776,7 @@ gboolean gfal_checker_guid(const char* guid, GError** err){
 	return ( sguid < GFAL_URL_MAX_LEN && sguid > 5 && strncmp(guid, "guid:",5)== 0);
 }  
 
-/**
+/*
  * Check if the passed url and operation is compatible with lfc
  * 
  * */

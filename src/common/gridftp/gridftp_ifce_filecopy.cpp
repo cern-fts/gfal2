@@ -20,18 +20,14 @@
 #include "gridftp_ifce_filecopy.h"
 #include <transfer/gfal_transfer_types_internal.h>
 
-using namespace Utilpp;
 
-GridFTPFileCopyModule::GridFTPFileCopyModule(GridFTPInterface * wrap) : GridFTPDecorator(wrap){
-}
-
-int GridFTPFileCopyModule::filecopy(gfalt_params_handle params, const char* src, const char* dst){
+int GridftpModule::filecopy(gfalt_params_handle params, const char* src, const char* dst){
 	using namespace Gfal::Transfer;
 	GError * tmp_err=NULL;
 
 	const unsigned long timeout = gfalt_get_timeout(params, &tmp_err);
-	gerror_to_cpp(&tmp_err);
-	gfal_globus_copy_handle_t h = this->take_globus_handle();
+	Gfal::gerror_to_cpp(&tmp_err);
+	gfal_globus_copy_handle_t h = _handle_factory->take_globus_gass_handle();
 
 	gfal_print_verbose(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);
 	gfal_globus_result_t res = globus_gass_copy_url_to_url 	(&h,
@@ -40,8 +36,8 @@ int GridFTPFileCopyModule::filecopy(gfalt_params_handle params, const char* src,
 		(char*)dst,
 		GLOBUS_NULL 
 		);
-	release_globus_handle(&h);
-	globus_check_result("GridFTPFileCopyModule::filecopy", res);
+	_handle_factory->release_globus_gass_handle(&h);
+	gfal_globus_check_result("GridFTPFileCopyModule::filecopy", res);
 	return 0;			
 }
 
@@ -58,7 +54,7 @@ int plugin_filecopy(plugin_handle handle, gfal_context_t context, gfalt_params_t
 	int ret = -1;
 	gfal_print_verbose(GFAL_VERBOSE_TRACE, "  -> [gridftp_plugin_filecopy]");
 	CPP_GERROR_TRY
-		reinterpret_cast<GridFTPFileCopyModule*>(handle)->filecopy(params, src, dst);
+		( static_cast<GridftpModule*>(handle))->filecopy(params, src, dst);
 		ret = 0;
 	CPP_GERROR_CATCH(&tmp_err);
 	gfal_print_verbose(GFAL_VERBOSE_TRACE, "  [gridftp_plugin_filecopy]<-");

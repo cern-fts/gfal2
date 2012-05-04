@@ -16,13 +16,11 @@
  */
 
 
-/**
- * @file gfal_dcap_plugin_main.c
- * @brief file for bindings for dcap funcs
- * @author Devresse Adrien
- * @date 20/07/2011
- * 
- **/
+/*
+ * gfal_dcap_plugin_main.c
+ * file for bindings for dcap funcs
+ * author Devresse Adrien
+ */
 
 
 #include <regex.h>
@@ -30,20 +28,43 @@
 #include <glib.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include "../gfal_common_internal.h"
-#include "../gfal_common_errverbose.h"
-#include "../gfal_common_plugin.h"
-#include "../gfal_common_filedescriptor.h"
-#include "../gfal_types.h"
+#include <common/gfal_common_internal.h>
+#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_plugin.h>
+#include <common/gfal_common_filedescriptor.h>
+#include <common//gfal_types.h>
 #include "gfal_dcap_plugin_layer.h"
 #include "gfal_dcap_plugin_bindings.h"
 #include "gfal_dcap_plugin_main.h"
+
+
+// errno conversion for dcap non-complete error messages
+static int dcap_errno_conversion( const char * msg, int old_err){
+	int ret;
+	ret = old_err;	
+	switch(old_err){
+		case EIO:
+			if(strstr(msg, "o such"))
+				ret = ENOENT;
+			break;
+		case EACCES:
+			if(strstr(msg, "ectory not empty"))
+				ret = ENOTEMPTY;
+			break;
+		default:
+			ret = old_err;
+	}
+	return ret;
+}
+
 
 static void dcap_report_error(gfal_plugin_dcap_handle h,  const char * func_name, GError** err){
 	char buff_error[2048];
 	const int status = *(h->ops->geterror());
 	g_strlcpy(buff_error, h->ops->strerror(status), 2048);
-	g_set_error(err, 0, status, "[%s] Error reported by the external library dcap : %s, number : %d ", func_name, buff_error, status);
+	// errno conversion
+	errno = dcap_errno_conversion(buff_error, errno);
+	g_set_error(err, 0, errno, "[%s] Error reported by the external library dcap : %s, number : %d ", func_name, buff_error, status);
 }
 
 gfal_file_handle gfal_dcap_openG(plugin_handle handle , const char* path, int flag, mode_t mode, GError** err){
@@ -58,10 +79,10 @@ gfal_file_handle gfal_dcap_openG(plugin_handle handle , const char* path, int fl
 	return ret;
 }
 
-/**
+/*
  * map to the libdcap read call
  * 
- * */
+ */
 int gfal_dcap_readG(plugin_handle handle , gfal_file_handle fd, void* buff, size_t s_buff, GError** err){
 	gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
 	int ret = h->ops->read(GPOINTER_TO_INT(fd->fdesc), buff, s_buff);
@@ -72,10 +93,9 @@ int gfal_dcap_readG(plugin_handle handle , gfal_file_handle fd, void* buff, size
 	return ret;
 }
 
-/**
+/*
  * map to the libdcap pread call
- * 
- * */
+ */
 ssize_t gfal_dcap_preadG(plugin_handle handle , gfal_file_handle fd, void* buff, size_t s_buff, off_t offset,  GError** err){
 	gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
 	ssize_t ret = h->ops->pread(GPOINTER_TO_INT(fd->fdesc), buff, s_buff, offset);
@@ -86,10 +106,9 @@ ssize_t gfal_dcap_preadG(plugin_handle handle , gfal_file_handle fd, void* buff,
 	return ret;
 }
 
-/**
+/*
  * map to the libdcap pwrite call
- * 
- * */
+ */
 ssize_t gfal_dcap_pwriteG(plugin_handle handle , gfal_file_handle fd, const void* buff, size_t s_buff, off_t offset,  GError** err){
 	gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
 	ssize_t ret = h->ops->pwrite(GPOINTER_TO_INT(fd->fdesc), buff, s_buff, offset);
@@ -159,6 +178,58 @@ int gfal_dcap_mkdirG(plugin_handle handle, const char* name, mode_t mode, gboole
 		dcap_report_error(h, __func__, err);		
 	}
 	return ret;
+}
+
+int gfal_dcap_chmodG(plugin_handle handle, const char* name, mode_t mode,  GError** err){
+	gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
+	int ret = h->ops->chmod(name, mode);	
+	if(ret !=0){
+		dcap_report_error(h, __func__, err);		
+	}
+	return ret;
+}
+
+
+int gfal_dcap_rmdirG(plugin_handle handle, const char* name, GError** err){
+	gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
+	int ret = h->ops->rmdir(name);	
+	if(ret !=0){
+		dcap_report_error(h, __func__, err);		
+	}
+	return ret;
+}
+
+gfal_file_handle gfal_dcap_opendirG(plugin_handle handle, const char* path, GError ** err){
+	gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
+	DIR * d = h->ops->opendir(path);	
+	gfal_file_handle ret = NULL;
+	if(d == NULL){
+		dcap_report_error(h, __func__, err);		
+	}else{
+		ret = gfal_file_handle_ext_new(gfal_dcap_getName(), (gpointer) d, NULL);	
+	}
+	return ret;	
+}
+
+int gfal_dcap_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err){
+	gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
+	int ret = h->ops->closedir(fh->fdesc);	
+	if(ret !=0){
+		dcap_report_error(h, __func__, err);		
+	}else{
+		g_free(fh);
+	}
+	return ret;	
+}
+
+struct dirent* gfal_dcap_readdirG(plugin_handle handle, gfal_file_handle fh, GError** err){
+	gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
+	struct dirent* ret = h->ops->readdir(fh->fdesc);	
+	if(ret == NULL && *(h->ops->geterror()) != 0){
+		dcap_report_error(h, __func__, err);		
+	}
+	return ret;	
+	
 }
 
 

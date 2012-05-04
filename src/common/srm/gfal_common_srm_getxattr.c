@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_getxattr.c
  * @brief file for the getxattr function on the srm url type
  * @author Devresse Adrien
@@ -54,7 +54,7 @@ ssize_t gfal_srm_geturl_getxattrG(plugin_handle handle, const char* path, const 
 }
 
 
-/**
+/*
  * implementation of the getxattr for turl resolution, pin management and spacetoken set/get
  * 
  * */
@@ -76,7 +76,7 @@ ssize_t gfal_srm_getxattrG(plugin_handle handle, const char* path, const char* n
 
 
 
-/**
+/*
  * lfc getxattr implem 
  * */
 ssize_t gfal_srm_listxattrG(plugin_handle handle, const char* path, char* list, size_t size, GError** err){

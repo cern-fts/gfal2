@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_close.c
  * @brief file for the internal close function for the posix interface
  * @author Devresse Adrien

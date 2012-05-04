@@ -16,7 +16,7 @@
  * limitations under the License.
  */
  
-/**
+/*
  * @file gfal_common_mds_ldap_internal.ch
  * @brief header for the internal ldap query by gfal, without is interface
  * @author Adrien Devresse

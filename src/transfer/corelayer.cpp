@@ -25,9 +25,7 @@
 
 #include <dlfcn.h>
 
-
-using namespace Utilpp;
- 
+const Glib::Quark scope_core("CoreLayer::CoreLayer");
 
 void* Gfal::PluginItem::get_sym(const std::string & str) const{
 	return dlsym(_dl, str.c_str());
@@ -45,7 +43,7 @@ Gfal::CoreLayer::CoreLayer()
 	GError * tmp_err=NULL;
 	gfal_handle mhandle = gfal_initG(&tmp_err);
 	if(mhandle == NULL)
-		throw Gfal::CoreException("CoreLayer::CoreLayer()", tmp_err->message, tmp_err->code);	
+		throw Gfal::CoreException(scope_core, tmp_err->message, tmp_err->code);	
 	_init(mhandle);
 }
 

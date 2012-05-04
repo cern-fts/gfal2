@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_readdir.c
  * @brief file for the readdir function on the srm url type
  * @author Devresse Adrien

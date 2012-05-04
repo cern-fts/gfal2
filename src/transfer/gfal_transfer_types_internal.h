@@ -23,8 +23,6 @@
 #include <string>
 
 
-#include <libcpp/cpp_to_gerror.hpp>
-
 #include <exceptions/gfalcoreexception.hpp>
 
 #include <common/gfal_constants.h>
@@ -91,9 +89,9 @@ protected:
 	
 }; 
 
-}; // end Transfer
+} // end Transfer
 
-};//end Gfal
+} //end Gfal
 
 
 

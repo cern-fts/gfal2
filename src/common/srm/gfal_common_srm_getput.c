@@ -15,15 +15,8 @@
  * limitations under the License.
  */
 
-/**
- * @file gfal_common.c
- * @brief file with the get/getasync srm funcs 
- * @author Devresse Adrien
- * @version 2.0
- * @date 12/06/2011
- * */
  
- #define _GNU_SOURCE 
+#define _GNU_SOURCE 
 
 #include <regex.h>
 #include <time.h> 
@@ -101,12 +94,7 @@ int gfal_srmv2_put_global(gfal_srm_plugin_t handle, gfal_srm_params_t params, st
 	G_RETURN_ERR(ret, tmp_err, err);		
 }
 
-
-
-
-/**
- *  @brief execute a srmv2 request sync "GET" on the srm_ifce
-*/
+//  @brief execute a srmv2 request sync "GET" on the srm_ifce
 int gfal_srm_getTURLS_srmv2_internal(gfal_srmv2_opt* opts,  gfal_srm_params_t params, char* endpoint, char** surls, gfal_srm_result** resu,  GError** err){
 	g_return_val_err_if_fail(surls!=NULL,-1,err,"[gfal_srmv2_getasync] tab null ");
 			
@@ -131,12 +119,7 @@ int gfal_srm_getTURLS_srmv2_internal(gfal_srmv2_opt* opts,  gfal_srm_params_t pa
 	G_RETURN_ERR(ret, tmp_err, err);
 }
 
-
-
-
-/**
- *  @brief execute a srmv2 request sync "PUT" on the srm_ifce
-*/
+// execute a srmv2 request sync "PUT" on the srm_ifce
 int gfal_srm_putTURLS_srmv2_internal(gfal_srmv2_opt* opts , gfal_srm_params_t params, char* endpoint, char** surls, gfal_srm_result** resu,  GError** err){
 	g_return_val_err_if_fail(surls!=NULL,-1,err,"[gfal_srm_putTURLS_srmv2_internal] GList passed null");
 			
@@ -167,10 +150,8 @@ int gfal_srm_putTURLS_srmv2_internal(gfal_srmv2_opt* opts , gfal_srm_params_t pa
 	G_RETURN_ERR(ret, tmp_err, err);	
 }
 
-/***
- * Internal function of gfal_srm_getTurls without argument check for internal usage
- * 
- * */
+
+// Internal function of gfal_srm_getTurls without argument check for internal usage
 int gfal_srm_mTURLS_internal(gfal_srmv2_opt* opts, gfal_srm_params_t params, srm_req_type req_type, char** surls, gfal_srm_result** resu,   GError** err){
 	GError* tmp_err=NULL;
 	int ret=-1;	
@@ -198,9 +179,7 @@ int gfal_srm_mTURLS_internal(gfal_srmv2_opt* opts, gfal_srm_params_t params, srm
 	return ret;		
 }
 
-/**
- *  simple wrapper to getTURLs for the gfal_module layer
- * */
+//  simple wrapper to getTURLs for the gfal_module layer
 int gfal_srm_getTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl, int size_turl, char** reqtoken,  GError** err){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
 	gfal_srm_result* resu=NULL;
@@ -231,15 +210,8 @@ int gfal_srm_getTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl
 }
 
 
-/**
- *  execute a get for thirdparty transfer turl
- *  @param ch : plugin handle
- *  @param surl : surl to resovle in turl
- *  @param buff_turl : buffer where write the result
- *  @param size_tur : maximum size of the buffer to use
- *  @param request token if needed
- *  @param gerror : err report
- * */
+
+//  execute a get for thirdparty transfer turl
 int gfal_srm_get_rd3_turl(plugin_handle ch, const char* surl, char* buff_turl, int size_turl, char** reqtoken,  GError** err){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
 	gfal_srm_result* resu=NULL;
@@ -268,14 +240,8 @@ int gfal_srm_get_rd3_turl(plugin_handle ch, const char* surl, char* buff_turl, i
 	G_RETURN_ERR(ret, tmp_err, err);		
 }
 
-/**
- * @brief launch a surls-> turls translation in the synchronous mode
- * @param opts : srmv2 opts initiated
- * @param surls : tab of string, last char* must be NULL
- * @param resu : pointer to a table of gfal_srm_result
- * @param err : GError** for error report
- * @return return positive if success else -1, check GError for more information
- */
+
+//  launch a surls-> turls translation in the synchronous mode
 int gfal_srm_getTURLS(gfal_srmv2_opt* opts, char** surls, gfal_srm_result** resu,  GError** err){
 	g_return_val_err_if_fail(opts!=NULL,-1,err,"[gfal_srm_getTURLS] handle passed is null");
 	
@@ -292,15 +258,8 @@ int gfal_srm_getTURLS(gfal_srmv2_opt* opts, char** surls, gfal_srm_result** resu
 	G_RETURN_ERR(ret, tmp_err, err);
 }
 
-/**
- *  execute a put for thirdparty transfer turl
- *  @param ch : plugin handle
- *  @param surl : surl to resovle in turl
- *  @param buff_turl : buffer where write the result
- *  @param size_tur : maximum size of the buffer to use
- *  @param request token if needed
- *  @param gerror : err report
- * */
+
+//  execute a put for thirdparty transfer turl
 int gfal_srm_put_rd3_turl(plugin_handle ch, const char* surl, char* buff_turl, int size_turl, char** reqtoken, GError** err){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
 	gfal_srm_result* resu=NULL;
@@ -333,9 +292,7 @@ int gfal_srm_put_rd3_turl(plugin_handle ch, const char* surl, char* buff_turl, i
 }
 
 
-/**
- *  simple wrapper to putTURLs for the gfal_module layer
- * */
+//  simple wrapper to putTURLs for the gfal_module layer
 int gfal_srm_putTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl, int size_turl, char** reqtoken, GError** err){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
 	gfal_srm_result* resu=NULL;
@@ -366,14 +323,8 @@ int gfal_srm_putTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl
 	return ret;			
 }
 
-/**
- * @brief launch a surls-> turls translation in the synchronous mode for file creation
- * @param opts : srmv2 opts initiated
- * @param surls : tab of string, last char* must be NULL
- * @param resu : pointer to a table of gfal_srm_result
- * @param err : GError** for error report
- * @return return positive if success else -1, check GError for more information
- */
+
+// @brief launch a surls-> turls translation in the synchronous mode for file creation
 int gfal_srm_putTURLS(gfal_srmv2_opt* opts , char** surls, gfal_srm_result** resu,  GError** err){
 	g_return_val_err_if_fail(opts!=NULL,-1,err,"[gfal_srm_putTURLS] handle passed is null");
 	
@@ -393,9 +344,7 @@ int gfal_srm_putTURLS(gfal_srmv2_opt* opts , char** surls, gfal_srm_result** res
 }
 
 
-/**
- *  execute a srm put done on the specified surl and token, return 0 if success else -1 and errno is set
-*/
+// execute a srm put done on the specified surl and token, return 0 if success else -1 and errno is set
 static int gfal_srm_putdone_srmv2_internal(gfal_srmv2_opt* opts, char* endpoint, char** surls, char* token,  GError** err){
 	g_return_val_err_if_fail(surls!=NULL,-1,err,"[gfal_srm_putdone_srmv2_internal] invalid args ");
 			

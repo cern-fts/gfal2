@@ -15,12 +15,10 @@
  * limitations under the License.
  */
 
-/**
- * @file gfal_common_file_handle.c
- * @brief file for the file handle management
- * @author Devresse Adrien
- * @version 2.0
- * @date 01/06/2011
+/*
+ * gfal_common_file_handle.c
+ * file for the file handle management
+ * author Devresse Adrien
  * */
 
 

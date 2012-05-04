@@ -17,8 +17,7 @@
 
 #define _GNU_SOURCE
  
- /**
-  * 
+/*
   @file gfal_common_lfc_open.c
   @brief lfc implementation for open/read/write/close
   @author Adrien Devresse
@@ -32,14 +31,14 @@
 #include <common/gfal_common_plugin.h>
 
 
+#include <common/gfal_common_internal.h>
+#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_filedescriptor.h>
 #include "gfal_common_lfc.h"
-#include "../gfal_common_internal.h"
-#include "../gfal_common_errverbose.h"
-#include "../gfal_common_filedescriptor.h"
 #include "lfc_ifce_ng.h"
 
 
-/**
+/*
  * open function for the srm  plugin
  */
 gfal_file_handle lfc_openG(plugin_handle ch, const char* path, int flag, mode_t mode, GError** err){

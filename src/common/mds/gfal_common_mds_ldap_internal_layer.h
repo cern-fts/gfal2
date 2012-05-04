@@ -15,7 +15,7 @@
  * limitations under the License.
  */
  
-/**
+/*
  * @file gfal_common_mds_ldap_internal_layer.h
  * @brief interface for mock purpose
  * @author Adrien Devresse

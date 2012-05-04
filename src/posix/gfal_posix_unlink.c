@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_unlink.c
  * @brief file for the internal function of the POSIX unlink function
  * @author Devresse Adrien
@@ -37,7 +37,7 @@
 #include "gfal_posix_local_file.h"
 #include "gfal_posix_internal.h"
 
- /**
+ /*
   *  internal implementation of gfal_unlink
   * */
 ssize_t gfal_posix_internal_unlink(const char* path){

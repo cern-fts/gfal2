@@ -15,12 +15,10 @@
  * limitations under the License.
  */
 
-/**
- * @file gfal_common_dir_handle.c
- * @brief file for the directory handle management
- * @author Devresse Adrien
- * @version 2.0
- * @date 25/05/2011
+/*
+ * gfal_common_dir_handle.c
+ * file for the directory handle management
+ * author Devresse Adrien
  * */
 
 #include <stdlib.h>
@@ -37,10 +35,7 @@
 pthread_mutex_t m_dir_container =PTHREAD_MUTEX_INITIALIZER;
 
 
-/**
- * 
- * return the singleton of the file descriptor container for the directories
- */
+// return the singleton of the file descriptor container for the directories
 gfal_fdesc_container_handle gfal_dir_handle_container_instance(gfal_descriptors_container* fdescs, GError** err){
 	gfal_fdesc_container_handle dir_handle = fdescs->dir_container;
 	if(dir_handle == NULL){

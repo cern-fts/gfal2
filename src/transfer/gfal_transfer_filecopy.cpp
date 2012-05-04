@@ -16,6 +16,7 @@
 
 #include <transfer/gfal_transfer_types_internal.h>
 
+const Glib::Quark scope_copy("FileCopy::start_copy");
 
 Gfal::Transfer::FileCopy::FileCopy(PluginFactory* wrap) :  MainDecorator(wrap){
 
@@ -32,12 +33,12 @@ void Gfal::Transfer::FileCopy::start_copy(Params* p, const std::string & src, co
 	GError * tmp_err=NULL;
 	plugin_filecopy_call p_copy = find_copy_plugin(src, dst, &plug_data); // get the filecopy call of the plugin
 	if(p_copy == NULL)
-		throw Gfal::CoreException("FileCopy::start_copy", "bug detected : \
+		throw Gfal::CoreException(scope_copy, "bug detected : \
 				no correct filecopy function in a plugin signaled like compatible", ENOSYS);
 	const int res = p_copy(plug_data, reinterpret_cast<gfal_context_t>(this), (gfalt_params_handle) p, src.c_str(), dst.c_str(), &tmp_err);
 	//p->unlock();
 	if(res <0 )
-		throw Gfal::CoreException("FileCopy::start_copy", std::string(tmp_err->message), tmp_err->code);
+		throw Gfal::CoreException(scope_copy, std::string(tmp_err->message), tmp_err->code);
 	gfal_print_verbose(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::FileCopy ");
 }
 
@@ -58,7 +59,7 @@ const plugin_filecopy_call Gfal::Transfer::FileCopy::find_copy_plugin(const std:
 				
 			}
 	}
-	throw Gfal::CoreException("Filecopy::plugin_filecopy_call", "no plugin is able to support this transfer ", EPROTONOSUPPORT);
+	throw Gfal::CoreException(scope_copy, "no plugin is able to support this transfer ", EPROTONOSUPPORT);
 }
 
 

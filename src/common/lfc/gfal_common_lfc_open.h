@@ -18,12 +18,12 @@
 
 #define _GNU_SOURCE
  
- /**
+/*
   * 
-  @file gfal_common_lfc_open.c
-  @brief header for lfc implementation for open/read/write/close
-  @author Adrien Devresse
-  @date 06/07/2011
+   file gfal_common_lfc_open.c
+   brief header for lfc implementation for open/read/write/close
+   author Adrien Devresse
+   date 06/07/2011
  */
 
 #include <regex.h>

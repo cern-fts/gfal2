@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_rfio_plugin_main.c
  * @brief header file for bindings for rfio funcs
  * @author Devresse Adrien

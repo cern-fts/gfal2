@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_endpoint.c
  * @brief file for internal use in the srm part, endpoint determination
  * @author Devresse Adrien
@@ -38,7 +38,7 @@
 
 static enum gfal_srm_proto gfal_proto_list_prefG[]= { PROTO_SRMv2, PROTO_SRM, PROTO_ERROR_UNKNOW };
 
-/**
+/*
  * @brief extract endpoint and srm_type from a surl
  *  determine the best endpoint associated with the surl and the param of the actual handle (no bdii check or not)
  *  see the diagram in doc/diagrams/surls_get_endpoint_activity_diagram.svg for more informations
@@ -70,7 +70,7 @@ int gfal_srm_determine_endpoint(gfal_srmv2_opt* opts, const char* surl, char* bu
 }
 
 
-/**
+/*
  *  return TRUE if a full endpoint is contained in surl  else FALSE
  * 
 */
@@ -84,7 +84,7 @@ gboolean gfal_check_fullendpoint_in_surlG(const char * surl, GError ** err){
 }
 
 
-/**
+/*
  *  @brief create a full endpoint from a "full-surl"
  * */
 int gfal_get_fullendpointG(const char* surl, char* buff_endpoint, size_t s_buff, GError** err){
@@ -105,7 +105,7 @@ int gfal_get_fullendpointG(const char* surl, char* buff_endpoint, size_t s_buff,
 
 
 
- /**
+ /*
   * map a bdii se protocol type to a gfal protocol type
   */
 static enum gfal_srm_proto gfal_convert_proto_from_bdii(const char* se_type_bdii){
@@ -121,7 +121,7 @@ static enum gfal_srm_proto gfal_convert_proto_from_bdii(const char* se_type_bdii
 }
 
 
-/**
+/*
  * select the best protocol choice and the best endpoint choice  from a list of protocol and endpoints obtained by the bdii
  * 
  */
@@ -150,7 +150,7 @@ int gfal_select_best_protocol_and_endpointG(gfal_srmv2_opt* opts, char** tab_se_
 }
 
 
-/**
+/*
  * @brief get the hostname from a surl
  *  @return return 0 if success else -1 and err is set
  */
@@ -178,7 +178,7 @@ int  gfal_get_hostname_from_surlG(const char * surl, char* buff_hostname, size_t
  }
 
 
-/**
+/*
  * @brief get endpoint from the bdii system only
  * @return 0 if success with endpoint and srm_type set correctly else -1 and err set
  * 

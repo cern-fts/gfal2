@@ -20,6 +20,7 @@
 
 #include <globus_gass_copy.h>
 #include <globus_ftp_client.h>
+#include <globus_gsi_proxy.h>
 #include <globus_ftp_client_restart_marker_plugin.h>
 #include <globus_ftp_client_restart_plugin.h>
 #include <globus_ftp_client_debug_plugin.h>
@@ -29,20 +30,36 @@
 
 
 typedef globus_gass_copy_handle_t gfal_globus_copy_handle_t;
+typedef globus_gass_copy_attr_t gfal_globus_copy_attr_t;
 typedef globus_result_t gfal_globus_result_t;
 
-class GridFTPInterface
+
+struct GridFTP_session{
+	
+	virtual ~GridFTP_session(){}
+	
+	globus_ftp_client_handle_t handle;
+	globus_ftp_client_handleattr_t attr_handle;
+};
+
+
+class GridFTPFactoryInterface
 {
 	public:
-		GridFTPInterface();
-		virtual ~GridFTPInterface();
+		GridFTPFactoryInterface();
+		virtual ~GridFTPFactoryInterface();
 
 		virtual gfal_handle get_handle()=0;	
 		
-		virtual gfal_globus_copy_handle_t take_globus_handle() = 0;
-		virtual void release_globus_handle(gfal_globus_copy_handle_t*) = 0;
-		virtual void globus_check_result(const std::string & nmspace, gfal_globus_result_t res) = 0;
+		virtual gfal_globus_copy_handle_t take_globus_gass_handle() = 0;
+		virtual void release_globus_gass_handle(gfal_globus_copy_handle_t*) = 0;
 		
+		virtual gfal_globus_copy_attr_t* take_globus_gass_attr()=0;
+		virtual void release_globus_gass_attr(gfal_globus_copy_attr_t * h)=0;
+		
+		virtual  GridFTP_session* gfal_globus_ftp_take_handle()=0;
+		virtual void gfal_globus_ftp_release_handle(GridFTP_session* h) =0;
+						
 	protected:
 
 };

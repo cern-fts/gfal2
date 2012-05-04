@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 
-/**
+/*
+
  * @file gfal_common_srm_internal_ls.c
  * @brief srm ls operation concentrator
  * @author Devresse Adrien
@@ -31,7 +32,7 @@
 #include "gfal_common_srm_internal_ls.h"
 #include "gfal_common_srm_endpoint.h"
 
-/**
+/*
  * clear memory used by the internal srm_ifce items
  * required by the old design of srm_ifce
  * 
@@ -48,7 +49,7 @@ void gfal_srm_ls_memory_management(struct srm_ls_input* input, struct srm_ls_out
 	}	
 }
 
-/**
+/*
  *  concentrate the srm_ls logical in one point for stat, readdir, status, and access
  * 
  * */

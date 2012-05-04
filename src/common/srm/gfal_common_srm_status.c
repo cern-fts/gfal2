@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_status.c
  * @brief status / pin functions layer from srm
  * @author Devresse Adrien

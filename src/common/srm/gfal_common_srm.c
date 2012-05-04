@@ -15,13 +15,11 @@
  * limitations under the License.
  */
 
-/**
- * @file gfal_common.c
- * @brief the header file with the main srm funcs of the common API
- * @author Devresse Adrien
- * @version 2.0
- * @date 12/04/2011
- * */
+/*
+ * file gfal_common.c
+ * brief the header file with the main srm funcs of the common API
+ * author Devresse Adrien
+ */
  
  #define _GNU_SOURCE 
 
@@ -46,19 +44,19 @@
 #include "../gfal_common_internal.h"
 #include "../gfal_common_errverbose.h"
 #include "../gfal_common_plugin.h"
-
-
-/**
+/*
  * 
  * list of the turls supported protocols
  */
 static char* srm_turls_sup_protocols[] = { "file", "rfio", "gsidcap", "dcap",  "kdcap",  NULL };
-/**
+
+/*
  * list of protocols supporting third party transfer
  */
 char* srm_turls_thirdparty_protocols[] = { "gsiftp", "ftp", NULL };
 
-/**
+
+/*
  * 
  * srm plugin id
  */
@@ -73,7 +71,7 @@ int gfal_checker_compile(gfal_srmv2_opt* opts, GError** err){
 	return ret;
 }
 
-/**
+/*
  * parse a surl to check the validity
  */
 int gfal_surl_checker(plugin_handle ch, const char* surl, GError** err){
@@ -85,7 +83,7 @@ int gfal_surl_checker(plugin_handle ch, const char* surl, GError** err){
 	return regexec(&opts->rexurl,surl,0,NULL,0);
 }
 
-/**
+/*
  * 
  * convenience func for a group of surls 
  * */
@@ -106,8 +104,7 @@ gboolean gfal_srm_surl_group_checker(gfal_srmv2_opt* opts,char** surls, GError**
 }
 
 
-
-/**
+/*
  * url checker for the srm module, surl part
  * 
  * */
@@ -129,7 +126,7 @@ static gboolean gfal_srm_check_url(plugin_handle handle, const char* url, plugin
 			return FALSE;		
 	}
 }
-/**
+/*
  * destroyer function, call when the module is unload
  * */
 void gfal_srm_destroyG(plugin_handle ch){
@@ -144,7 +141,7 @@ static void srm_internal_copy_stat(gpointer origin, gpointer copy){
 	memcpy(copy, origin, sizeof(struct stat));
 }
 
-/**
+/*
  * Init an opts struct with the default parameters
  * */
 void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal_handle handle){
@@ -160,7 +157,7 @@ void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal_handle handle){
 
 
 
-/**
+/*
  * Init function, called before all
  * */
 gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
@@ -168,7 +165,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	memset(&srm_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin	
 	gfal_srmv2_opt* opts = g_new(struct _gfal_srmv2_opt,1);	// define the srmv2 option struct and clear it	
 	gfal_srm_opt_initG(opts, handle);
-	srm_plugin.handle = (void*) opts;	
+	srm_plugin.plugin_data = (void*) opts;	
 	srm_plugin.check_plugin_url = &gfal_srm_check_url;
 	srm_plugin.plugin_delete = &gfal_srm_destroyG;
 	srm_plugin.accessG = &gfal_srm_accessG;
@@ -199,7 +196,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 
 
 
-/**
+/*
  * Construct a key for the cache system from a url and a prefix
  * */
 inline char* gfal_srm_construct_key(const char* url, const char* prefix, char* buff, const size_t s_buff){
@@ -215,8 +212,8 @@ inline char* gfal_srm_construct_key(const char* url, const char* prefix, char* b
 	return buff;
 }
 
-/**
- *  @brief create a full endpath from a surl with full endpath
+/*
+ *   brief create a full endpath from a surl with full endpath
  * */
 char* gfal_get_fullendpoint(const char* surl, GError** err){
 	char* p = strstr(surl,"?SFN=");
@@ -229,9 +226,9 @@ char* gfal_get_fullendpoint(const char* surl, GError** err){
 	return resu;
 }
 
-/**
- * @brief get the hostname from a surl
- *  @return return NULL if error and set err else return the hostname value
+/*
+ *  brief get the hostname from a surl
+ *   return return NULL if error and set err else return the hostname value
  */
  char*  gfal_get_hostname_from_surl(const char * surl, GError** err){
 	 const int srm_prefix_len = strlen(GFAL_PREFIX_SRM);
@@ -246,7 +243,7 @@ char* gfal_get_fullendpoint(const char* surl, GError** err){
 	 return strndup(surl+srm_prefix_len, p-surl-srm_prefix_len);	 
  }
  
- /**
+ /*
   * map a bdii se protocol type to a gfal protocol type
   */
 static enum gfal_srm_proto gfal_get_proto_from_bdii(const char* se_type_bdii){
@@ -262,8 +259,8 @@ static enum gfal_srm_proto gfal_get_proto_from_bdii(const char* se_type_bdii){
 }
 
 
-/**
- * @brief accessor for the default storage type definition
+/*
+ *  brief accessor for the default storage type definition
  * */
 void gfal_set_default_storageG(gfal_srmv2_opt* opts, enum gfal_srm_proto proto){
 	opts->srm_proto_type = proto;
@@ -273,7 +270,7 @@ void gfal_set_default_storageG(gfal_srmv2_opt* opts, enum gfal_srm_proto proto){
 
 
  
- int gfal_srm_convert_filestatuses_to_GError(struct srmv2_filestatus* statuses, int n, GError** err){
+int gfal_srm_convert_filestatuses_to_GError(struct srmv2_filestatus* statuses, int n, GError** err){
 	g_return_val_err_if_fail(statuses && n, -1, err, "[gfal_srm_convert_filestatuses_to_GError] args invalids");	
 	int i;
 	int ret =0;

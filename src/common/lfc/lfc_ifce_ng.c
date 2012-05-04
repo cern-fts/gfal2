@@ -16,13 +16,11 @@
  */
 
  
- /**
-  * 
-  @file lfc_ifce_ng.c
-  @brief main internal file of the lfc plugin module
-  @author Adrien Devresse
-  @version 0.0.1
-  @date 02/05/2011
+/*
+* 
+* lfc_ifce_ng.c
+* main internal file of the lfc plugin module
+* author : Adrien Devresse
  */
 #define _GNU_SOURCE
 #define GFAL_LFN_MAX_LEN	2048
@@ -63,9 +61,9 @@ int gfal_lfc_regex_compile(regex_t* rex, GError** err){
 	g_return_val_err_if_fail(ret ==0,-1,err,"[gfal_lfc_check_lfn_url] fail to compile regex, report this bug");
 	return ret;
 }
-/**
- * Routine for internal lfc hack, need to be call for the thread safety 
- * */
+
+
+// Routine for internal lfc hack, need to be call for the thread safety 
 void gfal_lfc_init_thread(struct lfc_ops* ops){
 	if(_local_thread_init==FALSE){
 		ops->_Cthread_addcid (NULL, 0, NULL, 0, (void*)pthread_self(), 0, NULL, 0); 
@@ -93,8 +91,9 @@ static int gfal_lfc_endSession(struct lfc_ops* ops, GError ** err){
 	return 0;
 }
 
+// session re-use
 void gfal_auto_maintain_session(struct lfc_ops* ops, GError ** err){
-	/*time_t current = time(NULL);
+	/*time_t current = time(NULL); --> disabled, thread safety problem in liblfc inthe current state
 	if(session_timestamp < current){
 		pthread_mutex_lock(&m_session);
 		if(session_timestamp < current){
@@ -106,6 +105,7 @@ void gfal_auto_maintain_session(struct lfc_ops* ops, GError ** err){
 		pthread_mutex_unlock(&m_session);	
 	}*/
 }
+
 void lfc_set_session_timeout(int timeout){
 	pthread_mutex_lock(&m_session);	
 	session_duration = timeout;
@@ -173,12 +173,8 @@ char* gfal_get_lfchost_envar(GError** err){
 	return lfc_endpoint;
 }
 
-/**
+/*
  * convert a guid to a lfn link with a call to the lfclib
- * @param handle handle of the lfc plugin
- * @param string of the guid
- * @param err : Error report system
- * @return : string of the lfn if success or NULL char* if error
  * */
  char* gfal_convert_guid_to_lfn(plugin_handle handle, char* guid, GError ** err){
 	GError* tmp_err=NULL;
@@ -204,7 +200,7 @@ char* gfal_get_lfchost_envar(GError** err){
  }
  
  
- /**
+ /*
  * convert a guid to a lfn link with a call to the lfclib in a reantrant( buffer mode )
  * @param handle plugin handle
  * @param guid string of the guid
@@ -241,7 +237,7 @@ int gfal_convert_guid_to_lfn_r(plugin_handle handle, const char* guid, char* buf
  
  
 
-/**
+/*
  * setup the lfc_host correctly for the lfc calls 
  * @param err GError report system if 
  * @return  string of the endpoint, need to be free or NULL if error
@@ -266,12 +262,12 @@ char* gfal_setup_lfchost(gfal_handle handle, GError ** err){
 	return lfc_host;
 }
 
-/**
+/*
  *  Resolve the lfc symbols, allow mocking
  * 
  * */
 
-/**
+/*
  * load the shared library and link the symbol for the LFC usage
  * @param name : name of the library
  * @param err:  error report
@@ -320,7 +316,7 @@ struct lfc_ops* gfal_load_lfc(const char* name, GError** err){
 	G_RETURN_ERR(lfc_sym, tmp_err, err);
 }
 
-/***
+/*
  *  convert a internal lfc statg to a POSIX lfc stat
  *  struct must be already allocated
  */
@@ -337,7 +333,7 @@ int gfal_lfc_convert_statg(struct stat* output, struct lfc_filestatg* input, GEr
 	return 0;
 }
 
-/***
+/*
  *  convert a internal lfc lstat to a POSIX lfc stat
  *  struct must be already allocated
  */
@@ -356,7 +352,7 @@ int gfal_lfc_convert_lstat(struct stat* output, struct lfc_filestat* input, GErr
 
 
 
-/**
+/*
  * basic wrapper mkdir to the lfc api
  */
 static int gfal_lfc_mkdir(struct lfc_ops* ops, const char* path, mode_t mode, GError** err){
@@ -373,7 +369,7 @@ static int gfal_lfc_mkdir(struct lfc_ops* ops, const char* path, mode_t mode, GE
 }
 
 
-/**
+/*
  * Begin a recursive call on mkdir to create a full tree path
  * @warning not safe, please ensure that string begin by "/"
  * 
@@ -400,7 +396,7 @@ int gfal_lfc_mkdir_rec(struct lfc_ops* ops, char* browser_path, const char* full
 	
 } 
 
-/**
+/*
  *  Implementation of mkdir -p call on the lfc
  * 
  * */
@@ -429,7 +425,7 @@ int gfal_lfc_ifce_mkdirpG(struct lfc_ops* ops,const char* path, mode_t mode, gbo
 		errno = 0;
 	return ret;
 }
-/**
+/*
  * return a list of surls from a getreplica request
  * 
  */
@@ -453,7 +449,7 @@ char ** gfal_lfc_getSURL(struct lfc_ops* ops, const char* path, GError** err){
 	
 }
 
-/***
+/*
  * return the comment associated with this path
  *  follow the xattr behavior, if buff==NULL, return only the appropriate buffer size for the call
  * @return the size of the comment or -1 if error
@@ -502,7 +498,7 @@ int gfal_lfc_setComment(struct lfc_ops * ops, const char* lfn, const char* buff,
 	return res;
 }
 
-/***
+/*
  * provide the checksum for a given file
  *  @return the size of the checksum string or -1 if error
  */
@@ -575,9 +571,9 @@ char*  gfal_lfc_get_strerror(struct lfc_ops* ops){
 }
 
 
-/**
+/*
  * @brief generate an uiid string
- * Generate a uuid string and cpy it in the buf,
+ * Generate a uuid string and copy it in the buf,
  * @warning buff must be > uuid size ( 37 bytes )
  * 
  * */

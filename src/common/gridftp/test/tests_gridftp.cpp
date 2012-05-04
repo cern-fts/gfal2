@@ -18,8 +18,9 @@
 
 #include "tests_gridftp.h"
 #include <common/gridftp/gridftp_plugin_loader.h>
-#include <common/gridftp/gridftp_ifce_filecopy.h>
 #include <common/gridftp/gridftp_plugin_main.h>
+#include <common/gridftp/gridftpinterface.h>
+#include <common/gridftp/gridftpmodule.h>
 #include <cgreen/cgreen.h>
 
 gfal_handle init_gfal_handle(){
@@ -56,12 +57,13 @@ void handle_creation(){
 	gfal_handle h = gfal_initG(&tmp_err);
 	assert_true_with_message(tmp_err== NULL && h ," initialize gfal failed ");
 	
-	GridFTPFileCopyModule* copy = new GridFTPFileCopyModule( new GridftpModule( new GridFTPWrapper(h) ));	
+	GridFTPFactoryInterface* f = new GridFTPFactory(h);
+	GridftpModule* copy = new GridftpModule(  f);	
 	assert_true_with_message(copy != NULL, " must be a valid ");
 	gfal_globus_copy_handle_t globus;
-	globus = copy->take_globus_handle();
-	copy->release_globus_handle(&globus);
-	
+	globus = f->take_globus_gass_handle();
+	f->release_globus_gass_handle(&globus);
+	delete copy;
 	gfal_handle_freeG(h);
 }
 
@@ -79,7 +81,7 @@ void gridftp_parseURL(){
 	res = plugin_url_check2(p, "gsiftp://myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
 	assert_true_with_message(res == TRUE, " must two good URL ");
 	res = plugin_url_check2(p, "myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
-	assert_true_with_message(res == FALSE, " first URL shoudl be bad ");
+	assert_true_with_message(res == FALSE, " first URL should be bad ");
 	res = plugin_url_check2(p,  "gsiftp://myurl.com/mypath/myfile", "myurl.com/mypath/myfile", GFAL_FILE_COPY);
 	assert_true_with_message(res == FALSE, " first URL shoudl be bad ");
 	plugin_unload(p);

@@ -35,37 +35,31 @@ extern "C"
 
 
 
-#define MAX_PLUGIN_LIST 64
-
-/* used to check wether there is enough space on the SE */
+#define MAX_PLUGIN_LIST 64 		
+#define GFAL_MODULE_NAME_SIZE 	1024	
 #define GFAL_NEWFILE_SIZE         1024
-#define GFAL_MODULE_NAME_SIZE 	1024
-#define GFAL_OPEN_MAX             1024
-#define GFAL_DEFAULT_PLUGIN_TYPE "lfc"
-#define GFAL_FQAN_MAX             64
-#define GFAL_GUID_LEN             37
-#define GFAL_VO_MAXLEN            255
-#define GFAL_FQAN_MAXLEN          511
-#define GFAL_HOSTNAME_MAXLEN      255
-#define GFAL_PATH_MAXLEN          1024
-#define GFAL_ERRMSG_LEN           1024
-#define GFAL_BDII_TIMEOUT         60
-#define GFAL_SIZE_MARGIN          1048576     // 1MB
-#define GFAL_SRM_MAXRETRIES       10
-#define GFAL_MAX_PLUGIN_ID_SIZE 512
+
+
 
 /* GFAL error level for gfal_errmsg */
+//! maximum error string length
 #define GFAL_ERRMSG_LEN			  1024
+
+//! maximum error string length
 #define GFAL_ERRLEVEL_ERROR       0
 #define GFAL_ERRLEVEL_WARN        1
 #define GFAL_ERRLEVEL_INFO        2
 
-#define GFAL_VERBOSE_NORMAL     0x00    /*!< \def GFAL_VERBOSE_NORMAL only errors are printed */
-#define GFAL_VERBOSE_VERBOSE    0x01    /*!< \def GFAL_VERBOSE_VERBOSE a bit more verbose information is printed */
-#define GFAL_VERBOSE_DEBUG      0x02    /*!< \def GFAL_VERBOSE_DEBUG  extra information is printed */
-#define GFAL_VERBOSE_TRACE		0x08	/*! < \def GFAL_VERBOSE_TRACE execution trace */
+//! \def GFAL_VERBOSE_NORMAL only errors are printed 
+#define GFAL_VERBOSE_NORMAL     0x00   
+//! \def GFAL_VERBOSE_VERBOSE a bit more verbose information is printed 
+#define GFAL_VERBOSE_VERBOSE    0x01  
+//! \def GFAL_VERBOSE_DEBUG  extra information is printed  
+#define GFAL_VERBOSE_DEBUG      0x02 
+//! \def GFAL_VERBOSE_TRACE execution trace 
+#define GFAL_VERBOSE_TRACE		0x08	
 
-
+//! guid prefix url
 #define GFAL_GUID_PREFIX "guid:"
 
 // default buffer size for address
@@ -81,16 +75,31 @@ extern "C"
 #define GFAL_MAX_PLUGIN_LIST 2048
 
 
-// xattr standard keys for getxattr / setxattr
+//! xattr standard keys for getxattr / setxattr
+//! replicas listing 
 #define GFAL_XATTR_REPLICA "user.replicas" // global key of replicas for the extended attributes 
+//! xattr standard keys for getxattr / setxattr
+//! guid information
 #define GFAL_XATTR_GUID "user.guid" // global key for the guid of a file 
+//! xattr standard keys for getxattr / setxattr
+//! file comment
 #define GFAL_XATTR_COMMENT "user.comment" // global key for the comments of a file 
+//! xattr standard keys for getxattr / setxattr
+//! file checksum type 
 #define GFAL_XATTR_CHKSUM_TYPE "user.chksumtype"
+//! xattr standard keys for getxattr / setxattr
+//! file checksum  
 #define GFAL_XATTR_CHKSUM_VALUE "user.checksum"
+//! xattr standard keys for getxattr / setxattr
+//! file availability status
+//! this key can be used to check or set the stage status of a file  
 #define GFAL_XATTR_STATUS "user.status" 
 
 // xattr standard values 
 // list of standard values return by getxattr for status key
+
+//! string value to use/compare for extended attribute user.status
+//! user.status possible value, similar to SRM meaning of status ( brings_online )
 #define GFAL_XATTR_STATUS_ONLINE "ONLINE"
 #define GFAL_XATTR_STATUS_NEARLINE "NEARLINE "
 #define GFAL_XATTR_STATUS_NEARLINE_ONLINE "ONLINE_AND_NEARLINE"
@@ -106,8 +115,10 @@ extern "C"
 #define GFAL_PLUGIN_URL_TRANSFER_CHECK "plugin_url_transfer_check"
 
 
-// parameters list for core
-#define GFAL_NO_BDII_OPTION "no_bdii" // set bdii value, can be True or False
+// parameters list for gfal 2.0 
+
+//! boolean parameter key to set for enable/disable  bdii information system usage.
+#define GFAL_NO_BDII_OPTION "no_bdii" 
 
 
 #ifdef __cplusplus

@@ -16,12 +16,11 @@
  * limitations under the License.
  */
 
-/**
- * @file gfal_common_plugin.h
- * @brief the header file of the common lib for the plugin management
- * @author Devresse Adrien
- * @version 0.0.1
- * @date 8/04/2011
+
+/*
+ * gfal_common_plugin.h
+ * the header file of the common lib for the plugin management
+ * author : Devresse Adrien
  * */
  
  
@@ -52,15 +51,18 @@ typedef struct _plugin_pointer_handle{
 	char plugin_lib[GFAL_URL_MAX_LEN];
 } *plugin_pointer_handle;
 
-gfal_plugin_interface* gfal_plugin_interface_new();
+/*
+ * 
+ *  This API is a plugin reserved API and should be used by GFAL 2.0's plugins only
+ *  Backward compatibility of this API is not guarantee
+ * 
+ * */
 
 
-extern char* gfal_get_cat_type(GError**);
-
-/**
- * @brief plugins walker
+/*
+ * plugins walker
  * provide a list of plugin handlers, each plugin handler is a reference to an usable plugin
- * @return give a NULL-ended table of plugin_pointer_handle, return NULL if error
+ * give a NULL-ended table of plugin_pointer_handle, return NULL if error
  * */
 plugin_pointer_handle gfal_plugins_list_handler(gfal_handle, GError** err);
 
@@ -98,6 +100,7 @@ int gfal_plugin_lseekG(gfal_handle handle, gfal_file_handle fh, off_t offset, in
 int gfal_plugin_readG(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, GError** err);
 
 ssize_t gfal_plugin_preadG(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, off_t offset, GError** err);
+ssize_t gfal_plugin_pwriteG(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, off_t offset, GError** err);
 
 
 int gfal_plugin_unlinkG(gfal_handle handle, const char* path, GError** err);

@@ -1,6 +1,6 @@
 #pragma once
-#ifndef GRIDFTPDECORATOR_H
-#define GRIDFTPDECORATOR_H
+#ifndef CPP_TO_GERROR_HPP
+#define CPP_TO_GERROR_HPP
 /*
  * Copyright (c) Members of the EGEE Collaboration. 2004.
  * See http://www.eu-egee.org/partners/ for details on the copyright holders.
@@ -20,23 +20,31 @@
 
 
 
-#include "gridftpinterface.h"
 
-class GridFTPDecorator: public GridFTPInterface
-{
-	public:
-		GridFTPDecorator(GridFTPInterface * i);
-		virtual ~GridFTPDecorator();
+#include <exception>
 
-		virtual gfal_handle get_handle();	
+#include <glib.h>
+#include <cerrno>
 
-		virtual gfal_globus_copy_handle_t take_globus_handle() ;
-		virtual void release_globus_handle(gfal_globus_copy_handle_t*) ;
-		virtual void globus_check_result(const std::string & nmspace, gfal_globus_result_t res);		
-	protected:
-		/* add your private declarations */
-		GridFTPInterface* _wrap;
+namespace Gfal{
 
-};
 
-#endif /* GRIDFTPDECORATOR_H */ 
+
+
+#define CPP_GERROR_TRY do{ \
+							try{
+
+#define CPP_GERROR_CATCH(err)  } \
+							catch(Glib::Error & e){ \
+								g_set_error(err, e.domain(), e.code(), e.what().c_str()); \
+							}catch(std::exception & e){ \
+								g_set_error(err, 0, EPROTONOSUPPORT , e.what()); \
+							}catch(...){ \
+								g_set_error(err, 0, EIO, "Undefined Exception catched: Bug found !! "); \
+							} \
+							}while(0) 	
+}
+
+
+#endif /* CPP_TO_GERROR_HPP */ 
+

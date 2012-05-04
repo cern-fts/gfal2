@@ -17,7 +17,7 @@
 
 #define _GNU_SOURCE
  
-/**
+/*
  * @file gfal_common_mds_ldap_internal.c
  * @brief file for the internal ldap query by gfal, without is interface
  * @author Adrien Devresse
@@ -68,7 +68,7 @@ LDAP* gfal_mds_ldap_connect(const char* uri, GError** err){
 	return ld;	
 }
 
-/**
+/*
  *  Execute a ldap query on a connected bdii
  * */
 int gfal_mds_ldap_search(LDAP* ld, const char* basedn, const char* filter, char** tabattr, LDAPMessage **res, GError** err){
@@ -88,7 +88,7 @@ int gfal_mds_ldap_search(LDAP* ld, const char* basedn, const char* filter, char*
    
 }
 
-/**
+/*
  *  convert bdii returned value to a srm_endpoint struct
  *  @return 0 if success else -1
  * */
@@ -121,7 +121,7 @@ static int gfal_mds_srm_endpoint_struct_builder(char* srm_name, char* srm_versio
 	return ret;
 }
 
-/**
+/*
  *  Analyse attr fields
  *  return > 0 if success, 0 if not it is an empty entry or -1 if error
  * */
@@ -173,7 +173,7 @@ static int gfal_mds_convert_entry_to_srm_information(LDAP* ld,LDAPMessage * entr
 }
 
 
-/**
+/*
  * 
  * parse the result of a query to get the srm endpoint
  */
@@ -211,7 +211,7 @@ int gfal_mds_get_srm_types_endpoint(LDAP* ld, LDAPMessage* result, gfal_mds_endp
 	return ret;			
 }
 
-/**
+/*
  * 
  * get the current ldap URI
  **/
@@ -235,7 +235,7 @@ void gfal_mds_ldap_disconnect(LDAP* ld){
 	gfal_mds_ldap.ldap_unbind_ext_s( ld,NULL,NULL ); 
 }
 
-/**
+/*
  * resolve the SRM endpoint associated with a given base_url with the bdii
  * @param base_url : basic url to resolve
  * @param endpoints : table of gfal_mds_endpoint to set with a size of s_endpoint

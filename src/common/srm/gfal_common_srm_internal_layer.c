@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_internal_layer.c
  * @brief file for the srm external function mapping for mocking purpose
  * @author Devresse Adrien

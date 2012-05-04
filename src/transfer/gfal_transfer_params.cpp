@@ -17,7 +17,7 @@
 #include <transfer/gfal_cpp_wrapper.h>
 #include <cerrno>
 
-using namespace Utilpp;
+const Glib::Quark scope_transfer_param("Gfal::Transfer::Params");
 
 Gfal::Transfer::Params::Params(){
 	_callback = NULL;
@@ -35,7 +35,7 @@ Gfal::Transfer::Params::~Params(){
 
 void Gfal::Transfer::Params::_check_params(){
 	if(this->_lock)
-		throw Gfal::CoreException("Gfal::Transfer::Params","Copy already started, the parameter modifications are locked", EBUSY);
+		throw Gfal::CoreException(scope_transfer_param,"Copy already started, the parameter modifications are locked", EBUSY);
 }
 
 

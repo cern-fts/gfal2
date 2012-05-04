@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_mkdir.c
  * @brief file for the internal mkdir func of the posix interface
  * @author Devresse Adrien
@@ -35,7 +35,7 @@
 #include "../common/gfal_constants.h"
 
 
-/**
+/*
  * Implementation of the mkdir function
  * 
  * */

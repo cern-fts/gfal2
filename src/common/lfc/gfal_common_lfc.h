@@ -17,13 +17,11 @@
  */
 
  
- /**
+ /*
   * 
-  @file gfal_common_lfc.h
-  @brief header file for the lfc plugin module
-  @author Adrien Devresse
-  @version 0.0.1
-  @date 29/04/2011
+   file gfal_common_lfc.h
+   brief header file for the lfc plugin module
+   author Adrien Devresse
  */
 
 #define _GNU_SOURCE

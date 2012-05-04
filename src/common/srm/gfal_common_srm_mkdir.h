@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_mkdir.h
  * @brief header file for the mkdir function on the srm url type
  * @author Devresse Adrien

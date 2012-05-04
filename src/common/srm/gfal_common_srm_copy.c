@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_common_srm_copy.c
  * @brief file for the third party transfer implementation
  * @author Devresse Adrien

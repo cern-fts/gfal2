@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_rmdir.c
  * @brief file for the rmdir function on the srm url type
  * @author Devresse Adrien
@@ -25,10 +25,11 @@
 #include "gfal_common_srm.h"
 #include "gfal_common_srm_rmdir.h"
 #include "gfal_common_srm_internal_layer.h"
+#include "gfal_common_srm_stat.h"
 #include "gfal_common_srm_endpoint.h"
 
-#include "../gfal_constants.h"
-#include "../gfal_common_errverbose.h"
+#include <common/gfal_constants.h>
+#include <common/gfal_common_errverbose.h>
 
 
 int gfal_srmv2_rmdir_internal(gfal_srmv2_opt* opts, char* endpoint, const char* surl, GError** err){
@@ -72,11 +73,25 @@ int gfal_srm_rmdirG(plugin_handle ch, const char* surl, GError** err){
 	GError* tmp_err=NULL;
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
 	enum gfal_srm_proto srm_type;
-	
+	gfal_print_verbose(GFAL_VERBOSE_VERBOSE, "  -> [gfal_srm_rmdirG]");	
+		
 	ret = gfal_srm_determine_endpoint(opts, surl, full_endpoint, GFAL_URL_MAX_LEN, &srm_type,  &tmp_err);
 	if( ret >=0 ){
 		if(srm_type == PROTO_SRMv2){
-			ret = gfal_srmv2_rmdir_internal(opts, full_endpoint, surl, &tmp_err);
+			struct stat st;
+			gfal_print_verbose(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_rmdirG] try to delete directory %s", surl);			
+			if( (ret = gfal_statG_srmv2_internal(opts, &st, full_endpoint, (char*) surl, &tmp_err)) ==0){ // stat file in order to verify if directory or not
+				
+				if( S_ISDIR(st.st_mode) ){
+					ret = gfal_srmv2_rmdir_internal(opts, full_endpoint, surl, &tmp_err);
+				}else{
+					ret = -1;
+					g_set_error(&tmp_err,0, ENOTDIR, " This file is not a directory, impossible to use rmdir on it");
+				}
+
+			
+			}				
+
 		}else if (srm_type == PROTO_SRM){
 			g_set_error(&tmp_err, 0, EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
 			ret = -1;
@@ -86,6 +101,7 @@ int gfal_srm_rmdirG(plugin_handle ch, const char* surl, GError** err){
 		}
 		
 	}
+	gfal_print_verbose(GFAL_VERBOSE_VERBOSE, "  [gfal_srm_rmdirG] <-");	
 	
 	if(tmp_err)
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);

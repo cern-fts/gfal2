@@ -14,7 +14,9 @@ IF(MAIN_DOC)
 ENDIF(MAIN_DOC)
 
 
+
 install(FILES "mans/gfal2_version.1"
 		DESTINATION ${MAN_INSTALL_DIR}/man1/) # install examples 
+
 
 

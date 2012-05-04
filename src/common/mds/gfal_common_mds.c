@@ -16,7 +16,7 @@
  */
  
  
- /**
+ /*
   * @brief  file for the bdii request part of gfal
   * @author Devresse Adrien
   * @version 2.0.0
@@ -40,7 +40,7 @@ pthread_mutex_t m_mds =PTHREAD_MUTEX_INITIALIZER;
 
 const char* bdii_env_var = "LCG_GFAL_INFOSYS";
 
-/**
+/*
  * set the bdii value of the handle specified
  */
 void gfal_set_nobdiiG(gfal_handle handle, gboolean no_bdii_chk){
@@ -51,7 +51,7 @@ gboolean gfal_get_nobdiiG(gfal_handle handle){
 	return handle->no_bdii_check;
 }
 
-/**
+/*
  * define the bdii endpoint for the current handle
  * same purpose that the old LCG_GFAL_INFOSYS environment variable
  */
@@ -65,7 +65,7 @@ void gfal_mds_set_infosys(gfal_handle handle, const char * infosys, GError** err
 }
 
 
-/**
+/*
  * return the srm endpoints and their types, in the old way
  * */
 int gfal_mds_get_se_types_and_endpoints (const char *host, char ***se_types, char ***se_endpoints, GError** err){
@@ -89,7 +89,7 @@ int gfal_mds_get_se_types_and_endpoints (const char *host, char ***se_types, cha
 	return (n >0)?0:-1;	
 }
 
-/**
+/*
  *  try to get lfc hostname from bdii
  *  @return string if success or NULL & set the err if fail
  * 
@@ -103,7 +103,7 @@ int gfal_mds_get_se_types_and_endpoints (const char *host, char ***se_types, cha
  } 
  
 #if MDS_BDII_EXTERNAL
-/**
+/*
  * external call to the is interface for external bdii resolution
  * 
  */

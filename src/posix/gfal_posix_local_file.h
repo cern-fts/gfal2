@@ -16,17 +16,15 @@
  * limitations under the License.
  */
 
-/**
- * @file gfal_posix_local_file.c
- * @brief header file for the local access file map for the gfal_posix call
- * @author Devresse Adrien
- * @version 2.0
- * @date 06/05/2011
- * */
+/*
+ *  gfal_posix_local_file.c
+ *  header file for the local access file map for the gfal_posix call
+ *  author Devresse Adrien
+ */
 
 #include <sys/types.h>
 #include <glib.h>
-#include "../common/gfal_types.h"
+#include <common/gfal_types.h>
  
 int gfal_local_initG(GError** err);
 

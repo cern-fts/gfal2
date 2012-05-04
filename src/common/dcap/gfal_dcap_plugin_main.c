@@ -16,13 +16,11 @@
  */
 
 
-/**
- * @file gfal_dcap_plugin_main.c
- * @brief file for the external dcap plugin for gfal ( based on the old dcap part in gfal legacy )
- * @author Devresse Adrien
- * @date 20/07/2011
- * 
- **/
+/*
+ * gfal_dcap_plugin_main.c
+ * file for the external dcap plugin for gfal ( based on the old dcap part in gfal legacy )
+ * author Devresse Adrien
+ */
 
 #define _GNU_SOURCE
 
@@ -55,7 +53,7 @@ static gfal_plugin_dcap_handle gfal_dcap_init_handle(gfal_handle handle, GError*
 	return ret;	
 }
 
-/**
+/*
  * Init function, called before all
  * */
 gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
@@ -63,7 +61,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	GError* tmp_err=NULL;
 	memset(&dcap_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin	
 	
-	dcap_plugin.handle = (plugin_handle) gfal_dcap_init_handle(handle, &tmp_err);
+	dcap_plugin.plugin_data = (plugin_handle) gfal_dcap_init_handle(handle, &tmp_err);
 	
 	dcap_plugin.plugin_delete = &gfal_dcap_destroyG;
 	dcap_plugin.getName= &gfal_dcap_getName;
@@ -78,7 +76,12 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	dcap_plugin.statG= &gfal_dcap_statG;
 	dcap_plugin.lstatG = &gfal_dcap_lstatG;
 	dcap_plugin.mkdirpG = &gfal_dcap_mkdirG;
-	
+	dcap_plugin.chmodG = &gfal_dcap_chmodG;
+	dcap_plugin.rmdirG = &gfal_dcap_rmdirG;
+	dcap_plugin.closedirG= gfal_dcap_closedirG;
+	dcap_plugin.opendirG= gfal_dcap_opendirG;
+	dcap_plugin.readdirG= gfal_dcap_readdirG;	
+		
 	if(tmp_err)
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
 	return dcap_plugin;
@@ -103,7 +106,7 @@ gboolean gfal_dcap_internal_check_url(gfal_plugin_dcap_handle dh, const char* su
 }
 
 
-/**
+/*
  *  Check the dcap url in the gfal module way
  * */
 gboolean gfal_dcap_check_url(plugin_handle ch, const char* url,  plugin_mode mode, GError** err){
@@ -115,6 +118,9 @@ gboolean gfal_dcap_check_url(plugin_handle ch, const char* url,  plugin_mode mod
 			case GFAL_PLUGIN_LSTAT:
 			case GFAL_PLUGIN_STAT:
 			case GFAL_PLUGIN_MKDIR:
+			case GFAL_PLUGIN_CHMOD:
+			case GFAL_PLUGIN_RMDIR:
+			case GFAL_PLUGIN_OPENDIR:
 				ret = gfal_dcap_internal_check_url(rh, url, &tmp_err);
 				break;
 			default:

@@ -44,8 +44,8 @@ gfal_plugin_interface get_lfc_interface(gfal_handle handle, GError** err){
 	}
 	i = constructor(handle ,err);
 #if USE_MOCK
-	i.handle = calloc(1, sizeof(struct lfc_ops));
-	struct lfc_ops* ops = (struct lfc_ops*) i.handle; 
+	i.plugin_data = calloc(1, sizeof(struct lfc_ops));
+	struct lfc_ops* ops = (struct lfc_ops*) i.plugin_data; 
 	ops->lfc_endpoint = NULL;
 	gfal_lfc_regex_compile(&(ops->rex), err);
 	ops->statg = &lfc_mock_statg;
@@ -174,11 +174,11 @@ void gfal2_test_gfal_common_lfc_access(){
 	always_return(lfc_mock_access, EINVAL);
 #endif
 
-	ret = i.accessG(i.handle, TEST_LFC_VALID_ACCESS, R_OK, &tmp_err);
+	ret = i.accessG(i.plugin_data, TEST_LFC_VALID_ACCESS, R_OK, &tmp_err);
 	assert_true_with_message(ret == 0 && tmp_err== NULL, " must be a valid access %d %ld ",ret, tmp_err);
 
 	g_clear_error(&tmp_err);
-	ret = i.accessG(i.handle, TEST_LFC_ONLY_READ_ACCESS, W_OK, &tmp_err);	
+	ret = i.accessG(i.plugin_data, TEST_LFC_ONLY_READ_ACCESS, W_OK, &tmp_err);	
 	assert_true_with_message(ret != 0 && tmp_err->code == EACCES, " must fail, unable to write this file %d %ld", ret, tmp_err);
 
 	g_clear_error(&tmp_err);
@@ -207,11 +207,11 @@ void gfal2_test_gfal_common_lfc_no_exist()
 	will_respond(lfc_mock_access, 0, want_string(path, TEST_LFC_VALID_ACCESS+4), want(mode, F_OK));
 	always_return(lfc_mock_access, EINVAL);
 #endif	
-	ret = i.accessG(i.handle, TEST_LFC_NOEXIST_ACCESS, F_OK, &tmp_err);
+	ret = i.accessG(i.plugin_data, TEST_LFC_NOEXIST_ACCESS, F_OK, &tmp_err);
 	assert_true_with_message(ret !=0 && tmp_err->code == ENOENT, " must fail, this file not exist");
 
 	g_clear_error(&tmp_err);	
-	ret = i.accessG(i.handle, TEST_LFC_VALID_ACCESS, F_OK, &tmp_err);
+	ret = i.accessG(i.plugin_data, TEST_LFC_VALID_ACCESS, F_OK, &tmp_err);
 	assert_true_with_message(ret ==0, "must be a success, file is present");
 		
 	gfal_handle_freeG(handle);
@@ -233,14 +233,14 @@ void gfal2_test_gfal_common_lfc_check_filename()
 	if(tmp_err)	
 		return;
 		
-	gboolean b = i.check_plugin_url(i.handle, TEST_LFC_VALID_ACCESS, GFAL_PLUGIN_ACCESS, &tmp_err);
+	gboolean b = i.check_plugin_url(i.plugin_data, TEST_LFC_VALID_ACCESS, GFAL_PLUGIN_ACCESS, &tmp_err);
 	assert_true_with_message(b && tmp_err==NULL, " must be a valid lfn url");
 
 	g_clear_error(&tmp_err);
-	b = i.check_plugin_url(i.handle, TEST_LFC_NOEXIST_ACCESS, GFAL_PLUGIN_ACCESS, &tmp_err);
+	b = i.check_plugin_url(i.plugin_data, TEST_LFC_NOEXIST_ACCESS, GFAL_PLUGIN_ACCESS, &tmp_err);
 	assert_true_with_message(b && tmp_err==NULL, " must be a valid lfn url 2");
 	g_clear_error(&tmp_err);
-	b = i.check_plugin_url(i.handle, TEST_LFC_URL_SYNTAX_ERROR, GFAL_PLUGIN_ACCESS, &tmp_err);
+	b = i.check_plugin_url(i.plugin_data, TEST_LFC_URL_SYNTAX_ERROR, GFAL_PLUGIN_ACCESS, &tmp_err);
 	assert_true_with_message(b==FALSE && tmp_err==NULL, " must an invalid lfn url 3 but must not report error");
 	g_clear_error(&tmp_err);
 
@@ -272,10 +272,10 @@ void gfal2_test_gfal_common_lfc_getSURL()
 	always_return(lfc_mock_getreplica, EINVAL);
 #endif	
 		
-	ret = gfal_lfc_getSURL(i.handle, TEST_LFC_NOEXIST_ACCESS+4, &tmp_err);
+	ret = gfal_lfc_getSURL(i.plugin_data, TEST_LFC_NOEXIST_ACCESS+4, &tmp_err);
 	assert_true_with_message( ret == NULL && tmp_err!=NULL, " must be a false convertion, file not exist");
 	g_clear_error(&tmp_err);
-	ret = gfal_lfc_getSURL(i.handle, TEST_LFC_VALID_ACCESS+4, &tmp_err);
+	ret = gfal_lfc_getSURL(i.plugin_data, TEST_LFC_VALID_ACCESS+4, &tmp_err);
 	assert_true_with_message(ret != NULL && tmp_err==NULL, "must be a successfull convert");
 
 	char** p = ret;
@@ -314,11 +314,11 @@ void gfal2_gfal2_test_gfal_common_lfc_access_guid_file_exist()
 	will_respond(lfc_mock_getlinks, 0, want_string(guid, TEST_GUID_VALID_ACCESS+5), want(path, NULL), want_non_null(nbentries), want_non_null(linkinfos));	
 	always_return(lfc_mock_getlinks, EINVAL);
 #endif
-	ret = gfal_convert_guid_to_lfn_r(i.handle, TEST_GUID_NOEXIST_ACCESS+5, buff_guid, 2048, &tmp_err);
+	ret = gfal_convert_guid_to_lfn_r(i.plugin_data, TEST_GUID_NOEXIST_ACCESS+5, buff_guid, 2048, &tmp_err);
 	assert_true_with_message(ret != 0 && tmp_err->code == ENOENT, "must fail, this file not exist");
 
 	g_clear_error(&tmp_err);
-	ret = gfal_convert_guid_to_lfn_r(i.handle, TEST_GUID_VALID_ACCESS+5, buff_guid, 2048, &tmp_err);
+	ret = gfal_convert_guid_to_lfn_r(i.plugin_data, TEST_GUID_VALID_ACCESS+5, buff_guid, 2048, &tmp_err);
 	gfal_release_GError(&tmp_err);
 	assert_true_with_message(ret == 0 && tmp_err==NULL, "must be a success, file is present");
 	
@@ -348,13 +348,13 @@ void gfal2_test__gfal_common_lfc_rename()
 #endif	
 
 	
-	ret = i.renameG(i.handle, TEST_LFC_RENAME_VALID_SRC, TEST_LFC_RENAME_VALID_DEST, &tmp_err);
+	ret = i.renameG(i.plugin_data, TEST_LFC_RENAME_VALID_SRC, TEST_LFC_RENAME_VALID_DEST, &tmp_err);
 	assert_true_with_message(ret >= 0 && tmp_err == NULL, " must be a success on the first rename %d %ld %s", ret,tmp_err);
 	g_clear_error(&tmp_err);
-	ret = i.renameG(i.handle, TEST_LFC_RENAME_VALID_DEST, TEST_LFC_RENAME_VALID_SRC, &tmp_err);
+	ret = i.renameG(i.plugin_data, TEST_LFC_RENAME_VALID_DEST, TEST_LFC_RENAME_VALID_SRC, &tmp_err);
 	assert_false_with_message(ret >= 0 && tmp_err == NULL, " must be a success on the second rename %d %ld ", ret,tmp_err);
 	g_clear_error(&tmp_err);
-	ret = i.renameG(i.handle, TEST_LFC_RENAME_VALID_DEST, TEST_LFC_RENAME_VALID_DEST, &tmp_err);
+	ret = i.renameG(i.plugin_data, TEST_LFC_RENAME_VALID_DEST, TEST_LFC_RENAME_VALID_DEST, &tmp_err);
 	assert_true_with_message(ret < 0 && tmp_err != NULL && tmp_err->code == ENOENT, " must be a success on the second rename %d %ld ", ret,tmp_err->code);
 	g_clear_error(&tmp_err);	
 	gfal_handle_freeG(handle);
@@ -389,11 +389,11 @@ void gfal2_test_common_lfc_checksum()
 	
 	lfc_checksum chk;
 	memset(&chk, '\0', sizeof(lfc_checksum));
-	int ret = gfal_lfc_getChecksum(i.handle, TEST_LFC_ONLY_READ_ACCESS+4, &chk, &tmp_err);
+	int ret = gfal_lfc_getChecksum(i.plugin_data, TEST_LFC_ONLY_READ_ACCESS+4, &chk, &tmp_err);
 	assert_true_with_message(ret==0, "must be a valid call");
 	assert_true_with_message(strcmp(chk.type, TEST_LFC_VALID_TESTREAD_CHKTYPE)==0, "must be a valid checksum type %s %s", chk.type, TEST_LFC_VALID_TESTREAD_CHKTYPE);
 	assert_true_with_message(strcmp(chk.value, TEST_LFC_VALID_TESTREAD_CHECKSUM)==0, "must be a valid checksum value %s %s", chk.value, TEST_LFC_VALID_TESTREAD_CHECKSUM);
-	ret = gfal_lfc_getChecksum(i.handle, TEST_LFC_NOEXIST_ACCESS+4, &chk, &tmp_err);
+	ret = gfal_lfc_getChecksum(i.plugin_data, TEST_LFC_NOEXIST_ACCESS+4, &chk, &tmp_err);
 	assert_true_with_message(ret != 0 && ((tmp_err)?(tmp_err->code):0)==ENOENT, "must be a non existing dir");	
 	g_clear_error(&tmp_err);	
 }
@@ -422,15 +422,15 @@ void gfal2_test_common_lfc_getcomment()
 	
 #endif
 	char buff[2048];
-	int ret = gfal_lfc_getComment(i.handle, TEST_LFC_VALID_COMMENT+4, NULL, 0, &tmp_err);
+	int ret = gfal_lfc_getComment(i.plugin_data, TEST_LFC_VALID_COMMENT+4, NULL, 0, &tmp_err);
 	assert_true_with_message(ret == (CA_MAXCOMMENTLEN+1) && tmp_err == NULL, "must be the valid value of buffer size %d %ld", ret, (long) tmp_err );
-	ret = gfal_lfc_getComment(i.handle, TEST_LFC_VALID_COMMENT+4, buff, 2048, &tmp_err);
+	ret = gfal_lfc_getComment(i.plugin_data, TEST_LFC_VALID_COMMENT+4, buff, 2048, &tmp_err);
 	assert_true_with_message(ret >0  && tmp_err == NULL, "must be a valid return %d %s", ret, (tmp_err)?tmp_err->message:"" );
 	if(ret> 0){
 		int word_len = strlen(buff);
 		assert_true_with_message(word_len == ret, "must be the good len for the return %d %d ", word_len, ret );
 	}	
-	ret = gfal_lfc_getComment(i.handle, TEST_LFC_INVALID_COMMENT+4, buff, 2048, &tmp_err);
+	ret = gfal_lfc_getComment(i.plugin_data, TEST_LFC_INVALID_COMMENT+4, buff, 2048, &tmp_err);
 	assert_true_with_message((ret < 0  && tmp_err != NULL) || (ret ==0 && strcmp(buff,"")==0) , "must be an error report" ); // impossible to détermine ENOENT due to a Cns_setcomment problem
 	g_clear_error(&tmp_err);
 }
@@ -460,17 +460,17 @@ void gfal2_test_common_lfc_setcomment(){
 	
 #endif
 	char buff[2048];
-	int ret = gfal_lfc_setComment(i.handle, TEST_LFC_WRITEVALID_COMMENT+4, TEST_LFC_COMMENT_CONTENT, 2048, &tmp_err);
+	int ret = gfal_lfc_setComment(i.plugin_data, TEST_LFC_WRITEVALID_COMMENT+4, TEST_LFC_COMMENT_CONTENT, 2048, &tmp_err);
 	assert_true_with_message(ret ==0 && tmp_err== 0, " must be a valid answser %d",ret);
-	ret = gfal_lfc_getComment(i.handle, TEST_LFC_WRITEVALID_COMMENT+4, buff, 2048, &tmp_err);
+	ret = gfal_lfc_getComment(i.plugin_data, TEST_LFC_WRITEVALID_COMMENT+4, buff, 2048, &tmp_err);
 	assert_true_with_message(ret >0  && tmp_err == NULL, "must be a valid return %d %s", ret, (tmp_err)?tmp_err->message:"" );
 	if(ret> 0){
 		assert_true_with_message(strcmp(buff, TEST_LFC_COMMENT_CONTENT)==0, "must be the good message %s %s ", buff, TEST_LFC_COMMENT_CONTENT );
 	}	
-	ret = gfal_lfc_setComment(i.handle, TEST_LFC_WRITEVALID_COMMENT+4, "", 2048, &tmp_err);	// reinit the comment and test an empty set
+	ret = gfal_lfc_setComment(i.plugin_data, TEST_LFC_WRITEVALID_COMMENT+4, "", 2048, &tmp_err);	// reinit the comment and test an empty set
 	assert_true_with_message(ret ==0 && tmp_err== 0, " must be a valid answser %d", ret);
 	
-	ret = gfal_lfc_setComment(i.handle, TEST_LFC_INVALID_COMMENT+4, TEST_LFC_COMMENT_CONTENT, 2048, &tmp_err);
+	ret = gfal_lfc_setComment(i.plugin_data, TEST_LFC_INVALID_COMMENT+4, TEST_LFC_COMMENT_CONTENT, 2048, &tmp_err);
 	assert_true_with_message(ret < 0  && tmp_err != NULL && ((tmp_err)?tmp_err->code:0)==ENOENT , "must be an error report" ); // impossible to détermine ENOENT due to a Cns_setcomment problem
 	g_clear_error(&tmp_err);	
 	
@@ -507,7 +507,7 @@ void gfal2_test__gfal_common_lfc_statg()
 #endif	
 	
 	struct stat buff;
-	ret = i.statG(i.handle, TEST_LFC_VALID_ACCESS, &buff , &tmp_err);
+	ret = i.statG(i.plugin_data, TEST_LFC_VALID_ACCESS, &buff , &tmp_err);
 	assert_true_with_message(ret >= 0 && tmp_err == NULL, " must be a success on the lfc valid %d %s ", ret);
 
 	assert_false_with_message( buff.st_gid != TEST_GFAL_LFC_FILE_STAT_GID_VALUE , "must be a valid gid");
@@ -515,11 +515,11 @@ void gfal2_test__gfal_common_lfc_statg()
 	assert_false_with_message(buff.st_mode != TEST_GFAL_LFC_FILE_STAT_MODE_VALUE, "must be a valid mode");
 	memset(&buff,0, sizeof(struct stat));
 	g_clear_error(&tmp_err);	
-	ret = i.statG(i.handle, TEST_LFC_NOEXIST_ACCESS, &buff , &tmp_err);
+	ret = i.statG(i.plugin_data, TEST_LFC_NOEXIST_ACCESS, &buff , &tmp_err);
 	assert_true_with_message( ret != 0 && tmp_err && tmp_err->code == ENOENT, "must be a non existing file ");
 	g_clear_error(&tmp_err);
 		
-	ret = i.statG(i.handle, TEST_LFC_OPEN_NOACCESS, &buff , &tmp_err);
+	ret = i.statG(i.plugin_data, TEST_LFC_OPEN_NOACCESS, &buff , &tmp_err);
 	assert_true_with_message(ret != 0 && tmp_err && tmp_err->code == EACCES, " must be a non existing accessible file : %d %ld", ret, tmp_err);
 	g_clear_error(&tmp_err);
 	gfal_handle_freeG(handle);

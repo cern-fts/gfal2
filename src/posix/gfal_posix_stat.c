@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_stat.c
  * @brief file for the internal function of the POSIX stat/stat64 functions
  * @author Devresse Adrien
@@ -39,7 +39,7 @@
 
 
 
- /**
+ /*
   *  internal implementation of gfal_access
   * */
 inline int gfal_posix_internal_stat(const char* path, struct stat* buf){

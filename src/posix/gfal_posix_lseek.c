@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_lseek.c
  * @brief file for the internal function of the POSIX lseek function
  * @author Devresse Adrien
@@ -55,7 +55,7 @@ static int gfal_posix_gfalfilehandle_lseek(gfal_handle handle, gfal_file_handle 
 	return ret;		
 }
  
- /**
+ /*
   * 
   * Implementation of the posix lseek
   */

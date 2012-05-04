@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_read.c
  * @brief file for the internal read function for the posix interface
  * @author Devresse Adrien
@@ -36,7 +36,7 @@
 #include "gfal_posix_local_file.h"
 
 
-/**
+/*
  *  map the file handle to the correct call
  */ 
 inline int gfal_posix_gfalfilehandle_read(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, GError** err){
@@ -55,7 +55,7 @@ inline int gfal_posix_gfalfilehandle_read(gfal_handle handle, gfal_file_handle f
 }
 
 
-/**
+/*
  * Implementation of the read functions
  * 
  */
@@ -88,7 +88,7 @@ inline int gfal_posix_internal_read(int fd, void* buff, size_t s_buff){
 
 
 
-/**
+/*
  *  map the file handle to the correct call
  */ 
 inline ssize_t gfal_posix_gfalfilehandle_pread(gfal_handle handle, gfal_file_handle fh, void* buff, 
@@ -108,7 +108,7 @@ inline ssize_t gfal_posix_gfalfilehandle_pread(gfal_handle handle, gfal_file_han
 }
 
 
-/**
+/*
  * Implementation of the pread function
  * 
  */

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_opendir.h
  * @brief header file for the opendir function on the srm url type
  * @author Devresse Adrien

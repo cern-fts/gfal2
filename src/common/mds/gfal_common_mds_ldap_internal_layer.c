@@ -15,7 +15,7 @@
  * limitations under the License.
  */
  
-/**
+/*
  * @file gfal_common_mds_ldap_internal.c
  * @brief file for the internal ldap query by gfal, without is interface
  * @author Adrien Devresse

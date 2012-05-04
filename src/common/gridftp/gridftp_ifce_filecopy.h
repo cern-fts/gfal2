@@ -19,20 +19,9 @@
  */
 
 
-#include <exceptions/gfalcoreexception.hpp>
-#include <transfer/params_plugin_interface.hpp>
-#include <transfer/gfal_transfer.h>
-#include <common/gfal_types.h>
-#include <common/gfal_constants.h>
 
 #include "gridftpmodule.h"
 
-class GridFTPFileCopyModule : public GridFTPDecorator {
-	public:
-		GridFTPFileCopyModule(GridFTPInterface* wrap);
-		virtual ~GridFTPFileCopyModule(){};
-		virtual int filecopy(gfalt_params_handle params, const char* src, const char* dst);
-};
 
 
 #endif /* GRIFTP_IFCE_FILECOPY_H */ 

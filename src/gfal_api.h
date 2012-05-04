@@ -1,7 +1,6 @@
 #pragma once
 #ifndef _GFAL2_API_
 #define _GFAL2_API_
-
 /*
  * Copyright (c) Members of the EGEE Collaboration. 2004.
  * See http://www.eu-egee.org/partners/ for details on the copyright holders.
@@ -18,17 +17,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
 /**
- * @file gfal_api
- * @brief main header for the old gfal compatibility
+ * @file gfal_api.h
+ * @brief Main header file for gfal 2.0
  * @author Devresse Adrien
- * @version 2.0
- * @date 11/04/2011
- * */
+ * @version 2.0.0
+ */
  
 // please use <posix/gfal_posix_api.h> directly instead of this
 #include <posix/gfal_posix_api.h> 
  
 
-#endif // _GFAL2_API_
+
+#endif  //_GFAL2_API_

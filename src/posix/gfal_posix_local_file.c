@@ -15,14 +15,6 @@
  * limitations under the License.
  */
 
-/**
- * @file gfal_posix_local_file.c
- * @brief file for the local access file map for the gfal_posix call
- * @author Devresse Adrien
- * @version 2.0
- * @date 06/05/2011
- * */
- 
 #define _GNU_SOURCE
  
 #include <stdio.h>
@@ -37,9 +29,17 @@
 #include <regex.h>
 #include <attr/xattr.h>
 
-#include "../common/gfal_common_errverbose.h"
-#include "../common/gfal_common_filedescriptor.h"
+#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_filedescriptor.h>
 #include "gfal_posix_local_file.h"
+
+/*
+ *  file gfal_posix_local_file.c
+ *  brief file for the local access file map for the gfal_posix call
+ *  author Devresse Adrien
+ */
+ 
+
 
 #define GFAL_LOCAL_PREFIX "file:"
 #define GFAL_LOCAL_PREFIX_LEN 5
@@ -215,7 +215,7 @@ gboolean gfal_is_local_call(const char * module_name){
 	return (strncmp(module_name, GFAL_MODULEID_LOCAL, GFAL_MODULE_NAME_SIZE) == 0);
 }
 
-/**
+/*
  *  map the gfal_read call to the local read call for file://
  * */
 int gfal_local_read(gfal_file_handle fh, void* buff, size_t s_buff, GError** err){
@@ -227,7 +227,7 @@ int gfal_local_read(gfal_file_handle fh, void* buff, size_t s_buff, GError** err
 	return ret;
 }
 
-/**
+/*
  *  map the gfal_pread call to the local pread call for file://
  * */
 ssize_t gfal_local_pread(gfal_file_handle fh, void* buff, size_t s_buff, off_t offset, GError** err){
@@ -247,7 +247,7 @@ int gfal_local_lseek(gfal_file_handle fh, off_t offset, int whence, GError** err
 	return ret;
 }
 
-/**
+/*
  *  map to the local write call
  * */
 int gfal_local_write(gfal_file_handle fh, void* buff, size_t s_buff, GError** err){
@@ -258,7 +258,7 @@ int gfal_local_write(gfal_file_handle fh, void* buff, size_t s_buff, GError** er
 	return ret;
 }
 
-/**
+/*
  * map to the local pwrite call
  */
 ssize_t gfal_local_pwrite(gfal_file_handle fh, void* buff, size_t s_buff, off_t offset, GError** err){
@@ -288,7 +288,7 @@ ssize_t gfal_local_readlink(const char* path, char* buff, size_t buffsiz, GError
 	return res;
 }
 
-/**
+/*
  * local rmdir mapper
  * */
 int gfal_local_rmdir(const char* path, GError** err){
@@ -298,7 +298,7 @@ int gfal_local_rmdir(const char* path, GError** err){
 	return res;
 }
 
-/**
+/*
  *  local closedir mapper
  * 
  * */
@@ -318,7 +318,7 @@ int gfal_local_symlink(const char* oldpath, const char* newpath, GError** err){
 	return res;		
 }
  
-/**
+/*
  * check the validity of a classique file url
  * */ 
 gboolean gfal_check_local_url(const char* path, GError** err){

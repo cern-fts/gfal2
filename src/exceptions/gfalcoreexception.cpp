@@ -25,6 +25,10 @@ Gfal::CoreException::CoreException(const std::string& nmspace, const std::string
 	
 }
 
+Gfal::CoreException::CoreException(const Glib::Quark & scope, const std::string & msg, int code) 
+	: Glib::Error(scope, code, msg) {
+		
+}
 
 Gfal::CoreException::~CoreException() throw()
 {

@@ -15,37 +15,56 @@
  * limitations under the License.
  */
 
-
-#include "grid_ftp_ifce_include.h"
-#include "gridftpmodule.h"
 #include <glib.h>
-
-GOnce my_once = G_ONCE_INIT;
-
+#include "gridftpmodule.h"
 
 
+//GOnce my_once = G_ONCE_INIT;
+
+const Glib::Quark scope_globus_init("GridftpModule::init_globus");
+
+
+
+// gfunction prototype : gonce 
 static void* init_globus(gpointer data){
     globus_result_t result = GLOBUS_SUCCESS;
      if( (  result = globus_module_activate(GLOBUS_GASS_COPY_MODULE) ) != GLOBUS_SUCCESS)
-    	throw Gfal::CoreException("GridftpModule::init_globus", "Error globus init, globus gass", result);
+    	throw Gfal::CoreException(scope_globus_init, "Error globus init, globus gass", result);
      if( ( result = globus_module_activate(GLOBUS_GSI_GSSAPI_MODULE) ) != GLOBUS_SUCCESS)
-		throw Gfal::CoreException("GridftpModule::init_globus", "Error globus init, globus gssapi", result);
-
+		throw Gfal::CoreException(scope_globus_init, "Error globus init, globus gssapi", result);
+	 if( ( result = globus_module_activate(GLOBUS_FTP_CLIENT_MODULE)) != GLOBUS_SUCCESS)
+		throw Gfal::CoreException(scope_globus_init, "Error globus init, globus ftp", result);
      if( (   result = globus_module_activate(GLOBUS_FTP_CLIENT_RESTART_PLUGIN_MODULE) ) != GLOBUS_SUCCESS)
-    	throw Gfal::CoreException("GridftpModule::init_globus", "Error globus init, glopus ftp restart plugin", result);
+    	throw Gfal::CoreException(scope_globus_init, "Error globus init, glopus ftp restart plugin", result);
      if( (   result = globus_module_activate(GLOBUS_FTP_CLIENT_RESTART_MARKER_PLUGIN_MODULE) ) != GLOBUS_SUCCESS)
-    	throw Gfal::CoreException("GridftpModule::init_globus", "Error globus init, globus ftp restart marker", result);
+    	throw Gfal::CoreException(scope_globus_init, "Error globus init, globus ftp restart marker", result);
 	return NULL;
 }
 
-GridftpModule::GridftpModule(GridFTPInterface* wrap) : GridFTPDecorator(wrap)
+static void* deinit_globus(gpointer data){
+    globus_result_t result = GLOBUS_SUCCESS;  
+     if( (  result = globus_module_deactivate(GLOBUS_GASS_COPY_MODULE) ) != GLOBUS_SUCCESS)
+    	throw Gfal::CoreException(scope_globus_init, "Error globus deinit, globus gass", result);
+     if( ( result = globus_module_deactivate(GLOBUS_GSI_GSSAPI_MODULE) ) != GLOBUS_SUCCESS)
+		throw Gfal::CoreException(scope_globus_init, "Error globus deinit, globus gssapi", result);
+	 if( ( result = globus_module_deactivate(GLOBUS_FTP_CLIENT_MODULE)) != GLOBUS_SUCCESS)
+		throw Gfal::CoreException(scope_globus_init, "Error globus deinit, globus ftp", result);
+     if( (   result = globus_module_deactivate(GLOBUS_FTP_CLIENT_RESTART_PLUGIN_MODULE) ) != GLOBUS_SUCCESS)
+    	throw Gfal::CoreException(scope_globus_init, "Error globus deinit, glopus ftp restart plugin", result);
+     if( (   result = globus_module_deactivate(GLOBUS_FTP_CLIENT_RESTART_MARKER_PLUGIN_MODULE) ) != GLOBUS_SUCCESS)
+    	throw Gfal::CoreException(scope_globus_init, "Error globus deinit, globus ftp restart marker", result);
+	return NULL;
+}
+
+GridftpModule::GridftpModule(GridFTPFactoryInterface* factory) 
 {
-	g_once(&my_once, init_globus, NULL);
+	init_globus(NULL);
+	_handle_factory = factory;
 }
 
 
 GridftpModule::~GridftpModule()
 {
-	
+	deinit_globus(NULL);	
 }
 

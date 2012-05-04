@@ -16,7 +16,7 @@
  */
  
  
- /**
+ /*
   * @brief  header file for the bdii request part of gfal
   * @author : Devresse Adrien
   * @version 2.0.0
@@ -36,7 +36,7 @@
 
 typedef enum { SRMv2=0, SRMv1, WebDav } mds_type_endpoint;
 
-/**
+/*
  * @struct gfal_mds_endpoint
  * represente an endpoint URL and its type
  */

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_getxattr.h
  * @brief header for the getxattr function on the srm url type
  * @author Devresse Adrien

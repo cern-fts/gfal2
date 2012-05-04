@@ -19,6 +19,7 @@
  */
 
 #include <common/gfal_common_internal.h>
+#include <common/gfal_common_filedescriptor.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -31,6 +32,8 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err);
 plugin_handle plugin_load(gfal_handle handle, GError ** err);
 
 void plugin_unload(plugin_handle handle);
+
+const char * plugin_name();
 
 #ifdef __cplusplus
 }

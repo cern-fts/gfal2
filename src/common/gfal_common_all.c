@@ -15,12 +15,11 @@
  * limitations under the License.
  */
 
-/**
- * @file gfal_common_all.c
- * @brief core file for the utility function of gfal common part
- * @author Devresse Adrien
- * @version 1.0
- * @date 02/05/2011
+
+/*
+ * gfal_common_all.c
+ * core file for the utility function of gfal common part
+ * author Devresse Adrien
  * */
 
 #include <dlfcn.h>
@@ -43,9 +42,8 @@
 /* the version should be set by a "define" at the makefile level */
 static const char *gfalversion = VERSION_STR(VERSION);
 
- /**
+ /*
  * initiate a gfal's context with default parameters for use
- * @return a gfal_handle, need to be free after usage. return NULL if errors
  */
 gfal_handle gfal_initG (GError** err)
 {
@@ -66,10 +64,7 @@ gfal_handle gfal_initG (GError** err)
 	return handle;
 }
 
-/**
- * @brief free a gfal's handle, safe if null
- * 
- */
+//free a gfal's handle, safe if null
 void gfal_handle_freeG (gfal_handle handle){
 	if(handle == NULL)
 		return;
@@ -81,9 +76,9 @@ void gfal_handle_freeG (gfal_handle handle){
 }
 
 
-/**
- * @brief convert glist of surl char* to char**
- *  @return return NULL if error or pointer to char**
+/*
+ * convert glist of surl char* to char**
+ * return NULL if error or pointer to char**
  */
 char** gfal_GList_to_tab(GList* surls){
 	int surl_size = g_list_length(surls);
@@ -96,10 +91,7 @@ char** gfal_GList_to_tab(GList* surls){
 	return resu;
 }
 
-/**
- * @brief convert glist of int to a table of int
- *  @return return NULL if error or pointer to int*
- */
+//convert glist of int to a table of int
 int* gfal_GList_to_tab_int(GList* int_list){
 	int int_size = g_list_length(int_list);
 	int i;
@@ -112,8 +104,8 @@ int* gfal_GList_to_tab_int(GList* int_list){
 }
 
 
-/**
- *  @brief open dynamycally a list of symbols
+/*
+ *  open dynamycally a list of symbols
  *  resolve all symbols from sym_list to flist with the associated dlhandle
  *  set GError properly if error
  *  
@@ -132,20 +124,14 @@ int resolve_dlsym_listG(void* handle, void*** flist, const char** sym_list, int 
 	
 }
 
-/**
- * return a string of the current gfal version
- * 
- * */
+//return a string of the current gfal version
 char *gfal_version(){
     return (char*) gfalversion;
 }
 
 
 
-/**
- * check the validity of a result for a "access" standard call
- * @return TRUE if status is a valid and standard access methode error, else return FALSE
- * */
+//check the validity of a result for a "access" standard call
  gboolean is_valid_access_result(int status){
 	 switch(status){
 		 case 0:

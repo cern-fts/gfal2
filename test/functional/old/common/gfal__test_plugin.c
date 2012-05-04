@@ -35,8 +35,8 @@ struct lfc_ops* find_lfc_ops(gfal_handle handle, GError** err){
 		g_set_error(err, 0, EINVAL, "[gfal] [mock] unable to load and replace the ops ");
 		return NULL;
 	}
-	handle->plugin_opt.plugin_list[i].handle = calloc(1, sizeof(struct lfc_ops));
-	struct lfc_ops* ops = (struct lfc_ops*) handle->plugin_opt.plugin_list[i].handle; 	
+	handle->plugin_opt.plugin_list[i].plugin_data = calloc(1, sizeof(struct lfc_ops));
+	struct lfc_ops* ops = (struct lfc_ops*) handle->plugin_opt.plugin_list[i].plugin_data; 	
 	return ops;
 }
 
@@ -44,30 +44,6 @@ struct lfc_ops* find_lfc_ops(gfal_handle handle, GError** err){
 
 
 
-
-void gfal2_test_get_cat_type()
-{
-	char* cat_type;
-	cat_type= gfal_get_cat_type(NULL);
-	assert_true_with_message(strncmp(cat_type, GFAL_DEFAULT_PLUGIN_TYPE, 50) == 0, " must be true");
-	free(cat_type);
-}
-
-
-
-void test_env_var()
-{
-	char* cat_type;
-	char* old_env;
-	old_env = getenv ("LCG_PLUGIN_TYPE");
-	setenv("LCG_PLUGIN_TYPE", "CATAX",1);
-	cat_type= gfal_get_cat_type(NULL);
-	assert_true_with_message(strncmp(cat_type, "CATAX", 50) == 0, " must be true");
-	if(old_env != NULL)
-		setenv("LCG_PLUGIN_TYPE", old_env,1);	// restore old env
-	free(cat_type);
-	free(old_env);
-}
 
 
 void gfal2_test_plugin_access_file()

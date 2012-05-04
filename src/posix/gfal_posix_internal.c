@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_local_file.c
  * @brief file for the internal func of the posix interface
  * @author Devresse Adrien
@@ -63,7 +63,7 @@ inline GError** gfal_posix_get_last_error(){
 }
 
 
-/**
+/*
  *  register the last error in the handle and display a VERBOSE warning if an error was registered and not deleted
  * */
 inline void gfal_posix_register_internal_error(gfal_handle mhandle, const char* prefix, GError * tmp_err){

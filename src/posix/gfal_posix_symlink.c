@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_symlink.c
  * @brief file for the internal symlink func
  * @author Devresse Adrien
@@ -34,7 +34,7 @@
 #include "gfal_posix_local_file.h"
 #include "gfal_posix_api.h"
 
-/**
+/*
  * Implementation of gfal_symlink POSIX
  * */
 int gfal_posix_internal_symlink(const char* oldpath, const char* newpath){

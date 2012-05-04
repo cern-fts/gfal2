@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_internal_layer.h
  * @brief header file for the srm external function mapping for mocking purpose
  * @author Devresse Adrien
@@ -41,7 +41,7 @@ typedef enum _srm_req_type{
 } srm_req_type;
 
 
-/**
+/*
  * structure for mock abylity in the srm part
  *
  */

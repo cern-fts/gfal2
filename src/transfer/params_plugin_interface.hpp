@@ -34,8 +34,8 @@ class Params_plugin_interface
 			
 };
 
-};
+}
 
-};
+}
 
 #endif /* PARAMS_INTERFACE_H */ 

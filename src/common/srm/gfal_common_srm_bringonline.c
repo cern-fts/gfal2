@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_bringonline.c
  * @brief brings online functions layer from srm
  * @author Devresse Adrien

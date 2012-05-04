@@ -38,8 +38,8 @@ class Params_interface
 			
 };
 
-};
+}
 
-};
+}
 
 #endif /* PARAMS_INTERFACE_H */ 

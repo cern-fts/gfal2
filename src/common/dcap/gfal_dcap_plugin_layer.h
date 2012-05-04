@@ -16,11 +16,10 @@
  */
 
 
-/**
- * @file gfal_dcap_plugin_layer.h
- * @brief file for the external call, abstraction layer for mock purpose
- * @author Devresse Adrien
- * @date 20/07/2011
+/*
+ *  gfal_dcap_plugin_layer.h
+ *  file for the external call, abstraction layer for mock purpose
+ *  author: Devresse Adrien
  * 
  **/
 

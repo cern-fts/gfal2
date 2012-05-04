@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_getxattr.c
  * @brief file for the internal function of the getxattr function
  * @author Devresse Adrien

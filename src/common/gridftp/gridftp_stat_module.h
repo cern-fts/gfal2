@@ -16,32 +16,12 @@
  */
 
 
-#include "gridftpdecorator.h"
+#ifndef GRIDFTP_STAT_MODULE_H
+#define GRIDFTP_STAT_MODULE_H
+
+#include "gridftpmodule.h"
 
 
-GridFTPDecorator::GridFTPDecorator(GridFTPInterface* i)
-	: GridFTPInterface()
-{
-	_wrap = i;
-}
+extern "C" int gfal_gridftp_statG(plugin_handle handle, const char* name, struct stat* buff, GError ** err);
 
-
-GridFTPDecorator::~GridFTPDecorator()
-{
-	delete _wrap;
-}
-
-gfal_handle GridFTPDecorator::get_handle(){
-	return _wrap->get_handle();
-}
-
-gfal_globus_copy_handle_t GridFTPDecorator::take_globus_handle(){
-	return _wrap->take_globus_handle();
-}
-void GridFTPDecorator::release_globus_handle(gfal_globus_copy_handle_t* handle){
-	_wrap->release_globus_handle(handle);
-}
-void GridFTPDecorator::globus_check_result(const std::string & nmspace, gfal_globus_result_t res){
-	_wrap->globus_check_result(nmspace, res);
-}
-
+#endif /* GRIDFTP_STAT_MODULE_H */ 

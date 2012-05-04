@@ -18,19 +18,22 @@
  
  
  
-/**
- * @file gfal_common_filedescriptor.h
- * @brief  header file for the file descriptor management
- * @author Devresse Adrien
- * @version 2.0
- * @date 22/05/2011
- * */
+/*
+ * gfal_common_filedescriptor.h
+ * header file for the file descriptor management
+ * author Devresse Adrien
+ */
  
 #include <glib.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include "gfal_prototypes.h"
-#include "gfal_constants.h"
+#include <common/gfal_prototypes.h>
+#include <common/gfal_constants.h>
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 struct _gfal_file_descriptor_container{
 	GHashTable* container;
@@ -72,3 +75,8 @@ void gfal_file_handle_delete(gfal_file_handle fh);
 void gfal_file_handle_lock(gfal_file_handle fh);
 
 void gfal_file_handle_unlock(gfal_file_handle fh);
+
+#ifdef __cplusplus
+}
+#endif
+

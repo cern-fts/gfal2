@@ -16,13 +16,11 @@
  */
 
 
-/**
- * @file gfal_dcap_plugin_layer.c
- * @brief file for the external call, abstraction layer for mock purpose
- * @author Devresse Adrien
- * @date 20/07/2011
- * 
- **/
+/*
+ * gfal_dcap_plugin_layer.c
+ * file for the external call, abstraction layer for mock purpose
+ * author Devresse Adrien
+ */
 
 
 #include <regex.h>
@@ -33,6 +31,8 @@
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_types.h>
 #include "gfal_dcap_plugin_layer.h"
+
+
 
 struct dcap_proto_ops * gfal_dcap_internal_loader_base(GError** err){
 	struct dcap_proto_ops * pops = NULL;

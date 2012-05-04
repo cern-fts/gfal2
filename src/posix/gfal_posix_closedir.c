@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_posix_closedir.c
  * @brief file for the closedir  posix func
  * @author Devresse Adrien

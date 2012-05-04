@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_stat.c
  * @brief file for the stat function on the srm url type
  * @author Devresse Adrien
@@ -33,11 +33,11 @@
 
 
 
-static int gfal_statG_srmv2_internal(gfal_srmv2_opt* opts, struct stat* buf, const char* endpoint, const char* surl, GError** err){
+int gfal_statG_srmv2_internal(gfal_srmv2_opt* opts, struct stat* buf, const char* endpoint, const char* surl, GError** err){
 	return gfal_statG_srmv2__generic_internal(opts, buf, endpoint, surl, err);
 }
 
-/**
+/*
  * stat call, for the srm interface stat and lstat are the same call !! the default behavior is similar to stat by default and ignore links
  * 
  * */
@@ -58,6 +58,7 @@ int gfal_srm_statG(plugin_handle ch, const char* surl, struct stat* buf, GError*
 		ret =gfal_srm_determine_endpoint(opts, surl, full_endpoint, GFAL_URL_MAX_LEN, &srm_type,   &tmp_err);
 		if( ret >=0 ){
 			if(srm_type == PROTO_SRMv2){
+				gfal_print_verbose(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_statG] try to stat file %s", surl);				
 				ret = gfal_statG_srmv2_internal(opts, buf, full_endpoint, surl, &tmp_err);
 			}else if (srm_type == PROTO_SRM){
 				g_set_error(&tmp_err, 0, EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");

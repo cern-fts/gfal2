@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common.c
  * @brief file for the gfal's plugin unlink function
  * @author Devresse Adrien
@@ -106,7 +106,7 @@ int gfal_srm_rm_internal(gfal_srmv2_opt* opts, char** surls, GError** err){
 }
 
 
-/***
+/**
  * 
  * bindings of the unlink plugin call
 */

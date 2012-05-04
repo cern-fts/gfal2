@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_chmod.c
  * @brief file for the internal function of the POSIX chmod function
  * @author Devresse Adrien

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_endpoint.h
  * @brief header file for internal use in the srm part, endpoint determination
  * @author Devresse Adrien

@@ -18,12 +18,11 @@
  * limitations under the License.
  */
 
-/**
- * @file gfal_common_internal.h
- * @brief internal declaration for gfal, USE DIRECTLY THIS FUNCTIONS IS  NOT RECOMMANDED
- * @author Devresse Adrien
- * @version 2.0
- * @date 12/04/2011
+/*
+ * gfal_common_internal.h
+ * internal declaration for gfal 2.0
+ * 			do not use this in external programs 
+ * author Devresse Adrien
  * */
 
 #include <common/gfal_prototypes.h>
@@ -33,8 +32,6 @@
 extern "C"
 {
 #endif
-
-
 
 gfal_handle gfal_initG(GError** err);
 void gfal_handle_freeG(gfal_handle handle);

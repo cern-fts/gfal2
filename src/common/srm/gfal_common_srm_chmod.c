@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/**
+/*
  * @file gfal_common_srm_chmod.c
  * @brief file for the change permission management
  * @author Devresse Adrien

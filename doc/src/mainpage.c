@@ -4,39 +4,41 @@
 	
 		
 
-	<h2>I.FAQ  : </h2>
+	<h2>FAQ  : </h2>
 	- GFAL 2.0 \ref faq
 
-	<h2> II API : </h2>
+	<h2>API : </h2>
 	
-	- GFAL 2.0 POSIX lib API:
-		- the POSIX style API : \ref posix_group \n
-		- the Error management API : \ref gfal_posix_check_error
+	- GFAL 2.0  API:
+		- \ref posix_group \n
+		- \ref gfal_posix_check_error
 
-	- Gfal internal API to construct plugin ( not stable currently ) :
+	- Gfal internal API for plugins  :
 		- \ref _gfal_plugin_interface
 
-	<h2> III. Examples : </h2>
+	<h2> Examples : </h2>
 		- <a href="examples.html"> examples </a>
 
-	<h2>IV. GFAL 2.0, Library Design : </h2>
+	<h2>GFAL 2.0, Library Design : </h2>
 		- \ref page_design
 
-	<h2>V. Report of the Scheduled changes : </h2>
+	<h2> Summary of the changes : </h2>
 	- Changes between 1.X and 2.X are resumed \ref api_change 	
 	
-	<h2>VI. How to compile locally GFAL 2.0</h2>
+	<h2>How to compile locally GFAL 2.0</h2>
 	- Compile :
-		- enable EMI and EPEL repositories ( and equivalent )
-		- Install scons ( http://www.scons.org, python script )
-		- " git svn clone  http://svnweb.cern.ch/guest/lcgutil/gfal/branches/gfal_2_0_main gfal2 "
-		- " cd gfal2 "
-		- "scons -j 8"
+		- " 1.svn export http://svnweb.cern.ch/guest/lcgutil/gfal2/trunk gfal2 "
+		- " 2.cd gfal2 "
+		- " 3.mkdir build; cd build"
+		- " 4. cmake ../"
+		- " 5. make "
+		
 	- Compile tests :
-		- Install cgreen, unit test framework
-		- Install scons 
-		- execute "scons test -j 8" in the CERNgfal dir
-	- Clean builds :
-		- scons -c
+		- " 4. cmake -DUNIT_TESTS=TRUE -DFUNCTIONAL_TESTS=TRUE ../ "
+		- " 5.  make; make test"	
+		
+	- make RPMS :
+	    - ./packaging/bin/packager_rpm.sh ./packaging/rpm/specs/ ./
+	    - mock -r [mycfg] RPMS/gfal2-.....
 	
 */

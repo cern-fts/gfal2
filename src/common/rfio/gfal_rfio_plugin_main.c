@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_rfio_plugin_main.c
  * @brief file for the external rfio's plugin  for gfal ( based on the old rfio part in gfal legacy )
  * @author Devresse Adrien
@@ -51,7 +51,7 @@ int gfal_rfio_regex_compile(regex_t * rex, GError** err){
 	return ret;	
 }
 
-/**
+/*
  * Init function, called before all
  * */
 gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
@@ -62,7 +62,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	h->handle = handle;
 	h->rf = gfal_rfio_internal_loader(&tmp_err);
 	gfal_rfio_regex_compile(&h->rex, err);
-	rfio_plugin.handle = (void*) h;	
+	rfio_plugin.plugin_data = (void*) h;	
 	rfio_plugin.check_plugin_url = &gfal_rfio_check_url;
 	rfio_plugin.getName= &gfal_rfio_getName;
 	rfio_plugin.plugin_delete= &gfal_rfio_destroyG;
@@ -92,7 +92,7 @@ gboolean gfal_rfio_internal_check_url(gfal_plugin_rfio_handle rh, const char* su
 }
 
 
-/**
+/*
  *  Check the rfio url in the gfal module way
  * */
 gboolean gfal_rfio_check_url(plugin_handle ch, const char* url,  plugin_mode mode, GError** err){

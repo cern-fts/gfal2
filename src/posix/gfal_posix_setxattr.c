@@ -16,7 +16,7 @@
  */
 
 
-/**
+/*
  * @file gfal_posix_setxattr.c
  * @brief file for the internal function of the setxattr function
  * @author Devresse Adrien
@@ -37,7 +37,7 @@
 #include "gfal_posix_local_file.h"
  
 
-/**
+/*
  *  set a value to a extended attribute
  * */ 
 int gfal_posix_internal_setxattr (const char *path, const char *name,
