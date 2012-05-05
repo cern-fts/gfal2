@@ -68,7 +68,7 @@ int gridftp_readdir_desc_parser(GridFTP_Dir_desc* desc){
 	char* p,*p1;
 	if( (p = strchr((char*) c_list, '\n')) == NULL)
 		return 0; // no new entry, c'est la fin des haricots
-	p1 = (char*)mempcpy(desc->dir.d_name, c_list, std::min((long)NAME_MAX-1, (long)p-c_list));
+	p1 = (char*)mempcpy(desc->dir.d_name, c_list, std::min((long)NAME_MAX-1, (long) (p-c_list)));
 	*p1 = '\0';
     while( *(--p1) == '\r' || *p1 == '\n') // clear new line madness
 		*p1 = '\0';
