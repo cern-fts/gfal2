@@ -294,7 +294,6 @@ int gfal_modules_resolve(gfal_handle handle, GError** err){
 inline int gfal_plugins_instance(gfal_handle handle, GError** err){
 	g_return_val_err_if_fail(handle, -1, err, "[gfal_plugins_instance]  invalid value of handle");
 	const int plugin_number = handle->plugin_opt.plugin_number;
-	int ret;
 	if(plugin_number <= 0){
 		GError* tmp_err=NULL;
 		ret = gfal_modules_resolve(handle, &tmp_err);
@@ -566,7 +565,6 @@ int gfal_plugin_closedirG(gfal_handle handle, gfal_file_handle fh, GError** err)
 // Execute a open function on the appropriate plugin  
 gfal_file_handle gfal_plugin_openG(gfal_handle handle, const char * path, int flag, mode_t mode, GError ** err){
 	GError* tmp_err=NULL;
-	int ret =-1;
 	gfal_file_handle resu =NULL;
 	gfal_print_verbose(GFAL_VERBOSE_TRACE, " %s ->",__func__);
 
@@ -579,7 +577,7 @@ gfal_file_handle gfal_plugin_openG(gfal_handle handle, const char * path, int fl
 		return (resu)?0:-1;
 	}	
 	
-	ret = gfal_plugins_operation_executor(handle, &openG_checker, &openG_executor, &tmp_err);
+	gfal_plugins_operation_executor(handle, &openG_checker, &openG_executor, &tmp_err);
 	if(tmp_err)
 		g_propagate_prefixed_error(err, tmp_err, "[%s]",__func__);	
 	return resu;

@@ -52,7 +52,7 @@ inline int gfal_posix_internal_stat(const char* path, struct stat* buf){
 		return -1;
 	}
 	
-	if(path == NULL || stat==NULL){
+	if(path == NULL || buf==NULL){
 		g_set_error(&tmp_err, 0, EFAULT, " path or/and stat is an incorrect argument");
 	}else{
 		if( gfal_check_local_url(path, NULL) ){

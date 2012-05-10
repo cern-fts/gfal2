@@ -50,7 +50,7 @@ ssize_t gfal_posix_internal_unlink(const char* path){
 		return -1;
 	}
 	
-	if(path == NULL || stat==NULL){
+	if(path == NULL){
 		g_set_error(&tmp_err, 0, EFAULT, " path is an incorrect argument");
 	}else{
 		if( gfal_check_local_url(path, NULL) ){
