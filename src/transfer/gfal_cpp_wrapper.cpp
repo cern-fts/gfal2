@@ -19,7 +19,6 @@
 
 #include <glib.h>
 
-#include <libcpp/cpp_to_gerror.hpp>
 // gfal 2.0 common types
 #include <common/gfal_types.h>
 #include <common/gfal_common_internal.h>
