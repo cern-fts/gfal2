@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <gfal_api.h>
 #include <transfer/gfal_transfer.h>
 
 
