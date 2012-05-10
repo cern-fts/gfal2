@@ -58,7 +58,11 @@ gfal_handle gfal_initG (GError** err)
 		g_thread_init(NULL);
 	handle->no_bdii_check=FALSE;
 	handle->plugin_opt.plugin_number= 0;
-	gfal_config_container_init(handle);
+	
+	gfal_plugins_instance(handle, &tmp_err); // load and instanciate all the plugins
+	if(!tmp_err)
+		gfal_config_container_init(handle);
+	
 	if(tmp_err)
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
 	return handle;

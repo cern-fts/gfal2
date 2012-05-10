@@ -50,7 +50,7 @@ inline gfal_handle gfal_posix_instance(){
 	if(handle == NULL){
 		pthread_mutex_lock(&m_instance);
 		if(handle == NULL){
-			handle= gfal_initG(NULL);
+			handle= gfal_initG(&last_error);
 			gfal_local_initG(NULL);
 		}
 		pthread_mutex_unlock(&m_instance);
