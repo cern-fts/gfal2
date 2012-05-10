@@ -84,7 +84,7 @@ IF (FUNCTIONAL_TESTS)
 	IF (MAIN_TRANSFER)
 
 		add_executable(gfal_copyfile ${src_gfaltcopy} )
-		target_link_libraries(gfal_copyfile ${OUTPUT_NAME_TRANSFER} )
+		target_link_libraries(gfal_copyfile ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
 
 		copy_files(${COPY_SRC} ${COPY_DST})
 		add_test(functional_copyfile gfal2_copyfile.sh)
