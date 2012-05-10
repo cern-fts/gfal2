@@ -24,4 +24,6 @@
 
 extern "C" int gfal_gridftp_statG(plugin_handle handle, const char* name, struct stat* buff, GError ** err);
 
+extern "C" int gfal_gridftp_accessG(plugin_handle handle, const char* name, int mode, GError** err);
+
 #endif /* GRIDFTP_STAT_MODULE_H */ 

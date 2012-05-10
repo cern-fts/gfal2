@@ -53,6 +53,8 @@ class GridftpModule
 		GridftpModule(GridFTPFactoryInterface *);
 		virtual ~GridftpModule();
 		
+		// Execute an access call, map on stat due to protocol restrictions
+		virtual void access(const char*  path, int mode);
 
 		//Execute a stat call on a gridftp URL
 		virtual void stat(const char*  path, struct stat * st);
