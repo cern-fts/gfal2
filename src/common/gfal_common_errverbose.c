@@ -40,14 +40,14 @@ __thread char _gfal_err[GFAL_ERRMSG_LEN];
 /**
  * \brief return verbose mode level
  */
-extern int gfal_get_verbose(){
+int gfal_get_verbose(){
 	return gfal_verbose;
 }
 
 /**
  * set the verbose level of gfal 2
  */
-extern int gfal_set_verbose (int value)
+int gfal_set_verbose (int value)
 {
     if (value < 0)
         return (-1);

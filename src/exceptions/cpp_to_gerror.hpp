@@ -36,9 +36,9 @@ namespace Gfal{
 
 #define CPP_GERROR_CATCH(err)  } \
 							catch(Glib::Error & e){ \
-								g_set_error(err, e.domain(), e.code(), e.what().c_str()); \
+								g_set_error(err, e.domain(), e.code(), "%s", e.what().c_str()); \
 							}catch(std::exception & e){ \
-								g_set_error(err, 0, EPROTONOSUPPORT , e.what()); \
+								g_set_error(err, 0, EPROTONOSUPPORT, "%s", e.what()); \
 							}catch(...){ \
 								g_set_error(err, 0, EIO, "Undefined Exception catched: Bug found !! "); \
 							} \
