@@ -8,6 +8,7 @@ FILE(GLOB src_gfal_testchmod "gfal_testchmod.c")
 FILE(GLOB src_gfalread "gfal_testread.c")
 FILE(GLOB src_gfalwrite "gfal_testwrite.c")
 FILE(GLOB src_gfalrw "gfal_testrw.c")
+FILE(GLOB src_gfal_rw_full "gfal_testrw_full.c")
 FILE(GLOB src_gfalget "gfal_testget.c")
 FILE(GLOB src_gfaltestcreatedir "gfal_testcreatedir.c")
 FILE(GLOB src_gfaltestrightchange "gfal_test_right_change.c")
@@ -53,6 +54,9 @@ IF (FUNCTIONAL_TESTS)
 
 	add_executable(gfal_rw	${src_gfalrw} )
 	target_link_libraries(gfal_rw ${OUTPUT_NAME_MAIN} )
+	
+	add_executable(gfal_rw_full	${src_gfal_rw_full} )
+	target_link_libraries(gfal_rw_full ${OUTPUT_NAME_MAIN} )	
 	
 	add_executable(gfal_testget	${src_gfalget} )
 	target_link_libraries(gfal_testget ${OUTPUT_NAME_MAIN} )

@@ -296,7 +296,7 @@ inline int gfal_plugins_instance(gfal_handle handle, GError** err){
 	const int plugin_number = handle->plugin_opt.plugin_number;
 	if(plugin_number <= 0){
 		GError* tmp_err=NULL;
-		ret = gfal_modules_resolve(handle, &tmp_err);
+		gfal_modules_resolve(handle, &tmp_err);
 		if(tmp_err){
 			g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
 			handle->plugin_opt.plugin_number = -1;
