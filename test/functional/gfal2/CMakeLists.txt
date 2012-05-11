@@ -45,6 +45,10 @@ IF (FUNCTIONAL_TESTS)
 	FUNCTION(test_readdir_full name valid)
 		add_test(gfal_test_readdir_full_${name} gfal_test_readdir_full ${valid})
 	ENDFUNCTION(test_readdir_full valid)	
+
+	FUNCTION(rwt_test_all name path size)
+		add_test(gfal_rw_size_${name} gfal_rw_full ${path} ${size})
+	ENDFUNCTION(rwt_test_all name path size)
 	
 	add_executable(gfal_read	${src_gfalread} )
 	target_link_libraries(gfal_read ${OUTPUT_NAME_MAIN} )

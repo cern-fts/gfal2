@@ -50,7 +50,7 @@ static void rfio_report_error(gfal_plugin_rfio_handle h,  const char * func_name
 gfal_file_handle gfal_rfio_openG(plugin_handle handle , const char* path, int flag, mode_t mode, GError** err){
 	gfal_plugin_rfio_handle h = (gfal_plugin_rfio_handle) handle;
 	gfal_file_handle ret = NULL;
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "  %s ->",__func__);
+	gfal_print_verbose(GFAL_VERBOSE_TRACE, "  %s -> ",__func__);
 	
 	int fd= h->rf->open(path, flag, mode);
 	if(fd <= 0)
