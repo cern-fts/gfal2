@@ -36,6 +36,7 @@ struct GridFTP_stream_state : public GridFTP_Request_state{
 	off_t offset; // file offset in the stream
 	bool eof;     // end of file reached
 	std::auto_ptr<GridFTP_session> sess;    
+	Glib::Threads::Mutex lock;
 
 };
 

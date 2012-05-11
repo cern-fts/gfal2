@@ -153,7 +153,6 @@ void globus_basic_client_callback (void * user_arg,
 				globus_object_t *				error){
 	GridFTP_Request_state* state = (GridFTP_Request_state*) user_arg;	
 	
-	state->status = 0;
 	if(error != GLOBUS_SUCCESS){	
 		char * glob_str;		
 		
@@ -164,7 +163,7 @@ void globus_basic_client_callback (void * user_arg,
 	}else{
 		state->errcode = 0;	
 	}
-		
+	state->status = 0;		
 }
 
 void gridftp_poll_callback(const Glib::Quark & scope, GridFTP_Request_state* state){

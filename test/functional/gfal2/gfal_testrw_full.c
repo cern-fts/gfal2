@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <time.h>
 
 #define BLKLEN 65536
 
@@ -33,14 +34,14 @@ int main(int argc, char **argv)
    char obuf[size];   
    srand(time(NULL));
 
-	printf(" create data of size %d \n", size);
+	printf(" create data of size %ld \n", size);
    for (i = 0; i < size; i++)
 	   obuf[i] = i;
 
 	snprintf(buff_name, 2048, "%s/testrw_full_%d_%d", argv[1], time(NULL),rand());
 
    printf ("creating file name %s\n", buff_name);
-   if ((fd = gfal_open (buff_name, O_WRONLY| O_CREAT, 0644)) < 0) {
+   if ((fd = gfal_open (buff_name, O_WRONLY | O_CREAT, 0644)) < 0) {
 		gfal_posix_check_error();
 		exit (1);
    }

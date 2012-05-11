@@ -1,6 +1,6 @@
 #pragma once
-#ifndef GRIDFTP_RMDIR_MODULE_H
-#define GRIDFTP_RMDIR_MODULE_H
+#ifndef GRIDFTP_RW_MODULE_H
+#define GRIDFTP_RW_MODULE_H
 /*
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,7 @@
 #include "gridftpmodule.h"
 
 
-extern "C" int gfal_gridftp_rmdirG(plugin_handle handle, const char* url , GError** err);
+extern "C" gfal_file_handle gfal_gridftp_openG(plugin_handle ch, const char* url, int flag, mode_t mode, GError** err);
 
-#endif /* GRIDFTP_RMDIR_MODULE_H */ 
+
+#endif /* GRIDFTP_RW_MODULE_H */ 

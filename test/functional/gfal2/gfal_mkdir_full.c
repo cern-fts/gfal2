@@ -36,13 +36,14 @@ int main(int argc, char **argv)
 	printf ("Creating directory  %s ...\n", url);
 	if ( (res =gfal_mkdir (url, 0777)) < 0) {
 		gfal_posix_check_error();
+		g_assert_not_reached();
 	}
 	g_assert( res == 0);
 	g_assert( errno == 0);
 	
 	printf (" verify that the directory exists  .... \n");
 	res = gfal_stat(url, &st);
-	printf(" stat result : %d %d %d",res, errno, gfal_posix_code_error() );
+	printf(" stat result : %d %d %d \n",res, errno, gfal_posix_code_error() );
 	g_assert( res == 0 );
 	g_assert(errno == 0);
 	g_assert(gfal_posix_code_error() ==0);
@@ -50,11 +51,14 @@ int main(int argc, char **argv)
 	
 	
 	// should return eexist
-	printf (" verify that the directory  one more call exists  too  .... \n");	
+	printf (" verify that the directory  one more call exists  too  %s.... \n", url);	
 	res =gfal_mkdir (url, 0777);
 	g_assert( res != 0);
+	printf(" error : %d ", gfal_posix_code_error());
+	gfal_posix_check_error();	
 	g_assert( errno == EEXIST);
 	g_assert(gfal_posix_code_error() == EEXIST);	
+	
 	errno = 0;
 	gfal_posix_clear_error();
 	

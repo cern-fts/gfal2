@@ -41,6 +41,7 @@
 #include "gridftp_rmdir_module.h"
 #include "gridftp_opendir_module.h"
 #include "gridftp_unlink_module.h"
+#include "gridftp_rw_module.h"
 
 typedef globus_gass_copy_glob_stat_t gfal_globus_stat_t;
 
@@ -55,6 +56,12 @@ class GridftpModule
 		
 		// Execute an access call, map on stat due to protocol restrictions
 		virtual void access(const char*  path, int mode);
+		
+		 // Execute a chmod query on path
+		virtual void chmod(const char* path, mode_t mode);
+		
+		 // Execute a open query on path
+		virtual gfal_file_handle open(const char* url, int flag, mode_t mode);			
 
 		//Execute a stat call on a gridftp URL
 		virtual void stat(const char*  path, struct stat * st);
@@ -65,8 +72,7 @@ class GridftpModule
 		 // Execute a mkdir query on path
 		 virtual void mkdir(const char* path, mode_t mode);
 		 
-		 // Execute a chmod query on path
-		virtual void chmod(const char* path, mode_t mode);
+
 		
 		// rmdir query on path
 	    virtual void rmdir(const char* path);	

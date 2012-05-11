@@ -44,6 +44,7 @@ gfal_file_handle GridftpModule::opendir(const char* path)
 						new GridFTP_stream_state(_handle_factory->gfal_globus_ftp_take_handle())
 						));
 	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> [GridftpModule::opendir] ");	
+	Glib::Threads::Mutex::Lock locker(desc->stream->lock);
 	
 	globus_result_t res = globus_ftp_client_list( // start req
 				&(desc->stream->sess->handle),
@@ -80,7 +81,8 @@ struct dirent * GridftpModule::readdir(gfal_file_handle  fh){
 	GridFTP_Dir_desc* desc = static_cast<GridFTP_Dir_desc*>(fh->fdesc);	
 	ssize_t r_size;
 	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> [GridftpModule::readdir] ");	
-	
+	Glib::Threads::Mutex::Lock locker(desc->stream->lock);
+		
 	while(gridftp_readdir_desc_parser(desc) == 0){
 		if( (r_size = gridftp_read_stream(scope_opendir, (desc->stream.get()),
 				desc->buff, readdir_len)) == 0) // end of stream

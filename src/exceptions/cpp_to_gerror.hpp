@@ -34,13 +34,13 @@ namespace Gfal{
 #define CPP_GERROR_TRY do{ \
 							try{
 
-#define CPP_GERROR_CATCH(err)  } \
+#define CPP_GERROR_CATCH(my_err_catched)  } \
 							catch(Glib::Error & e){ \
-								g_set_error(err, e.domain(), e.code(), "%s", e.what().c_str()); \
+								g_set_error(my_err_catched, e.domain(), e.code(), "%s", e.what().c_str()); \
 							}catch(std::exception & e){ \
-								g_set_error(err, 0, EPROTONOSUPPORT, "%s", e.what()); \
+								g_set_error(my_err_catched, 0, EPROTONOSUPPORT, "%s", e.what()); \
 							}catch(...){ \
-								g_set_error(err, 0, EIO, "Undefined Exception catched: Bug found !! "); \
+								g_set_error(my_err_catched, 0, EIO, "Undefined Exception catched: Bug found !! "); \
 							} \
 							}while(0) 	
 }
