@@ -60,7 +60,10 @@ gfal_handle gfal_initG (GError** err)
 	handle->plugin_opt.plugin_number= 0;
 	
 	gfal_plugins_instance(handle, &tmp_err); // load and instanciate all the plugins
-	if(!tmp_err)
+	if(tmp_err){
+		g_free(handle);
+		handle = NULL;	
+	}else
 		gfal_config_container_init(handle);
 	
 	if(tmp_err)

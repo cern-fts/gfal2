@@ -38,7 +38,8 @@ gfal_context_t gfal_context_new(GError ** err){
 	
 
 void gfal_context_free(gfal_context_t context){
-	delete (reinterpret_cast<FileCopy*>(context));
+	if(context)
+		delete (reinterpret_cast<FileCopy*>(context));
 }
 	
 }
