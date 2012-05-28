@@ -25,6 +25,11 @@
  * */
 
 #include <glib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include "gfal_common_srm.h"
 #include <common/gfal_types.h>
 
 int gfal_statG_srmv2_internal(gfal_srmv2_opt* opts, struct stat* buf, const char* endpoint, const char* surl, GError** err);

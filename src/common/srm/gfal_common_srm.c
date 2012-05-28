@@ -246,6 +246,7 @@ char* gfal_get_fullendpoint(const char* surl, GError** err){
  /*
   * map a bdii se protocol type to a gfal protocol type
   */
+  /*
 static enum gfal_srm_proto gfal_get_proto_from_bdii(const char* se_type_bdii){
 	enum gfal_srm_proto resu;
 	if( strcmp(se_type_bdii,"srm_v1") == 0){
@@ -257,7 +258,7 @@ static enum gfal_srm_proto gfal_get_proto_from_bdii(const char* se_type_bdii){
 	}
 	return resu;
 }
-
+*/
 
 /*
  *  brief accessor for the default storage type definition

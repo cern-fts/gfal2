@@ -27,14 +27,65 @@
 #include <transfer/gfal_transfer.h>
 
 #include "gfal_common_srm_getput.h"
+#include "gfal_common_srm_stat.h"
+#include "gfal_common_srm_internal_layer.h"
 
 
 int srm_plugin_get_3rdparty(plugin_handle handle, const char * surl, char* buff, size_t s_buff, GError ** err){
-	return gfal_srm_get_rd3_turl(handle, surl, buff , s_buff, NULL,  err);
+	GError * tmp_err=NULL;
+	int res = -1;
+	if( srm_check_url(surl) ){
+		if( (res =gfal_srm_get_rd3_turl(handle, surl, buff , s_buff, NULL,  err)) == 0){
+			gfal_log(GFAL_VERBOSE_TRACE, "		GET : surl -> turl dst resolution : %s -> %s", surl, buff);		
+		}
+	}else{
+		res =0;
+		g_strlcpy(buff, surl, s_buff);
+		gfal_log(GFAL_VERBOSE_TRACE, "		no SRM resolution needed on %s", surl);					
+	}	
+	G_RETURN_ERR(res, tmp_err, err);		
 }
 
-int srm_plugin_put_3rdparty(plugin_handle handle, const char * surl, char* buff, size_t s_buff, char** reqtoken, GError ** err){
-	return gfal_srm_put_rd3_turl(handle, surl, buff , s_buff, reqtoken,  err);
+int srm_plugin_delete_existing_copy(plugin_handle handle, gfalt_params_t params, 
+									const char * surl, GError ** err){
+	GError * tmp_err=NULL;
+	int res = 0;
+	const gboolean replace = gfalt_get_replace_existing_file(params, NULL);
+	if(replace){
+		if( (res = gfal_srm_unlinkG(handle, surl, &tmp_err)) ==0){
+			gfal_log(GFAL_VERBOSE_TRACE, "   %s found, delete in order to replace it", surl);		
+		}else{
+			if(tmp_err && tmp_err->code == ENOENT){
+				gfal_log(GFAL_VERBOSE_TRACE, "   %s does not exist, begin copy", surl);			
+				g_clear_error(&tmp_err);
+				res =0;
+			}
+			
+		}
+		
+	}
+
+	G_RETURN_ERR(res, tmp_err, err);		
+}
+
+int srm_plugin_put_3rdparty(plugin_handle handle, gfal_context_t context,
+					gfalt_params_t params,  const char * surl, 
+					char* buff, size_t s_buff, 
+					char** reqtoken, GError ** err){
+	GError * tmp_err=NULL;
+	int res = -1;
+	
+	if( srm_check_url(surl)){
+		if( (res = srm_plugin_delete_existing_copy(handle, params, surl, &tmp_err)) ==0){						
+			if(( res= gfal_srm_put_rd3_turl(handle, surl, buff , s_buff, reqtoken,  err))==0)
+				gfal_log(GFAL_VERBOSE_TRACE, "		PUT surl -> turl src resolution : %s -> %s", surl, buff);			
+		}
+	}else{
+		res =0;
+		g_strlcpy(buff, surl, s_buff);
+		gfal_log(GFAL_VERBOSE_TRACE, "		no SRM resolution needed on %s", surl);			
+	}
+	G_RETURN_ERR(res, tmp_err, err);	
 }
 
 
@@ -53,13 +104,11 @@ int plugin_filecopy(plugin_handle handle, gfal_context_t context,
 	char* reqtoken = NULL;
 	
 	if( (res = srm_plugin_get_3rdparty(handle, src, buff_turl_src, GFAL_URL_MAX_LEN, &tmp_err)) ==0 ){ // do the first resolution
-		gfal_log(GFAL_VERBOSE_TRACE, "    surl -> turl src resolution : %s -> %s", src, buff_turl_src);	
 		
-		if( ( res = srm_plugin_put_3rdparty(handle, dst, buff_turl_dst, GFAL_URL_MAX_LEN, &reqtoken, &tmp_err) ) ==0){
-			gfal_log(GFAL_VERBOSE_TRACE, "    surl -> turl dst resolution : %s -> %s", dst, buff_turl_dst);			
+		if( ( res = srm_plugin_put_3rdparty(handle, context, params, dst, buff_turl_dst, GFAL_URL_MAX_LEN, &reqtoken, &tmp_err) ) ==0){		
 					
 			res = gfalt_copy_file(context, params, buff_turl_src, buff_turl_dst, &tmp_err);
-			if( res == 0){
+			if( res == 0 && reqtoken){
 				gfal_log(GFAL_VERBOSE_TRACE, "  transfer executed, execute srm put done");				
 				res= gfal_srm_putdone_simple(handle, dst, reqtoken, &tmp_err);
 			}

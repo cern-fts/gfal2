@@ -126,10 +126,10 @@ ssize_t gfal_srm_preadG(plugin_handle ch, gfal_file_handle fd, void* buff, size_
 /*
  * write function for the srm  plugin
  */
-int gfal_srm_writeG(plugin_handle ch, gfal_file_handle fd, void* buff, size_t count, GError** err){
+ssize_t gfal_srm_writeG(plugin_handle ch, gfal_file_handle fd, const void* buff, size_t count, GError** err){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;	
 	GError* tmp_err=NULL;
-	int ret = gfal_plugin_writeG(opts->handle, gfal_srm_file_handle_map(fd), buff, count, &tmp_err);	
+	int ret = gfal_plugin_writeG(opts->handle, gfal_srm_file_handle_map(fd), (void* )buff, count, &tmp_err);	
 	if(tmp_err)
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
 	return ret;	

@@ -21,12 +21,15 @@
 
 #include "gfal_common_srm.h"
 
+gboolean srm_check_url(const char * surl);
+
 /*
  * 
  * implementation of the plugi_url_transfer_check for the srm plugin
  * Check if the srm plugin is able to handle a given type of URL.
  * 
  * */
+
 gboolean plugin_url_check2(plugin_handle handle, const char* src, const char* dst, gfal_url2_check type );
 
 

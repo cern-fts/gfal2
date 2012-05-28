@@ -19,6 +19,7 @@ FILE(GLOB src_gfaltestrmdirfull "gfal_test_rmdir_full.c")
 FILE(GLOB src_test_readdir_full "gfal_test_readdir_full.c")
 FILE(GLOB src_gfalmkdir_full "gfal_mkdir_full.c")
 FILE(GLOB src_gfaltcopy "gfalt_copyfile.c")
+FILE(GLOB src_gfaltcopy_test "gfalt_copyfile_test.c")
 FILE(GLOB src_copyfile_replace "gfalt_copyfile_replace_test.c")
 
 SET(COPY_SRC "*.sh")
@@ -106,15 +107,19 @@ IF (FUNCTIONAL_TESTS)
 		add_executable(gfal_copyfile ${src_gfaltcopy} )
 		target_link_libraries(gfal_copyfile ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
 		
+		add_executable(gfal_copyfile_test ${src_gfaltcopy_test} ${src_lib_test})
+		target_link_libraries(gfal_copyfile_test ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})		
+		
 		add_executable(copyfile_replace ${src_copyfile_replace} ${src_lib_test})
 		target_link_libraries(copyfile_replace ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
 		
-		copy_files(${COPY_SRC} ${COPY_DST})
-		add_test(functional_copyfile gfal2_copyfile.sh)
-		add_test(functional_copyfile_srm gfal2_copyfile_srm.sh)
+#		copy_files(${COPY_SRC} ${COPY_DST})
+#		add_test(functional_copyfile gfal2_copyfile.sh)
+#		add_test(functional_copyfile_srm gfal2_copyfile_srm.sh)
 		
 	FUNCTION(copy_file_test_full name src_file dir_src)
 		add_test(copyfile_replace_${name} copyfile_replace ${src_file} ${dir_src})
+		add_test(copyfile_test_${name} gfal_copyfile_test ${src_file} ${dir_src})
 	ENDFUNCTION(copy_file_test_full name dir_src)
 			
 	ENDIF (MAIN_TRANSFER)	

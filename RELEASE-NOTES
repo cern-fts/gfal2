@@ -7,12 +7,19 @@ GFAL 2.0 RELEASE-NOTE:
 - split the headers files properly
 - remove the carriage return from the gridftp error messages
 - add plugin dedicaded API.
-
+- refactor the parameter management for the transfer library
+- add the "transfer replace" logic for the transfer library ( FTS 3.0 requirement )
+- add logger system based on the glib log system ( ARC requirement )
+- correct memory leaks and a session-reuse memory corruption for gridftp
+- improve gridFTP global speed with request optimisations.
+- remove the old config/parameters system for the posix library.
+- add several functional tests for the new features.
+- add SRM to X and X to SRM modes to the SRM plugin ( FTS 3.0 requirement )
 
 2.0.0-0.7 :
 - major improvement for third party transfer
 - initial gridftp support
-- begin to swithc to configuration without env var
+- begin to switch to configuration without env var
 
 2.0.0-0.6 :
 - initial tagged release

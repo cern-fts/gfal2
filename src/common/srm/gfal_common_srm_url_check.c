@@ -47,8 +47,9 @@ gboolean plugin_url_check2(plugin_handle handle, const char* src, const char* ds
 	
 	if( src != NULL && dst != NULL){
 		if( type == GFAL_FILE_COPY 
-			&& srm_check_url(src)
-			&& srm_check_url(dst)
+			&& (srm_check_url(src)
+				||  srm_check_url(dst)
+				)
 			){
 				res= TRUE;
 			}
