@@ -76,15 +76,6 @@ class GridFTPFactory : public GridFTPFactoryInterface
 		virtual ~GridFTPFactory();
 
 		/**
-		 * take ownership and allocate a globus gass handle
-		 * */
-		virtual gfal_globus_copy_handle_t take_globus_gass_handle();
-		
-		 /**
-		 * release ownership and free memory of  a globus gass handle
-		 * */	
-		virtual void release_globus_gass_handle(gfal_globus_copy_handle_t*);
-		/**
 		 * provide session handle for most of the operations
 		 * 
 		 * */
@@ -95,16 +86,16 @@ class GridFTPFactory : public GridFTPFactoryInterface
 		 * */		
 		virtual void gfal_globus_ftp_release_handle(GridFTP_session* h) ;
 		
-		virtual gfal_globus_copy_attr_t* take_globus_gass_attr();
-		virtual void release_globus_gass_attr(gfal_globus_copy_attr_t * h);	
 		
 
 	protected:
 		gfal_handle _handle;
 		virtual gfal_handle get_handle();
+		bool gridftp_v2;
 		
 		void gfal_globus_ftp_release_handle_internal(GridFTP_session* sess);
 
+		void configure_gridftp_handle_attr(globus_ftp_client_handleattr_t * attrs);
 		
 	friend struct GridFTP_session_implem;
 };

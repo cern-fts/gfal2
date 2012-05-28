@@ -74,14 +74,11 @@ void GridftpModule::access(const char*  path, int mode){
 void GridftpModule::internal_globus_gass_stat(const char* path,  gfal_globus_stat_t * gl_stat){
 
 	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> [Gridftp_stat_module::globus_gass_stat] ");	
-	gfal_globus_copy_handle_t h = _handle_factory->take_globus_gass_handle();
-	gfal_globus_copy_attr_t * attr = _handle_factory->take_globus_gass_attr();
-	
-	globus_result_t res= globus_gass_copy_stat(&h, (char*)path, attr, gl_stat);
-	
-	_handle_factory->release_globus_gass_attr(attr);
-	_handle_factory->release_globus_gass_handle(&h);
-	gfal_globus_check_result("Gridftp_stat_module::globus_gass_stat", res);	
+	std::auto_ptr<GridFTP_session> sess(_handle_factory->gfal_globus_ftp_take_handle());
+		
+	globus_result_t res= globus_gass_copy_stat(sess->get_gass_handle(), (char*)path, sess->get_gass_attr(), gl_stat);
+	gfal_globus_check_result("GridFTPFileCopyModule::internal_globus_gass_stat", res);
+		
 	errno =0; // clean bad errno number
 	gfal_print_verbose(GFAL_VERBOSE_TRACE," <- [Gridftp_stat_module::globus_gass_stat] ");		
 }

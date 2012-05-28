@@ -29,7 +29,7 @@ void GridftpModule::mkdir(const char* path, mode_t mode)
 	
 	
 	globus_result_t res = globus_ftp_client_mkdir(
-				&(req->sess->handle),
+				req->sess->get_ftp_handle(),
 				path,
 				NULL,
 				globus_basic_client_callback,

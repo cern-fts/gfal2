@@ -81,14 +81,13 @@ inline int gridftp_rw_commit_put(const Glib::Quark & scope, GridFTP_File_desc* d
 }
 
 inline int gridftp_rw_valid_get(const Glib::Quark & scope, GridFTP_File_desc* desc){
-	char buffer[2];
 	if(is_read_only(desc->open_flags)){
 		if(desc->is_eof()){
 			gridftp_wait_for_callback(scope, static_cast<GridFTP_Request_state*>(desc->stream.get()));			
 		}else{
 				gfal_print_verbose(GFAL_VERBOSE_TRACE," not a full read -> kill the connexion ");
 				try{
-					globus_ftp_client_abort(&(desc->stream->sess->handle));
+					globus_ftp_client_abort(desc->stream->sess->get_ftp_handle());
 					gridftp_wait_for_callback(scope, desc->stream.get());	
 				}catch(Glib::Error & e ){
 					// silent !!
@@ -105,7 +104,7 @@ ssize_t gridftp_rw_internal_pread(GridFTPFactoryInterface * factory, GridFTP_Fil
 	std::auto_ptr<GridFTP_stream_state> stream(new GridFTP_stream_state(factory->gfal_globus_ftp_take_handle()));
 	
 	globus_result_t res = globus_ftp_client_partial_get( // start req
-				&(stream->sess->handle),
+				stream->sess->get_ftp_handle(),
 				desc->url.c_str(),
 				NULL,
 				NULL,
@@ -131,7 +130,7 @@ ssize_t gridftp_rw_internal_pwrite(GridFTPFactoryInterface * factory, GridFTP_Fi
 	std::auto_ptr<GridFTP_stream_state> stream(new GridFTP_stream_state(factory->gfal_globus_ftp_take_handle()));
 	
 	globus_result_t res = globus_ftp_client_partial_put( // start req
-				&(stream->sess->handle),
+				stream->sess->get_ftp_handle(),
 				desc->url.c_str(),
 				NULL,
 				NULL,
@@ -168,7 +167,7 @@ gfal_file_handle GridftpModule::open(const char* url, int flag, mode_t mode)
 	if( is_read_only(desc->open_flags) ){	// portability hack for O_RDONLY mask // bet on a full read
 		 gfal_print_verbose(GFAL_VERBOSE_TRACE," -> initialize FTP GET global operations... ");	
 		 res = globus_ftp_client_get( // start req
-					&(desc->stream->sess->handle),
+					desc->stream->sess->get_ftp_handle(),
 					url,
 					NULL,
 					NULL,
@@ -178,7 +177,7 @@ gfal_file_handle GridftpModule::open(const char* url, int flag, mode_t mode)
 	}else if( is_write_only(desc->open_flags) ){
 		 gfal_print_verbose(GFAL_VERBOSE_TRACE," -> initialize FTP PUT global operations ... ");		
 		res = globus_ftp_client_put( // bet on a full write
-					&(desc->stream->sess->handle),
+					desc->stream->sess->get_ftp_handle(),
 					url,
 					NULL,
 					NULL,

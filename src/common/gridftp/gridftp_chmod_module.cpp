@@ -28,7 +28,7 @@ void GridftpModule::chmod(const char* path, mode_t mode)
 	std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(_handle_factory->gfal_globus_ftp_take_handle())); // get connexion session
 	
 	globus_result_t res = globus_ftp_client_chmod(
-				&(req->sess->handle),
+				req->sess->get_ftp_handle(),
 				path,
 				mode,
 				NULL,

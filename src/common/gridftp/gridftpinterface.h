@@ -38,8 +38,16 @@ struct GridFTP_session{
 	
 	virtual ~GridFTP_session(){}
 	
-	globus_ftp_client_handle_t handle;
+	globus_ftp_client_handle_t handle_ftp;
 	globus_ftp_client_handleattr_t attr_handle;
+	globus_gass_copy_attr_t attr_gass;
+	globus_gass_copy_handle_t gass_handle;
+	globus_gass_copy_handleattr_t gass_handle_attr;
+	
+	virtual globus_ftp_client_handle_t* get_ftp_handle()=0;
+	virtual globus_gass_copy_handle_t* get_gass_handle()=0;
+	virtual globus_gass_copy_attr_t* get_gass_attr()=0;	
+	virtual globus_gass_copy_handleattr_t* get_gass_handle_attr()=0;		
 };
 
 
@@ -51,11 +59,6 @@ class GridFTPFactoryInterface
 
 		virtual gfal_handle get_handle()=0;	
 		
-		virtual gfal_globus_copy_handle_t take_globus_gass_handle() = 0;
-		virtual void release_globus_gass_handle(gfal_globus_copy_handle_t*) = 0;
-		
-		virtual gfal_globus_copy_attr_t* take_globus_gass_attr()=0;
-		virtual void release_globus_gass_attr(gfal_globus_copy_attr_t * h)=0;
 		
 		virtual  GridFTP_session* gfal_globus_ftp_take_handle()=0;
 		virtual void gfal_globus_ftp_release_handle(GridFTP_session* h) =0;

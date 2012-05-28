@@ -27,16 +27,16 @@ int GridftpModule::filecopy(gfalt_params_handle params, const char* src, const c
 
 	const unsigned long timeout = gfalt_get_timeout(params, &tmp_err);
 	Gfal::gerror_to_cpp(&tmp_err);
-	gfal_globus_copy_handle_t h = _handle_factory->take_globus_gass_handle();
+	std::auto_ptr<GridFTP_session> sess(_handle_factory->gfal_globus_ftp_take_handle());
 
 	gfal_print_verbose(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);
-	gfal_globus_result_t res = globus_gass_copy_url_to_url 	(&h,
+	gfal_globus_result_t res = globus_gass_copy_url_to_url 	(sess->get_gass_handle(),
 		(char*)src,
 		GLOBUS_NULL,
 		(char*)dst,
 		GLOBUS_NULL 
 		);
-	_handle_factory->release_globus_gass_handle(&h);
+	_handle_factory->gfal_globus_ftp_release_handle(sess.release());
 	gfal_globus_check_result("GridFTPFileCopyModule::filecopy", res);
 	return 0;			
 }

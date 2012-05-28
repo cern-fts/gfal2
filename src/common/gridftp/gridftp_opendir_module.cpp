@@ -46,7 +46,7 @@ gfal_file_handle GridftpModule::opendir(const char* path)
 	Glib::Mutex::Lock locker(desc->stream->lock);
 	
 	globus_result_t res = globus_ftp_client_list( // start req
-				&(desc->stream->sess->handle),
+				desc->stream->sess->get_ftp_handle(),
 				path,
 				NULL,
 				globus_basic_client_callback,

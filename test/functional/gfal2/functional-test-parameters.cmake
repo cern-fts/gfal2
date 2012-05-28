@@ -33,6 +33,18 @@ SET(dcap_stat_ok "${dcap_prefix}/testread0011")
 SET(dcap_chmod_ok "${dcap_prefix}/test_change_right")
 SET(dcap_valid_dir_root "${dcap_prefix}")
 
+SET(file_base_path "/tmp/")
+SET(file_prefix "file://${file_base_path}")
+FILE(WRITE "${file_base_path}/testread_0011" "hello world")
+SET(file_stat_ok "${file_prefix}/testread_0011")
+
+
+stat_test_all("FILE" ${file_stat_ok})
+mkdir_test_all("FILE" ${file_prefix})
+test_readdir_full("FILE" ${file_prefix})
+rwt_test_all("FILE" ${file_prefix} 4578)
+rwt_test_seq("FILE" ${file_prefix} 100 4560)	
+
 IF(PLUGIN_SRM)
 	stat_test_all( "SRM_DPM" ${srm_valid_dpm_stat})
 	stat_test_all( "SRM_DCACHE" ${srm_valid_dcache_stat})
