@@ -77,7 +77,7 @@ int gfalt_copy_file(gfal_context_t handle, gfalt_params_t params,
 	CPP_GERROR_TRY
 	
 		if(params == NULL){
-			gfalt_params_t p = gfalt_params_handle_new(NULL);
+			p = gfalt_params_handle_new(NULL);
 			reinterpret_cast<FileCopy*>(handle)->start_copy(p, src, dst);
 		}
 		else{

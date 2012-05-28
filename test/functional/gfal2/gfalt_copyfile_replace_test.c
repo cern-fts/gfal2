@@ -46,9 +46,9 @@ int main(int argc, char** argv){
 		printf(" transfer sucessfull, valid initial copy! \n");
 		
 	 // copy again -> should fail
-	printf(" try to copy again without replace flag ");
+	printf(" try to copy again without replace flag \n");
 	if( (ret = gfalt_copy_file(handle, NULL, src_uri, dst_uri, &tmp_err) )  != 0){
-		printf(" transfer failed, like wanted, %d ",gfal_posix_code_error());
+		printf(" transfer failed, like wanted, %d \n",gfal_posix_code_error());
 		g_assert( tmp_err->code == EEXIST);
 		g_clear_error(&tmp_err);		
 	}else{
@@ -56,14 +56,14 @@ int main(int argc, char** argv){
 		g_assert_not_reached();		
 	}
 	
-	printf(" create params replace ");
+	printf(" create params replace \n");
 	gfalt_params_t params = gfalt_params_handle_new(&tmp_err);
 	g_assert(tmp_err==NULL);
 	gfalt_set_replace_existing_file(params, TRUE, &tmp_err);
 	g_assert(tmp_err==NULL);
 
 	 
-	printf(" try replace transfer ");	 
+	printf(" try replace transfer \n");	 
 	if( (ret = gfalt_copy_file(handle, params, src_uri, dst_uri, &tmp_err) )  != 0){
 		 printf(" error while the file transfer %d : %s.\n", tmp_err->code,tmp_err->message);
 		 g_assert_not_reached();		 
@@ -71,13 +71,12 @@ int main(int argc, char** argv){
 	}else
 		printf(" second transfer is a success  \n");
 		
-	printf("delete files, and transfer again with replace parameter");
+	printf("delete files, and transfer again with replace parameter \n");
 	if( ( ret = gfal_unlink(dst_uri) ) != 0){
 		gfal_posix_check_error();
 		g_assert_not_reached();
 	}
 	
-	gfalt_set_replace_existing_file(params, FALSE, &tmp_err);
 	printf(" try re-do transfer \n");	 
 	if( (ret = gfalt_copy_file(handle, params, src_uri, dst_uri, &tmp_err) )  != 0){
 		 printf(" error while the file transfer %d : %s.\n", tmp_err->code,tmp_err->message);
@@ -100,6 +99,6 @@ int main(int argc, char** argv){
 		
 	gfalt_params_handle_delete(params, &tmp_err);
 	gfal_context_free(handle);
-	return ret;
+	return 0;
 }
 

@@ -38,13 +38,7 @@ struct GridFTP_session{
 	
 	virtual ~GridFTP_session(){}
 	
-	globus_ftp_client_handle_t handle_ftp;
-	globus_ftp_client_handleattr_t attr_handle;
-	globus_ftp_client_operationattr_t operation_attr_ftp;
-	globus_gass_copy_attr_t attr_gass;
-	globus_gass_copy_handle_t gass_handle;
-	globus_gass_copy_handleattr_t gass_handle_attr;
-	
+
 	virtual globus_ftp_client_handle_t* get_ftp_handle()=0;
 	virtual globus_ftp_client_operationattr_t* get_op_attr_ftp()=0;
 	virtual globus_gass_copy_handle_t* get_gass_handle()=0;
