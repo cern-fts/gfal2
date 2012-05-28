@@ -61,12 +61,11 @@ void handle_creation(){
 	GridftpModule* copy = new GridftpModule(  f);	
 	assert_true_with_message(copy != NULL, " must be a valid ");
 	// create and delete properly
-	GridFTP_session* sess = f->gfal_globus_ftp_take_handle();
+	GridFTP_session* sess = f->gfal_globus_ftp_take_handle("gsiftp://fsdfdsfsd/fsdfds");
 	f->gfal_globus_ftp_release_handle(sess);
-	delete sess;
 	
 	// wild delete for exception clean recovery
-	sess = f->gfal_globus_ftp_take_handle();
+	sess = f->gfal_globus_ftp_take_handle("gsiftp://fsdfdsfsd/fsdfds");
 	delete sess;
 	delete copy;
 	gfal_handle_freeG(h);

@@ -60,7 +60,7 @@ class GridFTPFactoryInterface
 		virtual gfal_handle get_handle()=0;	
 		
 		
-		virtual  GridFTP_session* gfal_globus_ftp_take_handle()=0;
+		virtual  GridFTP_session* gfal_globus_ftp_take_handle(const std::string & hostname)=0;
 		virtual void gfal_globus_ftp_release_handle(GridFTP_session* h) =0;
 						
 	protected:

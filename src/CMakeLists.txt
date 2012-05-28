@@ -13,6 +13,8 @@ SET(PLUGIN_DCAP TRUE
 
 	
 SET(IS_IFCE FALSE)
+# subdir import
+add_subdirectory(externals/utils)
 
 ## defaults sources
 FILE(GLOB src_posix "posix/*.c")
@@ -38,13 +40,14 @@ SET(common_dir	"common/")
 SET(posix_dir	"posix/")
 SET(mds_dir	"common/mds/")
 SET(global_dir	".")
+SET(externals_dir	"externals/")
 
 
 # gfal2 link and link dir
 SET(gfal2_link "gfal2")
 
 LIST(APPEND headers_main ${common_dir} ${posix_dir} ${global_dir} 
-			${mds_dir} )
+			${mds_dir}  ${externals_dir})
 
 include_directories(${headers_main} ${GLIB2_PKG_INCLUDE_DIRS} 
 						${GTHREAD2_PKG_INCLUDE_DIRS})
@@ -70,7 +73,7 @@ ELSE (IS_IFCE)
 	
 ENDIF(IS_IFCE)
 
-LIST(APPEND main_libs ${src_posix} ${src_common} ${mds_source})
+LIST(APPEND main_libs ${src_posix} ${src_common} ${mds_source} ${src_uri})
 
 
 IF (MAIN_CORE)
@@ -245,7 +248,8 @@ ENDIF(PLUGIN_DCAP)
 add_subdirectory(global)
 add_subdirectory(transfer)                         
 add_subdirectory(common/gridftp)    
-add_subdirectory(common/srm/test)                        
+add_subdirectory(common/srm/test)  
+                      
 
 
 

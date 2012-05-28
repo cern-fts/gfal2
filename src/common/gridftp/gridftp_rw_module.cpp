@@ -101,7 +101,7 @@ inline int gridftp_rw_valid_get(const Glib::Quark & scope, GridFTP_File_desc* de
 ssize_t gridftp_rw_internal_pread(GridFTPFactoryInterface * factory, GridFTP_File_desc* desc, void* buffer, size_t s_buff,
 									off_t offset){ // throw Gfal::CoreException								
 	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> [GridftpModule::internal_pread]");										
-	std::auto_ptr<GridFTP_stream_state> stream(new GridFTP_stream_state(factory->gfal_globus_ftp_take_handle()));
+	std::auto_ptr<GridFTP_stream_state> stream(new GridFTP_stream_state(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(desc->url.c_str()))));
 	
 	globus_result_t res = globus_ftp_client_partial_get( // start req
 				stream->sess->get_ftp_handle(),
@@ -127,7 +127,7 @@ ssize_t gridftp_rw_internal_pread(GridFTPFactoryInterface * factory, GridFTP_Fil
 ssize_t gridftp_rw_internal_pwrite(GridFTPFactoryInterface * factory, GridFTP_File_desc* desc, const void* buffer, size_t s_buff,
 									off_t offset){ // throw Gfal::CoreException								
 	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> [GridftpModule::internal_pwrite]");										
-	std::auto_ptr<GridFTP_stream_state> stream(new GridFTP_stream_state(factory->gfal_globus_ftp_take_handle()));
+	std::auto_ptr<GridFTP_stream_state> stream(new GridFTP_stream_state(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(desc->url.c_str()))));
 	
 	globus_result_t res = globus_ftp_client_partial_put( // start req
 				stream->sess->get_ftp_handle(),
@@ -157,7 +157,7 @@ gfal_file_handle GridftpModule::open(const char* url, int flag, mode_t mode)
 {
 	
 	std::auto_ptr<GridFTP_File_desc> desc(new GridFTP_File_desc(
-							new GridFTP_stream_state(_handle_factory->gfal_globus_ftp_take_handle()),
+							new GridFTP_stream_state(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(url))),
 							url,
 							flag)
 						);

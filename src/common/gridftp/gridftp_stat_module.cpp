@@ -74,7 +74,7 @@ void GridftpModule::access(const char*  path, int mode){
 void GridftpModule::internal_globus_gass_stat(const char* path,  gfal_globus_stat_t * gl_stat){
 
 	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> [Gridftp_stat_module::globus_gass_stat] ");	
-	std::auto_ptr<GridFTP_session> sess(_handle_factory->gfal_globus_ftp_take_handle());
+	std::auto_ptr<GridFTP_session> sess(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)));
 		
 	globus_result_t res= globus_gass_copy_stat(sess->get_gass_handle(), (char*)path, sess->get_gass_attr(), gl_stat);
 	gfal_globus_check_result("GridFTPFileCopyModule::internal_globus_gass_stat", res);

@@ -27,7 +27,7 @@ int GridftpModule::filecopy(gfalt_params_handle params, const char* src, const c
 
 	const unsigned long timeout = gfalt_get_timeout(params, &tmp_err);
 	Gfal::gerror_to_cpp(&tmp_err);
-	std::auto_ptr<GridFTP_session> sess(_handle_factory->gfal_globus_ftp_take_handle());
+	std::auto_ptr<GridFTP_session> sess(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(src)));
 
 	gfal_print_verbose(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);
 	gfal_globus_result_t res = globus_gass_copy_url_to_url 	(sess->get_gass_handle(),

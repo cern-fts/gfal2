@@ -46,6 +46,52 @@ struct GridFTP_stream_state : public GridFTP_Request_state{
 
 };
 
+				
+
+class GridFTPFactory : public GridFTPFactoryInterface
+{
+	public:
+		GridFTPFactory(gfal_handle handle );
+		virtual ~GridFTPFactory();
+
+		/**
+		 * provide session handle for most of the operations
+		 * 
+		 * */
+		virtual  GridFTP_session* gfal_globus_ftp_take_handle(const std::string & hostname);
+		/**
+		 * destruct an existing session handle, close the connection and desallocate memory
+		 * 
+		 * */		
+		virtual void gfal_globus_ftp_release_handle(GridFTP_session* h) ;
+		
+		
+
+	private:
+		gfal_handle _handle;
+		virtual gfal_handle get_handle();
+		bool gridftp_v2;
+		bool session_reuse;
+		unsigned int size_cache;
+		// session cache
+		std::multimap<std::string, GridFTP_session*> sess_cache;
+		Glib::Mutex mux_cache;
+		void recycle_session(GridFTP_session* sess);
+		void clear_cache();
+		GridFTP_session* get_recycled_handle(const std::string & hostname);
+		GridFTP_session* get_new_handle(const std::string & hostname);
+		
+		
+		
+		void gfal_globus_ftp_release_handle_internal(GridFTP_session* sess);
+
+		void configure_gridftp_handle_attr(globus_ftp_client_handleattr_t * attrs);
+	
+	
+		
+	friend struct GridFTP_session_implem;
+};
+
 void globus_basic_client_callback (void * user_arg, 
 				globus_ftp_client_handle_t *		handle,
 				globus_object_t *				error);
@@ -67,38 +113,7 @@ ssize_t gridftp_read_stream(const Glib::Quark & scope, GridFTP_stream_state* str
 				
 // do atomic write operation from globus async call
 ssize_t gridftp_write_stream(const Glib::Quark & scope, GridFTP_stream_state* stream,
-				const void* buffer, size_t s_write, bool eof);				
-
-class GridFTPFactory : public GridFTPFactoryInterface
-{
-	public:
-		GridFTPFactory(gfal_handle handle );
-		virtual ~GridFTPFactory();
-
-		/**
-		 * provide session handle for most of the operations
-		 * 
-		 * */
-		virtual  GridFTP_session* gfal_globus_ftp_take_handle();
-		/**
-		 * destruct an existing session handle, close the connection and desallocate memory
-		 * 
-		 * */		
-		virtual void gfal_globus_ftp_release_handle(GridFTP_session* h) ;
-		
-		
-
-	protected:
-		gfal_handle _handle;
-		virtual gfal_handle get_handle();
-		bool gridftp_v2;
-		
-		void gfal_globus_ftp_release_handle_internal(GridFTP_session* sess);
-
-		void configure_gridftp_handle_attr(globus_ftp_client_handleattr_t * attrs);
-		
-	friend struct GridFTP_session_implem;
-};
+				const void* buffer, size_t s_write, bool eof);
 
 /**
  * throw Glib::Error if error associated with this result
@@ -110,5 +125,7 @@ void gfal_globus_check_result(const Glib::Quark & scope, gfal_globus_result_t re
  * throw Glib::Error if error is present
  * */
 void gfal_globus_check_error(const Glib::Quark & scope,  globus_object_t *	error);
+
+std::string gridftp_hostname_from_url(const char * url);
 
 #endif /* GRIDFTPWRAPPER_H */ 

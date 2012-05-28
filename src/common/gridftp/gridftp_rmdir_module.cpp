@@ -26,7 +26,7 @@ void GridftpModule::rmdir(const char* path)
 	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> [GridftpModule::rmdir] ");
 	
 	try{
-		std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(_handle_factory->gfal_globus_ftp_take_handle())); // get connexion session
+		std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)))); // get connexion session
 		
 		globus_result_t res = globus_ftp_client_rmdir(
 					req->sess->get_ftp_handle(),

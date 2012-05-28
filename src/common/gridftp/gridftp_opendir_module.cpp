@@ -40,7 +40,7 @@ gfal_file_handle GridftpModule::opendir(const char* path)
 {
 	ssize_t r_size;
 	std::auto_ptr<GridFTP_Dir_desc> desc(new GridFTP_Dir_desc(
-						new GridFTP_stream_state(_handle_factory->gfal_globus_ftp_take_handle())
+						new GridFTP_stream_state(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)))
 						));
 	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> [GridftpModule::opendir] ");	
 	Glib::Mutex::Lock locker(desc->stream->lock);
