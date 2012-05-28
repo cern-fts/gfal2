@@ -85,6 +85,12 @@ guint gfalt_get_nbstreams(gfalt_params_t params, GError** err);
 gint gfalt_set_replace_existing_file(gfalt_params_t, gboolean replace, GError** err);
 
 /**
+ *  get the policy in case of destination file already existing ( replace or cancel )
+ * default : cancel
+ * */
+gboolean gfalt_get_replace_existing_file(gfalt_params_t,  GError** err);
+
+/**
  * default offset for the copy of the file ( retry function )
  * default : 0
  * */

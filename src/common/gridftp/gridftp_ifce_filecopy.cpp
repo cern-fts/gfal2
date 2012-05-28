@@ -16,9 +16,29 @@
  */
 
 
-
+#include "gridftp_exist.h"
 #include "gridftp_ifce_filecopy.h"
 #include <transfer/gfal_transfer_types_internal.h>
+
+const Glib::Quark scope_filecopy("GridFTP::Filecopy");
+
+void gridftp_filecopy_delete_existing(GridFTP_session * sess, gfalt_params_t params, const char * url){
+	const bool replace = gfalt_get_replace_existing_file(params,NULL);
+	bool exist = gridftp_module_file_exist(sess, url);	
+	if(exist){
+
+		if(replace){
+			gfal_log(GFAL_VERBOSE_TRACE, " File %s already exist, delete it for override ....",url); 
+			gridftp_unlink_internal(sess, url, false);
+			gfal_log(GFAL_VERBOSE_TRACE, " File %s deleted with success, proceed to copy ....",url); 									
+		}else{
+			char err_buff[GFAL_ERRMSG_LEN];
+			snprintf(err_buff, GFAL_ERRMSG_LEN, " Destination already exist %s, Cancel", url);
+			throw Gfal::CoreException(scope_filecopy, err_buff, EEXIST);
+		}
+	}
+	
+}
 
 
 int GridftpModule::filecopy(gfalt_params_t params, const char* src, const char* dst){
@@ -29,6 +49,8 @@ int GridftpModule::filecopy(gfalt_params_t params, const char* src, const char* 
 	Gfal::gerror_to_cpp(&tmp_err);
 	std::auto_ptr<GridFTP_session> sess(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(src)));
 
+	gridftp_filecopy_delete_existing(sess.get(), params, dst);
+
 	gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);
 	gfal_globus_result_t res = globus_gass_copy_url_to_url 	(sess->get_gass_handle(),
 		(char*)src,
@@ -36,7 +58,6 @@ int GridftpModule::filecopy(gfalt_params_t params, const char* src, const char* 
 		(char*)dst,
 		GLOBUS_NULL 
 		);
-	_handle_factory->gfal_globus_ftp_release_handle(sess.release());
 	gfal_globus_check_result("GridFTPFileCopyModule::filecopy", res);
 	return 0;			
 }

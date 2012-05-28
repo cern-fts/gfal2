@@ -1,8 +1,10 @@
 #
 # compilation lines for examples
 
+# lib test
+FILE(GLOB src_lib_test "gfal_lib_test.c")
 
-# gfal stat
+# list tests
 FILE(GLOB src_gfalstat "gfal_teststat.c")
 FILE(GLOB src_gfal_testchmod "gfal_testchmod.c")
 FILE(GLOB src_gfalread "gfal_testread.c")
@@ -17,6 +19,7 @@ FILE(GLOB src_gfaltestrmdirfull "gfal_test_rmdir_full.c")
 FILE(GLOB src_test_readdir_full "gfal_test_readdir_full.c")
 FILE(GLOB src_gfalmkdir_full "gfal_mkdir_full.c")
 FILE(GLOB src_gfaltcopy "gfalt_copyfile.c")
+FILE(GLOB src_copyfile_replace "gfalt_copyfile_replace_test.c")
 
 SET(COPY_SRC "*.sh")
 SET(COPY_DST "${CMAKE_CURRENT_BINARY_DIR}/")
@@ -102,10 +105,18 @@ IF (FUNCTIONAL_TESTS)
 
 		add_executable(gfal_copyfile ${src_gfaltcopy} )
 		target_link_libraries(gfal_copyfile ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
-
+		
+		add_executable(copyfile_replace ${src_copyfile_replace} ${src_lib_test})
+		target_link_libraries(copyfile_replace ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
+		
 		copy_files(${COPY_SRC} ${COPY_DST})
 		add_test(functional_copyfile gfal2_copyfile.sh)
 		add_test(functional_copyfile_srm gfal2_copyfile_srm.sh)
+		
+	FUNCTION(copy_file_test_full name src_file dir_src)
+		add_test(copyfile_replace_${name} copyfile_replace ${src_file} ${dir_src})
+	ENDFUNCTION(copy_file_test_full name dir_src)
+			
 	ENDIF (MAIN_TRANSFER)	
 
 	include(functional-test-parameters.cmake)	

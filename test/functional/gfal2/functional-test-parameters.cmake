@@ -18,6 +18,7 @@ SET(srm_valid_dcache_dir_root "${srm_prefix_dcache}")
 
 SET(gsiftp_prefix_dpm "gsiftp://cvitbdpm1.cern.ch/dpm/cern.ch/home/dteam/gfal2-tests")
 SET(gsiftp_valid_dpm_stat "${gsiftp_prefix_dpm}/testread0011")
+SET(gsiftp_valid_dpm_src_file "${gsiftp_valid_dpm_stat}")
 SET(gsiftp_valid_dpm_chmod "${gsiftp_prefix_dpm}/test_change_right_gsiftp")
 SET(gsiftp_valid_dir_root "${gsiftp_prefix_dpm}")
 
@@ -101,3 +102,7 @@ IF(PLUGIN_GRIDFTP)
 	rwt_test_seq("GRIDFTP" ${gsiftp_valid_dir_root} 100 4560)
 	rwt_test_seq("GRIDFTP_unit" ${gsiftp_valid_dir_root} 1 10)		
 ENDIF(PLUGIN_GRIDFTP)
+
+IF (MAIN_TRANSFER)
+	copy_file_test_full("GRIDFTP_DPM"  ${gsiftp_valid_dpm_src_file} ${gsiftp_prefix_dpm})	
+ENDIF (MAIN_TRANSFER)

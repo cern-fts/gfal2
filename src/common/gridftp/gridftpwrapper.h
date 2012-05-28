@@ -17,18 +17,21 @@
 
 #include "gridftpmodule.h"
 
+enum Gridftp_request_status{
+	GRIDFTP_REQUEST_NOT_LAUNCHED,
+	GRIDFTP_REQUEST_RUNNING,
+	GRIDFTP_REQUEST_FINISHED,
+};
+
 struct GridFTP_Request_state{
-	GridFTP_Request_state(GridFTP_session * s) : sess(s){
-		status=1;
-		done = false;
-	}
+	GridFTP_Request_state(GridFTP_session * s, bool own_session=true);
 	virtual ~GridFTP_Request_state();
 	
 	std::auto_ptr<GridFTP_session> sess;  
-	bool done; 	  // true if the request is finished correctly, else abort() will be called before destruction
-	int status;
+	Gridftp_request_status req_status;
     int errcode;
     std::string	error;	
+    bool own_session;
 };
 
 struct GridFTP_stream_state : public GridFTP_Request_state{
@@ -40,7 +43,7 @@ struct GridFTP_stream_state : public GridFTP_Request_state{
 	bool eof;     // end of file reached
 
 	bool finished(){
-		return done;
+		return (req_status==GRIDFTP_REQUEST_FINISHED);
 	}
 	Glib::Mutex lock;
 

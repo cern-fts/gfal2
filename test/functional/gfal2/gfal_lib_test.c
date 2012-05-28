@@ -1,7 +1,6 @@
-#pragma once
-#ifndef GRIDFTP_UNLINK_MODULE_H
-#define GRIDFTP_UNLINK_MODULE_H
 /*
+ * Copyright (c) Members of the EGEE Collaboration. 2004.
+ * See http://www.eu-egee.org/partners/ for details on the copyright holders.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+ 
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
-#include "gridftpmodule.h"
+char* generate_random_uri(const char* uri_dir, const char* prefix, char* buff, size_t s_buff){
+	snprintf(buff, s_buff, "%s/%s_%ld%ld",uri_dir, prefix, (long) time(NULL), (long) rand());
+	return buff;
+}
 
-void gridftp_unlink_internal(GridFTP_session* sess, const char * path, bool own_session=true);
+#include "gfal_lib_test.h"
 
-extern "C" int gfal_gridftp_unlinkG(plugin_handle handle, const char* url, GError** err);
 
-#endif /* GRIDFTP_UNLINK_MODULE_H */ 
+
+

@@ -28,6 +28,7 @@ void gfalt_params_handle_init(gfalt_params_t p, GError ** err){
 	p->nb_data_streams = GFALT_DEFAULT_NB_STREAM;
 	p->timeout = GFALT_DEFAULT_TRANSFERT_TIMEOUT;
 	p->start_offset = 0;
+	p->replace_existing = false;
 	uuid_clear(p->uuid);		
 }
 
@@ -70,6 +71,11 @@ gint gfalt_set_replace_existing_file(gfalt_params_t params, gboolean replace, GE
 	g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");	
 	params->replace_existing	= replace;
 	return 0;
+}
+
+gboolean gfalt_get_replace_existing_file(gfalt_params_t params,  GError** err){
+	g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");		
+	return params->replace_existing;	
 }
 
 gint gfalt_set_offset_from_source(gfalt_params_t params, off_t offset, GError** err){

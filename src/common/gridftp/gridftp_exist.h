@@ -1,6 +1,7 @@
 #pragma once
-#ifndef GRIDFTP_UNLINK_MODULE_H
-#define GRIDFTP_UNLINK_MODULE_H
+#ifndef GRIDFTP_EXIST_H
+#define GRIDFTP_EXIST_H
+
 /*
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +16,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+ 
 #include "gridftpmodule.h"
 
-void gridftp_unlink_internal(GridFTP_session* sess, const char * path, bool own_session=true);
+bool gridftp_module_file_exist(GridFTP_session* sess, const char * url);
 
-extern "C" int gfal_gridftp_unlinkG(plugin_handle handle, const char* url, GError** err);
 
-#endif /* GRIDFTP_UNLINK_MODULE_H */ 
+
+
+#endif /* GRIDFTP_EXIST_H */ 

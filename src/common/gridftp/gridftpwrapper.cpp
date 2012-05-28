@@ -32,6 +32,7 @@ struct GridFTP_session_implem : public GridFTP_session{
 	}
 	
 	GridFTP_session_implem( GridFTP_session_implem *src){
+		operation_attr_ftp = src->operation_attr_ftp;
 		handle_ftp = src->handle_ftp;
 		attr_handle= src->attr_handle;
 		attr_gass= src->attr_gass;
@@ -59,6 +60,10 @@ struct GridFTP_session_implem : public GridFTP_session{
 			return &attr_gass;
 	}
 	
+	virtual globus_ftp_client_operationattr_t* get_op_attr_ftp(){
+		return &operation_attr_ftp;
+	}	
+	
 	virtual globus_gass_copy_handleattr_t* get_gass_handle_attr(){
 			return &gass_handle_attr;
 	}
@@ -66,7 +71,8 @@ struct GridFTP_session_implem : public GridFTP_session{
 	virtual void purge(){
 		globus_gass_copy_handle_destroy(&(gass_handle));
 		globus_ftp_client_handleattr_destroy(&(attr_handle));
-		globus_gass_copy_handleattr_destroy(&(gass_handle_attr));		
+		globus_gass_copy_handleattr_destroy(&(gass_handle_attr));	
+		globus_ftp_client_operationattr_destroy(&(operation_attr_ftp));			
 	}	
 	
 	std::string hostname;		
@@ -86,9 +92,18 @@ void GridFTPFactory::configure_gridftp_handle_attr(globus_ftp_client_handleattr_
 	globus_ftp_client_handleattr_set_cache_all(attrs, GLOBUS_TRUE);	// enable session re-use
 }
 
+
+GridFTP_Request_state::GridFTP_Request_state(GridFTP_session * s, bool own_session) : sess(s){
+	req_status=GRIDFTP_REQUEST_NOT_LAUNCHED;
+	this-> own_session = own_session;
+}
+
 GridFTP_Request_state::~GridFTP_Request_state()
 {
-	if(!done){
+	if(!own_session)
+		sess.release(); // cancel the automatic memory management
+	
+	if(req_status == GRIDFTP_REQUEST_RUNNING){
 		gfal_log(GFAL_VERBOSE_TRACE,"cancel current running gridftp request... ");
 		globus_ftp_client_abort(sess->get_ftp_handle());
 		gridftp_wait_for_callback(scope_request, this);
@@ -156,7 +171,7 @@ static int scan_errstring(const char *p) {
     int ret = ECOMM;
     if (p == NULL) return ret;
 
-    if (strstr(p, "o such file"))
+    if (strstr(p, "o such file") || strstr(p, "File not found"))
         ret = ENOENT;
     else if (strstr(p, "ermission denied") || strstr(p, "credential"))
         ret = EACCES;
@@ -210,6 +225,11 @@ void gfal_globus_check_error(const Glib::Quark & scope,  globus_object_t *	error
 GridFTP_session* GridFTPFactory::get_new_handle(const std::string & hostname){
 	std::auto_ptr<GridFTP_session> sess(new GridFTP_session_implem(this, hostname));
 	globus_result_t res;
+	
+	// init operation attr
+	res= globus_ftp_client_operationattr_init(&(sess->operation_attr_ftp)); 	
+	gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_ops_attr", res);	
+		
 	// initialize gass copy attr
 	res = globus_gass_copy_attr_init(&(sess->attr_gass));
 	gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);		
@@ -273,21 +293,20 @@ void globus_basic_client_callback (void * user_arg,
 				globus_ftp_client_handle_t *		handle,
 				globus_object_t *				error){
 	GridFTP_Request_state* state = (GridFTP_Request_state*) user_arg;	
-	state->done = true;	
 	
 	if(error != GLOBUS_SUCCESS){	
 		gfal_globus_store_error(state, error);
 	}else{
 		state->errcode = 0;	
 	}
-	state->status = 0;	
+	state->req_status = GRIDFTP_REQUEST_FINISHED;	
 }
 
 
 
 void gridftp_poll_callback(const Glib::Quark & scope, GridFTP_Request_state* state){
 	gfal_log(GFAL_VERBOSE_TRACE," -> go polling for request ");
-	while(state->status !=0 )
+	while(state->req_status != GRIDFTP_REQUEST_FINISHED )
 			usleep(10);	
 	gfal_log(GFAL_VERBOSE_TRACE," <- out of polling for request ");			
 }
@@ -303,23 +322,11 @@ void gridftp_wait_for_callback(const Glib::Quark & scope, GridFTP_Request_state*
 }
 
 void gridftp_wait_for_read(const Glib::Quark & scope, GridFTP_stream_state* state, off_t end_read){
-	gfal_log(GFAL_VERBOSE_TRACE," -> go polling for read ");
-
-	while(state->status !=0)
-			usleep(10);			
-	if(state->errcode != 0)	
-		throw Gfal::CoreException(scope,  state->error, state->errcode);
-	gfal_log(GFAL_VERBOSE_TRACE," <- out of polling for read ");			
+	gridftp_wait_for_callback(scope, state);		
 }
 
 void gridftp_wait_for_write(const Glib::Quark & scope, GridFTP_stream_state* state, off_t end_write){
-	gfal_log(GFAL_VERBOSE_TRACE," -> go polling for write ");
-
-	while(state->status !=0)
-			usleep(10);			
-	if(state->errcode != 0)	
-		throw Gfal::CoreException(scope,  state->error, state->errcode);
-	gfal_log(GFAL_VERBOSE_TRACE," <- out of polling for write ");			
+	gridftp_wait_for_callback(scope, state);			
 }
 
 
@@ -345,7 +352,7 @@ static void gfal_griftp_stream_read_callback(void *user_arg, globus_ftp_client_h
 			state->errcode =0;
 		}		
 	}
-	state->status = 0;		
+	state->req_status = GRIDFTP_REQUEST_FINISHED;		
 }
 
 
@@ -370,7 +377,7 @@ static void gfal_griftp_stream_write_callback(void *user_arg, globus_ftp_client_
 			state->errcode =0;
 		}		
 	}
-	state->status = 0;		
+	state->req_status = GRIDFTP_REQUEST_FINISHED;		
 }
 
 ssize_t gridftp_read_stream(const Glib::Quark & scope,
@@ -390,7 +397,7 @@ ssize_t gridftp_read_stream(const Glib::Quark & scope,
 	); 		
 	gfal_globus_check_result(scope, res);	
 	gridftp_wait_for_read(scope, stream, initial_offset + s_read);	
-	stream->status =1;
+	stream->req_status =GRIDFTP_REQUEST_NOT_LAUNCHED;
 	return stream->offset - initial_offset;							
 }
 
@@ -413,7 +420,7 @@ ssize_t gridftp_write_stream(const Glib::Quark & scope,
 	); 		
 	gfal_globus_check_result(scope, res);	
 	gridftp_wait_for_write(scope, stream, initial_offset + s_write);	
-	stream->status =1;
+	stream->req_status =GRIDFTP_REQUEST_NOT_LAUNCHED;
 	return stream->offset - initial_offset;							
 }
 
