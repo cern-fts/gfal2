@@ -128,6 +128,21 @@ gfal_file_handle gfal_file_handle_ext_new(const char*  module_name, gpointer fde
 	return f;
 }
  
+
+/**
+* return the file descriptor of this gfal file handle
+*/
+gpointer gfal_file_handle_get_fdesc(gfal_file_handle fh){
+	return fh->fdesc;
+}
+
+/**
+* return the user data of this gfal file descriptor
+*/
+gpointer gfal_file_handle_get_user_data(gfal_file_handle fh){
+	return fh->ext_data;
+}
+
  /*
  * 
  * return the file handle associated with the file_desc

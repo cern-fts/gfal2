@@ -24,6 +24,7 @@
  */
 
 #include <common/gfal_common_plugin_interface.h>
+#include <fdesc/gfal_file_handle.h>
 #include <gfal_api.h>
 
 #endif  //_GFAL2_PLUGIN_API_

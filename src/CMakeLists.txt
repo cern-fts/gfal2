@@ -15,6 +15,7 @@ SET(PLUGIN_DCAP TRUE
 SET(IS_IFCE FALSE)
 # subdir import
 add_subdirectory(externals/utils)
+add_subdirectory(fdesc)
 
 ## defaults sources
 FILE(GLOB src_posix "posix/*.c")
@@ -123,7 +124,6 @@ IF (MAIN_CORE)
 			DESTINATION ${DOC_INSTALL_DIR}/examples/ ) # install examples 
 			
 	install(FILES 	"global/gfal_global.h"
-					"global/gfal_global.hpp"
 			DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/global)
 
 ENDIF (MAIN_CORE)

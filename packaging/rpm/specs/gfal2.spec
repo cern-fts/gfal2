@@ -1,8 +1,8 @@
-%define checkout_tag 2012050413snap
+%define checkout_tag 2012052812snap
 
 Name:				gfal2
 Version:			2.0.0
-Release:			0.7.%{checkout_tag}%{?dist}
+Release:			0.8.%{checkout_tag}%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -196,11 +196,8 @@ make DESTDIR=%{buildroot} install
 
 %files devel
 %defattr (-,root,root)
-%{_includedir}/gfal2/gfal_api.h
-%{_includedir}/gfal2/common/*
-%{_includedir}/gfal2/posix/gfal_posix_api.h
-%{_includedir}/gfal2/global/*.h*
-%{_includedir}/gfal2/transfer/*.h*
+%{_includedir}/gfal2/*.h
+%{_includedir}/gfal2/*/*.h
 %{_libdir}/pkgconfig/gfal2.pc
 %{_libdir}/pkgconfig/gfal_transfer.pc
 %{_libdir}/libgfal2.so
@@ -251,6 +248,9 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Fri May 04 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-0.8.2012052812snap
+ - Snapshot of the 0.8 version for testing.
+
 * Fri May 04 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-0.7.2012050413snap
  - Improve gridftp plugin with severals other calls
  - Correct dcap/rfio/srm bugs related to error report
