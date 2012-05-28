@@ -25,18 +25,3 @@
 
 #include "gfal_prototypes.h"
 #include "gfal_types.h"
-
-void gfal_config_container_init(gfal_handle  handle);
-
-void gfal_config_container_delete(gfal_handle  handle);
-
-
-void gfal_config_set_boolean(gfal_handle handle, const char* namespace, const char* key, gboolean value);
-
-gboolean gfal_config_get_boolean(gfal_handle handle, const char* namespace, const char* key, GError** err);
-
-
-void gfal_config_set_string(gfal_handle handle, const char* namespace, const char* key, const char* value);
-
-
-char* gfal_config_get_string(gfal_handle handle, const char* namespace, const char* key, GError** err);

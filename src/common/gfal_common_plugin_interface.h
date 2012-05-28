@@ -331,24 +331,6 @@ struct _gfal_plugin_interface{
 	 * */
 	 int (*setxattrG)(plugin_handle plugin_data, const char* url, const char* key,
 					const void* buff , size_t s_buff, int flags, GError** err);
-
-
-	 /**
-	  *  this function is called to inform plugin of a new parameter
-	  *  must return 1 if this parameter is used by the plugin else return 0
-	  *  @warning must be a NULL pointer if not used
-	  * 
-	  * */
-	 int (*is_used_parameter)(plugin_handle, const char* namespacep, const char* key);
-
-	 /**
-	  *  called when a change occures on a parameter
-	  *  push the information to the plugins
-	  *  to check the new value associated with the key, call gfal_get_*_parameter functions
-	  *  @warning must be a NULL pointer if not used
-	  *  @return 0 if parameter changed or if no parameter triggered, -1 if major error with the new parameter
-	  **/
-	 void (*notify_change_parameter)(plugin_handle, const char* namespacep, const char* key);
 	 
 	 // reserved for future usage
 	 //! @cond

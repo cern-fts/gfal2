@@ -61,10 +61,14 @@ struct _gfal_descriptors_container{
 	
 };
 
-struct _gfal_conf_container{
-	GData*  conf;
-	GMutex* mux;	
-};
+typedef struct _gfal_conf_elem{
+	GKeyFile * key_file;
+} *gfal_conf_elem_t;
+
+typedef struct _gfal_conf{
+	GHashTable * cont_config;
+	GMutex* mux;
+} *gfal_conf_t;
 
 
  
@@ -75,7 +79,7 @@ struct gfal_handle_ {		// define the protocole version of SRM choosen by default
 	//struct for the file descriptors
 	gfal_descriptors_container fdescs;
 	int no_bdii_check;
-	gfal_conf_container st_config;
+	gfal_conf_t conf;
 };
 
 

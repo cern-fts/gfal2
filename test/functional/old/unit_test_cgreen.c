@@ -49,7 +49,6 @@
 #include "posix/test__gfal_posix_read.h"
 #include "posix/test__gfal_posix_write.h"
 #include "posix/test__gfal_posix_opendir.h"
-#include "posix/test__gfal_posix_parameter.h"
 #include "posix/test__gfal_posix_xattr.h"
 #include "common/rfio/test__gfal_rfio_plugin.h"
 
@@ -219,7 +218,7 @@ TestSuite* posix_opendir_suite(){
       return tc_opendir;	
 }
 
-
+/*
 TestSuite* posix_parameter_suite(){
   TestSuite* tc_parameter = create_test_suite();  
   add_test(tc_parameter, test_posix_set_get_parameter);
@@ -227,7 +226,7 @@ TestSuite* posix_parameter_suite(){
   add_test(tc_parameter, test_posix_set_get_infosys_parameter);
   add_test(tc_parameter, test_posix_set_get_lfc_host_parameter);
   return tc_parameter;  
-}
+}*/
 
 TestSuite* posix_xattr_suite(){
   TestSuite* tc_xattr = create_test_suite();  
@@ -258,29 +257,6 @@ TestSuite* posix_access_suite (void)
   add_test(tc_access, gfal2_test_access_posix_srm_exist);
   add_test(tc_access, gfal2_test_access_posix_srm_read);
   add_test(tc_access, gfal2_test_access_posix_srm_write);
-/*
-//  TestSuite* tc_rename = create_test_suite();
-// add_test(tc_rename, test__gfal_posix_rename_plugin);
- // add_test(tc_rename, test__gfal_posix_move_dir_plugin);
- // add_test(tc_rename, test__gfal_posix_rename_url_check);
-//  add_test(tc_rename, test__gfal_posix_rename_local);
- // suite_add_tcase(s, tc_rename);
- // TestSuite* tc_opendir = create_test_suite();
-  //add_test(tc_opendir, gfal2_test__opendir_posix_local_simple);
- // add_test(tc_opendir, gfal2_test__opendir_posix_lfc_simple);
- // add_test(tc_opendir, gfal2_test__readdir_posix_local_simple);
- // add_test(tc_opendir, gfal2_test__readdir_posix_lfc_simple);
-//  add_test(tc_opendir, gfal2_test__opendir_posix_srm_simple_mock);
- // add_test(tc_opendir, gfal2_test__readdir_posix_srm_simple_mock);
- // add_test(tc_opendir, test__readdir_posix_srm_empty_mock);
- // suite_add_tcase(s, tc_opendir);
- // TestSuite* tc_open = create_test_suite();
- // add_test(tc_open, gfal2_test_open_posix_all_simple);
- // add_test(tc_open, gfal2_test_open_posix_local_simple);
- // add_test(tc_open, gfal2_test_open_posix_lfc_simple);
- // add_test(tc_open, gfal2_test_open_posix_srm_simple);
-//  add_test(tc_open, gfal2_test_open_posix_guid_simple);
-  suite_add_tcase(s, tc_open);*/
   return tc_access;
 }
 
@@ -306,7 +282,7 @@ int main (int argc, char** argv)
 	add_suite(global, posix_read_suite());
 	add_suite(global, posix_write_suite());
 	add_suite(global, posix_opendir_suite());
-	add_suite(global, posix_parameter_suite());
+	//add_suite(global, posix_parameter_suite());
 	add_suite(global, posix_xattr_suite());
 	add_suite(global, skip_list_tests());
 	//add_suite(global, filedesc_suite());

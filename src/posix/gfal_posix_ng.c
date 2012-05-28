@@ -30,9 +30,6 @@
 
 
 
-
-
-
 //
 // 
 //
@@ -189,42 +186,6 @@ void gfal_posix_release_error(){
 	gfal_posix_print_error();
 	gfal_posix_clear_error();
 }
-
-
-int gfal_set_parameter_string(const char* namespace, const char* key, const char* value){
-	return gfal_set_parameter_string_internal(namespace, key, value);
-}
-
-
-
-char* gfal_get_parameter_string(const char* namespace, const char* key){
-	return gfal_get_parameter_string_internal(namespace, key);	
-}
-
-
-
-int gfal_set_parameter_int(const char* module, const char* name, int value){
-  return -1;
-}
-
-
-
-
-int gfal_get_parameter_int(const char* module, const char* name){
-  return -1;	 
-}
-
-
-int gfal_set_parameter_boolean(const char* namespace, const char* key, int value){
-  return gfal_set_parameter_boolean_internal(namespace, key, value);
-}
-
-
-int gfal_get_parameter_boolean(const char* namespace, const char* key){
-  return gfal_get_parameter_boolean_internal(namespace, key);
-}
-
-
 
 void gfal_posix_clear_error(){
 	g_clear_error( gfal_posix_get_last_error());

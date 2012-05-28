@@ -48,7 +48,7 @@ static const char *gfalversion = VERSION_STR(VERSION);
 gfal_handle gfal_initG (GError** err)
 {
 	GError* tmp_err=NULL;
-	gfal_handle handle = calloc(1,sizeof(struct gfal_handle_));// clear allocation of the struct and set defautl options
+	gfal_handle handle = g_new0(struct gfal_handle_,1);// clear allocation of the struct and set defautl options
 	if(handle == NULL){
 		errno= ENOMEM;
 		g_set_error(err,0,ENOMEM, "[gfal_initG] bad allocation, no more memory free");
@@ -63,8 +63,9 @@ gfal_handle gfal_initG (GError** err)
 	if(tmp_err){
 		g_free(handle);
 		handle = NULL;	
-	}else
-		gfal_config_container_init(handle);
+	}else{
+		
+	}
 	
 	if(tmp_err)
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
@@ -77,8 +78,8 @@ void gfal_handle_freeG (gfal_handle handle){
 		return;
 	gfal_plugins_delete(handle, NULL);
 	gfal_dir_handle_container_delete(&(handle->fdescs));
-	gfal_config_container_delete(handle);
-	free(handle);
+	
+	g_free(handle);
 	handle = NULL;
 }
 

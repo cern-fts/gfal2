@@ -52,7 +52,7 @@ void test_timeout_c(){
 	assert_true_with_message( p != NULL && tmp_err==NULL, "bad initialization ");
 	long res = gfalt_get_timeout(p, &tmp_err);
 	assert_true_with_message( res == GFALT_DEFAULT_TRANSFERT_TIMEOUT && tmp_err==NULL, "bad timeout value %ld %ld ", res, tmp_err);
-	long  r = rand();
+	guint64  r = (guint64) rand();
 	gfalt_set_timeout(p, r, &tmp_err);
 	assert_true_with_message( gfalt_get_timeout(p, &tmp_err)  == r, "bad timeout get ");	
 	gfalt_params_handle_delete(p,NULL);

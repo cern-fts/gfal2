@@ -667,37 +667,6 @@ static ssize_t lfc_readlinkG(plugin_handle handle, const char* path, char* buff,
 	return ret;
 }
 
-/*
- *  signals the lfc parameters :
- *   - LFC_HOST : (lfc, host)
- * */
-int lfc_is_used_parameter(plugin_handle handle, const char* namespace, const char* key){
-	if(namespace != NULL && strcmp(namespace, LFC_PARAMETER_NAMESPACE) == 0){
-		if(strcmp(key, LFC_PARAMETER_HOST) ==0)
-			return 1;
-	}
-	return 0;
-}
-
-/*
- * Receive notification of a change in the parameter, take care of it
- */
-void lfc_notify_change_parameter(plugin_handle handle, const char* namespace, const char* key){
-	GError * tmp_err=NULL;
-	if(namespace != NULL && strcmp(namespace, LFC_PARAMETER_NAMESPACE) == 0){
-		struct lfc_ops* ops = (struct lfc_ops*) handle;	
-		if(strcmp(key, LFC_PARAMETER_HOST) ==0){ // setup the lfc host
-			char * var = gfal_common_parameter_get_string(ops->handle, namespace, key, &tmp_err);
-			if(var){
-				gfal_lfc_set_host(var, &tmp_err);
-			}
-			free(var);
-		}
-	}
-	
-	if(tmp_err)
-		gfal_log(GFAL_VERBOSE_VERBOSE, "[lfc_change_parameter] error in parameter %s management : %s", key, tmp_err->message);
-}
 
 static void internal_stat_copy(gpointer original, gpointer copy){
 	memcpy(copy, original, sizeof(struct stat));
@@ -753,8 +722,6 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	lfc_plugin.listxattrG = &lfc_listxattrG;
 	lfc_plugin.readlinkG = &lfc_readlinkG;
 	lfc_plugin.unlinkG = &lfc_unlinkG;
-	lfc_plugin.is_used_parameter = &lfc_is_used_parameter;
-	lfc_plugin.notify_change_parameter = &lfc_notify_change_parameter;
 	
 	
 	if(init_thread== FALSE){ // initiate Cthread system

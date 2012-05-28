@@ -35,7 +35,6 @@
 #include <common/gfal_types.h>
 #include <common/gfal_common_plugin_interface.h>
 
-#include <common/gfal_common_parameter.h>
 
  
 #ifdef __cplusplus
