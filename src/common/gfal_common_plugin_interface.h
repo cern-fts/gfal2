@@ -26,7 +26,7 @@
  * */
 
 #include <glib.h>
-#include <common/gfal_types.h>
+#include <common/gfal_prototypes.h>
 #include <common/gfal_constants.h>
 
 #ifdef __cplusplus
