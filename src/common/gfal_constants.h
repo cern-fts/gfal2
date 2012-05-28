@@ -50,15 +50,6 @@ extern "C"
 #define GFAL_ERRLEVEL_WARN        1
 #define GFAL_ERRLEVEL_INFO        2
 
-//! \def GFAL_VERBOSE_NORMAL only errors are printed 
-#define GFAL_VERBOSE_NORMAL     0x00   
-//! \def GFAL_VERBOSE_VERBOSE a bit more verbose information is printed 
-#define GFAL_VERBOSE_VERBOSE    0x01  
-//! \def GFAL_VERBOSE_DEBUG  extra information is printed  
-#define GFAL_VERBOSE_DEBUG      0x02 
-//! \def GFAL_VERBOSE_TRACE execution trace 
-#define GFAL_VERBOSE_TRACE		0x08	
-
 //! guid prefix url
 #define GFAL_GUID_PREFIX "guid:"
 

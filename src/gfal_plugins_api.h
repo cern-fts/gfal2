@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _GFAL2_API_
-#define _GFAL2_API_
+#ifndef _GFAL2_PLUGIN_API_
+#define _GFAL2_PLUGIN_API_
 /*
  * Copyright (c) Members of the EGEE Collaboration. 2004.
  * See http://www.eu-egee.org/partners/ for details on the copyright holders.
@@ -18,15 +18,12 @@
  * limitations under the License.
  */
 /**
- * @file gfal_api.h
- * @brief Main header file for gfal 2.0
+ * @file gfal_plugins_api.h
+ * @brief API reserved for plugin development
  * @author Devresse Adrien
- * @version 2.0.0
  */
- 
-#include <global/gfal_global.h>
-#include <logger/gfal_logger.h>
-#include <posix/gfal_posix_api.h> 
- 
 
-#endif  //_GFAL2_API_
+#include <common/gfal_common_plugin_interface.h>
+#include <gfal_api.h>
+
+#endif  //_GFAL2_PLUGIN_API_

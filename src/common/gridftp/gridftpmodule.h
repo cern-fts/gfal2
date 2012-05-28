@@ -46,7 +46,7 @@
 typedef globus_gass_copy_glob_stat_t gfal_globus_stat_t;
 
 
-
+void gridftp_module_file_exist(GridFTP_session* sess, const char * url);
 
 class GridftpModule 
 {

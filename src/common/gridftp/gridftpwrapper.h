@@ -115,15 +115,15 @@ ssize_t gridftp_read_stream(const Glib::Quark & scope, GridFTP_stream_state* str
 ssize_t gridftp_write_stream(const Glib::Quark & scope, GridFTP_stream_state* stream,
 				const void* buffer, size_t s_write, bool eof);
 
-/**
- * throw Glib::Error if error associated with this result
- * 
- **/
+
+// return 0 if no error, or return errno and set the error string properly
+// error allocation is dynamic
+int gfal_globus_error_convert(globus_object_t * error, char ** str_error);
+
+// throw Glib::Error if error associated with this result
 void gfal_globus_check_result(const Glib::Quark & scope, gfal_globus_result_t res);
 
-/**
- * throw Glib::Error if error is present
- * */
+// throw Glib::Error if error is present
 void gfal_globus_check_error(const Glib::Quark & scope,  globus_object_t *	error);
 
 std::string gridftp_hostname_from_url(const char * url);

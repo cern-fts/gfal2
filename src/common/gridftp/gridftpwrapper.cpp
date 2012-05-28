@@ -167,6 +167,19 @@ static int scan_errstring(const char *p) {
     return ret;
 }
 
+int gfal_globus_error_convert(globus_object_t * error, char ** str_error){
+	if(error){
+		*str_error = globus_error_print_friendly(error);
+		char * p = *str_error;
+		while(*p != '\0'){ // string normalization of carriage return
+			*p = (*p == '\n' || *p == '\r')?' ':*p;
+			++p;
+		}
+		return scan_errstring(*str_error); // try to get errno	
+	}
+	return 0;
+}
+
 void gfal_globus_check_result(const Glib::Quark & scope, gfal_globus_result_t res){
 	if(res != GLOBUS_SUCCESS){
 
@@ -179,14 +192,15 @@ void gfal_globus_check_result(const Glib::Quark & scope, gfal_globus_result_t re
 }
 
 void gfal_globus_check_error(const Glib::Quark & scope,  globus_object_t *	error){
-	if(error != GLOBUS_SUCCESS){	
+	if(error != GLOBUS_SUCCESS){
+		int globus_errno;	
 		char errbuff[GFAL_URL_MAX_LEN];
-		char * glob_str;		
+		char * glob_str=NULL;		
 		*errbuff='\0';
 		
-		if((glob_str = globus_error_print_friendly(error)) != NULL) // convert err string
+		globus_errno = gfal_globus_error_convert(error, &glob_str);
+		if(glob_str) // security
 			g_strlcpy( errbuff, glob_str, GFAL_URL_MAX_LEN);
-		const int globus_errno = scan_errstring(errbuff); // try to get errno
 		globus_object_free(error);
 		throw Gfal::CoreException(scope, errbuff, globus_errno );		
 	}
@@ -220,7 +234,18 @@ GridFTP_session* GridFTPFactory::get_new_handle(const std::string & hostname){
 	return sess.release();
 }
 
-
+// store the related globus error to the current handle
+void gfal_globus_store_error(GridFTP_Request_state * state, globus_object_t *error){
+		char * glob_str=NULL;	
+		state->errcode = gfal_globus_error_convert(error, &glob_str);
+		if(glob_str){
+			state->error = std::string(glob_str);
+			g_free(glob_str);
+		}else{
+			state->error = "Uknow Globus Error, bad error report";
+			state->errcode = EFAULT;
+		}
+}
 
 GridFTP_session* GridFTPFactory::gfal_globus_ftp_take_handle(const std::string & hostname){
 	GridFTP_session * res = NULL;
@@ -233,8 +258,8 @@ void GridFTPFactory::gfal_globus_ftp_release_handle_internal(GridFTP_session* se
 	if(session_reuse)
 		recycle_session(sess);
 	else{
-		GridFTP_session_implem * sess = static_cast<GridFTP_session_implem *>(sess);
-		sess->purge();
+		GridFTP_session_implem * s = static_cast<GridFTP_session_implem *>(sess);
+		s->purge();
 	}
 }
 
@@ -251,20 +276,14 @@ void globus_basic_client_callback (void * user_arg,
 	state->done = true;	
 	
 	if(error != GLOBUS_SUCCESS){	
-		char * glob_str;		
-		if((glob_str = globus_error_print_friendly(error)) != NULL){// convert err string
-			state->error = std::string(glob_str);
-			state->errcode = scan_errstring(glob_str); // try to get errno
-			g_free(glob_str);
-		}else{
-			state->error = "Uknow Globus Error, bad error report";
-			state->errcode = EFAULT;
-		}
+		gfal_globus_store_error(state, error);
 	}else{
 		state->errcode = 0;	
 	}
 	state->status = 0;	
 }
+
+
 
 void gridftp_poll_callback(const Glib::Quark & scope, GridFTP_Request_state* state){
 	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> go polling for request ");
@@ -312,15 +331,7 @@ static void gfal_griftp_stream_read_callback(void *user_arg, globus_ftp_client_h
 	
 	
 	if(error != GLOBUS_SUCCESS){	// check error status
-		char * glob_str;		
-		if((glob_str = globus_error_print_friendly(error)) != NULL){// convert err string
-			state->error = std::string(glob_str);
-			state->errcode = scan_errstring(glob_str); // try to get errno
-			g_free(glob_str);
-		}else{
-			state->error = "Uknow Globus Error, bad error report";
-			state->errcode = EFAULT;
-		}
+		gfal_globus_store_error(state, error);
 	   // gfal_print_verbose(GFAL_VERBOSE_TRACE," read error %s , code %d", state->error, state->errcode);					
 	}else{
 		// verify read 
@@ -345,15 +356,7 @@ static void gfal_griftp_stream_write_callback(void *user_arg, globus_ftp_client_
 	
 	
 	if(error != GLOBUS_SUCCESS){	// check error status
-		char * glob_str;		
-		if((glob_str = globus_error_print_friendly(error)) != NULL){// convert err string
-			state->error = std::string(glob_str);
-			state->errcode = scan_errstring(glob_str); // try to get errno
-			g_free(glob_str);
-		}else{
-			state->error = "Uknow Globus Error, bad error report";
-			state->errcode = EFAULT;
-		}
+		gfal_globus_store_error(state, error);
 	   // gfal_print_verbose(GFAL_VERBOSE_TRACE," read error %s , code %d", state->error, state->errcode);					
 	}else{
 		// verify write 

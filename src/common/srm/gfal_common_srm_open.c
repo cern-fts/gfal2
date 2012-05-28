@@ -28,10 +28,10 @@
 #include <time.h> 
 #include <fcntl.h> 
 #include <stdlib.h>
-#include "../gfal_common_internal.h"
-#include "../gfal_common_errverbose.h"
-#include "../gfal_common_plugin.h"
-#include "../gfal_common_filedescriptor.h"
+#include <common/gfal_common_internal.h>
+#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_plugin.h>
+#include <common/gfal_common_filedescriptor.h>
 #include "gfal_common_srm_internal_layer.h"
 #include "gfal_common_srm.h"
 

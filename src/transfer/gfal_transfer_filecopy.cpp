@@ -59,7 +59,7 @@ const plugin_filecopy_call Gfal::Transfer::FileCopy::find_copy_plugin(const std:
 				
 			}
 	}
-	throw Gfal::CoreException(scope_copy, "no plugin is able to support this transfer ", EPROTONOSUPPORT);
+	throw Gfal::CoreException(scope_copy, "no plugin is able to support this transfer", EPROTONOSUPPORT);
 }
 
 

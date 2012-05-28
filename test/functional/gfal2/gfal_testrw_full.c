@@ -11,6 +11,7 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
+#include <glib.h>
 
 #define BLKLEN 65536
 
@@ -39,6 +40,17 @@ int main(int argc, char **argv)
 	   obuf[i] = i;
 
 	snprintf(buff_name, 2048, "%s/testrw_full_%ld_%ld", argv[1], (long) time(NULL),(long) rand());
+	
+	// try to get a enoent
+	printf ("try to access unexisting file %s\n", buff_name);
+	if ((fd = gfal_open (buff_name, O_RDONLY, 0)) > 0) {
+		g_assert_not_reached();
+		exit (1);
+	}
+	g_assert(gfal_posix_code_error() == ENOENT);
+	g_assert(errno = ENOENT);
+	errno =0;
+	gfal_posix_clear_error();	
 
    printf ("creating file name %s\n", buff_name);
    if ((fd = gfal_open (buff_name, O_WRONLY | O_CREAT, 0644)) < 0) {

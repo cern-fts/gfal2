@@ -363,6 +363,47 @@ struct _plugin_opts{
 };
 //! @endcond
 
+
+// internal API for inter plugin communication
+//! @cond
+int gfal_plugins_accessG(gfal_handle handle, const char* path, int mode, GError** err);
+int gfal_plugin_rmdirG(gfal_handle handle, const char* path, GError** err);
+ssize_t gfal_plugin_readlinkG(gfal_handle handle, const char* path, char* buff, size_t buffsiz, GError** err);
+
+
+
+
+int gfal_plugin_chmodG(gfal_handle handle, const char* path, mode_t mode, GError** err);
+int gfal_plugin_statG(gfal_handle handle,const char* path, struct stat* st, GError** err);
+int gfal_plugin_renameG(gfal_handle handle, const char* oldpath, const char* newpath, GError** err);
+int gfal_plugin_symlinkG(gfal_handle handle, const char* oldpath, const char* newpath, GError** err);
+int gfal_plugin_lstatG(gfal_handle handle,const char* path, struct stat* st, GError** err);
+int gfal_plugin_mkdirp(gfal_handle handle, const char* path, mode_t mode, gboolean pflag,  GError** err);
+
+
+gfal_file_handle gfal_plugin_opendirG(gfal_handle handle, const char* name, GError** err);
+int gfal_plugin_closedirG(gfal_handle handle, gfal_file_handle fh, GError** err);
+struct dirent* gfal_plugin_readdirG(gfal_handle handle, gfal_file_handle fh, GError** err);
+ 	
+
+gfal_file_handle gfal_plugin_openG(gfal_handle handle, const char * path, int flag, mode_t mode, GError ** err);
+int gfal_plugin_closeG(gfal_handle handle, gfal_file_handle fh, GError** err);
+int gfal_plugin_writeG(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, GError** err);
+int gfal_plugin_lseekG(gfal_handle handle, gfal_file_handle fh, off_t offset, int whence, GError** err);
+int gfal_plugin_readG(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, GError** err);
+
+ssize_t gfal_plugin_preadG(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, off_t offset, GError** err);
+ssize_t gfal_plugin_pwriteG(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, off_t offset, GError** err);
+
+
+int gfal_plugin_unlinkG(gfal_handle handle, const char* path, GError** err);
+
+
+ssize_t gfal_plugin_getxattrG(gfal_handle, const char*, const char*, void* buff, size_t s_buff, GError** err);
+ssize_t gfal_plugin_listxattrG(gfal_handle, const char*, char* list, size_t s_list, GError** err);
+int gfal_plugin_setxattrG(gfal_handle, const char*, const char*, const void*, size_t, int, GError**);
+//! @endcond
+
 #ifdef __cplusplus
 }
 #endif 

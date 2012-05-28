@@ -101,15 +101,18 @@ IF (MAIN_CORE)
 			
 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/gfal2.pc DESTINATION ${PKGCONFIG_FILES_DIR})
 
-	install(FILES "gfal_api.h"
+	install(FILES "gfal_api.h" "gfal_plugins_api.h"
 			DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/ ) # install headers main
+
+	install(FILES "logger/gfal_logger.h"
+			DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/logger ) # install headers posix
 
 	install(FILES "posix/gfal_posix_api.h"
 			DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/posix ) # install headers posix
 
 	install(FILES   "common/gfal_constants.h"
 					"common/gfal_common_plugin_interface.h" 
-					"common/gfal_prototypes.h" "common/gfal_types.h"
+					"common/gfal_prototypes.h"
 					"common/gfal_common_plugin.h" 
 			DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/common ) # install headers common
 

@@ -68,3 +68,8 @@ GridftpModule::~GridftpModule()
 	deinit_globus(NULL);	
 }
 
+void gridftp_module_file_exist(GridFTP_session* sess, const char * url){
+	
+	
+}
+

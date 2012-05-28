@@ -18,10 +18,8 @@
 
 /**
  * @file gfal_common_errverbose.h
- * @brief the header file of the common lib for error management and verbose display
+ * @brief error management and verbose display
  * @author Devresse Adrien
- * @version 0.0.1
- * @date 8/04/2011
  * */
 
 
@@ -31,6 +29,7 @@
 #include <string.h>
 #include <errno.h>
 #include <glib.h>
+#include <logger/gfal_logger.h>
 #include <common/gfal_constants.h>
 
 
@@ -55,18 +54,6 @@ extern const char* no_err;
 if(tmp_err)\
 	g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);\
 return ret
-
-
-void gfal_print_verbose(int verbose_lvl,const char* msg, ...);
-/**
- * \brief set the verbose mode for the current program
- * 
- * 
- */
-int gfal_set_verbose (int value);
-
-int gfal_get_verbose();
-
 
 void gfal_release_GError(GError** err);
 
