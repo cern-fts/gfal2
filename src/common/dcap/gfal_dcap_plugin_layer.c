@@ -38,7 +38,7 @@ struct dcap_proto_ops * gfal_dcap_internal_loader_base(GError** err){
 	struct dcap_proto_ops * pops = NULL;
 	GError* tmp_err=NULL;
 	
-	gfal_print_verbose(GFAL_VERBOSE_VERBOSE, "    -> load dcap library ");	
+	gfal_log(GFAL_VERBOSE_VERBOSE, "    -> load dcap library ");	
 	
 	pops = g_new0(struct dcap_proto_ops, 1);
 	pops->geterror = &__dc_errno;
@@ -73,7 +73,7 @@ struct dcap_proto_ops * gfal_dcap_internal_loader_base(GError** err){
 	if( (gfal_get_verbose() & GFAL_VERBOSE_TRACE ) )
 		pops->debug_level(8 |6 | 32);
 		
-	gfal_print_verbose(GFAL_VERBOSE_VERBOSE, "  end load dcap library <-");	
+	gfal_log(GFAL_VERBOSE_VERBOSE, "  end load dcap library <-");	
 	G_RETURN_ERR(pops, tmp_err, err);
 }
 

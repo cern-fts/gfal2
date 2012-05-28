@@ -68,7 +68,7 @@ int gfal_posix_internal_open(const char* path, int flag, mode_t mode){
 	gfal_file_handle fhandle=NULL;
 	int key = -1;
 	
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "%s ->",__func__);
+	gfal_log(GFAL_VERBOSE_TRACE, "%s ->",__func__);
 
 	if((handle = gfal_posix_instance()) == NULL){
 		errno = EIO;

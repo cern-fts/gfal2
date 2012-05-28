@@ -22,6 +22,7 @@
  * @author Devresse Adrien
  * */
 
+#include <glib.h>
 #include <common/gfal_constants.h>
 
 
@@ -43,19 +44,31 @@ extern "C"
 /**
  * \brief print error message with the gfal2 logger
  */
-void gfal_print_verbose(int verbose_lvl,const char* msg, ...);
+void gfal_log(int verbose_lvl,const char* msg, ...);
 
 /**
  * \brief set the current log level
+ *  log level can be a combinaison of GFAL_VERBOSE_* flags
  */
 int gfal_set_verbose (int value);
 
 
+
 /**
  * \brief get the current log level
+ *  log level can be a combinaison of GFAL_VERBOSE_* flags
  */
 int gfal_get_verbose();
 
+/**
+ * define a log handler for the gfal messages
+ * see Glib 2.0 message logging system for more informations about log_func
+ * 
+ * internally, GFAL 2.0 use the glib 2.0 log system with the "GFAL2" domain : 
+ * usual glib 2.0 functions can be used to control the GFAL 2.0 messages flow.
+ **/
+guint gfal_log_set_handler(GLogFunc log_func,
+                                gpointer user_data);
 
 #ifdef __cplusplus
 }

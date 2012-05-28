@@ -29,7 +29,7 @@ int GridftpModule::filecopy(gfalt_params_handle params, const char* src, const c
 	Gfal::gerror_to_cpp(&tmp_err);
 	std::auto_ptr<GridFTP_session> sess(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(src)));
 
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);
+	gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);
 	gfal_globus_result_t res = globus_gass_copy_url_to_url 	(sess->get_gass_handle(),
 		(char*)src,
 		GLOBUS_NULL,
@@ -52,12 +52,12 @@ int plugin_filecopy(plugin_handle handle, gfal_context_t context, gfalt_params_t
 
 	GError * tmp_err=NULL;
 	int ret = -1;
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "  -> [gridftp_plugin_filecopy]");
+	gfal_log(GFAL_VERBOSE_TRACE, "  -> [gridftp_plugin_filecopy]");
 	CPP_GERROR_TRY
 		( static_cast<GridftpModule*>(handle))->filecopy(params, src, dst);
 		ret = 0;
 	CPP_GERROR_CATCH(&tmp_err);
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "  [gridftp_plugin_filecopy]<-");
+	gfal_log(GFAL_VERBOSE_TRACE, "  [gridftp_plugin_filecopy]<-");
 	G_RETURN_ERR(ret, tmp_err, err);
 }
 

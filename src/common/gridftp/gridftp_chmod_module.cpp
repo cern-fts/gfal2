@@ -23,7 +23,7 @@ void GridftpModule::chmod(const char* path, mode_t mode)
 {
 	if(path== NULL )
 		throw Glib::Error(scope_chmod, EINVAL, "Invalid arguments path or mode ");
-	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> [GridftpModule::chmod] ");
+	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::chmod] ");
 	
 	std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)))); // get connexion session
 	
@@ -38,7 +38,7 @@ void GridftpModule::chmod(const char* path, mode_t mode)
 	// wait for answer
 	gridftp_wait_for_callback(scope_chmod, req.get());		
 
-	gfal_print_verbose(GFAL_VERBOSE_TRACE," <- [GridftpModule::chmod] ");	
+	gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::chmod] ");	
 	
 }
 
@@ -49,12 +49,12 @@ extern "C" int gfal_gridftp_chmodG(plugin_handle handle, const char* path , mode
 
 	GError * tmp_err=NULL;
 	int ret = -1;
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_chmod]");
+	gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_chmod]");
 	CPP_GERROR_TRY
 		(static_cast<GridftpModule*>(handle))->chmod(path, mode);
 		ret = 0;
 	CPP_GERROR_CATCH(&tmp_err);
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_chmod]<-");
+	gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_chmod]<-");
 	G_RETURN_ERR(ret, tmp_err, err);	
 }
 

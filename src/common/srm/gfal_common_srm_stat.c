@@ -52,13 +52,13 @@ int gfal_srm_statG(plugin_handle ch, const char* surl, struct stat* buf, GError*
 	gfal_srm_construct_key(surl, GFAL_SRM_LSTAT_PREFIX, key_buff, GFAL_URL_MAX_LEN);
 	
 	if( (ret = gsimplecache_take_one_kstr(opts->cache, key_buff, buf)) ==0){
-		gfal_print_verbose(GFAL_VERBOSE_DEBUG, " srm_statG -> value taken from the cache");
+		gfal_log(GFAL_VERBOSE_DEBUG, " srm_statG -> value taken from the cache");
 		ret = 0;
 	}else{
 		ret =gfal_srm_determine_endpoint(opts, surl, full_endpoint, GFAL_URL_MAX_LEN, &srm_type,   &tmp_err);
 		if( ret >=0 ){
 			if(srm_type == PROTO_SRMv2){
-				gfal_print_verbose(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_statG] try to stat file %s", surl);				
+				gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_statG] try to stat file %s", surl);				
 				ret = gfal_statG_srmv2_internal(opts, buf, full_endpoint, surl, &tmp_err);
 			}else if (srm_type == PROTO_SRM){
 				g_set_error(&tmp_err, 0, EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");

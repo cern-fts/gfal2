@@ -69,7 +69,7 @@ inline GError** gfal_posix_get_last_error(){
 inline void gfal_posix_register_internal_error(gfal_handle mhandle, const char* prefix, GError * tmp_err){
 	GError** err = gfal_posix_get_last_error();
 	if(*err != NULL){
-		gfal_print_verbose(GFAL_VERBOSE_NORMAL, "%s Warning : existing registered error replaced ! old err : %s ", prefix, (*err)->message);
+		gfal_log(GFAL_VERBOSE_NORMAL, "%s Warning : existing registered error replaced ! old err : %s ", prefix, (*err)->message);
 		g_clear_error(err);
 	}
 	g_propagate_prefixed_error(err, tmp_err, "%s", prefix);

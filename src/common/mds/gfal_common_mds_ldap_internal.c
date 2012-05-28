@@ -56,7 +56,7 @@ LDAP* gfal_mds_ldap_connect(const char* uri, GError** err){
 	if ( (rc = gfal_mds_ldap.ldap_initialize(&ld, uri)) != LDAP_SUCCESS ) {
 		 g_set_error(&tmp_err, 0, ECOMM, "Error with contacting ldap %s : %s", uri, ldap_err2string(rc)); 
 	}else{
-		gfal_print_verbose(GFAL_VERBOSE_VERBOSE, "  Try to bind with the bdii %s", uri);
+		gfal_log(GFAL_VERBOSE_VERBOSE, "  Try to bind with the bdii %s", uri);
 		struct berval cred= { .bv_val = NULL, .bv_len = 0 };
 		if( (rc = gfal_mds_ldap.ldap_sasl_bind_s( ld,  NULL, LDAP_SASL_SIMPLE, &cred, NULL, NULL, NULL)) != LDAP_SUCCESS){
 			 g_set_error(&tmp_err, 0, ECOMM, "Error while bind to bdii with %s : %s", uri, ldap_err2string(rc));
@@ -248,7 +248,7 @@ int gfal_mds_bdii_get_srm_endpoint(const char* base_url, gfal_mds_endpoint* endp
 	GError* tmp_err=NULL;
 	char uri[GFAL_URL_MAX_LEN];
 	LDAP* ld;
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, " gfal_mds_bdii_get_srm_endpoint ->");
+	gfal_log(GFAL_VERBOSE_TRACE, " gfal_mds_bdii_get_srm_endpoint ->");
 	if( gfal_mds_get_ldapuri(uri, GFAL_URL_MAX_LEN, &tmp_err) >= 0){
 		if( (ld = gfal_mds_ldap_connect(uri, &tmp_err)) != NULL){
 			LDAPMessage * res;
@@ -262,7 +262,7 @@ int gfal_mds_bdii_get_srm_endpoint(const char* base_url, gfal_mds_endpoint* endp
 		}
 	}
 
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, " gfal_mds_bdii_get_srm_endpoint <-");	
+	gfal_log(GFAL_VERBOSE_TRACE, " gfal_mds_bdii_get_srm_endpoint <-");	
 	if(tmp_err)
 		g_propagate_prefixed_error(err, tmp_err, "[%s]",__func__);
 	return ret;

@@ -88,7 +88,7 @@ static inline  char* lfc_urlconverter(const char * lfn_url, const char* prefix){
 static char* url_converter(plugin_handle handle, const char * url,GError** err){
 	GError* tmp_err=NULL;
 	if(strnlen(url, 5) != 5){ // bad string size, return empty string
-		gfal_print_verbose(GFAL_VERBOSE_VERBOSE, "lfc url converter -> bad url size");
+		gfal_log(GFAL_VERBOSE_VERBOSE, "lfc url converter -> bad url size");
 		return strdup("");
 	}
 	if(strncmp(url, "lfn", 3) == 0)
@@ -267,9 +267,9 @@ static int lfc_lstatG(plugin_handle handle, const char* path, struct stat* st, G
 	
 	if(lfn){
 		if( ( ret= gsimplecache_take_one_kstr(ops->cache_stat, lfn, st)) == 0){ // take the version of the buffer
-			gfal_print_verbose(GFAL_VERBOSE_TRACE, " lfc_lstatG -> value taken from cache");
+			gfal_log(GFAL_VERBOSE_TRACE, " lfc_lstatG -> value taken from cache");
 		}else{	
-			gfal_print_verbose(GFAL_VERBOSE_TRACE, " lfc_lstatG -> value not in cache, do normal call");
+			gfal_log(GFAL_VERBOSE_TRACE, " lfc_lstatG -> value not in cache, do normal call");
 			gfal_lfc_init_thread(ops);
 			gfal_auto_maintain_session(ops, &tmp_err);
 			if(!tmp_err){
@@ -696,7 +696,7 @@ void lfc_notify_change_parameter(plugin_handle handle, const char* namespace, co
 	}
 	
 	if(tmp_err)
-		gfal_print_verbose(GFAL_VERBOSE_VERBOSE, "[lfc_change_parameter] error in parameter %s management : %s", key, tmp_err->message);
+		gfal_log(GFAL_VERBOSE_VERBOSE, "[lfc_change_parameter] error in parameter %s management : %s", key, tmp_err->message);
 }
 
 static void internal_stat_copy(gpointer original, gpointer copy){

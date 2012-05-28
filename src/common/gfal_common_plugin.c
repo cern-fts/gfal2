@@ -86,7 +86,7 @@ static int gfal_module_init(gfal_handle handle, void* dlhandle, const char* modu
 			*n=0;		
 		}else{
 			*n+=1;
-			gfal_print_verbose(GFAL_VERBOSE_NORMAL, " [gfal_module_load] plugin %s loaded with success ", module_name);
+			gfal_log(GFAL_VERBOSE_NORMAL, " [gfal_module_load] plugin %s loaded with success ", module_name);
 			ret=0;
 		}
 	}
@@ -219,13 +219,13 @@ char ** gfal_list_directory_plugins(const char * dir, GError ** err){
 					res = realloc(res, sizeof(char*)*(n+1));
 					p_res = res + n -1;
 				}
-				gfal_print_verbose(GFAL_VERBOSE_TRACE, " [gfal_list_directory_plugins] add plugin to list to load %s%s%s ",
+				gfal_log(GFAL_VERBOSE_TRACE, " [gfal_list_directory_plugins] add plugin to list to load %s%s%s ",
 				dir, G_DIR_SEPARATOR_S,  d_name);	 
 				g_string_append (strbuff, G_DIR_SEPARATOR_S);  
 				g_string_append (strbuff, d_name); 
 				*p_res = g_string_free(strbuff, FALSE);						
 		   }else{
-				gfal_print_verbose(GFAL_VERBOSE_TRACE, " [gfal_list_directory_plugins] WARNING : File that is not a plugin in the plugin directory %s%s%s ",
+				gfal_log(GFAL_VERBOSE_TRACE, " [gfal_list_directory_plugins] WARNING : File that is not a plugin in the plugin directory %s%s%s ",
 				dir, G_DIR_SEPARATOR_S,  d_name);	 	   
 		   }
 		}
@@ -247,13 +247,13 @@ char ** gfal_localize_plugins(GError** err){
 	char** res = NULL;
 	char * gfal_plugin_dir = (char*) g_getenv(GFAL_PLUGIN_DIR_ENV);
 	if(gfal_plugin_dir != NULL){
-		gfal_print_verbose(GFAL_VERBOSE_VERBOSE, "... %s environnement variable specified, \
+		gfal_log(GFAL_VERBOSE_VERBOSE, "... %s environnement variable specified, \
 			try to load the plugins in given dir : %s",GFAL_PLUGIN_DIR_ENV,   gfal_plugin_dir);
 	}else{
 		/* GFAL_PLUGIN_DIR_DEFAULT defined at compilation time */
 		gfal_plugin_dir = GFAL_PLUGIN_DIR_DEFAULT 
 						  G_DIR_SEPARATOR_S;
-		gfal_print_verbose(GFAL_VERBOSE_VERBOSE, "... no %s environnement variable specified, try to load plugins in the default directory : %s",GFAL_PLUGIN_DIR_ENV,   gfal_plugin_dir);		
+		gfal_log(GFAL_VERBOSE_VERBOSE, "... no %s environnement variable specified, try to load plugins in the default directory : %s",GFAL_PLUGIN_DIR_ENV,   gfal_plugin_dir);		
 			
 	}
 	res = gfal_list_directory_plugins(gfal_plugin_dir, &tmp_err);
@@ -275,7 +275,7 @@ int gfal_modules_resolve(gfal_handle handle, GError** err){
 				ret = -1;
 				break;
 			}
-			gfal_print_verbose(GFAL_VERBOSE_VERBOSE, " gfal_plugin loaded succesfully : %s", *p);
+			gfal_log(GFAL_VERBOSE_VERBOSE, " gfal_plugin loaded succesfully : %s", *p);
 			ret =0;
 			p++;
 		}
@@ -566,7 +566,7 @@ int gfal_plugin_closedirG(gfal_handle handle, gfal_file_handle fh, GError** err)
 gfal_file_handle gfal_plugin_openG(gfal_handle handle, const char * path, int flag, mode_t mode, GError ** err){
 	GError* tmp_err=NULL;
 	gfal_file_handle resu =NULL;
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, " %s ->",__func__);
+	gfal_log(GFAL_VERBOSE_TRACE, " %s ->",__func__);
 
 	
 	gboolean openG_checker(gfal_plugin_interface* cata_list, GError** terr){

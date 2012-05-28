@@ -42,7 +42,7 @@ gfal_file_handle GridftpModule::opendir(const char* path)
 	std::auto_ptr<GridFTP_Dir_desc> desc(new GridFTP_Dir_desc(
 						new GridFTP_stream_state(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)))
 						));
-	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> [GridftpModule::opendir] ");	
+	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::opendir] ");	
 	Glib::Mutex::Lock locker(desc->stream->lock);
 	
 	globus_result_t res = globus_ftp_client_list( // start req
@@ -58,7 +58,7 @@ gfal_file_handle GridftpModule::opendir(const char* path)
 	*(desc->buff + r_size) = '\0';
 	desc->list = std::string(desc->buff);
 	
-	gfal_print_verbose(GFAL_VERBOSE_TRACE," <- [GridftpModule::opendir] ");	
+	gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::opendir] ");	
 	return gfal_file_handle_ext_new(plugin_name(), (gpointer) desc.release(), NULL);
 }
 
@@ -79,7 +79,7 @@ int gridftp_readdir_desc_parser(GridFTP_Dir_desc* desc){
 struct dirent * GridftpModule::readdir(gfal_file_handle  fh){
 	GridFTP_Dir_desc* desc = static_cast<GridFTP_Dir_desc*>(fh->fdesc);	
 	ssize_t r_size;
-	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> [GridftpModule::readdir] ");	
+	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::readdir] ");	
 	Glib::Mutex::Lock locker(desc->stream->lock);
 		
 	while(gridftp_readdir_desc_parser(desc) == 0){
@@ -90,13 +90,13 @@ struct dirent * GridftpModule::readdir(gfal_file_handle  fh){
 		desc->list+= std::string(desc->buff);	
 	}
 	
-	gfal_print_verbose(GFAL_VERBOSE_VERBOSE,"  list file %s ", desc->dir.d_name);		
-	gfal_print_verbose(GFAL_VERBOSE_TRACE,"  [GridftpModule::readdir] <- ");		
+	gfal_log(GFAL_VERBOSE_VERBOSE,"  list file %s ", desc->dir.d_name);		
+	gfal_log(GFAL_VERBOSE_TRACE,"  [GridftpModule::readdir] <- ");		
 	return &(desc->dir);
 }
 
 int GridftpModule::closedir(gfal_file_handle  fh){
-	gfal_print_verbose(GFAL_VERBOSE_TRACE,"  -> [GridftpModule::closedir]");	
+	gfal_log(GFAL_VERBOSE_TRACE,"  -> [GridftpModule::closedir]");	
 	GridFTP_Dir_desc* desc = static_cast<GridFTP_Dir_desc*>(fh->fdesc);	
 	if(desc){
 		try{
@@ -106,7 +106,7 @@ int GridftpModule::closedir(gfal_file_handle  fh){
 		}
 		gfal_file_handle_delete(fh);
 	}
-	gfal_print_verbose(GFAL_VERBOSE_TRACE,"  [GridftpModule::closedir]  <- ");	
+	gfal_log(GFAL_VERBOSE_TRACE,"  [GridftpModule::closedir]  <- ");	
 	return 0;
 }
 
@@ -116,11 +116,11 @@ extern "C" gfal_file_handle gfal_gridftp_opendirG(plugin_handle handle , const c
 
 	GError * tmp_err=NULL;
 	gfal_file_handle ret = NULL;
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_opendirG]");
+	gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_opendirG]");
 	CPP_GERROR_TRY
 		ret = ((static_cast<GridftpModule*>(handle))->opendir(path));
 	CPP_GERROR_CATCH(&tmp_err);
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_opendirG]<-");
+	gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_opendirG]<-");
 	G_RETURN_ERR(ret, tmp_err, err);	
 }
 
@@ -131,11 +131,11 @@ extern "C" struct dirent* gfal_gridftp_readdirG(plugin_handle handle, gfal_file_
 
 	GError * tmp_err=NULL;
 	struct dirent* ret = NULL;
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_readdirG]");
+	gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_readdirG]");
 	CPP_GERROR_TRY
 		ret = ((static_cast<GridftpModule*>(handle))->readdir(fh));
 	CPP_GERROR_CATCH(&tmp_err);
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_readdirG] <-");
+	gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_readdirG] <-");
 	G_RETURN_ERR(ret, tmp_err, err);	
 }
 
@@ -144,12 +144,12 @@ extern "C" int gfal_gridftp_closedirG(plugin_handle handle, gfal_file_handle fh,
 			, -1, err, "[gfal_gridftp_readdirG][gridftp] einval params");
 	GError * tmp_err=NULL;
 	int ret = -1;
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_closedirG]");
+	gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_closedirG]");
 	CPP_GERROR_TRY
 		((static_cast<GridftpModule*>(handle))->closedir(fh));
 		ret =0;
 	CPP_GERROR_CATCH(&tmp_err);
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_closedirG] <-");
+	gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_closedirG] <-");
 	G_RETURN_ERR(ret, tmp_err, err);	
 }
 

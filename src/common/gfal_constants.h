@@ -43,7 +43,7 @@ extern "C"
 
 /* GFAL error level for gfal_errmsg */
 //! maximum error string length
-#define GFAL_ERRMSG_LEN			  1024
+#define GFAL_ERRMSG_LEN			  2048
 
 //! maximum error string length
 #define GFAL_ERRLEVEL_ERROR       0

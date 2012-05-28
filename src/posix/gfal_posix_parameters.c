@@ -44,7 +44,7 @@ int gfal_set_parameter_boolean_internal(const char* namespace, const char* key, 
 
 	int ret = -1;
 	
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "%s ->",__func__);
+	gfal_log(GFAL_VERBOSE_TRACE, "%s ->",__func__);
 
 	if((handle = gfal_posix_instance()) == NULL){
 		errno = EIO;
@@ -60,7 +60,7 @@ int gfal_set_parameter_boolean_internal(const char* namespace, const char* key, 
 		gfal_posix_register_internal_error(handle, "[gfal_set_parameter_boolean]", tmp_err);
 	}else
 		errno=0;
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "%s <-",__func__);
+	gfal_log(GFAL_VERBOSE_TRACE, "%s <-",__func__);
 	return ret;	
 }
 
@@ -73,7 +73,7 @@ int gfal_set_parameter_string_internal(const char* namespace, const char* key, c
 
 	int ret = -1;
 	
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "%s ->",__func__);
+	gfal_log(GFAL_VERBOSE_TRACE, "%s ->",__func__);
 
 	if((handle = gfal_posix_instance()) == NULL){
 		errno = EIO;
@@ -89,7 +89,7 @@ int gfal_set_parameter_string_internal(const char* namespace, const char* key, c
 		gfal_posix_register_internal_error(handle, "[gfal_set_parameter_string]", tmp_err);
 	}else
 		errno=0;
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "%s <-",__func__);
+	gfal_log(GFAL_VERBOSE_TRACE, "%s <-",__func__);
 	return ret;	
 }
 
@@ -103,7 +103,7 @@ char* gfal_get_parameter_string_internal(const char* namespace, const char* key)
 
 	char* ret = NULL;
 	
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "%s ->",__func__);
+	gfal_log(GFAL_VERBOSE_TRACE, "%s ->",__func__);
 
 	if((handle = gfal_posix_instance()) == NULL){
 		errno = EIO;
@@ -119,7 +119,7 @@ char* gfal_get_parameter_string_internal(const char* namespace, const char* key)
 		gfal_posix_register_internal_error(handle, "[gfal_get_parameter_string]", tmp_err);
 	}else
 		errno=0;
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "%s <-",__func__);
+	gfal_log(GFAL_VERBOSE_TRACE, "%s <-",__func__);
 	return ret;	
 }
 
@@ -133,7 +133,7 @@ int gfal_get_parameter_boolean_internal(const char* namespace, const char* key){
 
 	int ret = -1;
 	
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "%s ->",__func__);
+	gfal_log(GFAL_VERBOSE_TRACE, "%s ->",__func__);
 
 	if((handle = gfal_posix_instance()) == NULL){
 		errno = EIO;
@@ -151,6 +151,6 @@ int gfal_get_parameter_boolean_internal(const char* namespace, const char* key){
 		ret =-1;
 	}else
 		errno=0;
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "%s <-",__func__);
+	gfal_log(GFAL_VERBOSE_TRACE, "%s <-",__func__);
 	return ret;	
 }

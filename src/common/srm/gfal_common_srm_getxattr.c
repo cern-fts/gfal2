@@ -61,7 +61,7 @@ ssize_t gfal_srm_geturl_getxattrG(plugin_handle handle, const char* path, const 
 ssize_t gfal_srm_getxattrG(plugin_handle handle, const char* path, const char* name , void* buff, size_t s_buff, GError** err){
 	GError* tmp_err=NULL;
 	ssize_t ret = -1;
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, " gfal_srm_getxattrG ->");
+	gfal_log(GFAL_VERBOSE_TRACE, " gfal_srm_getxattrG ->");
 	if(strcmp(name, srm_geturl_key) == 0){
 		ret = gfal_srm_geturl_getxattrG(handle, path, name, buff, s_buff, &tmp_err);
 	}else if(strcmp(name, srm_status_key) ==0 ){
@@ -70,7 +70,7 @@ ssize_t gfal_srm_getxattrG(plugin_handle handle, const char* path, const char* n
 		g_set_error(&tmp_err, 0, ENOATTR, "not an existing extended attribute");
 	}
 	
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, " gfal_srm_getxattrG <- ");
+	gfal_log(GFAL_VERBOSE_TRACE, " gfal_srm_getxattrG <- ");
 	G_RETURN_ERR(ret, tmp_err, err);	
 }
 

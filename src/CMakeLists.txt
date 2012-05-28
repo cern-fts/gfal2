@@ -32,6 +32,8 @@ FILE(GLOB src_rfio "common/rfio/*.c")
 FILE(GLOB src_dcap "common/dcap/*.c")
 #define libcpp source
 FILE(GLOB src_libcpp "libcpp/*.cpp")
+#define logger source
+FILE(GLOB src_logger "logger/*.c")
 #define exceptions source
 FILE(GLOB src_exceptions "exceptions/*.cpp")
 
@@ -73,7 +75,7 @@ ELSE (IS_IFCE)
 	
 ENDIF(IS_IFCE)
 
-LIST(APPEND main_libs ${src_posix} ${src_common} ${mds_source} ${src_uri})
+LIST(APPEND main_libs ${src_posix} ${src_common} ${mds_source} ${src_uri} ${src_logger})
 
 
 IF (MAIN_CORE)

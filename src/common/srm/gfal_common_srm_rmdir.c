@@ -73,13 +73,13 @@ int gfal_srm_rmdirG(plugin_handle ch, const char* surl, GError** err){
 	GError* tmp_err=NULL;
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
 	enum gfal_srm_proto srm_type;
-	gfal_print_verbose(GFAL_VERBOSE_VERBOSE, "  -> [gfal_srm_rmdirG]");	
+	gfal_log(GFAL_VERBOSE_VERBOSE, "  -> [gfal_srm_rmdirG]");	
 		
 	ret = gfal_srm_determine_endpoint(opts, surl, full_endpoint, GFAL_URL_MAX_LEN, &srm_type,  &tmp_err);
 	if( ret >=0 ){
 		if(srm_type == PROTO_SRMv2){
 			struct stat st;
-			gfal_print_verbose(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_rmdirG] try to delete directory %s", surl);			
+			gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_rmdirG] try to delete directory %s", surl);			
 			if( (ret = gfal_statG_srmv2_internal(opts, &st, full_endpoint, (char*) surl, &tmp_err)) ==0){ // stat file in order to verify if directory or not
 				
 				if( S_ISDIR(st.st_mode) ){
@@ -101,7 +101,7 @@ int gfal_srm_rmdirG(plugin_handle ch, const char* surl, GError** err){
 		}
 		
 	}
-	gfal_print_verbose(GFAL_VERBOSE_VERBOSE, "  [gfal_srm_rmdirG] <-");	
+	gfal_log(GFAL_VERBOSE_VERBOSE, "  [gfal_srm_rmdirG] <-");	
 	
 	if(tmp_err)
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);

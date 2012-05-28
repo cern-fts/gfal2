@@ -27,7 +27,7 @@ Gfal::Transfer::FileCopy::~FileCopy() {
 }
 
 void Gfal::Transfer::FileCopy::start_copy(Params* p, const std::string & src, const std::string & dst){
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::FileCopy ");
+	gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::FileCopy ");
 	//p->lock(); suppress locker, need read/write lock system	
 	void * plug_data;
 	GError * tmp_err=NULL;
@@ -39,7 +39,7 @@ void Gfal::Transfer::FileCopy::start_copy(Params* p, const std::string & src, co
 	//p->unlock();
 	if(res <0 )
 		throw Gfal::CoreException(scope_copy, std::string(tmp_err->message), tmp_err->code);
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::FileCopy ");
+	gfal_log(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::FileCopy ");
 }
 
 const plugin_filecopy_call Gfal::Transfer::FileCopy::find_copy_plugin(const std::string & src, const std::string & dst, void** plugin_data){

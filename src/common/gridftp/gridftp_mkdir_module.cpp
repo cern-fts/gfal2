@@ -23,7 +23,7 @@ void GridftpModule::mkdir(const char* path, mode_t mode)
 {
 	if(path== NULL )
 		throw Glib::Error(scope_mkdir, EINVAL, "Invalid arguments path or mode ");
-	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> [GridftpModule::mkdir] ");
+	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::mkdir] ");
 	
 	std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)))); // get connexion session
 	
@@ -38,7 +38,7 @@ void GridftpModule::mkdir(const char* path, mode_t mode)
 	// wait for answer
 	gridftp_wait_for_callback(scope_mkdir, req.get());		
 
-	gfal_print_verbose(GFAL_VERBOSE_TRACE," <- [GridftpModule::mkdir] ");	
+	gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::mkdir] ");	
 	
 }
 
@@ -49,12 +49,12 @@ extern "C" int gfal_gridftp_mkdirG(plugin_handle handle , const char* path , mod
 
 	GError * tmp_err=NULL;
 	int ret = -1;
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_mkdirG]");
+	gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_mkdirG]");
 	CPP_GERROR_TRY
 		(static_cast<GridftpModule*>(handle))->mkdir(path, mode);
 		ret = 0;
 	CPP_GERROR_CATCH(&tmp_err);
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_mkdirG]<-");
+	gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_mkdirG]<-");
 	G_RETURN_ERR(ret, tmp_err, err);	
 }
 

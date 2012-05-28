@@ -57,7 +57,7 @@ void Gfal::CoreLayer::_init(gfal_handle handle)
 	gerror_to_cpp(&tmp_err);
 	
 	while(pdls->dlhandle != NULL){
-		gfal_print_verbose(GFAL_VERBOSE_TRACE, " get plugin links for %s plugin ", pdls->plugin_name);
+		gfal_log(GFAL_VERBOSE_TRACE, " get plugin links for %s plugin ", pdls->plugin_name);
 		_plugins.push_back(new PluginItem(pdls->dlhandle, pdls->plugin_data));		
 		++pdls;
 	}

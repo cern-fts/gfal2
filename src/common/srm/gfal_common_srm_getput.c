@@ -160,7 +160,7 @@ int gfal_srm_mTURLS_internal(gfal_srmv2_opt* opts, gfal_srm_params_t params, srm
 	enum gfal_srm_proto srm_types;
 
 	if((gfal_srm_determine_endpoint(opts, *surls, full_endpoint, GFAL_URL_MAX_LEN, &srm_types, &tmp_err)) == 0){		// check & get endpoint										
-		gfal_print_verbose(GFAL_VERBOSE_NORMAL, "[gfal_srm_mTURLS_internal] endpoint %s", full_endpoint);
+		gfal_log(GFAL_VERBOSE_NORMAL, "[gfal_srm_mTURLS_internal] endpoint %s", full_endpoint);
 
 		if (srm_types == PROTO_SRMv2){
 			if(req_type == SRM_GET)
@@ -365,7 +365,7 @@ static int gfal_srm_putdone_srmv2_internal(gfal_srmv2_opt* opts, char* endpoint,
 
 	gfal_srm_external_call.srm_context_init(&context, endpoint, errbuf, err_size, gfal_get_verbose());	
 
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "    [gfal_srm_putdone_srmv2_internal] start srm put done on %s", surls[0]);	
+	gfal_log(GFAL_VERBOSE_TRACE, "    [gfal_srm_putdone_srmv2_internal] start srm put done on %s", surls[0]);	
 	ret = gfal_srm_external_call.srm_put_done(&context,&putdone_input, &statuses);
 	if(ret < 0){
 		g_set_error(&tmp_err,0,errno,"call to srm_ifce error: %s",errbuf);
@@ -384,10 +384,10 @@ int gfal_srm_putdone(gfal_srmv2_opt* opts , char** surls, char* token,  GError**
 
 	char full_endpoint[2048];
 	enum gfal_srm_proto srm_types;
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "   -> [gfal_srm_putdone] ");
+	gfal_log(GFAL_VERBOSE_TRACE, "   -> [gfal_srm_putdone] ");
 	
 	if((gfal_srm_determine_endpoint(opts, *surls, full_endpoint, GFAL_URL_MAX_LEN, &srm_types, &tmp_err)) == 0){		// check & get endpoint										
-		gfal_print_verbose(GFAL_VERBOSE_NORMAL, "[gfal_srm_putdone] endpoint %s", full_endpoint);
+		gfal_log(GFAL_VERBOSE_NORMAL, "[gfal_srm_putdone] endpoint %s", full_endpoint);
 
 		if (srm_types == PROTO_SRMv2){
 			ret = gfal_srm_putdone_srmv2_internal(opts, full_endpoint, surls, token, &tmp_err);
@@ -397,7 +397,7 @@ int gfal_srm_putdone(gfal_srmv2_opt* opts , char** surls, char* token,  GError**
 			g_set_error(&tmp_err,0,EPROTONOSUPPORT, "Unknow SRM protocol, failure ");
 		}		
 	}
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "   [gfal_srm_putdone] <-");
+	gfal_log(GFAL_VERBOSE_TRACE, "   [gfal_srm_putdone] <-");
 
 	if(tmp_err)
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);

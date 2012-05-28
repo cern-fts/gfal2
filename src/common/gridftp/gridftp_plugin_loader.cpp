@@ -31,11 +31,11 @@ plugin_handle plugin_load(gfal_handle handle, GError ** err){
 	GError * tmp_err=NULL;
 	plugin_handle h = NULL;
 	CPP_GERROR_TRY
-		gfal_print_verbose(GFAL_VERBOSE_TRACE, " -> [gridftp_plugin] try to load ..");	
+		gfal_log(GFAL_VERBOSE_TRACE, " -> [gridftp_plugin] try to load ..");	
 		 h = static_cast<plugin_handle>(
 					new GridftpModule( new GridFTPFactory(handle) )
 			);
-		gfal_print_verbose(GFAL_VERBOSE_TRACE, " -> [gridftp_plugin] loaded ..");	
+		gfal_log(GFAL_VERBOSE_TRACE, " -> [gridftp_plugin] loaded ..");	
 	CPP_GERROR_CATCH(&tmp_err);
 	
 	G_RETURN_ERR(h, tmp_err, err);
@@ -48,7 +48,7 @@ void plugin_unload(plugin_handle handle){
 		try{
 			delete (static_cast<GridftpModule*>(handle));
 		}catch(...){
-			gfal_print_verbose(GFAL_VERBOSE_NORMAL, " bug found plugin gridFTP throws error while loading");
+			gfal_log(GFAL_VERBOSE_NORMAL, " bug found plugin gridFTP throws error while loading");
 		}
 	}
 }

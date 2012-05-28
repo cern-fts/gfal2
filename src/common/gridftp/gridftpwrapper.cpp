@@ -89,7 +89,7 @@ void GridFTPFactory::configure_gridftp_handle_attr(globus_ftp_client_handleattr_
 GridFTP_Request_state::~GridFTP_Request_state()
 {
 	if(!done){
-		gfal_print_verbose(GFAL_VERBOSE_TRACE,"cancel current running gridftp request... ");
+		gfal_log(GFAL_VERBOSE_TRACE,"cancel current running gridftp request... ");
 		globus_ftp_client_abort(sess->get_ftp_handle());
 		gridftp_wait_for_callback(scope_request, this);
 	}
@@ -98,7 +98,7 @@ GridFTP_Request_state::~GridFTP_Request_state()
 
 
 void GridFTPFactory::clear_cache(){
-		gfal_print_verbose(GFAL_VERBOSE_TRACE, "gridftp session cache garbage collection ...");	
+		gfal_log(GFAL_VERBOSE_TRACE, "gridftp session cache garbage collection ...");	
 		std::multimap<std::string, GridFTP_session*>::iterator it;
 		for(it = sess_cache.begin(); it != sess_cache.end(); ++it){
 			GridFTP_session_implem *sess = static_cast<GridFTP_session_implem *>((*it).second);
@@ -118,7 +118,7 @@ void GridFTPFactory::recycle_session(GridFTP_session* sess){
 	if(sess_cache.size() > size_cache)
 		clear_cache();	
 
-	gfal_print_verbose(GFAL_VERBOSE_TRACE, "insert gridftp session for %s in cache ...", c_hostname);				
+	gfal_log(GFAL_VERBOSE_TRACE, "insert gridftp session for %s in cache ...", c_hostname);				
 	sess_cache.insert(std::pair<std::string,GridFTP_session*>(c_hostname, new GridFTP_session_implem(my_sess )));
 }
 	
@@ -128,11 +128,11 @@ GridFTP_session* GridFTPFactory::get_recycled_handle(const std::string & hostnam
 	GridFTP_session* res= NULL;
 	std::multimap<std::string, GridFTP_session*>::iterator it=sess_cache.find(hostname);
 	if(it != sess_cache.end()){
-		gfal_print_verbose(GFAL_VERBOSE_TRACE, "gridftp session for %s found in  cache !", hostname.c_str());				
+		gfal_log(GFAL_VERBOSE_TRACE, "gridftp session for %s found in  cache !", hostname.c_str());				
 		res = (*it).second;
 		sess_cache.erase(it);
 	}else{
-		gfal_print_verbose(GFAL_VERBOSE_TRACE, "no session found in cache for %s!", hostname.c_str());			
+		gfal_log(GFAL_VERBOSE_TRACE, "no session found in cache for %s!", hostname.c_str());			
 	}
 	return res;	
 }
@@ -286,10 +286,10 @@ void globus_basic_client_callback (void * user_arg,
 
 
 void gridftp_poll_callback(const Glib::Quark & scope, GridFTP_Request_state* state){
-	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> go polling for request ");
+	gfal_log(GFAL_VERBOSE_TRACE," -> go polling for request ");
 	while(state->status !=0 )
 			usleep(10);	
-	gfal_print_verbose(GFAL_VERBOSE_TRACE," <- out of polling for request ");			
+	gfal_log(GFAL_VERBOSE_TRACE," <- out of polling for request ");			
 }
 
 void gridftp_callback_err_report(const Glib::Quark & scope, GridFTP_Request_state* state){
@@ -303,23 +303,23 @@ void gridftp_wait_for_callback(const Glib::Quark & scope, GridFTP_Request_state*
 }
 
 void gridftp_wait_for_read(const Glib::Quark & scope, GridFTP_stream_state* state, off_t end_read){
-	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> go polling for read ");
+	gfal_log(GFAL_VERBOSE_TRACE," -> go polling for read ");
 
 	while(state->status !=0)
 			usleep(10);			
 	if(state->errcode != 0)	
 		throw Gfal::CoreException(scope,  state->error, state->errcode);
-	gfal_print_verbose(GFAL_VERBOSE_TRACE," <- out of polling for read ");			
+	gfal_log(GFAL_VERBOSE_TRACE," <- out of polling for read ");			
 }
 
 void gridftp_wait_for_write(const Glib::Quark & scope, GridFTP_stream_state* state, off_t end_write){
-	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> go polling for write ");
+	gfal_log(GFAL_VERBOSE_TRACE," -> go polling for write ");
 
 	while(state->status !=0)
 			usleep(10);			
 	if(state->errcode != 0)	
 		throw Gfal::CoreException(scope,  state->error, state->errcode);
-	gfal_print_verbose(GFAL_VERBOSE_TRACE," <- out of polling for write ");			
+	gfal_log(GFAL_VERBOSE_TRACE," <- out of polling for write ");			
 }
 
 
@@ -332,10 +332,10 @@ static void gfal_griftp_stream_read_callback(void *user_arg, globus_ftp_client_h
 	
 	if(error != GLOBUS_SUCCESS){	// check error status
 		gfal_globus_store_error(state, error);
-	   // gfal_print_verbose(GFAL_VERBOSE_TRACE," read error %s , code %d", state->error, state->errcode);					
+	   // gfal_log(GFAL_VERBOSE_TRACE," read error %s , code %d", state->error, state->errcode);					
 	}else{
 		// verify read 
-		//gfal_print_verbose(GFAL_VERBOSE_TRACE," read %d bytes , eof %d %d,%d", length, eof, state->offset, offset);			
+		//gfal_log(GFAL_VERBOSE_TRACE," read %d bytes , eof %d %d,%d", length, eof, state->offset, offset);			
 		if(state->offset != offset){
 			state->error = " Invalid read callback call from globus, out of order";
 			state->errcode =EIO;			
@@ -357,10 +357,10 @@ static void gfal_griftp_stream_write_callback(void *user_arg, globus_ftp_client_
 	
 	if(error != GLOBUS_SUCCESS){	// check error status
 		gfal_globus_store_error(state, error);
-	   // gfal_print_verbose(GFAL_VERBOSE_TRACE," read error %s , code %d", state->error, state->errcode);					
+	   // gfal_log(GFAL_VERBOSE_TRACE," read error %s , code %d", state->error, state->errcode);					
 	}else{
 		// verify write 
-		//gfal_print_verbose(GFAL_VERBOSE_TRACE," read %d bytes , eof %d %d,%d", length, eof, state->offset, offset);			
+		//gfal_log(GFAL_VERBOSE_TRACE," read %d bytes , eof %d %d,%d", length, eof, state->offset, offset);			
 		if(state->offset != offset){
 			state->error = " Invalid write callback call from globus, out of order";
 			state->errcode =EIO;			
@@ -377,7 +377,7 @@ ssize_t gridftp_read_stream(const Glib::Quark & scope,
 							GridFTP_stream_state* stream,
 							void* buffer, size_t s_read
 							){
-	gfal_print_verbose(GFAL_VERBOSE_TRACE,"  -> [gridftp_read_stream]");	
+	gfal_log(GFAL_VERBOSE_TRACE,"  -> [gridftp_read_stream]");	
 	off_t initial_offset = stream->offset;
 	
 	if(stream->eof)
@@ -400,7 +400,7 @@ ssize_t gridftp_write_stream(const Glib::Quark & scope,
 							const void* buffer, size_t s_write,
 							bool eof
 							){
-	gfal_print_verbose(GFAL_VERBOSE_TRACE,"  -> [gridftp_write_stream]");	
+	gfal_log(GFAL_VERBOSE_TRACE,"  -> [gridftp_write_stream]");	
 	off_t initial_offset = stream->offset;
 	
 	globus_result_t res = globus_ftp_client_register_write( stream->sess->get_ftp_handle(),
