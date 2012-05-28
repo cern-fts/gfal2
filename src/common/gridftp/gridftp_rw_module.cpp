@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+#include <string>
+#include <sstream>
 
 #include "gridftp_plugin_loader.h"
 #include "gridftp_rw_module.h"
