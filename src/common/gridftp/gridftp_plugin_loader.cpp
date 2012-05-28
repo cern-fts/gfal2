@@ -89,6 +89,11 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	ret.readdirG = &gfal_gridftp_readdirG;
 	ret.closedirG = &gfal_gridftp_closedirG;
 	ret.openG = &gfal_gridftp_openG;
+	ret.closeG = &gfal_gridftp_closeG;
+	ret.readG = &gfal_gridftp_readG;
+	ret.writeG = &gfal_gridftp_writeG;
+	ret.lseekG = &gfal_gridftp_lseekG;
+	
 	G_RETURN_ERR(ret, tmp_err, err);
 }
 

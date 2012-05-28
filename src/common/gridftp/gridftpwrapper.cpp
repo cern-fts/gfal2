@@ -155,11 +155,14 @@ void globus_basic_client_callback (void * user_arg,
 	
 	if(error != GLOBUS_SUCCESS){	
 		char * glob_str;		
-		
-		if((glob_str = globus_error_print_friendly(error)) != NULL)// convert err string
-			state->error = glob_str;
-		state->errcode = scan_errstring(glob_str); // try to get errno
-		g_free(glob_str);
+		if((glob_str = globus_error_print_friendly(error)) != NULL){// convert err string
+			state->error = std::string(glob_str);
+			state->errcode = scan_errstring(glob_str); // try to get errno
+			g_free(glob_str);
+		}else{
+			state->error = "Uknow Globus Error, bad error report";
+			state->errcode = EFAULT;
+		}
 	}else{
 		state->errcode = 0;	
 	}
@@ -193,6 +196,17 @@ void gridftp_wait_for_read(const Glib::Quark & scope, GridFTP_stream_state* stat
 	gfal_print_verbose(GFAL_VERBOSE_TRACE," <- out of polling for read ");			
 }
 
+void gridftp_wait_for_write(const Glib::Quark & scope, GridFTP_stream_state* state, off_t end_write){
+	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> go polling for write ");
+
+	while(state->status !=0)
+			usleep(10);			
+	if(state->errcode != 0)	
+		throw Gfal::CoreException(scope,  state->error, state->errcode);
+	gfal_print_verbose(GFAL_VERBOSE_TRACE," <- out of polling for write ");			
+}
+
+
 
 static void gfal_griftp_stream_read_callback(void *user_arg, globus_ftp_client_handle_t *handle, globus_object_t *error, globus_byte_t *buffer,
 				globus_size_t length, globus_off_t offset, globus_bool_t eof){
@@ -202,10 +216,14 @@ static void gfal_griftp_stream_read_callback(void *user_arg, globus_ftp_client_h
 	
 	if(error != GLOBUS_SUCCESS){	// check error status
 		char * glob_str;		
-		if((glob_str = globus_error_print_friendly(error)) != NULL) // convert err string
-			state->error = glob_str;				
-		state->errcode = scan_errstring(glob_str); // try to get errno
-		g_free(glob_str);
+		if((glob_str = globus_error_print_friendly(error)) != NULL){// convert err string
+			state->error = std::string(glob_str);
+			state->errcode = scan_errstring(glob_str); // try to get errno
+			g_free(glob_str);
+		}else{
+			state->error = "Uknow Globus Error, bad error report";
+			state->errcode = EFAULT;
+		}
 	   // gfal_print_verbose(GFAL_VERBOSE_TRACE," read error %s , code %d", state->error, state->errcode);					
 	}else{
 		// verify read 
@@ -214,8 +232,8 @@ static void gfal_griftp_stream_read_callback(void *user_arg, globus_ftp_client_h
 			state->error = " Invalid read callback call from globus, out of order";
 			state->errcode =EIO;			
 		}else{
-			state->offset += length;
-			state->eof = eof;
+			state->offset += (off_t) length;
+			state->eof = (bool) eof;
 			state->errcode =0;
 		}		
 	}
@@ -223,7 +241,37 @@ static void gfal_griftp_stream_read_callback(void *user_arg, globus_ftp_client_h
 }
 
 
+static void gfal_griftp_stream_write_callback(void *user_arg, globus_ftp_client_handle_t *handle, globus_object_t *error, globus_byte_t *buffer,
+				globus_size_t length, globus_off_t offset, globus_bool_t eof){
 
+	GridFTP_stream_state* state = static_cast<GridFTP_stream_state*>(user_arg);
+	
+	
+	if(error != GLOBUS_SUCCESS){	// check error status
+		char * glob_str;		
+		if((glob_str = globus_error_print_friendly(error)) != NULL){// convert err string
+			state->error = std::string(glob_str);
+			state->errcode = scan_errstring(glob_str); // try to get errno
+			g_free(glob_str);
+		}else{
+			state->error = "Uknow Globus Error, bad error report";
+			state->errcode = EFAULT;
+		}
+	   // gfal_print_verbose(GFAL_VERBOSE_TRACE," read error %s , code %d", state->error, state->errcode);					
+	}else{
+		// verify write 
+		//gfal_print_verbose(GFAL_VERBOSE_TRACE," read %d bytes , eof %d %d,%d", length, eof, state->offset, offset);			
+		if(state->offset != offset){
+			state->error = " Invalid write callback call from globus, out of order";
+			state->errcode =EIO;			
+		}else{
+			state->offset += (off_t) length;
+			state->eof = (bool) eof;
+			state->errcode =0;
+		}		
+	}
+	state->status = 0;		
+}
 
 ssize_t gridftp_read_stream(const Glib::Quark & scope,
 							GridFTP_stream_state* stream,
@@ -245,6 +293,29 @@ ssize_t gridftp_read_stream(const Glib::Quark & scope,
 	stream->status =1;
 	return stream->offset - initial_offset;							
 }
+
+
+ssize_t gridftp_write_stream(const Glib::Quark & scope,
+							GridFTP_stream_state* stream,
+							const void* buffer, size_t s_write
+							){
+	gfal_print_verbose(GFAL_VERBOSE_TRACE,"  -> [gridftp_write_stream]");	
+	off_t initial_offset = stream->offset;
+	
+	globus_result_t res = globus_ftp_client_register_write( &(stream->sess->handle),
+		(globus_byte_t*) buffer,
+		s_write,
+		initial_offset,
+		false,
+		gfal_griftp_stream_write_callback,
+		stream 
+	); 		
+	gfal_globus_check_result(scope, res);	
+	gridftp_wait_for_write(scope, stream, initial_offset + s_write);	
+	stream->status =1;
+	return stream->offset - initial_offset;							
+}
+
 
 
 

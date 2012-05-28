@@ -28,7 +28,6 @@ namespace Gfal{
 class CoreException: public Glib::Error
 {
 	public:
-		CoreException(const std::string& nmspace, const std::string & msg, int code);
 		CoreException(const Glib::Quark & scope, const std::string & msg, int mode);
 		virtual ~CoreException() throw();
 

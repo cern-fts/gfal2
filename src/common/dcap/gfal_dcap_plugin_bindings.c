@@ -129,7 +129,7 @@ int gfal_dcap_lseekG(plugin_handle handle , gfal_file_handle fd, off_t offset, i
 	return ret;
 }
 
-int gfal_dcap_writeG(plugin_handle handle , gfal_file_handle fd, void* buff, size_t s_buff, GError** err){
+int gfal_dcap_writeG(plugin_handle handle , gfal_file_handle fd, const void* buff, size_t s_buff, GError** err){
 	gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
 	int ret = h->ops->write(GPOINTER_TO_INT(fd->fdesc), buff, s_buff);
 	if(ret <0)

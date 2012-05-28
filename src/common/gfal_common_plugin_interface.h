@@ -245,7 +245,7 @@ struct _gfal_plugin_interface{
 	 *  MANDATORY IF OPEN : gfal_write function  support
 	 * 			
 	 * */		 
-	 int (*writeG)(plugin_handle, gfal_file_handle fd, void* buff, size_t count, GError**);
+	 int (*writeG)(plugin_handle, gfal_file_handle fd, const void* buff, size_t count, GError**);
 	
 	/**
 	 *  MANDATORY IF OPEN : gfal_close function  support

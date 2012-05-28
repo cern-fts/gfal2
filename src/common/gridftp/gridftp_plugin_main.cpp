@@ -76,6 +76,7 @@ gboolean plugin_url_check(plugin_handle handle, const char* src, plugin_mode che
 			case GFAL_PLUGIN_RMDIR:
 			case GFAL_PLUGIN_OPENDIR:
 			case GFAL_PLUGIN_UNLINK:
+			case GFAL_PLUGIN_OPEN:
 				res = TRUE;
 				break;
 			default:

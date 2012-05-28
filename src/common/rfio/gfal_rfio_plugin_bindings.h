@@ -36,7 +36,7 @@ gfal_file_handle gfal_rfio_openG(plugin_handle ch , const char* path, int flag, 
 
 int gfal_rfio_closeG(plugin_handle handle, gfal_file_handle fd, GError ** err);
 
-int gfal_rfio_writeG(plugin_handle handle , gfal_file_handle fd, void* buff, size_t s_buff, GError** err);
+int gfal_rfio_writeG(plugin_handle handle , gfal_file_handle fd, const void* buff, size_t s_buff, GError** err);
 
 int gfal_rfio_readG(plugin_handle handle , gfal_file_handle fd, void* buff, size_t s_buff, GError** err);
 

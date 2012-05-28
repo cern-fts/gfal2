@@ -61,8 +61,22 @@ class GridftpModule
 		virtual void chmod(const char* path, mode_t mode);
 		
 		 // Execute a open query on path
-		virtual gfal_file_handle open(const char* url, int flag, mode_t mode);			
-
+		virtual gfal_file_handle open(const char* url, int flag, mode_t mode);
+		
+		// Execute a read/pread query
+		virtual ssize_t read(gfal_file_handle handle, void* buffer, size_t count);			
+		virtual ssize_t pread(gfal_file_handle handle, void* buffer, size_t count, off_t offset);
+		
+		// Execute a read/pread query
+		virtual ssize_t write(gfal_file_handle handle, const void* buffer, size_t count);			
+		virtual ssize_t pwrite(gfal_file_handle handle, const void* buffer, size_t count, off_t offset);		
+		
+		// seek a file
+		virtual off_t lseek(gfal_file_handle handle, off_t offset, int whence);	
+		
+		// close a file 
+		virtual int close(gfal_file_handle handle);
+		
 		//Execute a stat call on a gridftp URL
 		virtual void stat(const char*  path, struct stat * st);
 		

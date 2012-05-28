@@ -38,7 +38,7 @@ int main(int argc, char **argv)
    for (i = 0; i < size; i++)
 	   obuf[i] = i;
 
-	snprintf(buff_name, 2048, "%s/testrw_full_%d_%d", argv[1], time(NULL),rand());
+	snprintf(buff_name, 2048, "%s/testrw_full_%ld_%ld", argv[1], (long) time(NULL),(long) rand());
 
    printf ("creating file name %s\n", buff_name);
    if ((fd = gfal_open (buff_name, O_WRONLY | O_CREAT, 0644)) < 0) {

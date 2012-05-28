@@ -80,9 +80,9 @@ int gfal_rfio_lseekG(plugin_handle handle , gfal_file_handle fd, off_t offset, i
 	return (int)ret;
 }
 
-int gfal_rfio_writeG(plugin_handle handle , gfal_file_handle fd, void* buff, size_t s_buff, GError** err){
+int gfal_rfio_writeG(plugin_handle handle , gfal_file_handle fd, const void* buff, size_t s_buff, GError** err){
 	gfal_plugin_rfio_handle h = (gfal_plugin_rfio_handle) handle;
-	int ret = h->rf->write(GPOINTER_TO_INT(fd->fdesc), buff, s_buff);
+	int ret = h->rf->write(GPOINTER_TO_INT(fd->fdesc), (void*) buff, s_buff);
 	if(ret <0)
 		rfio_report_error(h, __func__, err);
 	else

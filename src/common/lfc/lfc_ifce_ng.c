@@ -80,7 +80,7 @@ int gfal_lfc_startSession(struct lfc_ops* ops, GError ** err){
 	}
 	return 0;
 }
-
+/* --> session reused disabled -> bugged in liblfc
 static int gfal_lfc_endSession(struct lfc_ops* ops, GError ** err){ 
 	if (ops->endsess() < 0){
 		int sav_errno = gfal_lfc_get_errno(ops);
@@ -89,7 +89,7 @@ static int gfal_lfc_endSession(struct lfc_ops* ops, GError ** err){
 		return -1;
 	}
 	return 0;
-}
+}*/
 
 // session re-use
 void gfal_auto_maintain_session(struct lfc_ops* ops, GError ** err){

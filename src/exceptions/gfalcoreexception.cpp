@@ -19,14 +19,8 @@
 #include "gfalcoreexception.hpp"
 
 
-Gfal::CoreException::CoreException(const std::string& nmspace, const std::string & msg, int code)
-	: Glib::Error(Glib::Quark(nmspace), code, msg) 
-{
-	
-}
-
 Gfal::CoreException::CoreException(const Glib::Quark & scope, const std::string & msg, int code) 
-	: Glib::Error(scope, code, msg) {
+	: Glib::Error(scope.id(), code, msg) {
 		
 }
 

@@ -58,6 +58,10 @@ void gridftp_poll_callback(const Glib::Quark & scope, GridFTP_Request_state* sta
 // do atomic read operation from globus async call
 ssize_t gridftp_read_stream(const Glib::Quark & scope, GridFTP_stream_state* stream,
 				void* buffer, size_t s_read);	
+				
+// do atomic write operation from globus async call
+ssize_t gridftp_write_stream(const Glib::Quark & scope, GridFTP_stream_state* stream,
+				const void* buffer, size_t s_write);				
 
 class GridFTPFactory : public GridFTPFactoryInterface
 {

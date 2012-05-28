@@ -222,7 +222,7 @@ char ** gfal_list_directory_plugins(const char * dir, GError ** err){
 				gfal_print_verbose(GFAL_VERBOSE_TRACE, " [gfal_list_directory_plugins] add plugin to list to load %s%s%s ",
 				dir, G_DIR_SEPARATOR_S,  d_name);	 
 				g_string_append (strbuff, G_DIR_SEPARATOR_S);  
-				g_string_append (strbuff, d_name); 	
+				g_string_append (strbuff, d_name); 
 				*p_res = g_string_free(strbuff, FALSE);						
 		   }else{
 				gfal_print_verbose(GFAL_VERBOSE_TRACE, " [gfal_list_directory_plugins] WARNING : File that is not a plugin in the plugin directory %s%s%s ",
