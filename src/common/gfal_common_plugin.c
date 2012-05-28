@@ -291,7 +291,7 @@ int gfal_modules_resolve(gfal_handle handle, GError** err){
 // Instance all plugins for use if it's not the case
 // return the number of plugin available
 //
-inline int gfal_plugins_instance(gfal_handle handle, GError** err){
+int gfal_plugins_instance(gfal_handle handle, GError** err){
 	g_return_val_err_if_fail(handle, -1, err, "[gfal_plugins_instance]  invalid value of handle");
 	const int plugin_number = handle->plugin_opt.plugin_number;
 	if(plugin_number <= 0){

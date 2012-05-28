@@ -23,7 +23,7 @@ static GQuark scope_uri(){
 }
 
 int gfal_hostname_from_uri(const char * uri, char* buff_hostname, size_t s_buff, GError ** err){
-	 g_return_val_if_fail (uri != NULL && buff_hostname != NULL && s_buff != NULL, -1);
+	 g_return_val_if_fail (uri != NULL && buff_hostname != NULL && s_buff != 0, -1);
 	 
 	char* p1, *p2; 
 	p1= strstr(uri, "://");
