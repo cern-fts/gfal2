@@ -29,6 +29,7 @@ struct GridFTP_session_implem : public GridFTP_session{
 	GridFTP_session_implem(GridFTPFactory* f, const std::string & hostname){
 		factory = f;
 		this->hostname = hostname;
+		purged = false;		
 	}
 	
 	GridFTP_session_implem( GridFTP_session_implem *src){
@@ -40,10 +41,12 @@ struct GridFTP_session_implem : public GridFTP_session{
 		gass_handle_attr= src->gass_handle_attr;
 		factory = src->factory;
 		hostname = src->hostname;
+		purged = false;		
 	}
 	
 	virtual ~GridFTP_session_implem(){
-		factory->gfal_globus_ftp_release_handle_internal(this);
+		if(!purged)
+			factory->gfal_globus_ftp_release_handle_internal(this);
 	}
 	
 	virtual globus_ftp_client_handle_t* get_ftp_handle(){
@@ -65,18 +68,20 @@ struct GridFTP_session_implem : public GridFTP_session{
 	}	
 	
 	virtual globus_gass_copy_handleattr_t* get_gass_handle_attr(){
-			return &gass_handle_attr;
+		return &gass_handle_attr;
 	}
 	
 	virtual void purge(){
 		globus_gass_copy_handle_destroy(&(gass_handle));
 		globus_ftp_client_handleattr_destroy(&(attr_handle));
 		globus_gass_copy_handleattr_destroy(&(gass_handle_attr));	
-		globus_ftp_client_operationattr_destroy(&(operation_attr_ftp));			
+		globus_ftp_client_operationattr_destroy(&(operation_attr_ftp));
+		purged = true;			
 	}	
 	
 	std::string hostname;		
 	GridFTPFactory* factory;
+	bool purged;
 };
 
 
@@ -154,7 +159,8 @@ GridFTP_session* GridFTPFactory::get_recycled_handle(const std::string & hostnam
 
 GridFTPFactory::~GridFTPFactory()
 {
-	
+	Glib::Mutex::Lock l(mux_cache);	
+	clear_cache();
 }
 
 gfal_handle GridFTPFactory::get_handle(){

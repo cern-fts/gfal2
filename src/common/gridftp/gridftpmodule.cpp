@@ -49,7 +49,7 @@ static void* deinit_globus(gpointer data){
 		throw Gfal::CoreException(scope_globus_init, "Error globus deinit, globus gssapi", result);
 	 if( ( result = globus_module_deactivate(GLOBUS_FTP_CLIENT_MODULE)) != GLOBUS_SUCCESS)
 		throw Gfal::CoreException(scope_globus_init, "Error globus deinit, globus ftp", result);
-     if( (   result = globus_module_deactivate(GLOBUS_FTP_CLIENT_RESTART_PLUGIN_MODULE) ) != GLOBUS_SUCCESS)
+    if( (   result = globus_module_deactivate(GLOBUS_FTP_CLIENT_RESTART_PLUGIN_MODULE) ) != GLOBUS_SUCCESS)
     	throw Gfal::CoreException(scope_globus_init, "Error globus deinit, glopus ftp restart plugin", result);
      if( (   result = globus_module_deactivate(GLOBUS_FTP_CLIENT_RESTART_MARKER_PLUGIN_MODULE) ) != GLOBUS_SUCCESS)
     	throw Gfal::CoreException(scope_globus_init, "Error globus deinit, globus ftp restart marker", result);
@@ -65,6 +65,7 @@ GridftpModule::GridftpModule(GridFTPFactoryInterface* factory)
 
 GridftpModule::~GridftpModule()
 {
+	delete _handle_factory;
 	deinit_globus(NULL);	
 }
 

@@ -97,7 +97,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	G_RETURN_ERR(ret, tmp_err, err);
 }
 
-/*  --> desactivated temporary -> responsible of segfault with globus 2.5 thread problem
+/*  --> desactivated temporary -> responsible of segfault with globus 5.2 thread problem
 __attribute__((destructor)) 
 static void gridftp_destructor(){ // try to unload globus
 	globus_module_deactivate_all();
