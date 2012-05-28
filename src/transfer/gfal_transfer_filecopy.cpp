@@ -26,7 +26,7 @@ Gfal::Transfer::FileCopy::~FileCopy() {
 
 }
 
-void Gfal::Transfer::FileCopy::start_copy(Params* p, const std::string & src, const std::string & dst){
+void Gfal::Transfer::FileCopy::start_copy(gfalt_params_t p, const std::string & src, const std::string & dst){
 	gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::FileCopy ");
 	//p->lock(); suppress locker, need read/write lock system	
 	void * plug_data;
@@ -35,7 +35,7 @@ void Gfal::Transfer::FileCopy::start_copy(Params* p, const std::string & src, co
 	if(p_copy == NULL)
 		throw Gfal::CoreException(scope_copy, "bug detected : \
 				no correct filecopy function in a plugin signaled like compatible", ENOSYS);
-	const int res = p_copy(plug_data, reinterpret_cast<gfal_context_t>(this), (gfalt_params_handle) p, src.c_str(), dst.c_str(), &tmp_err);
+	const int res = p_copy(plug_data, static_cast<gfal_context_t>(this), p, src.c_str(), dst.c_str(), &tmp_err);
 	//p->unlock();
 	if(res <0 )
 		throw Gfal::CoreException(scope_copy, std::string(tmp_err->message), tmp_err->code);
@@ -72,18 +72,20 @@ int gfalt_copy_file(gfal_context_t handle, gfalt_params_t params,
 	g_return_val_err_if_fail( handle && src && dst, -1, err, "invalid source or/and destination values");
 	GError * tmp_err=NULL;
 	int ret = -1;
+	gfalt_params_t p = NULL;
+	
 	CPP_GERROR_TRY
 	
 		if(params == NULL){
-			std::auto_ptr<Params> p( new Params());
-			reinterpret_cast<FileCopy*>(handle)->start_copy(p.get(), src, dst);
+			gfalt_params_t p = gfalt_params_handle_new(NULL);
+			reinterpret_cast<FileCopy*>(handle)->start_copy(p, src, dst);
 		}
 		else{
-			Params* p = reinterpret_cast<Params*>(params);
-			reinterpret_cast<FileCopy*>(handle)->start_copy(p, src, dst);
+			reinterpret_cast<FileCopy*>(handle)->start_copy(params, src, dst);
 		}
 		ret = 0;
 	CPP_GERROR_CATCH(&tmp_err);
+	gfalt_params_handle_delete(p, NULL);
 	G_RETURN_ERR(ret, tmp_err, err);
 }
 	

@@ -20,17 +20,13 @@
  */
 
 #include <exceptions/gerror_to_cpp.h> 
- 
-
-
 #include <common/gfal_common_errverbose.h>
 #include <common/gfal_types.h>
 #include <common/gfal_common_plugin.h>
-
 #include <transfer/gfal_transfer.h>
 
 
-
+extern "C" void gfalt_params_handle_init(gfalt_params_t  handle, GError ** err);
 
 
 

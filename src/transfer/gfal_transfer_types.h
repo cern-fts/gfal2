@@ -34,11 +34,9 @@ extern "C"
 #endif  // __cplusplus
 
 /**
- * @brief handle containing the parameters related to a copy of a file
- * 
+ * @brief container for transfer related parameters
  * */
-typedef gpointer gfalt_params_handle; 
-typedef gfalt_params_handle gfalt_params_t; 
+typedef struct _gfalt_params_t* gfalt_params_t; 
 
 /**
  * @brief internal status of a copy file action
@@ -53,7 +51,7 @@ typedef gfalt_tfr_handle gfalt_transfer_status_t;
  *  @param dst : URL of the dest file
  *  @param user_data : external pointer provided before
  * */
-typedef void (*gfalt_monitor_tfr)(gfalt_tfr_handle h, const char* src, const char* dst, gpointer user_data)  ;
+typedef void (*gfalt_monitor_func)(gfalt_transfer_status_t h, const char* src, const char* dst, gpointer user_data)  ;
 
 #ifdef __cplusplus
 }

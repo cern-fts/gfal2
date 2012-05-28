@@ -35,15 +35,7 @@ extern "C"
 {
 #endif  // __cplusplus
 
-/**
- * get the maximum connexion timeout
- **/
-long gfalt_get_timeout(gfalt_params_t handle, GError** err);
 
-/**
- * get the maximum number of parallels streams to use for the transfer
- **/
-long gfalt_get_nbstreams(gfalt_params_t params, GError** err);
 
 //
 // full list of functions that are re-searched by GFAL 2.0 in the plugins

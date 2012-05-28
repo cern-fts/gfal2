@@ -27,7 +27,6 @@
 #include <common/gfal_constants.h>
 #include <common/gfal_common_errverbose.h>
 #include <transfer/gfal_transfer_plugins.h>
-#include <transfer/params_plugin_interface.hpp>
 #include <transfer/gfal_transfer.h>
 
 
@@ -101,7 +100,7 @@ class GridftpModule
 		
 
 		 // Execute a file transfer operation for gridftp URLs
-		virtual int filecopy(gfalt_params_handle params, const char* src, const char* dst);
+		virtual int filecopy(gfalt_params_t params, const char* src, const char* dst);
 		
 				 
 		void internal_globus_gass_stat(const char* path,  gfal_globus_stat_t * gl_stat);

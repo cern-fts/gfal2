@@ -37,10 +37,7 @@ TestSuite * params_suite (void)
   // verbose test case /
    add_test(s1, create_params);
    add_test(s1, test_timeout_c);
-   add_test(s1, test_timeout);
-   add_test(s1, test_nbstreams);
    add_test(s1, test_nbstreams_c);
-   add_test(s1, test_lock);
    return s1;
  }
  

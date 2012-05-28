@@ -21,7 +21,7 @@
 #include <transfer/gfal_transfer_types_internal.h>
 
 
-int GridftpModule::filecopy(gfalt_params_handle params, const char* src, const char* dst){
+int GridftpModule::filecopy(gfalt_params_t params, const char* src, const char* dst){
 	using namespace Gfal::Transfer;
 	GError * tmp_err=NULL;
 

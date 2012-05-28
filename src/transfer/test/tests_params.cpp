@@ -35,95 +35,42 @@ int get_locked_errcode(){
 }
 
 void create_params(){
-	Params p;
-
-		
+	GError * tmp_err=NULL;
+	gfalt_params_t  p = gfalt_params_handle_new(&tmp_err);
+	g_assert(p != NULL);
+	g_assert(tmp_err == NULL);
+	gfalt_params_handle_delete(NULL, &tmp_err);
+	g_assert(tmp_err == NULL);
+	gfalt_params_handle_delete(p,&tmp_err);
+	g_assert(tmp_err == NULL);		
 }
 
-void test_timeout(){
-	Params p;
-	long res = p.get_timeout();
-	assert_true_with_message( res == GFALT_DEFAULT_TRANSFERT_TIMEOUT, "bad timeout value");
-	long  r = rand();
-	p.set_timeout(r);
-	assert_true_with_message( p.get_timeout()  == r, "bad timeout get ");	
-	p.lock(); // lock to block read access
-	try{
-		p.set_timeout(r);	
-		assert_true_with_message(FALSE, "should send exception, locked ");
-	}catch(Glib::Error & e){
-		assert_true_with_message(e.code() == get_locked_errcode() , " must be a inval value");
-	}catch (...){
-		assert_true_with_message(FALSE, " unknown exception");
-	}	
-}
 
 void test_timeout_c(){
 	GError * tmp_err=NULL;
-	
-	gfalt_params_handle p = gfalt_params_handle_new(&tmp_err);
+	gfalt_params_t p = gfalt_params_handle_new(&tmp_err);
 	assert_true_with_message( p != NULL && tmp_err==NULL, "bad initialization ");
 	long res = gfalt_get_timeout(p, &tmp_err);
 	assert_true_with_message( res == GFALT_DEFAULT_TRANSFERT_TIMEOUT && tmp_err==NULL, "bad timeout value %ld %ld ", res, tmp_err);
 	long  r = rand();
 	gfalt_set_timeout(p, r, &tmp_err);
 	assert_true_with_message( gfalt_get_timeout(p, &tmp_err)  == r, "bad timeout get ");	
-	((Params*)p)->lock(); // lock to block read access
-	res = gfalt_set_timeout(p, r, &tmp_err);
-	assert_true_with_message(tmp_err != NULL && tmp_err->code == get_locked_errcode() && res == -1 , " must be a inval value %ld %ld ", tmp_err->code, res);
+	gfalt_params_handle_delete(p,NULL);
 }
 
-
-void test_nbstreams(){
-	Params p;
-	unsigned long res = p.get_nbstream();
-	assert_true_with_message( res == GFALT_DEFAULT_NB_STREAM, "bad nbstreams value");
-	unsigned long  r = rand();
-	p.set_nbstream(r);
-	assert_true_with_message( p.get_nbstream()  == r, "bad nbstreams get ");	
-	p.lock(); // lock to block read access
-	try{
-		p.set_nbstream(r);	
-		assert_true_with_message(FALSE, "should send exception, locked ");
-	}catch(Glib::Error & e){
-		assert_true_with_message(e.code() == get_locked_errcode() , " must be a inval value");
-	}catch (...){
-		assert_true_with_message(FALSE, " unknown exception");
-	}	
-}
 
 void test_nbstreams_c(){
 	GError * tmp_err=NULL;
-	gfalt_params_handle p = gfalt_params_handle_new(&tmp_err);
+	gfalt_params_t p = gfalt_params_handle_new(&tmp_err);
 	assert_true_with_message( p != NULL && tmp_err==NULL, "bad initialization ");
 	long res = gfalt_get_nbstreams(p, &tmp_err);
 	assert_true_with_message( res == GFALT_DEFAULT_NB_STREAM && tmp_err==NULL, "bad nbstreams value %ld %ld ", res, tmp_err);
 	long  r = rand();
 	gfalt_set_nbstreams(p, r, &tmp_err);
 	assert_true_with_message( gfalt_get_nbstreams(p, &tmp_err)  == r, "bad timeout get ");	
-	((Params*)p)->lock(); // lock to block read access
-	res = gfalt_set_nbstreams(p, r, &tmp_err);
-	assert_true_with_message(tmp_err != NULL && tmp_err->code == get_locked_errcode() && res == -1 , " must be a inval value %ld %ld ", tmp_err->code, res);
+	gfalt_params_handle_delete(p,NULL);
 }
 
 
 
-void test_lock(){
-	Params p;
-	long res = p.get_timeout();
-	assert_true_with_message( res == GFALT_DEFAULT_TRANSFERT_TIMEOUT, "bad timeout value");
-	p.lock(); // verify lock
-	try{
-		p.set_timeout(res);	
-		assert_true_with_message(FALSE, "should send exception, locked ");
-	}catch(Glib::Error & e){
-		assert_true_with_message(e.code() == get_locked_errcode() , " must be a inval value");
-	}catch (...){
-		assert_true_with_message(FALSE, " unknown exception");
-	}		
-	
-	p.unlock();
-	res = p.get_timeout();
-	assert_true_with_message( res == GFALT_DEFAULT_TRANSFERT_TIMEOUT, "bad timeout value");	
-}
 

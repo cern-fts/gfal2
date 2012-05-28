@@ -42,7 +42,7 @@ extern "C"
 
 
 /**
-  @brief initiate a new parameter handle
+	initiate a new parameter handle
 */
 gfalt_params_t gfalt_params_handle_new(GError ** err);
 
@@ -50,13 +50,6 @@ gfalt_params_t gfalt_params_handle_new(GError ** err);
   delete a created parameters handle
 */
 void gfalt_params_handle_delete(gfalt_params_t params, GError ** err);
-
-
-
-
-
-
-
 
 
 //
@@ -68,42 +61,57 @@ void gfalt_params_handle_delete(gfalt_params_t params, GError ** err);
 /**
  * define the maximum time acceptable for the file tranfer
  * */
-int gfalt_set_timeout(gfalt_params_t, unsigned long timeout, GError** err);
+gint gfalt_set_timeout(gfalt_params_t, guint64 timeout, GError** err);
+
+/**
+ * get the maximum connexion timeout
+ **/
+guint64 gfalt_get_timeout(gfalt_params_t handle, GError** err);
 
 /**
  * define the maximum number of parallels connexion to use for the file tranfer
  * */
-int gfalt_set_nbstreams(gfalt_params_t, unsigned long nbstreams, GError** err);
+gint gfalt_set_nbstreams(gfalt_params_t, guint nbstreams, GError** err);
+
+/**
+ * get the maximum number of parallels streams to use for the transfer
+ **/
+guint gfalt_get_nbstreams(gfalt_params_t params, GError** err);
+
 /**
  * set the policy in case of destination file already existing ( replace or cancel )
  * default : cancel
  * */
-int gfalt_set_replace_existing_file(gfalt_params_t, gboolean replace, GError** err);
+gint gfalt_set_replace_existing_file(gfalt_params_t, gboolean replace, GError** err);
+
 /**
  * default offset for the copy of the file ( retry function )
  * default : 0
  * */
-int gfalt_set_offset_from_source(gfalt_params_t, off_t offset, GError** err);
+gint gfalt_set_offset_from_source(gfalt_params_t, off_t offset, GError** err);
+
 /**
  * set the user_data pointer for statefull usages.
  * */
-int gfalt_set_user_data(gfalt_params_t, gpointer user_data, GError** err);
+gint gfalt_set_user_data(gfalt_params_t, gpointer user_data, GError** err);
+
 /**
  * set the uid of the transfer
  * */
-int gfalt_set_uuid(gfalt_params_t, uuid_t uuid, GError** err);
+gint gfalt_set_uuid(gfalt_params_t, uuid_t uuid, GError** err);
+
 /**
  * set the minimum among of time between two calls of gfalt_monitor_tfr
  * 
  * */
-int gfalt_set_callback_mperiod(gfalt_params_t, unsigned int mtime, GError** err); // time in ms between two callback calls.
+gint gfalt_set_callback_mperiod(gfalt_params_t, guint mtime, GError** err); // time in ms between two callback calls.
 // etc ......     
      
 /**
  * @brief define a callback for monitoring the current transfer
  * The default value is NULL and no monitoring will occures
 */
-void gfalt_set_monitor_tfr(gfalt_params_t params, gfalt_monitor_tfr callback);
+void gfalt_set_monitor_callback(gfalt_params_t params, gfalt_monitor_func callback);
 
 
 
@@ -115,11 +123,11 @@ void gfalt_set_monitor_tfr(gfalt_params_t params, gfalt_monitor_tfr callback);
  *	@brief copy function
  *  start a synchronous copy of the file
  *  @param context : global gfal context
- *  @param ph parameter handle ( \ref gfalt_parameters_new )
+ *  @param params parameter handle ( \ref gfalt_parameters_new )
  *  @param src source URL supported by GFAL
  *  @param dst destination URL supported by GFAL
 */
-int gfalt_copy_file(gfal_context_t context, gfalt_params_t ph, const char* src, const char* dst, GError** err);
+int gfalt_copy_file(gfal_context_t context, gfalt_params_t params, const char* src, const char* dst, GError** err);
 
 
 //
@@ -129,24 +137,24 @@ int gfalt_copy_file(gfal_context_t context, gfalt_params_t ph, const char* src, 
 /**
  * cancel the current file copy
  * */
-int gfalt_copy_cancel(gfalt_transfer_status_t, GError** err);
+gint gfalt_copy_cancel(gfalt_transfer_status_t, GError** err);
 /**
  * temporary put the transfer in pause
  * */
-int gfalt_copy_pause(gfalt_transfer_status_t, GError ** err );
+gint gfalt_copy_pause(gfalt_transfer_status_t, GError ** err );
 /**
  * resume a transfer in pause
  * */
-int  gfalt_copy_resume(gfalt_transfer_status_t, GError ** err);
+gint  gfalt_copy_resume(gfalt_transfer_status_t, GError ** err);
 
 /**
  * 
  * */
-int gfalt_copy_get_status(gfalt_transfer_status_t, GError ** err);
+gint gfalt_copy_get_status(gfalt_transfer_status_t, GError ** err);
 /**
  * get an estimation of the baudrate
  * */
-int gfalt_copy_get_baudrate(gfalt_transfer_status_t, GError ** err);
+gint gfalt_copy_get_baudrate(gfalt_transfer_status_t, GError ** err);
 /**
  * get the current number of bytes transfered
  * */
