@@ -25,20 +25,18 @@ void GridftpModule::chmod(const char* path, mode_t mode)
 		throw Glib::Error(scope_chmod, EINVAL, "Invalid arguments path or mode ");
 	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> [GridftpModule::chmod] ");
 	
-	std::auto_ptr<GridFTP_session> sess(_handle_factory->gfal_globus_ftp_take_handle()); // get connexion session
-	
-	GridFTP_Request_state status;
+	std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(_handle_factory->gfal_globus_ftp_take_handle())); // get connexion session
 	
 	globus_result_t res = globus_ftp_client_chmod(
-				&(sess.get()->handle),
+				&(req->sess->handle),
 				path,
 				mode,
 				NULL,
 				globus_basic_client_callback,
-    			&status);
+    			req.get());
 	gfal_globus_check_result(scope_chmod, res);
 	// wait for answer
-	gridftp_wait_for_callback(scope_chmod, &status);		
+	gridftp_wait_for_callback(scope_chmod, req.get());		
 
 	gfal_print_verbose(GFAL_VERBOSE_TRACE," <- [GridftpModule::chmod] ");	
 	

@@ -16,6 +16,7 @@
 #include "gridftpwrapper.h"
 
 const Glib::Quark scope_readder("gfal_griftp_stream_read");
+const Glib::Quark scope_request("GridftpModule::request");
 
 struct RwStatus{
 	off_t init;
@@ -41,7 +42,15 @@ GridFTPFactory::GridFTPFactory(gfal_handle handle) : _handle(handle)
 	
 }
 
-
+GridFTP_Request_state::~GridFTP_Request_state()
+{
+			if(!done){
+				gfal_print_verbose(GFAL_VERBOSE_TRACE,"cancel current running gridftp request... ");
+				globus_ftp_client_abort(&(sess->handle));
+				gridftp_wait_for_callback(scope_request, this);
+			}
+		
+}
 
 
 GridFTPFactory::~GridFTPFactory()
@@ -152,6 +161,7 @@ void globus_basic_client_callback (void * user_arg,
 				globus_ftp_client_handle_t *		handle,
 				globus_object_t *				error){
 	GridFTP_Request_state* state = (GridFTP_Request_state*) user_arg;	
+	state->done = true;	
 	
 	if(error != GLOBUS_SUCCESS){	
 		char * glob_str;		
@@ -166,7 +176,7 @@ void globus_basic_client_callback (void * user_arg,
 	}else{
 		state->errcode = 0;	
 	}
-	state->status = 0;		
+	state->status = 0;	
 }
 
 void gridftp_poll_callback(const Glib::Quark & scope, GridFTP_Request_state* state){
@@ -297,7 +307,8 @@ ssize_t gridftp_read_stream(const Glib::Quark & scope,
 
 ssize_t gridftp_write_stream(const Glib::Quark & scope,
 							GridFTP_stream_state* stream,
-							const void* buffer, size_t s_write
+							const void* buffer, size_t s_write,
+							bool eof
 							){
 	gfal_print_verbose(GFAL_VERBOSE_TRACE,"  -> [gridftp_write_stream]");	
 	off_t initial_offset = stream->offset;
@@ -306,7 +317,7 @@ ssize_t gridftp_write_stream(const Glib::Quark & scope,
 		(globus_byte_t*) buffer,
 		s_write,
 		initial_offset,
-		false,
+		eof,
 		gfal_griftp_stream_write_callback,
 		stream 
 	); 		

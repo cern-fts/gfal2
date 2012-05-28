@@ -18,24 +18,30 @@
 #include "gridftpmodule.h"
 
 struct GridFTP_Request_state{
-	GridFTP_Request_state(){
+	GridFTP_Request_state(GridFTP_session * s) : sess(s){
 		status=1;
+		done = false;
 	}
-	virtual ~GridFTP_Request_state(){};
+	virtual ~GridFTP_Request_state();
 	
+	std::auto_ptr<GridFTP_session> sess;  
+	bool done; 	  // true if the request is finished correctly, else abort() will be called before destruction
 	int status;
     int errcode;
     std::string	error;	
 };
 
 struct GridFTP_stream_state : public GridFTP_Request_state{
-	GridFTP_stream_state(GridFTP_session * s) : sess(s)	{
+	GridFTP_stream_state(GridFTP_session * s) : GridFTP_Request_state(s)	{
 		offset =0;
 		eof = false;
 	}
 	off_t offset; // file offset in the stream
 	bool eof;     // end of file reached
-	std::auto_ptr<GridFTP_session> sess;    
+
+	bool finished(){
+		return done;
+	}
 	Glib::Mutex lock;
 
 };
@@ -61,7 +67,7 @@ ssize_t gridftp_read_stream(const Glib::Quark & scope, GridFTP_stream_state* str
 				
 // do atomic write operation from globus async call
 ssize_t gridftp_write_stream(const Glib::Quark & scope, GridFTP_stream_state* stream,
-				const void* buffer, size_t s_write);				
+				const void* buffer, size_t s_write, bool eof);				
 
 class GridFTPFactory : public GridFTPFactoryInterface
 {

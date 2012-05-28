@@ -25,19 +25,18 @@ void GridftpModule::mkdir(const char* path, mode_t mode)
 		throw Glib::Error(scope_mkdir, EINVAL, "Invalid arguments path or mode ");
 	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> [GridftpModule::mkdir] ");
 	
-	std::auto_ptr<GridFTP_session> sess(_handle_factory->gfal_globus_ftp_take_handle()); // get connexion session
+	std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(_handle_factory->gfal_globus_ftp_take_handle())); // get connexion session
 	
-	GridFTP_Request_state status;
 	
 	globus_result_t res = globus_ftp_client_mkdir(
-				&(sess.get()->handle),
+				&(req->sess->handle),
 				path,
 				NULL,
 				globus_basic_client_callback,
-    			&status);
+    			req.get());
 	gfal_globus_check_result("GridftpModule::mkdir", res);
 	// wait for answer
-	gridftp_wait_for_callback(scope_mkdir, &status);		
+	gridftp_wait_for_callback(scope_mkdir, req.get());		
 
 	gfal_print_verbose(GFAL_VERBOSE_TRACE," <- [GridftpModule::mkdir] ");	
 	

@@ -38,7 +38,6 @@ struct GridFTP_Dir_desc{
 
 gfal_file_handle GridftpModule::opendir(const char* path)
 {
-	GridFTP_Request_state status;
 	ssize_t r_size;
 	std::auto_ptr<GridFTP_Dir_desc> desc(new GridFTP_Dir_desc(
 						new GridFTP_stream_state(_handle_factory->gfal_globus_ftp_take_handle())
@@ -51,7 +50,7 @@ gfal_file_handle GridftpModule::opendir(const char* path)
 				path,
 				NULL,
 				globus_basic_client_callback,
-    			&status);
+    			static_cast<GridFTP_Request_state*>(desc->stream.get()));
 	gfal_globus_check_result(scope_opendir, res);
 	
 	r_size= gridftp_read_stream(scope_opendir, (desc->stream.get()),
@@ -100,7 +99,11 @@ int GridftpModule::closedir(gfal_file_handle  fh){
 	gfal_print_verbose(GFAL_VERBOSE_TRACE,"  -> [GridftpModule::closedir]");	
 	GridFTP_Dir_desc* desc = static_cast<GridFTP_Dir_desc*>(fh->fdesc);	
 	if(desc){
-		delete desc;
+		try{
+			delete desc;
+		}catch(Glib::Error & e){
+			// .. make the desctruction "abort" silent
+		}
 		gfal_file_handle_delete(fh);
 	}
 	gfal_print_verbose(GFAL_VERBOSE_TRACE,"  [GridftpModule::closedir]  <- ");	

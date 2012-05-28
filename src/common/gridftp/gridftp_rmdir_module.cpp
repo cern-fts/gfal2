@@ -26,19 +26,17 @@ void GridftpModule::rmdir(const char* path)
 	gfal_print_verbose(GFAL_VERBOSE_TRACE," -> [GridftpModule::rmdir] ");
 	
 	try{
-		std::auto_ptr<GridFTP_session> sess(_handle_factory->gfal_globus_ftp_take_handle()); // get connexion session
-		
-		GridFTP_Request_state status;
+		std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(_handle_factory->gfal_globus_ftp_take_handle())); // get connexion session
 		
 		globus_result_t res = globus_ftp_client_rmdir(
-					&(sess.get()->handle),
+					&(req->sess->handle),
 					path,
 					NULL,
 					globus_basic_client_callback,
-					&status);
+					req.get());
 		gfal_globus_check_result(scope_rmdir, res);
 		// wait for answer
-		gridftp_wait_for_callback(scope_rmdir, &status);	
+		gridftp_wait_for_callback(scope_rmdir, req.get());	
 	}catch(Glib::Error & e){
 		if(e.code() == EEXIST) // false ENOTEMPTY errno, do conversion
 			throw Glib::Error(e.domain(), ENOTEMPTY, e.what());
