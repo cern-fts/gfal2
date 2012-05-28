@@ -47,6 +47,10 @@ IF(PLUGIN_SRM)
 	rwt_test_all("SRM_DCAP" ${srm_valid_dcache_dir_root} 4578)
 	rwt_test_all("SRM_DCAP_little" ${srm_valid_dcache_dir_root} 10)	
 	rwt_test_all("SRM_DCAP_single" ${srm_valid_dcache_dir_root} 1)		
+	rwt_test_seq("SRM_DPM" ${srm_valid_dir_root} 100 4560)	
+	rwt_test_seq("SRM_DPM_unit" ${srm_valid_dir_root} 1 10)			
+	rwt_test_seq("SRM_DCAP" ${srm_valid_dir_root} 100 4560)	
+			
 		
 #	chmod_test_all("SRM_DCACHE" ${srm_valid_dcache_chmod} 0565 060 360 767)	 -> disabled, since unavailable on dcache
 #	stat_test_all( "SRM_EOS" ${srm_valid_EOS_stat})
@@ -69,6 +73,7 @@ IF(PLUGIN_DCAP)
 	#test_readdir_full("DCAP" ${dcap_valid_dir_root} )	
 	#rmdir_test_all("DCAP" ${dcap_valid_dir_root} ${dcap_stat_ok})	
 	rwt_test_all("DCAP" ${dcap_valid_dir_root} 4578)	
+	rwt_test_seq("DCAP" ${dcap_valid_dir_root} 100 4560)	
 ENDIF(PLUGIN_DCAP)
 
 
@@ -80,4 +85,7 @@ IF(PLUGIN_GRIDFTP)
 	rmdir_test_all("GRIDFTP" ${gsiftp_valid_dir_root} ${gsiftp_valid_dpm_stat})	
 	test_readdir_full("GRIDFTP" ${gsiftp_valid_dir_root} )	
 	rwt_test_all("GRIDFTP" ${gsiftp_valid_dir_root} 4578)
+	rwt_test_all("GRIDFTP_single" ${gsiftp_valid_dir_root} 1)		
+	rwt_test_seq("GRIDFTP" ${gsiftp_valid_dir_root} 100 4560)
+	rwt_test_seq("GRIDFTP_unit" ${gsiftp_valid_dir_root} 1 10)		
 ENDIF(PLUGIN_GRIDFTP)

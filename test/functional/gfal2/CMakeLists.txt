@@ -9,6 +9,7 @@ FILE(GLOB src_gfalread "gfal_testread.c")
 FILE(GLOB src_gfalwrite "gfal_testwrite.c")
 FILE(GLOB src_gfalrw "gfal_testrw.c")
 FILE(GLOB src_gfal_rw_full "gfal_testrw_full.c")
+FILE(GLOB src_gfal_rw_seq "gfal_testrw_seq.c")
 FILE(GLOB src_gfalget "gfal_testget.c")
 FILE(GLOB src_gfaltestcreatedir "gfal_testcreatedir.c")
 FILE(GLOB src_gfaltestrightchange "gfal_test_right_change.c")
@@ -50,6 +51,11 @@ IF (FUNCTIONAL_TESTS)
 		add_test(gfal_rw_size_${name} gfal_rw_full ${path} ${size})
 	ENDFUNCTION(rwt_test_all name path size)
 	
+	FUNCTION(rwt_test_seq name path size size_read)
+		add_test(gfal_rw_seq_${name} gfal_rw_seq ${path} ${size} ${size_read})		
+	ENDFUNCTION(rwt_test_seq name path size size_read)
+	
+		
 	add_executable(gfal_read	${src_gfalread} )
 	target_link_libraries(gfal_read ${OUTPUT_NAME_MAIN} )
 	
@@ -61,6 +67,9 @@ IF (FUNCTIONAL_TESTS)
 	
 	add_executable(gfal_rw_full	${src_gfal_rw_full} )
 	target_link_libraries(gfal_rw_full ${OUTPUT_NAME_MAIN} )	
+	
+	add_executable(gfal_rw_seq	${src_gfal_rw_seq} )
+	target_link_libraries(gfal_rw_seq ${OUTPUT_NAME_MAIN} )		
 	
 	add_executable(gfal_testget	${src_gfalget} )
 	target_link_libraries(gfal_testget ${OUTPUT_NAME_MAIN} )
