@@ -65,7 +65,7 @@ void GridftpModule::access(const char*  path, int mode){
 		throw Gfal::CoreException(scope_access, "No write access ", EACCES);	
 		
 	if( ((file_mode & ( S_IXUSR | S_IXGRP | S_IXOTH)  ) == FALSE)
-		&& ( mode & W_OK) )
+		&& ( mode & X_OK) )
 		throw Gfal::CoreException(scope_access, "No execute access ", EACCES);				
 
 	gfal_log(GFAL_VERBOSE_TRACE," <- [Gridftp_stat_module::access] ");	

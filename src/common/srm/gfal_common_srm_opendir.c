@@ -31,9 +31,9 @@
 #include <stdio.h>
 #include "gfal_common_srm.h"
 #include "gfal_common_srm_opendir.h"
-#include "../gfal_common_errverbose.h"
-#include "../gfal_common_filedescriptor.h"
-#include "gfal_common_srm_access.h"
+#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_filedescriptor.h>
+#include "gfal_common_srm_stat.h"
 #include "gfal_common_srm_endpoint.h"
 #include "gfal_common_srm_internal_layer.h"
 
@@ -45,7 +45,8 @@ gfal_file_handle gfal_srm_opendir_internal(gfal_srmv2_opt* opts, char* endpoint,
 	g_return_val_err_if_fail(opts && endpoint && surl, NULL, err, "[gfal_srmv2_opendir_internal] invaldi args");
 	GError* tmp_err=NULL;
 	gfal_file_handle resu = NULL;
-	int exist = gfal_access_srmv2_internal(opts, endpoint, surl, R_OK, &tmp_err);
+	struct stat st;
+	int exist = gfal_statG_srmv2_internal(opts, &st, endpoint, surl, &tmp_err);
 	
 	if(exist == 0){
 		gfal_srm_opendir_handle h = g_new0(struct _gfal_srm_opendir_handle,1);

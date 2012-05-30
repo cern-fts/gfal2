@@ -69,6 +69,7 @@ gboolean plugin_url_check(plugin_handle handle, const char* src, plugin_mode che
 	gboolean res = FALSE;
 	if(gridftp_check_url(src) == true){
 		switch(check){
+			case GFAL_PLUGIN_ACCESS:
 			case GFAL_PLUGIN_STAT:
 			case GFAL_PLUGIN_LSTAT:
 			case GFAL_PLUGIN_MKDIR:

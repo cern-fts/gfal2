@@ -48,7 +48,7 @@
  * 
  * list of the turls supported protocols
  */
-static char* srm_turls_sup_protocols[] = { "file", "rfio", "gsidcap", "dcap",  "kdcap",  NULL };
+static char* srm_turls_sup_protocols[] = { "rfio", "gsidcap", "dcap", "kdcap", "gsiftp", "file", NULL };
 
 /*
  * list of protocols supporting third party transfer

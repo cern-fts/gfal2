@@ -78,7 +78,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	ret.check_plugin_url = &plugin_url_check_with_gerror;
 	ret.plugin_delete = &plugin_unload;
 	ret.getName = &plugin_name;
-	ret.accessG = & gfal_gridftp_accessG;
+	ret.accessG = &gfal_gridftp_accessG;
 	ret.statG = & gfal_gridftp_statG;
 	ret.lstatG = &gfal_gridftp_statG;
 	ret.unlinkG = &gfal_gridftp_unlinkG;
