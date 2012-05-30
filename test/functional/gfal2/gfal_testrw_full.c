@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 		exit (1);
 	}
 	g_assert(gfal_posix_code_error() == ENOENT);
-	g_assert(errno = ENOENT);
+	g_assert(errno == ENOENT);
 	errno =0;
 	gfal_posix_clear_error();	
 

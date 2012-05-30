@@ -19,7 +19,7 @@
 #ifndef TESTS_GRIDFTP_H
 #define TESTS_GRIDFTP_H
 
-void srm_url_check();
+void test_srm_url_check();
 
 
 #endif /* TESTS_GRIDFTP_H */ 

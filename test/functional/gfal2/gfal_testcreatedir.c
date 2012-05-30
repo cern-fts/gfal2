@@ -6,10 +6,9 @@
 #include <stdlib.h>
 #include "gfal_api.h"
 
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	char *rootdir;
-	char olddir[1024], newdir[1024];
 
 	if (argc != 2) {
 		fprintf (stderr, "usage: %s rootdir rights \n", argv[0]);

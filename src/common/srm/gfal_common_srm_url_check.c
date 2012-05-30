@@ -34,7 +34,6 @@ gboolean srm_check_url(const char * surl){
 	if( ( surl_len < GFAL_URL_MAX_LEN )
 			&& (strncmp(surl, surl_prefix, prefix_len) == 0)){
 		res = TRUE;
-		
 	}
 	return res;
 }

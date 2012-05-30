@@ -239,13 +239,13 @@ struct _gfal_plugin_interface{
 	 *  MANDATORY IF OPEN : gfal_read function  support
 	 * 			
 	 * */		 
-	 int (*readG)(plugin_handle, gfal_file_handle fd, void* buff, size_t count, GError**);
+	 ssize_t (*readG)(plugin_handle, gfal_file_handle fd, void* buff, size_t count, GError**);
 	
 	/**
 	 *  MANDATORY IF OPEN : gfal_write function  support
 	 * 			
 	 * */		 
-	 int (*writeG)(plugin_handle, gfal_file_handle fd, const void* buff, size_t count, GError**);
+	 ssize_t (*writeG)(plugin_handle, gfal_file_handle fd, const void* buff, size_t count, GError**);
 	
 	/**
 	 *  MANDATORY IF OPEN : gfal_close function  support
@@ -257,7 +257,7 @@ struct _gfal_plugin_interface{
 	 *  MANDATORY IF OPEN : gfal_lseek function  support
 	 * 			
 	 * */	 
-	 int (*lseekG)(plugin_handle, gfal_file_handle fd, off_t offset, int whence, GError** err);
+	 off_t (*lseekG)(plugin_handle, gfal_file_handle fd, off_t offset, int whence, GError** err);
 	 
 	 // vector operations
 	/**

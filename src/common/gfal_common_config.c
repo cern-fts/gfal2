@@ -23,3 +23,31 @@
 #include "gfal_common_errverbose.h"
 
 
+void gfal_conf_elem_destroy_callback(gpointer data){
+	gfal_conf_elem_t elem = (gfal_conf_elem_t) data;
+	gfal_conf_elem_delete(elem);
+}
+
+gfal_conf_t gfal_conf_new(){
+	gfal_conf_t res = g_new0(struct _gfal_conf, 1);
+	g_mutex_init(&(res->mux));
+	res->cont_config =g_hash_table_new_full(g_str_hash, g_str_equal,
+											g_free, gfal_conf_elem_destroy_callback);
+	return res;
+}
+
+void gfal_conf_delete(gfal_conf_t conf){
+	if(conf){
+		g_mutex_clear(&(conf->mux));
+		g_hash_table_destroy(conf->cont_config);
+		g_free(conf);
+	}
+}
+
+
+void gfal_conf_elem_delete(gfal_conf_elem_t elem ){
+	if(elem){
+		g_key_file_free(elem->key_file);
+		g_free(elem);
+	}
+}

@@ -34,7 +34,7 @@ TestSuite * srm_suite (void)
 {
    TestSuite *s1 = create_test_suite();
   // verbose test case /
-   add_test(s1, srm_url_check);
+   add_test(s1, test_srm_url_check);
 
    return s1;
  }

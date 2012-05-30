@@ -64,7 +64,7 @@ gfal_handle gfal_initG (GError** err)
 		g_free(handle);
 		handle = NULL;	
 	}else{
-		
+		gfal_conf_new(handle->conf);
 	}
 	
 	if(tmp_err)
@@ -78,7 +78,7 @@ void gfal_handle_freeG (gfal_handle handle){
 		return;
 	gfal_plugins_delete(handle, NULL);
 	gfal_dir_handle_container_delete(&(handle->fdescs));
-	
+	gfal_conf_delete(handle->conf);
 	g_free(handle);
 	handle = NULL;
 }

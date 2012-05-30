@@ -102,7 +102,7 @@ gfal_file_handle gfal_srm_openG(plugin_handle ch, const char* path, int flag, mo
 /*
  * read function for the srm  plugin
  */
-int gfal_srm_readG(plugin_handle ch, gfal_file_handle fd, void* buff, size_t count, GError** err){
+ssize_t gfal_srm_readG(plugin_handle ch, gfal_file_handle fd, void* buff, size_t count, GError** err){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;	
 	GError* tmp_err=NULL;
 	int ret =  gfal_plugin_readG(opts->handle, gfal_srm_file_handle_map(fd), buff, count, &tmp_err);	
@@ -138,7 +138,7 @@ ssize_t gfal_srm_writeG(plugin_handle ch, gfal_file_handle fd, const void* buff,
 /*
  * lseek function for the srm  plugin
  */
-int gfal_srm_lseekG(plugin_handle ch, gfal_file_handle fd, off_t offset, int whence, GError** err){
+off_t gfal_srm_lseekG(plugin_handle ch, gfal_file_handle fd, off_t offset, int whence, GError** err){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;	
 	GError* tmp_err=NULL;
 	int ret = gfal_plugin_lseekG(opts->handle, gfal_srm_file_handle_map(fd), offset, whence, &tmp_err);	

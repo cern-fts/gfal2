@@ -296,7 +296,7 @@ extern "C" gfal_file_handle gfal_gridftp_openG(plugin_handle handle, const char*
 	G_RETURN_ERR(ret, tmp_err, err);	
 }
 
-extern "C" int gfal_gridftp_readG(plugin_handle ch , gfal_file_handle fd, void* buff, size_t s_buff, GError** err){
+extern "C" ssize_t gfal_gridftp_readG(plugin_handle ch , gfal_file_handle fd, void* buff, size_t s_buff, GError** err){
 	g_return_val_err_if_fail( ch != NULL && fd != NULL
 			, -1, err, "[gfal_gridftp_readG][gridftp] einval params");
 
@@ -311,7 +311,7 @@ extern "C" int gfal_gridftp_readG(plugin_handle ch , gfal_file_handle fd, void* 
 }
 
 
-extern "C" int gfal_gridftp_writeG(plugin_handle ch , gfal_file_handle fd, const void* buff, size_t s_buff, GError** err){
+extern "C" ssize_t gfal_gridftp_writeG(plugin_handle ch , gfal_file_handle fd, const void* buff, size_t s_buff, GError** err){
 	g_return_val_err_if_fail( ch != NULL && fd != NULL
 			, -1, err, "[gfal_gridftp_writeG][gridftp] einval params");
 
@@ -340,7 +340,7 @@ extern "C" int gfal_gridftp_closeG(plugin_handle ch, gfal_file_handle fd, GError
 	
 }
 
-extern "C" int gfal_gridftp_lseekG(plugin_handle ch , gfal_file_handle fd, off_t offset, int whence, GError** err){
+extern "C" off_t gfal_gridftp_lseekG(plugin_handle ch , gfal_file_handle fd, off_t offset, int whence, GError** err){
 	g_return_val_err_if_fail( ch != NULL && fd != NULL
 			, -1, err, "[gfal_gridftp_lseekG][gridftp] einval params");
 

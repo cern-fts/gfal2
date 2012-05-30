@@ -67,7 +67,7 @@ typedef struct _gfal_conf_elem{
 
 typedef struct _gfal_conf{
 	GHashTable * cont_config;
-	GMutex* mux;
+	GMutex mux;
 } *gfal_conf_t;
 
 

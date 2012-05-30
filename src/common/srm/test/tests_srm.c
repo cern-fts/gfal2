@@ -29,7 +29,7 @@
 
 
 
-void srm_url_check(){
+void test_srm_url_check(){
 	GError * tmp_err=NULL;
 	gfal_handle handle = gfal_initG(&tmp_err);
 	assert_true_with_message(tmp_err== NULL && handle ," initialize gfal failed ");

@@ -38,17 +38,17 @@
 
 gfal_file_handle gfal_srm_openG(plugin_handle, const char* path, int flag, mode_t mode, GError**);
 
-int gfal_srm_readG(plugin_handle, gfal_file_handle fd, void* buff, size_t count, GError**);
+ssize_t gfal_srm_readG(plugin_handle, gfal_file_handle fd, void* buff, size_t count, GError**);
 
 ssize_t gfal_srm_preadG(plugin_handle ch, gfal_file_handle fd, void* buff, size_t count, off_t offset, GError** err);
 
-int gfal_srm_writeG(plugin_handle, gfal_file_handle fd, void* buff, size_t count, GError**);
+ssize_t gfal_srm_writeG(plugin_handle, gfal_file_handle fd, const void* buff, size_t count, GError**);
 
 int gfal_srm_closeG(plugin_handle, gfal_file_handle fd, GError **);
 
 /*
  * lseek function for the srm  plugin
  */
-int gfal_srm_lseekG(plugin_handle ch, gfal_file_handle fd, off_t offset, int whence, GError** err);
+off_t gfal_srm_lseekG(plugin_handle ch, gfal_file_handle fd, off_t offset, int whence, GError** err);
 
 

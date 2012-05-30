@@ -10,7 +10,7 @@
 #include <gfal_api.h>
 #define BLKLEN 65536
 
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	int fd;
 	char ibuf[BLKLEN];

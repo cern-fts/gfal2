@@ -10,11 +10,10 @@
 #include <stdlib.h>
 #define BLKLEN 65536
 
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
    int fd;
    int i;
-   char ibuf[BLKLEN];
    char obuf[BLKLEN];
    int rc;
 

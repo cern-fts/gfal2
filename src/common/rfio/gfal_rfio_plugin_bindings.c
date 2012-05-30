@@ -60,7 +60,7 @@ gfal_file_handle gfal_rfio_openG(plugin_handle handle , const char* path, int fl
 	return ret;
 }
 
-int gfal_rfio_readG(plugin_handle handle , gfal_file_handle fd, void* buff, size_t s_buff, GError** err){
+ssize_t gfal_rfio_readG(plugin_handle handle , gfal_file_handle fd, void* buff, size_t s_buff, GError** err){
 	gfal_plugin_rfio_handle h = (gfal_plugin_rfio_handle) handle;
 	int ret = h->rf->read(GPOINTER_TO_INT(fd->fdesc), buff, s_buff);
 	if(ret <0)
@@ -70,7 +70,7 @@ int gfal_rfio_readG(plugin_handle handle , gfal_file_handle fd, void* buff, size
 	return ret;
 }
 
-int gfal_rfio_lseekG(plugin_handle handle , gfal_file_handle fd, off_t offset, int whence, GError** err){
+off_t gfal_rfio_lseekG(plugin_handle handle , gfal_file_handle fd, off_t offset, int whence, GError** err){
 	gfal_plugin_rfio_handle h = (gfal_plugin_rfio_handle) handle;
 	off_t ret = h->rf->lseek(GPOINTER_TO_INT(fd->fdesc), offset, (int) whence);
 	if(ret == ((off_t)0)-1)
@@ -80,7 +80,7 @@ int gfal_rfio_lseekG(plugin_handle handle , gfal_file_handle fd, off_t offset, i
 	return (int)ret;
 }
 
-int gfal_rfio_writeG(plugin_handle handle , gfal_file_handle fd, const void* buff, size_t s_buff, GError** err){
+ssize_t gfal_rfio_writeG(plugin_handle handle , gfal_file_handle fd, const void* buff, size_t s_buff, GError** err){
 	gfal_plugin_rfio_handle h = (gfal_plugin_rfio_handle) handle;
 	int ret = h->rf->write(GPOINTER_TO_INT(fd->fdesc), (void*) buff, s_buff);
 	if(ret <0)

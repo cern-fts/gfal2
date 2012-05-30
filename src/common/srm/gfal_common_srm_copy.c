@@ -28,7 +28,9 @@
 
 #include "gfal_common_srm_getput.h"
 #include "gfal_common_srm_stat.h"
+#include "gfal_common_srm_url_check.h"
 #include "gfal_common_srm_internal_layer.h"
+
 
 
 int srm_plugin_get_3rdparty(plugin_handle handle, const char * surl, char* buff, size_t s_buff, GError ** err){
