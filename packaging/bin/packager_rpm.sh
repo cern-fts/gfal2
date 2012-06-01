@@ -17,31 +17,13 @@ create_tmp_dir() {
 	mkdir -p $TMP_DIR
 }
 
-# var, value, specfile, try to do a recursive resolution of a spec attribute
-do_rec_resolution(){
-	RES_VAR=""
-	local TMP_VAR="$(echo \"$2\" | grep % | sed -e 's@.*%{\(.*\)}.*@\1@g' )"
-	if [[ "$TMP_VAR" != "" ]]; then
-		local TMP_VAR2="$( grep "%define $TMP_VAR" $3 | sed "s@.*%define $TMP_VAR \(.*\)@\1@g" )"
-		if [[ "x$TMP_VAR2" == "x" ]]; then
-			local TMP_VAR2="$( grep -i "$TMP_VAR" $3 | sed "s@$TMP_VAR\:[ \t]*\(.*\)@\1@I" ) "	
-		fi
-		do_rec_resolution $1 $TMP_VAR2 $3
-		export RES_VAR="$(echo $2 | sed "s@%{$TMP_VAR}@$RES_VAR@g" )"
-		do_rec_resolution $1 $RES_VAR $3
-	else
-		export RES_VAR=$2
-	fi
-	export $1="$RES_VAR"
-}
-
 get_attrs_spec(){
-	export PKG_VERSION="$( grep "Version:" $1 | sed 's@Version:\(.*\)@\1@g' )"
-	export PKG_NAME="$( grep "Name:" $1 | sed 's@Name:\(.*\)@\1@g' )"
-	export PKG_SOURCE="$( grep "Source0:" $1 | sed 's@Source0:\(.*\)@\1@g' )"
-	do_rec_resolution "PKG_VERSION" $PKG_VERSION $1
-	do_rec_resolution "PKG_NAME" $PKG_NAME $1
-	do_rec_resolution "PKG_SOURCE" $PKG_SOURCE $1
+	export SPEC_CONTENT="$(rpm -E "`cat $1`")"
+	export PKG_VERSION="$( echo "$SPEC_CONTENT" | grep "Version:"  | sed 's@Version:\(.*\)@\1@g' | sed -e 's/^[ \t]*//')"
+	export PKG_RELEASE="$( echo "$SPEC_CONTENT" | grep "Version:"  | sed 's@Release:\(.*\)@\1@g' | sed -e 's/^[ \t]*//')"	
+	export PKG_NAME="$(echo "$SPEC_CONTENT" | grep "Name:" | sed 's@Name:\(.*\)@\1@g' | sed -e 's/^[ \t]*//')"
+	export SPEC_CONTENT="$(echo "$SPEC_CONTENT" | sed "s/%{name}/$PKG_NAME/g" | sed "s/%{version}/$PKG_VERSION/g" | sed "s/%{Release}/$PKG_RELEASE/g")"
+	export PKG_SOURCE="$( echo "$SPEC_CONTENT" | grep "Source0:"  | sed 's@Source0:\(.*\)@\1@g' )"
 	export PKG_SOURCE="$( echo $PKG_SOURCE | awk -F/ '{print $NF'})"
 	export SRC_NAME="$PKG_SOURCE"
 	echo "res : $SRC_NAME $PKG_VERSION $PKG_NAME $PKG_SOURCE"
@@ -82,7 +64,6 @@ delete_rpmbuild_env(){
 # specfile
 rpm_build_src_package(){
 	echo "Begin the rpmbuild source call for spec file $1 ...."
-	echo "%_topdir $RPM_BUILD_DIR" >> ~/.rpmmacro
 	local OLD_DIR=$PWD
 	local MACRO_TOPDIR="s  \"_topdir $RPM_BUILD_DIR\""
 	cd $RPM_BUILD_DIR
