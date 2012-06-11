@@ -11,9 +11,9 @@ SET(FUNCTIONAL_TESTS FALSE
 FILE(GLOB src_mock "mock/*.c")
 SET(headers_mock "mock/")
 
-include_directories( ${headers_mock} ".")
+include_directories( ${headers_mock} "." ${PROJECT_SOURCE_DIR}/src/externals)
 
-link_directories (${PROJECT_BINARY_DIR}/src) 
+link_directories (${PROJECT_BINARY_DIR}/src /)
 
 
 

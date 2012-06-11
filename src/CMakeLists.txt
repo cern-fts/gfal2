@@ -15,6 +15,7 @@ SET(PLUGIN_DCAP TRUE
 SET(IS_IFCE FALSE)
 # subdir import
 add_subdirectory(externals/utils)
+add_subdirectory(externals/g_config_manager)
 add_subdirectory(fdesc)
 
 ## defaults sources
@@ -76,7 +77,7 @@ ELSE (IS_IFCE)
 	
 ENDIF(IS_IFCE)
 
-LIST(APPEND main_libs ${src_posix} ${src_common} ${mds_source} ${src_uri} ${src_logger})
+LIST(APPEND main_libs ${src_posix} ${src_common} ${mds_source} ${src_uri} ${src_logger} ${src_g_shared_map})
 
 
 IF (MAIN_CORE)

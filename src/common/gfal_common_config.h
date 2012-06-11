@@ -23,13 +23,12 @@
  * @date 04/11/2011
  * */
 
-#include "gfal_prototypes.h"
-#include "gfal_types.h"
+#include <common/gfal_prototypes.h>
+#include <common/gfal_types.h>
 
 // create or delete configuration manager for gfal 2.0, internal
 gfal_conf_t gfal_conf_new();
 
 void gfal_conf_delete(gfal_conf_t conf);
 
-//
-void gfal_conf_elem_delete(gfal_conf_elem_t elem);
+GQuark gfal_quark_config_loader();

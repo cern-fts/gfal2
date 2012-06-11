@@ -60,11 +60,15 @@ extern "C"
 #define GFAL_MODULEID_SRM 2
 #define GFAL_EXTERNAL_MODULE_OFFSET 10
 
+// plugin related
 #define GFAL_PLUGIN_DIR_ENV "GFAL_PLUGIN_DIR" /**<  environment variable for personnalized plugin directory  */
 #define GFAL_PLUGIN_DIR_SUFFIX "gfal2-plugins" /**< default directory name for gfal 2 plugin search */
 #define GFAL_PLUGIN_INIT_SYM "gfal_plugin_init"
 #define GFAL_MAX_PLUGIN_LIST 2048
 
+// configuration loader related
+#define GFAL_CONFIG_DIR_ENV "GFAL_CONFIG_DIR" /**<  environment variable for personnalized configuration directory */
+#define GFAL_CONFIG_DIR_SUFFIX "gfal2"
 
 //! xattr standard keys for getxattr / setxattr
 //! replicas listing 

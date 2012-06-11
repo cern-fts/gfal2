@@ -15,39 +15,127 @@
  * limitations under the License.
  */
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <glib.h>
 #include <string.h>
 #include <stdlib.h>
+#include <string.h>
+
+
 
 #include "gfal_common_config.h"
 #include "gfal_common_errverbose.h"
 
+#ifndef GFAL_CONFIG_DIR_DEFAULT
+#error "GFAL_CONFIG_DIR_DEFAULT should be define at compile time"
+#endif
 
-void gfal_conf_elem_destroy_callback(gpointer data){
-	gfal_conf_elem_t elem = (gfal_conf_elem_t) data;
-	gfal_conf_elem_delete(elem);
+const gchar* config_env_var = GFAL_CONFIG_DIR_ENV;
+const gchar* default_config_dir =  GFAL_CONFIG_DIR_DEFAULT
+                                    "/"
+                                    GFAL_CONFIG_DIR_SUFFIX
+                                    "/";
+GQuark gfal_quark_config_loader(){
+    return g_quark_from_static_string("Gfal2::common_config_loader");
 }
 
-gfal_conf_t gfal_conf_new(){
+static gchar* check_configuration_dir(GError ** err){
+    struct stat st;
+    int res;
+    gchar* dir_config = NULL;
+    const gchar * env_str = g_getenv(config_env_var);
+    if(env_str != NULL){
+        gfal_log(GFAL_VERBOSE_TRACE, " %s env var found, try to load configuration from %s", config_env_var, env_str);
+        dir_config = strdup(env_str);
+    }else{
+        gfal_log(GFAL_VERBOSE_TRACE, " no %s env var found, try to load configuration from default directory %s",
+                                    config_env_var, default_config_dir);
+        dir_config = strdup(default_config_dir);
+    }
+
+    res = stat(dir_config, &st);
+    if( res != 0 || S_ISDIR(st.st_mode) == FALSE){
+        g_set_error(err, gfal_quark_config_loader(),EINVAL, " %s is not a valid directory for "
+                        "gfal2 configuration files, please specify %s properly", dir_config, config_env_var);
+        g_free(dir_config);
+        dir_config = NULL;
+    }
+    return dir_config;
+}
+
+int gfal_load_configuration_to_conf_manager(GConfigManager_t manager, const gchar * path, GError ** err){
+    GKeyFile * conf_file = g_key_file_new();
+    int res = 0;
+    GError * tmp_err1=NULL, *tmp_err2=NULL;
+    if(g_key_file_load_from_file (conf_file, path, G_KEY_FILE_NONE, &tmp_err1) == FALSE){
+           res = -1;
+           g_set_error(&tmp_err2, gfal_quark_config_loader(), EFAULT, "Error while loading configuration file %s : %s", path, tmp_err1->message);
+           g_clear_error(&tmp_err1);
+    }else{
+        g_config_manager_prepend_keyvalue(manager, conf_file);
+    }
+
+    G_RETURN_ERR(res, tmp_err2, err);
+}
+
+GConfigManager_t gfal_load_static_configuration(GError ** err){
+    GError * tmp_err=NULL;
+    gchar* dir_config = NULL;
+    GConfigManager_t res = g_config_manager_new();
+    if( (dir_config = check_configuration_dir(&tmp_err)) != NULL){
+        DIR* d = opendir(dir_config);
+        struct dirent* dirinfo;
+        if(d != NULL){
+            while( (dirinfo = readdir(d)) != NULL){
+                if(strcmp(dirinfo->d_name, ".") != 0
+                   && strcmp(dirinfo->d_name, "..") !=0){
+                    char buff[strlen(dir_config)+strlen(dirinfo->d_name) +2];
+                    strcpy(buff, dir_config);
+                    strcat(buff,"/");
+                    strcat(buff, dirinfo->d_name);
+
+                    gfal_log(GFAL_VERBOSE_TRACE, " try to load configuration file %s ...", buff);
+                    if(gfal_load_configuration_to_conf_manager(res, buff, &tmp_err) != 0)
+                        break;
+                }
+            }
+            closedir(d);
+        }else{
+            g_set_error(&tmp_err, gfal_quark_config_loader(), ENOENT, "Unable to open configuration directory %s", dir_config);
+        }
+        g_free(dir_config);
+    }
+    if(tmp_err){
+        g_config_manager_delete_full(res);
+        res = NULL;
+    }
+    G_RETURN_ERR(res, tmp_err, err);
+}
+
+gfal_conf_t gfal_conf_new(GError ** err){
+    GError * tmp_err=NULL;
+
 	gfal_conf_t res = g_new0(struct _gfal_conf, 1);
+    res->running_config= g_key_file_new();
+    res->manager= gfal_load_static_configuration(&tmp_err);
 	//g_mutex_init(&(res->mux));
-	res->cont_config =g_hash_table_new_full(g_str_hash, g_str_equal,
-											g_free, gfal_conf_elem_destroy_callback);
-	return res;
+    if(tmp_err){
+        gfal_conf_delete(res);
+        res = NULL;
+    }else{
+        // add the running config to the configuration manager
+        g_config_manager_prepend_keyvalue(res->manager, res->running_config);
+    }
+    G_RETURN_ERR(res, tmp_err, err);
 }
 
 void gfal_conf_delete(gfal_conf_t conf){
 	if(conf){
 	//	g_mutex_clear(&(conf->mux));
-		g_hash_table_destroy(conf->cont_config);
+        g_config_manager_delete_full(conf->manager);
 		g_free(conf);
 	}
 }
 
-
-void gfal_conf_elem_delete(gfal_conf_elem_t elem ){
-	if(elem){
-		g_key_file_free(elem->key_file);
-		g_free(elem);
-	}
-}

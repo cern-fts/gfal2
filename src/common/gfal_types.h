@@ -36,6 +36,7 @@
 #include <common/gfal_prototypes.h>
 #include <common/gfal_constants.h>
 #include <common/gfal_common_plugin_interface.h>
+#include <g_config_manager/g_config_manager.h>
 
 
 /* enforce proper calling convention */
@@ -66,8 +67,9 @@ typedef struct _gfal_conf_elem{
 } *gfal_conf_elem_t;
 
 typedef struct _gfal_conf{
-	GHashTable * cont_config;
 	GMutex* mux;
+    GKeyFile* running_config;
+    GConfigManager_t manager;
 } *gfal_conf_t;
 
 
