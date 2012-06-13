@@ -225,7 +225,7 @@ make DESTDIR=%{buildroot} install
 %defattr (-,root,root)
 %{_libdir}/%{name}-plugins/libgfal_plugin_rfio.so*
 %{_docdir}/%{name}-%{version}/README_PLUGIN_RFIO
-%{_sysconfdir}/%{name}.d/rfio_plugin.conf
+%config(noreplace) %{_sysconfdir}/%{name}.d/rfio_plugin.conf
 
 %files plugin-dcap
 %defattr (-,root,root)

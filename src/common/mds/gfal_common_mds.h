@@ -27,8 +27,9 @@
 #define GFAL_MDS_MAX_SRM_ENDPOINT 100
 
 #include <glib.h>
-#include "../gfal_prototypes.h"
-#include "../gfal_types.h"
+#include <common/gfal_prototypes.h>
+#include <common/gfal_types.h>
+#include <config/gfal_config.h>
 
 #ifndef MDS_BDII_EXTERNAL
 #define MDS_BDII_EXTERNAL 0
@@ -48,10 +49,10 @@ typedef struct _gfal_mds_endpoint{
 extern const char* bdii_env_var;
 
 // 
-int gfal_mds_resolve_srm_endpoint(const char* base_url, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err);
+int gfal_mds_resolve_srm_endpoint(gfal_context_t handle, const char* base_url, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err);
 
 // deprecated, use gfal_mds_resolve_srm_endpoint instead
-int gfal_mds_get_se_types_and_endpoints(const char *host, char ***se_types, char ***se_endpoints, GError** err);
+int gfal_mds_get_se_types_and_endpoints(gfal_context_t handle, const char *host, char ***se_types, char ***se_endpoints, GError** err);
 
 char * gfal_get_lfchost_bdii(gfal_handle handle, GError** err);
 

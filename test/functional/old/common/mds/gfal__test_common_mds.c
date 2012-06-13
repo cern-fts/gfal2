@@ -14,6 +14,7 @@
 #include <common/gfal_common_errverbose.h>
 #include <posix/gfal_posix_api.h>
 #include <posix/gfal_posix_internal.h>
+#include <config/gfal_config.h>
 #include "../../unit_test_constants.h"
 #include "../../mock/gfal_mds_mock_test.h" 
 
@@ -31,14 +32,14 @@ void gfal2_test_check_bdii_endpoints_srm()
 						NULL };
 	char** ptr = endpoints;
 	
-#if USE_MOCK
-
-#endif	
+    gfal_context_t c = gfal_context_new(&err);
+    g_assert(err == NULL);
+    g_assert(c != NULL);
 	
 	while(*ptr != NULL){
 		se_types=NULL;
 		se_endpoints=NULL;
-		ret = gfal_mds_get_se_types_and_endpoints (*ptr, &se_types, &se_endpoints, &err);
+        ret = gfal_mds_get_se_types_and_endpoints (c, *ptr, &se_types, &se_endpoints, &err);
 		assert_true_with_message(ret == 0, " ret of bdii with error %d %d", ret, errno);
 		assert_true_with_message(ret == 0 && 
 				((strings_are_equal(*se_types, "srm_v1") && strstr(*se_endpoints, TEST_MDS_VALID_ENDPOINT_RESU_1) != NULL) ||
@@ -51,11 +52,13 @@ void gfal2_test_check_bdii_endpoints_srm()
 
 	se_types=NULL;
 	se_endpoints=NULL;	
-	ret = gfal_mds_get_se_types_and_endpoints (TEST_MDS_INVALID_ENDPOINT_URL, &se_types, &se_endpoints, &err);		
+    ret = gfal_mds_get_se_types_and_endpoints (c, TEST_MDS_INVALID_ENDPOINT_URL, &se_types, &se_endpoints, &err);
 	assert_true_with_message(ret != 0 &&  err->code == ENXIO , "must fail, invalid url");
 	g_clear_error(&err);
 	g_strfreev(se_types);
 	g_strfreev(se_endpoints);
+
+    gfal_context_free(c);
 }
 
 
@@ -69,10 +72,14 @@ void gfal2_gfal2_test_check_bdii_endpoints_srm_ng()
 	char* endpoints[] = { TEST_MDS_VALID_ENDPOINT_URL,
 						NULL };
 	char** ptr = endpoints;
-	
+
+    gfal_context_t c = gfal_context_new(&err);
+    g_assert(err == NULL);
+    g_assert(c != NULL);
+
 	while(*ptr != NULL){
 		
-		ret = gfal_mds_resolve_srm_endpoint(*ptr, tabendpoint, 100, &err);
+        ret = gfal_mds_resolve_srm_endpoint(c, *ptr, tabendpoint, 100, &err);
 		assert_true_with_message(ret > 0, " ret of bdii with error %d %d ", ret, errno);
 		if(err)
 			gfal_release_GError(&err);
@@ -86,9 +93,10 @@ void gfal2_gfal2_test_check_bdii_endpoints_srm_ng()
 		ptr++;
 	}
 
-	ret = gfal_mds_resolve_srm_endpoint (TEST_MDS_INVALID_ENDPOINT_URL, tabendpoint, 100, &err);	
+    ret = gfal_mds_resolve_srm_endpoint (c, TEST_MDS_INVALID_ENDPOINT_URL, tabendpoint, 100, &err);
 	assert_true_with_message(ret < 0 &&  err->code == ENXIO , "must fail, invalid url");
 	g_clear_error(&err);
+    gfal_context_free(c);
 }
 
 

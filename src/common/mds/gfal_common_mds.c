@@ -31,15 +31,18 @@
 #include <ctype.h>
 #include <sys/time.h>
 #include <pthread.h>
-#include "../gfal_prototypes.h"
-#include "../gfal_types.h"
-#include "../gfal_common_internal.h"
+#include <common/gfal_prototypes.h>
+#include <common/gfal_types.h>
+#include <common/gfal_common_internal.h>
+#include <config/gfal_config.h>
+
 #include "gfal_common_mds_ldap_internal.h"
 
 pthread_mutex_t m_mds =PTHREAD_MUTEX_INITIALIZER; 
 
 const char* bdii_env_var = "LCG_GFAL_INFOSYS";
-
+const char* bdii_config_var = "LCG_GFAL_INFOSYS";
+const char* bdii_config_group = "BDII";
 /*
  * set the bdii value of the handle specified
  */
@@ -59,21 +62,30 @@ void gfal_mds_set_infosys(gfal_handle handle, const char * infosys, GError** err
 	g_return_if_fail(handle && infosys);
 	// no manner to define infosys in is interface currently, just setup the env var, 
 	// TODO : change this in is-interface and integrated module
-	const int ret = setenv(bdii_env_var, infosys, TRUE);
-	if(ret == -1)
-		g_set_error(err, 0, EINVAL, "Unable to set the infosys properly");
+    g_setenv(bdii_env_var, infosys, TRUE);
+}
+
+void gfal_mds_define_bdii_endpoint(gfal_context_t handle,  GError** err){
+    if(g_getenv(bdii_env_var) == NULL){
+        gchar * bdii_host = gfal2_get_opt_string(handle,bdii_config_group, bdii_config_var,NULL);
+        if(bdii_host ){
+            gfal_log(GFAL_VERBOSE_DEBUG, " define LCG_GFAL_INFOSYS : %s", bdii_host);
+            gfal_mds_set_infosys (handle, bdii_host, NULL);
+        }
+        g_free(bdii_host);
+    }
 }
 
 
 /*
  * return the srm endpoints and their types, in the old way
  * */
-int gfal_mds_get_se_types_and_endpoints (const char *host, char ***se_types, char ***se_endpoints, GError** err){
+int gfal_mds_get_se_types_and_endpoints (gfal_context_t handle, const char *host, char ***se_types, char ***se_endpoints, GError** err){
 	GError* tmp_err=NULL;
 	gfal_mds_endpoint tabend[GFAL_MDS_MAX_SRM_ENDPOINT];
 	
 	
-	int n = gfal_mds_resolve_srm_endpoint(host, tabend, GFAL_MDS_MAX_SRM_ENDPOINT, &tmp_err);
+    int n = gfal_mds_resolve_srm_endpoint(handle, host, tabend, GFAL_MDS_MAX_SRM_ENDPOINT, &tmp_err);
 	if( n > 0){
 		int i;
 		*se_types = calloc(n+1, sizeof(char*));
@@ -133,7 +145,10 @@ int gfal_mds_isifce_wrapper(const char* base_url, gfal_mds_endpoint* endpoints, 
 
 #endif
 
- int gfal_mds_resolve_srm_endpoint(const char* base_url, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err){
+ int gfal_mds_resolve_srm_endpoint(gfal_context_t handle, const char* base_url, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err){
+    // define endpoint
+    gfal_mds_define_bdii_endpoint(handle, err);
+
 #if MDS_BDII_EXTERNAL // call the is interface if configured for
 	return gfal_mds_isifce_wrapper(base_url, endpoints, s_endpoint, err);
 #else

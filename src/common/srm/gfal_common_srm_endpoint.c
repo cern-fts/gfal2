@@ -192,7 +192,7 @@ int gfal_get_endpoint_and_setype_from_bdiiG(gfal_srmv2_opt* opts, const char* su
 	GError* tmp_err=NULL;
 	if( (ret = gfal_get_hostname_from_surlG(surl, hostname, GFAL_URL_MAX_LEN, &tmp_err)) == 0){ 		// get the hostname
 
-		if( (ret =gfal_mds_get_se_types_and_endpoints( hostname,  &tab_se_type, &tab_endpoint, &tmp_err)) == 0){ // questioning the bdii
+        if( (ret =gfal_mds_get_se_types_and_endpoints(opts->handle, hostname,  &tab_se_type, &tab_endpoint, &tmp_err)) == 0){ // questioning the bdii
 			gfal_select_best_protocol_and_endpointG(opts, tab_se_type, tab_endpoint, buff_endpoint, GFAL_URL_MAX_LEN, srm_type, &tmp_err); // map the response if correct
 			g_strfreev(tab_endpoint);
 			g_strfreev(tab_se_type);
