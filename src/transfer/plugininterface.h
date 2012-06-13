@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <common/gfal_prototypes.h>
 
 
 namespace Gfal{
@@ -72,7 +73,7 @@ class PluginFactory{
 		 */
 		virtual const VectorPlugin& get_plugin_links() =0;
 
-
+        virtual gfal_context_t get_context()=0;
 };
 
 }

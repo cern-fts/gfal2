@@ -50,6 +50,11 @@ class CoreLayer: public PluginFactory
 		virtual ~CoreLayer();
 
 		virtual const VectorPlugin & get_plugin_links();
+
+        virtual gfal_context_t get_context(){
+            return _handle;
+        }
+
 	private:
 		void _init(gfal_handle handle);
 	

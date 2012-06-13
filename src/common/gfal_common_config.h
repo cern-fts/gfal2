@@ -32,3 +32,35 @@ gfal_conf_t gfal_conf_new();
 void gfal_conf_delete(gfal_conf_t conf);
 
 GQuark gfal_quark_config_loader();
+
+
+gchar * gfalc_get_opt_string(gfal_handle handle, const gchar *group_name,
+                                    const gchar *key, GError **error);
+
+
+gint gfalc_set_opt_string(gfal_handle handle, const gchar *group_name,
+                                    const gchar *key, gchar* value, GError **error);
+
+gint gfalc_get_opt_integer(gfal_handle handle, const gchar *group_name,
+                                 const gchar *key, GError **error);
+
+
+gint gfalc_set_opt_integer(gfal_handle handle, const gchar *group_name,
+                                  const gchar *key, gint value,
+                                  GError** error);
+
+gint gfalc_set_opt_boolean(gfal_handle handle, const gchar *group_name,
+                                  const gchar *key, gboolean value, GError **error);
+
+gboolean gfalc_get_opt_boolean(gfal_handle handle, const gchar *group_name,
+                                        const gchar *key, GError **error);
+
+
+gint gfalc_set_opt_string_list(gfal_handle handle, const gchar *group_name,
+                                     const gchar *key,
+                                     const gchar * const list[],
+                                     gsize length,
+                                     GError ** error);
+
+gchar ** gfalc_get_opt_string_list(gfal_handle handle, const gchar *group_name,
+                                          const gchar *key, gsize *length, GError **error);

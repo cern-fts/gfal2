@@ -19,27 +19,23 @@
 #include <cstdlib>
 #include <global/gfal_global.h>
 #include <common/gfal_common_internal.h>
-#include <transfer/gfal_transfer_types_internal.h>
 
 
-extern "C" {
-	
-using namespace Gfal;
-using namespace Gfal::Transfer;
 
-gfal_context_t gfal_context_new(GError ** err){
-	GError * tmp_err=NULL;
-	gfal_context_t c = NULL;
-	CPP_GERROR_TRY
-		c = reinterpret_cast<gfal_context_t>(new FileCopy(new CoreLayer()));	
-	CPP_GERROR_CATCH(&tmp_err);
-	G_RETURN_ERR(c, tmp_err, err);
+gfal2_context_t gfal2_context_new(GError ** err){
+    return gfal_initG(err);
 } 
 	
 
+void gfal2_context_free(gfal2_context_t context){
+    gfal_handle_freeG(context);
+}
+
+gfal_context_t gfal_context_new(GError ** err){
+    return gfal2_context_new(err);
+}
+
 void gfal_context_free(gfal_context_t context){
-	if(context)
-		delete (reinterpret_cast<FileCopy*>(context));
+    return gfal2_context_free(context);
 }
-	
-}
+

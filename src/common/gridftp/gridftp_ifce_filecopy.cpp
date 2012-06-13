@@ -67,7 +67,7 @@ extern "C"{
 /**
  * initiaize a file copy from the given source to the given dest with the parameters params
  */
-int plugin_filecopy(plugin_handle handle, gfal_context_t context, gfalt_params_t params, const char* src, const char* dst, GError ** err){
+int plugin_filecopy(plugin_handle handle, gfal2_context_t context, gfalt_params_t params, const char* src, const char* dst, GError ** err){
 	g_return_val_err_if_fail( handle != NULL && src != NULL
 			&& dst != NULL , -1, err, "[plugin_filecopy][gridftp] einval params");
 

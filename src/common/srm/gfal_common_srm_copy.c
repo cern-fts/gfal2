@@ -70,7 +70,7 @@ int srm_plugin_delete_existing_copy(plugin_handle handle, gfalt_params_t params,
 	G_RETURN_ERR(res, tmp_err, err);		
 }
 
-int srm_plugin_put_3rdparty(plugin_handle handle, gfal_context_t context,
+int srm_plugin_put_3rdparty(plugin_handle handle, gfal2_context_t context,
 					gfalt_params_t params,  const char * surl, 
 					char* buff, size_t s_buff, 
 					char** reqtoken, GError ** err){
@@ -92,7 +92,7 @@ int srm_plugin_put_3rdparty(plugin_handle handle, gfal_context_t context,
 
 
 
-int plugin_filecopy(plugin_handle handle, gfal_context_t context,
+int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
 					gfalt_params_t params, 
 					const char* src, const char* dst, GError ** err){
 	g_return_val_err_if_fail( handle != NULL && src != NULL

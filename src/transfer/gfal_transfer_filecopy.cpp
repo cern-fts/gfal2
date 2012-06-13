@@ -18,7 +18,8 @@
 
 const Glib::Quark scope_copy("FileCopy::start_copy");
 
-Gfal::Transfer::FileCopy::FileCopy(PluginFactory* wrap) :  MainDecorator(wrap){
+
+Gfal::Transfer::FileCopy::FileCopy(PluginFactory* wrap) :  MainDecorator(wrap), context(wrap->get_context()){
 
 }
 
@@ -33,9 +34,9 @@ void Gfal::Transfer::FileCopy::start_copy(gfalt_params_t p, const std::string & 
 	GError * tmp_err=NULL;
 	plugin_filecopy_call p_copy = find_copy_plugin(src, dst, &plug_data); // get the filecopy call of the plugin
 	if(p_copy == NULL)
-		throw Gfal::CoreException(scope_copy, "bug detected : \
-				no correct filecopy function in a plugin signaled like compatible", ENOSYS);
-	const int res = p_copy(plug_data, static_cast<gfal_context_t>(this), p, src.c_str(), dst.c_str(), &tmp_err);
+        throw Gfal::CoreException(scope_copy, "bug detected : "
+                "no correct filecopy function in a plugin signaled like compatible", ENOSYS);
+    const int res = p_copy(plug_data, context, p, src.c_str(), dst.c_str(), &tmp_err);
 	//p->unlock();
 	if(res <0 )
 		throw Gfal::CoreException(scope_copy, std::string(tmp_err->message), tmp_err->code);
@@ -63,11 +64,30 @@ const plugin_filecopy_call Gfal::Transfer::FileCopy::find_copy_plugin(const std:
 }
 
 
+
+
+
 extern "C" {
+
+static void filecopy_GDestroyer(gpointer p){
+    delete (static_cast<Gfal::Transfer::FileCopy*>(p));
+
+}
+
+static Gfal::Transfer::FileCopy* init_Filecopy_from_handle(gfal2_context_t handle){
+    Gfal::Transfer::FileCopy* f=NULL;
+    if( ( f= (Gfal::Transfer::FileCopy*) handle->gfal_transfer_instance) == NULL){
+             f =new Gfal::Transfer::FileCopy(new Gfal::CoreLayer(handle));
+             handle->gfal_transfer_instance =  static_cast<gpointer>(f);
+             handle->gfal_transfer_destroyer = &filecopy_GDestroyer;
+    }
+    return f;
+}
+
+
 	
-int gfalt_copy_file(gfal_context_t handle, gfalt_params_t params, 
+int gfalt_copy_file(gfal2_context_t handle, gfalt_params_t params, 
 			const char* src, const char* dst,  GError** err){
-	using namespace Gfal::Transfer;
 	
 	g_return_val_err_if_fail( handle && src && dst, -1, err, "invalid source or/and destination values");
 	GError * tmp_err=NULL;
@@ -75,13 +95,13 @@ int gfalt_copy_file(gfal_context_t handle, gfalt_params_t params,
 	gfalt_params_t p = NULL;
 	
 	CPP_GERROR_TRY
-	
+        Gfal::Transfer::FileCopy* f = init_Filecopy_from_handle(handle);
 		if(params == NULL){
 			p = gfalt_params_handle_new(NULL);
-			reinterpret_cast<FileCopy*>(handle)->start_copy(p, src, dst);
+            f->start_copy(p, src, dst);
 		}
 		else{
-			reinterpret_cast<FileCopy*>(handle)->start_copy(params, src, dst);
+            f->start_copy(params, src, dst);
 		}
 		ret = 0;
 	CPP_GERROR_CATCH(&tmp_err);
@@ -90,6 +110,4 @@ int gfalt_copy_file(gfal_context_t handle, gfalt_params_t params,
 }
 	
 }	
-
-
 

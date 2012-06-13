@@ -14,6 +14,7 @@ SET(PLUGIN_DCAP TRUE
 	
 SET(IS_IFCE FALSE)
 # subdir import
+add_subdirectory(global)
 add_subdirectory(externals/utils)
 add_subdirectory(externals/g_config_manager)
 add_subdirectory(fdesc)
@@ -77,7 +78,7 @@ ELSE (IS_IFCE)
 	
 ENDIF(IS_IFCE)
 
-LIST(APPEND main_libs ${src_posix} ${src_common} ${mds_source} ${src_uri} ${src_logger} ${src_g_shared_map})
+LIST(APPEND main_libs ${src_posix} ${src_common} ${src_global} ${mds_source} ${src_uri} ${src_logger} ${src_g_shared_map})
 
 
 IF (MAIN_CORE)
@@ -251,7 +252,6 @@ install(FILES  "common/dcap/README_PLUGIN_DCAP"
 ENDIF(PLUGIN_DCAP)
 
 
-add_subdirectory(global)
 add_subdirectory(transfer)                         
 add_subdirectory(common/gridftp)    
 add_subdirectory(common/srm/test)  

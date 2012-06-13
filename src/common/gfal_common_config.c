@@ -41,6 +41,10 @@ GQuark gfal_quark_config_loader(){
     return g_quark_from_static_string("Gfal2::common_config_loader");
 }
 
+gfal_conf_t gfal_handle_to_conf(gfal_handle h){
+    return h->conf;
+}
+
 static gchar* check_configuration_dir(GError ** err){
     struct stat st;
     int res;
@@ -141,5 +145,107 @@ void gfal_conf_delete(gfal_conf_t conf){
         g_config_manager_delete_full(conf->running_manager);
 		g_free(conf);
 	}
+}
+
+void gfal_config_propagate_error_external(GError ** err, GError ** tmp_err){
+    if(tmp_err && *tmp_err){
+        g_set_error(err, gfal_quark_config_loader(), EINVAL, " Configuration Error : %s", (*tmp_err)->message);
+        g_clear_error(tmp_err);
+    }
+}
+
+
+gchar * gfal_config_get_opt_string(gfal_handle handle, const gchar *group_name,
+                                    const gchar *key, GError **error){
+    g_assert(handle != NULL);
+    GError * tmp_err=NULL;
+    gfal_conf_t c = gfal_handle_to_conf(handle);
+
+    gchar * res = g_config_manager_get_string(c->running_manager, group_name, key, &tmp_err);
+    gfal_config_propagate_error_external(error, &tmp_err);
+    return res;
+}
+
+gint gfal_config_set_opt_string(gfal_handle handle, const gchar *group_name,
+                                    const gchar *key, gchar* value, GError **error){
+    g_assert(handle != NULL);
+    GError * tmp_err=NULL;
+    gfal_conf_t c = gfal_handle_to_conf(handle);
+
+    gint res = g_config_manager_set_string(c->running_manager, group_name, key, value, &tmp_err);
+    gfal_config_propagate_error_external(error, &tmp_err);
+    return res;
+}
+
+gint gfal_config_get_opt_integer(gfal_handle handle, const gchar *group_name,
+                                 const gchar *key, GError **error){
+    g_assert(handle != NULL);
+    GError * tmp_err=NULL;
+    gfal_conf_t c = gfal_handle_to_conf(handle);
+
+    gint res = g_config_manager_get_integer(c->running_manager, group_name, key, &tmp_err);
+    gfal_config_propagate_error_external(error, &tmp_err);
+    return res;
+}
+
+gint gfal_config_set_opt_integer(gfal_handle handle, const gchar *group_name,
+                                  const gchar *key, gint value,
+                                  GError** error){
+    g_assert(handle != NULL);
+    GError * tmp_err=NULL;
+    gfal_conf_t c = gfal_handle_to_conf(handle);
+
+    gint res = g_config_manager_set_integer(c->running_manager, group_name, key, value, &tmp_err);
+    gfal_config_propagate_error_external(error, &tmp_err);
+    return res;
+}
+
+
+
+gboolean gfal_config_get_opt_boolean(gfal_handle handle, const gchar *group_name,
+                                        const gchar *key, GError **error){
+    g_assert(handle != NULL);
+    GError * tmp_err=NULL;
+    gfal_conf_t c = gfal_handle_to_conf(handle);
+
+    gboolean res = g_config_manager_get_boolean(c->running_manager, group_name, key, &tmp_err);
+    gfal_config_propagate_error_external(error, &tmp_err);
+    return res;
+}
+
+gint gfal_config_set_opt_boolean(gfal_handle handle, const gchar *group_name,
+                                  const gchar *key, gboolean value, GError **error){
+    g_assert(handle != NULL);
+    GError * tmp_err=NULL;
+    gfal_conf_t c = gfal_handle_to_conf(handle);
+
+    gint res = g_config_manager_set_boolean(c->running_manager, group_name, key, value, &tmp_err);
+    gfal_config_propagate_error_external(error, &tmp_err);
+    return res;
+}
+
+gchar ** gfal_config_get_opt_string_list(gfal_handle handle, const gchar *group_name,
+                                          const gchar *key, gsize *length, GError **error){
+    g_assert(handle != NULL);
+    GError * tmp_err=NULL;
+    gfal_conf_t c = gfal_handle_to_conf(handle);
+
+    gchar** res = g_config_manager_get_string_list(c->running_manager, group_name, key, length, &tmp_err);
+    gfal_config_propagate_error_external(error, &tmp_err);
+    return res;
+}
+
+gint gfal_config_set_opt_string_list(gfal_handle handle, const gchar *group_name,
+                                     const gchar *key,
+                                     const gchar * const list[],
+                                     gsize length,
+                                     GError ** error){
+    g_assert(handle != NULL);
+    GError * tmp_err=NULL;
+    gfal_conf_t c = gfal_handle_to_conf(handle);
+
+    gint res  = g_config_manager_set_string_list(c->running_manager, group_name, key, list, length, &tmp_err);
+    gfal_config_propagate_error_external(error, &tmp_err);
+    return res;
 }
 

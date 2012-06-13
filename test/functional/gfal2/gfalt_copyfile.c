@@ -14,12 +14,12 @@ int main(int argc, char** argv){
 		return 1;
 	}
 	GError * tmp_err = NULL; // classical GError/glib error management
-	gfal_context_t handle;
+	gfal2_context_t handle;
 	int ret=-1;
 	
 	// initialize gfal
 	gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE);
-	 if( (handle = gfal_context_new(&tmp_err)) == NULL ) {
+	 if( (handle = gfal2_context_new(&tmp_err)) == NULL ) {
 		 printf(" bad initialization %d : %s.\n", tmp_err->code,tmp_err->message);
 		 return -1;
 	 }
@@ -30,7 +30,7 @@ int main(int argc, char** argv){
 	}else
 		printf(" transfer sucessfull ! \n");
 		
-	gfal_context_free(handle);
+	gfal2_context_free(handle);
 	return ret;
 }
 

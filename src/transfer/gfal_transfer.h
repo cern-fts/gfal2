@@ -128,12 +128,12 @@ void gfalt_set_monitor_callback(gfalt_params_t params, gfalt_monitor_func callba
 /**
  *	@brief copy function
  *  start a synchronous copy of the file
- *  @param context : global gfal context
+ *  @param context : gfal context
  *  @param params parameter handle ( \ref gfalt_parameters_new )
  *  @param src source URL supported by GFAL
  *  @param dst destination URL supported by GFAL
 */
-int gfalt_copy_file(gfal_context_t context, gfalt_params_t params, const char* src, const char* dst, GError** err);
+int gfalt_copy_file(gfal2_context_t context, gfalt_params_t params, const char* src, const char* dst, GError** err);
 
 
 //

@@ -24,7 +24,7 @@ IF (MAIN_TRANSFER)
 						${GTHREAD2_PKG_INCLUDE_DIRS}  ${GLIBMM_PKG_INCLUDE_DIRS})
 	add_definitions( ${GLIB2_PKG_CFLAGS} ${GTHREAD2_PKG_CFLAGS} ${GLIBMM_PKG_CFLAGS})
 	
-	add_library(gfal2_transfer  SHARED ${src_trans} ${src_libcpp} ${src_exceptions} ${src_global})
+        add_library(gfal2_transfer  SHARED ${src_trans} ${src_libcpp} ${src_exceptions} )
 	target_link_libraries(gfal2_transfer ${GLIB2_PKG_LIBRARIES} ${GTHREAD2_PKG_LIBRARIES} 
 							${UUID_PKG_LIBRARIES} ${gfal2_link}  ${GLIBMM_PKG_LIBRARIES} "dl")
 	set_target_properties(gfal2_transfer	 	PROPERTIES

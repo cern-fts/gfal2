@@ -80,6 +80,8 @@ void gfal_handle_freeG (gfal_handle handle){
 	gfal_plugins_delete(handle, NULL);
 	gfal_dir_handle_container_delete(&(handle->fdescs));
 	gfal_conf_delete(handle->conf);
+    if(handle->gfal_transfer_destroyer)
+        handle->gfal_transfer_destroyer(handle->gfal_transfer_instance);
 	g_free(handle);
 	handle = NULL;
 }

@@ -19,6 +19,7 @@
  */
 
 #include <glib.h>
+#include <common/gfal_prototypes.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -31,12 +32,26 @@ extern "C"
  * Context allows to have separated instance of GFAL with differents parameters
  *  providing an advanced interface to  GFAL
  */
-typedef void* gfal_context_t;
+typedef gfal_handle gfal2_context_t;
+typedef gfal2_context_t gfal_context_t;
 
+/**
+  @brief create a gfal 2 context
+  contexts are used for all gfal 2 operations
+  @param err : GError error report system
+  @return gfal2 context
+*/
+gfal2_context_t gfal2_context_new(GError ** err);
+
+/**
+  free a gfal 2 context
+*/
+void gfal2_context_free(gfal2_context_t context);
+
+//  same than gfal2_context_new but with old compatibility
 gfal_context_t gfal_context_new(GError ** err);
-
+// same than gfal2_context_free for compatibility reasons
 void gfal_context_free(gfal_context_t context);
-
 
 #ifdef __cplusplus
 }

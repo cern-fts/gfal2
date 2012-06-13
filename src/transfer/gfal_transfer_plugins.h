@@ -47,7 +47,7 @@ extern "C"
 typedef int(*plugin_url_check2_call)(plugin_handle,  const char* src, const char* dst, gfal_url2_check check);
 
 // prototype for the filecopy entry point in the plugins
-typedef int (*plugin_filecopy_call)(plugin_handle, gfal_context_t, gfalt_params_t, const char* src, const char* dst, GError** );
+typedef int (*plugin_filecopy_call)(plugin_handle, gfal2_context_t, gfalt_params_t, const char* src, const char* dst, GError** );
 
 // prototype for the url_check2 entry point in the plugin
 typedef int (*plugin_url_check_call)(plugin_handle, const char* src, plugin_mode check);

@@ -61,8 +61,13 @@ public:
 	
 	void start_copy(gfalt_params_t p, const std::string & src, const std::string & dst);
 	
+    virtual gfal_context_t get_context(){
+        return context;
+    }
+
 protected:
 	const plugin_filecopy_call find_copy_plugin(const std::string & src, const std::string & dst, void** plugin_data);
+    gfal_context_t context;
 	
 }; 
 

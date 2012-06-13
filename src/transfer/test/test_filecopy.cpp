@@ -46,16 +46,16 @@ void test_filecopy_instance(){
 void test_filecopy_instance_c(){
 	setenv("GFAL_PLUGIN_LIST", "libgfal_plugin_gridftp.so", TRUE);
 	GError* tmp_err= NULL;
-	gfal_context_t c = gfal_context_new(&tmp_err);
+	gfal2_context_t c = gfal2_context_new(&tmp_err);
 	assert_true_with_message(c != NULL && tmp_err==NULL, "must be a valid init ");	
-	gfal_context_free(c);
+	gfal2_context_free(c);
 }
 
 
 void test_filecopy_instance_c_problem(){
 	setenv("GFAL_PLUGIN_DIR", "/tmp/blablafalse", TRUE);
 	GError* tmp_err= NULL;
-	gfal_context_t c = gfal_context_new(&tmp_err);
+	gfal2_context_t c = gfal2_context_new(&tmp_err);
 	assert_true_with_message(c == NULL && tmp_err!=NULL, "must be an unvalid init ");
 	printf("%d %s\n", tmp_err->code, tmp_err->message);	
 }
