@@ -48,9 +48,10 @@ void g_config_manager_prepend_manager(GConfigManager_t config_manager, GConfigMa
     g_assert(config_manager != NULL);
     g_assert(new_config != NULL);
     if(new_config->configs){
-        config_manager->configs = g_list_concat( config_manager->configs, new_config->configs);
+        config_manager->configs = g_list_concat( config_manager->configs, g_list_copy(new_config->configs));
     }
 }
+
 
 void g_config_manager_prepend_keyvalue(GConfigManager_t config_manager, GKeyFile * keyvalue_config){
     g_assert(config_manager != NULL);

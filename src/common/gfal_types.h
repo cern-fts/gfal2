@@ -69,7 +69,8 @@ typedef struct _gfal_conf_elem{
 typedef struct _gfal_conf{
 	GMutex* mux;
     GKeyFile* running_config;
-    GConfigManager_t manager;
+    GConfigManager_t static_manager;
+    GConfigManager_t running_manager;
 } *gfal_conf_t;
 
 

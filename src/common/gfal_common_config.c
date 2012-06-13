@@ -119,14 +119,17 @@ gfal_conf_t gfal_conf_new(GError ** err){
 
 	gfal_conf_t res = g_new0(struct _gfal_conf, 1);
     res->running_config= g_key_file_new();
-    res->manager= gfal_load_static_configuration(&tmp_err);
+    g_key_file_load_from_data(res->running_config, " ", 1, G_KEY_FILE_NONE, NULL);
+    res->running_manager = g_config_manager_new();
+    res->static_manager= gfal_load_static_configuration(&tmp_err);
 	//g_mutex_init(&(res->mux));
     if(tmp_err){
         gfal_conf_delete(res);
         res = NULL;
     }else{
         // add the running config to the configuration manager
-        g_config_manager_prepend_keyvalue(res->manager, res->running_config);
+        g_config_manager_prepend_manager(res->running_manager, res->static_manager);
+        g_config_manager_prepend_keyvalue(res->running_manager, res->running_config);
     }
     G_RETURN_ERR(res, tmp_err, err);
 }
@@ -134,7 +137,8 @@ gfal_conf_t gfal_conf_new(GError ** err){
 void gfal_conf_delete(gfal_conf_t conf){
 	if(conf){
 	//	g_mutex_clear(&(conf->mux));
-        g_config_manager_delete_full(conf->manager);
+        g_config_manager_delete(conf->static_manager);
+        g_config_manager_delete_full(conf->running_manager);
 		g_free(conf);
 	}
 }
