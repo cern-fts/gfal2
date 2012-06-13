@@ -28,13 +28,13 @@
 
 
 
-#include "gfal_prototypes.h"
-#include "gfal_types.h"
-#include "gfal_common_plugin.h"
-#include "gfal_common_errverbose.h"
-#include "gfal_common_dir_handle.h"
-#include "gfal_common_file_handle.h"
-#include "gfal_common_config.h"
+#include <common/gfal_prototypes.h>
+#include <common/gfal_types.h>
+#include <common/gfal_common_plugin.h>
+#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_dir_handle.h>
+#include <common/gfal_common_file_handle.h>
+#include <config/gfal_config_internal.h>
 
 #define XVERSION_STR(x) #x
 #define VERSION_STR(x) XVERSION_STR(x)

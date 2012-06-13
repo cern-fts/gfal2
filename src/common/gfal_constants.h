@@ -68,7 +68,7 @@ extern "C"
 
 // configuration loader related
 #define GFAL_CONFIG_DIR_ENV "GFAL_CONFIG_DIR" /**<  environment variable for personnalized configuration directory */
-#define GFAL_CONFIG_DIR_SUFFIX "gfal2"
+#define GFAL_CONFIG_DIR_SUFFIX "gfal2.d"
 
 //! xattr standard keys for getxattr / setxattr
 //! replicas listing 

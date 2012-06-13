@@ -1,6 +1,3 @@
-#pragma once
-#ifndef _GFAL2_API_
-#define _GFAL2_API_
 /*
  * Copyright (c) Members of the EGEE Collaboration. 2004.
  * See http://www.eu-egee.org/partners/ for details on the copyright holders.
@@ -17,17 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * @file gfal_api.h
- * @brief Main header file for gfal 2.0
- * @author Devresse Adrien
- * @version 2.0.0
- */
- 
-#include <global/gfal_global.h>
-#include <config/gfal_config.h>
-#include <logger/gfal_logger.h>
-#include <posix/gfal_posix_api.h> 
- 
 
-#endif  //_GFAL2_API_
+#include <glib.h>
+#include <global/gfal_global.h>
+#include <common/gfal_common_internal.h>
+
+
+
+gfal2_context_t gfal2_context_new(GError ** err){
+    return gfal_initG(err);
+} 
+	
+
+void gfal2_context_free(gfal2_context_t context){
+    gfal_handle_freeG(context);
+}
+
+gfal_context_t gfal_context_new(GError ** err){
+    return gfal2_context_new(err);
+}
+
+void gfal_context_free(gfal_context_t context){
+    return gfal2_context_free(context);
+}
+

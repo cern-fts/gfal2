@@ -25,8 +25,8 @@
 
 
 
-#include "gfal_common_config.h"
-#include "gfal_common_errverbose.h"
+#include <config/gfal_config_internal.h>
+#include <common/gfal_common_errverbose.h>
 
 #ifndef GFAL_CONFIG_DIR_DEFAULT
 #error "GFAL_CONFIG_DIR_DEFAULT should be define at compile time"

@@ -187,6 +187,9 @@ make DESTDIR=%{buildroot} install
 %files core
 %defattr (-,root,root)
 %{_libdir}/libgfal2.so.*
+%dir %{_libdir}/%{name}-plugins
+%dir %{_docdir}/%{name}-%{version}
+%dir %{_sysconfdir}/gfal2.d
 %{_docdir}/%{name}-%{version}/LICENSE
 
 %files transfer
@@ -196,6 +199,7 @@ make DESTDIR=%{buildroot} install
 
 %files devel
 %defattr (-,root,root)
+%dir %{_includedir}/gfal2
 %{_includedir}/gfal2/*.h
 %{_includedir}/gfal2/*/*.h
 %{_libdir}/pkgconfig/gfal2.pc

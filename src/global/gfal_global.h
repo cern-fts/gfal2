@@ -33,6 +33,7 @@ extern "C"
  *  providing an advanced interface to  GFAL
  */
 typedef gfal_handle gfal2_context_t;
+// backward compatibility
 typedef gfal2_context_t gfal_context_t;
 
 /**

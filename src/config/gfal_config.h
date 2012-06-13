@@ -1,4 +1,6 @@
 #pragma once
+#ifndef GFAL_CONFIG_H
+#define GFAL_CONFIG_H
 /*
  * Copyright (c) Members of the EGEE Collaboration. 2004.
  * See http://www.eu-egee.org/partners/ for details on the copyright holders.
@@ -16,51 +18,49 @@
  * limitations under the License.
  */
 
-/**
- * @file gfal_common_config.h
- * @author Devresse Adrien
- * @version 1.0
- * @date 04/11/2011
- * */
+#include <glib.h>
+#include <global/gfal_global.h>
 
-#include <common/gfal_prototypes.h>
-#include <common/gfal_types.h>
+#ifdef __cplusplus
+extern "C"
+{
+#endif  // __cplusplus
 
-// create or delete configuration manager for gfal 2.0, internal
-gfal_conf_t gfal_conf_new();
-
-void gfal_conf_delete(gfal_conf_t conf);
-
-GQuark gfal_quark_config_loader();
-
-
-gchar * gfalc_get_opt_string(gfal_handle handle, const gchar *group_name,
+gchar * gfal2_get_opt_string(gfal2_context_t handle, const gchar *group_name,
                                     const gchar *key, GError **error);
 
 
-gint gfalc_set_opt_string(gfal_handle handle, const gchar *group_name,
+gint gfal2_set_opt_string(gfal2_context_t handle, const gchar *group_name,
                                     const gchar *key, gchar* value, GError **error);
 
-gint gfalc_get_opt_integer(gfal_handle handle, const gchar *group_name,
+gint gfal2_get_opt_integer(gfal2_context_t handle, const gchar *group_name,
                                  const gchar *key, GError **error);
 
 
-gint gfalc_set_opt_integer(gfal_handle handle, const gchar *group_name,
+gint gfal2_set_opt_integer(gfal2_context_t handle, const gchar *group_name,
                                   const gchar *key, gint value,
                                   GError** error);
 
-gint gfalc_set_opt_boolean(gfal_handle handle, const gchar *group_name,
+gint gfal2_set_opt_boolean(gfal2_context_t handle, const gchar *group_name,
                                   const gchar *key, gboolean value, GError **error);
 
-gboolean gfalc_get_opt_boolean(gfal_handle handle, const gchar *group_name,
+gboolean gfal2_get_opt_boolean(gfal2_context_t handle, const gchar *group_name,
                                         const gchar *key, GError **error);
 
 
-gint gfalc_set_opt_string_list(gfal_handle handle, const gchar *group_name,
+gint gfal2_set_opt_string_list(gfal_handle handle, const gchar *group_name,
                                      const gchar *key,
                                      const gchar * const list[],
                                      gsize length,
                                      GError ** error);
 
-gchar ** gfalc_get_opt_string_list(gfal_handle handle, const gchar *group_name,
+gchar ** gfal2_get_opt_string_list(gfal_handle handle, const gchar *group_name,
                                           const gchar *key, gsize *length, GError **error);
+
+#ifdef __cplusplus
+}
+#endif  // __cplusplus
+
+
+#endif /* GFAL_CONFIG_H */
+

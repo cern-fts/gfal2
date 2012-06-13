@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (c) Members of the EGEE Collaboration. 2004.
  * See http://www.eu-egee.org/partners/ for details on the copyright holders.
@@ -15,27 +16,23 @@
  * limitations under the License.
  */
 
-#include <glib.h>
-#include <cstdlib>
-#include <global/gfal_global.h>
-#include <common/gfal_common_internal.h>
+/**
+ * @file gfal_common_config.h
+ * @author Devresse Adrien
+ * @version 1.0
+ * @date 04/11/2011
+ * */
+
+#include <common/gfal_prototypes.h>
+#include <common/gfal_types.h>
+#include <config/gfal_config.h>
+
+// create or delete configuration manager for gfal 2.0, internal
+gfal_conf_t gfal_conf_new();
+
+void gfal_conf_delete(gfal_conf_t conf);
+
+GQuark gfal_quark_config_loader();
 
 
-
-gfal2_context_t gfal2_context_new(GError ** err){
-    return gfal_initG(err);
-} 
-	
-
-void gfal2_context_free(gfal2_context_t context){
-    gfal_handle_freeG(context);
-}
-
-gfal_context_t gfal_context_new(GError ** err){
-    return gfal2_context_new(err);
-}
-
-void gfal_context_free(gfal_context_t context){
-    return gfal2_context_free(context);
-}
 
