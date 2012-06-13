@@ -189,8 +189,10 @@ make DESTDIR=%{buildroot} install
 %{_libdir}/libgfal2.so.*
 %dir %{_libdir}/%{name}-plugins
 %dir %{_docdir}/%{name}-%{version}
-%dir %{_sysconfdir}/gfal2.d
+%dir %{_sysconfdir}/%{name}.d
 %{_docdir}/%{name}-%{version}/LICENSE
+%config(noreplace) %{_sysconfdir}/%{name}.d/bdii.conf
+%config(noreplace) %{_sysconfdir}/%{name}.d/gfal2_core.conf
 
 %files transfer
 %defattr (-,root,root)
@@ -199,9 +201,9 @@ make DESTDIR=%{buildroot} install
 
 %files devel
 %defattr (-,root,root)
-%dir %{_includedir}/gfal2
-%{_includedir}/gfal2/*.h
-%{_includedir}/gfal2/*/*.h
+%dir %{_includedir}/%{name}
+%{_includedir}/%{name}/*.h
+%{_includedir}/%{name}/*/*.h
 %{_libdir}/pkgconfig/gfal2.pc
 %{_libdir}/pkgconfig/gfal_transfer.pc
 %{_libdir}/libgfal2.so
@@ -216,30 +218,26 @@ make DESTDIR=%{buildroot} install
 %files plugin-lfc
 %defattr (-,root,root)
 %{_libdir}/%{name}-plugins/libgfal_plugin_lfc.so*
-%config(noreplace) %{_sysconfdir}/profile.d/gfal_plugin_lfc.csh
-%config(noreplace) %{_sysconfdir}/profile.d/gfal_plugin_lfc.sh
 %{_docdir}/%{name}-%{version}/README_PLUGIN_LFC
+%config(noreplace) %{_sysconfdir}/%{name}.d/lfc_plugin.conf
 
 %files plugin-rfio
 %defattr (-,root,root)
 %{_libdir}/%{name}-plugins/libgfal_plugin_rfio.so*
-%config(noreplace) %{_sysconfdir}/profile.d/gfal_plugin_rfio.csh
-%config(noreplace) %{_sysconfdir}/profile.d/gfal_plugin_rfio.sh
 %{_docdir}/%{name}-%{version}/README_PLUGIN_RFIO
+%{_sysconfdir}/%{name}.d/rfio_plugin.conf
 
 %files plugin-dcap
 %defattr (-,root,root)
 %{_libdir}/%{name}-plugins/libgfal_plugin_dcap.so*
-%config(noreplace) %{_sysconfdir}/profile.d/gfal_plugin_dcap.csh
-%config(noreplace) %{_sysconfdir}/profile.d/gfal_plugin_dcap.sh
 %{_docdir}/%{name}-%{version}/README_PLUGIN_DCAP
+%config(noreplace) %{_sysconfdir}/%{name}.d/dcap_plugin.conf
 
 %files plugin-srm
 %defattr (-,root,root)
 %{_libdir}/%{name}-plugins/libgfal_plugin_srm.so*
-%config(noreplace) %{_sysconfdir}/profile.d/gfal_plugin_srm.csh
-%config(noreplace) %{_sysconfdir}/profile.d/gfal_plugin_srm.sh
 %{_docdir}/%{name}-%{version}/README_PLUGIN_SRM
+%config(noreplace) %{_sysconfdir}/%{name}.d/srm_plugin.conf
 
 %files plugin-gridftp
 %defattr (-,root,root)

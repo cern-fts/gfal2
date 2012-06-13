@@ -155,7 +155,7 @@ void gfal_config_propagate_error_external(GError ** err, GError ** tmp_err){
 }
 
 
-gchar * gfal_config_get_opt_string(gfal_handle handle, const gchar *group_name,
+gchar * gfal2_get_opt_string(gfal_handle handle, const gchar *group_name,
                                     const gchar *key, GError **error){
     g_assert(handle != NULL);
     GError * tmp_err=NULL;
@@ -166,7 +166,7 @@ gchar * gfal_config_get_opt_string(gfal_handle handle, const gchar *group_name,
     return res;
 }
 
-gint gfal_config_set_opt_string(gfal_handle handle, const gchar *group_name,
+gint gfal2_set_opt_string(gfal_handle handle, const gchar *group_name,
                                     const gchar *key, gchar* value, GError **error){
     g_assert(handle != NULL);
     GError * tmp_err=NULL;
@@ -177,7 +177,7 @@ gint gfal_config_set_opt_string(gfal_handle handle, const gchar *group_name,
     return res;
 }
 
-gint gfal_config_get_opt_integer(gfal_handle handle, const gchar *group_name,
+gint gfal2_get_opt_integer(gfal_handle handle, const gchar *group_name,
                                  const gchar *key, GError **error){
     g_assert(handle != NULL);
     GError * tmp_err=NULL;
@@ -188,7 +188,7 @@ gint gfal_config_get_opt_integer(gfal_handle handle, const gchar *group_name,
     return res;
 }
 
-gint gfal_config_set_opt_integer(gfal_handle handle, const gchar *group_name,
+gint gfal2_set_opt_integer(gfal_handle handle, const gchar *group_name,
                                   const gchar *key, gint value,
                                   GError** error){
     g_assert(handle != NULL);
@@ -202,7 +202,7 @@ gint gfal_config_set_opt_integer(gfal_handle handle, const gchar *group_name,
 
 
 
-gboolean gfal_config_get_opt_boolean(gfal_handle handle, const gchar *group_name,
+gboolean gfal2_get_opt_boolean(gfal_handle handle, const gchar *group_name,
                                         const gchar *key, GError **error){
     g_assert(handle != NULL);
     GError * tmp_err=NULL;
@@ -213,7 +213,7 @@ gboolean gfal_config_get_opt_boolean(gfal_handle handle, const gchar *group_name
     return res;
 }
 
-gint gfal_config_set_opt_boolean(gfal_handle handle, const gchar *group_name,
+gint gfal2_set_opt_boolean(gfal_handle handle, const gchar *group_name,
                                   const gchar *key, gboolean value, GError **error){
     g_assert(handle != NULL);
     GError * tmp_err=NULL;
@@ -224,7 +224,7 @@ gint gfal_config_set_opt_boolean(gfal_handle handle, const gchar *group_name,
     return res;
 }
 
-gchar ** gfal_config_get_opt_string_list(gfal_handle handle, const gchar *group_name,
+gchar ** gfal2_get_opt_string_list(gfal_handle handle, const gchar *group_name,
                                           const gchar *key, gsize *length, GError **error){
     g_assert(handle != NULL);
     GError * tmp_err=NULL;
@@ -235,7 +235,7 @@ gchar ** gfal_config_get_opt_string_list(gfal_handle handle, const gchar *group_
     return res;
 }
 
-gint gfal_config_set_opt_string_list(gfal_handle handle, const gchar *group_name,
+gint gfal2_set_opt_string_list(gfal_handle handle, const gchar *group_name,
                                      const gchar *key,
                                      const gchar * const list[],
                                      gsize length,

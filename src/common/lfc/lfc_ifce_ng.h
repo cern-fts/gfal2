@@ -38,6 +38,8 @@
 
 
 #define LFC_ENV_VAR_HOST "LFC_HOST"
+#define LFC_GROUP_CONFIG_VAR "LFC PLUGIN"
+#define LFC_HOST_CONFIG_VAR LFC_ENV_VAR_HOST
 
 typedef struct _lfc_checksum{
 	char type[255];

@@ -36,17 +36,18 @@
 #include <serrno.h>
 #include <uuid/uuid.h>
 
-
+#include <config/gfal_config.h>
 
 #include <common/gfal_prototypes.h>
 #include <common/gfal_types.h>
 #include <common/gfal_common_plugin.h>
 
-
 #include <common/mds/gfal_common_mds.h>
 #include <common/gfal_common_interface.h>
-#include "lfc_ifce_ng.h"
 #include <common/gfal_common_errverbose.h>
+
+#include "lfc_ifce_ng.h"
+
 
 int _Cthread_addcid(char *, int, char *, int, Cth_pid_t *, unsigned, void *(*)(void *), int); // hack in order to use the internal CThread API ( DPNS limitation )
 
@@ -148,27 +149,12 @@ static int gfal_lfc_abortTransaction(struct lfc_ops* ops, GError ** err){
 
 char* gfal_get_lfchost_envar(GError** err){
 
-	char *lfc_host=NULL, *lfc_port=NULL;
+    char *lfc_host=NULL;
 	char *lfc_endpoint=NULL;
-	int port=0;
 	if( (lfc_host = getenv ("LFC_HOST")) !=NULL){
-		if (strnlen (lfc_host,GFAL_MAX_LFCHOST_LEN) + 6 >= GFAL_MAX_LFCHOST_LEN)  {
-				g_set_error(err, 0, ENAMETOOLONG, "[gfal_get_lfchost_envar] Host name from LFC_HOST env var too long");
-				return NULL;
-		}
-
-		lfc_port = getenv ("LFC_PORT");
-		if ( lfc_port  && (strnlen (lfc_port,6) > 5  || (port = atoi(lfc_port)) == 0) ) {
-			g_set_error(err, 0, EINVAL , "[gfal_get_lfchost_envar]  Invalid LFC port number in the LFC_PORT env var");
-			return NULL;
-		}
-
-		if (lfc_port)
-			lfc_endpoint = g_strdup_printf("%s:%d", lfc_host, port);
-		else
-			lfc_endpoint = g_strdup_printf("%s", lfc_host);	
-
-	}
+        gfal_log(GFAL_VERBOSE_TRACE, " env var LFC_HOST found, LFC_HOST parameter picked from env var ...");
+        lfc_endpoint = strdup(lfc_host);
+    }
 	//g_printerr("my host : %s", lfc_endpoint);
 	return lfc_endpoint;
 }
@@ -235,28 +221,38 @@ int gfal_convert_guid_to_lfn_r(plugin_handle handle, const char* guid, char* buf
 	return ret;
  }
  
- 
+gchar* gfal_get_lfc_host(gfal_handle handle, GError ** err){
+    gchar * lfc_host = NULL;
+    GError * tmp_err=NULL;
+
+    if( (lfc_host = gfal_get_lfchost_envar(&tmp_err)) == NULL){
+        gfal_log(GFAL_VERBOSE_TRACE, " try to load LFC_HOST parameter from configuration files");
+        lfc_host = gfal2_get_opt_string(handle, LFC_GROUP_CONFIG_VAR, LFC_HOST_CONFIG_VAR, &tmp_err);
+    }
+    if(lfc_host)
+        gfal_log(GFAL_VERBOSE_DEBUG, " LFC_HOST parameter : %s", lfc_host);
+
+    G_RETURN_ERR(lfc_host, tmp_err, err);
+}
 
 /*
  * setup the lfc_host correctly for the lfc calls 
  * @param err GError report system if 
  * @return  string of the endpoint, need to be free or NULL if error
  */
-char* gfal_setup_lfchost(gfal_handle handle, GError ** err){
+gchar* gfal_setup_lfchost(gfal_handle handle, GError ** err){
 	g_return_val_err_if_fail(handle && err, NULL, err, "[gfal_setup_lfchost] Invalid parameters handle & err");
 	char* lfc_host = NULL;
 	GError* tmp_err = NULL;
 
 	
-	if ( (lfc_host = gfal_get_lfchost_envar(&tmp_err)) == NULL ) { // if env var not specified got one from bdii, and setup the env var
+    if ( (lfc_host = gfal_get_lfc_host(handle, &tmp_err)) == NULL ) { // if env var not specified got one from bdii, and setup the env var
 		if(!tmp_err)
-			g_set_error(&tmp_err, 0, ENOENT, "Environment variable LFC_HOST does not exist"); // disable the bdii resolution, not used anymore.
-	}else if (strnlen (lfc_host,GFAL_MAX_LFCHOST_LEN) + 6 >= GFAL_MAX_LFCHOST_LEN) { 
-		g_set_error(&tmp_err, 0, ENAMETOOLONG, "lfc host name :  %s, Host name too long", lfc_host);
-		free(lfc_host);
-		lfc_host=NULL;
+            g_set_error(&tmp_err, 0, ENOENT, "Environment variable LFC_HOST does not exist");
+    }else{
+        g_setenv("LFC_HOST", lfc_host, TRUE);
 	}	
-	//g_printerr(" my host : %s", lfc_host);
+
 	if(tmp_err)
 		g_propagate_prefixed_error(err, tmp_err, "[gfal_get_lfchost]");
 	return lfc_host;
