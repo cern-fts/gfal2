@@ -32,7 +32,9 @@ char ** gfal_srm_params_get_protocols(gfal_srm_params_t params);
 
 void gfal_srm_params_set_protocols(gfal_srm_params_t params, char** protocols);
 
+gchar* gfal_srm_params_get_spacetoken(gfal_srm_params_t params);
 
+void gfal_srm_params_set_spacetoken(gfal_srm_params_t params, const char* spacetoken);
 
 
 #endif /* GFAL_SRM_REQUEST_H */ 

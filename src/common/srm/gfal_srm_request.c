@@ -22,17 +22,29 @@ gfal_srm_params_t gfal_srm_params_new(gfal_srm_plugin_t handle, GError ** err ){
 	res->protocols = handle->opt_srmv2_protocols;
 	res->desiredpintime= handle->opt_srmv2_desiredpintime;
 	res->proto_version = handle->srm_proto_type;
-	res->spacetokendesc= handle->opt_srmv2_spacetokendesc;
+    res->spacetokendesc= g_strdup(handle->opt_srmv2_spacetokendesc);
 	return res;
 }
 
  void gfal_srm_params_free(gfal_srm_params_t params){
-	 g_free(params);
+     if(params){
+         g_free(params->spacetokendesc);
+         g_free(params);
+     }
  }
  
  
 char ** gfal_srm_params_get_protocols(gfal_srm_params_t params){
 		return params->protocols;
+}
+
+gchar* gfal_srm_params_get_spacetoken(gfal_srm_params_t params){
+    return params->spacetokendesc;
+}
+
+void gfal_srm_params_set_spacetoken(gfal_srm_params_t params, const char* spacetoken){
+    g_free(params->spacetokendesc);
+    params->spacetokendesc = g_strdup(spacetoken);
 }
 
 void gfal_srm_params_set_protocols(gfal_srm_params_t params, char** protocols){

@@ -34,7 +34,7 @@ void gfalt_params_handle_init(gfalt_params_t p, GError ** err){
 
 gfalt_params_t gfalt_params_handle_new(GError ** err){
 	
-	gfalt_params_t p = g_new(struct _gfalt_params_t,1); 
+    gfalt_params_t p = g_new0(struct _gfalt_params_t,1);
 	gfalt_params_handle_init(p, err);
 	return p;
 }
@@ -43,7 +43,10 @@ gfalt_params_t gfalt_params_handle_new(GError ** err){
 void gfalt_params_handle_delete(gfalt_params_t params, GError ** err){
 	if(params){
 		params->lock = false;
-		g_free(params);
+        g_free(params->src_space_token);
+        g_free(params->dst_space_token);
+        g_free(params);
+
 	}
 }
 
@@ -95,6 +98,32 @@ guint gfalt_get_nbstreams(gfalt_params_t params, GError** err){
 	return params->nb_data_streams ;
 }
 
+
+
+gint gfalt_set_src_spacetoken(gfalt_params_t params, const char* srm_spacetoken, GError** err){
+    if(params->src_space_token)
+        g_free(params->src_space_token);
+    params->src_space_token = g_strdup(srm_spacetoken);
+    return 0;
+}
+
+
+gchar* gfalt_get_src_spacetoken(gfalt_params_t params, GError** err){
+    return params->src_space_token;
+}
+
+
+gint gfalt_set_dst_spacetoken(gfalt_params_t params, const char* srm_spacetoken, GError** err){
+    if(params->dst_space_token)
+        g_free(params->dst_space_token);
+    params->dst_space_token = g_strdup(srm_spacetoken);
+    return 0;
+}
+
+
+gchar* gfalt_get_dst_spacetoken(gfalt_params_t params, GError** err){
+    return params->dst_space_token;
+}
 
 /*
 int gfalt_set_uuid(gfalt_params_t, uuid_t uuid, GError** err);

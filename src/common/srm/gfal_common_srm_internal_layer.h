@@ -31,6 +31,7 @@
 #include <common/gfal_types.h>
 #include <common/gfal_common_errverbose.h>
 #include <config/gfal_config.h>
+#include <transfer/gfal_transfer.h>
 
 #include "gfal_common_srm_endpoint.h"
 #include "gfal_common_srm.h"

@@ -79,6 +79,27 @@ gint gfalt_set_nbstreams(gfalt_params_t, guint nbstreams, GError** err);
 guint gfalt_get_nbstreams(gfalt_params_t params, GError** err);
 
 /**
+  set the source spacetoken for SRM transfers
+*/
+gint gfalt_set_src_spacetoken(gfalt_params_t params, const char* srm_spacetoken, GError** err);
+
+/**
+  get the source spacetoken for SRM transfers
+*/
+gchar* gfalt_get_src_spacetoken(gfalt_params_t params, GError** err);
+
+/**
+  set the destination spacetoken for SRM transfers
+*/
+gint gfalt_set_dst_spacetoken(gfalt_params_t params, const char* srm_spacetoken, GError** err);
+
+/**
+  get the destination spacetoken for SRM transfers
+*/
+gchar* gfalt_get_dst_spacetoken(gfalt_params_t params, GError** err);
+
+
+/**
  * set the policy in case of destination file already existing ( replace or cancel )
  * default : cancel
  * */
@@ -112,6 +133,9 @@ gint gfalt_set_uuid(gfalt_params_t, uuid_t uuid, GError** err);
  * */
 gint gfalt_set_callback_mperiod(gfalt_params_t, guint mtime, GError** err); // time in ms between two callback calls.
 // etc ......     
+
+
+
      
 /**
  * @brief define a callback for monitoring the current transfer

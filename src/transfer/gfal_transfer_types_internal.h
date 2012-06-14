@@ -43,6 +43,11 @@ struct _gfalt_params_t{
 	gboolean replace_existing; // replace destination or not
 	off_t start_offset;		// start offset in case of restart
 	guint nb_data_streams;	// nb of parallels streams
+    // spacetoken management for SRM
+    gchar * src_space_token;
+    gchar* dst_space_token;
+
+    // performance callback
 	gpointer user_data;			// user data information for the monitoring callback
 	gfalt_monitor_func callback;
 	size_t buffer_size; // internal buffer size per flow for non-third party transfer

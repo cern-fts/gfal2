@@ -111,7 +111,7 @@ int gfal_srm_getTURLS_srmv2_internal(gfal_srmv2_opt* opts,  gfal_srm_params_t pa
 	preparetoget_input.desiredpintime = opts->opt_srmv2_desiredpintime;		
 	preparetoget_input.nbfiles = n_surl;
 	preparetoget_input.protocols = gfal_srm_params_get_protocols(params);
-	preparetoget_input.spacetokendesc = opts->opt_srmv2_spacetokendesc;
+    preparetoget_input.spacetokendesc = gfal_srm_params_get_spacetoken(params);
 	preparetoget_input.surls = surls;	
     gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
                                   errbuf, err_size, &tmp_err);
@@ -141,7 +141,7 @@ int gfal_srm_putTURLS_srmv2_internal(gfal_srmv2_opt* opts , gfal_srm_params_t pa
 	preparetoput_input.desiredpintime = opts->opt_srmv2_desiredpintime;		
 	preparetoput_input.nbfiles = n_surl;
 	preparetoput_input.protocols = gfal_srm_params_get_protocols(params);
-	preparetoput_input.spacetokendesc = opts->opt_srmv2_spacetokendesc;
+    preparetoput_input.spacetokendesc = gfal_srm_params_get_spacetoken(params);
 	preparetoput_input.surls = surls;	
 	preparetoput_input.filesizes = filesize_tab;
     gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
@@ -214,7 +214,7 @@ int gfal_srm_getTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl
 
 
 //  execute a get for thirdparty transfer turl
-int gfal_srm_get_rd3_turl(plugin_handle ch, const char* surl, char* buff_turl, int size_turl, char** reqtoken,  GError** err){
+int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl, char* buff_turl, int size_turl, char** reqtoken,  GError** err){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
 	gfal_srm_result* resu=NULL;
 	GError* tmp_err=NULL;
@@ -222,6 +222,7 @@ int gfal_srm_get_rd3_turl(plugin_handle ch, const char* surl, char* buff_turl, i
 	int ret = -1;
 	
 	gfal_srm_params_t params = gfal_srm_params_new(opts, & tmp_err);
+    gfal_srm_params_set_spacetoken(params, gfalt_get_src_spacetoken(p, NULL));
 	gfal_srm_params_set_protocols(params, opts->opt_srmv2_tp3_protocols);
 	if(params != NULL){
 	ret= gfal_srm_mTURLS_internal(opts, params, SRM_GET, surls, &resu, &tmp_err);
@@ -262,7 +263,7 @@ int gfal_srm_getTURLS(gfal_srmv2_opt* opts, char** surls, gfal_srm_result** resu
 
 
 //  execute a put for thirdparty transfer turl
-int gfal_srm_put_rd3_turl(plugin_handle ch, const char* surl, char* buff_turl, int size_turl, char** reqtoken, GError** err){
+int gfal_srm_put_rd3_turl(plugin_handle ch,  gfalt_params_t p, const char* surl, char* buff_turl, int size_turl, char** reqtoken, GError** err){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
 	gfal_srm_result* resu=NULL;
 	GError* tmp_err=NULL;
@@ -270,6 +271,7 @@ int gfal_srm_put_rd3_turl(plugin_handle ch, const char* surl, char* buff_turl, i
 	int ret = -1;
 	
 	gfal_srm_params_t params = gfal_srm_params_new(opts, & tmp_err);
+    gfal_srm_params_set_spacetoken(params, gfalt_get_dst_spacetoken(p, NULL));
 	gfal_srm_params_set_protocols(params, opts->opt_srmv2_tp3_protocols);	
 	if(params != NULL){
 		ret= gfal_srm_mTURLS_internal(opts, params, SRM_PUT, surls, &resu,  &tmp_err);

@@ -33,11 +33,11 @@
 
 
 
-int srm_plugin_get_3rdparty(plugin_handle handle, const char * surl, char* buff, size_t s_buff, GError ** err){
+int srm_plugin_get_3rdparty(plugin_handle handle, gfalt_params_t params, const char * surl, char* buff, size_t s_buff, GError ** err){
 	GError * tmp_err=NULL;
 	int res = -1;
 	if( srm_check_url(surl) ){
-		if( (res =gfal_srm_get_rd3_turl(handle, surl, buff , s_buff, NULL,  err)) == 0){
+        if( (res =gfal_srm_get_rd3_turl(handle, params, surl, buff , s_buff, NULL,  err)) == 0){
 			gfal_log(GFAL_VERBOSE_TRACE, "		GET : surl -> turl dst resolution : %s -> %s", surl, buff);		
 		}
 	}else{
@@ -79,7 +79,7 @@ int srm_plugin_put_3rdparty(plugin_handle handle, gfal2_context_t context,
 	
 	if( srm_check_url(surl)){
 		if( (res = srm_plugin_delete_existing_copy(handle, params, surl, &tmp_err)) ==0){						
-			if(( res= gfal_srm_put_rd3_turl(handle, surl, buff , s_buff, reqtoken,  err))==0)
+            if(( res= gfal_srm_put_rd3_turl(handle, params, surl, buff , s_buff, reqtoken,  err))==0)
 				gfal_log(GFAL_VERBOSE_TRACE, "		PUT surl -> turl src resolution : %s -> %s", surl, buff);			
 		}
 	}else{
@@ -105,7 +105,7 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
 	char buff_turl_dst[GFAL_URL_MAX_LEN];
 	char* reqtoken = NULL;
 	
-	if( (res = srm_plugin_get_3rdparty(handle, src, buff_turl_src, GFAL_URL_MAX_LEN, &tmp_err)) ==0 ){ // do the first resolution
+    if( (res = srm_plugin_get_3rdparty(handle, params, src, buff_turl_src, GFAL_URL_MAX_LEN, &tmp_err)) ==0 ){ // do the first resolution
 		
 		if( ( res = srm_plugin_put_3rdparty(handle, context, params, dst, buff_turl_dst, GFAL_URL_MAX_LEN, &reqtoken, &tmp_err) ) ==0){		
 					
