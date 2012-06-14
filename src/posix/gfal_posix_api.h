@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 /**
- * @file gfal_posix_api
+ * @file gfal_posix_api.h
  * @brief main header file for API of the posix lib
  * @author Devresse Adrien
  * @version 2.0.1

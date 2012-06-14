@@ -26,34 +26,122 @@ extern "C"
 {
 #endif  // __cplusplus
 
+/**
+ * @file gfal_config.h
+ * @brief gfal2 configuration API
+ * set/get option for the running configuration of GFAL 2.0
+ * @author Adrien Devresse
+ */
+
+/**
+ * @brief get a string parameter in the current GFAL 2.0 configuration
+ *  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+ *
+ * @param handle : context of gfal 2.0
+ * @param group_name : group name of the parameter
+ * @param key : key of the parameter
+ * @param error : GError error report system
+ * @return parameter value
+ **/
 gchar * gfal2_get_opt_string(gfal2_context_t handle, const gchar *group_name,
                                     const gchar *key, GError **error);
 
 
+/**
+ * @brief set a string parameter in the current GFAL 2.0 configuration
+ *  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+ *
+ * @param handle : context of gfal 2.0
+ * @param group_name : group name of the parameter
+ * @param key : key of the parameter
+ * @param value : value to set
+ * @param error : GError error report system
+ * @return parameter value
+ **/
 gint gfal2_set_opt_string(gfal2_context_t handle, const gchar *group_name,
                                     const gchar *key, gchar* value, GError **error);
 
+/**
+ * @brief get an integer parameter in the current GFAL 2.0 configuration
+ *  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+ *
+ * @param handle : context of gfal 2.0
+ * @param group_name : group name of the parameter
+ * @param key : key of the parameter
+ * @param error : GError error report system
+ * @return parameter value
+ **/
 gint gfal2_get_opt_integer(gfal2_context_t handle, const gchar *group_name,
                                  const gchar *key, GError **error);
 
-
+/**
+ * @brief set an integer parameter in the current GFAL 2.0 configuration
+ *  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+ *
+ * @param handle : context of gfal 2.0
+ * @param group_name : group name of the parameter
+ * @param key : key of the parameter
+ * @param value : value to set
+ * @param error : GError error report system
+ * @return parameter value
+ **/
 gint gfal2_set_opt_integer(gfal2_context_t handle, const gchar *group_name,
                                   const gchar *key, gint value,
                                   GError** error);
-
+/**
+ * @brief set a boolean parameter in the current GFAL 2.0 configuration
+ *  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+ *
+ * @param handle : context of gfal 2.0
+ * @param group_name : group name of the parameter
+ * @param key : key of the parameter
+ * @param value : value to set
+ * @param error : GError error report system
+ * @return parameter value
+ **/
 gint gfal2_set_opt_boolean(gfal2_context_t handle, const gchar *group_name,
                                   const gchar *key, gboolean value, GError **error);
 
+/**
+* @brief get a boolean parameter in the current GFAL 2.0 configuration
+*  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+*
+* @param handle : context of gfal 2.0
+* @param group_name : group name of the parameter
+* @param key : key of the parameter
+* @param error : GError error report system
+* @return parameter value
+**/
 gboolean gfal2_get_opt_boolean(gfal2_context_t handle, const gchar *group_name,
                                         const gchar *key, GError **error);
 
-
+/**
+ * @brief set a list of string parameter in the current GFAL 2.0 configuration
+ *  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+ *
+ * @param handle : context of gfal 2.0
+ * @param group_name : group name of the parameter
+ * @param key : key of the parameter
+ * @param value : value to set
+ * @param error : GError error report system
+ * @return parameter value
+ **/
 gint gfal2_set_opt_string_list(gfal_handle handle, const gchar *group_name,
                                      const gchar *key,
                                      const gchar * const list[],
                                      gsize length,
                                      GError ** error);
 
+/**
+* @brief get a list of string parameter in the current GFAL 2.0 configuration
+*  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+*
+* @param handle : context of gfal 2.0
+* @param group_name : group name of the parameter
+* @param key : key of the parameter
+* @param error : GError error report system
+* @return parameter value
+**/
 gchar ** gfal2_get_opt_string_list(gfal_handle handle, const gchar *group_name,
                                           const gchar *key, gsize *length, GError **error);
 

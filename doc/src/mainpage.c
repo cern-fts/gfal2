@@ -1,6 +1,8 @@
 /**
 	\mainpage GFAL 2.0  Documentation
+    \author lcg-util section, CERN IT-GT-DMS ( lcgutil-support@cern.ch )
 	\author Devresse Adrien ( adrien.devresse@cern.ch )
+
 	
 		
 
@@ -10,11 +12,12 @@
 	<h2>API : </h2>
 	
 	- GFAL 2.0  API:
-		- \ref posix_group \n
-		- \ref gfal_posix_check_error
+            - \ref posix_group
+            - \ref transfer_group
+            - GLOBAL API : \ref gfal_api.h
 
-	- Gfal internal API for plugins  :
-		- \ref _gfal_plugin_interface
+    - GFAL API for plugin development  :
+        - \ref _gfal_plugin_interface
 
 	<h2> Examples : </h2>
 		- <a href="examples.html"> examples </a>

@@ -34,6 +34,11 @@ extern "C"
 #endif  // __cplusplus
 
 /**
+ * @file gfal_transfer_types.h
+ * @author Adrien Devresse
+ */
+
+/**
  * @brief container for transfer related parameters
  * */
 typedef struct _gfalt_params_t* gfalt_params_t; 
@@ -41,8 +46,7 @@ typedef struct _gfalt_params_t* gfalt_params_t;
 /**
  * @brief internal status of a copy file action
  * */
-typedef gpointer gfalt_tfr_handle; 
-typedef gfalt_tfr_handle gfalt_transfer_status_t; 
+typedef gpointer gfalt_transfer_status_t;
 
 /**
  * @brief copy gfalt_monitor_transfer

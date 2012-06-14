@@ -27,6 +27,14 @@ extern "C"
 #endif  // __cplusplus
 
 /**
+ * @file gfal_global.h
+ * @brief gfal2 context management functions
+ * @author Devresse Adrien
+ *
+ * */
+
+
+/**
  * a gfal context is a separated instance of the gfal library
  * Each context owns his parameters, file descriptors
  * Context allows to have separated instance of GFAL with differents parameters
@@ -49,9 +57,14 @@ gfal2_context_t gfal2_context_new(GError ** err);
 */
 void gfal2_context_free(gfal2_context_t context);
 
-//  same than gfal2_context_new but with old compatibility
+/**
+  @deprecated
+    same than gfal2_context_new but with old compatibility
+*/
 gfal_context_t gfal_context_new(GError ** err);
-// same than gfal2_context_free for compatibility reasons
+/**
+  @deprecated
+*/
 void gfal_context_free(gfal_context_t context);
 
 #ifdef __cplusplus

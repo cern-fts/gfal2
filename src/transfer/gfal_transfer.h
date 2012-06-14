@@ -19,15 +19,7 @@
  * limitations under the License.
  */
 
-/**
- * @file gfal_transfer.h
- *  gfal API for file transfers of the gfal2_transfer shared library.
- *  This API provide : 
- *    - third party file transfers 
- *    - monitoring of the transfer
- *    - flow control for the transfer
- *  @author Adrien Devresse 
- */
+
 
 #include <transfer/gfal_transfer_types.h>
 #include <global/gfal_global.h>
@@ -39,6 +31,29 @@
 extern "C"
 {
 #endif  // __cplusplus
+
+
+/**
+ * @file gfal_transfer.h
+ *  gfal2 API for file transfers .
+ *  This API provide :
+ *    - third party file transfers
+ *    - monitoring of the transfer
+ *    - flow control for the transfer
+ *  @author Adrien Devresse
+ */
+
+/*!
+    \defgroup transfer_group File Transfer API
+*/
+
+/*!
+    \addtogroup transfer_group
+    @{
+*/
+
+
+
 
 
 /**
@@ -168,14 +183,12 @@ int gfalt_copy_file(gfal2_context_t context, gfalt_params_t params, const char* 
  * cancel the current file copy
  * */
 gint gfalt_copy_cancel(gfalt_transfer_status_t, GError** err);
-/**
- * temporary put the transfer in pause
- * */
+
+/* // not implemented
 gint gfalt_copy_pause(gfalt_transfer_status_t, GError ** err );
-/**
- * resume a transfer in pause
- * */
 gint  gfalt_copy_resume(gfalt_transfer_status_t, GError ** err);
+
+*/
 
 /**
  * 
@@ -194,7 +207,10 @@ size_t gfalt_copy_get_bytes_transfered(gfalt_transfer_status_t, GError ** err);
  * */
 time_t gfalt_copy_get_elapsed_time(gfalt_transfer_status_t, GError ** err);
 
-
+/**
+    @}
+    End of the POSIX group
+*/
 
 #ifdef __cplusplus
 }
