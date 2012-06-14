@@ -38,7 +38,8 @@ int gfal_mkdir_srmv2_internal(gfal_srmv2_opt* opts, char* endpoint, const char* 
 	char errbuf[GFAL_ERRMSG_LEN]={0};
 
 	errno =0;	
-    gfal_srm_external_call.srm_context_init(&context, endpoint, NULL, 0, gfal_get_verbose());	  
+    gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
+                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err);
     mkdir_input.dir_name = (char*) path;
    	res  = gfal_srm_external_call.srm_mkdir(&context, &mkdir_input);
 

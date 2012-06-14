@@ -41,9 +41,9 @@
 #include "gfal_common_srm_chmod.h"
 #include "gfal_common_srm_getxattr.h"
 
-#include "../gfal_common_internal.h"
-#include "../gfal_common_errverbose.h"
-#include "../gfal_common_plugin.h"
+#include <common/gfal_common_internal.h>
+#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_plugin.h>
 /*
  * 
  * list of the turls supported protocols
@@ -53,7 +53,7 @@ static char* srm_turls_sup_protocols[] = { "rfio", "gsidcap", "dcap", "kdcap", "
 /*
  * list of protocols supporting third party transfer
  */
-char* srm_turls_thirdparty_protocols[] = { "gsiftp", "ftp", NULL };
+char* srm_turls_thirdparty_protocols[] = { "gsiftp", NULL };
 
 
 /*
@@ -289,4 +289,5 @@ void gfal_srm_report_error(char* errbuff, GError** err){
 	int errcode = (errno != ECOMM && errno != 0)?errno:ECOMM;
 	g_set_error(err,0, errcode, "SRM_IFCE ERR: %s, %s, maybe voms-proxy is not initiated properly", strerror(errno), errbuff);	
 }
+
 

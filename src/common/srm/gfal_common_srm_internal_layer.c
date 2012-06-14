@@ -23,6 +23,9 @@
  * @date 09/06/2011
  * */
 
+const char * srm_config_group= "SRM PLUGIN";
+const char * srm_ops_timeout_key= "OPERATION_TIMEOUT";
+const char * srm_conn_timeout_key= "CONN_TIMEOUT";
 
 #include "gfal_common_srm_internal_layer.h"
 // hotfix for the old srm lib 
@@ -47,5 +50,34 @@ struct _gfal_srm_external_call gfal_srm_external_call = {
 	.srm_prepare_to_put= &srm_prepare_to_put,
 	.srm_put_done = &srm_put_done,
 	.srm_setpermission= &srm_setpermission,
-	.srm_rm = &srm_rm
+    .srm_rm = &srm_rm,
+    .srm_set_timeout_connect = &srm_set_timeout_connect
 };
+
+
+int gfal_srm_ifce_context_init(struct srm_context* context, gfal_context_t handle, const char* endpoint,
+                                char* errbuff, size_t s_errbuff, GError** err){
+    gint timeout;
+    GError * tmp_err=NULL;
+    gfal_srm_external_call.srm_context_init(context, (char*) endpoint, errbuff, s_errbuff, gfal_get_verbose());
+    timeout = gfal2_get_opt_integer(handle, srm_config_group, srm_ops_timeout_key, &tmp_err);
+    if(!tmp_err){
+        gfal_log(GFAL_VERBOSE_DEBUG, " SRM operation timeout %d", timeout);
+        context->timeout = timeout;
+
+        timeout = gfal2_get_opt_integer(handle, srm_config_group, srm_conn_timeout_key, &tmp_err);
+        if(!tmp_err){
+            gfal_log(GFAL_VERBOSE_DEBUG, " SRM connexion timeout %d", timeout);
+            gfal_srm_external_call.srm_set_timeout_connect(timeout);
+        }
+    }
+    if(!tmp_err)
+        return 0;
+    G_RETURN_ERR(-1, tmp_err, err);
+}
+
+
+int gfal_srm_ifce_context_deinit(struct srm_context* context){
+    return 0;
+}
+

@@ -47,7 +47,8 @@ static int gfal_srm_rm_srmv2_internal(gfal_srmv2_opt* opts, const char* full_end
 	int ret=-1;
 
 
-	gfal_srm_external_call.srm_context_init(&context, (char*)full_endpoint, errbuf, GFAL_ERRMSG_LEN, gfal_get_verbose());
+    gfal_srm_ifce_context_init(&context, opts->handle, full_endpoint,
+                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err);
 
 	input.nbfiles = nb_request;
 	input.surls = surls;

@@ -29,6 +29,9 @@
 #include <glib.h>
 
 #include <common/gfal_types.h>
+#include <common/gfal_common_errverbose.h>
+#include <config/gfal_config.h>
+
 #include "gfal_common_srm_endpoint.h"
 #include "gfal_common_srm.h"
 
@@ -86,6 +89,8 @@ struct _gfal_srm_external_call{
 			
 	int (*srm_setpermission) (struct srm_context *context,
 			struct srm_setpermission_input *input);
+
+    void (*srm_set_timeout_connect) (int);
 	
 };
 
@@ -111,3 +116,8 @@ int gfal_srm_unlinkG(plugin_handle ch, const char * path, GError** err);
 void gfal_srm_report_error(char* errbuff, GError** err);
 
 
+int gfal_srm_ifce_context_init(struct srm_context* context, gfal_context_t handle, const char* endpoint,
+                                char* errbuff, size_t s_errbuff, GError** err);
+
+
+int gfal_srm_ifce_context_deinit(struct srm_context* context);

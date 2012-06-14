@@ -113,7 +113,8 @@ int gfal_srm_getTURLS_srmv2_internal(gfal_srmv2_opt* opts,  gfal_srm_params_t pa
 	preparetoget_input.protocols = gfal_srm_params_get_protocols(params);
 	preparetoget_input.spacetokendesc = opts->opt_srmv2_spacetokendesc;
 	preparetoget_input.surls = surls;	
-	gfal_srm_external_call.srm_context_init(&context, endpoint, errbuf, err_size, gfal_get_verbose());	
+    gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
+                                  errbuf, err_size, &tmp_err);
 	
 	ret = gfal_srmv2_get_global(opts, params, &context, &preparetoget_input, resu, &tmp_err);
 	G_RETURN_ERR(ret, tmp_err, err);
@@ -143,7 +144,8 @@ int gfal_srm_putTURLS_srmv2_internal(gfal_srmv2_opt* opts , gfal_srm_params_t pa
 	preparetoput_input.spacetokendesc = opts->opt_srmv2_spacetokendesc;
 	preparetoput_input.surls = surls;	
 	preparetoput_input.filesizes = filesize_tab;
-	gfal_srm_external_call.srm_context_init(&context, endpoint, errbuf, err_size, gfal_get_verbose());	
+    gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
+                                  errbuf, err_size, &tmp_err);
 	
 	
 	ret = gfal_srmv2_put_global(opts, params, &context, &preparetoput_input, resu, &tmp_err);

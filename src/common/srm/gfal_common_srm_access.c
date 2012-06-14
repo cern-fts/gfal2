@@ -44,7 +44,8 @@ int gfal_access_srmv2_internal(gfal_srmv2_opt*  opts, char* endpoint, const char
 	char* tab_surl[] = { (char*)surl, NULL};
 
 
-	gfal_srm_external_call.srm_context_init(&context, endpoint, errbuf, GFAL_ERRMSG_LEN, gfal_get_verbose());
+    gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
+                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err);
 
 	checkpermission_input.nbfiles = nb_request;
 	checkpermission_input.amode = mode;

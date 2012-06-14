@@ -27,8 +27,10 @@
 
 #include <string.h>
 #include <stdio.h>
+
+#include <common/gfal_common_errverbose.h>
+
 #include "gfal_common_srm_readdir.h"
-#include "../gfal_common_errverbose.h"
 #include "gfal_common_srm_opendir.h" 
 #include "gfal_common_srm_internal_layer.h"
  
@@ -83,12 +85,14 @@ int gfal_srm_readdir_internal(plugin_handle ch, gfal_srm_opendir_handle oh, int 
 	struct srm_ls_input input;
 	struct srm_ls_output output;
 	struct srmv2_mdfilestatus *srmv2_mdstatuses=NULL;
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
 	char errbuf[GFAL_ERRMSG_LEN]={0};
 	int ret =-1;
 	int offset = oh->dir_offset;
 	char* tab_surl[] = { (char*) oh->surl, NULL};
 	
-	gfal_srm_external_call.srm_context_init(&context, oh->endpoint, errbuf, GFAL_ERRMSG_LEN, gfal_get_verbose());	// init context
+    gfal_srm_ifce_context_init(&context, opts->handle, oh->endpoint,
+                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err);	// init context
 	
 	input.nbfiles = 1;
 	input.surls = tab_surl;

@@ -25,6 +25,7 @@
 #include <string.h>
 #include <regex.h>
 
+
 #include <common/gfal_prototypes.h>
 #include <common/gfal_types.h>
 #include <common/gfal_constants.h>
@@ -116,4 +117,6 @@ void gfal_set_default_storageG(gfal_srmv2_opt* opts, enum gfal_srm_proto proto);
 int gfal_srm_convert_filestatuses_to_GError(struct srmv2_filestatus* statuses, int n, GError** err);
 
 int gfal_surl_checker(plugin_handle ch, const char* surl, GError** err);
+
+
 

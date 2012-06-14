@@ -40,7 +40,8 @@ int gfal_srmv2_rmdir_internal(gfal_srmv2_opt* opts, char* endpoint, const char* 
 	char errbuf[GFAL_ERRMSG_LEN]={0};
 	int ret = -1;
 	
-	gfal_srm_external_call.srm_context_init(&context, endpoint, errbuf, GFAL_ERRMSG_LEN, gfal_get_verbose());
+    gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
+                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err);
 
 	rmdir_input.recursive = 0;
 	rmdir_input.surl = (char*)surl;

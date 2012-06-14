@@ -50,7 +50,8 @@ static int gfal_checksumG_srmv2_internal(gfal_srmv2_opt* opts, const char* endpo
 	int ret=-1;
 	char* tab_surl[] = { (char*)surl, NULL};
 	
-	gfal_srm_external_call.srm_context_init(&context, (char*)endpoint, errbuf, GFAL_ERRMSG_LEN, gfal_get_verbose());	// init context
+    gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
+                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err);
 	
 	input.nbfiles = nb_request;
 	input.surls = tab_surl;
