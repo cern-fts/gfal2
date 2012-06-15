@@ -1,8 +1,8 @@
-%define checkout_tag 2012052812snap
+%define checkout_tag 2012061511snap
 
 Name:				gfal2
 Version:			2.0.0
-Release:			0.8.%{checkout_tag}%{?dist}
+Release:			0.9.%{checkout_tag}%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -250,6 +250,9 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Fri Jun 15 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-0.9.2012061511snap
+ - Snapshort of the 0.9 version for testing
+
 * Fri May 04 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-0.8.2012052812snap
  - Snapshot of the 0.8 version for testing.
 

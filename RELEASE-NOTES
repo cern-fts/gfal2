@@ -1,5 +1,12 @@
 GFAL 2.0 RELEASE-NOTE:
 
+2.0.0-0.9 :
+- Without environment variable design implemented
+- add set/get option calls
+- add SRM src/dst spacetoken management for gfal transfer
+- re-factor properly gfal-transfer and gfal2_context_t
+- generate a new clean documentation with log/transfer/context support
+- allow direct modification of the internal posix context 
 
 
 2.0.0-0.8 :
