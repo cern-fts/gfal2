@@ -220,4 +220,8 @@ ssize_t gfal_pread(int fd, void * buffer, size_t count, off_t offset){
 ssize_t gfal_pwrite(int fd, const void * buffer, size_t count, off_t offset){
 	return gfal_posix_internal_pwrite(fd, (void*)buffer, count, offset);
 }
+
+gfal2_context_t gfal_posix_get_context(){
+    return gfal_posix_instance();
+}
  

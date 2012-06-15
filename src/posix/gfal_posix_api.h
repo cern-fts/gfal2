@@ -36,6 +36,7 @@
 #include <unistd.h>
 #include <attr/xattr.h>
 
+#include <global/gfal_global.h>
 #include <common/gfal_constants.h>
 
 #ifdef __cplusplus
@@ -576,6 +577,13 @@ char *gfal_version();
 
 
 
+/**
+  @brief get context for advanced operation
+   return the gfal2 context used for POSIX operations
+   allow to do advanced operation ( config, checksum, transfer ) on this context
+   @warning Delete this context leads to undefined behavior.
+*/
+gfal2_context_t gfal_posix_get_context();
 
 /**
 	@} 
