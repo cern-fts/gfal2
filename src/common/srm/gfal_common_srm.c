@@ -1,19 +1,19 @@
-/*
- * Copyright (c) Members of the EGEE Collaboration. 2004.
- * See http://www.eu-egee.org/partners/ for details on the copyright holders.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/* 
+* Copyright @ Members of the EMI Collaboration, 2010.
+* See www.eu-emi.eu for details on the copyright holders.
+* 
+* Licensed under the Apache License, Version 2.0 (the "License"); 
+* you may not use this file except in compliance with the License. 
+* You may obtain a copy of the License at 
+*
+*    http://www.apache.org/licenses/LICENSE-2.0 
+* 
+* Unless required by applicable law or agreed to in writing, software 
+* distributed under the License is distributed on an "AS IS" BASIS, 
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+* See the License for the specific language governing permissions and 
+* limitations under the License.
+*/
 
 /*
  * file gfal_common.c
@@ -40,6 +40,7 @@
 #include "gfal_common_srm_readdir.h"
 #include "gfal_common_srm_chmod.h"
 #include "gfal_common_srm_getxattr.h"
+#include "gfal_common_srm_checksum.h"
 
 #include <common/gfal_common_internal.h>
 #include <common/gfal_common_errverbose.h>
@@ -121,6 +122,7 @@ static gboolean gfal_srm_check_url(plugin_handle handle, const char* url, plugin
 		case GFAL_PLUGIN_UNLINK:
 		case GFAL_PLUGIN_GETXATTR:
 		case GFAL_PLUGIN_LISTXATTR:
+        case GFAL_PLUGIN_CHECKSUM:
 			return (gfal_surl_checker(handle, url,  err)==0);
 		default:
 			return FALSE;		
@@ -187,6 +189,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	srm_plugin.unlinkG = &gfal_srm_unlinkG;
 	srm_plugin.getxattrG = &gfal_srm_getxattrG;
 	srm_plugin.listxattrG = &gfal_srm_listxattrG;
+    srm_plugin.checksum_calcG = &gfal_srm_checksumG;
 	return srm_plugin;
 }
 

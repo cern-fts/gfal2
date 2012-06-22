@@ -14,16 +14,19 @@ pkg_check_modules(GLOBUS_GASS_COPY_PKG REQUIRED globus-gass-copy)
 
 #FILE(GLOB gridFTP_scripts "../dist/scripts/gfal_plugin_dcap/*sh")
 
+add_definitions( ${GLOBUS_GASS_COPY_PKG_CFLAGS}    ${OpenMP_C_FLAGS})
 add_library(plugin_gridftp  SHARED ${src_gridftp} ${src_libcpp} ${src_exceptions})
 
 target_link_libraries(plugin_gridftp ${gfal2_link}
 			${GLOBUS_GASS_COPY_PKG_LIBRARIES} gfal2_transfer
+                        gomp
 			)
 include_directories( ${GLOBUS_GASS_COPY_PKG_INCLUDE_DIRS}
 				${GRIDFTP_IFCE_INCLUDE_DIRS} 	 
 				${GLIBMM_PKG_INCLUDE_DIRS}
+                                ${OpenMP_INCLUDE_DIRS}
 				)
-add_definitions( ${GLOBUS_GASS_COPY_PKG_CFLAGS}   )
+
 
 set_target_properties(plugin_gridftp	 	PROPERTIES
 								LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/src

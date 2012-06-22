@@ -1,19 +1,19 @@
-/*
- * Copyright (c) Members of the EGEE Collaboration. 2004.
- * See http://www.eu-egee.org/partners/ for details on the copyright holders.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/* 
+* Copyright @ Members of the EMI Collaboration, 2010.
+* See www.eu-emi.eu for details on the copyright holders.
+* 
+* Licensed under the Apache License, Version 2.0 (the "License"); 
+* you may not use this file except in compliance with the License. 
+* You may obtain a copy of the License at 
+*
+*    http://www.apache.org/licenses/LICENSE-2.0 
+* 
+* Unless required by applicable law or agreed to in writing, software 
+* distributed under the License is distributed on an "AS IS" BASIS, 
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+* See the License for the specific language governing permissions and 
+* limitations under the License.
+*/
 
  
 /*
@@ -502,6 +502,7 @@ int gfal_lfc_getChecksum(struct lfc_ops* ops, const char* lfn, lfc_checksum* che
 	g_return_val_err_if_fail(ops && checksum, -1, err, " inval args")
 	GError * tmp_err=NULL;
 	struct lfc_filestatg statbuf;
+    memset(&statbuf, 0, sizeof(struct lfc_filestatg));
 	int ret;
 	if( (ret = gfal_lfc_statg(ops, lfn, &statbuf, &tmp_err)) == 0){
 		*((char*) mempcpy(checksum->type, statbuf.csumtype, sizeof(char)*3)) = '\0';

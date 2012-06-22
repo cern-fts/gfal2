@@ -17,6 +17,8 @@
 
 #include "gridftpmodule.h"
 
+#define GRIDFTP_CONFIG_GROUP "GRIDFTP PLUGIN"
+
 enum Gridftp_request_status{
 	GRIDFTP_REQUEST_NOT_LAUNCHED,
 	GRIDFTP_REQUEST_RUNNING,

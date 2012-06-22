@@ -1,20 +1,20 @@
 #pragma once
-/*
- * Copyright (c) Members of the EGEE Collaboration. 2004.
- * See http://www.eu-egee.org/partners/ for details on the copyright holders.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/* 
+* Copyright @ Members of the EMI Collaboration, 2010.
+* See www.eu-emi.eu for details on the copyright holders.
+* 
+* Licensed under the Apache License, Version 2.0 (the "License"); 
+* you may not use this file except in compliance with the License. 
+* You may obtain a copy of the License at 
+*
+*    http://www.apache.org/licenses/LICENSE-2.0 
+* 
+* Unless required by applicable law or agreed to in writing, software 
+* distributed under the License is distributed on an "AS IS" BASIS, 
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+* See the License for the specific language governing permissions and 
+* limitations under the License.
+*/
 
 
 
@@ -69,9 +69,16 @@ int gfal_plugins_instance(gfal_handle, GError** err);
 char** gfal_plugins_get_list(gfal_handle, GError** err);
 int gfal_plugins_delete(gfal_handle, GError** err);
 
-int gfal_plugins_has_parameter(gfal_handle handle, const char* nmespace, const char* key, GError** err);
 
-int gfal_plugins_notify_all(gfal_handle handle, const char* nmespace, const char* key, GError** err);
+// find a compatible catalog or return NULL + error
+gfal_plugin_interface* gfal_find_catalog(gfal_handle handle,
+                                         const char * url,
+                                         plugin_mode acc_mode, GError** err);
+
+plugin_handle gfal_get_plugin_handle(gfal_plugin_interface* p_interface);
+
+// default plugin checker for a given operation and call_type
+gboolean gfal_plugin_checker_safe(gfal_plugin_interface* cata_list, const char* path, plugin_mode call_type, GError** terr );
 
 #ifdef __cplusplus
 }

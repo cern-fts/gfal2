@@ -15,7 +15,6 @@ int main(int argc, char** argv){
 	}
 	GError * tmp_err = NULL; // classical GError/glib error management
 	gfal2_context_t handle;
-	int ret=-1;
 	
 	// initialize gfal
 	gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE);
@@ -24,13 +23,14 @@ int main(int argc, char** argv){
 		 return -1;
 	 }
 	 // begin copy
-	if( (ret = gfalt_copy_file(handle, NULL, argv[1], argv[2], &tmp_err) )  != 0){
-		 printf(" error while the file transfer %d : %s.\n", tmp_err->code,tmp_err->message);
+    if(  gfalt_copy_file(handle, NULL, argv[1], argv[2], &tmp_err)   != 0){
+         printf(" error while the file transfer %d : %s.\n", tmp_err->code,tmp_err->message);
+         gfal2_context_free(handle);
 		 return -1;		
 	}else
 		printf(" transfer sucessfull ! \n");
 		
 	gfal2_context_free(handle);
-	return ret;
+    return 0;
 }
 

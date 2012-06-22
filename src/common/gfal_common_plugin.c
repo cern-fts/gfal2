@@ -1,19 +1,19 @@
-/*
- * Copyright (c) Members of the EGEE Collaboration. 2004.
- * See http://www.eu-egee.org/partners/ for details on the copyright holders.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/* 
+* Copyright @ Members of the EMI Collaboration, 2010.
+* See www.eu-emi.eu for details on the copyright holders.
+* 
+* Licensed under the Apache License, Version 2.0 (the "License"); 
+* you may not use this file except in compliance with the License. 
+* You may obtain a copy of the License at 
+*
+*    http://www.apache.org/licenses/LICENSE-2.0 
+* 
+* Unless required by applicable law or agreed to in writing, software 
+* distributed under the License is distributed on an "AS IS" BASIS, 
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+* See the License for the specific language governing permissions and 
+* limitations under the License.
+*/
 
 /*
  * gfal_common_plugin.c
@@ -52,10 +52,12 @@ gfal_plugin_interface* gfal_plugin_interface_new(){
 	return ret;
 }
 
-
+plugin_handle gfal_get_plugin_handle(gfal_plugin_interface* cata_list){
+    return cata_list->plugin_data;
+}
 
 //convenience function for safe calls to the plugin checkers
-inline static gboolean gfal_plugin_checker_safe(gfal_plugin_interface* cata_list, const char* path, plugin_mode call_type, GError** terr ){
+gboolean gfal_plugin_checker_safe(gfal_plugin_interface* cata_list, const char* path, plugin_mode call_type, GError** terr ){
 	if(cata_list->check_plugin_url)
 		return cata_list->check_plugin_url(cata_list->plugin_data, path, call_type, terr);
 	else{
@@ -336,6 +338,67 @@ int gfal_plugins_instance(gfal_handle handle, GError** err){
 	return ret;
 	 
  }
+
+ //  generic plugin operation executor with user data
+ //  Check alls plugins, if a plugin is valid execute the given operation on this plugin and return result,
+ //  else return nagative value and set GError to the correct error
+  int gfal_plugins_operation_executor_generic(gfal_handle handle,
+                                      gboolean (*checker)(gfal_plugin_interface*, gpointer userdata_check, GError**), gpointer user_data_check,
+                                     int (*executor)(gfal_plugin_interface*, gpointer user_data_exec, GError**) , gpointer user_data_exec,
+                                      GError** err){
+     GError* tmp_err=NULL;
+     int i;
+     int ret = -1;
+     const int n_plugins = gfal_plugins_instance(handle, &tmp_err);
+     if(n_plugins > 0){
+         gfal_plugin_interface* cata_list = handle->plugin_opt.plugin_list;
+         for(i=0; i < n_plugins; ++i, ++cata_list){
+             const gboolean comp =  checker(cata_list, user_data_check, &tmp_err);
+             if(tmp_err)
+                 break;
+
+             if(comp){
+                 ret = executor(cata_list, user_data_exec, &tmp_err);
+                 break;
+             }
+         }
+     }
+     if(tmp_err){
+         g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+     }else if(ret){
+         g_set_error(err,0,EPROTONOSUPPORT, "[%s] Protocol not supported or path/url invalid", __func__);
+     }
+     return ret;
+
+  }
+
+  gfal_plugin_interface* gfal_find_catalog(gfal_handle handle,
+                                           const char * url,
+                                           plugin_mode acc_mode, GError** err){
+        GError* tmp_err=NULL;
+        int i;
+        gboolean compatible = FALSE;
+        const int n_plugins = gfal_plugins_instance(handle, &tmp_err);
+        if(n_plugins > 0){
+          gfal_plugin_interface* cata_list = handle->plugin_opt.plugin_list;
+          for(i=0; i < n_plugins; ++i, ++cata_list){
+              compatible =  gfal_plugin_checker_safe(cata_list, url, acc_mode , &tmp_err);
+              if(tmp_err)
+                  break;
+              if(compatible)
+                  return cata_list;
+
+          }
+        }
+        if(tmp_err){
+          g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        }else{
+          g_set_error(err,0,EPROTONOSUPPORT, "[%s] Protocol not supported or path/url invalid", __func__);
+        }
+        return NULL;
+}
+
+
  
 
 //  Execute an access function on the first plugin compatible in the plugin list

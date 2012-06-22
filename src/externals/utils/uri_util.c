@@ -15,6 +15,8 @@
  */
 
 #include <errno.h>
+#include <stdarg.h>
+#include <stdlib.h>
 #include <utils/uri_util.h>
 #include <string.h>
  
@@ -43,3 +45,21 @@ int gfal_hostname_from_uri(const char * uri, char* buff_hostname, size_t s_buff,
 }
 
 
+gboolean gfal_error_keep_first_err(GError** err_out, ...){
+    va_list err_list;
+    GError ** tmp_err=NULL;
+    gboolean done = FALSE;
+    va_start(err_list, err_out);
+    while( (tmp_err = va_arg(err_list,GError**)) != NULL){
+        if(*tmp_err != NULL){
+            if(done == FALSE){
+                g_propagate_error(err_out,*tmp_err);
+                done =TRUE;
+            }else{
+                g_clear_error(tmp_err);
+            }
+        }
+    }
+    va_end(err_list);
+    return done;
+}

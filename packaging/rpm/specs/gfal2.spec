@@ -243,6 +243,7 @@ make DESTDIR=%{buildroot} install
 %defattr (-,root,root)
 %{_libdir}/%{name}-plugins/libgfal_plugin_gridftp.so*
 %{_docdir}/%{name}-%{version}/README_PLUGIN_GRIDFTP
+%config(noreplace) %{_sysconfdir}/%{name}.d/gsiftp_plugin.conf
 
 %files all
 %defattr (-,root,root)

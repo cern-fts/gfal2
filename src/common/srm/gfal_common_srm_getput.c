@@ -1,19 +1,19 @@
-/*
- * Copyright (c) Members of the EGEE Collaboration. 2004.
- * See http://www.eu-egee.org/partners/ for details on the copyright holders.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/* 
+* Copyright @ Members of the EMI Collaboration, 2010.
+* See www.eu-emi.eu for details on the copyright holders.
+* 
+* Licensed under the Apache License, Version 2.0 (the "License"); 
+* you may not use this file except in compliance with the License. 
+* You may obtain a copy of the License at 
+*
+*    http://www.apache.org/licenses/LICENSE-2.0 
+* 
+* Unless required by applicable law or agreed to in writing, software 
+* distributed under the License is distributed on an "AS IS" BASIS, 
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+* See the License for the specific language governing permissions and 
+* limitations under the License.
+*/
 
  
 #define _GNU_SOURCE 
@@ -212,6 +212,37 @@ int gfal_srm_getTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl
 }
 
 
+//  special call for TURL resolution for checksum fallback solution
+int gfal_srm_getTURL_checksum(plugin_handle ch, const char* surl, char* buff_turl, int size_turl,   GError** err){
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
+    gfal_srm_result* resu=NULL;
+    GError* tmp_err=NULL;
+    char* surls[]= { (char*)surl, NULL };
+    int ret = -1;
+
+    gfal_srm_params_t params = gfal_srm_params_new(opts, & tmp_err);
+    gfal_srm_params_set_protocols(params, opts->opt_srmv2_tp3_protocols);
+    if(params != NULL){
+        ret= gfal_srm_mTURLS_internal(opts, params, SRM_GET, surls, &resu, &tmp_err);
+        if(ret >0){
+            if(resu[0].err_code == 0){
+                g_strlcpy(buff_turl, resu[0].turl, size_turl);
+                ret=0;
+            }else{
+                g_set_error(&tmp_err,0 , resu[0].err_code, " error on the turl request : %s ", resu[0].err_str);
+                ret = -1;
+            }
+            free(resu);
+        }
+        gfal_srm_params_free(params);
+    }
+    if(tmp_err)
+        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+    return ret;
+}
+
+
+
 
 //  execute a get for thirdparty transfer turl
 int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl, char* buff_turl, int size_turl, char** reqtoken,  GError** err){
@@ -386,7 +417,7 @@ int gfal_srm_putdone(gfal_srmv2_opt* opts , char** surls, char* token,  GError**
 	GError* tmp_err=NULL;
 	int ret=-1;	
 
-	char full_endpoint[2048];
+    char full_endpoint[GFAL_URL_MAX_LEN];
 	enum gfal_srm_proto srm_types;
 	gfal_log(GFAL_VERBOSE_TRACE, "   -> [gfal_srm_putdone] ");
 	
@@ -413,6 +444,50 @@ int gfal_srm_putdone_simple(plugin_handle * handle , const char* surl, char* tok
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)handle;
 	char* surls[]= { (char*)surl, NULL };
 	return gfal_srm_putdone(opts, surls, token, err);
+}
+
+int srmv2_abort_request_internal(gfal_srmv2_opt* opts , char* endpoint, char* req_token,  GError** err){
+    GError* tmp_err=NULL;
+    struct srm_context context;
+    int ret=0;
+
+    char errbuf[GFAL_URL_MAX_LEN] = {0};
+
+    gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
+                                  errbuf, GFAL_URL_MAX_LEN, &tmp_err);
+
+    if((ret = srm_abort_request(&context, req_token)) < 0){
+        g_set_error(&tmp_err,0,errno,"SRMv2 abort request error : %s",errbuf);
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
+}
+
+int srm_abort_request_plugin (plugin_handle * handle , const char* surl,
+        char *reqtoken, GError** err){
+    g_return_val_err_if_fail(handle != NULL && reqtoken != NULL, -1, err, "[srm_abort_request_plugin] invalid values for token/handle");
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*)handle;
+    GError* tmp_err=NULL;
+    int ret=-1;
+
+    char full_endpoint[GFAL_URL_MAX_LEN];
+    enum gfal_srm_proto srm_types;
+    gfal_log(GFAL_VERBOSE_TRACE, "   -> [srm_abort_request] ");
+
+    if((gfal_srm_determine_endpoint(opts, surl, full_endpoint, GFAL_URL_MAX_LEN, &srm_types, &tmp_err)) == 0){		// check & get endpoint
+        gfal_log(GFAL_VERBOSE_NORMAL, "[srm_abort_request] endpoint %s", full_endpoint);
+
+        if (srm_types == PROTO_SRMv2){
+            ret = srmv2_abort_request_internal(opts, full_endpoint, reqtoken, &tmp_err);
+        } else if(srm_types == PROTO_SRM){
+            g_set_error(&tmp_err,0, EPROTONOSUPPORT, "support for SRMv1 is removed in gfal 2.0, failure");
+        } else{
+            g_set_error(&tmp_err,0,EPROTONOSUPPORT, "Unknow SRM protocol, failure ");
+        }
+    }
+    gfal_log(GFAL_VERBOSE_TRACE, " [srm_abort_request] <-");
+
+    G_RETURN_ERR(ret, tmp_err, err);
+
 }
 
 

@@ -14,7 +14,11 @@
  */
 #include <memory>
 #include <utils/uri_util.h>
+#include <config/gfal_config.h>
 #include "gridftpwrapper.h"
+
+const char* gridftp_version_config = "GRIDFTP_V2";
+const char* gridftp_session_reuse_config= "SESSION_REUSE";
 
 const Glib::Quark scope_readder("gfal_griftp_stream_read");
 const Glib::Quark scope_request("GridftpModule::request");
@@ -136,8 +140,14 @@ struct GridFTP_session_implem : public GridFTP_session{
 
 GridFTPFactory::GridFTPFactory(gfal_handle handle) : _handle(handle)
 {
-	gridftp_v2 = true;
-	session_reuse = true;
+    GError * tmp_err=NULL;
+    gridftp_v2 = gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP, gridftp_version_config, &tmp_err);
+    if(tmp_err)
+        throw Glib::Error(tmp_err);
+
+    session_reuse = gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP, gridftp_session_reuse_config, &tmp_err);
+    if(tmp_err)
+        throw Glib::Error(tmp_err);
 	size_cache = 400;
 }
 
@@ -229,6 +239,8 @@ static int scan_errstring(const char *p) {
         ret = EEXIST;
     else if (strstr(p, "ot a direct"))
 		ret = ENOTDIR;
+    else if (strstr(p, "ation not sup"))
+        ret = ENOTSUP;
     return ret;
 }
 

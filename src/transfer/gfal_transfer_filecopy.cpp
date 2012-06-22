@@ -84,6 +84,17 @@ static Gfal::Transfer::FileCopy* init_Filecopy_from_handle(gfal2_context_t handl
     return f;
 }
 
+gfalt_transfer_status_t gfalt_transfer_status_create(const gfalt_hook_transfer_plugin_t * hook){
+    gfalt_transfer_status_t state = g_new0(struct _gfalt_transfer_status,1);
+    state->hook = hook;
+    return state;
+}
+
+void gfalt_transfer_status_delete(gfalt_transfer_status_t state){
+    if(state)
+        g_free(state);
+}
+
 
 	
 int gfalt_copy_file(gfal2_context_t handle, gfalt_params_t params, 
@@ -108,6 +119,7 @@ int gfalt_copy_file(gfal2_context_t handle, gfalt_params_t params,
 	gfalt_params_handle_delete(p, NULL);
 	G_RETURN_ERR(ret, tmp_err, err);
 }
-	
-}	
+
+
+}
 

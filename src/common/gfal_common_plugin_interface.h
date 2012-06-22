@@ -1,22 +1,22 @@
 #pragma once
 #ifndef _GFAL_PLUGIN_INTERFACE_
 #define _GFAL_PLUGIN_INTERFACE_
-/*
- * Copyright (c) Members of the EGEE Collaboration. 2004.
- * See http://www.eu-egee.org/partners/ for details on the copyright holders.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/* 
+* Copyright @ Members of the EMI Collaboration, 2010.
+* See www.eu-emi.eu for details on the copyright holders.
+* 
+* Licensed under the Apache License, Version 2.0 (the "License"); 
+* you may not use this file except in compliance with the License. 
+* You may obtain a copy of the License at 
+*
+*    http://www.apache.org/licenses/LICENSE-2.0 
+* 
+* Unless required by applicable law or agreed to in writing, software 
+* distributed under the License is distributed on an "AS IS" BASIS, 
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+* See the License for the specific language governing permissions and 
+* limitations under the License.
+*/
 
 
 /**
@@ -281,7 +281,7 @@ struct _gfal_plugin_interface{
 	 *  OPTIONAL : gfal_unlink function  support
 	 * 			
 	 *  @param plugin_data : internal plugin data
-	 *  @param url : url of the file to delete
+     *  @param url : url of the file
 	 *  @param err : Error report, the code field of err should be set to errno value when possible
 	 *  @return 0 in case of success or -1 if error occures,
 	 *          err MUST be set in case of error
@@ -293,7 +293,7 @@ struct _gfal_plugin_interface{
 	 *  OPTIONAL : gfal_getxattr function  support
 	 * 			
 	 *  @param plugin_data : internal plugin data
-	 *  @param url : url of the file to delete
+     *  @param url : url of the file
 	 *  @param key : key of the attribute to get
 	 *  @param buff : buffer for the attribute content
 	 *  @param s_buff : maximum buffer size
@@ -307,7 +307,7 @@ struct _gfal_plugin_interface{
 	 *  OPTIONAL : gfal_listxattr function  support
 	 * 			
 	 *  @param plugin_data : internal plugin data
-	 *  @param url : url of the file to delete
+     *  @param url : url of the file
 	 *  @param list : buffer for the list attribute content
 	 *  @param s_buff : maximum buffer size
 	 *  @param s_list : Error report, the code field of err should be set to errno value when possible
@@ -320,7 +320,7 @@ struct _gfal_plugin_interface{
 	 *  OPTIONAL : gfal_setxattr function  support
 	 * 			
 	 *  @param plugin_data : internal plugin data
-	 *  @param url : url of the file to delete
+     *  @param url : url of the file
 	 *  @param key : key of the attribute to set
 	 *  @param buff : buffer for the attribute content
 	 *  @param s_buff : maximum buffer size
@@ -332,9 +332,30 @@ struct _gfal_plugin_interface{
 	 int (*setxattrG)(plugin_handle plugin_data, const char* url, const char* key,
 					const void* buff , size_t s_buff, int flags, GError** err);
 	 
+     /**
+      *  OPTIONAL : checksum calculation function support ( transfer consistency check, gfal_checksum )
+      *
+      * @param plugin_data : internal plugin data
+      * @param url : url of the file
+      * @param check_type : string of the checksum type ( \ref GFAL_CHKSUM_MD5, \ref GFAL_CHKSUM_SHA1, .. )
+      * @param start_offset : offset in the file where the checksum calculation will start ( 0 : from begining )
+      * @param data_length : size of data to compute for the checksum after start_offset ( 0 -: full file )
+      * @param checksum_buffer : buffer with checksum string as result
+      * @param buffer_length : maximum buffer length
+      * @param err : GError error support
+      * @return dynamically allocated checksum string if success, else NULL and err MUST be set
+      *  error code MUST be ENOSUPPORT in case of :
+      *         - checksum calculation with offset is not supported
+      *         - the specified checksum algorithm is not supported
+      */
+     int (*checksum_calcG)(plugin_handle data, const char* url, const char* check_type,
+                            char * checksum_buffer, size_t buffer_length,
+                            off_t start_offset, size_t data_length,
+                            GError ** err);
+
 	 // reserved for future usage
 	 //! @cond
-	 void* future[25];
+     void* future[24];
 	 //! @endcond
 };
 

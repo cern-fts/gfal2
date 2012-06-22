@@ -23,6 +23,6 @@
 
 char* generate_random_uri(const char* uri_dir, const char* prefix, char* buff, size_t s_buff);
 
-
+char * generate_random_string_content(size_t size);
 
 #endif /* GFAL_LIB_TEST_H */ 
