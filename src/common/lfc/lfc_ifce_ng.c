@@ -575,8 +575,10 @@ char*  gfal_lfc_get_strerror(struct lfc_ops* ops){
  * 
  * */
  void gfal_generate_guidG(char* buf, GError** err){
+    char filler[255]; // hotfix for libuuid EPEL 5 maddness
     uuid_t uuid;
 
+    (void) filler;
     uuid_generate (uuid);
     uuid_unparse (uuid, buf);
     uuid_clear(uuid);
