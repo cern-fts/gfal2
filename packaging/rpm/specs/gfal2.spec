@@ -251,7 +251,7 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
-* Sat Jun 23 2012 Adrien Devresse <adevress at cern.ch>  - 2.0.0-0.10.2012062323snap
+* Sat Jun 23 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-0.10.2012062323snap
  - Snapshot of the 0.10 version for testing
 
 * Fri Jun 15 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-0.9.2012061511snap
