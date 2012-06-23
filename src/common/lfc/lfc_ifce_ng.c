@@ -568,6 +568,7 @@ char*  gfal_lfc_get_strerror(struct lfc_ops* ops){
 }
 
 
+
 /*
  * @brief generate an uiid string
  * Generate a uuid string and copy it in the buf,
@@ -575,13 +576,11 @@ char*  gfal_lfc_get_strerror(struct lfc_ops* ops){
  * 
  * */
  void gfal_generate_guidG(char* buf, GError** err){
-    char filler[255]; // hotfix for libuuid EPEL 5 maddness
-    uuid_t uuid;
-
-    (void) filler;
-    uuid_generate (uuid);
-    uuid_unparse (uuid, buf);
-    uuid_clear(uuid);
+    uuid_t myuid;
+    
+    uuid_generate_random(myuid);
+    uuid_unparse (myuid, buf);
+    uuid_clear(myuid);
  }
  
  

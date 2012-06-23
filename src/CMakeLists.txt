@@ -145,7 +145,7 @@ SET(lcgdm_headers_dir "${DPM_INCLUDE}/lcgdm/")
 add_definitions( -D_REENTRANT)
 add_library(plugin_lfc  SHARED ${src_lfc} ${src_gsimplecache})
 
-target_link_libraries(plugin_lfc ${gfal2_link} ${UUID_PKG_LIBRARIES} ${LFC_LIBRARIES})
+target_link_libraries(plugin_lfc ${UUID_PKG_LIBRARIES} ${gfal2_link} ${LFC_LIBRARIES})
 include_directories(${LFC_INCLUDE_DIR} ${LCGDM_INCLUDE_DIR} ${UUID_PKG_INCLUDE_DIR})
 
 
