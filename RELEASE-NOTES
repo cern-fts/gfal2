@@ -1,5 +1,13 @@
 GFAL 2.0 RELEASE-NOTE:
 
+
+2.0.0-0.10 :
+- effective set/get opt support for lfc/srm/gsiftp
+- checksum calculation management
+- auto-check functionality on transfer
+- support for user-defined checksum
+- performance marker implementation for SRM/GSIFTP
+
 2.0.0-0.9 :
 - Without environment variable design implemented
 - add set/get option calls
