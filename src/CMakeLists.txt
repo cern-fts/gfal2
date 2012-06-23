@@ -83,7 +83,7 @@ IF (MAIN_CORE)
 
 	add_library(gfal2  SHARED ${main_libs} )
 	target_link_libraries(gfal2 ${GLIB2_PKG_LIBRARIES} ${GTHREAD2_PKG_LIBRARIES} 
-							${is_ifce_link} "dl")
+							${is_ifce_link} "dl" "stdc++" )
 	set_target_properties(gfal2	 	PROPERTIES
 									VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
 									SOVERSION ${VERSION_MAJOR}
