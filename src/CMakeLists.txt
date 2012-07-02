@@ -82,8 +82,9 @@ LIST(APPEND main_libs ${src_posix} ${src_common} ${src_global} ${src_config}
 IF (MAIN_CORE)
 
 	add_library(gfal2  SHARED ${main_libs} )
+	target_link_libraries(gfal2	${UUID_PKG_LIBRARIES} "stdc++" ) # hotfix for libc TLS init bug in EPEL 5 
 	target_link_libraries(gfal2 ${GLIB2_PKG_LIBRARIES} ${GTHREAD2_PKG_LIBRARIES} 
-							${is_ifce_link} "dl" "stdc++" )
+							${is_ifce_link}  "dl" )
 	set_target_properties(gfal2	 	PROPERTIES
 									VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
 									SOVERSION ${VERSION_MAJOR}
@@ -145,7 +146,7 @@ SET(lcgdm_headers_dir "${DPM_INCLUDE}/lcgdm/")
 add_definitions( -D_REENTRANT)
 add_library(plugin_lfc  SHARED ${src_lfc} ${src_gsimplecache})
 
-target_link_libraries(plugin_lfc ${UUID_PKG_LIBRARIES} ${gfal2_link} ${LFC_LIBRARIES})
+target_link_libraries(plugin_lfc ${gfal2_link} ${LFC_LIBRARIES} ${UUID_PKG_LIBRARIES} )
 include_directories(${LFC_INCLUDE_DIR} ${LCGDM_INCLUDE_DIR} ${UUID_PKG_INCLUDE_DIR})
 
 
