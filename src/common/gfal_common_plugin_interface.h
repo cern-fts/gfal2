@@ -35,6 +35,13 @@ extern "C"
 #endif 
 
 /**
+  classical data access plugin
+*/
+#define GFAL_PLUGIN_PRIORITY_DATA 0;
+#define GFAL_PLUGIN_PRIORITY_CATALOG 100;
+#define GFAL_PLUGIN_PRIORITY_CACHE 200;
+
+/**
  * Prototype of the plugins entry point
  * @param handle : gfal_handle of the current call
  * @param err : Error report in case of fatal error while the plugin load.
@@ -61,6 +68,11 @@ struct _gfal_plugin_interface{
 	 * 
 	 * */
 	plugin_handle plugin_data;
+    /**
+     * plugin priority
+     *  SHOULD be defined to GFAL_PLUGIN_PRIORITY_DATA by default
+     * */
+    int priority;
 	/**
 	 *  MANDATORY : return a the string id of the plugin.
 	 *  string id must be short, constant and unique ( ex : "plugin_gridftp" )
