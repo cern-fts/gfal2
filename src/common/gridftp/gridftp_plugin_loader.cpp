@@ -94,6 +94,8 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	ret.writeG = &gfal_gridftp_writeG;
 	ret.lseekG = &gfal_gridftp_lseekG;
     ret.checksum_calcG = &gfal_gridftp_checksumG;
+    ret.copy_file = &gridftp_plugin_filecopy;
+    ret.check_plugin_url_transfer = &plugin_url_check2;
 	
 	G_RETURN_ERR(ret, tmp_err, err);
 }

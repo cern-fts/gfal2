@@ -222,5 +222,8 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context, gfalt_params_
 	G_RETURN_ERR(ret, tmp_err, err);
 }
 
+int gridftp_plugin_filecopy(plugin_handle handle, gfal2_context_t context, gfalt_params_t params, const char* src, const char* dst, GError ** err){
+    return plugin_filecopy(handle, context, params, src, dst, err);
+}
 
 }

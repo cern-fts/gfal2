@@ -28,6 +28,8 @@
 #include <glib.h>
 #include <common/gfal_prototypes.h>
 #include <common/gfal_constants.h>
+#include <global/gfal_global.h>
+#include <transfer/gfal_transfer_types.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -63,6 +65,8 @@ struct _gfal_plugin_interface{
 	void * gfal_data;
 	//! @endcond
 	
+    // plugin management
+
 	/**
 	 *  plugin reserved pointer, free to use for plugin's personnal datas
 	 * 
@@ -85,6 +89,10 @@ struct _gfal_plugin_interface{
 	 * @param plugin_data : internal plugin data
 	 */
 	void (*plugin_delete)(plugin_handle plugin_data); 
+
+    // FILE API
+
+
 	/**
 	 *  MANDATORY: Main critical function of the plugins, URL checker.
 	 *  check the availability of the given operation on this plugin for the given URL
@@ -365,6 +373,27 @@ struct _gfal_plugin_interface{
                             off_t start_offset, size_t data_length,
                             GError ** err);
 
+     // TRANSFER API
+     /**
+      *  OPTIONAL:  if transfer support,
+      *  should return TRUE if the plugin is able to execute third party transfer from src to dst url
+      *
+      */
+     int(*check_plugin_url_transfer)(plugin_handle plugin_data,  const char* src, const char* dst, gfal_url2_check check);
+
+     /**
+       *
+       *  OPTIONAL:  if transfer support,
+       *  Execute a filecopy operation for the given parameters
+       *  @param plugin_data : internal plugin context
+       *  @param gfal2_context_t context : gfal 2 handle
+       *  @param params: parameters for the current transfer, see gfalt_params calls
+       *  @param src : source file to copy
+       *  @param dst : destination file
+       *  @param err : GError err report
+       *
+    */
+     int (*copy_file)(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params, const char* src, const char* dst, GError** );
 	 // reserved for future usage
 	 //! @cond
      void* future[24];

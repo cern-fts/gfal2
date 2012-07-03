@@ -41,6 +41,8 @@
 #include "gfal_common_srm_chmod.h"
 #include "gfal_common_srm_getxattr.h"
 #include "gfal_common_srm_checksum.h"
+#include "gfal_common_srm_copy.h"
+#include "gfal_common_srm_url_check.h"
 
 #include <common/gfal_common_internal.h>
 #include <common/gfal_common_errverbose.h>
@@ -190,6 +192,8 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	srm_plugin.getxattrG = &gfal_srm_getxattrG;
 	srm_plugin.listxattrG = &gfal_srm_listxattrG;
     srm_plugin.checksum_calcG = &gfal_srm_checksumG;
+    srm_plugin.copy_file = &srm_plugin_filecopy;
+    srm_plugin.check_plugin_url_transfer =&plugin_url_check2;
 	return srm_plugin;
 }
 

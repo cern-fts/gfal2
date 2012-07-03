@@ -22,6 +22,6 @@
 
 #include "gridftpmodule.h"
 
-
+extern "C" int gridftp_plugin_filecopy(plugin_handle handle, gfal2_context_t context, gfalt_params_t params, const char* src, const char* dst, GError ** err);
 
 #endif /* GRIFTP_IFCE_FILECOPY_H */ 

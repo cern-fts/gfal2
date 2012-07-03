@@ -28,8 +28,7 @@ Gfal::Transfer::FileCopy::~FileCopy() {
 }
 
 void Gfal::Transfer::FileCopy::start_copy(gfalt_params_t p, const std::string & src, const std::string & dst){
-	gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::FileCopy ");
-	//p->lock(); suppress locker, need read/write lock system	
+	gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::FileCopy ");	
 	void * plug_data;
 	GError * tmp_err=NULL;
 	plugin_filecopy_call p_copy = find_copy_plugin(src, dst, &plug_data); // get the filecopy call of the plugin
