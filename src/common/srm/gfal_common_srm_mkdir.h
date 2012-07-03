@@ -25,7 +25,7 @@
  * */
 
 #include <glib.h>
-#include "../gfal_types.h" 
-#include "../gfal_constants.h"
+#include <common/gfal_types.h>
+#include <common/gfal_constants.h>
 
 int gfal_srm_mkdirG(plugin_handle handle, const char* surl, mode_t mode, gboolean pflag, GError** err); 

@@ -27,7 +27,7 @@
 #include <glib.h>
 
 #include "gfal_common_srm.h"
-#include "../gfal_types.h" 
+#include <common/gfal_types.h>
 
 int gfal_srm_accessG(plugin_handle handle, const char* surl, int mode, GError** err); 
 

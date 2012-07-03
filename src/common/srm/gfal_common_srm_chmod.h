@@ -29,9 +29,9 @@
 #include <time.h> 
  
 #include "gfal_common_srm.h"
-#include "../gfal_common_internal.h"
-#include "../gfal_common_errverbose.h"
-#include "../gfal_common_plugin.h"
+#include <common/gfal_common_internal.h>
+#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_plugin.h>
 #include "gfal_common_srm_internal_layer.h"
 
 

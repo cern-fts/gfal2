@@ -39,9 +39,9 @@
 
 #include "gfal_common_lfc.h"
 #include "gfal_common_lfc_open.h"
-#include "../gfal_common_internal.h"
-#include "../gfal_common_errverbose.h"
-#include "../gfal_common_filedescriptor.h"
+#include <common/gfal_common_internal.h>
+#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_filedescriptor.h>
 #include "lfc_ifce_ng.h"
 
 

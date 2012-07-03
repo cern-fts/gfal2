@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <glib.h>
-#include "../gfal_common_filedescriptor.h"
+#include <common/gfal_common_filedescriptor.h>
 
 typedef struct _gfal_srm_opendir_handle{
 	char surl[GFAL_URL_MAX_LEN];

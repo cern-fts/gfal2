@@ -40,7 +40,7 @@ static bool gridftp_check_url(const char* src){
 
 /**
  * 
- * implementation of the plugi_url_transfer_check for the gridFTP plugin
+ *  implementation of the plugi_url_transfer_check for the gridFTP plugin
  *  Check if the gridFTP plugin is able to handle a given type of URL.
  * 
  * */
@@ -49,11 +49,11 @@ gboolean plugin_url_check2(plugin_handle handle, const char* src, const char* ds
 	gboolean res = FALSE;
 
 	
-	if( src != NULL && dst != NULL){
+    if( src != NULL && dst != NULL){
 		if( type == GFAL_FILE_COPY 
-			&& gridftp_check_url(src)
-			&& gridftp_check_url(dst)
-			){
+            && gridftp_check_url(src)
+            && gridftp_check_url(dst)
+            ){
 				res= TRUE;
 			}
 		
