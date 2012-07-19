@@ -33,8 +33,8 @@ void Gfal::Transfer::FileCopy::start_copy(gfalt_params_t p, const std::string & 
 	GError * tmp_err=NULL;
 	plugin_filecopy_call p_copy = find_copy_plugin(src, dst, &plug_data); // get the filecopy call of the plugin
 	if(p_copy == NULL)
-        throw Gfal::CoreException(scope_copy, "bug detected : "
-                "no correct filecopy function in a plugin signaled like compatible", ENOSYS);
+        throw Gfal::CoreException(scope_copy, "no plugin is able to support this transfer", EPROTONOSUPPORT);
+
     const int res = p_copy(plug_data, context, p, src.c_str(), dst.c_str(), &tmp_err);
 	//p->unlock();
 	if(res <0 )
@@ -59,7 +59,7 @@ const plugin_filecopy_call Gfal::Transfer::FileCopy::find_copy_plugin(const std:
 				
 			}
 	}
-	throw Gfal::CoreException(scope_copy, "no plugin is able to support this transfer", EPROTONOSUPPORT);
+    return NULL;
 }
 
 
