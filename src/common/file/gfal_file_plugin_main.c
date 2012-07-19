@@ -85,6 +85,8 @@ static gboolean gfal_file_check_url(plugin_handle handle, const char* url, plugi
 		case GFAL_PLUGIN_GETXATTR:
 		case GFAL_PLUGIN_LISTXATTR:
         case GFAL_PLUGIN_SETXATTR:
+        case GFAL_PLUGIN_RENAME:
+        case GFAL_PLUGIN_SYMLINK:
         //case GFAL_PLUGIN_CHECKSUM:
             return (gfal_lfile_path_checker(handle, url)==0);
 		default:
@@ -343,6 +345,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
     file_plugin.statG = &gfal_plugin_file_stat;
     file_plugin.lstatG = &gfal_plugin_file_lstat;
     file_plugin.renameG = &gfal_plugin_file_rename;
+    file_plugin.symlinkG = &gfal_plugin_file_symlink;
     file_plugin.rmdirG = &gfal_plugin_file_rmdir;
     file_plugin.opendirG = &gfal_plugin_file_opendir;
     file_plugin.readdirG = &gfal_plugin_file_readdir;
