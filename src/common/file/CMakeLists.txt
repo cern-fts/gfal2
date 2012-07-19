@@ -31,7 +31,6 @@ install(TARGETS		plugin_file
 	    
 install(FILES		"README_PLUGIN_FILE"
 		DESTINATION ${DOC_INSTALL_DIR})	    
-#install(FILES ${dcap_scripts} DESTINATION ${SYSCONF_INSTALL_DIR}/profile.d/ )
 
 ENDIF(PLUGIN_FILE)
 

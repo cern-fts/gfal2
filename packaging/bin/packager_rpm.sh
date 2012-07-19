@@ -18,7 +18,7 @@ create_tmp_dir() {
 }
 
 get_attrs_spec(){
-	export SPEC_CONTENT="$(rpm -E "`cat $1`")"
+        export SPEC_CONTENT="$(rpm -E "`cat $1 | head -n 50`")"
 	export PKG_VERSION="$( echo "$SPEC_CONTENT" | grep "Version:"  | sed 's@Version:\(.*\)@\1@g' | sed -e 's/^[ \t]*//')"
 	export PKG_RELEASE="$( echo "$SPEC_CONTENT" | grep "Version:"  | sed 's@Release:\(.*\)@\1@g' | sed -e 's/^[ \t]*//')"	
 	export PKG_NAME="$(echo "$SPEC_CONTENT" | grep "Name:" | sed 's@Name:\(.*\)@\1@g' | sed -e 's/^[ \t]*//')"

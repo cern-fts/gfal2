@@ -187,11 +187,11 @@ make DESTDIR=%{buildroot} install
 %files core
 %defattr (-,root,root)
 %{_libdir}/libgfal2.so.*
-%{_libdir}/%{name}-plugins/libgfal_plugin_file.so*
-%{_docdir}/%{name}-%{version}/README_PLUGIN_FILE
 %dir %{_libdir}/%{name}-plugins
 %dir %{_docdir}/%{name}-%{version}
 %dir %{_sysconfdir}/%{name}.d
+%{_libdir}/%{name}-plugins/libgfal_plugin_file.so*
+%{_docdir}/%{name}-%{version}/README_PLUGIN_FILE
 %{_docdir}/%{name}-%{version}/LICENSE
 %config(noreplace) %{_sysconfdir}/%{name}.d/bdii.conf
 %config(noreplace) %{_sysconfdir}/%{name}.d/gfal2_core.conf
