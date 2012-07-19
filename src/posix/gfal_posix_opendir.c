@@ -33,10 +33,10 @@
 
 #include "gfal_posix_api.h"
 #include "gfal_posix_internal.h"
-#include "../common/gfal_common_filedescriptor.h"
-#include "../common/gfal_common_dir_handle.h"
-#include "../common/gfal_common_errverbose.h"
-#include "gfal_posix_local_file.h"
+#include <common/gfal_common_filedescriptor.h>
+#include <common/gfal_common_dir_handle.h>
+#include <common/gfal_common_errverbose.h>
+
 
 inline static int gfal_posix_dir_handle_store(gfal_handle handle, gfal_file_handle fhandle, GError** err){
 	g_return_val_err_if_fail(handle && fhandle, 0, err, "[gfal_posix_dir_handle_store] handle invalid");
@@ -64,11 +64,7 @@ inline DIR* gfal_posix_internal_opendir(const char* name){
 	if(name == NULL){
 		g_set_error(&tmp_err, 0, EFAULT, " name is empty");
 	}else{
-		if( gfal_check_local_url(name, NULL) == TRUE){
-			ret = gfal_local_opendir(name, &tmp_err);
-		}else{
-			ret = gfal_plugin_opendirG(handle, name, &tmp_err);
-		}
+        ret = gfal_plugin_opendirG(handle, name, &tmp_err);
 	}
 	
 	int key = 0;

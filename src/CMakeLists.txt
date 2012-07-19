@@ -245,7 +245,8 @@ ENDIF(PLUGIN_DCAP)
 
 add_subdirectory(transfer)                         
 add_subdirectory(common/gridftp)    
-add_subdirectory(common/srm/test)  
+add_subdirectory(common/srm/test)
+add_subdirectory(common/file)
                       
 
 

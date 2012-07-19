@@ -38,16 +38,12 @@
 
 
 #include "gfal_posix_internal.h"
-#include "gfal_posix_local_file.h"
+
  
 static int gfal_posix_gfalfilehandle_lseek(gfal_handle handle, gfal_file_handle fh, off_t offset, int whence, GError** err){
 	g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_posix_gfalfilehandle_lseek] incorrect args");
 	GError *tmp_err=NULL;
-	int ret = -1;
-	if( gfal_is_local_call(fh->module_name) )
-		ret = gfal_local_lseek(fh, offset, whence, &tmp_err);
-	else
-		ret = gfal_plugin_lseekG(handle, fh, offset, whence, &tmp_err);
+    int ret  = gfal_plugin_lseekG(handle, fh, offset, whence, &tmp_err);
 
 	if(tmp_err){
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);

@@ -34,7 +34,7 @@
 #include <common/gfal_prototypes.h>
 #include <common/gfal_types.h>
 #include <common/gfal_common_plugin.h>
-#include <posix/gfal_posix_local_file.h>
+
 #include <posix/gfal_posix_internal.h>
 
 
@@ -55,11 +55,7 @@ inline int gfal_posix_internal_stat(const char* path, struct stat* buf){
 	if(path == NULL || buf==NULL){
 		g_set_error(&tmp_err, 0, EFAULT, " path or/and stat is an incorrect argument");
 	}else{
-		if( gfal_check_local_url(path, NULL) ){
-			ret = gfal_local_stat(path, buf, &tmp_err);
-		}else {
-			ret = gfal_plugin_statG(handle, path, buf, &tmp_err);
-		}
+        ret = gfal_plugin_statG(handle, path, buf, &tmp_err);
 	}	
 	if(tmp_err){ // error reported
 		gfal_posix_register_internal_error(handle, "[gfal_stat]", tmp_err);
@@ -83,11 +79,7 @@ inline int gfal_posix_internal_lstat(const char* path, struct stat* buf){
 		return -1;
 	}
 	
-	if( gfal_check_local_url(path, NULL) ){
-		ret = gfal_local_lstat(path, buf, &tmp_err);
-	}else {
-		ret = gfal_plugin_lstatG(handle, path, buf, &tmp_err);
-	}
+    ret = gfal_plugin_lstatG(handle, path, buf, &tmp_err);
 	
 	if(ret){ // error reported
 		gfal_posix_register_internal_error(handle, "[gfal_lstat]", tmp_err);

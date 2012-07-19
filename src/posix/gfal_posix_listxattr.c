@@ -33,7 +33,7 @@
 #include <common/gfal_common_plugin.h>
 
 #include "gfal_posix_internal.h"
-#include "gfal_posix_local_file.h"
+
  
 
 /*
@@ -52,11 +52,7 @@ ssize_t gfal_posix_internal_listxattr (const char *path, char *list, size_t size
 	if(path == NULL){
 		g_set_error(&tmp_err, 0, EFAULT, " path is an incorrect argument");
 	}else{
-		if( gfal_check_local_url(path, NULL) == TRUE){
-			res = gfal_local_listxattr(path, list, size, &tmp_err);
-		}else{
-			res = gfal_plugin_listxattrG(handle, path, list, size, &tmp_err);
-		}
+        res = gfal_plugin_listxattrG(handle, path, list, size, &tmp_err);
 
 	}
 	if(tmp_err){

@@ -35,7 +35,7 @@
 
 
 #include "gfal_posix_internal.h"
-#include "gfal_posix_local_file.h"
+
  
  
 ssize_t gfal_posix_internal_getxattr (const char *path, const char *name,
@@ -52,12 +52,7 @@ ssize_t gfal_posix_internal_getxattr (const char *path, const char *name,
 	if(path == NULL){
 		g_set_error(&tmp_err, 0, EFAULT, " path is an incorrect argument");
 	}else{
-		if( gfal_check_local_url(path, NULL) == TRUE){
-			res = gfal_local_getxattr(path, name, value, size, &tmp_err);
-		}else{
-			res = gfal_plugin_getxattrG(handle, path, name, value, size, &tmp_err);
-		}
-
+        res = gfal_plugin_getxattrG(handle, path, name, value, size, &tmp_err);
 	}
 	if(tmp_err){
 		gfal_posix_register_internal_error(handle, "[gfal_getxattr]", tmp_err);

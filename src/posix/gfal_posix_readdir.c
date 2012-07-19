@@ -34,10 +34,9 @@
 
 #include "gfal_posix_api.h"
 #include "gfal_posix_internal.h"
-#include "../common/gfal_common_filedescriptor.h"
-#include "../common/gfal_common_dir_handle.h"
-#include "../common/gfal_common_errverbose.h"
-#include "gfal_posix_local_file.h"
+#include <common/gfal_common_filedescriptor.h>
+#include <common/gfal_common_dir_handle.h>
+#include <common/gfal_common_errverbose.h>
 
 
 /*
@@ -46,11 +45,7 @@
 inline static struct dirent* gfal_posix_gfalfilehandle_readdir(gfal_handle handle, gfal_file_handle fh, GError** err){
 	g_return_val_err_if_fail(handle && fh, NULL, err, "[gfal_posix_gfalfilehandle_readdir] incorrect args");
 	GError *tmp_err=NULL;
-	struct dirent* ret = NULL;
-	if( gfal_is_local_call(fh->module_name) )
-		ret = gfal_local_readdir(fh, &tmp_err);
-	else
-		ret = gfal_plugin_readdirG(handle, fh, &tmp_err);
+    struct dirent* ret = gfal_plugin_readdirG(handle, fh, &tmp_err);
 
 	if(tmp_err){
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);

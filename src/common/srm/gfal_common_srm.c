@@ -21,7 +21,7 @@
  * author Devresse Adrien
  */
  
- #define _GNU_SOURCE 
+#define _GNU_SOURCE
 
 #include <regex.h>
 #include <time.h> 

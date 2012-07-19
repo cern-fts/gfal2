@@ -33,7 +33,7 @@
 #include "../common/gfal_common_errverbose.h"
 #include "../common/gfal_common_file_handle.h"
 #include "../common/gfal_common_plugin.h"
-#include "gfal_posix_local_file.h"
+
 
 
 /*
@@ -42,11 +42,7 @@
 int gfal_posix_gfalfilehandle_write(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, GError** err){
 	g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_posix_gfalfilehandle_write] incorrect args");
 	GError *tmp_err=NULL;
-	int ret = -1;
-	if( gfal_is_local_call(fh->module_name) )
-		ret = gfal_local_write(fh, buff, s_buff, &tmp_err);
-	else
-		ret = gfal_plugin_writeG(handle, fh, buff, s_buff, &tmp_err);
+    int ret = gfal_plugin_writeG(handle, fh, buff, s_buff, &tmp_err);
 
 	if(tmp_err){
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
@@ -94,11 +90,7 @@ int gfal_posix_internal_write(int fd, void* buff, size_t s_buff){
 int gfal_posix_gfalfilehandle_pwrite(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, off_t offset, GError** err){
 	g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_posix_gfalfilehandle_pwrite] incorrect args");
 	GError *tmp_err=NULL;
-	int ret = -1;
-	if( gfal_is_local_call(fh->module_name) )
-		ret = gfal_local_pwrite(fh, buff, s_buff, offset, &tmp_err);
-	else 
-		ret = gfal_plugin_pwriteG(handle, fh, buff, s_buff, offset, &tmp_err);
+    int ret = gfal_plugin_pwriteG(handle, fh, buff, s_buff, offset, &tmp_err);
 
 	if(tmp_err){
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);

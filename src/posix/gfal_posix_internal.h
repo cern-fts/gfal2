@@ -25,8 +25,8 @@
  * @date 06/05/2011
  * */
 
-#include "../common/gfal_prototypes.h"
-#include "../common/gfal_types.h"
+#include <common/gfal_prototypes.h>
+#include <common/gfal_types.h>
 #include <common/gfal_common_errverbose.h>
 
 gfal_handle gfal_posix_instance();

@@ -26,14 +26,14 @@
  
  #include <glib.h>
 #include <stdlib.h>
-#include "../common/gfal_types.h"
-#include "../common/gfal_common_filedescriptor.h"
+#include <common/gfal_types.h>
+#include <common/gfal_common_filedescriptor.h>
 #include "gfal_common_file_handle.h"
 #include "gfal_posix_internal.h"
-#include "../common/gfal_common_errverbose.h"
-#include "../common/gfal_common_file_handle.h"
-#include "../common/gfal_common_plugin.h"
-#include "gfal_posix_local_file.h"
+#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_file_handle.h>
+#include <common/gfal_common_plugin.h>
+
 
 
 /*
@@ -42,11 +42,7 @@
 inline int gfal_posix_gfalfilehandle_read(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, GError** err){
 	g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_posix_gfalfilehandle_read] incorrect args");
 	GError *tmp_err=NULL;
-	int ret = -1;
-	if( gfal_is_local_call(fh->module_name) )
-		ret = gfal_local_read(fh, buff, s_buff, &tmp_err);
-	else
-		ret = gfal_plugin_readG(handle, fh, buff, s_buff, &tmp_err);
+    int ret = gfal_plugin_readG(handle, fh, buff, s_buff, &tmp_err);
 
 	if(tmp_err){
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
@@ -95,11 +91,7 @@ inline ssize_t gfal_posix_gfalfilehandle_pread(gfal_handle handle, gfal_file_han
 						size_t s_buff, off_t offset, GError** err){
 	g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_posix_gfalfilehandle_pread] incorrect args");
 	GError *tmp_err=NULL;
-	ssize_t ret = -1;
-	if( gfal_is_local_call(fh->module_name) )
-		ret = gfal_local_pread(fh, buff, s_buff, offset, &tmp_err);
-	else 
-		ret = gfal_plugin_preadG(handle, fh, buff, s_buff, offset, &tmp_err);
+    ssize_t ret = gfal_plugin_preadG(handle, fh, buff, s_buff, offset, &tmp_err);
 
 	if(tmp_err){
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);

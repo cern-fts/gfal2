@@ -43,6 +43,9 @@ set(OUTPUT_NAME_DCAP "gfal_plugin_dcap")
 set(PROJECT_NAME_GRIDFTP "plugin_gridftp")
 set(OUTPUT_NAME_GRIDFTP "gfal_plugin_gridftp")
 
+set(PROJECT_NAME_FILE "plugin_file")
+set(OUTPUT_NAME_FILE "gfal_plugin_file")
+
 set(VERSION_MAJOR 2)
 set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)

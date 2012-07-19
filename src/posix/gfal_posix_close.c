@@ -37,7 +37,7 @@
 
 
 #include "gfal_posix_internal.h"
-#include "gfal_posix_local_file.h"
+
  
 
 
@@ -60,10 +60,8 @@ static int gfal_posix_file_handle_close(gfal_handle handle, gfal_file_handle fha
 	g_return_val_err_if_fail(handle && fhandle, -1, err, "[gfal_posix_file_handle_close] invalid args");
 	GError* tmp_err=NULL;
 	int ret = -1;
-	if( gfal_is_local_call(fhandle->module_name) )
-		ret = gfal_local_close(fhandle, &tmp_err);
-	else
-		ret = gfal_plugin_closeG(handle, fhandle, &tmp_err);	
+
+    ret = gfal_plugin_closeG(handle, fhandle, &tmp_err);
 		
 	if(tmp_err){
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);

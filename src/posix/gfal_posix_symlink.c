@@ -31,7 +31,7 @@
 #include <common/gfal_common_plugin.h>
 
 #include "gfal_posix_internal.h"
-#include "gfal_posix_local_file.h"
+
 #include "gfal_posix_api.h"
 
 /*
@@ -50,12 +50,7 @@ int gfal_posix_internal_symlink(const char* oldpath, const char* newpath){
 	if( oldpath == NULL || newpath == NULL){
 		g_set_error(&tmp_err, 0, EFAULT, " oldpath/newpath is an incorrect argument");
 	}else{	
-		if( gfal_check_local_url(oldpath, NULL) 
-				&& gfal_check_local_url(newpath, NULL)){
-			ret = gfal_local_symlink(oldpath, newpath, &tmp_err);			
-		}else{
-			ret = gfal_plugin_symlinkG(handle, oldpath, newpath, &tmp_err);
-		}
+        ret = gfal_plugin_symlinkG(handle, oldpath, newpath, &tmp_err);
 	}
 	
 	if(tmp_err){

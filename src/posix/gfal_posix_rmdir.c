@@ -30,7 +30,7 @@
 #include <glib.h>
 #include "../common/gfal_types.h"
 #include "gfal_posix_internal.h"
-#include "gfal_posix_local_file.h"
+
 #include  "../common/gfal_common_plugin.h"
 #include "../common/gfal_constants.h"
 
@@ -52,11 +52,7 @@
 	if(path == NULL){
 		g_set_error(&tmp_err, 0, EFAULT, " path is an incorrect argument");
 	}else{
-		if( gfal_check_local_url(path, NULL) == TRUE){
-			res = gfal_local_rmdir(path, &tmp_err);
-		}else{
-			res = gfal_plugin_rmdirG(handle, path, &tmp_err);
-		}
+        res = gfal_plugin_rmdirG(handle, path, &tmp_err);
 	}
 
 	if(tmp_err){

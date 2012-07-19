@@ -30,7 +30,7 @@
 #include <glib.h>
 #include <common/gfal_types.h>
 #include <posix/gfal_posix_internal.h>
-#include <posix/gfal_posix_local_file.h>
+
 #include  <common/gfal_common_plugin.h>
 #include <common/gfal_constants.h>
 
@@ -48,13 +48,9 @@ int gfal_posix_internal_access (const char *path, int amode){
 	}
 	
 	if(path == NULL){
-		g_set_error(&tmp_err, 0, EFAULT, " path is an incorrect argument");
+        g_set_error(&tmp_err, 0, EFAULT, "path is an incorrect argument");
 	}else{
-		if(gfal_check_local_url(path, NULL)){
-			resu = gfal_local_access(path, amode, &tmp_err);									// file:// -> send to the local system call
-		}else {
-			resu = gfal_plugins_accessG(handle, (char*) path, amode, &tmp_err );		// if registered url ( lfn:// ) resolve,
-		}
+        resu = gfal_plugins_accessG(handle, (char*) path, amode, &tmp_err );
 	}
 	if(tmp_err){ // error reported
 		gfal_posix_register_internal_error(handle, "[gfal_access]", tmp_err);

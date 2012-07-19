@@ -29,7 +29,7 @@
  #include <errno.h>
  #include <glib.h>
  #include "../common/gfal_prototypes.h"
- #include "gfal_posix_local_file.h"
+
  #include "gfal_posix_internal.h"
  #include  "../common/gfal_common_plugin.h"
  
@@ -47,11 +47,7 @@
 	if(path == NULL){
 		g_set_error(&tmp_err, 0, EFAULT, " path is an incorrect argument");
 	}else{
-		if( gfal_check_local_url(path, NULL) == TRUE){
-			res = gfal_local_chmod(path, mode, &tmp_err);
-		}else{
-			res = gfal_plugin_chmodG(handle, path, mode, &tmp_err);
-		}
+        res = gfal_plugin_chmodG(handle, path, mode, &tmp_err);
 	}
 	if(tmp_err){
 		gfal_posix_register_internal_error(handle, "[gfal_chmod]", tmp_err);

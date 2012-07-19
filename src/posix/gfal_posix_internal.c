@@ -35,7 +35,7 @@
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_internal.h>
 
-#include "gfal_posix_local_file.h"
+
 
 #include "gfal_posix_internal.h"
 
@@ -51,7 +51,6 @@ inline gfal_handle gfal_posix_instance(){
 		pthread_mutex_lock(&m_instance);
 		if(handle == NULL){
 			handle= gfal_initG(&last_error);
-			gfal_local_initG(NULL);
 		}
 		pthread_mutex_unlock(&m_instance);
 	}

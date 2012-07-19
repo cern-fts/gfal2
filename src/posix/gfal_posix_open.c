@@ -36,7 +36,7 @@
 
 
 #include "gfal_posix_internal.h"
-#include "gfal_posix_local_file.h"
+
 
 
 
@@ -77,11 +77,7 @@ int gfal_posix_internal_open(const char* path, int flag, mode_t mode){
 	if(path == NULL){
 		g_set_error(&tmp_err, 0, EFAULT, " name is empty");
 	}else{
-		if( gfal_check_local_url(path, NULL) == TRUE){
-			fhandle = gfal_local_open(path, flag, mode, &tmp_err);
-		}else{
-			fhandle = gfal_plugin_openG(handle, path, flag, mode, &tmp_err);
-		}
+        fhandle = gfal_plugin_openG(handle, path, flag, mode, &tmp_err);
 	}
 
 	if(fhandle)
