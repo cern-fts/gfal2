@@ -342,6 +342,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
     file_plugin.mkdirpG = &gfal_plugin_file_mkdir;
     file_plugin.statG = &gfal_plugin_file_stat;
     file_plugin.lstatG = &gfal_plugin_file_lstat;
+    file_plugin.renameG = &gfal_plugin_file_rename;
     file_plugin.rmdirG = &gfal_plugin_file_rmdir;
     file_plugin.opendirG = &gfal_plugin_file_opendir;
     file_plugin.readdirG = &gfal_plugin_file_readdir;
