@@ -81,13 +81,17 @@ gpointer g_config_manager_find_first_valid(GConfigManager_t config_manager, GCon
     GList* list = g_list_first(config_manager->configs);
     while(list != NULL){
         gpointer res = func((GKeyFile*) list->data, userdata, &tmp_err);
-        if(res || tmp_err){
-            if(tmp_err){
-                g_propagate_error(err, tmp_err);
-                return NULL;
-            }
+        if(tmp_err){
+                if(g_error_matches(tmp_err, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_KEY_NOT_FOUND)
+                              || g_error_matches(tmp_err, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_GROUP_NOT_FOUND) ){
+                    g_clear_error(&tmp_err);
+                }else{
+                    g_propagate_error(err, tmp_err);
+                    return NULL;
+                }
+         }else{
             return res;
-        }
+         }
         list = g_list_next(list);
     }
     g_set_error(err, g_config_manager_quark(), G_CONFIG_MANAGER_NOT_FOUND, "No configuration parameter with this value found");
@@ -106,10 +110,8 @@ gpointer g_config_manager_exec_on_first(GConfigManager_t config_manager, GConfig
 
 static void propagate_config_manager_error(GError ** err, GError * tmp_err){
     if(tmp_err){
-        if(!g_error_matches(tmp_err, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_KEY_NOT_FOUND)
-           && !g_error_matches(tmp_err, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_GROUP_NOT_FOUND) ){
             g_propagate_error(err, tmp_err);
-        }
+
     }
 }
 
