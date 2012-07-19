@@ -19,6 +19,7 @@
 
 const char* gridftp_version_config = "GRIDFTP_V2";
 const char* gridftp_session_reuse_config= "SESSION_REUSE";
+const char* gridftp_dcau_config= "DCAU";
 
 const Glib::Quark scope_readder("gfal_griftp_stream_read");
 const Glib::Quark scope_request("GridftpModule::request");
@@ -146,6 +147,10 @@ GridFTPFactory::GridFTPFactory(gfal_handle handle) : _handle(handle)
         throw Glib::Error(tmp_err);
 
     session_reuse = gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP, gridftp_session_reuse_config, &tmp_err);
+    if(tmp_err)
+        throw Glib::Error(tmp_err);
+
+    dcau_param.mode = (gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP, gridftp_dcau_config, &tmp_err))?GLOBUS_FTP_CONTROL_DCAU_DEFAULT:GLOBUS_FTP_CONTROL_DCAU_NONE;
     if(tmp_err)
         throw Glib::Error(tmp_err);
 	size_cache = 400;
