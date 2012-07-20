@@ -78,7 +78,7 @@ class GridFTPFactory : public GridFTPFactoryInterface
         // gridftp version management
 		bool gridftp_v2;
         // dcau management
-        globus_ftp_control_dcau_subject_t dcau_param;
+        globus_ftp_control_dcau_t dcau_param;
         // session re-use management
 		bool session_reuse;
 		unsigned int size_cache;

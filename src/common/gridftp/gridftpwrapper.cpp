@@ -42,7 +42,11 @@ struct GridFTP_session_implem : public GridFTP_session{
 			
 		// initialize gass copy attr
 		res = globus_gass_copy_attr_init(&(_sess->attr_gass));
-		gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);		
+        gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);
+
+        // associate ftp operation attr to gass
+        res = globus_gass_copy_attr_set_ftp (&(_sess->attr_gass), &(_sess->operation_attr_ftp));
+        gfal_globus_check_result("GridFTPFactory::globus_gass_copy_handleattr_set_ftp_attr", res);
 		
 		// initialize ftp attributes
 		res = globus_ftp_client_handleattr_init(&(_sess->attr_handle));
@@ -66,10 +70,18 @@ struct GridFTP_session_implem : public GridFTP_session{
 	void configure_gridftp_handle_attr(){
 		globus_ftp_client_handleattr_set_cache_all(&(_sess->attr_handle), GLOBUS_TRUE);	// enable session re-use
 	}
+
 	
 	void set_gridftpv2(bool v2){
 		globus_ftp_client_handleattr_set_gridftp2(&(_sess->attr_handle), v2); // define gridftp 2	
 	}
+
+    void set_dcau(const globus_ftp_control_dcau_t & dcau ){
+        globus_ftp_client_operationattr_set_dcau(&(_sess->operation_attr_ftp), &dcau);
+        globus_result_t res = globus_gass_copy_attr_set_ftp (&(_sess->attr_gass), &(_sess->operation_attr_ftp));
+        gfal_globus_check_result("GridFTPFactory::globus_gass_copy_handleattr_set_ftp_attr", res);
+
+    }
 	
 	
 	GridFTP_session_implem(GridFTPFactory* f, const std::string & hostname){
@@ -126,7 +138,7 @@ struct GridFTP_session_implem : public GridFTP_session{
 	struct Session_handler{
 		globus_ftp_client_handle_t handle_ftp;
 		globus_ftp_client_handleattr_t attr_handle;
-		globus_ftp_client_operationattr_t operation_attr_ftp;
+		globus_ftp_client_operationattr_t operation_attr_ftp;     
 		globus_gass_copy_attr_t attr_gass;
 		globus_gass_copy_handle_t gass_handle;
 		globus_gass_copy_handleattr_t gass_handle_attr;
@@ -136,6 +148,7 @@ struct GridFTP_session_implem : public GridFTP_session{
 	// internal fields	
 	std::string hostname;		
 	GridFTPFactory* factory;
+    globus_ftp_control_dcau_t dcau;
 };
 
 
@@ -292,6 +305,7 @@ void gfal_globus_check_error(const Glib::Quark & scope,  globus_object_t *	error
 GridFTP_session* GridFTPFactory::get_new_handle(const std::string & hostname){
 	std::auto_ptr<GridFTP_session_implem> sess(new GridFTP_session_implem(this, hostname));		
 	sess->set_gridftpv2(gridftp_v2);
+    sess->set_dcau(dcau_param);
 	return sess.release();
 }
 

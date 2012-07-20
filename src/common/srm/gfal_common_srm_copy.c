@@ -92,7 +92,7 @@ int srm_plugin_put_3rdparty(plugin_handle handle, gfal2_context_t context,
                 gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl src resolution ended : %s -> %s", surl, buff);
 		}
 	}else{
-		res =0;
+        res =1;
 		g_strlcpy(buff, surl, s_buff);
 		gfal_log(GFAL_VERBOSE_TRACE, "		no SRM resolution needed on %s", surl);			
 	}
@@ -170,6 +170,8 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
 	char buff_turl_dst[GFAL_URL_MAX_LEN];
     char buff_dst_checksum[GFAL_URL_MAX_LEN];
 	char* reqtoken = NULL;
+    gfalt_params_t params_turl = gfalt_params_handle_copy(params, &tmp_err);  // create underlying protocol parameters
+    gfalt_set_checksum_check(params_turl, FALSE,NULL); // disable already does actions
 
     GError * tmp_err_get, *tmp_err_put,*tmp_err_chk_src;
     tmp_err_chk_src= tmp_err_get = tmp_err_put = NULL;
@@ -189,20 +191,20 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
             }
             #pragma omp section
             {
-                srm_plugin_put_3rdparty(handle, context, params, dst, buff_turl_dst, GFAL_URL_MAX_LEN, &reqtoken, &tmp_err_put);
+                int ret_put = srm_plugin_put_3rdparty(handle, context, params, dst, buff_turl_dst, GFAL_URL_MAX_LEN, &reqtoken, &tmp_err_put);
                 if(!tmp_err_put && reqtoken != NULL)
                     put_waiting = TRUE;
+                if(ret_put == 0) // srm resolution done to turl, do not check dest -> already done
+                    gfalt_set_replace_existing_file(params_turl,FALSE, NULL);
             }
         }
 
     }
 
    if( !gfal_error_keep_first_err(&tmp_err, &tmp_err_get, &tmp_err_chk_src, &tmp_err_put,NULL) ){ // do the first resolution
-            gfalt_params_t params_turl = gfalt_params_handle_copy(params, &tmp_err);
 
             if(!tmp_err){
                 res = gfalt_copy_file(context, params_turl, buff_turl_src, buff_turl_dst, &tmp_err);
-                gfalt_params_handle_delete(params_turl, NULL);
                 if( res == 0 && put_waiting){
                     gfal_log(GFAL_VERBOSE_TRACE, "\ttransfer executed, execute srm put done"); // commit transaction
 
@@ -231,7 +233,7 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
            gfal_srm_unlinkG(handle, dst,NULL);
     }
 
-
+    gfalt_params_handle_delete(params_turl, NULL);
 	gfal_log(GFAL_VERBOSE_TRACE, " [srm_plugin_filecopy] <-");	
 	G_RETURN_ERR(res, tmp_err, err);		
 }

@@ -108,9 +108,9 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);
     gfal_globus_result_t res = globus_gass_copy_url_to_url 	(sess->get_gass_handle(),
         (char*)src,
-        GLOBUS_NULL,
+        sess->get_gass_attr(),
         (char*)dst,
-        GLOBUS_NULL
+        sess->get_gass_attr()
         );
     gfal_globus_check_result("GridFTPFileCopyModule::filecopy", res);
     return 0;
