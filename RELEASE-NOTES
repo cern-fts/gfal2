@@ -1,5 +1,20 @@
 GFAL 2.0 RELEASE-NOTE:
-
+* Fri Jul 20 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-1
+ - Official initial release candidate of gfal 2.0
+ - Transfer API is official
+ - gridftp support for performance marker, checksum
+ - gridftp support for gridftpv2, dcau param
+ - SRM support for spacetoken in transfer
+ - SRM abort auto-management
+ - parallel operations in transfers
+ - file protocol dedicated in a plugin
+ - configuration file support
+ - srm timeout support
+ - general purpose checksum operation support
+ - POSIX operation support for gridftp
+ - cleaner plugin API
+ - new documentation
+ - I hope that you will enjoy gfal 2.0 :)
 
 2.0.0-0.10 :
 - effective set/get opt support for lfc/srm/gsiftp

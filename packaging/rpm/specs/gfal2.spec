@@ -1,14 +1,14 @@
-%define checkout_tag 2012062323snap
+%define checkout_tag %{nil}
 
 Name:				gfal2
 Version:			2.0.0
-Release:			0.10.%{checkout_tag}%{?dist}
+Release:			1.%{checkout_tag}%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
 URL:				https://svnweb.cern.ch/trac/lcgutil/wiki/gfal2
 # svn export http://svn.cern.ch/guest/lcgutil/gfal2/trunk gfal2
-Source0:			http://grid-deployment.web.cern.ch/grid-deployment/dms/lcgutil/tar/%{name}/%{name}-%{version}-%{checkout_tag}.tar.gz 
+Source0:			http://grid-deployment.web.cern.ch/grid-deployment/dms/lcgutil/tar/%{name}/%{name}-%{version}%{checkout_tag}.tar.gz
 BuildRoot:			%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 #main lib dependencies
@@ -253,6 +253,23 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Fri Jul 20 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-1
+ - Official initial release candidate of gfal 2.0
+ - Transfer API is official
+ - gridftp support for performance marker, checksum
+ - gridftp support for gridftpv2, dcau param
+ - SRM support for spacetoken in transfer
+ - SRM abort auto-management
+ - parallel operations in transfers
+ - file protocol dedicated in a plugin
+ - configuration file support
+ - srm timeout support
+ - general purpose checksum operation support
+ - POSIX operation support for gridftp
+ - cleaner plugin API
+ - new documentation
+ - I hope that you will enjoy gfal 2.0 :)
+
 * Sat Jun 23 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-0.10.2012062323snap
  - Snapshot of the 0.10 version for testing
 
