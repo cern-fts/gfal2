@@ -38,17 +38,33 @@ gboolean srm_check_url(const char * surl){
 	return res;
 }
 
+gboolean srm_check_url_transport_compatible(plugin_handle handle, const char* url){
+        gfal_srmv2_opt* opts = (gfal_srmv2_opt*) handle;
+        char** p_proto = opts->opt_srmv2_tp3_protocols;
+        while(*p_proto != NULL){
+            const int proto_len = strlen(*p_proto);
+            if(strncmp(url, *p_proto, proto_len) == 0)
+                return TRUE;
+            ++p_proto;
+        }
+        return FALSE;
+}
+
 
 gboolean plugin_url_check2(plugin_handle handle, const char* src, const char* dst, gfal_url2_check type ){
 	g_return_val_if_fail(handle != NULL,FALSE);
 	gboolean res = FALSE;
+    gboolean src_srm = srm_check_url(src);
+    gboolean dst_srm = srm_check_url(dst);
+    gboolean src_3rd = srm_check_url_transport_compatible(handle, src);
+    gboolean dst_3rd = srm_check_url_transport_compatible(handle, dst);
 
-	
 	if( src != NULL && dst != NULL){
 		if( type == GFAL_FILE_COPY 
-			&& (srm_check_url(src)
-				||  srm_check_url(dst)
-				)
+            && (    ( src_srm && dst_srm)
+                 || ( src_srm && dst_3rd)
+                 || ( dst_srm && src_3rd)
+               )
 			){
 				res= TRUE;
 			}

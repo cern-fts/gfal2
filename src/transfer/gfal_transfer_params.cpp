@@ -29,6 +29,7 @@ void gfalt_params_handle_init(gfalt_params_t p, GError ** err){
 	p->timeout = GFALT_DEFAULT_TRANSFERT_TIMEOUT;
 	p->start_offset = 0;
 	p->replace_existing = false;
+    p->local_transfers=true;
 	uuid_clear(p->uuid);		
 }
 
@@ -80,6 +81,17 @@ gint gfalt_set_nbstreams(gfalt_params_t params, guint nbstreams, GError** err){
 	g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid parameter handle");
 	params->nb_data_streams = nbstreams;
 	return 0;	
+}
+
+gint gfalt_set_local_transfer_perm(gfalt_params_t params, gboolean local_transfer_status, GError ** err){
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+    params->local_transfers	= local_transfer_status;
+    return 0;
+}
+
+gboolean gfalt_get_local_transfer_perm(gfalt_params_t params, GError ** err){
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+    return params->local_transfers;
 }
 
 gint gfalt_set_replace_existing_file(gfalt_params_t params, gboolean replace, GError** err){
