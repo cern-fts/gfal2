@@ -366,6 +366,13 @@ void gridftp_poll_callback(const Glib::Quark & scope, GridFTP_Request_state* sta
 	gfal_log(GFAL_VERBOSE_TRACE," <- out of polling for request ");			
 }
 
+void gridftp_poll_callback_stream(const Glib::Quark & scope, GridFTP_stream_state* state){
+    gfal_log(GFAL_VERBOSE_TRACE," -> go polling for request ");
+    while(state->stream_status != GRIDFTP_REQUEST_FINISHED )
+            usleep(10);
+    gfal_log(GFAL_VERBOSE_TRACE," <- out of polling for request ");
+}
+
 void gridftp_callback_err_report(const Glib::Quark & scope, GridFTP_Request_state* state){
 	if(state->errcode != 0)	
 		throw Gfal::CoreException(scope,  state->error, state->errcode);	
@@ -376,12 +383,17 @@ void gridftp_wait_for_callback(const Glib::Quark & scope, GridFTP_Request_state*
 	gridftp_callback_err_report(scope, state);
 }
 
+void gridftp_wait_for_callback_stream(const Glib::Quark & scope, GridFTP_stream_state* state){
+    gridftp_poll_callback_stream(scope, state);
+    gridftp_callback_err_report(scope, state);
+}
+
 void gridftp_wait_for_read(const Glib::Quark & scope, GridFTP_stream_state* state, off_t end_read){
-	gridftp_wait_for_callback(scope, state);		
+    gridftp_wait_for_callback_stream(scope, state);
 }
 
 void gridftp_wait_for_write(const Glib::Quark & scope, GridFTP_stream_state* state, off_t end_write){
-	gridftp_wait_for_callback(scope, state);			
+    gridftp_wait_for_callback_stream(scope, state);
 }
 
 
@@ -407,7 +419,7 @@ static void gfal_griftp_stream_read_callback(void *user_arg, globus_ftp_client_h
 			state->errcode =0;
 		}		
 	}
-	state->req_status = GRIDFTP_REQUEST_FINISHED;		
+    state->stream_status = GRIDFTP_REQUEST_FINISHED;
 }
 
 
@@ -432,7 +444,7 @@ static void gfal_griftp_stream_write_callback(void *user_arg, globus_ftp_client_
 			state->errcode =0;
 		}		
 	}
-	state->req_status = GRIDFTP_REQUEST_FINISHED;		
+    state->stream_status = GRIDFTP_REQUEST_FINISHED;
 }
 
 ssize_t gridftp_read_stream(const Glib::Quark & scope,
@@ -442,8 +454,8 @@ ssize_t gridftp_read_stream(const Glib::Quark & scope,
 	gfal_log(GFAL_VERBOSE_TRACE,"  -> [gridftp_read_stream]");	
 	off_t initial_offset = stream->offset;
 	
-	if(stream->eof)
-		return 0;
+    if(stream->eof)
+        return 0;
 	globus_result_t res = globus_ftp_client_register_read( stream->sess->get_ftp_handle(),
 		(globus_byte_t*) buffer,
 		s_read,
@@ -452,7 +464,7 @@ ssize_t gridftp_read_stream(const Glib::Quark & scope,
 	); 		
 	gfal_globus_check_result(scope, res);	
 	gridftp_wait_for_read(scope, stream, initial_offset + s_read);	
-	stream->req_status =GRIDFTP_REQUEST_NOT_LAUNCHED;
+    stream->stream_status =GRIDFTP_REQUEST_NOT_LAUNCHED;
 	return stream->offset - initial_offset;							
 }
 
@@ -475,7 +487,7 @@ ssize_t gridftp_write_stream(const Glib::Quark & scope,
 	); 		
 	gfal_globus_check_result(scope, res);	
 	gridftp_wait_for_write(scope, stream, initial_offset + s_write);	
-	stream->req_status =GRIDFTP_REQUEST_NOT_LAUNCHED;
+    stream->stream_status =GRIDFTP_REQUEST_NOT_LAUNCHED;
 	return stream->offset - initial_offset;							
 }
 

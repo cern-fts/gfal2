@@ -43,9 +43,10 @@ struct GridFTP_stream_state : public GridFTP_Request_state{
 	}
 	off_t offset; // file offset in the stream
 	bool eof;     // end of file reached
+    Gridftp_request_status stream_status;
 
 	bool finished(){
-		return (req_status==GRIDFTP_REQUEST_FINISHED);
+        return (stream_status==GRIDFTP_REQUEST_FINISHED);
 	}
 	Glib::Mutex lock;
 
