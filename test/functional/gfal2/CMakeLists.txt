@@ -152,8 +152,13 @@ IF (FUNCTIONAL_TESTS)
 		add_test(copyfile_replace_${name} copyfile_replace ${src_file} ${dir_src})
 		add_test(copyfile_test_${name} gfal_copyfile_test ${src_file} ${dir_src})
 	ENDFUNCTION(copy_file_test_full name dir_src)
-			
-	ENDIF (MAIN_TRANSFER)	
+
+
+        FUNCTION(copy_file_test_simple name src_file dir_src)
+                add_test(copyfile_test_${name} gfal_copyfile_test ${src_file} ${dir_src})
+        ENDFUNCTION(copy_file_test_simple name src_file dir_src)
+
+        ENDIF (MAIN_TRANSFER)
 
 	include(functional-test-parameters.cmake)	
 	
