@@ -21,7 +21,7 @@
 
 #include <iostream>
 #include <string>
-
+#include <uuid/uuid.h>
 
 #include <exceptions/gfalcoreexception.hpp>
 
