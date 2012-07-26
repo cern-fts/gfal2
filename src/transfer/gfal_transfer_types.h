@@ -20,8 +20,6 @@
 */
  
 #include <stdlib.h>
-#include <uuid/uuid.h>
-
 #include <glib.h>
 
 #define GFALT_DEFAULT_TRANSFERT_TIMEOUT 60
