@@ -169,7 +169,8 @@ int GridftpModule::filecopy(gfalt_params_t params, const char* src, const char* 
         gfal_log(GFAL_VERBOSE_DEBUG, "\t\tChecksum Algorithm for transfer verification %s", chk_algo.checksum_algo);
     }
 
-    #pragma omp parallel num_threads(2)
+    const int n_sess = 1;
+    #pragma omp parallel num_threads(n_sess)
     {
         #pragma omp sections
         {
