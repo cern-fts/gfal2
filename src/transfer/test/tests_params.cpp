@@ -76,6 +76,17 @@ void test_nbstreams_c(){
 	gfalt_params_handle_delete(p,NULL);
 }
 
+void test_local_transfers(){
+    GError * tmp_err=NULL;
+    gfalt_params_t p = gfalt_params_handle_new(&tmp_err);
+    assert_true_with_message( p != NULL && tmp_err==NULL, "bad initialization ");
+    gboolean res = gfalt_get_local_transfer_perm(p, &tmp_err);
+    assert_true_with_message( res == TRUE && tmp_err==NULL, "def value should be true");
 
+    int ret = gfalt_set_local_transfer_perm(p, FALSE, &tmp_err);
+    res = gfalt_get_local_transfer_perm(p, &tmp_err);
+    assert_true_with_message( res == FALSE && ret == FALSE && tmp_err==NULL, "should be false");
+    gfalt_params_handle_delete(p,NULL);
+}
 
 

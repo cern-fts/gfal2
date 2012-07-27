@@ -21,7 +21,7 @@
 
 #include <iostream>
 #include <string>
-
+#include <uuid/uuid.h>
 
 #include <exceptions/gfalcoreexception.hpp>
 
@@ -44,6 +44,7 @@ struct _gfalt_params_t{
 	gboolean replace_existing; // replace destination or not
 	off_t start_offset;		// start offset in case of restart
 	guint nb_data_streams;	// nb of parallels streams
+    gboolean local_transfers;
     // spacetoken management for SRM
     gchar * src_space_token;
     gchar* dst_space_token;
@@ -74,6 +75,8 @@ public:
 	virtual ~FileCopy();
 	
 	void start_copy(gfalt_params_t p, const std::string & src, const std::string & dst);
+
+    void start_local_copy(gfalt_params_t p, const std::string & src, const std::string & dst);
 	
     virtual gfal_context_t get_context(){
         return context;

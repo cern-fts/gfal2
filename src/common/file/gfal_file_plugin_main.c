@@ -284,7 +284,7 @@ int gfal_plugin_file_close(plugin_handle plugin_data, gfal_file_handle fh, GErro
     if(ret !=0){
         gfal_plugin_file_report_error(__func__, err);
     }else
-        free(fh);
+        gfal_file_handle_delete(fh);
     return ret;
 }
 

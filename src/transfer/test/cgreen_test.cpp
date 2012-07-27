@@ -38,6 +38,7 @@ TestSuite * params_suite (void)
    add_test(s1, create_params);
    add_test(s1, test_timeout_c);
    add_test(s1, test_nbstreams_c);
+   add_test(s1, test_local_transfers);
    return s1;
  }
  

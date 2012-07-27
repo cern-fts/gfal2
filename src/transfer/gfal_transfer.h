@@ -101,6 +101,17 @@ gint gfalt_set_nbstreams(gfalt_params_t, guint nbstreams, GError** err);
  **/
 guint gfalt_get_nbstreams(gfalt_params_t params, GError** err);
 
+
+/**
+  enable or disable the non-third party transfer execution ( default : true )
+ */
+gint gfalt_set_local_transfer_perm(gfalt_params_t, gboolean local_transfer_status, GError ** err);
+
+/**
+  get the current authorisation for the non-third party transfer execution
+ */
+gboolean gfalt_get_local_transfer_perm(gfalt_params_t, GError ** err);
+
 // SRM SPECIFIC OPTIONS
 /**
   set the source spacetoken for SRM transfers
@@ -194,6 +205,7 @@ gint gfalt_set_monitor_callback(gfalt_params_t params, gfalt_monitor_func callba
  * @brief get the current monitor callback
 */
 gfalt_monitor_func gfalt_get_monitor_callback(gfalt_params_t params, GError** err);
+
 
 //
 // Main function for transfer launch 

@@ -31,4 +31,6 @@ void test_nbstreams_c();
 
 void test_lock();
 
+void test_local_transfers();
+
 #endif /* TESTS_PARAMS_H */ 

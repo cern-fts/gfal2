@@ -65,7 +65,7 @@ are supported.
 %package devel
 Summary:			Development files of %{name}
 Group:				Applications/Internet
-Requires:			%{name}%{?_isa} = %{version}-%{release} 
+Requires:			%{name}-core%{?_isa} = %{version}-%{release}
 Requires:			%{name}-transfer%{?_isa} = %{version}-%{release} 
 Requires:			glib2-devel%{?_isa} 
 Requires:			libattr-devel%{?_isa} 

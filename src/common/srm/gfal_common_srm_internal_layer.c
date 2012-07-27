@@ -61,15 +61,16 @@ int gfal_srm_ifce_context_init(struct srm_context* context, gfal_context_t handl
     gint timeout;
     GError * tmp_err=NULL;
     gfal_srm_external_call.srm_context_init(context, (char*) endpoint, errbuff, s_errbuff, gfal_get_verbose());
-    timeout = gfal2_get_opt_integer(handle, srm_config_group, srm_ops_timeout_key, &tmp_err);
+    timeout =  gfal2_get_opt_integer(handle, srm_config_group, srm_ops_timeout_key, &tmp_err);
     if(!tmp_err){
         gfal_log(GFAL_VERBOSE_DEBUG, " SRM operation timeout %d", timeout);
         context->timeout = timeout;
+        context->timeout_ops = timeout;
 
         timeout = gfal2_get_opt_integer(handle, srm_config_group, srm_conn_timeout_key, &tmp_err);
         if(!tmp_err){
             gfal_log(GFAL_VERBOSE_DEBUG, " SRM connexion timeout %d", timeout);
-            gfal_srm_external_call.srm_set_timeout_connect(timeout);
+            context->timeout_conn = timeout;
         }
     }
     if(!tmp_err)
