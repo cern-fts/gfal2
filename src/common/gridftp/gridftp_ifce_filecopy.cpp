@@ -29,19 +29,19 @@ const char * gridftp_checksum_transfer_config= "COPY_CHECKSUM_TYPE";
 
 void gridftp_filecopy_delete_existing(GridFTP_session * sess, gfalt_params_t params, const char * url){
 	const bool replace = gfalt_get_replace_existing_file(params,NULL);
-	bool exist = gridftp_module_file_exist(sess, url);	
-	if(exist){
+    bool exist = gridftp_module_file_exist(sess, url);
+    if(exist){
 
-		if(replace){
-			gfal_log(GFAL_VERBOSE_TRACE, " File %s already exist, delete it for override ....",url); 
-			gridftp_unlink_internal(sess, url, false);
-			gfal_log(GFAL_VERBOSE_TRACE, " File %s deleted with success, proceed to copy ....",url); 									
-		}else{
-			char err_buff[GFAL_ERRMSG_LEN];
-			snprintf(err_buff, GFAL_ERRMSG_LEN, " Destination already exist %s, Cancel", url);
-			throw Gfal::CoreException(scope_filecopy, err_buff, EEXIST);
-		}
-	}
+        if(replace){
+            gfal_log(GFAL_VERBOSE_TRACE, " File %s already exist, delete it for override ....",url);
+            gridftp_unlink_internal(sess, url, false);
+            gfal_log(GFAL_VERBOSE_TRACE, " File %s deleted with success, proceed to copy ....",url);
+        }else{
+            char err_buff[GFAL_ERRMSG_LEN];
+            snprintf(err_buff, GFAL_ERRMSG_LEN, " Destination already exist %s, Cancel", url);
+            throw Gfal::CoreException(scope_filecopy, err_buff, EEXIST);
+        }
+    }
 	
 }
 
