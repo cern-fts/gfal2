@@ -47,11 +47,7 @@ inline ssize_t gfal_posix_internal_readlink(const char* path, char* buf, size_t 
 		return -1;
 	}
 	
-	if(path == NULL || buf==NULL){
-		g_set_error(&tmp_err, 0, EFAULT, " path or buff is an incorrect argument");
-	}else{
-        ret = gfal_plugin_readlinkG(handle, path, buf, buffsiz, &tmp_err);
-	}	
+    ret = gfal2_readlink(handle, path, buf, buffsiz, &tmp_err);
 	if(tmp_err){ // error reported
 		gfal_posix_register_internal_error(handle, "[gfal_readlink]", tmp_err);
 		errno = tmp_err->code;			

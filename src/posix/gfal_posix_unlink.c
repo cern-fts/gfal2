@@ -37,9 +37,7 @@
 
 #include "gfal_posix_internal.h"
 
- /*
-  *  internal implementation of gfal_unlink
-  * */
+
 ssize_t gfal_posix_internal_unlink(const char* path){
 	gfal_handle handle;
 	GError* tmp_err = NULL;
@@ -50,11 +48,7 @@ ssize_t gfal_posix_internal_unlink(const char* path){
 		return -1;
 	}
 	
-	if(path == NULL){
-		g_set_error(&tmp_err, 0, EFAULT, " path is an incorrect argument");
-	}else{
-        ret = gfal_plugin_unlinkG(handle, path, &tmp_err);
-	}	
+    ret = gfal2_unlink(handle, path, &tmp_err);
 	if(tmp_err){ // error reported
 		gfal_posix_register_internal_error(handle, "[gfal_unlink]", tmp_err);
 		errno = tmp_err->code;			

@@ -34,9 +34,7 @@
 
 #include "gfal_posix_api.h"
 
-/*
- * Implementation of gfal_symlink POSIX
- * */
+
 int gfal_posix_internal_symlink(const char* oldpath, const char* newpath){
 	GError* tmp_err = NULL;
 	gfal_handle handle;
@@ -47,11 +45,7 @@ int gfal_posix_internal_symlink(const char* oldpath, const char* newpath){
 		return -1;
 	}
 
-	if( oldpath == NULL || newpath == NULL){
-		g_set_error(&tmp_err, 0, EFAULT, " oldpath/newpath is an incorrect argument");
-	}else{	
-        ret = gfal_plugin_symlinkG(handle, oldpath, newpath, &tmp_err);
-	}
+    ret = gfal2_symlink(handle, oldpath, newpath,&tmp_err);
 	
 	if(tmp_err){
 		gfal_posix_register_internal_error(handle, "[gfal_symlink]", tmp_err);

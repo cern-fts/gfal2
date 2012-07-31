@@ -47,11 +47,7 @@ int gfal_posix_internal_access (const char *path, int amode){
 		return -1;
 	}
 	
-	if(path == NULL){
-        g_set_error(&tmp_err, 0, EFAULT, "path is an incorrect argument");
-	}else{
-        resu = gfal_plugins_accessG(handle, (char*) path, amode, &tmp_err );
-	}
+    resu = gfal2_access(handle, path, amode, &tmp_err);
 	if(tmp_err){ // error reported
 		gfal_posix_register_internal_error(handle, "[gfal_access]", tmp_err);
 		errno = tmp_err->code;			

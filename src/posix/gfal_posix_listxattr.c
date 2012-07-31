@@ -49,12 +49,7 @@ ssize_t gfal_posix_internal_listxattr (const char *path, char *list, size_t size
 		return -1;
 	}
 	
-	if(path == NULL){
-		g_set_error(&tmp_err, 0, EFAULT, " path is an incorrect argument");
-	}else{
-        res = gfal_plugin_listxattrG(handle, path, list, size, &tmp_err);
-
-	}
+    res = gfal2_listxattr(handle, path, list, size, &tmp_err);
 	if(tmp_err){
 		gfal_posix_register_internal_error(handle, "[gfal_listxattr]", tmp_err);
 		errno = tmp_err->code;	

@@ -42,7 +42,7 @@
  /*
   *  internal implementation of gfal_access
   * */
-inline int gfal_posix_internal_stat(const char* path, struct stat* buf){
+inline int gfal_posix_internal_stat(const char* path, struct stat* buff){
 	gfal_handle handle;
 	GError* tmp_err = NULL;
 	int ret = -1;
@@ -52,11 +52,7 @@ inline int gfal_posix_internal_stat(const char* path, struct stat* buf){
 		return -1;
 	}
 	
-	if(path == NULL || buf==NULL){
-		g_set_error(&tmp_err, 0, EFAULT, " path or/and stat is an incorrect argument");
-	}else{
-        ret = gfal_plugin_statG(handle, path, buf, &tmp_err);
-	}	
+    ret = gfal2_stat(handle, path, buff, &tmp_err);
 	if(tmp_err){ // error reported
 		gfal_posix_register_internal_error(handle, "[gfal_stat]", tmp_err);
 		errno = tmp_err->code;			
@@ -65,22 +61,17 @@ inline int gfal_posix_internal_stat(const char* path, struct stat* buf){
 }
 
 
-inline int gfal_posix_internal_lstat(const char* path, struct stat* buf){
+inline int gfal_posix_internal_lstat(const char* path, struct stat* buff){
 	gfal_handle handle;
 	GError* tmp_err = NULL;
 	int ret = -1;
-	if(!path || !buf){
-		errno = EFAULT;
-		return -1;
-	}
 	
 	if( (handle = gfal_posix_instance()) == NULL){
 		errno = EIO;
 		return -1;
 	}
 	
-    ret = gfal_plugin_lstatG(handle, path, buf, &tmp_err);
-	
+    ret = gfal2_lstat(handle, path, buff, &tmp_err);
 	if(ret){ // error reported
 		gfal_posix_register_internal_error(handle, "[gfal_lstat]", tmp_err);
 		errno = tmp_err->code;			

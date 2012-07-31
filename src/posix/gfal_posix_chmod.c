@@ -28,10 +28,10 @@
  #include <stdio.h>
  #include <errno.h>
  #include <glib.h>
- #include "../common/gfal_prototypes.h"
+ #include <common/gfal_prototypes.h>
 
  #include "gfal_posix_internal.h"
- #include  "../common/gfal_common_plugin.h"
+ #include  <common/gfal_common_plugin.h>
  
  
  int gfal_posix_internal_chmod(const char* path, mode_t mode){
@@ -44,11 +44,7 @@
 		return -1;
 	}
 	
-	if(path == NULL){
-		g_set_error(&tmp_err, 0, EFAULT, " path is an incorrect argument");
-	}else{
-        res = gfal_plugin_chmodG(handle, path, mode, &tmp_err);
-	}
+    res = gfal2_chmod(handle, path, mode, &tmp_err);
 	if(tmp_err){
 		gfal_posix_register_internal_error(handle, "[gfal_chmod]", tmp_err);
 		errno = tmp_err->code;	

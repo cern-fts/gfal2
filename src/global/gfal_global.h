@@ -57,6 +57,7 @@ gfal2_context_t gfal2_context_new(GError ** err);
 */
 void gfal2_context_free(gfal2_context_t context);
 
+
 /**
   @deprecated
     same than gfal2_context_new but with old compatibility
@@ -66,6 +67,12 @@ gfal_context_t gfal_context_new(GError ** err);
   @deprecated
 */
 void gfal_context_free(gfal_context_t context);
+
+
+/**
+  give the gfal 2 core namespace quark
+*/
+GQuark gfal2_get_core_quark();
 
 #ifdef __cplusplus
 }

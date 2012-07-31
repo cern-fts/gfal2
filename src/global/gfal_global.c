@@ -19,6 +19,10 @@
 #include <global/gfal_global.h>
 #include <common/gfal_common_internal.h>
 
+GQuark gfal2_get_core_quark(){
+    return g_quark_from_string("GFAL2-CORE");
+}
+
 
 
 gfal2_context_t gfal2_context_new(GError ** err){
