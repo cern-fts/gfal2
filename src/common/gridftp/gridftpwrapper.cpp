@@ -155,15 +155,7 @@ struct GridFTP_session_implem : public GridFTP_session{
 GridFTPFactory::GridFTPFactory(gfal_handle handle) : _handle(handle)
 {
     GError * tmp_err=NULL;
-    gridftp_v2 = gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP, gridftp_version_config, &tmp_err);
-    if(tmp_err)
-        throw Glib::Error(tmp_err);
-
     session_reuse = gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP, gridftp_session_reuse_config, &tmp_err);
-    if(tmp_err)
-        throw Glib::Error(tmp_err);
-
-    dcau_param.mode = (gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP, gridftp_dcau_config, &tmp_err))?GLOBUS_FTP_CONTROL_DCAU_DEFAULT:GLOBUS_FTP_CONTROL_DCAU_NONE;
     if(tmp_err)
         throw Glib::Error(tmp_err);
 	size_cache = 400;
@@ -213,20 +205,25 @@ void GridFTPFactory::recycle_session(GridFTP_session* sess){
 	gfal_log(GFAL_VERBOSE_TRACE, "insert gridftp session for %s in cache ...", c_hostname);				
 	sess_cache.insert(std::pair<std::string,GridFTP_session*>(c_hostname, new GridFTP_session_implem(my_sess )));
 }
-	
+
+
 
 GridFTP_session* GridFTPFactory::get_recycled_handle(const std::string & hostname){
 	Glib::Mutex::Lock l(mux_cache);	
-	GridFTP_session* res= NULL;
-	std::multimap<std::string, GridFTP_session*>::iterator it=sess_cache.find(hostname);
-	if(it != sess_cache.end()){
-		gfal_log(GFAL_VERBOSE_TRACE, "gridftp session for %s found in  cache !", hostname.c_str());				
-		res = (*it).second;
-		sess_cache.erase(it);
-	}else{
-		gfal_log(GFAL_VERBOSE_TRACE, "no session found in cache for %s!", hostname.c_str());			
-	}
-	return res;	
+    GridFTP_session* res= NULL;
+    std::multimap<std::string, GridFTP_session*>::iterator it=sess_cache.find(hostname); // try to find a session explicitely associated with this handle
+    if(it == sess_cache.end()){ // if no session found, take a generic one
+        gfal_log(GFAL_VERBOSE_TRACE, "recycled unamed generic session found .... ");
+        it = sess_cache.begin();
+    }
+    if(it != sess_cache.end()){
+        gfal_log(GFAL_VERBOSE_TRACE, "gridftp session for %s found in  cache !", hostname.c_str());
+        res = (*it).second;
+        sess_cache.erase(it);
+    }else{
+        gfal_log(GFAL_VERBOSE_TRACE, "no session found in cache for %s!", hostname.c_str());
+    }
+    return res;
 }
 
 GridFTPFactory::~GridFTPFactory()
@@ -242,7 +239,7 @@ gfal_handle GridFTPFactory::get_handle(){
 
 /*
  *  dirty function to convert error code from globus
- *  In the current state, globus provides no way to convert gridftp error code to errno properly :'(
+ *  In the current state, globus provides no way to convert gridftp error code to errno properly....
  * */
 static int scan_errstring(const char *p) {
 
@@ -303,7 +300,18 @@ void gfal_globus_check_error(const Glib::Quark & scope,  globus_object_t *	error
 
 
 GridFTP_session* GridFTPFactory::get_new_handle(const std::string & hostname){
+    GError * tmp_err=NULL;
+    globus_ftp_control_dcau_t dcau_param;
+    bool gridftp_v2 = gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP, gridftp_version_config, &tmp_err);
+    if(tmp_err)
+        throw Glib::Error(tmp_err);
+
+    dcau_param.mode = (gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP, gridftp_dcau_config, &tmp_err))?GLOBUS_FTP_CONTROL_DCAU_DEFAULT:GLOBUS_FTP_CONTROL_DCAU_NONE;
+    if(tmp_err)
+        throw Glib::Error(tmp_err);
+
 	std::auto_ptr<GridFTP_session_implem> sess(new GridFTP_session_implem(this, hostname));		
+
 	sess->set_gridftpv2(gridftp_v2);
     sess->set_dcau(dcau_param);
 	return sess.release();

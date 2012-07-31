@@ -76,10 +76,6 @@ class GridFTPFactory : public GridFTPFactoryInterface
 	private:
 		gfal_handle _handle;
 		virtual gfal_handle get_handle();
-        // gridftp version management
-		bool gridftp_v2;
-        // dcau management
-        globus_ftp_control_dcau_t dcau_param;
         // session re-use management
 		bool session_reuse;
 		unsigned int size_cache;
