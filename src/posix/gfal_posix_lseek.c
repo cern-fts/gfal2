@@ -40,16 +40,6 @@
 #include "gfal_posix_internal.h"
 
  
-static int gfal_posix_gfalfilehandle_lseek(gfal_handle handle, gfal_file_handle fh, off_t offset, int whence, GError** err){
-	g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_posix_gfalfilehandle_lseek] incorrect args");
-	GError *tmp_err=NULL;
-    int ret  = gfal_plugin_lseekG(handle, fh, offset, whence, &tmp_err);
-
-	if(tmp_err){
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	}
-	return ret;		
-}
  
  /*
   * 
@@ -65,16 +55,8 @@ static int gfal_posix_gfalfilehandle_lseek(gfal_handle handle, gfal_file_handle 
 		return -1;
 	}
 	
-	if(fd <=0){
-		g_set_error(&tmp_err, 0, EBADF, "Incorrect file descriptor");
-	}else{
-		gfal_fdesc_container_handle container= gfal_file_handle_container_instance(&(handle->fdescs), &tmp_err);	
-		const int key = fd;
-		gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
-		if( fh != NULL){
-			res = gfal_posix_gfalfilehandle_lseek(handle, fh, offset, whence, &tmp_err);
-		}
-	}
+
+    res = gfal2_lseek(handle, fd, offset, whence, &tmp_err);
 	if(tmp_err){
 		gfal_posix_register_internal_error(handle, "[gfal_lseek]", tmp_err);
 		errno = tmp_err->code;	

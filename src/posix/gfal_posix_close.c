@@ -38,37 +38,6 @@
 
 #include "gfal_posix_internal.h"
 
- 
-
-
-static int gfal_posix_file_handle_delete(gfal_fdesc_container_handle container, int key, GError** err){
-	g_return_val_err_if_fail(container, -1, err, "[gfal_posix_dir_handle_delete] invalid args");
-	GError *tmp_err=NULL;
-	int ret = -1;
-	if(container){
-		ret = (gfal_remove_file_desc(container, key, &tmp_err))?0:-1;
-	}
-	if(tmp_err){
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	}else{
-		errno = 0;
-	}
-	return ret;
-}
- 
-static int gfal_posix_file_handle_close(gfal_handle handle, gfal_file_handle fhandle, GError ** err){
-	g_return_val_err_if_fail(handle && fhandle, -1, err, "[gfal_posix_file_handle_close] invalid args");
-	GError* tmp_err=NULL;
-	int ret = -1;
-
-    ret = gfal_plugin_closeG(handle, fhandle, &tmp_err);
-		
-	if(tmp_err){
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	}
-	return ret;
-	
-} 
 
 int gfal_posix_internal_close(int fd){
 	GError* tmp_err=NULL;
@@ -78,20 +47,7 @@ int gfal_posix_internal_close(int fd){
 		errno = EIO;
 		return -1;
 	}
-	
-	if(fd == 0){
-		g_set_error(&tmp_err, 0, EFAULT, "File descriptor is NULL");
-	}else{
-		gfal_fdesc_container_handle container= gfal_file_handle_container_instance(&(handle->fdescs), &tmp_err);	
-		int key = GPOINTER_TO_INT(fd);
-		gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
-		if( fh != NULL){
-			ret = gfal_posix_file_handle_close(handle, fh, &tmp_err);
-			if(ret==0){
-				ret = gfal_posix_file_handle_delete(container, key, &tmp_err);
-			}
-		}		
-	}
+    ret = gfal2_close(handle, fd, &tmp_err);
 	if(tmp_err){
 		gfal_posix_register_internal_error(handle, "[gfal_close]", tmp_err);
 		errno = tmp_err->code;

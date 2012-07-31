@@ -26,29 +26,14 @@
  
 #include <glib.h>
 #include <stdlib.h>
-#include "../common/gfal_types.h"
-#include "../common/gfal_common_filedescriptor.h"
+#include <common/gfal_types.h>
 #include "gfal_common_file_handle.h"
 #include "gfal_posix_internal.h"
-#include "../common/gfal_common_errverbose.h"
-#include "../common/gfal_common_file_handle.h"
-#include "../common/gfal_common_plugin.h"
+#include <common/gfal_common_filedescriptor.h>
+#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_file_handle.h>
+#include <common/gfal_common_plugin.h>
 
-
-
-/*
- *  map the file handle to the correct call
- */ 
-int gfal_posix_gfalfilehandle_write(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, GError** err){
-	g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_posix_gfalfilehandle_write] incorrect args");
-	GError *tmp_err=NULL;
-    int ret = gfal_plugin_writeG(handle, fh, buff, s_buff, &tmp_err);
-
-	if(tmp_err){
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	}
-	return ret;		
-}
 
 
 /*
@@ -65,16 +50,7 @@ int gfal_posix_internal_write(int fd, void* buff, size_t s_buff){
 		return -1;
 	}
 	
-	if(fd <=0){
-		g_set_error(&tmp_err, 0, EBADF, "Incorrect file descriptor");
-	}else{
-		gfal_fdesc_container_handle container= gfal_file_handle_container_instance(&(handle->fdescs), &tmp_err);	
-		const int key = fd;
-		gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
-		if( fh != NULL){
-			res = gfal_posix_gfalfilehandle_write(handle, fh, buff, s_buff, &tmp_err);
-		}
-	}
+    res = gfal2_write(handle, fd, buff, s_buff, &tmp_err);
 	if(tmp_err){
 		gfal_posix_register_internal_error(handle, "[gfal_write]", tmp_err);
 		errno = tmp_err->code;	
@@ -82,21 +58,6 @@ int gfal_posix_internal_write(int fd, void* buff, size_t s_buff){
 	return res; 	
 }
 
-
-
-/*
- *  map the file handle to the correct call for pwrite
- */ 
-int gfal_posix_gfalfilehandle_pwrite(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, off_t offset, GError** err){
-	g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_posix_gfalfilehandle_pwrite] incorrect args");
-	GError *tmp_err=NULL;
-    int ret = gfal_plugin_pwriteG(handle, fh, buff, s_buff, offset, &tmp_err);
-
-	if(tmp_err){
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	}
-	return ret;		
-}
 
 
 
@@ -111,16 +72,7 @@ ssize_t gfal_posix_internal_pwrite(int fd, void* buff, size_t s_buff, off_t offs
 		return -1;
 	}
 	
-	if(fd <=0){
-		g_set_error(&tmp_err, 0, EBADF, "Incorrect file descriptor");
-	}else{
-		gfal_fdesc_container_handle container= gfal_file_handle_container_instance(&(handle->fdescs), &tmp_err);	
-		const int key = fd;
-		gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
-		if( fh != NULL){
-			res = gfal_posix_gfalfilehandle_pwrite(handle, fh, buff, s_buff, offset, &tmp_err);
-		}
-	}
+    res= gfal2_pwrite(handle, fd, buff, s_buff,offset , &tmp_err);
 	if(tmp_err){
 		gfal_posix_register_internal_error(handle, "[gfal_pwrite]", tmp_err);
 		errno = tmp_err->code;	

@@ -128,47 +128,6 @@ int gfal2_rmdir(gfal2_context_t handle, const char* uri, GError ** err){
 }
 
 
-DIR* gfal2_opendir(gfal2_context_t handle, const char* name, GError ** err){
-
-}
-
-
-struct dirent* gfal2_readdir(gfal2_context_t handle, DIR* d, GError ** err){
-
-}
-
-
-int gfal2_closedir(gfal2_context_t handle, DIR* d, GError ** err){
-
-}
-
-
-int gfal2_open(gfal2_context_t handle, const char * uri, int flag, GError ** err){
-    return gfal2_open2(handle, uri, flag, (S_IRWXU | S_IRGRP | S_IROTH), err);
-}
-
-int gfal2_open2(gfal2_context_t handle, const char * uri, int flag, mode_t mode, GError ** err){
-}
-
-
-
-int gfal2_creat (gfal2_context_t handle, const char *filename, mode_t mode, GError ** err){
-
-}
-
-ssize_t gfal2_read(gfal2_context_t handle, int fd, void* buff, size_t s_buff, GError ** err){
-
-}
-
-ssize_t gfal2_write(gfal2_context_t handle, int fd, const void *buff, size_t s_buff, GError ** err){
-
-}
-
-
-int gfal2_close(gfal2_context_t handle, int fd, GError ** err){
-
-}
-
 int gfal2_symlink(gfal2_context_t handle, const char* olduri, const char * newuri, GError ** err){
     GError* tmp_err = NULL;
     int ret=-1;
@@ -182,9 +141,6 @@ int gfal2_symlink(gfal2_context_t handle, const char* olduri, const char * newur
     G_RETURN_ERR(((ret)?-1:0), tmp_err, err);
 }
 
-off_t gfal2_lseek (gfal2_context_t handle, int fd, off_t offset, int whence, GError ** err){
-
-}
 
 ssize_t gfal2_getxattr (gfal2_context_t handle, const char *url, const char *name,
                         void *value, size_t size, GError ** err){
@@ -251,20 +207,5 @@ int gfal2_setxattr (gfal2_context_t handle, const char *uri, const char *name,
 }
 
 
-int gfal2_flush(gfal2_context_t handle, int fd, GError ** err){
-
-}
-
-
-
-ssize_t gfal2_pread(gfal2_context_t handle, int fd, void * buffer, size_t count, off_t offset, GError ** err){
-
-}
-
-
-
-ssize_t gfal2_pwrite(gfal2_context_t handle, int fd, const void * buffer, size_t count, off_t offset, GError ** err){
-
-}
 
 

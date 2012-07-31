@@ -38,34 +38,12 @@
 #include "gfal_posix_internal.h"
 
 
-
-
-
-/*
- *  store a gfal_file_handle in the base, in a key/value model
- *  the key, else 0 if error occured and err is set correctly
- */
-static int gfal_posix_file_handle_store(gfal_handle handle, gfal_file_handle fhandle, GError** err){
-	g_return_val_err_if_fail( handle && fhandle, -1, err, "[gfal_posix_file_handle_store] invalid args");
-	GError* tmp_err=NULL;
-	int key=0;
-	gfal_fdesc_container_handle container= gfal_file_handle_container_instance(&(handle->fdescs), &tmp_err);
-	if(container)
-		key = gfal_add_new_file_desc(container, (gpointer) fhandle, &tmp_err);
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return key;
-}
-
-
-
 /*
  *  Implementation of gfal_open
  * */
 int gfal_posix_internal_open(const char* path, int flag, mode_t mode){
 	GError* tmp_err=NULL;
 	gfal_handle handle;
-	gfal_file_handle fhandle=NULL;
 	int key = -1;
 	
 	gfal_log(GFAL_VERBOSE_TRACE, "%s ->",__func__);
@@ -74,15 +52,7 @@ int gfal_posix_internal_open(const char* path, int flag, mode_t mode){
 		errno = EIO;
 		return -1;
 	}
-	if(path == NULL){
-		g_set_error(&tmp_err, 0, EFAULT, " name is empty");
-	}else{
-        fhandle = gfal_plugin_openG(handle, path, flag, mode, &tmp_err);
-	}
-
-	if(fhandle)
-		key = gfal_posix_file_handle_store(handle, fhandle, &tmp_err);
-
+    key = gfal2_open(handle, path, flag, &tmp_err);
 	if(tmp_err){
 		gfal_posix_register_internal_error(handle, "[gfal_open]", tmp_err);
 		errno = tmp_err->code;	
