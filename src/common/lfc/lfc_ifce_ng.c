@@ -72,7 +72,7 @@ int lfc_configure_environment(struct lfc_ops * ops, GError** err){
                            LFC_ENV_VAR_CONRETRY, LFC_ENV_VAR_CONRETRYINT};
     const int tab_type[] = { 0, 1,
                            1, 1};
-    const int n_var =3;
+    const int n_var =4;
     const char * plugin_group = LFC_ENV_VAR_GROUP_PLUGIN;
     int i,ret;
     char* v1;
