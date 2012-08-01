@@ -37,33 +37,6 @@
 
 
 
-static int gfal_posix_dir_handle_delete(gfal_fdesc_container_handle container, int key, GError** err){
-	g_return_val_err_if_fail(container, -1, err, "[gfal_posix_dir_handle_delete] invalid args");
-	GError *tmp_err=NULL;
-	int ret = -1;
-	if(container){
-		ret = (gfal_remove_file_desc(container, key, &tmp_err))?0:-1;
-	}
-	if(tmp_err){
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	}else{
-		errno = 0;
-	}
-	return ret;
-}
-
-static int gfal_posix_dir_handle_close(gfal_handle handle, gfal_file_handle fh, GError** err){
-	g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_posix_gfalfilehandle_close] invalid args");
-	GError *tmp_err=NULL;
-	int ret = -1;
-
-    ret = gfal_plugin_closedirG(handle, fh, &tmp_err);
-
-	if(tmp_err){
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	}
-	return ret;
-}
 
 int gfal_posix_internal_closedir(DIR* d){
 	GError* tmp_err=NULL;
@@ -77,15 +50,7 @@ int gfal_posix_internal_closedir(DIR* d){
 	if(d == NULL){
 		g_set_error(&tmp_err, 0, EFAULT, "File descriptor is NULL");
 	}else{
-		gfal_fdesc_container_handle container= gfal_dir_handle_container_instance(&(handle->fdescs), &tmp_err);	
-		int key = GPOINTER_TO_INT(d);
-		gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
-		if( fh != NULL){
-			ret = gfal_posix_dir_handle_close(handle, fh, &tmp_err);
-			if(ret==0){
-				ret = gfal_posix_dir_handle_delete(container, key, &tmp_err);
-			}
-		}
+        ret = gfal2_closedir(handle, d, &tmp_err);
 	}	
 	
 	if(tmp_err){

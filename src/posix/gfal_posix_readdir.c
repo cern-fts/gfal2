@@ -40,20 +40,6 @@
 
 
 /*
- *  map the file handle to the correct call
- */ 
-inline static struct dirent* gfal_posix_gfalfilehandle_readdir(gfal_handle handle, gfal_file_handle fh, GError** err){
-	g_return_val_err_if_fail(handle && fh, NULL, err, "[gfal_posix_gfalfilehandle_readdir] incorrect args");
-	GError *tmp_err=NULL;
-    struct dirent* ret = gfal_plugin_readdirG(handle, fh, &tmp_err);
-
-	if(tmp_err){
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	}
-	return ret;		
-}
-
-/*
  * Implementation of the readdir functions
  * 
  */
@@ -67,16 +53,7 @@ inline struct dirent* gfal_posix_internal_readdir(DIR* dir){
 		return NULL;
 	}
 	
-	if(dir == NULL){
-		g_set_error(&tmp_err, 0, EBADF, "Incorrect file descriptor");
-	}else{
-		gfal_fdesc_container_handle container= gfal_dir_handle_container_instance(&(handle->fdescs), &tmp_err);	
-		const int key = GPOINTER_TO_INT(dir);
-		gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
-		if( fh != NULL){
-			res = gfal_posix_gfalfilehandle_readdir(handle, fh, &tmp_err);
-		}
-	}
+    res = gfal2_readdir(handle, dir, &tmp_err);
 	if(tmp_err){
 		gfal_posix_register_internal_error(handle, "[gfal_readdir]", tmp_err);
 		errno = tmp_err->code;	
