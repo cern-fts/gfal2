@@ -96,9 +96,13 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
     using namespace Gfal::Transfer;
     GError * tmp_err=NULL;
 
-    const unsigned long timeout = gfalt_get_timeout(params, &tmp_err);
-    Gfal::gerror_to_cpp(&tmp_err);
+    const unsigned long timeout = gfalt_get_timeout(params, &tmp_err); Gfal::gerror_to_cpp(&tmp_err);
+    const unsigned int nbstream = gfalt_get_nbstreams(params, &tmp_err); Gfal::gerror_to_cpp(&tmp_err);
+
     std::auto_ptr<GridFTP_session> sess(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(src)));
+
+    sess->set_nb_stream( nbstream);
+    gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] setup gsiftp number of streams to %d", nbstream);
 
     Callback_handler callback_handler(params, sess.get(), src, dst);
     gridftp_filecopy_delete_existing(sess.get(), params, dst);

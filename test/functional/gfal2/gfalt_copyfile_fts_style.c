@@ -74,6 +74,7 @@ int main(int argc, char** argv){
      gfalt_set_checksum_check(my_params, TRUE, NULL);
      gfalt_set_user_defined_checksum(my_params,"ADLER32",argv[2], NULL);
      gfalt_set_monitor_callback(my_params, &call_perf,&tmp_err);
+     gfalt_set_nbstreams(my_params, 10, &tmp_err);
 	 // begin copy
 
     for(i=3; i < argc; ++i){

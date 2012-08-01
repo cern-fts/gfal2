@@ -76,12 +76,24 @@ struct GridFTP_session_implem : public GridFTP_session{
 		res = globus_gass_copy_handle_init (&(_sess->gass_handle), &(_sess->gass_handle_attr));
 		gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);			
 		
+        configure_default_stream_attributes();
+        apply_default_stream_attribute();
 	}
 	
 	void configure_gridftp_handle_attr(){
 		globus_ftp_client_handleattr_set_cache_all(&(_sess->attr_handle), GLOBUS_TRUE);	// enable session re-use
 	}
 
+    void configure_default_stream_attributes(){
+         _sess->parall.fixed.size = 1;
+         _sess->parall.mode = GLOBUS_FTP_CONTROL_PARALLELISM_NONE;
+         _sess->mode = GLOBUS_FTP_CONTROL_MODE_NONE;
+    }
+
+    void apply_default_stream_attribute(){
+        globus_ftp_client_operationattr_set_mode(&(_sess->operation_attr_ftp), _sess->mode);
+        globus_ftp_client_operationattr_set_parallelism(&(_sess->operation_attr_ftp),&(_sess->parall));
+    }
 	
 	void set_gridftpv2(bool v2){
 		globus_ftp_client_handleattr_set_gridftp2(&(_sess->attr_handle), v2); // define gridftp 2	
@@ -92,7 +104,16 @@ struct GridFTP_session_implem : public GridFTP_session{
         globus_ftp_client_operationattr_set_dcau(&(_sess->operation_attr_ftp), &(_sess->dcau));
     }
 
-
+    void set_nb_stream(const unsigned int nbstream){
+        if(nbstream == 0){
+            configure_default_stream_attributes();
+        }else{
+            _sess->parall.fixed.size = nbstream;
+            _sess->parall.mode = GLOBUS_FTP_CONTROL_PARALLELISM_FIXED;
+            _sess->mode = GLOBUS_FTP_CONTROL_MODE_EXTENDED_BLOCK;
+        }
+        apply_default_stream_attribute();
+    }
 	
 	
 	GridFTP_session_implem(GridFTPFactory* f, const std::string & hostname){
@@ -134,7 +155,8 @@ struct GridFTP_session_implem : public GridFTP_session{
 	}
 
     virtual Gass_attr_handler* generate_gass_copy_attr(){
-        return new Gass_attr_handler_implem(&(_sess->operation_attr_ftp));
+        Gass_attr_handler_implem* res = new Gass_attr_handler_implem(&(_sess->operation_attr_ftp));
+        return res;
     }
 
     virtual void clean(){
@@ -142,6 +164,7 @@ struct GridFTP_session_implem : public GridFTP_session{
         globus_result_t res = globus_gass_copy_register_performance_cb(&(_sess->gass_handle),
                 NULL,NULL);
         gfal_globus_check_result("GridFTPFactory::GridFTP_session_implem", res);
+        configure_default_stream_attributes();
     }
 	
 	virtual void purge(){
@@ -160,8 +183,11 @@ struct GridFTP_session_implem : public GridFTP_session{
 		globus_ftp_client_operationattr_t operation_attr_ftp;     
 		globus_gass_copy_handle_t gass_handle;
 		globus_gass_copy_handleattr_t gass_handle_attr;
-
         globus_ftp_control_dcau_t dcau;
+
+        // options
+        globus_ftp_control_parallelism_t parall;
+        globus_ftp_control_mode_t  	mode;
 	};
 	
 	Session_handler* _sess;

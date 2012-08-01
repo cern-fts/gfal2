@@ -53,6 +53,8 @@ struct GridFTP_session{
 
     virtual Gass_attr_handler* generate_gass_copy_attr()=0;
 
+    virtual void set_nb_stream(const unsigned int nbstream)=0;
+
 };
 
 
