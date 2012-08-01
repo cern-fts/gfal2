@@ -30,6 +30,24 @@ struct RwStatus{
 	bool ops_state;
 };
 
+struct Gass_attr_handler_implem : public Gass_attr_handler{
+    Gass_attr_handler_implem(globus_ftp_client_operationattr_t* ftp_operation_attr){
+        // initialize gass copy attr
+        globus_result_t res = globus_gass_copy_attr_init(&(attr_gass));
+        gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);
+        globus_ftp_client_operationattr_copy(&(operation_attr_ftp_for_gass), ftp_operation_attr);
+         res = globus_gass_copy_attr_set_ftp (&(attr_gass), &operation_attr_ftp_for_gass);
+        gfal_globus_check_result("GridFTPFactory::globus_gass_copy_handleattr_set_ftp_attr", res);
+
+    }
+
+    virtual ~Gass_attr_handler_implem(){
+        // initialize gass copy attr
+        globus_ftp_client_operationattr_destroy(&(operation_attr_ftp_for_gass));
+    }
+
+};
+
 struct GridFTP_session_implem : public GridFTP_session{
 	
 	void init(){
@@ -40,13 +58,6 @@ struct GridFTP_session_implem : public GridFTP_session{
 		res= globus_ftp_client_operationattr_init(&(_sess->operation_attr_ftp)); 	
 		gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_ops_attr", res);	
 			
-		// initialize gass copy attr
-		res = globus_gass_copy_attr_init(&(_sess->attr_gass));
-        gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);
-
-        // associate ftp operation attr to gass
-        res = globus_gass_copy_attr_set_ftp (&(_sess->attr_gass), &(_sess->operation_attr_ftp));
-        gfal_globus_check_result("GridFTPFactory::globus_gass_copy_handleattr_set_ftp_attr", res);
 		
 		// initialize ftp attributes
 		res = globus_ftp_client_handleattr_init(&(_sess->attr_handle));
@@ -79,10 +90,9 @@ struct GridFTP_session_implem : public GridFTP_session{
     void set_dcau(const globus_ftp_control_dcau_t & _dcau ){
         _sess->dcau.mode = _dcau.mode;
         globus_ftp_client_operationattr_set_dcau(&(_sess->operation_attr_ftp), &(_sess->dcau));
-        globus_result_t res = globus_gass_copy_attr_set_ftp (&(_sess->attr_gass), &(_sess->operation_attr_ftp));
-        gfal_globus_check_result("GridFTPFactory::globus_gass_copy_handleattr_set_ftp_attr", res);
-
     }
+
+
 	
 	
 	GridFTP_session_implem(GridFTPFactory* f, const std::string & hostname){
@@ -99,8 +109,10 @@ struct GridFTP_session_implem : public GridFTP_session{
 	}
 	
 	virtual ~GridFTP_session_implem(){
-		if(_sess != NULL)
+        if(_sess != NULL){
+            clean();
 			factory->gfal_globus_ftp_release_handle_internal(this);
+        }
 	}
 	
 	virtual globus_ftp_client_handle_t* get_ftp_handle(){
@@ -112,10 +124,6 @@ struct GridFTP_session_implem : public GridFTP_session{
 	virtual globus_gass_copy_handle_t* get_gass_handle(){
 		return &(_sess->gass_handle);
 	}	
-		
-	virtual globus_gass_copy_attr_t* get_gass_attr(){
-			return &(_sess->attr_gass);
-	}
 	
 	virtual globus_ftp_client_operationattr_t* get_op_attr_ftp(){
 		return &(_sess->operation_attr_ftp);
@@ -124,13 +132,22 @@ struct GridFTP_session_implem : public GridFTP_session{
 	virtual globus_gass_copy_handleattr_t* get_gass_handle_attr(){
 		return &(_sess->gass_handle_attr);
 	}
+
+    virtual Gass_attr_handler* generate_gass_copy_attr(){
+        return new Gass_attr_handler_implem(&(_sess->operation_attr_ftp));
+    }
+
+    virtual void clean(){
+        // clean performance markers
+        globus_result_t res = globus_gass_copy_register_performance_cb(&(_sess->gass_handle),
+                NULL,NULL);
+        gfal_globus_check_result("GridFTPFactory::GridFTP_session_implem", res);
+    }
 	
 	virtual void purge(){
 		globus_gass_copy_handle_destroy(&(_sess->gass_handle));
-		globus_ftp_client_handleattr_destroy(&(_sess->attr_handle));
 		globus_ftp_client_operationattr_destroy (&(_sess->operation_attr_ftp));
 		globus_gass_copy_handleattr_destroy(&(_sess->gass_handle_attr));	
-		globus_ftp_client_operationattr_destroy(&(_sess->operation_attr_ftp));
 		delete _sess;
 		_sess = NULL;		
 	}	
@@ -141,7 +158,6 @@ struct GridFTP_session_implem : public GridFTP_session{
 		globus_ftp_client_handle_t handle_ftp;
 		globus_ftp_client_handleattr_t attr_handle;
 		globus_ftp_client_operationattr_t operation_attr_ftp;     
-		globus_gass_copy_attr_t attr_gass;
 		globus_gass_copy_handle_t gass_handle;
 		globus_gass_copy_handleattr_t gass_handle_attr;
 

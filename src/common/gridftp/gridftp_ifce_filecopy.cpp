@@ -100,17 +100,18 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
     Gfal::gerror_to_cpp(&tmp_err);
     std::auto_ptr<GridFTP_session> sess(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(src)));
 
+    Callback_handler callback_handler(params, sess.get(), src, dst);
     gridftp_filecopy_delete_existing(sess.get(), params, dst);
 
-    Callback_handler callback_handler(params, sess.get(), src, dst);
-
+    std::auto_ptr<Gass_attr_handler>  gass_attr_src( sess->generate_gass_copy_attr());
+    std::auto_ptr<Gass_attr_handler>  gass_attr_dst(sess->generate_gass_copy_attr());
 
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);
     gfal_globus_result_t res = globus_gass_copy_url_to_url 	(sess->get_gass_handle(),
         (char*)src,
-        sess->get_gass_attr(),
+        &(gass_attr_src->attr_gass),
         (char*)dst,
-        sess->get_gass_attr()
+        &(gass_attr_dst->attr_gass)
         );
     gfal_globus_check_result("GridFTPFileCopyModule::filecopy", res);
     return 0;
