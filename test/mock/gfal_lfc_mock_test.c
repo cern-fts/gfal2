@@ -35,7 +35,7 @@ void test_mock_lfc(gfal_handle handle, GError** err){
 
 	if(gfal2_tests_is_mock()){
 		struct lfc_ops* ops = find_lfc_ops(handle, err); 
-		ops->lfc_endpoint = NULL;
+        ops->lfc_endpoint_predefined = NULL;
 		ops->handle = handle;
 		ops->cache_stat= gsimplecache_new(50000000, &test_internal_generic_copy, sizeof(struct stat));
 		gfal_lfc_regex_compile(&(ops->rex), err);

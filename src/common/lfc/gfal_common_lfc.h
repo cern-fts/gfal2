@@ -41,9 +41,10 @@
 
 #include <sys/types.h>
 #include <glib.h>
-#include "../gfal_common_plugin.h"
-#include "../gfal_prototypes.h"
-#include "../gfal_types.h"
+#include <common/gfal_common_plugin.h>
+#include <common/gfal_prototypes.h>
+#include <common/gfal_types.h>
+#include <common/gfal_common_errverbose.h>
 #include "../../externals/gsimplecache/gcachemain.h"
 
 

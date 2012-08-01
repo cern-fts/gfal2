@@ -40,6 +40,11 @@
 #define LFC_ENV_VAR_HOST "LFC_HOST"
 #define LFC_GROUP_CONFIG_VAR "LFC PLUGIN"
 #define LFC_HOST_CONFIG_VAR LFC_ENV_VAR_HOST
+#define LFC_ENV_VAR_CONNTIMEOUT "LFC_CONNTIMEOUT"
+#define LFC_ENV_VAR_CONRETRY "LFC_CONRETRY"
+#define LFC_ENV_VAR_CONRETRYINT "LFC_CONRETRYINT"
+
+#define LFC_ENV_VAR_GROUP_PLUGIN "LFC PLUGIN"
 
 typedef struct _lfc_checksum{
 	char type[255];
@@ -48,7 +53,10 @@ typedef struct _lfc_checksum{
 
 
 struct lfc_ops {
-	char* lfc_endpoint;
+    char* lfc_endpoint_predefined; // default  lfc env var
+    char* lfc_conn_retry;
+    char* lfc_conn_try_int;
+    char* lfc_conn_timeout;
 	regex_t rex; // regular expression compiled 
 	gfal_handle handle;
 	GSimpleCache* cache_stat;
@@ -93,9 +101,8 @@ struct lfc_ops {
 	int (*_Cthread_addcid)(char *, int, char *, int, Cth_pid_t *, unsigned, void *(*)(void *), int);
 };
 
-char* gfal_setup_lfchost(gfal_handle handle, GError ** err);
 
-struct lfc_ops* gfal_load_lfc(const char* name, GError** err);
+int lfc_configure_environment(struct lfc_ops * ops, GError** err);
 
 
 int gfal_lfc_get_errno(struct lfc_ops* ops);
@@ -134,6 +141,7 @@ int gfal_lfc_convert_lstat(struct stat* output, struct lfc_filestat* input, GErr
 
 void gfal_generate_guidG(char* buf, GError** err);
 
+struct lfc_ops* gfal_load_lfc(const char* name, GError** err);
 
-int gfal_lfc_set_host(const char* host, GError** err);
+
 

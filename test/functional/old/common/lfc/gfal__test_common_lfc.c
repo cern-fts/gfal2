@@ -67,55 +67,6 @@ gfal_plugin_interface get_lfc_interface(gfal_handle handle, GError** err){
 
 
 
-void gfal2_test_gfal_common_lfc_define_env()
-{
-	char* old_host = getenv("LFC_HOST");
-	char* old_port = getenv("LFC_PORT");
-	GError * tmp_err=NULL;
-	int ret =0;
-	char* resu = NULL;
-	
-	setenv("LFC_HOST", "google.com",1);
-	setenv("LFC_PORT", "4465488896645546564",1);
-
-	gfal_handle handle = gfal_initG(&tmp_err);
-
-	assert_true_with_message(handle != NULL, " handle must be initiated properly ");
-	if(!handle)
-		return;
-	g_clear_error(&tmp_err);		
-	resu = gfal_setup_lfchost(handle, &tmp_err);
-	assert_true_with_message(!resu, " must fail, port invalid");
-	errno = 0;
-	g_clear_error(&tmp_err);
-	tmp_err=NULL;
-	setenv("LFC_PORT", "2000",1);	
-	resu = gfal_setup_lfchost(handle, &tmp_err);	// re-test with good port number
-	
-	assert_true_with_message(resu != NULL, " must be a success, LFC_HOST & LFC_PORT defined");
-	if(tmp_err)
-		gfal_release_GError(&tmp_err);
-
-	char *new_host = getenv("LFC_HOST");
-	char *new_port = getenv("LFC_PORT");
-	ret = strcmp(new_port, "2000") | strcmp(new_host, "google.com");
-
-	assert_true_with_message(!ret, "must be the same string");
-	
-	
-	if(old_host)
-		setenv("LFC_HOST", old_host,1);	
-	else
-		unsetenv("LFC_HOST");
-	if(old_port)
-		setenv("LFC_PORT", old_port,1);
-	else
-		unsetenv("LFC_PORT");
-	free(resu);
-	gfal_handle_freeG(handle);
-}
-
-
 void gfal2_test_gfal_common_lfc_resolve_sym()
 {
 	GError* err = NULL;

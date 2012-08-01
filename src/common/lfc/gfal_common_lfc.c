@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
 * 
@@ -40,7 +40,6 @@
 #include "gfal_common_lfc.h"
 #include "gfal_common_lfc_open.h"
 #include <common/gfal_common_internal.h>
-#include <common/gfal_common_errverbose.h>
 #include <common/gfal_common_filedescriptor.h>
 #include "lfc_ifce_ng.h"
 
@@ -111,7 +110,6 @@ static void lfc_destroyG(plugin_handle handle){
 	struct lfc_ops* ops = (struct lfc_ops*) handle;
 	if(ops){
 		gsimplecache_delete(ops->cache_stat);
-		free(ops->lfc_endpoint);
 		regfree(&(ops->rex));
 		free(ops);
 	}
@@ -162,7 +160,7 @@ int lfc_accessG(plugin_handle handle, const char* lfn, int mode, GError** err){
 		ret = ops->access(url, mode);
 		if(ret <0){
 			int sav_errno = gfal_lfc_get_errno(ops);
-			g_set_error(&tmp_err, 0, sav_errno, "lfc access error, lfc_endpoint :%s,  file : %s, error : %s", ops->lfc_endpoint, lfn, gfal_lfc_get_strerror(ops) );
+            g_set_error(&tmp_err, 0, sav_errno, "lfc access error, file : %s, error : %s", lfn, gfal_lfc_get_strerror(ops) );
 		}else
 			errno=0;
 	}
@@ -684,21 +682,20 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	GError* tmp_err=NULL;
 	memset(&lfc_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin
 	
-	char* endpoint = gfal_setup_lfchost(handle, &tmp_err); // load the endpoint
-	if(endpoint==NULL){
-		g_propagate_prefixed_error(err, tmp_err, "[lfc_initG]");
-		pthread_mutex_unlock(&m_lfcinit);
-		return lfc_plugin;
-	}
-	
 	struct lfc_ops* ops = gfal_load_lfc(GFAL_LFC_LIBRARY_NAME, &tmp_err); // load library
 	if(ops ==NULL){
 		g_propagate_prefixed_error(err, tmp_err,"[%s]", __func__);
 		pthread_mutex_unlock(&m_lfcinit);
 		return lfc_plugin;
 	}
-	ops->lfc_endpoint = endpoint;
+    ops->lfc_endpoint_predefined = (char*) g_getenv(LFC_ENV_VAR_HOST);
+    ops->lfc_conn_retry = (char*) g_getenv(LFC_ENV_VAR_CONRETRY) ;
+    ops->lfc_conn_try_int = (char*) g_getenv(LFC_ENV_VAR_CONRETRYINT);
+    ops->lfc_conn_timeout  =(char*)  g_getenv(LFC_ENV_VAR_CONNTIMEOUT);
 	ops->handle = handle;
+
+    lfc_configure_environment(ops, err);
+
 	ops->cache_stat = gsimplecache_new(50000000,&internal_stat_copy, sizeof(struct stat) );
 	gfal_lfc_regex_compile(&(ops->rex), err);
 	lfc_plugin.plugin_data = (void*) ops;

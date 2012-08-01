@@ -113,7 +113,6 @@ TestSuite* mds_suite(){
 TestSuite* lfc_suite(){
 	TestSuite *tc_lfc= create_test_suite();
 	add_test(tc_lfc, gfal2_test_gfal_common_lfc_resolve_sym);
-	add_test(tc_lfc, gfal2_test_gfal_common_lfc_define_env);
 	add_test(tc_lfc, gfal2_test_gfal_common_lfc_init);
 	add_test(tc_lfc,  gfal2_test__gfal_common_lfc_statg);	
 	add_test(tc_lfc, gfal2_test__gfal_common_lfc_rename);

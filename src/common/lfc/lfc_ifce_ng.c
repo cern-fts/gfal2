@@ -45,6 +45,7 @@
 #include <common/mds/gfal_common_mds.h>
 #include <common/gfal_common_interface.h>
 #include <common/gfal_common_errverbose.h>
+#include <config/gfal_config.h>
 
 #include "lfc_ifce_ng.h"
 
@@ -63,6 +64,53 @@ int gfal_lfc_regex_compile(regex_t* rex, GError** err){
 	return ret;
 }
 
+int lfc_configure_environment(struct lfc_ops * ops, GError** err){
+    GError * tmp_err=NULL;
+    const char * tab_envar[] = { ops->lfc_endpoint_predefined, ops->lfc_conn_timeout,
+                           ops->lfc_conn_retry, ops->lfc_conn_try_int};
+    const char * tab_envar_name[] = { LFC_ENV_VAR_HOST , LFC_ENV_VAR_CONNTIMEOUT,
+                           LFC_ENV_VAR_CONRETRY, LFC_ENV_VAR_CONRETRYINT};
+    const int tab_type[] = { 0, 1,
+                           1, 1};
+    const int n_var =3;
+    const char * plugin_group = LFC_ENV_VAR_GROUP_PLUGIN;
+    int i,ret;
+    char* v1;
+    int v2;
+    ret = 0;
+
+    for(i = 0; i < n_var;++i){
+        if(tab_envar[i] == NULL){
+            switch(tab_type[i]){
+                case 0:
+
+                    v1 =gfal2_get_opt_string(ops->handle, plugin_group, tab_envar_name[i], &tmp_err);
+                    if(!tmp_err){
+                        gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : setup env var value %s to %s", tab_envar_name[i],v1);
+                        g_setenv(tab_envar_name[i],v1,TRUE);
+                        free(v1);
+                    }
+                    break;
+                case 1:
+                    v2 =gfal2_get_opt_integer(ops->handle, plugin_group, tab_envar_name[i], &tmp_err);
+                    if(!tmp_err){
+                        char v_str[20];
+                        snprintf(v_str,20, "%d",v2);
+                        gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : setup env var value %s to %d",tab_envar_name[i],v2);
+                        g_setenv(tab_envar_name[i],v_str,TRUE);
+                    }
+                    break;
+            default:
+                ret =-1;
+                g_set_error(&tmp_err,0,EINVAL, "Invalid value %s in configuration file ", tab_envar_name[i]);
+            }
+        }
+        if(tmp_err)
+            break;
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
+}
+
 
 // Routine for internal lfc hack, need to be call for the thread safety 
 void gfal_lfc_init_thread(struct lfc_ops* ops){
@@ -73,13 +121,13 @@ void gfal_lfc_init_thread(struct lfc_ops* ops){
 }
 
 int gfal_lfc_startSession(struct lfc_ops* ops, GError ** err){ 
-	if (ops->startsess (ops->lfc_endpoint, "gfal 2.0 auto-session") < 0){
+    /*if (ops->startsess (ops->lfc_endpoint, "gfal 2.0 auto-session") < 0){
 		int sav_errno = gfal_lfc_get_errno(ops);
 		g_set_error(err,0,sav_errno,"[%s] Error while start session with lfc, lfc_endpoint: %s, Error : %s ",
 								__func__, ops->lfc_endpoint, gfal_lfc_get_strerror(ops));
 		return -1;
-	}
-	return 0;
+    }*/
+    return 0;
 }
 /* --> session reused disabled -> bugged in liblfc
 static int gfal_lfc_endSession(struct lfc_ops* ops, GError ** err){ 
@@ -115,12 +163,12 @@ void lfc_set_session_timeout(int timeout){
 
 
 static int gfal_lfc_startTransaction(struct lfc_ops* ops, GError ** err){ 
-	if (ops->starttrans(ops->lfc_endpoint, "gfal 2.0 auto-trans")){
+    /*if (ops->starttrans(ops->lfc_endpoint, "gfal 2.0 auto-trans")){
 		int sav_errno = gfal_lfc_get_errno(ops);
 		g_set_error(err,0,sav_errno,"[%s] Error while start transaction with lfc, lfc_endpoint: %s, Error : %s ",
 										__func__, ops->lfc_endpoint, gfal_lfc_get_strerror(ops));
 		return -1;
-	}
+    }*/
 	return 0;
 }
 
@@ -147,18 +195,6 @@ static int gfal_lfc_abortTransaction(struct lfc_ops* ops, GError ** err){
 	return 0;
 }
 
-char* gfal_get_lfchost_envar(GError** err){
-
-    char *lfc_host=NULL;
-	char *lfc_endpoint=NULL;
-	if( (lfc_host = getenv ("LFC_HOST")) !=NULL){
-        gfal_log(GFAL_VERBOSE_TRACE, " env var LFC_HOST found, LFC_HOST parameter picked from env var ...");
-        lfc_endpoint = strdup(lfc_host);
-    }
-	//g_printerr("my host : %s", lfc_endpoint);
-	return lfc_endpoint;
-}
-
 /*
  * convert a guid to a lfn link with a call to the lfclib
  * */
@@ -171,7 +207,7 @@ char* gfal_get_lfchost_envar(GError** err){
 	struct lfc_linkinfo* links = NULL;
 	if(ops->getlinks(NULL, guid, &size, &links) <0){
 		int sav_errno = gfal_lfc_get_errno(ops);
-		g_set_error(&tmp_err,0,sav_errno, "Error while getlinks() with lfclib, lfc_endpoint: %s, guid : %s, Error : %s ", ops->lfc_endpoint,guid, gfal_lfc_get_strerror(ops));
+        g_set_error(&tmp_err,0,sav_errno, "Error while getlinks() with lfclib, guid : %s, Error : %s ",guid, gfal_lfc_get_strerror(ops));
 	}else{
 		errno=0;
 		if(!links || strnlen(links[0].path, GFAL_LFN_MAX_LEN) >= GFAL_LFN_MAX_LEN){
@@ -204,7 +240,7 @@ int gfal_convert_guid_to_lfn_r(plugin_handle handle, const char* guid, char* buf
 	struct lfc_linkinfo* links = NULL;
 	if(ops->getlinks(NULL, guid, &size, &links) <0){
 		int sav_errno = gfal_lfc_get_errno(ops);
-		g_set_error(err,0,sav_errno, " Error while getlinks() with lfclib, lfc_endpoint: %s, guid : %s, Error : %s ", ops->lfc_endpoint,guid, gfal_lfc_get_strerror(ops));
+        g_set_error(err,0,sav_errno, " Error while getlinks() with lfclib,  guid : %s, Error : %s ", guid, gfal_lfc_get_strerror(ops));
 		ret = -1;
 	}else{
 		if(!links || strnlen(links[0].path, GFAL_LFN_MAX_LEN) >= GFAL_LFN_MAX_LEN){
@@ -221,43 +257,6 @@ int gfal_convert_guid_to_lfn_r(plugin_handle handle, const char* guid, char* buf
 	return ret;
  }
  
-gchar* gfal_get_lfc_host(gfal_handle handle, GError ** err){
-    gchar * lfc_host = NULL;
-    GError * tmp_err=NULL;
-
-    if( (lfc_host = gfal_get_lfchost_envar(&tmp_err)) == NULL){
-        gfal_log(GFAL_VERBOSE_TRACE, " try to load LFC_HOST parameter from configuration files");
-        lfc_host = gfal2_get_opt_string(handle, LFC_GROUP_CONFIG_VAR, LFC_HOST_CONFIG_VAR, &tmp_err);
-    }
-    if(lfc_host)
-        gfal_log(GFAL_VERBOSE_DEBUG, " LFC_HOST parameter : %s", lfc_host);
-
-    G_RETURN_ERR(lfc_host, tmp_err, err);
-}
-
-/*
- * setup the lfc_host correctly for the lfc calls 
- * @param err GError report system if 
- * @return  string of the endpoint, need to be free or NULL if error
- */
-gchar* gfal_setup_lfchost(gfal_handle handle, GError ** err){
-	g_return_val_err_if_fail(handle && err, NULL, err, "[gfal_setup_lfchost] Invalid parameters handle & err");
-	char* lfc_host = NULL;
-	GError* tmp_err = NULL;
-
-	
-    if ( (lfc_host = gfal_get_lfc_host(handle, &tmp_err)) == NULL ) { // if env var not specified got one from bdii, and setup the env var
-		if(!tmp_err)
-            g_set_error(&tmp_err, 0, ENOENT, "Environment variable LFC_HOST does not exist");
-    }else{
-        g_setenv("LFC_HOST", lfc_host, TRUE);
-	}	
-
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[gfal_get_lfchost]");
-	return lfc_host;
-}
-
 /*
  *  Resolve the lfc symbols, allow mocking
  * 
@@ -584,11 +583,3 @@ char*  gfal_lfc_get_strerror(struct lfc_ops* ops){
  }
  
  
- int gfal_lfc_set_host(const char* host, GError** err){
-	 g_return_val_if_fail(host != NULL, -1);
-	 const int ret = setenv(LFC_ENV_VAR_HOST, host, TRUE);
-	 if(ret)
-		g_set_error(err, 0, EINVAL, " invalid lfc host value");
-	return ret;
- }
-
