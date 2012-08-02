@@ -44,6 +44,7 @@ struct _gfalt_params_t{
 	gboolean replace_existing; // replace destination or not
 	off_t start_offset;		// start offset in case of restart
 	guint nb_data_streams;	// nb of parallels streams
+    gboolean strict_mode;  // state of the strict copy mode
     gboolean local_transfers;
     // spacetoken management for SRM
     gchar * src_space_token;

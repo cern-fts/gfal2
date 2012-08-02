@@ -63,6 +63,6 @@ IF (FUNCTIONAL_TESTS)
 #env_test.PrependENVPath('LFC_HOST', lfc_host); # setup the bdii access point
 #env_test.PrependENVPath('GFAL_PLUGIN_LIST', "libgfal_plugin_lfc.so:libgfal_plugin_srm.so:libgfal_plugin_rfio.so"); # setup the GFAL PLUGIN SEARCH PATH
 
-	add_test(test-all test_all_with_mock)
+        #add_test(test-all test_all_with_mock)
 ENDIF (FUNCTIONAL_TESTS)
 

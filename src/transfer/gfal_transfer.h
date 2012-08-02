@@ -136,8 +136,9 @@ gchar* gfalt_get_dst_spacetoken(gfalt_params_t params, GError** err);
 // CONSISTENCY OPTIONS
 
 /**
- * set the policy in case of destination file already existing ( replace or cancel )
- * default : cancel
+ * set the replace/overwritte option.
+ * default : false
+ * when True, if a destination file already exist, it is deleted before the copy.
  * */
 gint gfalt_set_replace_existing_file(gfalt_params_t, gboolean replace, GError** err);
 
@@ -146,6 +147,22 @@ gint gfalt_set_replace_existing_file(gfalt_params_t, gboolean replace, GError** 
  * default : cancel
  * */
 gboolean gfalt_get_replace_existing_file(gfalt_params_t,  GError** err);
+
+/**
+ * set the strict copy mode
+ * default : false
+ * In the strict copy mode, the destination/source checks are skipped.
+ * only the minimum of the operations are done
+ * This option can leads to undefined behavior depending of the underlying protocol
+ */
+gint gfalt_set_strict_copy_mode(gfalt_params_t, gboolean strict_mode, GError** err);
+
+
+/**
+ * get the strict copy mode value
+ *
+ */
+gboolean gfalt_get_strict_copy_mode(gfalt_params_t, GError** err);
 
 /**
   force additional checksum verification between source and destination

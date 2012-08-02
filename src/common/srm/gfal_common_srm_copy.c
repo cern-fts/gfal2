@@ -194,8 +194,10 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
                 int ret_put = srm_plugin_put_3rdparty(handle, context, params, dst, buff_turl_dst, GFAL_URL_MAX_LEN, &reqtoken, &tmp_err_put);
                 if(!tmp_err_put && reqtoken != NULL)
                     put_waiting = TRUE;
-                if(ret_put == 0) // srm resolution done to turl, do not check dest -> already done
+                if(ret_put == 0){ // srm resolution done to turl, do not check dest -> already done
                     gfalt_set_replace_existing_file(params_turl,FALSE, NULL);
+                    gfalt_set_strict_copy_mode(params_turl, TRUE, NULL);
+                }
             }
         }
 

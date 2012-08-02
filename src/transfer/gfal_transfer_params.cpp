@@ -30,6 +30,7 @@ void gfalt_params_handle_init(gfalt_params_t p, GError ** err){
 	p->start_offset = 0;
 	p->replace_existing = false;
     p->local_transfers=true;
+    p->strict_mode = false;
 	uuid_clear(p->uuid);		
 }
 
@@ -140,6 +141,22 @@ guint gfalt_get_nbstreams(gfalt_params_t params, GError** err){
 	return params->nb_data_streams ;
 }
 
+
+//
+//
+gint gfalt_set_strict_copy_mode(gfalt_params_t params, gboolean strict_mode, GError** err){
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid parameter handle");
+    params->strict_mode = strict_mode;
+    return 0;
+}
+
+
+//
+//
+gboolean gfalt_get_strict_copy_mode(gfalt_params_t params, GError** err){
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid parameter handle");
+    return params->strict_mode ;
+}
 
 
 gint gfalt_set_src_spacetoken(gfalt_params_t params, const char* srm_spacetoken, GError** err){

@@ -105,7 +105,9 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] setup gsiftp number of streams to %d", nbstream);
 
     Callback_handler callback_handler(params, sess.get(), src, dst);
-    gridftp_filecopy_delete_existing(sess.get(), params, dst);
+
+    if( gfalt_get_strict_copy_mode(params, NULL) == false)
+        gridftp_filecopy_delete_existing(sess.get(), params, dst);
 
     std::auto_ptr<Gass_attr_handler>  gass_attr_src( sess->generate_gass_copy_attr());
     std::auto_ptr<Gass_attr_handler>  gass_attr_dst(sess->generate_gass_copy_attr());
