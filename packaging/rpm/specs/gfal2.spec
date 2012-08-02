@@ -1,4 +1,4 @@
-%global checkout_tag 20120802svn
+%global checkout_tag 20120803svn
 
 Name:				gfal2
 Version:			2.0.0
