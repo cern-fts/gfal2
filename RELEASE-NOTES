@@ -1,4 +1,12 @@
 GFAL 2.0 RELEASE-NOTE:
+
+Trunk:
+- One-globus session system for gsiftp plugin ( FTS 3.0 need )
+- correct a major issue with the gass attribute system in gsiftp plugin
+- change the lfc set/get env var for a one compatible with set/get opt
+- add set/nb streams option for gsiftp
+
+
 * Fri Jul 20 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-1
  - Official initial release candidate of gfal 2.0
  - Transfer API is official
