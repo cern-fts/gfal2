@@ -39,7 +39,7 @@ SET(lfc_chmod_ok "${lfc_prefix}/test_change_right")
 SET(lfc_valid_dir_root "${lfc_prefix}")
 
 
-SET(dcap_prefix "gsidcap://cork.desy.de:22128/pnfs/desy.de/data/dteam/testgfal2")
+SET(dcap_prefix "gsidcap://cork.desy.de:22128/pnfs/desy.de/data/${MY_VO}/testgfal2")
 SET(dcap_stat_ok "${dcap_prefix}/testread0011")
 SET(dcap_chmod_ok "${dcap_prefix}/test_change_right")
 SET(dcap_valid_dir_root "${dcap_prefix}")
