@@ -123,24 +123,25 @@ int lfc_chmodG(plugin_handle handle, const char* path, mode_t mode, GError** err
 	g_return_val_err_if_fail(handle && path, -1, err, "[lfc_chmodG] Invalid valid value in handle/path ");
 	GError* tmp_err=NULL;
 	struct lfc_ops* ops = (struct lfc_ops*) handle;	
-	gfal_lfc_init_thread(ops);
-	gfal_auto_maintain_session(ops, &tmp_err);
-	int  ret=-1;
-	char* url = url_converter(handle, path, &tmp_err);
-	if(url){
-		ret = ops->chmod(url, mode);
-		if(ret < 0){
-			const int myerrno = gfal_lfc_get_errno(ops);
-			g_set_error(&tmp_err, 0, myerrno, "Errno reported from lfc : %s ", gfal_lfc_get_strerror(ops));
-		}else{
-			errno =0;
-			gsimplecache_remove_kstr(ops->cache_stat, url);	
-		}
-	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	free(url);
-	return ret;
+    int  ret=-1;
+    lfc_configure_environment(ops,&tmp_err);
+    if(!tmp_err){
+        gfal_lfc_init_thread(ops);
+        gfal_auto_maintain_session(ops, &tmp_err);
+        char* url = url_converter(handle, path, &tmp_err);
+        if(url){
+            ret = ops->chmod(url, mode);
+            if(ret < 0){
+                const int myerrno = gfal_lfc_get_errno(ops);
+                g_set_error(&tmp_err, 0, myerrno, "Errno reported from lfc : %s ", gfal_lfc_get_strerror(ops));
+            }else{
+                errno =0;
+                gsimplecache_remove_kstr(ops->cache_stat, url);
+            }
+        }
+        free(url);
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 /*
@@ -151,23 +152,24 @@ int lfc_chmodG(plugin_handle handle, const char* path, mode_t mode, GError** err
 int lfc_accessG(plugin_handle handle, const char* lfn, int mode, GError** err){
 	g_return_val_err_if_fail(handle && lfn, -1, err, "[lfc_accessG] Invalid value in arguments handle  or/and path");
 	GError* tmp_err=NULL;
+    int ret =-1;
 	struct lfc_ops* ops = (struct lfc_ops*) handle;
-	gfal_lfc_init_thread(ops); 
-	gfal_auto_maintain_session(ops, &tmp_err);
-	char* url = url_converter(handle, lfn, &tmp_err);
-	int ret=-1;
-	if(url){
-		ret = ops->access(url, mode);
-		if(ret <0){
-			int sav_errno = gfal_lfc_get_errno(ops);
-            g_set_error(&tmp_err, 0, sav_errno, "lfc access error, file : %s, error : %s", lfn, gfal_lfc_get_strerror(ops) );
-		}else
-			errno=0;
-	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	free(url);
-	return ret;
+    lfc_configure_environment(ops,&tmp_err);
+    if(!tmp_err){
+        gfal_lfc_init_thread(ops);
+        gfal_auto_maintain_session(ops, &tmp_err);
+        char* url = url_converter(handle, lfn, &tmp_err);
+        if(url){
+            ret = ops->access(url, mode);
+            if(ret <0){
+                int sav_errno = gfal_lfc_get_errno(ops);
+                g_set_error(&tmp_err, 0, sav_errno, "lfc access error, file : %s, error : %s", lfn, gfal_lfc_get_strerror(ops) );
+            }else
+                errno=0;
+        }
+        free(url);
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
@@ -181,22 +183,24 @@ int lfc_renameG(plugin_handle handle, const char* oldpath, const char* newpath, 
 	g_return_val_err_if_fail(handle && oldpath && newpath, -1, err, "[lfc_renameG] Invalid value in args handle/oldpath/newpath");
 	struct lfc_ops* ops = (struct lfc_ops*) handle;	
 	GError* tmp_err=NULL;
-	gfal_lfc_init_thread(ops);
-	gfal_auto_maintain_session(ops, &tmp_err);
-	char* surl = lfc_urlconverter(oldpath, GFAL_LFC_PREFIX);
-	char* durl = lfc_urlconverter(newpath, GFAL_LFC_PREFIX);
-	int ret  = ops->rename(surl, durl);
-	if(ret <0){
-		int sav_errno = gfal_lfc_get_errno(ops);
-		g_set_error(&tmp_err,0,sav_errno, "Error report from LFC : %s",  gfal_lfc_get_strerror(ops) );
-	}else{
-		gsimplecache_remove_kstr(ops->cache_stat, surl);
-	}
-	free(surl);
-	free(durl);
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;	
+    int ret =-1;
+    lfc_configure_environment(ops,&tmp_err);
+    if(!tmp_err){
+        gfal_lfc_init_thread(ops);
+        gfal_auto_maintain_session(ops, &tmp_err);
+        char* surl = lfc_urlconverter(oldpath, GFAL_LFC_PREFIX);
+        char* durl = lfc_urlconverter(newpath, GFAL_LFC_PREFIX);
+        ret  = ops->rename(surl, durl);
+        if(ret <0){
+            int sav_errno = gfal_lfc_get_errno(ops);
+            g_set_error(&tmp_err,0,sav_errno, "Error report from LFC : %s",  gfal_lfc_get_strerror(ops) );
+        }else{
+            gsimplecache_remove_kstr(ops->cache_stat, surl);
+        }
+        free(surl);
+        free(durl);
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
@@ -207,22 +211,25 @@ int lfc_renameG(plugin_handle handle, const char* oldpath, const char* newpath, 
  * */
 int lfc_symlinkG(plugin_handle handle, const char* oldpath, const char* newpath, GError** err){
 	g_return_val_err_if_fail(handle && oldpath && newpath, -1, err, "[lfc_symlinkG] Invalid value in args handle/oldpath/newpath");
-	struct lfc_ops* ops = (struct lfc_ops*) handle;	
-	GError* tmp_err=NULL;
-	gfal_lfc_init_thread(ops);
-	gfal_auto_maintain_session(ops, &tmp_err);
-	char* surl = lfc_urlconverter(oldpath, GFAL_LFC_PREFIX);
-	char* durl = lfc_urlconverter(newpath, GFAL_LFC_PREFIX);
-	int ret  = ops->symlink(surl, durl);
-	if(ret <0){
-		int sav_errno = gfal_lfc_get_errno(ops);
-		g_set_error(&tmp_err,0,sav_errno, "Error report from LFC : %s",  gfal_lfc_get_strerror(ops) );
-	}
-	free(surl);
-	free(durl);
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;	
+    struct lfc_ops* ops = (struct lfc_ops*) handle;
+    GError* tmp_err=NULL;
+    int ret =-1;
+
+    lfc_configure_environment(ops,&tmp_err);
+    if(!tmp_err){
+        gfal_lfc_init_thread(ops);
+        gfal_auto_maintain_session(ops, &tmp_err);
+        char* surl = lfc_urlconverter(oldpath, GFAL_LFC_PREFIX);
+        char* durl = lfc_urlconverter(newpath, GFAL_LFC_PREFIX);
+        ret  = ops->symlink(surl, durl);
+        if(ret <0){
+            int sav_errno = gfal_lfc_get_errno(ops);
+            g_set_error(&tmp_err,0,sav_errno, "Error report from LFC : %s",  gfal_lfc_get_strerror(ops) );
+        }
+        free(surl);
+        free(durl);
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 /*
@@ -235,21 +242,22 @@ int lfc_statG(plugin_handle handle, const char* path, struct stat* st, GError** 
 	GError* tmp_err=NULL;
 	int ret=-1;
 	struct lfc_ops* ops = (struct lfc_ops*) handle;		
-	gfal_lfc_init_thread(ops);
-	gfal_auto_maintain_session(ops, &tmp_err);
-	char* lfn = url_converter(handle, path, &tmp_err);
-	struct lfc_filestatg statbuf;	
-	if(lfn){
-		ret = gfal_lfc_statg(ops, lfn, &statbuf, &tmp_err);
-		if(ret == 0){
-			ret= gfal_lfc_convert_statg(st, &statbuf, err);
-			errno=0;
-		}
-		free(lfn);
-	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;
+    lfc_configure_environment(ops,&tmp_err);
+    if(!tmp_err){
+        gfal_lfc_init_thread(ops);
+        gfal_auto_maintain_session(ops, &tmp_err);
+        char* lfn = url_converter(handle, path, &tmp_err);
+        struct lfc_filestatg statbuf;
+        if(lfn){
+            ret = gfal_lfc_statg(ops, lfn, &statbuf, &tmp_err);
+            if(ret == 0){
+                ret= gfal_lfc_convert_statg(st, &statbuf, err);
+                errno=0;
+            }
+            free(lfn);
+        }
+     }
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 /*
  * execute a posix lstat request on the lfc ( stat request with link information)
@@ -260,32 +268,34 @@ static int lfc_lstatG(plugin_handle handle, const char* path, struct stat* st, G
 	GError* tmp_err=NULL;
 	struct lfc_ops* ops = (struct lfc_ops*) handle;	
 	int ret=-1;	
-	char* lfn = url_converter(handle, path, &tmp_err);
-	struct lfc_filestat statbuf;
-	
-	if(lfn){
-		if( ( ret= gsimplecache_take_one_kstr(ops->cache_stat, lfn, st)) == 0){ // take the version of the buffer
-			gfal_log(GFAL_VERBOSE_TRACE, " lfc_lstatG -> value taken from cache");
-		}else{	
-			gfal_log(GFAL_VERBOSE_TRACE, " lfc_lstatG -> value not in cache, do normal call");
-			gfal_lfc_init_thread(ops);
-			gfal_auto_maintain_session(ops, &tmp_err);
-			if(!tmp_err){
-				ret = ops->lstat(lfn, &statbuf);
-				if(ret != 0){
-					int sav_errno = gfal_lfc_get_errno(ops);
-					g_set_error(&tmp_err,0,sav_errno, "Error report from LFC : %s", gfal_lfc_get_strerror(ops) );
-				}else{
-					ret= gfal_lfc_convert_lstat(st, &statbuf, err);
-					errno=0;
-				}
-			}
-		}
-	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	free(lfn);
-	return ret;
+
+    lfc_configure_environment(ops,&tmp_err);
+    if(!tmp_err){
+        char* lfn = url_converter(handle, path, &tmp_err);
+        struct lfc_filestat statbuf;
+
+        if(lfn){
+            if( ( ret= gsimplecache_take_one_kstr(ops->cache_stat, lfn, st)) == 0){ // take the version of the buffer
+                gfal_log(GFAL_VERBOSE_TRACE, " lfc_lstatG -> value taken from cache");
+            }else{
+                gfal_log(GFAL_VERBOSE_TRACE, " lfc_lstatG -> value not in cache, do normal call");
+                gfal_lfc_init_thread(ops);
+                gfal_auto_maintain_session(ops, &tmp_err);
+                if(!tmp_err){
+                    ret = ops->lstat(lfn, &statbuf);
+                    if(ret != 0){
+                        int sav_errno = gfal_lfc_get_errno(ops);
+                        g_set_error(&tmp_err,0,sav_errno, "Error report from LFC : %s", gfal_lfc_get_strerror(ops) );
+                    }else{
+                        ret= gfal_lfc_convert_lstat(st, &statbuf, err);
+                        errno=0;
+                    }
+                }
+            }
+        }
+        free(lfn);
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 /*
@@ -296,18 +306,19 @@ static int lfc_lstatG(plugin_handle handle, const char* path, struct stat* st, G
 	g_return_val_err_if_fail(handle && path , -1, err, "[lfc_mkdirpG] Invalid value in args handle/path");	
 	GError* tmp_err = NULL; 
 	int ret= -1;
-	struct lfc_ops* ops = (struct lfc_ops*) handle;		
-	gfal_lfc_init_thread(ops);
-	gfal_auto_maintain_session(ops, &tmp_err);
-	char* lfn = url_converter(handle, path, &tmp_err);
-	if(lfn){
-		 ret =gfal_lfc_ifce_mkdirpG(ops, lfn, mode, pflag, &tmp_err);
+    struct lfc_ops* ops = (struct lfc_ops*) handle;
+    lfc_configure_environment(ops,&tmp_err);
+    if(!tmp_err){
+        gfal_lfc_init_thread(ops);
+        gfal_auto_maintain_session(ops, &tmp_err);
+        char* lfn = url_converter(handle, path, &tmp_err);
+        if(lfn){
+             ret =gfal_lfc_ifce_mkdirpG(ops, lfn, mode, pflag, &tmp_err);
 
-		free(lfn);
-	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret; 
+            free(lfn);
+        }
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
  }
  
 /*
@@ -343,24 +354,26 @@ static gfal_file_handle lfc_opendirG(plugin_handle handle, const char* name, GEr
 	GError* tmp_err=NULL;
 	struct lfc_ops* ops = (struct lfc_ops*) handle;
 	lfc_opendir_handle oh=NULL;
-	gfal_lfc_init_thread(ops);
-	gfal_auto_maintain_session(ops, &tmp_err);
-	char* lfn = url_converter(handle, name, &tmp_err);
-	DIR* d = NULL;
-	if(lfn){
-		d  = (DIR*) ops->opendirg(lfn,NULL);	
-		if(d==NULL){
-			int sav_errno = gfal_lfc_get_errno(ops);
-			g_set_error(err,0, sav_errno, "Error report from LFC %s", gfal_lfc_get_strerror(ops) );
-		}else{	
-			oh = g_new0(struct _lfc_opendir_handle,1);
-			g_strlcpy(oh->url, lfn, GFAL_URL_MAX_LEN );
-		}
-		free(lfn);
-	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return (d)?(gfal_file_handle_ext_new(lfc_getName(), (gpointer) d, (gpointer) oh)):NULL;		
+    DIR* d = NULL;
+    lfc_configure_environment(ops,&tmp_err);
+    if(!tmp_err){
+        gfal_lfc_init_thread(ops);
+        gfal_auto_maintain_session(ops, &tmp_err);
+        char* lfn = url_converter(handle, name, &tmp_err);
+
+        if(lfn){
+            d  = (DIR*) ops->opendirg(lfn,NULL);
+            if(d==NULL){
+                int sav_errno = gfal_lfc_get_errno(ops);
+                g_set_error(err,0, sav_errno, "Error report from LFC %s", gfal_lfc_get_strerror(ops) );
+            }else{
+                oh = g_new0(struct _lfc_opendir_handle,1);
+                g_strlcpy(oh->url, lfn, GFAL_URL_MAX_LEN );
+            }
+            free(lfn);
+        }
+    }
+    G_RETURN_ERR(((d)?(gfal_file_handle_ext_new(lfc_getName(), (gpointer) d, (gpointer) oh)):NULL), tmp_err, err);
 }
 
 static struct dirent* lfc_convert_dirent_struct(struct lfc_ops *ops , struct dirent* dir , struct Cns_direnstat* filestat, const char* url){

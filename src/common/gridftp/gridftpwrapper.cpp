@@ -171,6 +171,7 @@ struct GridFTP_session_implem : public GridFTP_session{
 		globus_gass_copy_handle_destroy(&(_sess->gass_handle));
 		globus_ftp_client_operationattr_destroy (&(_sess->operation_attr_ftp));
 		globus_gass_copy_handleattr_destroy(&(_sess->gass_handle_attr));	
+        globus_ftp_client_handleattr_destroy(&(_sess->attr_handle));
 		delete _sess;
 		_sess = NULL;		
 	}	
@@ -201,6 +202,7 @@ GridFTPFactory::GridFTPFactory(gfal_handle handle) : _handle(handle)
 {
     GError * tmp_err=NULL;
     session_reuse = gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP, gridftp_session_reuse_config, &tmp_err);
+    gfal_log(GFAL_VERBOSE_TRACE," define GSIFTP session re-use to %s",(session_reuse)?"TRUE":"FALSE");
     if(tmp_err)
         throw Glib::Error(tmp_err);
 	size_cache = 400;
