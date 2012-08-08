@@ -75,7 +75,7 @@ install(FILES "LICENSE" "README" "RELEASE-NOTES" "VERSION" "DESCRIPTION"
 			DESTINATION ${DOC_INSTALL_DIR})
 			
 # install configuration files
-FILE(GLOB lst_conf_files "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/*")
+FILE(GLOB lst_conf_files "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/*.conf")
 install(FILES ${lst_conf_files}
 			DESTINATION ${SYSCONF_INSTALL_DIR}/gfal2.d/)
 
