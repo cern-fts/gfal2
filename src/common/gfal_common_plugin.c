@@ -84,17 +84,15 @@ static int gfal_module_init(gfal_handle handle, void* dlhandle, const char* modu
 		handle->plugin_opt.plugin_list[*n] = constructor(handle, &tmp_err);
 		handle->plugin_opt.plugin_list[*n].gfal_data = dlhandle;
 		if(tmp_err){
-			g_prefix_error(&tmp_err, " Unable to load plugin %s : ", module_name);		
+            g_prefix_error(&tmp_err, "Unable to load plugin %s : ", module_name);
 			*n=0;		
 		}else{
 			*n+=1;
-			gfal_log(GFAL_VERBOSE_NORMAL, " [gfal_module_load] plugin %s loaded with success ", module_name);
+            gfal_log(GFAL_VERBOSE_NORMAL, "[gfal_module_load] plugin %s loaded with success ", module_name);
 			ret=0;
 		}
 	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;	
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
@@ -185,11 +183,15 @@ plugin_pointer_handle gfal_plugins_list_handler(gfal_handle handle, GError** err
 	if(n > 0){
 		resu =g_new0(struct _plugin_pointer_handle,n+1);
 		int i;
-		gfal_plugin_interface* cata_list = handle->plugin_opt.plugin_list;
-		for(i=0; i < n; ++i, ++cata_list){
+        GList * plugin_list = g_list_first(handle->plugin_opt.sorted_plugin);
+        i =0;
+        while(plugin_list != NULL){
+            gfal_plugin_interface* cata_list = plugin_list->data;
 			resu[i].dlhandle = cata_list->gfal_data;
 			resu[i].plugin_data = cata_list->plugin_data;
 			g_strlcpy(resu[i].plugin_name, cata_list->getName(), GFAL_URL_MAX_LEN);
+            i++;
+            plugin_list = g_list_next(plugin_list);
 		}	
 	}
 	
@@ -290,6 +292,41 @@ int gfal_modules_resolve(gfal_handle handle, GError** err){
 }
 
 //
+// compare of the plugin function
+//
+gint gfal_plugin_compare(gconstpointer a, gconstpointer b){
+    gfal_plugin_interface* pa  = (gfal_plugin_interface*)  a;
+    gfal_plugin_interface* pb  = (gfal_plugin_interface*)  b;
+    return ( pa->priority > pb->priority)?(-1):(((pa->priority == pb->priority)?0:1));
+}
+
+
+//
+// Sort plugins by priority
+//
+int gfal_plugins_sort(gfal_handle handle, GError ** err){
+    int i;
+    for(i=0; i < handle->plugin_opt.plugin_number;++i){
+        handle->plugin_opt.sorted_plugin = g_list_append(handle->plugin_opt.sorted_plugin, &(handle->plugin_opt.plugin_list[i]));
+    }
+    handle->plugin_opt.sorted_plugin= g_list_sort(handle->plugin_opt.sorted_plugin, &gfal_plugin_compare);
+
+    if(gfal_get_verbose() & GFAL_VERBOSE_TRACE){ // print plugin order
+        GString* strbuff = g_string_new (" plugin priority order: ");
+        GList* l = handle->plugin_opt.sorted_plugin;
+
+        for(i=0; i < handle->plugin_opt.plugin_number;++i){
+            strbuff = g_string_append(strbuff, ((gfal_plugin_interface*) l->data)->getName());
+            strbuff = g_string_append(strbuff, " -> ");
+            l = g_list_next(l);
+        }
+        gfal_log(GFAL_VERBOSE_TRACE, "%s", strbuff->str);
+        g_string_free(strbuff, TRUE);
+    }
+    return 0;
+}
+
+//
 // Instance all plugins for use if it's not the case
 // return the number of plugin available
 //
@@ -302,7 +339,13 @@ int gfal_plugins_instance(gfal_handle handle, GError** err){
 		if(tmp_err){
 			g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
 			handle->plugin_opt.plugin_number = -1;
-		}
+        }else if(handle->plugin_opt.plugin_number > 0){
+            gfal_plugins_sort(handle, &tmp_err);
+            if(tmp_err){
+                g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+                return -1;
+            }
+        }
 		return handle->plugin_opt.plugin_number;	
 	}
 	return plugin_number;
@@ -314,12 +357,12 @@ int gfal_plugins_instance(gfal_handle handle, GError** err){
  int gfal_plugins_operation_executor(gfal_handle handle, gboolean (*checker)(gfal_plugin_interface*, GError**),
 										int (*executor)(gfal_plugin_interface*, GError**) , GError** err){
 	GError* tmp_err=NULL;
-	int i;
 	int ret = -1;
 	const int n_plugins = gfal_plugins_instance(handle, &tmp_err);
 	if(n_plugins > 0){
-		gfal_plugin_interface* cata_list = handle->plugin_opt.plugin_list;
-		for(i=0; i < n_plugins; ++i, ++cata_list){
+        GList * plugin_list = g_list_first(handle->plugin_opt.sorted_plugin);
+        while(plugin_list != NULL){
+            gfal_plugin_interface* cata_list = plugin_list->data;
 			const gboolean comp =  checker(cata_list, &tmp_err);
 			if(tmp_err)
 				break;
@@ -327,7 +370,8 @@ int gfal_plugins_instance(gfal_handle handle, GError** err){
 			if(comp){
 				ret = executor(cata_list, &tmp_err);
 				break;		
-			}	
+            }
+            plugin_list = g_list_next(plugin_list);
 		}
 	}
 	if(tmp_err){	
@@ -347,12 +391,12 @@ int gfal_plugins_instance(gfal_handle handle, GError** err){
                                      int (*executor)(gfal_plugin_interface*, gpointer user_data_exec, GError**) , gpointer user_data_exec,
                                       GError** err){
      GError* tmp_err=NULL;
-     int i;
      int ret = -1;
      const int n_plugins = gfal_plugins_instance(handle, &tmp_err);
      if(n_plugins > 0){
-         gfal_plugin_interface* cata_list = handle->plugin_opt.plugin_list;
-         for(i=0; i < n_plugins; ++i, ++cata_list){
+         GList * plugin_list = g_list_first(handle->plugin_opt.sorted_plugin);
+         while(plugin_list != NULL){
+             gfal_plugin_interface* cata_list = plugin_list->data;
              const gboolean comp =  checker(cata_list, user_data_check, &tmp_err);
              if(tmp_err)
                  break;
@@ -361,6 +405,7 @@ int gfal_plugins_instance(gfal_handle handle, GError** err){
                  ret = executor(cata_list, user_data_exec, &tmp_err);
                  break;
              }
+            plugin_list = g_list_next(plugin_list);
          }
      }
      if(tmp_err){
@@ -376,18 +421,18 @@ int gfal_plugins_instance(gfal_handle handle, GError** err){
                                            const char * url,
                                            plugin_mode acc_mode, GError** err){
         GError* tmp_err=NULL;
-        int i;
         gboolean compatible = FALSE;
         const int n_plugins = gfal_plugins_instance(handle, &tmp_err);
         if(n_plugins > 0){
-          gfal_plugin_interface* cata_list = handle->plugin_opt.plugin_list;
-          for(i=0; i < n_plugins; ++i, ++cata_list){
+            GList * plugin_list = g_list_first(handle->plugin_opt.sorted_plugin);
+            while(plugin_list != NULL){
+              gfal_plugin_interface* cata_list = plugin_list->data;
               compatible =  gfal_plugin_checker_safe(cata_list, url, acc_mode , &tmp_err);
               if(tmp_err)
                   break;
               if(compatible)
                   return cata_list;
-
+              plugin_list = g_list_next(plugin_list);
           }
         }
         if(tmp_err){

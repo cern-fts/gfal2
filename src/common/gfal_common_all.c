@@ -82,6 +82,7 @@ void gfal_handle_freeG (gfal_handle handle){
 	gfal_conf_delete(handle->conf);
     if(handle->gfal_transfer_destroyer)
         handle->gfal_transfer_destroyer(handle->gfal_transfer_instance);
+    g_list_free(handle->plugin_opt.sorted_plugin);
 	g_free(handle);
 	handle = NULL;
 }

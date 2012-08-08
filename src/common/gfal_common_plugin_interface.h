@@ -403,6 +403,7 @@ struct _gfal_plugin_interface{
 //! @cond
 struct _plugin_opts{
 	gfal_plugin_interface plugin_list[MAX_PLUGIN_LIST];
+    GList* sorted_plugin;
 	int plugin_number;
 };
 //! @endcond

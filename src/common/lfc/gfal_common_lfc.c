@@ -332,18 +332,19 @@ static int lfc_lstatG(plugin_handle handle, const char* path, struct stat* st, G
 	struct lfc_ops* ops = (struct lfc_ops*) handle;		
 	gfal_lfc_init_thread(ops);
 	char* lfn = url_converter(handle, path, &tmp_err);
-	if(lfn){
-		ret = ops->rmdir(lfn);
-		if( ret < 0){
-			int sav_errno = gfal_lfc_get_errno(ops);
-			sav_errno = (sav_errno==EEXIST)?ENOTEMPTY:sav_errno;		// convert wrong reponse code
-			g_set_error(err,0, sav_errno, "Error report from LFC %s", gfal_lfc_get_strerror(ops) );
-		}
-		free(lfn);
-	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;	 
+    lfc_configure_environment(ops,&tmp_err);
+    if(!tmp_err){
+        if(lfn){
+            ret = ops->rmdir(lfn);
+            if( ret < 0){
+                int sav_errno = gfal_lfc_get_errno(ops);
+                sav_errno = (sav_errno==EEXIST)?ENOTEMPTY:sav_errno;		// convert wrong reponse code
+                g_set_error(err,0, sav_errno, "Error report from LFC %s", gfal_lfc_get_strerror(ops) );
+            }
+            free(lfn);
+        }
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
  }
  
 /*
@@ -444,14 +445,15 @@ char ** lfc_getSURLG(plugin_handle handle, const char * path, GError** err){
 	char** resu = NULL;
 	struct lfc_ops* ops = (struct lfc_ops*) handle;	
 	gfal_lfc_init_thread(ops);
-	char * lfn = url_converter(handle, path, &tmp_err);
-	if(lfn){
-		resu = gfal_lfc_getSURL(ops, lfn, &tmp_err);
-		free(lfn);		
-	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return resu;
+    lfc_configure_environment(ops,&tmp_err);
+    if(!tmp_err){
+        char * lfn = url_converter(handle, path, &tmp_err);
+        if(lfn){
+            resu = gfal_lfc_getSURL(ops, lfn, &tmp_err);
+            free(lfn);
+        }
+    }
+    G_RETURN_ERR(resu, tmp_err, err);
 }
 
 /*
@@ -466,9 +468,7 @@ ssize_t lfc_getxattr_getsurl(plugin_handle handle, const char* path, void* buff,
 		res = g_strv_catbuff(tmp_ret, buff, size);
 		g_strfreev(tmp_ret);
 	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]",__func__);	
-	return res;
+    G_RETURN_ERR(res, tmp_err, err);
 }
 
 
@@ -479,24 +479,25 @@ ssize_t lfc_getxattr_getguid(plugin_handle handle, const char* path, void* buff,
 	GError* tmp_err=NULL;
 	ssize_t res = -1;
 	struct lfc_ops* ops = (struct lfc_ops*) handle;	
-	if(size == 0 || buff ==NULL){ // just return the size of a guid
-		res = sizeof(char) * 36; // strng uuid are 36 bytes long
-	}else{
-		char* lfn = url_converter(handle, path, &tmp_err);
-		if(lfn){
-			struct lfc_filestatg statbuf;
-			int tmp_ret = gfal_lfc_statg(ops, lfn, &statbuf, &tmp_err);
-			if(tmp_ret == 0){
-				res = strnlen(statbuf.guid, GFAL_URL_MAX_LEN);
-				g_strlcpy(buff,statbuf.guid, size);
-				errno=0;
-			}
-			free(lfn);
-		}
-	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]",__func__);
-	return res;
+    lfc_configure_environment(ops,&tmp_err);
+    if(!tmp_err){
+        if(size == 0 || buff ==NULL){ // just return the size of a guid
+            res = sizeof(char) * 36; // strng uuid are 36 bytes long
+        }else{
+            char* lfn = url_converter(handle, path, &tmp_err);
+            if(lfn){
+                struct lfc_filestatg statbuf;
+                int tmp_ret = gfal_lfc_statg(ops, lfn, &statbuf, &tmp_err);
+                if(tmp_ret == 0){
+                    res = strnlen(statbuf.guid, GFAL_URL_MAX_LEN);
+                    g_strlcpy(buff,statbuf.guid, size);
+                    errno=0;
+                }
+                free(lfn);
+            }
+        }
+    }
+    G_RETURN_ERR(res, tmp_err, err);
 }
 
 /*
@@ -512,9 +513,7 @@ ssize_t lfc_getxattr_getguid(plugin_handle handle, const char* path, void* buff,
 		res = gfal_lfc_getComment(ops, lfn, buff, size, &tmp_err);
 		free(lfn);
 	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]",__func__);
-	return res;	 
+    G_RETURN_ERR(res, tmp_err, err);
  }
 
 /*
@@ -536,9 +535,7 @@ ssize_t lfc_getxattrG(plugin_handle handle, const char* path, const char* name, 
 		g_set_error(&tmp_err,0, ENOATTR, "axttr not found");
 		res = -1;
 	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]",__func__);
-	return res;
+    G_RETURN_ERR(res, tmp_err, err);
 }
 
 /*
@@ -564,9 +561,7 @@ ssize_t lfc_listxattrG(plugin_handle handle, const char* path, char* list, size_
 			}
 		}
 	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return res;
+    G_RETURN_ERR(res, tmp_err, err);
 }
 
 /*
@@ -601,9 +596,7 @@ int lfc_setxattrG(plugin_handle handle, const char *path, const char *name,
 	}else{
 		g_set_error(&tmp_err, 0, ENOATTR, " unable to set this attribute on this file");
 	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return res;	
+    G_RETURN_ERR(res, tmp_err, err);
 }
 
 /*
@@ -630,21 +623,23 @@ static int lfc_unlinkG(plugin_handle handle, const char* path, GError** err){
 	GError* tmp_err=NULL;
 	struct lfc_ops* ops = (struct lfc_ops*) handle;	
 	int ret = -1;
-	char* lfn = url_converter(handle, path, &tmp_err);
-	if(lfn){
-		ret = ops->unlink(lfn);
-		if(ret != 0){
-			int sav_errno = gfal_lfc_get_errno(ops);
-			g_set_error(&tmp_err,0,sav_errno, "Error report from LFC : %s", gfal_lfc_get_strerror(ops) );
-		}else{
-			gsimplecache_remove_kstr(ops->cache_stat, lfn);	// remove the key associated in the buffer	
-			errno=0;
-		}
-	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]",__func__);
-	free(lfn);
-	return ret;
+    lfc_configure_environment(ops,&tmp_err);
+    if(!tmp_err){
+        char* lfn = url_converter(handle, path, &tmp_err);
+        if(lfn){
+            ret = ops->unlink(lfn);
+            if(ret != 0){
+                int sav_errno = gfal_lfc_get_errno(ops);
+                g_set_error(&tmp_err,0,sav_errno, "Error report from LFC : %s", gfal_lfc_get_strerror(ops) );
+            }else{
+                gsimplecache_remove_kstr(ops->cache_stat, lfn);	// remove the key associated in the buffer
+                errno=0;
+            }
+              free(lfn);
+        }
+
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
 }
   
 /*
@@ -655,27 +650,29 @@ static ssize_t lfc_readlinkG(plugin_handle handle, const char* path, char* buff,
 	g_return_val_err_if_fail(handle && path && buff, -1, err, "[lfc_readlinkG] Invalid value in args handle/path/stat");
 	struct lfc_ops* ops = (struct lfc_ops*) handle;	
 	GError* tmp_err=NULL;
+    ssize_t ret=-1;
 	char res_buff[LFC_BUFF_SIZE];
 	gfal_lfc_init_thread(ops);
 	gfal_auto_maintain_session(ops, &tmp_err);	
-	char* lfn = lfc_urlconverter(path, GFAL_LFC_PREFIX);
 
-	ssize_t ret = ops->readlink(lfn, res_buff, LFC_BUFF_SIZE );
-	if(ret == -1){
-		int sav_errno = gfal_lfc_get_errno(ops);
-		g_set_error(err,0,sav_errno, "Error report from LFC : %s", gfal_lfc_get_strerror(ops) );
-	}else{
-		errno=0;
-		if(buffsiz > 0)
-			memcpy(buff, GFAL_LFC_PREFIX, MIN(buffsiz,GFAL_LFC_PREFIX_LEN) );
-		if(buffsiz - GFAL_LFC_PREFIX_LEN > 0)
-			memcpy(buff+ GFAL_LFC_PREFIX_LEN, res_buff, MIN(ret,buffsiz-GFAL_LFC_PREFIX_LEN) );
-		ret += GFAL_LFC_PREFIX_LEN;
-	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]",__func__);	
-	free(lfn);
-	return ret;
+    lfc_configure_environment(ops,&tmp_err);
+    if(!tmp_err){
+        char* lfn = lfc_urlconverter(path, GFAL_LFC_PREFIX);
+        ret = ops->readlink(lfn, res_buff, LFC_BUFF_SIZE );
+        if(ret == -1){
+            int sav_errno = gfal_lfc_get_errno(ops);
+            g_set_error(err,0,sav_errno, "Error report from LFC : %s", gfal_lfc_get_strerror(ops) );
+        }else{
+            errno=0;
+            if(buffsiz > 0)
+                memcpy(buff, GFAL_LFC_PREFIX, MIN(buffsiz,GFAL_LFC_PREFIX_LEN) );
+            if(buffsiz - GFAL_LFC_PREFIX_LEN > 0)
+                memcpy(buff+ GFAL_LFC_PREFIX_LEN, res_buff, MIN(ret,buffsiz-GFAL_LFC_PREFIX_LEN) );
+            ret += GFAL_LFC_PREFIX_LEN;
+        }
+        free(lfn);
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
@@ -712,6 +709,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	ops->cache_stat = gsimplecache_new(50000000,&internal_stat_copy, sizeof(struct stat) );
 	gfal_lfc_regex_compile(&(ops->rex), err);
 	lfc_plugin.plugin_data = (void*) ops;
+    lfc_plugin.priority =GFAL_PLUGIN_PRIORITY_CATALOG;
 	lfc_plugin.check_plugin_url= &gfal_lfc_check_lfn_url;
 	lfc_plugin.plugin_delete = &lfc_destroyG;
 	lfc_plugin.accessG = &lfc_accessG;
