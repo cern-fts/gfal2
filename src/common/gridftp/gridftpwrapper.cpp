@@ -53,7 +53,11 @@ struct GridFTP_session_implem : public GridFTP_session{
 	void init(){
 		_sess = new Session_handler();
 		globus_result_t res;
-		
+
+        // init debug plugin
+        res= globus_ftp_client_debug_plugin_init(&(_sess->debug_ftp_plugin), stderr, "gridftp debug :");
+        gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_ops_attr", res);
+
 		// init operation attr
 		res= globus_ftp_client_operationattr_init(&(_sess->operation_attr_ftp)); 	
 		gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_ops_attr", res);	
@@ -82,6 +86,9 @@ struct GridFTP_session_implem : public GridFTP_session{
 	
 	void configure_gridftp_handle_attr(){
 		globus_ftp_client_handleattr_set_cache_all(&(_sess->attr_handle), GLOBUS_TRUE);	// enable session re-use
+        if(gfal_get_verbose() & GFAL_VERBOSE_TRACE_PLUGIN){
+            globus_ftp_client_handleattr_add_plugin(&(_sess->attr_handle), &(_sess->debug_ftp_plugin));
+        }
 	}
 
     void configure_default_stream_attributes(){
@@ -168,6 +175,7 @@ struct GridFTP_session_implem : public GridFTP_session{
     }
 	
 	virtual void purge(){
+        globus_ftp_client_debug_plugin_destroy(&(_sess->debug_ftp_plugin)); // destruct the debug plugin
 		globus_gass_copy_handle_destroy(&(_sess->gass_handle));
 		globus_ftp_client_operationattr_destroy (&(_sess->operation_attr_ftp));
 		globus_gass_copy_handleattr_destroy(&(_sess->gass_handle_attr));	
@@ -180,6 +188,7 @@ struct GridFTP_session_implem : public GridFTP_session{
 	
 	struct Session_handler{
 		globus_ftp_client_handle_t handle_ftp;
+        globus_ftp_client_plugin_t debug_ftp_plugin;
 		globus_ftp_client_handleattr_t attr_handle;
 		globus_ftp_client_operationattr_t operation_attr_ftp;     
 		globus_gass_copy_handle_t gass_handle;

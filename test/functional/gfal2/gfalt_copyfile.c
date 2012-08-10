@@ -17,7 +17,7 @@ int main(int argc, char** argv){
 	gfal2_context_t handle;
 	
 	// initialize gfal
-	gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE);
+    gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE | GFAL_VERBOSE_TRACE_PLUGIN);
 	 if( (handle = gfal2_context_new(&tmp_err)) == NULL ) {
 		 printf(" bad initialization %d : %s.\n", tmp_err->code,tmp_err->message);
 		 return -1;

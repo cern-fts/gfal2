@@ -38,8 +38,10 @@ extern "C"
 #define GFAL_VERBOSE_VERBOSE    0x01  
 //! \def GFAL_VERBOSE_DEBUG  extra information is printed  
 #define GFAL_VERBOSE_DEBUG      0x02 
-//! \def GFAL_VERBOSE_TRACE execution trace 
-#define GFAL_VERBOSE_TRACE		0x08	
+//! \def GFAL_VERBOSE_TRACE execution trace internal to GFAL 2.0
+#define GFAL_VERBOSE_TRACE		0x08
+//! \def GFAL_VERBOSE_TRACE_PLUGIN log all the plugin related debug information
+#define GFAL_VERBOSE_TRACE_PLUGIN 0x04
 
 /**
  * \brief print error message with the gfal2 logger
