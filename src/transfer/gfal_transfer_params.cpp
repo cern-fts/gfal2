@@ -31,6 +31,7 @@ void gfalt_params_handle_init(gfalt_params_t p, GError ** err){
 	p->replace_existing = false;
     p->local_transfers=true;
     p->strict_mode = false;
+    p->parent_dir_create = false;
 	uuid_clear(p->uuid);		
 }
 
@@ -193,6 +194,17 @@ gint gfalt_set_checksum_check(gfalt_params_t params, gboolean value, GError** er
 
 gboolean gfalt_get_checksum_check(gfalt_params_t params, GError** err){
     return params->checksum_check;
+}
+
+//
+gint gfalt_set_create_parent_dir(gfalt_params_t params, gboolean value, GError** err){
+    params->parent_dir_create=value;
+    return 0;	
+}
+
+//
+gboolean gfalt_get_create_parent_dir(gfalt_params_t params, GError** err){
+	return params->parent_dir_create;
 }
 
 

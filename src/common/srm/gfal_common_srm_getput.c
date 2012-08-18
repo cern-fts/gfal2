@@ -63,7 +63,7 @@ int gfal_srmv2_get_global(gfal_srm_plugin_t handle, gfal_srm_params_t params, st
 	
 	ret = gfal_srm_external_call.srm_prepare_to_get(context,input,&preparetoget_output);
 	if(ret < 0){
-		gfal_srm_report_error(errbuf, &tmp_err);
+		gfal_srm_report_error(context->errbuf, &tmp_err);
 	} else{
 		gfal_srm_convert_filestatuses_to_srm_result(preparetoget_output.filestatuses, preparetoget_output.token, ret, resu,  &tmp_err);
     	gfal_srm_external_call.srm_srmv2_pinfilestatus_delete(preparetoget_output.filestatuses, ret);
@@ -78,14 +78,12 @@ int gfal_srmv2_put_global(gfal_srm_plugin_t handle, gfal_srm_params_t params, st
 	g_return_val_err_if_fail(handle != NULL && input != NULL && resu != NULL,-1,err,"[gfal_srmv2_put_global] tab null ");
 
 	GError* tmp_err=NULL;
-	char errbuf[GFAL_URL_MAX_LEN];
-	errbuf[0]='\0';
 	int ret=0;
 	struct srm_preparetoput_output preparetoput_output;
 	
 	ret = gfal_srm_external_call.srm_prepare_to_put(context, input, &preparetoput_output);
 	if(ret < 0){
-		gfal_srm_report_error(errbuf, &tmp_err);
+		gfal_srm_report_error(context->errbuf, &tmp_err);
 	} else{
 		gfal_srm_convert_filestatuses_to_srm_result(preparetoput_output.filestatuses, preparetoput_output.token, ret, resu, &tmp_err);
     	gfal_srm_external_call.srm_srmv2_pinfilestatus_delete(preparetoput_output.filestatuses, ret);

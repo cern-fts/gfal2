@@ -38,14 +38,15 @@
 
 
 struct _gfalt_params_t{
-	gboolean lock; 			// lock enabled after the start of the transfer
-	uuid_t uuid;			// unique id of the transfer
+	gboolean lock; 				// lock enabled after the start of the transfer
+	uuid_t uuid;				// unique id of the transfer
 	guint64 timeout; 			// connexion timeout
-	gboolean replace_existing; // replace destination or not
-	off_t start_offset;		// start offset in case of restart
-	guint nb_data_streams;	// nb of parallels streams
-    gboolean strict_mode;  // state of the strict copy mode
-    gboolean local_transfers;
+	gboolean replace_existing;  // replace destination or not
+	off_t start_offset;			// start offset in case of restart
+	guint nb_data_streams;		// nb of parallels streams
+    gboolean strict_mode;  		// state of the strict copy mode
+    gboolean local_transfers;   // local transfer authorized
+    gboolean parent_dir_create;  // force the creation of the parent dir
     // spacetoken management for SRM
     gchar * src_space_token;
     gchar* dst_space_token;

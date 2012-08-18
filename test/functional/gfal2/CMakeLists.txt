@@ -7,6 +7,7 @@ FILE(GLOB src_lib_test "gfal_lib_test.c")
 # list tests
 FILE(GLOB src_gfalchecksum_test "gfal_testchecksum.c")
 FILE(GLOB src_gfalstat "gfal_teststat.c")
+FILE(GLOB src_gfalaccess "gfal_testaccess.c")
 FILE(GLOB src_gfal_testchmod "gfal_testchmod.c")
 FILE(GLOB src_gfal_checksum_tool "gfal_checksum_tool.c")
 FILE(GLOB src_gfalread "gfal_testread.c")
@@ -23,6 +24,7 @@ FILE(GLOB src_gfalmkdir_full "gfal_mkdir_full.c")
 FILE(GLOB src_gfaltcopy "gfalt_copyfile.c")
 FILE(GLOB src_gfaltcopy_fts "gfalt_copyfile_fts_style.c")
 FILE(GLOB src_gfaltcopy_test "gfalt_copyfile_test.c")
+FILE(GLOB src_gfaltcopy_mkdir_test "gfalt_copyfile_mkdir_test.c")
 FILE(GLOB src_gfaltcopy_perf "gfalt_copyfile_with_performance_marker.c")
 FILE(GLOB src_copyfile_replace "gfalt_copyfile_replace_test.c")
 FILE(GLOB src_copyfile_checksum "gfalt_copyfile_checksum_test_simple.c")
@@ -40,6 +42,9 @@ IF (FUNCTIONAL_TESTS)
 
         add_executable(gfal_stat	${src_gfalstat} )
 	target_link_libraries(gfal_stat ${OUTPUT_NAME_MAIN} )
+
+        add_executable(gfal_access	${src_gfalaccess} )
+	target_link_libraries(gfal_access ${OUTPUT_NAME_MAIN} )
 
    #     add_executable(gfal_checksum_test	${src_gfalchecksum_test} ${src_lib_test} )
     #    target_link_libraries(gfal_checksum_test ${OUTPUT_NAME_MAIN} ${NETTLE_PKG_LIBRARIES})
@@ -137,6 +142,9 @@ IF (FUNCTIONAL_TESTS)
 		add_executable(gfal_copyfile_test ${src_gfaltcopy_test} ${src_lib_test})
 		target_link_libraries(gfal_copyfile_test ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})		
 		
+		add_executable(gfal_copyfile_mkdir_test ${src_gfaltcopy_mkdir_test} ${src_lib_test})
+		target_link_libraries(gfal_copyfile_mkdir_test ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})		
+		
 		add_executable(copyfile_replace ${src_copyfile_replace} ${src_lib_test})
 		target_link_libraries(copyfile_replace ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
 
@@ -155,6 +163,7 @@ IF (FUNCTIONAL_TESTS)
                 add_test(copyfile_checksum_user_${name} copyfile_checksum_user ${src_file} ${dir_src})
 		add_test(copyfile_replace_${name} copyfile_replace ${src_file} ${dir_src})
 		add_test(copyfile_test_${name} gfal_copyfile_test ${src_file} ${dir_src})
+		add_test(copyfile_test_mkdir_${name} gfal_copyfile_mkdir_test ${src_file} ${dir_src})		
 	ENDFUNCTION(copy_file_test_full name dir_src)
 
 

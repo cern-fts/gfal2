@@ -198,6 +198,19 @@ gint gfalt_set_user_defined_checksum(gfalt_params_t param, const gchar* chktype,
 gint gfalt_get_user_defined_checksum(gfalt_params_t params, gchar* chktype_buff, size_t chk_type_len,
                                 gchar* checksum_buff, size_t checksum_len, GError** err);
 
+// Utility functions
+/**
+   enable or disable the destination parent directory creation
+*/
+gint gfalt_set_create_parent_dir(gfalt_params_t, gboolean value, GError** err);
+
+/**
+   enable or disable the destination parent directory creation
+*/
+gboolean gfalt_get_create_parent_dir(gfalt_params_t, GError** err);
+
+
+// Monitoring functions
 
 /**
  * set the user_data pointer for the monitoring callback

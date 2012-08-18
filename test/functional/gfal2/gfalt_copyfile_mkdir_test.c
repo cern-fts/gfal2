@@ -23,24 +23,32 @@ int main(int argc, char** argv){
 	char dst_uri[2048];
 	char dst_uri2[2048];
 	generate_random_uri(argv[2], "generate_folder", dst_uri, 2048);
-	generate_random_uri(dst_uri, "generate_folder", dst_uri2, 2048);
+	generate_random_uri(dst_uri, "generate_folder2", dst_uri2, 2048);
+	generate_random_uri(dst_uri2, "generate_folder3", dst_uri, 2048);	
+	generate_random_uri(dst_uri, "generate_dest_file", dst_uri2, 2048);	
 
 	// initialize gfal
     gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE | GFAL_VERBOSE_DEBUG);
 	 if( (handle = gfal2_context_new(&tmp_err)) == NULL ) {
 		 printf(" bad initialization %d : %s.\n", tmp_err->code,tmp_err->message);
 		 return -1;
-	 }	
+	 }
+	 
+	 gfalt_params_t params = gfalt_params_handle_new(NULL);
+	 
+	 int res_params = gfalt_set_create_parent_dir(params, TRUE, &tmp_err);
+	 g_assert(res_params == 0 && tmp_err==NULL);
+	 g_assert( gfalt_get_create_parent_dir(params, &tmp_err) == TRUE && tmp_err == NULL);	
 	
 	 // begin copy
-	printf(" begin to copyfile from %s to %s", src_uri, dst_uri);
-	if( (ret = gfalt_copy_file(handle, NULL, src_uri, dst_uri, &tmp_err) )  != 0){
+	printf(" begin to copyfile from %s to %s", src_uri, dst_uri2);
+	if( (ret = gfalt_copy_file(handle, params, src_uri, dst_uri2, &tmp_err) )  != 0){
 		 printf(" error while the file transfer %d : %s.\n", tmp_err->code,tmp_err->message);
 		 return -1;		
 	}else
 		printf(" transfer sucessfull ! \n");
 			
-		
+	gfalt_params_handle_delete(params, NULL);	
 	gfal2_context_free(handle);
 	return ret;
 }

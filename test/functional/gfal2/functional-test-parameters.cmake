@@ -4,6 +4,7 @@
 ## STAT Tests
 
 SET(MY_VO "testers.eu-emi.eu")
+SET(MY_VO_STORM "${MY_VO}")
 
 SET(srm_prefix_dpm "srm://cvitbdpm1.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(srm_valid_dpm_stat "${srm_prefix_dpm}/testread0011")
@@ -17,7 +18,7 @@ SET(srm_valid_dcache_chmod "${srm_prefix_dcache}/test_change_right")
 SET(srm_valid_dcache_dir_root "${srm_prefix_dcache}")
 SET(srm_valid_dcache_src_file "${srm_valid_dcache_stat}")
 
-SET(srm_prefix_storm "srm://emitestbed03.cnaf.infn.it:8444/srm/managerv2?SFN=/${MY_VO}/gfal2tests")
+SET(srm_prefix_storm "srm://emitestbed03.cnaf.infn.it:8444/srm/managerv2?SFN=/${MY_VO_STORM}/gfal2tests")
 SET(srm_valid_storm_stat "${srm_prefix_storm}/testread0011")
 SET(srm_valid_storm_chmod "${srm_prefix_storm}/test_change_right")
 SET(srm_valid_storm_dir_root "${srm_prefix_storm}")

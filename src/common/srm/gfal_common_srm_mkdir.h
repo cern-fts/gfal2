@@ -28,4 +28,6 @@
 #include <common/gfal_types.h>
 #include <common/gfal_constants.h>
 
+int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError** err);
+
 int gfal_srm_mkdirG(plugin_handle handle, const char* surl, mode_t mode, gboolean pflag, GError** err); 

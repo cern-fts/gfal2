@@ -34,6 +34,7 @@
 
 
 #define GFAL_PREFIX_SRM "srm://"
+#define GFAL_PREFIX_SRM_LEN 6
 #define GFAL_ENDPOINT_DEFAULT_PREFIX "httpg://"
 
 #define SRM_XATTR_GETURL "user.replicas"

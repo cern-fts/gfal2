@@ -69,6 +69,8 @@ int srm_plugin_delete_existing_copy(plugin_handle handle, gfalt_params_t params,
 				gfal_log(GFAL_VERBOSE_TRACE, "   %s does not exist, begin copy", surl);			
 				g_clear_error(&tmp_err);
 				res =0;
+			}else{
+				res = -1;
 			}
 			
 		}
@@ -76,6 +78,56 @@ int srm_plugin_delete_existing_copy(plugin_handle handle, gfalt_params_t params,
 	}
 
 	G_RETURN_ERR(res, tmp_err, err);		
+}
+
+// create the parent directory 
+// return 0 if nothing or not requested
+// return 1 if creation has been done
+// return < 0 in case of error
+int srm_plugin_create_parent_copy(plugin_handle handle, gfalt_params_t params, 
+									const char * surl, GError ** err){
+	GError * tmp_err=NULL;
+	int res = -1;
+	const gboolean create_parent = gfalt_get_create_parent_dir(params, NULL);
+	if(create_parent){
+		char * path_dir = g_strdup(surl);
+		char *p = path_dir + strlen(path_dir)-1;
+		while(*p == '/'){ // remote trailing /
+			*p='\0';
+			p--;
+		}
+		const unsigned int pref_len = GFAL_PREFIX_SRM_LEN;
+		while(*p  != '/' && (path_dir + pref_len) < p)
+			p--;
+		if( (path_dir + pref_len) < p){ 
+			*p='\0';
+			gfal_log(GFAL_VERBOSE_TRACE, " try to create parent dir : %s for %s", path_dir, surl);
+			res = gfal_srm_mkdir_recG(handle, path_dir, 0755, &tmp_err);
+			if(res == 0)
+				gfal_log(GFAL_VERBOSE_TRACE, "parent path %s created with success", path_dir);			
+			res = 1;
+		}else{
+			g_set_error(&tmp_err, srm_quark_3rd_party(), EINVAL, "Invalid srm url %s",surl);
+			res= -1;
+		}
+		g_free(path_dir);
+	}else{
+		res = 0;
+	}
+	G_RETURN_ERR(res, tmp_err, err);		
+}
+
+// prepare srm destination for 3rd party copy
+int srm_plugin_prepare_dest_put(plugin_handle handle, gfal2_context_t context,
+					gfalt_params_t params,  const char * surl, GError ** err){
+	GError * tmp_err=NULL;
+	int res = -1;						
+	if( (res = srm_plugin_delete_existing_copy(handle, params, surl, &tmp_err)) >=0){						
+			if( (res = srm_plugin_create_parent_copy(handle, params, surl, &tmp_err) ) >= 0){
+				res = 0;
+			}
+	}
+	G_RETURN_ERR(res, tmp_err, err);								
 }
 
 int srm_plugin_put_3rdparty(plugin_handle handle, gfal2_context_t context,
@@ -87,7 +139,7 @@ int srm_plugin_put_3rdparty(plugin_handle handle, gfal2_context_t context,
 	
 	if( srm_check_url(surl)){
         gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl src resolution start ");
-		if( (res = srm_plugin_delete_existing_copy(handle, params, surl, &tmp_err)) ==0){						
+		if( (res = srm_plugin_prepare_dest_put(handle, context, params, surl, &tmp_err)) >=0){						
             if(( res= gfal_srm_put_rd3_turl(handle, params, surl, buff , s_buff, reqtoken,  err))==0)
                 gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl src resolution ended : %s -> %s", surl, buff);
 		}

@@ -3,7 +3,7 @@ project (gfal2)
 cmake_minimum_required (VERSION 2.6)
 message("cmake source dir : ${CMAKE_SOURCE_DIR}")
 # build type
-set(CMAKE_BUILD_TYPE RelWithDebInfo
+set(CMAKE_BUILD_TYPE "RelWithDebInfo"
 	CACHE STRING "type of build")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
