@@ -45,6 +45,8 @@ off_t gfal_dcap_lseekG(plugin_handle handle , gfal_file_handle fd, off_t offset,
 
 ssize_t gfal_dcap_writeG(plugin_handle handle , gfal_file_handle fd, const void* buff, size_t s_buff, GError** err);
 
+int gfal_dcap_accessG(plugin_handle plugin_data, const char* url, int mode, GError** err);
+
 int gfal_dcap_closeG(plugin_handle handle, gfal_file_handle fd, GError ** err);
 
 int gfal_dcap_statG(plugin_handle handle, const char* name, struct stat* buff, GError ** err);

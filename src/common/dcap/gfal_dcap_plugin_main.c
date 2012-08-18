@@ -78,9 +78,10 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	dcap_plugin.mkdirpG = &gfal_dcap_mkdirG;
 	dcap_plugin.chmodG = &gfal_dcap_chmodG;
 	dcap_plugin.rmdirG = &gfal_dcap_rmdirG;
-	dcap_plugin.closedirG= gfal_dcap_closedirG;
-	dcap_plugin.opendirG= gfal_dcap_opendirG;
-	dcap_plugin.readdirG= gfal_dcap_readdirG;	
+	dcap_plugin.closedirG= &gfal_dcap_closedirG;
+	dcap_plugin.opendirG= &gfal_dcap_opendirG;
+	dcap_plugin.readdirG= &gfal_dcap_readdirG;
+	dcap_plugin.accessG = &gfal_dcap_accessG;	
 		
 	if(tmp_err)
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
@@ -121,6 +122,7 @@ gboolean gfal_dcap_check_url(plugin_handle ch, const char* url,  plugin_mode mod
 			case GFAL_PLUGIN_CHMOD:
 			case GFAL_PLUGIN_RMDIR:
 			case GFAL_PLUGIN_OPENDIR:
+			case GFAL_PLUGIN_ACCESS:
 				ret = gfal_dcap_internal_check_url(rh, url, &tmp_err);
 				break;
 			default:

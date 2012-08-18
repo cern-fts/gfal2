@@ -57,7 +57,6 @@ static int dcap_errno_conversion( const char * msg, int old_err){
 	return ret;
 }
 
-
 static void dcap_report_error(gfal_plugin_dcap_handle h,  const char * func_name, GError** err){
 	char buff_error[2048];
 	const int status = *(h->ops->geterror());
@@ -168,6 +167,16 @@ int gfal_dcap_lstatG(plugin_handle handle, const char* name, struct stat* buff, 
 	if(ret != 0){
 		dcap_report_error(h, __func__, err);
 	}
+	return ret;	
+}
+
+int gfal_dcap_accessG(plugin_handle plugin_data, const char* url, int mode, GError** err){
+gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) plugin_data;
+	ssize_t ret = h->ops->access(url, mode);
+	if(ret <0)
+		dcap_report_error(h, __func__, err);
+	else
+		errno =0;
 	return ret;	
 }
 
