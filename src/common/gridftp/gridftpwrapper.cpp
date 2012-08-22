@@ -347,8 +347,10 @@ void gfal_globus_check_error(const Glib::Quark & scope,  globus_object_t *	error
 		*errbuff='\0';
 		
 		globus_errno = gfal_globus_error_convert(error, &glob_str);
-		if(glob_str) // security
+		if(glob_str){ // security
 			g_strlcpy( errbuff, glob_str, GFAL_URL_MAX_LEN);
+			g_free(glob_str);
+		}
 		globus_object_free(error);
 		throw Gfal::CoreException(scope, errbuff, globus_errno );		
 	}

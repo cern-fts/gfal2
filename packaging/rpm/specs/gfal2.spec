@@ -1,4 +1,4 @@
-%global checkout_tag 20120816svn
+%global checkout_tag 20120822svn
 
 
 Name:				gfal2

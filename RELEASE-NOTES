@@ -40,6 +40,7 @@ Trunk:
 - re-factor properly gfal-transfer and gfal2_context_t
 - generate a new clean documentation with log/transfer/context support
 - allow direct modification of the internal posix context 
+- fix memory leak with gsiftp error report
 
 
 2.0.0-0.8 :
