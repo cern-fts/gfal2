@@ -5,6 +5,8 @@ Trunk:
 - correct a major issue with the gass attribute system in gsiftp plugin
 - change the lfc set/get env var for a one compatible with set/get opt
 - add set/nb streams option for gsiftp
+- add the mkdir rec function for SRM transfer
+- correct an issue with opendir and srm_ls ( ENOTDIR error silent )
 
 
 * Fri Jul 20 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-1

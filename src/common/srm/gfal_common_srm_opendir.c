@@ -42,21 +42,26 @@
 
 
 gfal_file_handle gfal_srm_opendir_internal(gfal_srmv2_opt* opts, char* endpoint, const char* surl, GError** err){
-	g_return_val_err_if_fail(opts && endpoint && surl, NULL, err, "[gfal_srmv2_opendir_internal] invaldi args");
+	g_return_val_err_if_fail(opts && endpoint && surl, NULL, err, "[gfal_srmv2_opendir_internal] invalid args");
 	GError* tmp_err=NULL;
 	gfal_file_handle resu = NULL;
 	struct stat st;
 	int exist = gfal_statG_srmv2_internal(opts, &st, endpoint, surl, &tmp_err);
 	
+	
 	if(exist == 0){
-		gfal_srm_opendir_handle h = g_new0(struct _gfal_srm_opendir_handle,1);
-		const size_t s = strnlen(surl, GFAL_URL_MAX_LEN);
-		char* p = (char*) mempcpy(h->surl, surl, MIN(s,GFAL_URL_MAX_LEN));
-		while( *(p-1) == '/') //remove last '/' char
-			*(p-1) = '\0';
-		g_strlcpy(h->endpoint, endpoint, GFAL_URL_MAX_LEN);
-		h->dir_offset = 0;
-		resu = gfal_file_handle_new(gfal_srm_getName(), (gpointer) h);
+		if( S_ISDIR(st.st_mode) ){
+			gfal_srm_opendir_handle h = g_new0(struct _gfal_srm_opendir_handle,1);
+			const size_t s = strnlen(surl, GFAL_URL_MAX_LEN);
+			char* p = (char*) mempcpy(h->surl, surl, MIN(s,GFAL_URL_MAX_LEN));
+			while( *(p-1) == '/') //remove last '/' char
+				*(p-1) = '\0';
+			g_strlcpy(h->endpoint, endpoint, GFAL_URL_MAX_LEN);
+			h->dir_offset = 0;
+			resu = gfal_file_handle_new(gfal_srm_getName(), (gpointer) h);
+		}else{
+			g_set_error(&tmp_err, 0, ENOTDIR, "srm-plugin: %s is not a directory, impossible to list content", surl);
+		}
 	}
 	
 	

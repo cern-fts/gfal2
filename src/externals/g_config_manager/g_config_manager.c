@@ -101,9 +101,8 @@ gpointer g_config_manager_find_first_valid(GConfigManager_t config_manager, GCon
 gpointer g_config_manager_exec_on_first(GConfigManager_t config_manager, GConfigFunction func,
                                     gpointer userdata, GError ** err){
     g_assert(config_manager != NULL);
-    GError* tmp_err=NULL;
     if (check_kv_exist_error(config_manager, err)){
-        return func((GKeyFile*) config_manager->configs->data, userdata, &tmp_err);
+        return func((GKeyFile*) config_manager->configs->data, userdata, err);
     }
     return NULL;
 }

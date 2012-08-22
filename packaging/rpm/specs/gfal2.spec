@@ -51,7 +51,7 @@ Group:				Applications/Internet
 Requires:			openldap%{?_isa}
 
 %description core
-The main library of %{name}. \
+The main library of %{name}. 
 the %{name} protocol support relies on a plugin system.
 
 %package transfer
@@ -149,7 +149,7 @@ Requires:			%{name}-plugin-rfio%{?_isa} = %{version}-%{release}
 Requires:			%{name}-plugin-gridftp%{?_isa} = %{version}-%{release} 
 
 %description all
-Meta-package for complete install of GFAL 2.0 \
+Meta-package for complete install of GFAL 2.0 
 with all the protocol plugins.
 
 %clean
