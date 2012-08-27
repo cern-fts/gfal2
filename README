@@ -1,8 +1,14 @@
 How to compile GFAL 2.0 ?
 
 
-- install glib2, openldap in development version
-- install all the plugin development files that you need ( lfc-dev, dcap-dev, etc...)
+1.) Install dependencies
+On a clean SLCX system the following 'extra' packages are needed to be installed:
+
+cmake, glib2, glib2-devel, openldap-devel, gcc-c++, openmp, openmpi-devel, pkgconfig, 
+lfc-devel, dcap-devel ,dpm-devel doxygen, globus-gass-copy-devel,, glibmm24-devel, 
+libattr-devel, cgreen-devel
+
+2.) Compile
 
 compilation :
 cd [src_dir]
@@ -12,9 +18,11 @@ cmake ../
 ccmake ../ # configure the plugin that you need : default = all !
 make -j 8
 
-- installation
+3.) Installation
 make install 
 
 
+4.) Tests
+make test
 
 

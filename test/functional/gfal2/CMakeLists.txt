@@ -13,6 +13,9 @@ FILE(GLOB src_gfal_checksum_tool "gfal_checksum_tool.c")
 FILE(GLOB src_gfalread "gfal_testread.c")
 FILE(GLOB src_gfalwrite "gfal_testwrite.c")
 FILE(GLOB src_gfalrw "gfal_testrw.c")
+FILE(GLOB src_gfal_test_del_nonex "gfal_test_del_nonex.c")
+FILE(GLOB src_gfal_test_del "gfal_test_del.c")
+FILE(GLOB src_gfal_test_mkdir_unlink "gfal_test_mkdir_unlink.c")
 FILE(GLOB src_gfal_rw_full "gfal_testrw_full.c")
 FILE(GLOB src_gfal_rw_seq "gfal_testrw_seq.c")
 FILE(GLOB src_gfalget "gfal_testget.c")
@@ -56,6 +59,18 @@ IF (FUNCTIONAL_TESTS)
 		add_test(gfal_stat_${name} gfal_stat ${valid})
 	ENDFUNCTION(stat_test_all valid)
 
+	FUNCTION(test_gfal_test_del_nonex name path)
+		add_test(gfal_test_del_nonex_${name} gfal_test_del_nonex ${path})
+	ENDFUNCTION(test_gfal_test_del_nonex name path)	
+
+	FUNCTION(test_gfal_test_del name path)
+		add_test(gfal_test_del_${name} gfal_test_del ${path})
+	ENDFUNCTION(test_gfal_test_del name path)	
+
+	FUNCTION(test_gfal_test_mkdir_unlink name path)
+		add_test(gfal_test_mkdir_unlink_${name} gfal_test_mkdir_unlink ${path})
+	ENDFUNCTION(test_gfal_test_mkdir_unlink name path)	
+
         FUNCTION(checksum_test_all name valid)
        #         add_test(gfal_checksum_${name} gfal_checksum_test ${valid})
         ENDFUNCTION(checksum_test_all name valid)
@@ -84,7 +99,6 @@ IF (FUNCTIONAL_TESTS)
 	FUNCTION(rwt_test_seq name path size size_read)
 		add_test(gfal_rw_seq_${name} gfal_rw_seq ${path} ${size} ${size_read})		
 	ENDFUNCTION(rwt_test_seq name path size size_read)
-	
 		
 	add_executable(gfal_read	${src_gfalread} )
 	target_link_libraries(gfal_read ${OUTPUT_NAME_MAIN} )
@@ -94,7 +108,16 @@ IF (FUNCTIONAL_TESTS)
 
 	add_executable(gfal_rw	${src_gfalrw} )
 	target_link_libraries(gfal_rw ${OUTPUT_NAME_MAIN} )
+
+	add_executable(gfal_test_del_nonex   ${src_gfal_test_del_nonex} )
+	target_link_libraries(gfal_test_del_nonex ${OUTPUT_NAME_MAIN} )
+
+	add_executable(gfal_test_del   ${src_gfal_test_del} )
+	target_link_libraries(gfal_test_del ${OUTPUT_NAME_MAIN} )
 	
+	add_executable(gfal_test_mkdir_unlink   ${src_gfal_test_mkdir_unlink} )
+	target_link_libraries(gfal_test_mkdir_unlink ${OUTPUT_NAME_MAIN} )
+
 	add_executable(gfal_rw_full	${src_gfal_rw_full} )
 	target_link_libraries(gfal_rw_full ${OUTPUT_NAME_MAIN} )	
 	

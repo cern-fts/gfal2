@@ -33,12 +33,10 @@ SET(gsiftp_valid_dpm_src_file "${gsiftp_valid_dpm_stat}")
 SET(gsiftp_valid_dpm_chmod "${gsiftp_prefix_dpm}/test_change_right_gsidcap")
 SET(gsiftp_valid_dir_root "${gsiftp_prefix_dpm}")
 
-
 SET(lfc_prefix "lfn:/grid/${MY_VO}")
 SET(lfc_stat_ok "${lfc_prefix}/testread0011")
 SET(lfc_chmod_ok "${lfc_prefix}/test_change_right")
 SET(lfc_valid_dir_root "${lfc_prefix}")
-
 
 SET(dcap_prefix "gsidcap://cork.desy.de:22128/pnfs/desy.de/data/${MY_VO}/testgfal2")
 SET(dcap_stat_ok "${dcap_prefix}/testread0011")
@@ -52,7 +50,19 @@ FILE(WRITE "${file_base_path}/test_change_right" "testblabl")
 SET(file_stat_ok "${file_prefix}/testread_0011")
 SET(file_valid_chmod "${file_prefix}/test_change_right")
 
+# Parameters for gfal_test_del_nonex test
+SET(nonexfile "nonexistingfile")
+
+# Parameter for the gfal_test_del test
+SET(testdelfile "testdelfile")
+
+# Parameter for the gfal_test_mkdir_unlink test
+SET(unlinkdirectory "unlinkdirectory")
+
 IF(PLUGIN_FILE)
+    test_gfal_test_del_nonex("FILE" "file://${file_base_path}/${nonexfile}")
+    test_gfal_test_del ("FILE" "file://${file_base_path}/${testdelfile}")
+    test_gfal_test_mkdir_unlink("FILE" "file://${file_base_path}/${unlinkdirectory}")
     stat_test_all("FILE" ${file_stat_ok})
     chmod_test_all("FILE" ${file_valid_chmod} 0565 060 360 767)
     mkdir_test_all("FILE" ${file_prefix})
@@ -65,6 +75,15 @@ IF(PLUGIN_FILE)
 ENDIF(PLUGIN_FILE)
 
 IF(PLUGIN_SRM)
+	test_gfal_test_del_nonex("SRM_DPM"    "${srm_prefix_dpm}/${nonexfile}")
+	test_gfal_test_del_nonex("SRM_STORM"  "${srm_prefix_storm}/${nonexfile}")
+	test_gfal_test_del_nonex("SRM_DCACHE" "${srm_prefix_dcache}/${nonexfile}")
+	test_gfal_test_del("SRM_DPM"     "${srm_prefix_dpm}/${nonexfile}")
+	test_gfal_test_del("SRM_STORM"   "${srm_prefix_storm}/${nonexfile}")
+	test_gfal_test_del("SRM_DCACHE"  "${srm_prefix_dcache}/${nonexfile}")
+	test_gfal_test_mkdir_unlink("SRM_DPM"     "${srm_prefix_dpm}/${unlinkdirectory}")
+	test_gfal_test_mkdir_unlink("SRM_STORM"   "${srm_prefix_storm}/${unlinkdirectory}")
+	test_gfal_test_mkdir_unlink("SRM_DCACHE"  "${srm_prefix_dcache}/${unlinkdirectory}")
 	stat_test_all( "SRM_DPM" ${srm_valid_dpm_stat})
         stat_test_all( "SRM_DCACHE" ${srm_valid_dcache_stat})
         checksum_test_all("SRM_DPM" ${srm_valid_dir_root})
@@ -116,6 +135,9 @@ ENDIF(PLUGIN_DCAP)
 
 
 IF(PLUGIN_GRIDFTP)
+	test_gfal_test_del_nonex("GRIDFTP_DPM"  "${gsiftp_prefix_dpm}/${nonexfile}")
+	test_gfal_test_del("GRIDFTP_DPM"   "${gsiftp_prefix_dpm}/${nonexfile}")
+	test_gfal_test_mkdir_unlink("GRIDFTP" "${gsiftp_prefix_dpm}/${unlinkdirectory}")
 	stat_test_all( "GRIDFTP" ${gsiftp_valid_dpm_stat})
         checksum_test_all("GRIDFTP" ${gsiftp_valid_dir_root})
         checksum_test_simple("GRIDFTP_ADLER32" ${gsiftp_valid_dpm_stat} ADLER32)
