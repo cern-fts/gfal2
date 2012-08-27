@@ -15,7 +15,10 @@
  * limitations under the License.
  */
 
+#include <ctime>
+#include <externals/utils/time_utils.h>
 #include "gridftpmodule.h"
+
 
 #define GRIDFTP_CONFIG_GROUP "GRIDFTP PLUGIN"
 
@@ -28,12 +31,27 @@ enum Gridftp_request_status{
 struct GridFTP_Request_state{
 	GridFTP_Request_state(GridFTP_session * s, bool own_session=true);
 	virtual ~GridFTP_Request_state();
-	
+
+    // ftp session
 	std::auto_ptr<GridFTP_session> sess;  
-	Gridftp_request_status req_status;
+    // request status
+    Gridftp_request_status req_status;
     int errcode;
-    std::string	error;	
+    std::string	error;
+    // params
+    struct timespec end_time; // timeout trigger -> 0 if not enabled, usage of CLOCK_MONOTONIC is required.
+    // enable/disable destroy when out of scope
     bool own_session;
+
+    //
+    inline void init_timeout(struct timespec * time_offset){
+        if( timespec_isset(&end_time)){
+            timespec_clear(&end_time);
+        }else{
+            clock_gettime(CLOCK_MONOTONIC, &end_time);
+            timespec_add(&end_time, time_offset, &end_time);
+        }
+    }
 };
 
 struct GridFTP_stream_state : public GridFTP_Request_state{
@@ -101,6 +119,15 @@ class GridFTPFactory : public GridFTPFactoryInterface
 void globus_basic_client_callback (void * user_arg, 
 				globus_ftp_client_handle_t *		handle,
 				globus_object_t *				error);
+
+void globus_gass_basic_client_callback(
+        void * callback_arg,
+        globus_gass_copy_handle_t * handle,
+        globus_object_t * error);
+
+// wait for the end of the gass asynchronous call
+//throw Glib::Error in case of failure
+void gridftp_gass_wait_for_callback(const Glib::Quark & scope, GridFTP_Request_state* state);	// throw GLib::Error
 	
 				
 // wait for the end of the globus asynchronous call
@@ -111,6 +138,11 @@ void gridftp_callback_err_report(const Glib::Quark & scope, GridFTP_Request_stat
 
 void gridftp_callback_err_report(const Glib::Quark & scope, GridFTP_Request_state* state);
 
+
+// polling function for gass ops
+void gridftp_gass_poll_callback(const Glib::Quark & scope, GridFTP_Request_state* state);
+
+// polling function for gridftp ops
 void gridftp_poll_callback(const Glib::Quark & scope, GridFTP_Request_state* state);
 
 // do atomic read operation from globus async call

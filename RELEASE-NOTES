@@ -8,6 +8,7 @@ Trunk:
 - add the mkdir rec function for SRM transfer
 - correct an issue with opendir and srm_ls ( ENOTDIR error silent )
 - correct a memory leak in the cache system
+- correct timeout support for gsiftp transfer
 
 * Fri Jul 20 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-1
  - Official initial release candidate of gfal 2.0

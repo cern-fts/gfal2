@@ -95,31 +95,41 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
                                         const char* src, const char* dst){
     using namespace Gfal::Transfer;
     GError * tmp_err=NULL;
+    struct timespec ops_timeout;
 
-    const unsigned long timeout = gfalt_get_timeout(params, &tmp_err); Gfal::gerror_to_cpp(&tmp_err);
+    ops_timeout.tv_sec = gfalt_get_timeout(params, &tmp_err); Gfal::gerror_to_cpp(&tmp_err);
+    ops_timeout.tv_nsec =0;
     const unsigned int nbstream = gfalt_get_nbstreams(params, &tmp_err); Gfal::gerror_to_cpp(&tmp_err);
 
-    std::auto_ptr<GridFTP_session> sess(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(src)));
+    std::auto_ptr<GridFTP_Request_state> req(  new GridFTP_Request_state(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(src))));
+    GridFTP_session* sess = req->sess.get();
 
     sess->set_nb_stream( nbstream);
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] setup gsiftp number of streams to %d", nbstream);
+    req->init_timeout(&ops_timeout);
+    gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] setup gsiftp timeout to %ld s and %ld ns", ops_timeout.tv_sec, ops_timeout.tv_nsec);
 
-    Callback_handler callback_handler(params, sess.get(), src, dst);
+    Callback_handler callback_handler(params, sess, src, dst);
 
     if( gfalt_get_strict_copy_mode(params, NULL) == false)
-        gridftp_filecopy_delete_existing(sess.get(), params, dst);
+        gridftp_filecopy_delete_existing(sess, params, dst);
 
-    std::auto_ptr<Gass_attr_handler>  gass_attr_src( sess->generate_gass_copy_attr());
+    std::auto_ptr<Gass_attr_handler>  gass_attr_src(sess->generate_gass_copy_attr());
     std::auto_ptr<Gass_attr_handler>  gass_attr_dst(sess->generate_gass_copy_attr());
 
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);
-    gfal_globus_result_t res = globus_gass_copy_url_to_url 	(sess->get_gass_handle(),
+    gfal_globus_result_t res = globus_gass_copy_register_url_to_url(
+        sess->get_gass_handle(),
         (char*)src,
         &(gass_attr_src->attr_gass),
         (char*)dst,
-        &(gass_attr_dst->attr_gass)
-        );
+        &(gass_attr_dst->attr_gass),
+        globus_gass_basic_client_callback,
+        req.get()
+    );
+
     gfal_globus_check_result("GridFTPFileCopyModule::filecopy", res);
+    gridftp_gass_wait_for_callback(scope_filecopy,req.get());
     return 0;
 
 }

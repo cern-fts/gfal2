@@ -220,7 +220,9 @@ GridFTPFactory::GridFTPFactory(gfal_handle handle) : _handle(handle)
 
 GridFTP_Request_state::GridFTP_Request_state(GridFTP_session * s, bool own_session) : sess(s){
 	req_status=GRIDFTP_REQUEST_NOT_LAUNCHED;
-	this-> own_session = own_session;
+    this->own_session = own_session;
+    this->end_time.tv_sec=0;
+    this->end_time.tv_nsec=0;
 }
 
 GridFTP_Request_state::~GridFTP_Request_state()
@@ -423,12 +425,62 @@ void globus_basic_client_callback (void * user_arg,
 	state->req_status = GRIDFTP_REQUEST_FINISHED;	
 }
 
+void globus_gass_basic_client_callback(
+        void * callback_arg,
+        globus_gass_copy_handle_t * handle,
+        globus_object_t * error){
+    GridFTP_Request_state* state = (GridFTP_Request_state*) callback_arg;
 
+    if(error != GLOBUS_SUCCESS){
+        gfal_globus_store_error(state, error);
+    }else{
+        state->errcode = 0;
+    }
+    state->req_status = GRIDFTP_REQUEST_FINISHED;
+}
+
+
+void gass_cancel_handler(
+    void * callback_arg,
+    globus_gass_copy_handle_t * handle,
+    globus_object_t * error){
+    gfal_log(GFAL_VERBOSE_TRACE," -> transfer gas cancel  ");
+}
+
+static bool check_timeout(GridFTP_Request_state* state){
+    if(timespec_isset(&state->end_time)){ //check timeout
+        struct timespec current_time;
+        clock_gettime(CLOCK_MONOTONIC, &current_time);
+        if(timespec_cmp(&state->end_time, &current_time, <) ){
+            gfal_log(GFAL_VERBOSE_TRACE,"timeout, transfer canceled");
+            globus_gass_copy_cancel(state->sess->get_gass_handle(), gass_cancel_handler, NULL);
+            return true;
+        }
+    }
+    return false;
+}
+
+void gridftp_gass_poll_callback(const Glib::Quark & scope, GridFTP_Request_state* state){
+    gfal_log(GFAL_VERBOSE_TRACE," -> go gass polling for request ");
+    bool timeout= false;
+    while(state->req_status != GRIDFTP_REQUEST_FINISHED){
+        timeout = check_timeout(state);
+        usleep(10);
+    }
+
+    if(timeout){
+        state->errcode= ETIME;
+        state->error= "gridftp gass operation timeout, operation canceled";
+    }
+
+    gfal_log(GFAL_VERBOSE_TRACE," <- out of gass polling for request ");
+}
 
 void gridftp_poll_callback(const Glib::Quark & scope, GridFTP_Request_state* state){
 	gfal_log(GFAL_VERBOSE_TRACE," -> go polling for request ");
-	while(state->req_status != GRIDFTP_REQUEST_FINISHED )
-			usleep(10);	
+    while(state->req_status != GRIDFTP_REQUEST_FINISHED){
+        usleep(10);
+    }
 	gfal_log(GFAL_VERBOSE_TRACE," <- out of polling for request ");			
 }
 
@@ -449,10 +501,17 @@ void gridftp_wait_for_callback(const Glib::Quark & scope, GridFTP_Request_state*
 	gridftp_callback_err_report(scope, state);
 }
 
+void gridftp_gass_wait_for_callback(const Glib::Quark & scope, GridFTP_Request_state* state){
+    gridftp_gass_poll_callback(scope, state);
+    gridftp_callback_err_report(scope, state);
+}
+
 void gridftp_wait_for_callback_stream(const Glib::Quark & scope, GridFTP_stream_state* state){
     gridftp_poll_callback_stream(scope, state);
     gridftp_callback_err_report(scope, state);
 }
+
+
 
 void gridftp_wait_for_read(const Glib::Quark & scope, GridFTP_stream_state* state, off_t end_read){
     gridftp_wait_for_callback_stream(scope, state);
