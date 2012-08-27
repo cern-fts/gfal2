@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <glib.h>
 
-#define GFALT_DEFAULT_TRANSFERT_TIMEOUT 60
+#define GFALT_DEFAULT_TRANSFERT_TIMEOUT 180
 #define GFALT_DEFAULT_NB_STREAM			0
 
  
