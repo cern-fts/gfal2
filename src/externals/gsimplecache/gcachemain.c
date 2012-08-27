@@ -60,7 +60,7 @@ GSimpleCache* gsimplecache_new(guint64 max_size, GSimpleCache_CopyConstructor va
 void gsimplecache_delete(GSimpleCache* cache){
 	if(cache != NULL){
 		pthread_mutex_lock(&cache->mux);
-		g_hash_table_remove_all(cache->table);
+		g_hash_table_destroy (cache->table);		
 		pthread_mutex_unlock(&cache->mux);
 		pthread_mutex_destroy(&cache->mux);
 		g_free(cache);
