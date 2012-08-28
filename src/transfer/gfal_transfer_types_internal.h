@@ -41,6 +41,7 @@ struct _gfalt_params_t{
 	gboolean lock; 				// lock enabled after the start of the transfer
 	uuid_t uuid;				// unique id of the transfer
 	guint64 timeout; 			// connexion timeout
+    guint64 tcp_buffer_size;
 	gboolean replace_existing;  // replace destination or not
 	off_t start_offset;			// start offset in case of restart
 	guint nb_data_streams;		// nb of parallels streams

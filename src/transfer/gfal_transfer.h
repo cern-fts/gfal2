@@ -103,6 +103,16 @@ guint gfalt_get_nbstreams(gfalt_params_t params, GError** err);
 
 
 /**
+ * define the size of the tcp buffer size for network transfer
+ * */
+gint gfalt_set_tcp_buffer_size(gfalt_params_t, guint64 tcp_buffer_size, GError** err);
+
+/**
+ * get the size of the tcp buffer size for network transfer
+ **/
+guint64 gfalt_get_tcp_buffer_size(gfalt_params_t params, GError** err);
+
+/**
   enable or disable the non-third party transfer execution ( default : true )
  */
 gint gfalt_set_local_transfer_perm(gfalt_params_t, gboolean local_transfer_status, GError ** err);

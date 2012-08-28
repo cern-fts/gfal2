@@ -56,8 +56,6 @@ int gfal_srmv2_get_global(gfal_srm_plugin_t handle, gfal_srm_params_t params, st
 	g_return_val_err_if_fail(handle != NULL && input != NULL && resu != NULL,-1,err,"[gfal_srmv2_get_global] tab null ");
 
 	GError* tmp_err=NULL;
-	char errbuf[GFAL_URL_MAX_LEN];
-	errbuf[0]='\0';
 	int ret=0;
 	struct srm_preparetoget_output preparetoget_output;
 	

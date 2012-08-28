@@ -85,6 +85,18 @@ gint gfalt_set_nbstreams(gfalt_params_t params, guint nbstreams, GError** err){
 	return 0;	
 }
 
+//
+gint gfalt_set_tcp_buffer_size(gfalt_params_t params, guint64 tcp_buffer_size, GError** err){
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+    params->tcp_buffer_size = tcp_buffer_size;
+    return 0;
+}
+
+//
+guint64 gfalt_get_tcp_buffer_size(gfalt_params_t params, GError** err){
+    return params->tcp_buffer_size;
+}
+
 gint gfalt_set_local_transfer_perm(gfalt_params_t params, gboolean local_transfer_status, GError ** err){
     g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
     params->local_transfers	= local_transfer_status;
