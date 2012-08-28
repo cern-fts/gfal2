@@ -65,11 +65,17 @@ int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError*
 	ret =gfal_srm_determine_endpoint(opts, surl, full_endpoint, GFAL_URL_MAX_LEN, &srm_types,   &tmp_err);
 	if(ret >=0){
 		if (srm_types == PROTO_SRMv2){			// check the proto version
-			gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_mkdir_rec] try to create directory %s", surl);
-			// verify if directory already exist
-			if( (ret= gfal_mkdir_srmv2_internal(opts, full_endpoint, (char*)surl, mode, &tmp_err)) !=0){
-				ret = 0;
-			}
+            struct stat stat_dir;
+            gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_mkdir_rec] check if directory %s already exist...", surl);
+            if( (ret = gfal_statG_srmv2_internal(opts, &stat_dir, full_endpoint, surl, &tmp_err)) == 0 && S_ISDIR(stat_dir.st_mode) ){
+                ret =0;
+            }else{
+                g_clear_error(&tmp_err);
+                gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_mkdir_rec] try to create directory %s", surl);
+                if( (ret= gfal_mkdir_srmv2_internal(opts, full_endpoint, (char*)surl, mode, &tmp_err)) !=0){
+                    ret = 0;
+                }
+            }
 	
 		} else if(srm_types == PROTO_SRM){
 			g_set_error(&tmp_err,0, EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
