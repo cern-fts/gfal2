@@ -55,6 +55,8 @@ struct GridFTP_session{
 
     virtual void set_nb_stream(const unsigned int nbstream)=0;
 
+    virtual void set_tcp_buffer_size(const guint64 tcp_buffer_size)=0;
+
 };
 
 

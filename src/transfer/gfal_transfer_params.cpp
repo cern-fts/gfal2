@@ -28,6 +28,7 @@ void gfalt_params_handle_init(gfalt_params_t p, GError ** err){
 	p->nb_data_streams = GFALT_DEFAULT_NB_STREAM;
 	p->timeout = GFALT_DEFAULT_TRANSFERT_TIMEOUT;
 	p->start_offset = 0;
+    p->tcp_buffer_size=0;
 	p->replace_existing = false;
     p->local_transfers=true;
     p->strict_mode = false;

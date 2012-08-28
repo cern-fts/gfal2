@@ -101,6 +101,10 @@ struct GridFTP_session_implem : public GridFTP_session{
         globus_ftp_client_operationattr_set_mode(&(_sess->operation_attr_ftp), _sess->mode);
         globus_ftp_client_operationattr_set_parallelism(&(_sess->operation_attr_ftp),&(_sess->parall));
     }
+
+    void apply_default_tcp_buffer_attributes(){
+        globus_ftp_client_operationattr_set_tcp_buffer(&(_sess->operation_attr_ftp), &(_sess->tcp_buffer_size));
+    }
 	
 	void set_gridftpv2(bool v2){
 		globus_ftp_client_handleattr_set_gridftp2(&(_sess->attr_handle), v2); // define gridftp 2	
@@ -122,7 +126,16 @@ struct GridFTP_session_implem : public GridFTP_session{
         apply_default_stream_attribute();
     }
 	
-	
+
+    virtual void set_tcp_buffer_size(const guint64 tcp_buffer_size){
+        if(tcp_buffer_size == 0){
+            _sess->tcp_buffer_size.mode = GLOBUS_FTP_CONTROL_TCPBUFFER_DEFAULT;
+        }else{
+            _sess->tcp_buffer_size.mode = GLOBUS_FTP_CONTROL_TCPBUFFER_FIXED;
+            _sess->tcp_buffer_size.fixed.size = tcp_buffer_size;
+        }
+    }
+
 	GridFTP_session_implem(GridFTPFactory* f, const std::string & hostname){
 		this->factory = f;
 		this->hostname = hostname;
@@ -198,6 +211,7 @@ struct GridFTP_session_implem : public GridFTP_session{
         // options
         globus_ftp_control_parallelism_t parall;
         globus_ftp_control_mode_t  	mode;
+        globus_ftp_control_tcpbuffer_t tcp_buffer_size;
 	};
 	
 	Session_handler* _sess;
@@ -265,7 +279,7 @@ void GridFTPFactory::recycle_session(GridFTP_session* sess){
 }
 
 
-
+// recycle a gridftp session object from cache if exist, return NULL else
 GridFTP_session* GridFTPFactory::get_recycled_handle(const std::string & hostname){
 	Glib::Mutex::Lock l(mux_cache);	
     GridFTP_session* res= NULL;
