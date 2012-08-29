@@ -23,7 +23,6 @@ test suite for gfal 2.0
 
 %clean
 rm -rf %{buildroot};
-make clean
 
 %prep
 %setup -q
