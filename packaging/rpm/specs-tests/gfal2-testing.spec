@@ -13,10 +13,10 @@ Source0:			http://grid-deployment.web.cern.ch/grid-deployment/dms/lcgutil/tar/%{
 BuildRoot:			%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 #main lib dependencies
-Requires:		cmake
-Requires:		gfal2-devel
-Requires:		gfal2-all
-Requires:		voms-clients
+Requires:		cmake%{?_isa}
+Requires:		gfal2-devel%{?_isa}
+Requires:		gfal2-all%{?_isa}
+Requires:		voms-clients%{?_isa}
 
 %description
 test suite for gfal 2.0
