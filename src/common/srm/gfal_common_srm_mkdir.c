@@ -67,7 +67,7 @@ int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError*
 		if (srm_types == PROTO_SRMv2){			// check the proto version
             struct stat stat_dir;
             gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_mkdir_rec] check if directory %s already exist...", surl);
-            if( (ret = gfal_statG_srmv2_internal(opts, &stat_dir, full_endpoint, surl, &tmp_err)) == 0 && S_ISDIR(stat_dir.st_mode) ){
+            if( (ret = gfal_srm_statG(ch, surl, &stat_dir, &tmp_err)) == 0 && S_ISDIR(stat_dir.st_mode) ){
                 ret =0;
             }else{
                 g_clear_error(&tmp_err);
@@ -97,33 +97,38 @@ int gfal_srm_mkdirG(plugin_handle ch, const char* surl, mode_t mode, gboolean pf
 	GError* tmp_err=NULL;
 	enum gfal_srm_proto srm_types;
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
-	
-	gfal_log(GFAL_VERBOSE_TRACE, "  ->  [gfal_srm_mkdirG] ");
-	ret =gfal_srm_determine_endpoint(opts, surl, full_endpoint, GFAL_URL_MAX_LEN, &srm_types,   &tmp_err);
-	if(ret >=0){
-		if (srm_types == PROTO_SRMv2){			// check the proto version
-			gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_mkdirG] try to create directory %s", surl);
-			// verify if directory already exist
-			struct stat st;
-			if( gfal_statG_srmv2_internal(opts, &st, full_endpoint, (char*) surl, &tmp_err) !=0){
-				g_clear_error(&tmp_err);
-				ret= gfal_mkdir_srmv2_internal(opts, full_endpoint, (char*)surl, mode, &tmp_err);	// execute the SRMv2 access test			
-			}else{
-				g_set_error(&tmp_err,0, EEXIST, "directory already exist");				
-				ret = -1;	
-			}
-			
 
+    if(pflag){ // pflag set : behavior similar to mkdir -p requested
+        ret = gfal_srm_mkdir_recG(ch, surl, mode, &tmp_err);
+    }else{
 	
-		} else if(srm_types == PROTO_SRM){
-			g_set_error(&tmp_err,0, EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
-			ret =  -1;
-		} else{
-			g_set_error(&tmp_err,0,EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure ");
-			ret=-1;
-		}
+        gfal_log(GFAL_VERBOSE_TRACE, "  ->  [gfal_srm_mkdirG] ");
+        ret =gfal_srm_determine_endpoint(opts, surl, full_endpoint, GFAL_URL_MAX_LEN, &srm_types,   &tmp_err);
+        if(ret >=0){
+            if (srm_types == PROTO_SRMv2){			// check the proto version
+                gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_mkdirG] try to create directory %s", surl);
+                // verify if directory already exist
+                struct stat st;
+                if( gfal_statG_srmv2_internal(opts, &st, full_endpoint, (char*) surl, &tmp_err) !=0){
+                    g_clear_error(&tmp_err);
+                    ret= gfal_mkdir_srmv2_internal(opts, full_endpoint, (char*)surl, mode, &tmp_err);	// execute the SRMv2 access test
+                }else{
+                    g_set_error(&tmp_err,0, EEXIST, "directory already exist");
+                    ret = -1;
+                }
 
-	gfal_log(GFAL_VERBOSE_TRACE, "   [gfal_srm_mkdirG] <-");
-	}
+
+
+            } else if(srm_types == PROTO_SRM){
+                g_set_error(&tmp_err,0, EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
+                ret =  -1;
+            } else{
+                g_set_error(&tmp_err,0,EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure ");
+                ret=-1;
+            }
+
+        gfal_log(GFAL_VERBOSE_TRACE, "   [gfal_srm_mkdirG] <-");
+        }
+    }
 	G_RETURN_ERR(ret, tmp_err, err);
 }

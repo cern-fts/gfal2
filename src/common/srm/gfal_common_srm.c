@@ -125,6 +125,7 @@ static gboolean gfal_srm_check_url(plugin_handle handle, const char* url, plugin
 		case GFAL_PLUGIN_GETXATTR:
 		case GFAL_PLUGIN_LISTXATTR:
         case GFAL_PLUGIN_CHECKSUM:
+        case GFAL_PLUGIN_MKDIR_REC:
 			return (gfal_surl_checker(handle, url,  err)==0);
 		default:
 			return FALSE;		

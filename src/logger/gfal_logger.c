@@ -79,7 +79,10 @@ guint gfal_log_set_handler(GLogFunc log_func,
 void gfal_log(int verbose_lvl, const char* msg, ...){
 	 if(verbose_lvl & gfal_get_verbose() ){
 			char tab[GFAL_ERRMSG_LEN];
-			snprintf(tab, GFAL_ERRMSG_LEN,"<pthrid:%ld> %s", (unsigned long) pthread_self(), msg);
+            struct timespec current_time;
+            clock_gettime(CLOCK_REALTIME, &current_time);
+            double real_time = ( current_time.tv_sec) + ((double) current_time.tv_nsec) / 1000000000.0;
+            snprintf(tab, GFAL_ERRMSG_LEN,"<t:%f> <pthrid:%ld> %s", real_time, (unsigned long) pthread_self(), msg);
 			va_list args;
 			va_start(args, msg);
 			gfal_internal_logger(verbose_lvl, tab, args); 
