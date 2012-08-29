@@ -41,7 +41,7 @@ cp -r * %{buildroot}/usr/src/gfal2/
 
 %files
 %defattr (-,root,root)
-/usr/share/src/gfal2/*
+/usr/src/gfal2/*
 
 
 %changelog
