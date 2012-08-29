@@ -1,5 +1,5 @@
 %global checkout_tag 20120828svn
-
+%define debug_package %{nil}
 
 Name:				gfal2-testing
 Version:			2.0.3
