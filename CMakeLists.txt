@@ -52,6 +52,9 @@ set(VERSION_PATCH 0)
 set(VERSION_STRING ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 
+# out of project test compilation
+SET(ONLY_TESTS FALSE
+	CACHE STRING "enable or disable out of project dir")
 
 
 # libs checks
@@ -79,7 +82,10 @@ FILE(GLOB lst_conf_files "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/*.conf")
 install(FILES ${lst_conf_files}
 			DESTINATION ${SYSCONF_INSTALL_DIR}/gfal2.d/)
 
-add_subdirectory (doc)
-add_subdirectory (src)
+IF(NOT ONLY_TESTS)
+	add_subdirectory (doc)
+	add_subdirectory (src)
+ENDIF(NOT ONLY_TESTS)
 add_subdirectory (test)
 add_subdirectory (testing)
+

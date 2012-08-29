@@ -2,6 +2,7 @@
 
 ## default set of build
 
+SET(OLD_TESTS FALSE)
 	
 ## defaults sources
 FILE(GLOB src_test_global "*.c")
@@ -33,7 +34,7 @@ SET(global_dir	".")
 
 
 
-IF (FUNCTIONAL_TESTS)
+IF (OLD_TESTS)
 
 	find_package(LFC REQUIRED)
 	find_package(DPM REQUIRED)
@@ -64,5 +65,5 @@ IF (FUNCTIONAL_TESTS)
 #env_test.PrependENVPath('GFAL_PLUGIN_LIST', "libgfal_plugin_lfc.so:libgfal_plugin_srm.so:libgfal_plugin_rfio.so"); # setup the GFAL PLUGIN SEARCH PATH
 
         #add_test(test-all test_all_with_mock)
-ENDIF (FUNCTIONAL_TESTS)
+ENDIF (OLD_TESTS)
 
