@@ -1,8 +1,8 @@
-%global checkout_tag 20120828svn
+%global checkout_tag 20120830svn
 
 
 Name:				gfal2
-Version:			2.0.2
+Version:			2.0.3
 Release:			1.%{checkout_tag}%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
