@@ -66,6 +66,7 @@ int srm_plugin_delete_existing_copy(plugin_handle handle, gfalt_params_t params,
         if( (res = gfal_srm_statG(handle, surl, &st_dest_file, &tmp_err)) == 0 ){
             gfal_log(GFAL_VERBOSE_TRACE, "   %s found, delete in order to replace it", surl);
             if( (res = gfal_srm_unlinkG(handle, surl, &tmp_err)) ==0){
+                gfal_log(GFAL_VERBOSE_TRACE, "   %s deleted with sucess", surl);
                 res =0;
             }else{
                 if(tmp_err && tmp_err->code == ENOENT){
@@ -77,8 +78,9 @@ int srm_plugin_delete_existing_copy(plugin_handle handle, gfalt_params_t params,
 
             }
         }else if(tmp_err->code == ENOENT){
-            gfal_log(GFAL_VERBOSE_TRACE, "   %s does not exist, begin copy", surl);
+            gfal_log(GFAL_VERBOSE_TRACE, " %s dest does not exist, no over-write needed, begin copy", surl);
             g_clear_error(&tmp_err);
+            res =0;
         }
 		
 	}
