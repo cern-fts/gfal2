@@ -12,6 +12,7 @@ Trunk:
 - implement tcp buffer size support for gsiftp layer
 - apply a correction on the SRM over-write logic, linked to a BeStMan errcode problem on File Not Found with srmRm ( EOS )
 - apply a fix on the transfer gsiftp timeout ( protection against multiple cancel )
+- fix for SRM filesize problem ( defined to 0, workaround ) related to globus 426 error bad filesize
 
 * Fri Jul 20 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-1
  - Official initial release candidate of gfal 2.0
