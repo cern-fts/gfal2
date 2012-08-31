@@ -18,6 +18,25 @@ Requires:		cmake%{?_isa}
 Requires:		gfal2-devel%{?_isa}
 Requires:		gfal2-all%{?_isa}
 Requires:		voms-clients%{?_isa}
+Requires:		glibmm24-devel%{?_isa}
+Requires:		libattr-devel%{?_isa}
+Requires:		openldap-devel%{?_isa}
+## libuuid is in a different rpm for el5
+%if 0%{?el5}
+Requires:		e2fsprogs-devel%{?_isa}
+%else
+Requires:		libuuid-devel%{?_isa}
+%endif
+#lfc plugin dependencies
+Requires:		lfc-devel%{?_isa}
+#rfio plugin dependencies
+Requires:		dpm-devel%{?_isa}
+#srm plugin dependencies
+Requires:		srm-ifce-devel%{?_isa}
+#dcap plugin dependencies
+Requires:		dcap-devel%{?_isa}
+#gridftp plugin dependencies
+Requires:		globus-gass-copy-devel%{?_isa}
 
 %description
 test suite for gfal 2.0
