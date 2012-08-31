@@ -1,6 +1,5 @@
 #File plugin compilation file
-SET(PLUGIN_FILE TRUE
-	CACHE STRING "enable compilation of the local File plugin")
+
 
 #define gridftp source
 FILE(GLOB src_file "*.c*")

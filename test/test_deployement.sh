@@ -23,8 +23,9 @@ cmake -D MAIN_TRANSFER=TRUE -D FUNCTIONAL_TESTS=TRUE -D UNIT_TESTS=TRUE -D CMAKE
 echo "## build tests..."
 make
 
+echo "## import test environment"
+source $gfal_dir/setup_test_env_isolated.sh
 
 echo "## test execution .... "
-source $gfal_dir/setup_test_env.sh
 
 ctest

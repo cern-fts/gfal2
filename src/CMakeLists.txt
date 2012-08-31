@@ -1,15 +1,4 @@
 ## default set of build
-SET(MAIN_CORE TRUE
-	CACHE STRING "enable compilation of the main library")
-
-SET(PLUGIN_LFC TRUE
-	CACHE STRING "enable compilation of the lfc plugin")
-SET(PLUGIN_SRM TRUE
-	CACHE STRING "enable compilation of the srm plugin")
-SET(PLUGIN_RFIO TRUE
-	CACHE STRING "enable compilation of the RFIO plugin")
-SET(PLUGIN_DCAP TRUE
-	CACHE STRING "enable compilation of the DCAP plugin")
 
 	
 SET(IS_IFCE FALSE)

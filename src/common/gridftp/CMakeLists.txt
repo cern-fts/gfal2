@@ -1,6 +1,5 @@
 #grid ftp plugin compilation file
-SET(PLUGIN_GRIDFTP TRUE
-	CACHE STRING "enable compilation of the GRIDFTP plugin")
+
 
 #define gridftp source
 FILE(GLOB src_gridftp "*.c*")

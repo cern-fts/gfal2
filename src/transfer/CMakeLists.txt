@@ -1,6 +1,5 @@
 ## default set of build
-SET(MAIN_TRANSFER TRUE
-	CACHE STRING "enable compilation of the transfer library")
+
 
 ## defaults sources
 FILE(GLOB src_trans "*.cpp" )

@@ -2,6 +2,25 @@
 project (gfal2)
 cmake_minimum_required (VERSION 2.6)
 message("cmake source dir : ${CMAKE_SOURCE_DIR}")
+# default set of options
+SET(MAIN_CORE TRUE
+        CACHE STRING "enable compilation of the main library")
+SET(PLUGIN_LFC TRUE
+        CACHE STRING "enable compilation of the lfc plugin")
+SET(PLUGIN_SRM TRUE
+        CACHE STRING "enable compilation of the srm plugin")
+SET(PLUGIN_RFIO TRUE
+        CACHE STRING "enable compilation of the RFIO plugin")
+SET(PLUGIN_DCAP TRUE
+        CACHE STRING "enable compilation of the DCAP plugin")
+SET(PLUGIN_FILE TRUE
+        CACHE STRING "enable compilation of the local File plugin")
+SET(PLUGIN_GRIDFTP TRUE
+        CACHE STRING "enable compilation of the GRIDFTP plugin")
+
+SET(MAIN_TRANSFER TRUE
+        CACHE STRING "enable compilation of the transfer library")
+
 # build type
 set(CMAKE_BUILD_TYPE "RelWithDebInfo"
 	CACHE STRING "type of build")
