@@ -4,6 +4,8 @@
 
 set -e
 
+PATH_TESTS=/usr/tests/functional/gfal2
+
 echo "## start test deployement"
 
 gfal_dir=$(dirname $0)/
@@ -26,6 +28,27 @@ make
 echo "## import test environment"
 source $gfal_dir/setup_test_env_isolated.sh
 
-echo "## test execution .... "
+echo "## test deployement .... "
 
-ctest
+n_test=$(ctest -N | grep  "[\\/|#][0-9]" | wc -l)
+
+echo "## found $n_test tests to execute..."
+
+
+echo "## creat tests..."
+mkdir -p $PATH_TESTS
+
+for i in `seq $n_test`}
+do
+test_name="gfal_ctest_number_$i"
+echo " generate test : $test_name"
+test_path=$PATH_TESTS/$test_name
+touch $test_path
+echo "#!/bin/bash" >> $test_path
+echo "## test $test_name" >> $test_path
+echo " " >> $test_path
+echo "cd $gfal_test_dir/build " >> $test_path
+echo "set -e" >> $test_path
+echo "ctest -V -I ${i},${i}" >> $test_path
+chmod a+x $test_path
+done
