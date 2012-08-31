@@ -125,11 +125,10 @@ int gfal_srm_putTURLS_srmv2_internal(gfal_srmv2_opt* opts , gfal_srm_params_t pa
 	int ret=0,i=0;
 	struct srm_preparetoput_input preparetoput_input;
 	const int err_size = 2048;
-
 	
 	char errbuf[err_size]; errbuf[0]='\0';
 	size_t n_surl = g_strv_length (surls);									// n of surls
-	gint64 filesize_tab[n_surl];
+	SRM_LONG64 filesize_tab[n_surl];
 	for(i=0; i < n_surl;++i)
 		filesize_tab[i] = opts->filesizes;
 		
