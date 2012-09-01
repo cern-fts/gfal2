@@ -40,7 +40,7 @@ mkdir -p $PATH_TESTS
 
 for i in `seq $n_test`}
 do
-test_name="gfal_ctest_number_$i"
+test_name="gfal2_ctest_number_$i"
 echo " generate test : $test_name"
 test_path=$PATH_TESTS/$test_name
 touch $test_path
