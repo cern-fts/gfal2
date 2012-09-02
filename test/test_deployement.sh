@@ -47,6 +47,7 @@ touch $test_path
 echo "#!/bin/bash" >> $test_path
 echo "## test $test_name" >> $test_path
 echo " " >> $test_path
+echo "voms-proxy-info  " >> $test_path
 echo "cd $gfal_test_dir/build " >> $test_path
 echo "set -e" >> $test_path
 echo "source $gfal_dir/setup_test_env_isolated.sh" >> $test_path
