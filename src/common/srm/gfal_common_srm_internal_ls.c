@@ -80,7 +80,7 @@ int gfal_statG_srmv2__generic_internal(	gfal_srmv2_opt* opts, struct stat* buf,
 										GError** err){
 	g_return_val_err_if_fail( opts && endpoint && surl 
 								 && buf && (sizeof(struct stat) == sizeof(struct stat64)),
-								-1, err, "[gfal_statG_srmv2_generic_internal] Invalid args handle/endpoint or invalid stat sturct size");	
+                                -1, err, "[gfal_statG_srmv2_generic_internal] Invalid args handle/endpoint or invalid stat struct size");
 	GError* tmp_err=NULL;
 	struct srm_ls_input input;
 	struct srm_ls_output output;

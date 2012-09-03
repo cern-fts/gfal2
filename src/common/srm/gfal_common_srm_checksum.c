@@ -44,7 +44,7 @@ static int gfal_checksumG_srmv2_internal(gfal_srmv2_opt* opts, const char* endpo
 												
 	g_return_val_err_if_fail( opts && endpoint && surl 
 								 && buf_checksum && buf_chktype,
-								-1, err, "[gfal_checksumG_srmv2_internal] Invalid args handle/endpoint or invalid stat sturct size");
+                                -1, err, "[gfal_checksumG_srmv2_internal] Invalid input parameters : endpoint, surl, checksum, checksum_type");
 	GError* tmp_err=NULL;
 	struct srm_context context;
 	struct srm_ls_input input;
