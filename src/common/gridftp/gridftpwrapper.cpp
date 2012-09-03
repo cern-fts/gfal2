@@ -30,6 +30,8 @@ struct RwStatus{
 	bool ops_state;
 };
 
+
+
 struct Gass_attr_handler_implem : public Gass_attr_handler{
     Gass_attr_handler_implem(globus_ftp_client_operationattr_t* ftp_operation_attr){
         // initialize gass copy attr
@@ -425,7 +427,7 @@ void GridFTPFactory::gfal_globus_ftp_release_handle(GridFTP_session* h){
 	delete h;
 }
 
-
+// gridftp callback generic implementation
 void globus_basic_client_callback (void * user_arg, 
 				globus_ftp_client_handle_t *		handle,
 				globus_object_t *				error){
@@ -439,6 +441,7 @@ void globus_basic_client_callback (void * user_arg,
 	state->req_status = GRIDFTP_REQUEST_FINISHED;	
 }
 
+// gass operation callback implementation
 void globus_gass_basic_client_callback(
         void * callback_arg,
         globus_gass_copy_handle_t * handle,
@@ -453,21 +456,26 @@ void globus_gass_basic_client_callback(
     state->req_status = GRIDFTP_REQUEST_FINISHED;
 }
 
+// cancel any gass operation synchronously associated with this gridftp session object
+void globus_gass_cancel_sync(const Glib::Quark & scope, GridFTP_session* sess){
+    gfal_log(GFAL_VERBOSE_TRACE," -> gass operation cancel  ");
+    std::auto_ptr<GridFTP_Request_state>  state( new GridFTP_Request_state(sess, false));
 
-void gass_cancel_handler(
-    void * callback_arg,
-    globus_gass_copy_handle_t * handle,
-    globus_object_t * error){
-    gfal_log(GFAL_VERBOSE_TRACE," -> transfer gas cancel  ");
+    globus_result_t res = globus_gass_copy_cancel(state->sess->get_gass_handle(),
+                                                  NULL,
+                                                  NULL);
+     gfal_globus_check_result(scope, res);
+  //  gridftp_gass_wait_for_callback(scope, state.get());
+    gfal_log(GFAL_VERBOSE_TRACE,"  gass operation cancel  <- ");
 }
 
-static bool check_timeout(GridFTP_Request_state* state){
+static bool check_timeout(const Glib::Quark & scope, GridFTP_Request_state* state){
     if(timespec_isset(&state->end_time) == TRUE){ //check timeout
         struct timespec current_time;
         clock_gettime(CLOCK_MONOTONIC, &current_time);
         if(timespec_cmp(&state->end_time, &current_time, <) ==TRUE ){
             gfal_log(GFAL_VERBOSE_TRACE,"timeout, transfer canceled");
-            globus_gass_copy_cancel(state->sess->get_gass_handle(), gass_cancel_handler, NULL);
+            globus_gass_cancel_sync(scope, state->sess.get());
             return true;
         }
     }
@@ -479,7 +487,7 @@ void gridftp_gass_poll_callback(const Glib::Quark & scope, GridFTP_Request_state
     bool timeout= false;
     while(state->req_status != GRIDFTP_REQUEST_FINISHED){
         if(!timeout)
-            timeout = check_timeout(state);
+            timeout = check_timeout(scope, state);
         usleep(10);
     }
 

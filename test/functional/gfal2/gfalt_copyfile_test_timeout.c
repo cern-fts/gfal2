@@ -41,13 +41,14 @@ int main(int argc, char** argv){
 
     if( (ret = gfalt_copy_file(handle, params, src_uri, dst_uri, &tmp_err) )  == 0){
          fprintf(stderr, "should fail... transfer successfull \n");
-		 return -1;		
+         ret= -1;
     }else if( tmp_err->code != ETIME){
         fprintf(stderr, " not a timeout error : problem %s \n", tmp_err->message);
-        return -1;
+        ret= -1;
     }else{
         fprintf(stderr, " success : timeout trigerred :%s \n", tmp_err->message);
         g_clear_error(&tmp_err);
+        ret = 0;
     }
 
 
