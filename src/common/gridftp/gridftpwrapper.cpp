@@ -484,7 +484,7 @@ void gridftp_gass_poll_callback(const Glib::Quark & scope, GridFTP_Request_state
     }
 
     if(timeout){
-        state->errcode= ETIME;
+        state->errcode= ETIMEDOUT;
         state->error= "gridftp gass operation timeout, operation canceled";
     }
 
