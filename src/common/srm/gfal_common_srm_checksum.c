@@ -69,7 +69,7 @@ static int gfal_checksumG_srmv2_internal(gfal_srmv2_opt* opts, const char* endpo
 	if(ret >=0){
 		srmv2_mdstatuses = output.statuses;
         if(srmv2_mdstatuses->status != 0){
-            g_set_error(&tmp_err, srm_checksum_quark(), srmv2_mdstatuses->status, "Error reported from srm_ifce : %d %s",
+            g_set_error(&tmp_err, srm_checksum_quark(), errno, "Error reported from srm_ifce : %d %s",
                             srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
             ret = -1;
         }else{

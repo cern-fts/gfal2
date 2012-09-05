@@ -295,7 +295,7 @@ int gfal_srm_convert_filestatuses_to_GError(struct srmv2_filestatus* statuses, i
  
 void gfal_srm_report_error(char* errbuff, GError** err){
 	int errcode = (errno != ECOMM && errno != 0)?errno:ECOMM;
-	g_set_error(err,0, errcode, "srm-ifce err: %s, err: %s", strerror(errno), errbuff);	
+    g_set_error(err,0, errcode, "srm-ifce err: %s, err: %s", strerror(errcode), errbuff);
 }
 
 
