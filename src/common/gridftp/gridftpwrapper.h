@@ -28,12 +28,19 @@ enum Gridftp_request_status{
 	GRIDFTP_REQUEST_FINISHED,
 };
 
+enum GridFtp_request_type{
+    GRIDFTP_REQUEST_GASS,
+    GRIDFTP_REQUEST_FTP
+};
+
 struct GridFTP_Request_state{
-	GridFTP_Request_state(GridFTP_session * s, bool own_session=true);
+    GridFTP_Request_state(GridFTP_session * s, bool own_session=true,  GridFtp_request_type request_type = GRIDFTP_REQUEST_FTP);
 	virtual ~GridFTP_Request_state();
 
     // ftp session
 	std::auto_ptr<GridFTP_session> sess;  
+    // request type
+    GridFtp_request_type request_type;
     // request status
     Gridftp_request_status req_status;
     int errcode;
@@ -115,6 +122,9 @@ class GridFTPFactory : public GridFTPFactoryInterface
 		
 	friend struct GridFTP_session_implem;
 };
+
+
+void globus_gass_cancel_sync(const Glib::Quark & scope, GridFTP_Request_state* req);
 
 void globus_basic_client_callback (void * user_arg, 
 				globus_ftp_client_handle_t *		handle,

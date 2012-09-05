@@ -8,11 +8,13 @@ SET(MY_VO_STORM "${MY_VO}")
 
 SET(srm_prefix_dpm "srm://cvitbdpm1.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(srm_valid_dpm_stat "${srm_prefix_dpm}/testread0011")
+SET(srm_valid_dpm_bigfile "${srm_prefix_dpm}/testbig")
 SET(srm_valid_dpm_chmod "${srm_prefix_dpm}/test_change_right")
 SET(srm_valid_dir_root "${srm_prefix_dpm}")
 SET(srm_valid_dpm_src_file "${srm_valid_dpm_stat}")
 
 SET(srm_prefix_dcache "srm://cork.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/data/${MY_VO}/testgfal2")
+SET(srm_valid_dcache_bigfile "${srm_prefix_dcache}/testbig")
 SET(srm_valid_dcache_stat "${srm_prefix_dcache}/testread0011")
 SET(srm_valid_dcache_chmod "${srm_prefix_dcache}/test_change_right")
 SET(srm_valid_dcache_dir_root "${srm_prefix_dcache}")
@@ -75,17 +77,21 @@ IF(PLUGIN_FILE)
 ENDIF(PLUGIN_FILE)
 
 IF(PLUGIN_SRM)
+        # del dir test
 	test_gfal_test_del_nonex("SRM_DPM"    "${srm_prefix_dpm}/${nonexfile}")
 	test_gfal_test_del_nonex("SRM_STORM"  "${srm_prefix_storm}/${nonexfile}")
 	test_gfal_test_del_nonex("SRM_DCACHE" "${srm_prefix_dcache}/${nonexfile}")
 	test_gfal_test_del("SRM_DPM"     "${srm_prefix_dpm}/${nonexfile}")
 	test_gfal_test_del("SRM_STORM"   "${srm_prefix_storm}/${nonexfile}")
 	test_gfal_test_del("SRM_DCACHE"  "${srm_prefix_dcache}/${nonexfile}")
+        # mkdir tests
 	test_gfal_test_mkdir_unlink("SRM_DPM"     "${srm_prefix_dpm}/${unlinkdirectory}")
 	test_gfal_test_mkdir_unlink("SRM_STORM"   "${srm_prefix_storm}/${unlinkdirectory}")
 	test_gfal_test_mkdir_unlink("SRM_DCACHE"  "${srm_prefix_dcache}/${unlinkdirectory}")
+        # stat tests
 	stat_test_all( "SRM_DPM" ${srm_valid_dpm_stat})
         stat_test_all( "SRM_DCACHE" ${srm_valid_dcache_stat})
+        # checksum tests
         checksum_test_all("SRM_DPM" ${srm_valid_dir_root})
         checksum_test_all("SRM_DCACHE" ${srm_valid_dcache_dir_root})
         checksum_test_simple("SRM_DPM_ADLER32" ${srm_valid_dpm_stat} ADLER32)
@@ -164,6 +170,8 @@ IF (MAIN_TRANSFER)
 	copy_file_test_full("SRM_TO_GRIDFTP"  ${srm_valid_dpm_src_file} ${gsiftp_prefix_dpm})
         copy_file_test_full("GRIDFTP_TO_SRM"  ${gsiftp_valid_dpm_src_file} ${srm_valid_dir_root})
 
+        # global transfer tests for storage compatibility
+
         # storm <-> storm
         copy_file_test_full("STORM_TO_STORM" ${srm_valid_storm_stat}  ${srm_prefix_storm})
         # storm -> dpm
@@ -191,5 +199,8 @@ IF (MAIN_TRANSFER)
         copy_file_test_simple("STORM_TO_FILE" ${srm_valid_storm_stat}  ${file_prefix})
         copy_file_test_simple("FILE_TO_STORM" ${file_stat_ok}  ${srm_prefix_storm})
 
+        # generic timeout tests
+        copy_file_test_timeout("SRM_DPM"    "${srm_valid_dpm_bigfile}" "${srm_valid_dir_root}")
+        copy_file_test_timeout("SRM_DCACHE" "${srm_valid_dcache_bigfile}" "${srm_valid_dcache_dir_root}" )
 
 ENDIF (MAIN_TRANSFER)

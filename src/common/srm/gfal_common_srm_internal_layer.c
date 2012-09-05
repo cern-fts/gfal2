@@ -79,6 +79,36 @@ int gfal_srm_ifce_context_init(struct srm_context* context, gfal_context_t handl
 }
 
 
+srm_context_t gfal_srm_ifce_context_setup(gfal_context_t handle, const char* endpoint,
+                                                char* errbuff, size_t s_errbuff, GError** err){
+    srm_context_t context = srm_context_new(endpoint, errbuff, s_errbuff, gfal_get_verbose());
+    gint timeout;
+    GError * tmp_err=NULL;
+    timeout =  gfal2_get_opt_integer(handle, srm_config_group, srm_ops_timeout_key, &tmp_err);
+    if(!tmp_err){
+        gfal_log(GFAL_VERBOSE_DEBUG, " SRM operation timeout %d", timeout);
+        context->timeout = timeout;
+        context->timeout_ops = timeout;
+
+        timeout = gfal2_get_opt_integer(handle, srm_config_group, srm_conn_timeout_key, &tmp_err);
+        if(!tmp_err){
+            gfal_log(GFAL_VERBOSE_DEBUG, " SRM connexion timeout %d", timeout);
+            context->timeout_conn = timeout;
+        }
+    }
+    if(tmp_err){
+        srm_context_free(context);
+        context = NULL;
+    }
+
+    G_RETURN_ERR(context, tmp_err, err);
+}
+
+void gfal_srm_ifce_context_release(srm_context_t context){
+    srm_context_free(context);
+}
+
+
 int gfal_srm_ifce_context_deinit(struct srm_context* context){
     return 0;
 }

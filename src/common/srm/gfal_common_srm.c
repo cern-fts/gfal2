@@ -153,6 +153,7 @@ void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal_handle handle){
 	memset(opts, 0, sizeof(gfal_srmv2_opt));
 	gfal_checker_compile(opts, NULL);
 	opts->opt_srmv2_protocols = srm_turls_sup_protocols;
+    opts->opt_srmv2_desiredpintime = 0;
 	opts->opt_srmv2_tp3_protocols = srm_turls_thirdparty_protocols; // thrid party protocols
 	opts->srm_proto_type = PROTO_SRMv2;
 	opts->handle = handle;

@@ -102,7 +102,10 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
     const unsigned int nbstream = gfalt_get_nbstreams(params, &tmp_err); Gfal::gerror_to_cpp(&tmp_err);
     const guint64 tcp_buffer_size = gfalt_get_tcp_buffer_size(params, &tmp_err); Gfal::gerror_to_cpp(&tmp_err);
 
-    std::auto_ptr<GridFTP_Request_state> req(  new GridFTP_Request_state(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(src))));
+    std::auto_ptr<GridFTP_Request_state> req(  new GridFTP_Request_state(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(src)),
+                                                                         true,
+                                                                         GRIDFTP_REQUEST_GASS)
+                                            );
     GridFTP_session* sess = req->sess.get();
 
     sess->set_nb_stream( nbstream);

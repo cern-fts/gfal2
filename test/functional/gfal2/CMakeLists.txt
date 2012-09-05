@@ -198,6 +198,11 @@ IF (FUNCTIONAL_TESTS)
                 add_test(copyfile_test_${name} gfal_copyfile_test ${src_file} ${dir_src})
         ENDFUNCTION(copy_file_test_simple name src_file dir_src)
 
+
+        FUNCTION(copy_file_test_timeout name src_file dir_src)
+                add_test(copy_file_test_timeout_${name} gfal_copyfile_test_timeout ${src_file} ${dir_src})
+        ENDFUNCTION(copy_file_test_timeout name src_file dir_src)
+
         ENDIF (MAIN_TRANSFER)
 
 	include(functional-test-parameters.cmake)	

@@ -95,8 +95,7 @@ int gfal_srm_getTURLS_srmv2_internal(gfal_srmv2_opt* opts,  gfal_srm_params_t pa
 	g_return_val_err_if_fail(surls!=NULL,-1,err,"[gfal_srmv2_getasync] tab null ");
 			
 	GError* tmp_err=NULL;
-	struct srm_context context;
-	int ret=0;
+    int ret=-1;
 	struct srm_preparetoget_input preparetoget_input;
 	const int err_size = 2048;
 	
@@ -109,10 +108,10 @@ int gfal_srm_getTURLS_srmv2_internal(gfal_srmv2_opt* opts,  gfal_srm_params_t pa
 	preparetoget_input.protocols = gfal_srm_params_get_protocols(params);
     preparetoget_input.spacetokendesc = gfal_srm_params_get_spacetoken(params);
 	preparetoget_input.surls = surls;	
-    gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
-                                  errbuf, err_size, &tmp_err);
-	
-	ret = gfal_srmv2_get_global(opts, params, &context, &preparetoget_input, resu, &tmp_err);
+    srm_context_t context = gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, err_size, &tmp_err);
+    if(context)
+        ret = gfal_srmv2_get_global(opts, params, context, &preparetoget_input, resu, &tmp_err);
+    gfal_srm_ifce_context_release(context);
 	G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -121,8 +120,7 @@ int gfal_srm_putTURLS_srmv2_internal(gfal_srmv2_opt* opts , gfal_srm_params_t pa
 	g_return_val_err_if_fail(surls!=NULL,-1,err,"[gfal_srm_putTURLS_srmv2_internal] GList passed null");
 			
 	GError* tmp_err=NULL;
-	struct srm_context context;
-	int ret=0,i=0;
+    int ret=-1,i=0;
 	struct srm_preparetoput_input preparetoput_input;
 	const int err_size = 2048;
 	
@@ -139,11 +137,11 @@ int gfal_srm_putTURLS_srmv2_internal(gfal_srmv2_opt* opts , gfal_srm_params_t pa
     preparetoput_input.spacetokendesc = gfal_srm_params_get_spacetoken(params);
 	preparetoput_input.surls = surls;	
 	preparetoput_input.filesizes = filesize_tab;
-    gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
-                                  errbuf, err_size, &tmp_err);
 	
-	
-	ret = gfal_srmv2_put_global(opts, params, &context, &preparetoput_input, resu, &tmp_err);
+    srm_context_t context = gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, err_size, &tmp_err);
+    if(context)
+        ret = gfal_srmv2_put_global(opts, params, context, &preparetoput_input, resu, &tmp_err);
+    gfal_srm_ifce_context_release(context);
 	G_RETURN_ERR(ret, tmp_err, err);	
 }
 
@@ -171,9 +169,7 @@ int gfal_srm_mTURLS_internal(gfal_srmv2_opt* opts, gfal_srm_params_t params, srm
 		}		
 	}
 
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;		
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 //  simple wrapper to getTURLs for the gfal_module layer
@@ -201,9 +197,7 @@ int gfal_srm_getTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl
 		}
 		gfal_srm_params_free(params);
 	}	
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;			
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
@@ -231,9 +225,7 @@ int gfal_srm_getTURL_checksum(plugin_handle ch, const char* surl, char* buff_tur
         }
         gfal_srm_params_free(params);
     }
-    if(tmp_err)
-        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-    return ret;
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
@@ -316,9 +308,7 @@ int gfal_srm_put_rd3_turl(plugin_handle ch,  gfalt_params_t p, const char* surl,
 		gfal_srm_params_free(params);
 	}
 	
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;			
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
@@ -348,9 +338,7 @@ int gfal_srm_putTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl
 		gfal_srm_params_free(params);
 	}
 	
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;			
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
@@ -368,9 +356,7 @@ int gfal_srm_putTURLS(gfal_srmv2_opt* opts , char** surls, gfal_srm_result** res
 		}
 		gfal_srm_params_free(params);
 	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;	
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
@@ -379,7 +365,6 @@ static int gfal_srm_putdone_srmv2_internal(gfal_srmv2_opt* opts, char* endpoint,
 	g_return_val_err_if_fail(surls!=NULL,-1,err,"[gfal_srm_putdone_srmv2_internal] invalid args ");
 			
 	GError* tmp_err=NULL;
-	struct srm_context context;
 	int ret=0;
 	struct srm_putdone_input putdone_input;
 	struct srmv2_filestatus *statuses;
@@ -393,19 +378,20 @@ static int gfal_srm_putdone_srmv2_internal(gfal_srmv2_opt* opts, char* endpoint,
 	putdone_input.reqtoken = token;
 	putdone_input.surls = surls;
 
-	gfal_srm_external_call.srm_context_init(&context, endpoint, errbuf, err_size, gfal_get_verbose());	
+    srm_context_t context = gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_URL_MAX_LEN, &tmp_err);
 
-	gfal_log(GFAL_VERBOSE_TRACE, "    [gfal_srm_putdone_srmv2_internal] start srm put done on %s", surls[0]);	
-	ret = gfal_srm_external_call.srm_put_done(&context,&putdone_input, &statuses);
-	if(ret < 0){
-		g_set_error(&tmp_err,0,errno,"call to srm_ifce error: %s",errbuf);
-	} else{
-    	 ret = gfal_srm_convert_filestatuses_to_GError(statuses, ret, &tmp_err);
-    	 gfal_srm_external_call.srm_srmv2_filestatus_delete(statuses, n_surl);
-	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;	
+    if(context){
+        gfal_log(GFAL_VERBOSE_TRACE, "    [gfal_srm_putdone_srmv2_internal] start srm put done on %s", surls[0]);
+        ret = gfal_srm_external_call.srm_put_done(context,&putdone_input, &statuses);
+        if(ret < 0){
+            g_set_error(&tmp_err,0,errno,"call to srm_ifce error: %s",errbuf);
+        } else{
+             ret = gfal_srm_convert_filestatuses_to_GError(statuses, ret, &tmp_err);
+             gfal_srm_external_call.srm_srmv2_filestatus_delete(statuses, n_surl);
+        }
+    }
+    gfal_srm_ifce_context_release(context);
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 int gfal_srm_putdone(gfal_srmv2_opt* opts , char** surls, char* token,  GError** err){
@@ -429,9 +415,7 @@ int gfal_srm_putdone(gfal_srmv2_opt* opts , char** surls, char* token,  GError**
 	}
 	gfal_log(GFAL_VERBOSE_TRACE, "   [gfal_srm_putdone] <-");
 
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;		
+    G_RETURN_ERR(ret, tmp_err, err);
 	
 }
 
@@ -443,17 +427,19 @@ int gfal_srm_putdone_simple(plugin_handle * handle , const char* surl, char* tok
 
 int srmv2_abort_request_internal(gfal_srmv2_opt* opts , char* endpoint, char* req_token,  GError** err){
     GError* tmp_err=NULL;
-    struct srm_context context;
-    int ret=0;
+    int ret=-1;
 
     char errbuf[GFAL_URL_MAX_LEN] = {0};
 
-    gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
-                                  errbuf, GFAL_URL_MAX_LEN, &tmp_err);
+    srm_context_t context = gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_URL_MAX_LEN, &tmp_err);
 
-    if((ret = srm_abort_request(&context, req_token)) < 0){
-        g_set_error(&tmp_err,0,errno,"SRMv2 abort request error : %s",errbuf);
+    if(context){
+        if((ret = srm_abort_request(context, req_token)) < 0){
+            g_set_error(&tmp_err,0,errno,"SRMv2 abort request error : %s",errbuf);
+        }
     }
+    gfal_srm_ifce_context_release(context);
+
     G_RETURN_ERR(ret, tmp_err, err);
 }
 

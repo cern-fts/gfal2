@@ -122,4 +122,9 @@ int gfal_srm_ifce_context_init(struct srm_context* context, gfal_context_t handl
                                 char* errbuff, size_t s_errbuff, GError** err);
 
 
+srm_context_t gfal_srm_ifce_context_setup(gfal_context_t handle, const char* endpoint,
+                                                char* errbuff, size_t s_errbuff, GError** err);
+
+void gfal_srm_ifce_context_release(srm_context_t context);
+
 int gfal_srm_ifce_context_deinit(struct srm_context* context);
