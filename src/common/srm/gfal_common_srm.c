@@ -70,7 +70,9 @@ const char* gfal_srm_getName(){
 
 int gfal_checker_compile(gfal_srmv2_opt* opts, GError** err){
 	int ret = regcomp(&opts->rexurl, "^srm://([:alnum:]|-|/|\.|_)+$",REG_ICASE | REG_EXTENDED);
-	g_return_val_err_if_fail(ret==0,-1,err,"[gfal_surl_checker_] fail to compile regex, report this bug");	
+    g_return_val_err_if_fail(ret==0,-1,err,"[gfal_surl_checker_] fail to compile regex for srm checking, report this bug");
+    ret = regcomp(&(opts->rex_full), "^srm://([:alnum:]|-|/|\.|_)+:[0-9]+/([:alnum:]|-|/|\.|_)+?SFN=",REG_ICASE | REG_EXTENDED);
+    g_return_val_err_if_fail(ret==0,-1,err,"[gfal_surl_checker_] fail to compile regex for the full SURL srm checking, report this bug");
 	return ret;
 }
 

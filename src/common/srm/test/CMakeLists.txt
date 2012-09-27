@@ -12,7 +12,7 @@ IF (PLUGIN_SRM)
 	link_directories (${PROJECT_BINARY_DIR}/src) 
 	add_executable(unit_test_srm_plugin	${src_test_srm} )
 	
-	target_link_libraries(unit_test_srm_plugin ${OUTPUT_NAME_MAIN} ${CGREEN_LIBRARIES}  ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_SRM} m)
+        target_link_libraries(unit_test_srm_plugin ${OUTPUT_NAME_MAIN} ${CGREEN_LIBRARIES}  ${SRM_IFCE_PKG_LIBRARIES} ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_SRM} m)
 	
 	add_test(test_srm_check_url unit_test_srm_plugin srm_url_check)
 

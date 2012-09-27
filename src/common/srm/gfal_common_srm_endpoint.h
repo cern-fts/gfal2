@@ -33,7 +33,7 @@
 int gfal_srm_determine_endpoint(gfal_srmv2_opt* opts, const char* surl, char* buff_endpoint, size_t s_buff, enum gfal_srm_proto* srm_type, GError** err);
 
 
-gboolean gfal_check_fullendpoint_in_surlG(const char* surl, GError** err);
+gboolean gfal_check_fullendpoint_in_surlG(gfal_srmv2_opt* opts, const char* surl, GError** err);
 
 int gfal_get_fullendpointG(const char* surl, char* buff_endpoint, size_t s_buff, GError** err);
 

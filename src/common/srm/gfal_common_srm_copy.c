@@ -33,6 +33,7 @@
 #include "gfal_common_srm_url_check.h"
 #include "gfal_common_srm_internal_layer.h"
 #include "gfal_common_srm_checksum.h"
+#include "gfal_common_srm_mkdir.h"
 
 GQuark srm_quark_3rd_party(){
     return g_quark_from_static_string("srm_plugin::filecopy");

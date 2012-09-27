@@ -155,7 +155,6 @@ int gfal_srm_mTURLS_internal(gfal_srmv2_opt* opts, gfal_srm_params_t params, srm
 	enum gfal_srm_proto srm_types;
 
 	if((gfal_srm_determine_endpoint(opts, *surls, full_endpoint, GFAL_URL_MAX_LEN, &srm_types, &tmp_err)) == 0){		// check & get endpoint										
-		gfal_log(GFAL_VERBOSE_NORMAL, "[gfal_srm_mTURLS_internal] endpoint %s", full_endpoint);
 
 		if (srm_types == PROTO_SRMv2){
 			if(req_type == SRM_GET)
