@@ -249,9 +249,7 @@ GridFTP_Request_state::~GridFTP_Request_state()
 	
     if(req_status == GRIDFTP_REQUEST_RUNNING ){
         if(request_type == GRIDFTP_REQUEST_FTP){
-            gfal_log(GFAL_VERBOSE_TRACE," Last hope delete : cancel current running gridftp request... ");
-            globus_ftp_client_abort(sess->get_ftp_handle());
-            gridftp_wait_for_callback(scope_request, this);
+            gfal_log(GFAL_VERBOSE_TRACE," Last hope delete : cancel current running gridftp request... ");	                
         }else{
             gfal_log(GFAL_VERBOSE_TRACE," Last hope delete : cancel current running gass request... ");
             globus_gass_cancel_sync(scope_request, this);
