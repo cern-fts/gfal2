@@ -246,16 +246,6 @@ GridFTP_Request_state::~GridFTP_Request_state()
 {
 	if(!own_session)
 		sess.release(); // cancel the automatic memory management
-	
-    if(req_status == GRIDFTP_REQUEST_RUNNING ){
-        if(request_type == GRIDFTP_REQUEST_FTP){
-            gfal_log(GFAL_VERBOSE_TRACE," Last hope delete : cancel current running gridftp request... ");	                
-        }else{
-            gfal_log(GFAL_VERBOSE_TRACE," Last hope delete : cancel current running gass request... ");
-            globus_gass_cancel_sync(scope_request, this);
-        }
-	}
-		
 }
 
 
