@@ -33,8 +33,8 @@
 
 LDAP* gfal_mds_ldap_connect(const char* uri, GError** err);
 
-int gfal_mds_get_ldapuri(char* buff, size_t s_buff, GError** err);
+int gfal_mds_get_ldapuri(gfal2_context_t context, char* buff, size_t s_buff, GError** err);
 
 int gfal_mds_get_srm_types_endpoint(LDAP* ld, LDAPMessage *result, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err);
 
-int gfal_mds_bdii_get_srm_endpoint(const char* base_url, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err);
+int gfal_mds_bdii_get_srm_endpoint(gfal2_context_t handle, const char* base_url, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err);

@@ -232,9 +232,7 @@ int gfal_get_endpoint_and_setype_from_bdiiG(gfal_srmv2_opt* opts, const char* su
 			ret = 0;
 		}
 	}	
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);		
-	return ret;
+    G_RETURN_ERR(ret, tmp_err, err);
 	
 }
 

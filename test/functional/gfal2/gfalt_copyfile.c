@@ -22,6 +22,9 @@ int main(int argc, char** argv){
 		 printf(" bad initialization %d : %s.\n", tmp_err->code,tmp_err->message);
 		 return -1;
 	 }
+	gfal2_set_opt_string(handle, "bdii",
+                                    "LCG_GFAL_INFOSYS", "certtb-bdii-top.cern.ch:2170", &tmp_err);	 
+	 
 	 // begin copy
     if(  gfalt_copy_file(handle, NULL, argv[1], argv[2], &tmp_err)   != 0){
          printf(" error while the file transfer %d : %s.\n", tmp_err->code,tmp_err->message);

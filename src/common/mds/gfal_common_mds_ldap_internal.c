@@ -215,19 +215,22 @@ int gfal_mds_get_srm_types_endpoint(LDAP* ld, LDAPMessage* result, gfal_mds_endp
  * 
  * get the current ldap URI
  **/
-int gfal_mds_get_ldapuri(char* buff, size_t s_buff, GError** err){
+int gfal_mds_get_ldapuri(gfal2_context_t context, char* buff, size_t s_buff, GError** err){
 	char *var;
 	GError* tmp_err=NULL;
 	int ret = -1;
+    g_strlcpy(buff, "ldap://", s_buff);
 	if((var  = getenv(bdii_env_var)) != NULL){
-		g_strlcpy(buff, "ldap://",s_buff);
 		g_strlcat(buff, var, s_buff);
 		ret = 0;
-	}else
-		g_set_error(&tmp_err, 0, EINVAL, " %s env var is not set with the bdii infohost", bdii_env_var);
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]",__func__);
-	return ret;
+    }else{
+        gchar * internal_bdii_host = gfal2_get_opt_string(context, bdii_config_group, bdii_config_var,NULL);
+        gfal_log(GFAL_VERBOSE_TRACE, " use LCG_GFAL_INFOSYS : %s", internal_bdii_host);
+        g_strlcat(buff, internal_bdii_host, s_buff);
+        g_free(internal_bdii_host);
+        ret =0;
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
@@ -243,13 +246,13 @@ void gfal_mds_ldap_disconnect(LDAP* ld){
  * @param err: Gerror system for the report of the errors.
  *  @return : number of endpoints set or -1 if error
  */ 
-int gfal_mds_bdii_get_srm_endpoint(const char* base_url, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err){
+int gfal_mds_bdii_get_srm_endpoint(gfal2_context_t context, const char* base_url, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err){
 	int ret =-1;
 	GError* tmp_err=NULL;
 	char uri[GFAL_URL_MAX_LEN];
 	LDAP* ld;
 	gfal_log(GFAL_VERBOSE_TRACE, " gfal_mds_bdii_get_srm_endpoint ->");
-	if( gfal_mds_get_ldapuri(uri, GFAL_URL_MAX_LEN, &tmp_err) >= 0){
+    if( gfal_mds_get_ldapuri(context, uri, GFAL_URL_MAX_LEN, &tmp_err) >= 0){
 		if( (ld = gfal_mds_ldap_connect(uri, &tmp_err)) != NULL){
 			LDAPMessage * res;
 			char buff_filter[GFAL_URL_MAX_LEN];
