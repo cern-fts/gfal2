@@ -23,6 +23,7 @@ void gridftp_unlink_internal(GridFTP_session* sess, const char * path, bool own_
 	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::unlink] ");	
 	std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(sess, own_session)); // get connexion session
 	
+    req->start();
 	globus_result_t res = globus_ftp_client_delete(
 				req->sess->get_ftp_handle(),
 				path,
@@ -31,7 +32,7 @@ void gridftp_unlink_internal(GridFTP_session* sess, const char * path, bool own_
 				req.get());
 	gfal_globus_check_result(scope_unlink, res);
 	// wait for answer
-	gridftp_wait_for_callback(scope_unlink, req.get());	
+    req->wait_callback(scope_unlink);
 	gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::unlink] ");		
 }
 

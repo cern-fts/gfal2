@@ -492,49 +492,55 @@ void gridftp_gass_poll_callback(const Glib::Quark & scope, GridFTP_Request_state
     gfal_log(GFAL_VERBOSE_TRACE," <- out of gass polling for request ");
 }
 
-void gridftp_poll_callback(const Glib::Quark & scope, GridFTP_Request_state* state){
-	gfal_log(GFAL_VERBOSE_TRACE," -> go polling for request ");
-    while(state->req_status != GRIDFTP_REQUEST_FINISHED){
+void GridFTP_Request_state::poll_callback(const Glib::Quark &scope){
+    gfal_log(GFAL_VERBOSE_TRACE," -> go internal polling for request ");
+    bool timeout= false;
+    while(this->req_status != GRIDFTP_REQUEST_FINISHED){
+        if(!timeout)
+            timeout = check_timeout(scope, this);
         usleep(10);
     }
-	gfal_log(GFAL_VERBOSE_TRACE," <- out of polling for request ");			
+
+    if(timeout){
+        this->errcode= ETIMEDOUT;
+        this->error= "gfal gridftp internal operation timeout, operation canceled";
+    }
+
+    gfal_log(GFAL_VERBOSE_TRACE," <- out of gass polling for request ");
 }
 
-void gridftp_poll_callback_stream(const Glib::Quark & scope, GridFTP_stream_state* state){
+void GridFTP_Request_state::err_report(const Glib::Quark &scope){
+    if(this->errcode != 0)
+        throw Gfal::CoreException(scope,  this->error, this->errcode);
+}
+
+
+void GridFTP_Request_state::wait_callback(const Glib::Quark &scope){
+    poll_callback(scope);
+    err_report(scope);
+}
+
+void GridFTP_stream_state::poll_callback_stream(const Glib::Quark & scope){
     gfal_log(GFAL_VERBOSE_TRACE," -> go polling for request ");
-    while(state->stream_status != GRIDFTP_REQUEST_FINISHED )
+    while(this->stream_status != GRIDFTP_REQUEST_FINISHED )
             usleep(10);
     gfal_log(GFAL_VERBOSE_TRACE," <- out of polling for request ");
 }
 
-void gridftp_callback_err_report(const Glib::Quark & scope, GridFTP_Request_state* state){
-	if(state->errcode != 0)	
-		throw Gfal::CoreException(scope,  state->error, state->errcode);	
+void GridFTP_stream_state::wait_callback_stream(const Glib::Quark & scope){
+    poll_callback_stream(scope);
+    err_report(scope);
 }
 
-void gridftp_wait_for_callback(const Glib::Quark & scope, GridFTP_Request_state* state){
-	gridftp_poll_callback(scope, state);
-	gridftp_callback_err_report(scope, state);
-}
-
-void gridftp_gass_wait_for_callback(const Glib::Quark & scope, GridFTP_Request_state* state){
-    gridftp_gass_poll_callback(scope, state);
-    gridftp_callback_err_report(scope, state);
-}
-
-void gridftp_wait_for_callback_stream(const Glib::Quark & scope, GridFTP_stream_state* state){
-    gridftp_poll_callback_stream(scope, state);
-    gridftp_callback_err_report(scope, state);
-}
 
 
 
 void gridftp_wait_for_read(const Glib::Quark & scope, GridFTP_stream_state* state, off_t end_read){
-    gridftp_wait_for_callback_stream(scope, state);
+    state->wait_callback_stream(scope);
 }
 
 void gridftp_wait_for_write(const Glib::Quark & scope, GridFTP_stream_state* state, off_t end_write){
-    gridftp_wait_for_callback_stream(scope, state);
+    state->wait_callback_stream(scope);
 }
 
 

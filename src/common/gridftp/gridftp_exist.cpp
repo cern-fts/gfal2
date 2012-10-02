@@ -27,6 +27,7 @@ bool gridftp_module_file_exist(GridFTP_session* sess, const char * url){
 	std::auto_ptr<GridFTP_Request_state> req(new GridFTP_Request_state(sess, false));
 
 
+    req->start();
 	globus_result_t res = globus_ftp_client_exists(
 				req->sess->get_ftp_handle(),
 				url,
@@ -34,7 +35,7 @@ bool gridftp_module_file_exist(GridFTP_session* sess, const char * url){
 				globus_basic_client_callback,
 				req.get());
 	gfal_globus_check_result(scope_exist, res);
-	gridftp_poll_callback(scope_exist, req.get());
+    req->poll_callback(scope_exist);
 
 	gfal_log(GFAL_VERBOSE_TRACE,"   <- [gridftp_module_file_exist]");	
 	switch(req->errcode){
@@ -43,7 +44,7 @@ bool gridftp_module_file_exist(GridFTP_session* sess, const char * url){
 		case ENOENT:
 			return false;
 		default:
-			gridftp_callback_err_report(scope_exist, req.get());
+            req->err_report(scope_exist);
 		
 	}
 	return false;	

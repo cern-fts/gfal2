@@ -72,10 +72,12 @@ inline bool is_write_only(int open_flags){
 inline int gridftp_rw_commit_put(const Glib::Quark & scope, GridFTP_File_desc* desc){
 	char buffer[2];
 	if(is_write_only(desc->open_flags)){
-		gfal_log(GFAL_VERBOSE_TRACE," commit change for the current stream PUT ... ");	
+        gfal_log(GFAL_VERBOSE_TRACE," commit change for the current stream PUT ... ");
+        GridFTP_Request_state* state = desc->stream.get();
+        state->start();
 		gridftp_write_stream(scope_write, (desc->stream.get()),
 				buffer, 0, true);
-		gridftp_wait_for_callback(scope, static_cast<GridFTP_Request_state*>(desc->stream.get()));
+        state->wait_callback(scope_write);
 		gfal_log(GFAL_VERBOSE_TRACE," commited with success ... ");						
 	}
 	return 0;
@@ -84,12 +86,12 @@ inline int gridftp_rw_commit_put(const Glib::Quark & scope, GridFTP_File_desc* d
 inline int gridftp_rw_valid_get(const Glib::Quark & scope, GridFTP_File_desc* desc){
 	if(is_read_only(desc->open_flags)){
 		if(desc->is_eof()){
-			gridftp_wait_for_callback(scope, static_cast<GridFTP_Request_state*>(desc->stream.get()));			
+            static_cast<GridFTP_Request_state*>(desc->stream.get())->wait_callback(scope);
 		}else{
 				gfal_log(GFAL_VERBOSE_TRACE," not a full read -> kill the connexion ");
 				try{
 					globus_ftp_client_abort(desc->stream->sess->get_ftp_handle());
-					gridftp_wait_for_callback(scope, desc->stream.get());	
+                    static_cast<GridFTP_Request_state*>(desc->stream.get())->wait_callback(scope);
 				}catch(Glib::Error & e ){
 					// silent !!
 				}
@@ -118,7 +120,7 @@ ssize_t gridftp_rw_internal_pread(GridFTPFactoryInterface * factory, GridFTP_Fil
 	ssize_t r_size= gridftp_read_stream(scope_internal_pread, stream.get(),
 				buffer, s_buff); // read a block
 
-	gridftp_wait_for_callback(scope_internal_pread, static_cast<GridFTP_Request_state*>(stream.get()));					
+    static_cast<GridFTP_Request_state*>(stream.get())->wait_callback(scope_internal_pread);
 	gfal_log(GFAL_VERBOSE_TRACE,"[GridftpModule::internal_pread] <-");	
 	return r_size;
 					
@@ -144,7 +146,7 @@ ssize_t gridftp_rw_internal_pwrite(GridFTPFactoryInterface * factory, GridFTP_Fi
 	ssize_t r_size= gridftp_write_stream(scope_internal_pwrite, stream.get(),
 				buffer, s_buff, false); // write block
 
-	gridftp_wait_for_callback(scope_internal_pwrite, static_cast<GridFTP_Request_state*>(stream.get()));				
+    static_cast<GridFTP_Request_state*>(stream.get())->wait_callback(scope_internal_pwrite);
 	gfal_log(GFAL_VERBOSE_TRACE,"[GridftpModule::internal_pwrite] <-");	
 	return r_size;
 					

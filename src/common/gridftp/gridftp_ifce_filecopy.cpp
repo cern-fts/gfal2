@@ -123,6 +123,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
     std::auto_ptr<Gass_attr_handler>  gass_attr_src(sess->generate_gass_copy_attr());
     std::auto_ptr<Gass_attr_handler>  gass_attr_dst(sess->generate_gass_copy_attr());
 
+    req->start();
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);
     gfal_globus_result_t res = globus_gass_copy_register_url_to_url(
         sess->get_gass_handle(),
@@ -135,7 +136,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
     );
 
     gfal_globus_check_result("GridFTPFileCopyModule::filecopy", res);
-    gridftp_gass_wait_for_callback(scope_filecopy,req.get());
+    req->wait_callback(scope_filecopy);
     return 0;
 
 }

@@ -27,7 +27,7 @@ void GridftpModule::mkdir(const char* path, mode_t mode)
 	
 	std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)))); // get connexion session
 	
-	
+    req->start();
 	globus_result_t res = globus_ftp_client_mkdir(
 				req->sess->get_ftp_handle(),
 				path,
@@ -36,7 +36,7 @@ void GridftpModule::mkdir(const char* path, mode_t mode)
     			req.get());
 	gfal_globus_check_result("GridftpModule::mkdir", res);
 	// wait for answer
-	gridftp_wait_for_callback(scope_mkdir, req.get());		
+    req->wait_callback(scope_mkdir);
 
 	gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::mkdir] ");	
 	

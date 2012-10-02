@@ -28,6 +28,7 @@ void GridftpModule::rmdir(const char* path)
 	try{
 		std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)))); // get connexion session
 		
+        req->start();
 		globus_result_t res = globus_ftp_client_rmdir(
 					req->sess->get_ftp_handle(),
 					path,
@@ -36,7 +37,7 @@ void GridftpModule::rmdir(const char* path)
 					req.get());
 		gfal_globus_check_result(scope_rmdir, res);
 		// wait for answer
-		gridftp_wait_for_callback(scope_rmdir, req.get());	
+        req->wait_callback(scope_rmdir);
 	}catch(Glib::Error & e){
 		if(e.code() == EEXIST) // false ENOTEMPTY errno, do conversion
 			throw Glib::Error(e.domain(), ENOTEMPTY, e.what());
