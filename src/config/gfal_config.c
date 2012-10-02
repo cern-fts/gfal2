@@ -93,8 +93,7 @@ GConfigManager_t gfal_load_static_configuration(GError ** err){
         struct dirent* dirinfo;
         if(d != NULL){
             while( (dirinfo = readdir(d)) != NULL){
-                if(strcmp(dirinfo->d_name, ".") != 0
-                   && strcmp(dirinfo->d_name, "..") !=0){
+                if(dirinfo->d_name[0] != '.'){
                     char buff[strlen(dir_config)+strlen(dirinfo->d_name) +2];
                     strcpy(buff, dir_config);
                     strcat(buff,"/");
