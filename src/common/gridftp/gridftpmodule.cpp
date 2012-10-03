@@ -22,11 +22,13 @@
 //GOnce my_once = G_ONCE_INIT;
 
 const Glib::Quark scope_globus_init("GridftpModule::init_globus");
+static Glib::Mutex mux_globus_init;
 
 
 
 // gfunction prototype : gonce 
 static void* init_globus(gpointer data){
+    Glib::Mutex::Lock l(mux_globus_init);
     globus_result_t result = GLOBUS_SUCCESS;
      if( (  result = globus_module_activate(GLOBUS_GASS_COPY_MODULE) ) != GLOBUS_SUCCESS)
     	throw Gfal::CoreException(scope_globus_init, "Error globus init, globus gass", result);
@@ -40,6 +42,7 @@ static void* init_globus(gpointer data){
 }
 
 static void* deinit_globus(gpointer data){
+    Glib::Mutex::Lock l(mux_globus_init);
     globus_result_t result = GLOBUS_SUCCESS;  
      if( (  result = globus_module_deactivate(GLOBUS_GASS_COPY_MODULE) ) != GLOBUS_SUCCESS)
     	throw Gfal::CoreException(scope_globus_init, "Error globus deinit, globus gass", result);
