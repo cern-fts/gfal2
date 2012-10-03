@@ -42,9 +42,11 @@
 static char* tabattr[] = {"GlueServiceVersion",  "GlueServiceEndpoint", "GlueServiceType", NULL};
 static const char *sbasedn = "o=grid";
 
-static const char* srm_endpoint_filter = "(|(GlueSEUniqueID=%s)(&(GlueServiceType=srm*)(GlueServiceEndpoint=*://%s*)))";
+static const char* srm_endpoint_filter = "(|(GlueSEUniqueID=*%s*)(&(GlueServiceType=srm*)(GlueServiceEndpoint=*://%s*)))";
 
 static const char* SRM_PREFIX_NAME="SRM";
+
+static pthread_mutex_t mux_init_lap = PTHREAD_MUTEX_INITIALIZER;
 
 
 LDAP* gfal_mds_ldap_connect(const char* uri, GError** err){
@@ -52,8 +54,10 @@ LDAP* gfal_mds_ldap_connect(const char* uri, GError** err){
 	LDAP* ld=NULL;
 	GError* tmp_err=NULL;
 	int rc;
-	
+
+    pthread_mutex_lock(&mux_init_lap); // libldap suffers of a thread-safety bug inside initialize function
 	if ( (rc = gfal_mds_ldap.ldap_initialize(&ld, uri)) != LDAP_SUCCESS ) {
+
 		 g_set_error(&tmp_err, 0, ECOMM, "Error with contacting ldap %s : %s", uri, ldap_err2string(rc)); 
 	}else{
 		gfal_log(GFAL_VERBOSE_VERBOSE, "  Try to bind with the bdii %s", uri);
@@ -63,9 +67,8 @@ LDAP* gfal_mds_ldap_connect(const char* uri, GError** err){
 			 ld=NULL;
 		}
 	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ld;	
+    pthread_mutex_unlock(&mux_init_lap);
+    G_RETURN_ERR(ld, tmp_err, err);
 }
 
 /*

@@ -49,6 +49,10 @@ struct GridFTP_Request_state{
     struct timespec end_time; // timeout trigger -> 0 if not enabled, usage of CLOCK_MONOTONIC is required.
     // enable/disable destroy when out of scope
     bool own_session;
+    // bool canceling
+    bool canceling;
+    // mutex for state checking
+    Glib::RWLock mux_req_state;
 
     inline void start(){
         this->req_status = GRIDFTP_REQUEST_RUNNING;

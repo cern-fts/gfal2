@@ -36,19 +36,21 @@ int main(int argc, char** argv){
 	
 	 // begin copy
 	printf(" begin to copyfile from %s to %s", src_uri, dst_uri);
-    ret = gfalt_set_timeout(params,5, &tmp_err);
-    g_assert(tmp_err == NULL && ret == 0);
+    ret = gfalt_set_timeout(params,20, &tmp_err);
 
-    if( (ret = gfalt_copy_file(handle, params, src_uri, dst_uri, &tmp_err) )  == 0){
-         fprintf(stderr, "should fail... transfer successfull \n");
-         ret= -1;
-    }else if( tmp_err->code != ETIMEDOUT){
-        fprintf(stderr, " not a timeout error : problem %s \n", tmp_err->message);
-        ret= -1;
-    }else{
-        fprintf(stderr, " success : timeout trigerred :%s \n", tmp_err->message);
-        g_clear_error(&tmp_err);
-        ret = 0;
+    g_assert(tmp_err == NULL && ret == 0);
+    while(ret ==0){
+        if( (ret = gfalt_copy_file(handle, params, src_uri, dst_uri, &tmp_err) )  == 0){
+             fprintf(stderr, "should fail... transfer successfull \n");
+             ret= -1;
+        }else if( tmp_err->code != ETIMEDOUT){
+            fprintf(stderr, " not a timeout error : problem %s \n", tmp_err->message);
+            ret= -1;
+        }else{
+            fprintf(stderr, " success : timeout trigerred :%s \n", tmp_err->message);
+            g_clear_error(&tmp_err);
+            ret = 0;
+        }
     }
 
 
