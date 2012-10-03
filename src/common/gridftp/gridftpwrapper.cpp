@@ -466,7 +466,7 @@ void globus_gass_cancel_sync(const Glib::Quark & scope, GridFTP_Request_state* r
                                                  globus_gass_basic_client_callback,
                                                   req);
     gfal_globus_check_result(scope, res);
-    req->wait_callback(scope);
+    req->poll_callback(scope);
     gfal_log(GFAL_VERBOSE_TRACE,"  gass operation cancel  <- ");
 }
 
@@ -490,10 +490,13 @@ void GridFTP_Request_state::poll_callback(const Glib::Quark &scope){
     bool timeout= false;
     this->mux_callback_lock.lock();
     while(this->req_status != GRIDFTP_REQUEST_FINISHED){
+        this->mux_callback_lock.unlock();
         if(!timeout)
             timeout = check_timeout(scope, this);
         usleep(10);
+        this->mux_callback_lock.lock();
     }
+    this->mux_callback_lock.unlock();
 
     if(timeout){
         this->errcode= ETIMEDOUT;
