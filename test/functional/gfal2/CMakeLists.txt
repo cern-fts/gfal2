@@ -61,16 +61,16 @@ IF (FUNCTIONAL_TESTS)
 		add_test(gfal_stat_${name} gfal_stat ${valid})
 	ENDFUNCTION(stat_test_all valid)
 
-	FUNCTION(test_gfal_test_del_nonex name path)
-		add_test(gfal_test_del_nonex_${name} gfal_test_del_nonex ${path})
+        FUNCTION(test_gfal_test_del_nonex name dir_path)
+                add_test(gfal_test_del_nonex_${name} gfal_test_del_nonex ${dir_path})
 	ENDFUNCTION(test_gfal_test_del_nonex name path)	
 
-	FUNCTION(test_gfal_test_del name path)
-		add_test(gfal_test_del_${name} gfal_test_del ${path})
+        FUNCTION(test_gfal_test_del name dir_path)
+                add_test(gfal_test_del_${name} gfal_test_del ${dir_path})
 	ENDFUNCTION(test_gfal_test_del name path)	
 
-	FUNCTION(test_gfal_test_mkdir_unlink name path)
-		add_test(gfal_test_mkdir_unlink_${name} gfal_test_mkdir_unlink ${path})
+        FUNCTION(test_gfal_test_mkdir_unlink name dir_path)
+                add_test(gfal_test_mkdir_unlink_${name} gfal_test_mkdir_unlink ${dir_path})
 	ENDFUNCTION(test_gfal_test_mkdir_unlink name path)	
 
         FUNCTION(checksum_test_all name valid)
@@ -111,13 +111,13 @@ IF (FUNCTIONAL_TESTS)
 	add_executable(gfal_rw	${src_gfalrw} )
 	target_link_libraries(gfal_rw ${OUTPUT_NAME_MAIN} )
 
-	add_executable(gfal_test_del_nonex   ${src_gfal_test_del_nonex} )
+        add_executable(gfal_test_del_nonex   ${src_gfal_test_del_nonex} ${src_lib_test})
 	target_link_libraries(gfal_test_del_nonex ${OUTPUT_NAME_MAIN} )
 
-	add_executable(gfal_test_del   ${src_gfal_test_del} )
+        add_executable(gfal_test_del   ${src_gfal_test_del} ${src_lib_test})
 	target_link_libraries(gfal_test_del ${OUTPUT_NAME_MAIN} )
 	
-	add_executable(gfal_test_mkdir_unlink   ${src_gfal_test_mkdir_unlink} )
+        add_executable(gfal_test_mkdir_unlink   ${src_gfal_test_mkdir_unlink} ${src_lib_test})
 	target_link_libraries(gfal_test_mkdir_unlink ${OUTPUT_NAME_MAIN} )
 
 	add_executable(gfal_rw_full	${src_gfal_rw_full} )

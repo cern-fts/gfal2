@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <gfal_api.h>
 #include <stdlib.h>
+#include "gfal_lib_test.h"
 #define BLKLEN 65536
 
 /**
@@ -18,26 +19,30 @@
 
 int main(int argc, char **argv)
 {
-   int rc,err,ret;
+   int rc,ret;
 
-   // gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE);	// switch Gfal in verbose mode
+   char buff[2048];
+   gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE);	// switch Gfal in verbose mode
    if (argc != 2) {
 	   fprintf (stderr, "usage: %s filename\n", argv[0]);
 	   exit (1);
    }
 
-   if ((rc = gfal_mkdir(argv[1], 777)) < 0) {
+   // create a random file uri file
+   generate_random_uri(argv[1], "test_mkdir_unlink_file_", buff, 2048);
+
+   if ((rc = gfal_mkdir(buff, 777)) < 0) {
 	gfal_posix_check_error();
 	exit (1);
    }
 
-   if ((rc = gfal_unlink (argv[1])) < 0) {
+   if ((rc = gfal_unlink (buff)) < 0) {
         ret = 0;
    } else { ret = 1;}
 
 // Removing the directory
 
-   if (( rc = gfal_rmdir(argv[1])) < 0) {
+   if (( rc = gfal_rmdir(buff)) < 0) {
 	gfal_posix_check_error();
 	exit (1);
    }
