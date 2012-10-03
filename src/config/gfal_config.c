@@ -84,6 +84,15 @@ int gfal_load_configuration_to_conf_manager(GConfigManager_t manager, const gcha
     G_RETURN_ERR(res, tmp_err2, err);
 }
 
+gboolean is_config_dir(const char* conffile){
+    char* p=NULL;
+    if( (p = strstr(conffile, ".conf")) != NULL){
+        if( *(p+5) == '\0')
+            return TRUE;
+    }
+    return FALSE;
+}
+
 GConfigManager_t gfal_load_static_configuration(GError ** err){
     GError * tmp_err=NULL;
     gchar* dir_config = NULL;
@@ -93,7 +102,7 @@ GConfigManager_t gfal_load_static_configuration(GError ** err){
         struct dirent* dirinfo;
         if(d != NULL){
             while( (dirinfo = readdir(d)) != NULL){
-                if(dirinfo->d_name[0] != '.'){
+                if( is_config_dir(dirinfo->d_name)){
                     char buff[strlen(dir_config)+strlen(dirinfo->d_name) +2];
                     strcpy(buff, dir_config);
                     strcat(buff,"/");
