@@ -429,6 +429,7 @@ void globus_basic_client_callback (void * user_arg,
 				globus_object_t *				error){
 	GridFTP_Request_state* state = (GridFTP_Request_state*) user_arg;	
     Glib::RWLock::ReaderLock l (state->mux_req_state);
+    Glib::Mutex::Lock l_call(state->mux_callback_lock);
     gfal_log(GFAL_VERBOSE_TRACE,"gridFTP operation done");
 
 	if(error != GLOBUS_SUCCESS){	
@@ -446,6 +447,7 @@ void globus_gass_basic_client_callback(
         globus_object_t * error){
     GridFTP_Request_state* state = (GridFTP_Request_state*) callback_arg;
     Glib::RWLock::ReaderLock l (state->mux_req_state);
+    Glib::Mutex::Lock l_call(state->mux_callback_lock);
     gfal_log(GFAL_VERBOSE_TRACE,"gass operation done");
 
     if(error != GLOBUS_SUCCESS){
@@ -486,6 +488,7 @@ void GridFTP_Request_state::poll_callback(const Glib::Quark &scope){
     Glib::RWLock::ReaderLock l(mux_req_state);
     gfal_log(GFAL_VERBOSE_TRACE," -> go internal polling for request ");
     bool timeout= false;
+    this->mux_callback_lock.lock();
     while(this->req_status != GRIDFTP_REQUEST_FINISHED){
         if(!timeout)
             timeout = check_timeout(scope, this);

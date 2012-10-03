@@ -100,7 +100,7 @@ static int gfal_mds_srm_endpoint_struct_builder(char* srm_name, char* srm_versio
 			gfal_mds_endpoint* endpoints, GError** err){
 	int ret = 0;	
 	GError* tmp_err=NULL;		
-	if(strcmp(srm_name, SRM_PREFIX_NAME) != 0){
+    if(strncasecmp(srm_name, SRM_PREFIX_NAME, strlen(SRM_PREFIX_NAME)) != 0){
 		g_set_error(&tmp_err, 0, EINVAL, "bad value of srm endpoint returned by bdii : %s, excepted : %s ", srm_name, SRM_PREFIX_NAME);
 		ret =-1;
 	}else{
@@ -113,7 +113,7 @@ static int gfal_mds_srm_endpoint_struct_builder(char* srm_name, char* srm_versio
 			ret = -1;
 		}
 		if(strstr(srm_endpoint, ":/") != NULL)
-			strcpy(endpoints->url, srm_endpoint);
+            g_strlcpy(endpoints->url, srm_endpoint, GFAL_URL_MAX_LEN);
 		else{
 			g_set_error(&tmp_err, 0, EINVAL, "bad value of srm endpoint returned by bdii : %s, excepted a correct endpoint url ( httpg://, https://, ... ) ", srm_endpoint);
 			ret = -1;
@@ -136,9 +136,9 @@ static int gfal_mds_convert_entry_to_srm_information(LDAP* ld,LDAPMessage * entr
 	int ret = 0;
 	GError * tmp_err=NULL;
 	BerElement   *ber; 		
-	char srm_name[GFAL_URL_MAX_LEN]={0};
-	char srm_version[GFAL_URL_MAX_LEN]={0};
-	char srm_endpoint[GFAL_URL_MAX_LEN]={0};
+    char srm_name[GFAL_URL_MAX_LEN+1]={0};
+    char srm_version[GFAL_URL_MAX_LEN+1]={0};
+    char srm_endpoint[GFAL_URL_MAX_LEN+1]={0};
 				
 	for (  a = gfal_mds_ldap.ldap_first_attribute( ld, entry, &ber );  a != NULL;
 			a = gfal_mds_ldap.ldap_next_attribute( ld, entry, ber ) ) {  // for each attribute

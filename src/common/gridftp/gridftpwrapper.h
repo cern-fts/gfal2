@@ -53,6 +53,7 @@ struct GridFTP_Request_state{
     bool canceling;
     // mutex for state checking
     Glib::RWLock mux_req_state;
+    Glib::Mutex mux_callback_lock;
 
     inline void start(){
         this->req_status = GRIDFTP_REQUEST_RUNNING;
