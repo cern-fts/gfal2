@@ -73,7 +73,7 @@ void Gfal::Transfer::FileCopy::start_local_copy(gfalt_params_t p, const std::str
         ssize_t s_file=1;
         if(!tmp_err_dst){
             const unsigned long mbuffer = default_buffer_size;
-            char* buff = (char*) malloc(mbuffer);
+            char* buff = (char*) g_malloc(mbuffer);
 
             gfal_log(GFAL_VERBOSE_TRACE, "  begin local transfer %s ->  %s with buffer size %ld",src.c_str(), dst.c_str(), mbuffer);
             while(s_file > 0 && !tmp_err_src && !tmp_err_dst){

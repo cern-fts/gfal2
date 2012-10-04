@@ -52,11 +52,11 @@ static gchar* check_configuration_dir(GError ** err){
     const gchar * env_str = g_getenv(config_env_var);
     if(env_str != NULL){
         gfal_log(GFAL_VERBOSE_TRACE, " %s env var found, try to load configuration from %s", config_env_var, env_str);
-        dir_config = strdup(env_str);
+        dir_config = g_strdup(env_str);
     }else{
         gfal_log(GFAL_VERBOSE_TRACE, " no %s env var found, try to load configuration from default directory %s",
                                     config_env_var, default_config_dir);
-        dir_config = strdup(default_config_dir);
+        dir_config = g_strdup(default_config_dir);
     }
 
     res = stat(dir_config, &st);
