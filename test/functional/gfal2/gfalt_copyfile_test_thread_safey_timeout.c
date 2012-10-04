@@ -22,8 +22,6 @@ int main(int argc, char** argv){
 	char * src_uri = argv[1];
 	char dst_uri[2048];
 	char dst_uri2[2048];
-	generate_random_uri(argv[2], "generate_folder", dst_uri, 2048);
-	generate_random_uri(dst_uri, "generate_folder", dst_uri2, 2048);
 
     gfalt_params_t params = gfalt_params_handle_new(NULL);
 
@@ -40,6 +38,7 @@ int main(int argc, char** argv){
 
     g_assert(tmp_err == NULL && ret == 0);
     while(ret ==0){
+        generate_random_uri(argv[2], "bigfile_cancel", dst_uri, 2048);
         if( (ret = gfalt_copy_file(handle, params, src_uri, dst_uri, &tmp_err) )  == 0){
              fprintf(stderr, "should fail... transfer successfull \n");
              ret= -1;
