@@ -64,7 +64,7 @@ int main(int argc, char** argv){
     char buff[2048];
 	
 	// initialize gfal
-	gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE);
+    gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE | GFAL_VERBOSE_DEBUG);
 	 if( (handle = gfal2_context_new(&tmp_err)) == NULL ) {
 		 printf(" bad initialization %d : %s.\n", tmp_err->code,tmp_err->message);
 		 return -1;
