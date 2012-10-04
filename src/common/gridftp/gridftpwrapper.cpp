@@ -392,13 +392,13 @@ GridFTP_session* GridFTPFactory::get_new_handle(const std::string & hostname){
 // store the related globus error to the current handle
 void gfal_globus_store_error(GridFTP_Request_state * state, globus_object_t *error){
 		char * glob_str=NULL;	
-		state->errcode = gfal_globus_error_convert(error, &glob_str);
+		state->set_error_code(gfal_globus_error_convert(error, &glob_str));
 		if(glob_str){
-			state->error = std::string(glob_str);
+			state->set_error(glob_str);
 			g_free(glob_str);
 		}else{
-			state->error = "Uknow Globus Error, bad error report";
-			state->errcode = EFAULT;
+			state->set_error("Uknow Globus Error, bad error report");
+			state->set_error_code(EFAULT);
 		}
 }
 
@@ -435,9 +435,9 @@ void globus_basic_client_callback (void * user_arg,
 	if(error != GLOBUS_SUCCESS){	
 		gfal_globus_store_error(state, error);
 	}else{
-		state->errcode = 0;	
+		state->set_error_code(0);
 	}
-	state->req_status = GRIDFTP_REQUEST_FINISHED;	
+	state->set_req_status(GRIDFTP_REQUEST_FINISHED);
 }
 
 // gass operation callback implementation
@@ -453,9 +453,9 @@ void globus_gass_basic_client_callback(
     if(error != GLOBUS_SUCCESS){
         gfal_globus_store_error(state, error);
     }else{
-        state->errcode = 0;
+        state->set_error_code(0);
     }
-    state->req_status = GRIDFTP_REQUEST_FINISHED;
+    state->set_req_status(GRIDFTP_REQUEST_FINISHED);
 }
 
 // cancel any gass operation synchronously associated with this gridftp session object
@@ -554,16 +554,16 @@ static void gfal_griftp_stream_read_callback(void *user_arg, globus_ftp_client_h
 	}else{
 		// verify read 
 		//gfal_log(GFAL_VERBOSE_TRACE," read %d bytes , eof %d %d,%d", length, eof, state->offset, offset);			
-		if(state->offset != offset){
-			state->error = " Invalid read callback call from globus, out of order";
-			state->errcode =EIO;			
+		if(state->get_offset() != offset){
+			state->set_error(" Invalid read callback call from globus, out of order");
+			state->set_error_code(EIO);
 		}else{
-			state->offset += (off_t) length;
-			state->eof = (bool) eof;
-			state->errcode =0;
+			state->increase_offset(length);
+			state->set_eof(eof);
+			state->set_error_code(0);
 		}		
 	}
-    state->stream_status = GRIDFTP_REQUEST_FINISHED;
+    state->set_stream_status(GRIDFTP_REQUEST_FINISHED);
 }
 
 
@@ -579,16 +579,16 @@ static void gfal_griftp_stream_write_callback(void *user_arg, globus_ftp_client_
 	}else{
 		// verify write 
 		//gfal_log(GFAL_VERBOSE_TRACE," read %d bytes , eof %d %d,%d", length, eof, state->offset, offset);			
-		if(state->offset != offset){
-			state->error = " Invalid write callback call from globus, out of order";
-			state->errcode =EIO;			
+		if(state->get_offset() != offset){
+			state->set_error(" Invalid write callback call from globus, out of order");
+			state->set_error_code(EIO);
 		}else{
-			state->offset += (off_t) length;
-			state->eof = (bool) eof;
-			state->errcode =0;
+			state->increase_offset(length);
+			state->set_eof(eof);
+			state->set_error_code(0);
 		}		
 	}
-    state->stream_status = GRIDFTP_REQUEST_FINISHED;
+    state->set_stream_status(GRIDFTP_REQUEST_FINISHED);
 }
 
 ssize_t gridftp_read_stream(const Glib::Quark & scope,
@@ -596,9 +596,9 @@ ssize_t gridftp_read_stream(const Glib::Quark & scope,
 							void* buffer, size_t s_read
 							){
 	gfal_log(GFAL_VERBOSE_TRACE,"  -> [gridftp_read_stream]");	
-	off_t initial_offset = stream->offset;
+	off_t initial_offset = stream->get_offset();
 	
-    if(stream->eof)
+    if(stream->is_eof())
         return 0;
 	globus_result_t res = globus_ftp_client_register_read( stream->sess->get_ftp_handle(),
 		(globus_byte_t*) buffer,
@@ -608,8 +608,8 @@ ssize_t gridftp_read_stream(const Glib::Quark & scope,
 	); 		
 	gfal_globus_check_result(scope, res);	
 	gridftp_wait_for_read(scope, stream, initial_offset + s_read);	
-    stream->stream_status =GRIDFTP_REQUEST_NOT_LAUNCHED;
-	return stream->offset - initial_offset;							
+    stream->set_stream_status(GRIDFTP_REQUEST_NOT_LAUNCHED);
+	return stream->get_offset() - initial_offset;							
 }
 
 
@@ -619,7 +619,7 @@ ssize_t gridftp_write_stream(const Glib::Quark & scope,
 							bool eof
 							){
 	gfal_log(GFAL_VERBOSE_TRACE,"  -> [gridftp_write_stream]");	
-	off_t initial_offset = stream->offset;
+	off_t initial_offset = stream->get_offset();
 	
 	globus_result_t res = globus_ftp_client_register_write( stream->sess->get_ftp_handle(),
 		(globus_byte_t*) buffer,
@@ -631,8 +631,8 @@ ssize_t gridftp_write_stream(const Glib::Quark & scope,
 	); 		
 	gfal_globus_check_result(scope, res);	
 	gridftp_wait_for_write(scope, stream, initial_offset + s_write);	
-    stream->stream_status =GRIDFTP_REQUEST_NOT_LAUNCHED;
-	return stream->offset - initial_offset;							
+    stream->set_stream_status(GRIDFTP_REQUEST_NOT_LAUNCHED);
+	return stream->get_offset() - initial_offset;							
 }
 
 

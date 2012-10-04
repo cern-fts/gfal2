@@ -52,11 +52,11 @@ struct GridFTP_File_desc{
 	
 	bool is_not_seeked(){
 		return (stream.get() != NULL && 
-						current_offset == stream->offset)?true:false;
+						current_offset == stream->get_offset())?true:false;
 	}
 	
 	bool is_eof(){
-		return stream->eof;
+		return stream->is_eof();
 	}
 	
 };

@@ -38,7 +38,7 @@ bool gridftp_module_file_exist(GridFTP_session* sess, const char * url){
     req->poll_callback(scope_exist);
 
 	gfal_log(GFAL_VERBOSE_TRACE,"   <- [gridftp_module_file_exist]");	
-	switch(req->errcode){
+	switch(req->get_error_code()){
 		case 0:
 			return true;
 		case ENOENT:

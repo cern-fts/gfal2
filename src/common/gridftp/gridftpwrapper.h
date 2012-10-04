@@ -17,6 +17,7 @@
 
 #include <ctime>
 #include <externals/utils/time_utils.h>
+#include <glib.h>
 #include "gridftpmodule.h"
 
 
@@ -34,17 +35,22 @@ enum GridFtp_request_type{
 };
 
 struct GridFTP_Request_state{
+ protected:
+   Glib::Mutex internal_lock;
+   
+   int         errcode;
+   std::string error;
+   
+   Gridftp_request_status req_status;
+   
+ public:
     GridFTP_Request_state(GridFTP_session * s, bool own_session=true,  GridFtp_request_type request_type = GRIDFTP_REQUEST_FTP);
 	virtual ~GridFTP_Request_state();
 
     // ftp session
 	std::auto_ptr<GridFTP_session> sess;  
     // request type
-    GridFtp_request_type request_type;
-    // request status
-    Gridftp_request_status req_status;
-    int errcode;
-    std::string	error;
+    GridFtp_request_type request_type;   
     // params
     struct timespec end_time; // timeout trigger -> 0 if not enabled, usage of CLOCK_MONOTONIC is required.
     // enable/disable destroy when out of scope
@@ -76,6 +82,36 @@ struct GridFTP_Request_state{
             timespec_clear(&end_time);
         }
     }
+    
+    inline int get_error_code(void) {
+      Glib::Mutex::Lock locker(internal_lock);
+      return errcode;
+    }
+    
+    inline void set_error_code(int code) {
+      Glib::Mutex::Lock locker(internal_lock);
+      errcode = code;
+    }
+    
+    inline std::string get_error(void) {
+      Glib::Mutex::Lock locker(internal_lock);
+      return error;
+    }
+    
+    inline void set_error(const std::string & errstr) {
+      Glib::Mutex::Lock locker(internal_lock);
+      error = errstr;
+    }
+    
+    inline Gridftp_request_status get_req_status(void) {
+      Glib::Mutex::Lock locker(internal_lock);
+      return  req_status;
+    }
+    
+    inline void set_req_status(const Gridftp_request_status & st) {
+      Glib::Mutex::Lock locker(internal_lock);
+      req_status = st;
+    }
 
     void poll_callback(const Glib::Quark & scope);
     void wait_callback(const Glib::Quark & scope);
@@ -83,18 +119,59 @@ struct GridFTP_Request_state{
 };
 
 struct GridFTP_stream_state : public GridFTP_Request_state{
+ protected:
+    off_t offset; // file offset in the stream
+	bool eof;     // end of file reached
+    Gridftp_request_status stream_status;
+    
+ public:
+   
+   Glib::Mutex lock;
+   
 	GridFTP_stream_state(GridFTP_session * s) : GridFTP_Request_state(s)	{
 		offset =0;
 		eof = false;
 	}
-	off_t offset; // file offset in the stream
-	bool eof;     // end of file reached
-    Gridftp_request_status stream_status;
-
+	
 	bool finished(){
+        Glib::Mutex::Lock locker(internal_lock);
         return (stream_status==GRIDFTP_REQUEST_FINISHED);
 	}
-	Glib::Mutex lock;
+    
+    inline bool is_eof(void) {
+        Glib::Mutex::Lock locker(internal_lock);
+        return eof;
+    }
+    
+    inline void set_eof(bool end) {
+        Glib::Mutex::Lock locker(internal_lock);
+        eof = end;
+    }
+    
+    inline off_t get_offset(void) {
+        Glib::Mutex::Lock locker(internal_lock);
+        return offset;
+    }
+       
+    void set_offset(off_t off) {
+        Glib::Mutex::Lock locker(internal_lock);
+        offset = off;
+    }
+    
+    void increase_offset(off_t diff) {
+        Glib::Mutex::Lock locker(internal_lock);
+        offset += diff;
+    }
+    
+    Gridftp_request_status get_stream_status(void) {
+        Glib::Mutex::Lock locker(internal_lock);
+        return stream_status;
+    }
+    
+    void set_stream_status(const Gridftp_request_status & st) {
+        Glib::Mutex::Lock locker(internal_lock);
+        stream_status = st;
+    }
 
     void poll_callback_stream(const Glib::Quark & scope);
     void wait_callback_stream(const Glib::Quark & scope);
