@@ -49,28 +49,33 @@ void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, gl
 
 struct Callback_handler{
 
-    Callback_handler(gfalt_params_t params, GridFTP_session* sess, const char* src, const char* dst){
+    Callback_handler(gfalt_params_t params, GridFTP_Request_state* req, const char* src, const char* dst){
         GError * tmp_err=NULL;
         args.callback = gfalt_get_monitor_callback(params, &tmp_err);
         Gfal::gerror_to_cpp(&tmp_err);
 
-        args.sess = sess;
+        args.req = req;
         args.user_args = gfalt_get_user_data(params, &tmp_err);
         args.src = src;
         args.dst = dst;
         args.start_time = time(NULL);
         Gfal::gerror_to_cpp(&tmp_err);
-        if(args.callback)
-            globus_gass_copy_register_performance_cb(args.sess->get_gass_handle(), gsiftp_rd3p_callback, (gpointer) &args);
+        if(args.callback){
+            Glib::RWLock::ReaderLock l (req->mux_req_state);
+            Glib::Mutex::Lock l_call (req->mux_callback_lock);
+            globus_gass_copy_register_performance_cb(args.req->sess->get_gass_handle(), gsiftp_rd3p_callback, (gpointer) &args);
+        }
     }
 
     virtual ~Callback_handler(){
-        globus_gass_copy_register_performance_cb(args.sess->get_gass_handle(), NULL, NULL);
+        Glib::RWLock::ReaderLock l (args.req->mux_req_state);
+        Glib::Mutex::Lock l_call (args.req->mux_callback_lock);
+        globus_gass_copy_register_performance_cb(args.req->sess->get_gass_handle(), NULL, NULL);
     }
     struct callback_args{
         gfalt_monitor_func callback;
         gpointer user_args;
-        GridFTP_session* sess;
+        GridFTP_Request_state* req;
         const char* src;
         const char* dst;
         time_t start_time;
@@ -79,6 +84,11 @@ struct Callback_handler{
 
 void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, globus_off_t total_bytes, float throughput, float avg_throughput){
     Callback_handler::callback_args * args = (Callback_handler::callback_args *) user_args;
+
+    GridFTP_Request_state* req = args->req;
+    Glib::RWLock::ReaderLock l (req->mux_req_state);
+    Glib::Mutex::Lock l_call (req->mux_callback_lock);
+
     gfalt_hook_transfer_plugin_t hook;
     hook.bytes_transfered = total_bytes;
     hook.average_baudrate= (size_t) avg_throughput;
@@ -115,7 +125,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
     sess->set_tcp_buffer_size(tcp_buffer_size);
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] setup gsiftp buffer size to %d", tcp_buffer_size);
 
-    Callback_handler callback_handler(params, sess, src, dst);
+    Callback_handler callback_handler(params, req.get(), src, dst);
 
     if( gfalt_get_strict_copy_mode(params, NULL) == false)
         gridftp_filecopy_delete_existing(sess, params, dst);

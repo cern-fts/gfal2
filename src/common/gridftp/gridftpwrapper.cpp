@@ -450,22 +450,33 @@ void globus_gass_basic_client_callback(
     Glib::Mutex::Lock l_call(state->mux_callback_lock);
     gfal_log(GFAL_VERBOSE_TRACE,"gass operation done");
 
-    if(error != GLOBUS_SUCCESS){
-        gfal_globus_store_error(state, error);
+    if(state->get_req_status() == GRIDFTP_REQUEST_FINISHED){
+        gfal_log(GFAL_VERBOSE_TRACE,"gass operation already finished ! error !");
     }else{
-        state->set_error_code(0);
+        if(error != GLOBUS_SUCCESS){
+            gfal_globus_store_error(state, error);
+        }else{
+            state->set_error_code(0);
+        }
+        state->set_req_status(GRIDFTP_REQUEST_FINISHED);
     }
-    state->set_req_status(GRIDFTP_REQUEST_FINISHED);
 }
 
 // cancel any gass operation synchronously associated with this gridftp session object
 void globus_gass_cancel_sync(const Glib::Quark & scope, GridFTP_Request_state* req){
     gfal_log(GFAL_VERBOSE_TRACE," -> gass operation cancel  ");
 
-    globus_result_t res = globus_gass_copy_cancel(req->sess->get_gass_handle(),
-                                                 globus_gass_basic_client_callback,
-                                                  req);
-    gfal_globus_check_result(scope, res);
+    {
+        Glib::RWLock::ReaderLock l(req->mux_req_state);
+        Glib::Mutex::Lock l_call(req->mux_callback_lock);
+        if(req->get_req_status() == GRIDFTP_REQUEST_FINISHED); // already finished before cancelling -> return
+            return;
+        globus_result_t res = globus_gass_copy_cancel(req->sess->get_gass_handle(),
+                                                      globus_gass_basic_client_callback,
+                                                      req);
+        gfal_globus_check_result(scope, res);
+
+    }
     req->poll_callback(scope);
     gfal_log(GFAL_VERBOSE_TRACE,"  gass operation cancel  <- ");
 }
