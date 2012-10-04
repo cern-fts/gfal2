@@ -26,6 +26,7 @@ FILE(GLOB src_test_readdir_full "gfal_test_readdir_full.c")
 FILE(GLOB src_gfalmkdir_full "gfal_mkdir_full.c")
 FILE(GLOB src_gfaltcopy "gfalt_copyfile.c")
 FILE(GLOB src_gfaltcopy_fts "gfalt_copyfile_fts_style.c")
+FILE(GLOB src_gfaltcopy_fts_thread "gfalt_copyfile_fts_style_thread_safety.c")
 FILE(GLOB src_gfaltcopy_test "gfalt_copyfile_test.c")
 FILE(GLOB src_gfaltcopy_test_timeout "gfalt_copyfile_test_timeout.c")
 FILE(GLOB src_gfaltcopy_test_thread_safety_timeout "gfalt_copyfile_test_thread_safey_timeout.c")
@@ -160,6 +161,12 @@ IF (FUNCTIONAL_TESTS)
 
                 add_executable(gfal_copyfile_fts ${src_gfaltcopy_fts} )
                 target_link_libraries(gfal_copyfile_fts ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
+
+
+                add_executable(src_gfaltcopy_fts_thread ${src_gfaltcopy_fts} ${src_lib_test})
+                target_link_libraries(src_gfaltcopy_fts_thread ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
+
+
 
                 add_executable(gfal_copyfile_perf ${src_gfaltcopy_perf} )
                 target_link_libraries(gfal_copyfile_perf ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
