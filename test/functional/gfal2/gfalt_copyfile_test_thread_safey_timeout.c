@@ -36,7 +36,7 @@ int main(int argc, char** argv){
 	
 	 // begin copy
 	printf(" begin to copyfile from %s to %s", src_uri, dst_uri);
-    ret = gfalt_set_timeout(params,20, &tmp_err);
+    ret = gfalt_set_timeout(params,1, &tmp_err);
 
     g_assert(tmp_err == NULL && ret == 0);
     while(ret ==0){
