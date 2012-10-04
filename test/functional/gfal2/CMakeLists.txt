@@ -163,7 +163,7 @@ IF (FUNCTIONAL_TESTS)
                 target_link_libraries(gfal_copyfile_fts ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
 
 
-                add_executable(gfal_copyfile_fts_thread ${src_gfaltcopy_fts} ${src_lib_test})
+                add_executable(gfal_copyfile_fts_thread ${src_gfaltcopy_fts_thread} ${src_lib_test})
                 target_link_libraries(gfal_copyfile_fts_thread ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
 
 
