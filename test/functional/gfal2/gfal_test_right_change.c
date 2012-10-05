@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 		
 		if (gfal_chmod (file, mode) < 0) {
 			gfal_posix_check_error();
-			g_assert_not_reached();			
+			g_assert_not_reached();
 		}
 
 		if (gfal_stat (file, &current_stat) < 0) {

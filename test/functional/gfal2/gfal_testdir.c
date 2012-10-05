@@ -21,7 +21,7 @@ main(int argc, char **argv)
 		exit (1);
 	}
 
-
+    
 	while ((d = gfal_readdir (dir))) {
 		printf ("%s\n", d->d_name);
 	}

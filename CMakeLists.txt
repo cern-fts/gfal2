@@ -17,6 +17,8 @@ SET(PLUGIN_FILE TRUE
         CACHE STRING "enable compilation of the local File plugin")
 SET(PLUGIN_GRIDFTP TRUE
         CACHE STRING "enable compilation of the GRIDFTP plugin")
+SET(PLUGIN_HTTP TRUE
+        CACHE STRING "enable compilation of the HTTP plugin")
 
 SET(MAIN_TRANSFER TRUE
         CACHE STRING "enable compilation of the transfer library")
@@ -64,6 +66,9 @@ set(OUTPUT_NAME_GRIDFTP "gfal_plugin_gridftp")
 
 set(PROJECT_NAME_FILE "plugin_file")
 set(OUTPUT_NAME_FILE "gfal_plugin_file")
+
+set(PROJECT_NAME_HTTP "plugin_http")
+set(OUTPUT_NAME_HTTP "gfal_plugin_http")
 
 set(VERSION_MAJOR 2)
 set(VERSION_MINOR 0)

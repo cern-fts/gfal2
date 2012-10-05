@@ -35,6 +35,7 @@ FILE(GLOB src_gfaltcopy_perf "gfalt_copyfile_with_performance_marker.c")
 FILE(GLOB src_copyfile_replace "gfalt_copyfile_replace_test.c")
 FILE(GLOB src_copyfile_checksum "gfalt_copyfile_checksum_test_simple.c")
 FILE(GLOB src_copyfile_checksum_user "gfalt_copyfile_checksum_test_userdefined.c")
+FILE(GLOB src_testdir "gfal_testdir.c")
 
 SET(COPY_SRC "*.sh")
 SET(COPY_DST "${CMAKE_CURRENT_BINARY_DIR}/")
@@ -147,7 +148,10 @@ IF (FUNCTIONAL_TESTS)
 	target_link_libraries(gfal_test_rmdir_full ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})	
 
 	add_executable(gfal_test_readdir_full	${src_test_readdir_full} )
-	target_link_libraries(gfal_test_readdir_full ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})	
+	target_link_libraries(gfal_test_readdir_full ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})
+
+    add_executable(gfal_ls ${src_testdir})
+    target_link_libraries(gfal_ls ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})
 	
 
 	FUNCTION(mkdir_test_all name prefix)

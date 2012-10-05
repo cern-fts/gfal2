@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 		gfal_posix_check_error();
 		g_assert_not_reached();
 	}
-	printf(" err code enotempty : %d", gfal_posix_code_error());
+	printf(" err code enotempty : %d\n", gfal_posix_code_error());
 	g_assert(gfal_posix_code_error() == ENOTEMPTY);
 	gfal_posix_clear_error();
 	g_assert(gfal_posix_code_error() == 0);			
