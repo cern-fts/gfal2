@@ -483,7 +483,7 @@ void globus_gass_cancel_sync(const Glib::Quark & scope, GridFTP_Request_state* r
 }
 
 static bool check_timeout(const Glib::Quark & scope, GridFTP_Request_state* state){
-    if(state->canceling == FALSE){ //check timeout
+    if(timespec_isset(&state->end_time) == TRUE && state->canceling == FALSE){ //check timeout
         struct timespec current_time;
         clock_gettime(CLOCK_MONOTONIC, &current_time);
         if(timespec_cmp(&state->end_time, &current_time, <) ==TRUE ){
