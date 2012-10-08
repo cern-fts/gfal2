@@ -469,8 +469,9 @@ void globus_gass_cancel_sync(const Glib::Quark & scope, GridFTP_Request_state* r
     {
         Glib::RWLock::ReaderLock l(req->mux_req_state);
         Glib::Mutex::Lock l_call(req->mux_callback_lock);
-        if(req->get_req_status() == GRIDFTP_REQUEST_FINISHED); // already finished before cancelling -> return
+        if(req->get_req_status() == GRIDFTP_REQUEST_FINISHED){ // already finished before cancelling -> return
             return;
+        }
         globus_result_t res = globus_gass_copy_cancel(req->sess->get_gass_handle(),
                                                       globus_gass_basic_client_callback,
                                                       req);
