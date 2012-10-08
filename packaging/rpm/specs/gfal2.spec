@@ -19,7 +19,7 @@ BuildRequires:		glib2-devel
 BuildRequires:		glibmm24-devel
 BuildRequires:		libattr-devel
 BuildRequires:		openldap-devel
-BuildRequires:		davix-devel
+##BuildRequires:		davix-devel
 ## libuuid is in a different rpm for el5
 %if 0%{?el5}
 BuildRequires:		e2fsprogs-devel
@@ -138,13 +138,13 @@ Provide the gridftp support (GSIFTP://) for %{name}. \
 The gridftp plugin provides the POSIX operations and \
 the third party transfer support on the GSIFTP URLs.
 
-%package plugin-http
-Summary:			Provide the HTTP/DAV support for %{name}
-Group:				Applications/Internet
-Requires:			%{name}-core%{?_isa} = %{version}-%{release} 
+##%package plugin-http
+##Summary:			Provide the HTTP/DAV support for %{name}
+##Group:				Applications/Internet
+##Requires:			%{name}-core%{?_isa} = %{version}-%{release}
 
-%description plugin-http
-Provide the HTTP/DAV support for %{name}.
+##%description plugin-http
+##Provide the HTTP/DAV support for %{name}.
 
 %package all
 Summary:			Meta package for GFAL 2.0 install
@@ -257,11 +257,11 @@ make DESTDIR=%{buildroot} install
 %{_docdir}/%{name}-%{version}/README_PLUGIN_GRIDFTP
 %config(noreplace) %{_sysconfdir}/%{name}.d/gsiftp_plugin.conf
 
-%files plugin-http
-%defattr (-,root,root)
-%{_libdir}/%{name}-plugins/libgfal_plugin_http.so*
-%{_docdir}/%{name}-%{version}/README_PLUGIN_HTTP
-%config(noreplace) %{_sysconfdir}/%{name}.d/http_plugin.conf
+##%files plugin-http
+##%defattr (-,root,root)
+##%{_libdir}/%{name}-plugins/libgfal_plugin_http.so*
+##%{_docdir}/%{name}-%{version}/README_PLUGIN_HTTP
+##%config(noreplace) %{_sysconfdir}/%{name}.d/http_plugin.conf
 
 %files all
 %defattr (-,root,root)
