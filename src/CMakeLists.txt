@@ -108,7 +108,8 @@ IF (MAIN_CORE)
 	install(FILES   "common/gfal_constants.h"
 					"common/gfal_common_plugin_interface.h" 
 					"common/gfal_prototypes.h"
-					"common/gfal_common_plugin.h" 
+					"common/gfal_common_plugin.h"
+                    "common/gfal_types.h"
 			DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/common ) # install headers common
 
 	FILE(GLOB l_examples "../testing/example/*.c")
@@ -117,6 +118,9 @@ IF (MAIN_CORE)
 			
 	install(FILES 	"global/gfal_global.h"
 			DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/global)
+
+    install(FILES "externals/g_config_manager/g_config_manager.h"
+            DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/g_config_manager)
 
 ENDIF (MAIN_CORE)
 
