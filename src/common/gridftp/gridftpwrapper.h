@@ -52,7 +52,7 @@ struct GridFTP_Request_state{
     // request type
     GridFtp_request_type request_type;   
     // params
-    struct timespec end_time; // timeout trigger -> 0 if not enabled, usage of CLOCK_MONOTONIC is required.
+    Glib::TimeVal end_time; // timeout trigger -> 0 if not enabled, usage of CLOCK_MONOTONIC is required.
     // enable/disable destroy when out of scope
     bool own_session;
     // bool canceling
@@ -60,6 +60,7 @@ struct GridFTP_Request_state{
     // mutex for state checking
     Glib::RWLock mux_req_state;
     Glib::Mutex mux_callback_lock;
+    Glib::Cond signal_callback_main;
 
     inline void start(){
         this->req_status = GRIDFTP_REQUEST_RUNNING;
@@ -67,19 +68,20 @@ struct GridFTP_Request_state{
 
     //
     inline void init_timeout(struct timespec * time_offset){
-        if( timespec_isset(&end_time)){
-            timespec_clear(&end_time);
+        if( time_offset  && timespec_isset(time_offset)){
+            end_time.assign_current_time();
+            end_time.add_seconds(time_offset->tv_sec);
+            end_time.add_microseconds(time_offset->tv_nsec/1000);
         }else{
-            clock_gettime(CLOCK_MONOTONIC, &end_time);
-            timespec_add(&end_time, time_offset, &end_time);
+          end_time = Glib::TimeVal(0,0);
         }
     }
 
     inline void set_end_time(struct timespec * my_end_time){
         if(my_end_time && timespec_isset(my_end_time)){
-            timespec_copy(&end_time, my_end_time);
+            end_time = Glib::TimeVal(my_end_time->tv_sec, my_end_time->tv_nsec/1000);
         }else{
-            timespec_clear(&end_time);
+          end_time = Glib::TimeVal(0,0);
         }
     }
     
