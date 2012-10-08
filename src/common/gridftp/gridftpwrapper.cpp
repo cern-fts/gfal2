@@ -516,13 +516,12 @@ void GridFTP_Request_state::poll_callback(const Glib::Quark &scope){
                 signal_callback_main.wait(mux_callback_lock);
            } else{
                 timeout = !(signal_callback_main.timed_wait(mux_callback_lock,end_time));
-                gfal_log(GFAL_VERBOSE_TRACE," -> timeout :  %s",timeout?"TRUE":"FALSE");
-
             }
         }
     }
 
     if(timeout && this->canceling==FALSE){
+       gfal_log(GFAL_VERBOSE_TRACE,"gfal gridftp operation timeout occures ! cancel the operation ...");
         this->canceling = TRUE;
         globus_gass_cancel_sync(scope, this);
         this->set_error_code(ETIMEDOUT);
