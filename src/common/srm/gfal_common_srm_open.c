@@ -59,7 +59,7 @@ static gfal_file_handle gfal_srm_file_handle_map(gfal_file_handle fh){
 }
 
 static void gfal_srm_file_handle_delete(gfal_file_handle fh){
-	free(fh->fdesc);
+	g_free(fh->fdesc);
 	gfal_file_handle_delete(fh);
 }
 
@@ -90,8 +90,10 @@ gfal_file_handle gfal_srm_openG(plugin_handle ch, const char* path, int flag, mo
 	if(tmp_ret == 0){
 		gfal_log(GFAL_VERBOSE_TRACE, "  SRM RESOLUTION : %s -> %s ", path, turl);
 		ret = gfal_plugin_openG(opts->handle, turl, flag, mode, &tmp_err);
-		ret= gfal_srm_file_handle_create(ret, p, reqtoken, req_type);
+		ret = gfal_srm_file_handle_create(ret, p, g_strdup(reqtoken), req_type);
 	}
+
+    g_free(reqtoken);
 
 	if(tmp_err)
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
@@ -156,6 +158,7 @@ int gfal_srm_closeG(plugin_handle ch, gfal_file_handle fh, GError ** err){
 		char* surls[] = { sh->surl, NULL };
 		if(sh->req_type == SRM_PUT)
 			ret = gfal_srm_putdone(opts, surls, sh->reqtoken, &tmp_err); // end the transaction on the srm server in case of pu
+        g_free(sh->reqtoken);
 		gfal_srm_file_handle_delete(fh);
 	}
 	if(tmp_err)

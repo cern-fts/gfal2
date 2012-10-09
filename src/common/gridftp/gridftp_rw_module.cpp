@@ -277,6 +277,7 @@ int GridftpModule::close(gfal_file_handle handle){
 	if(desc){
 		gridftp_rw_commit_put(scope_close, desc);
 		gridftp_rw_valid_get(scope_close, desc);
+        gfal_file_handle_delete(handle);
 		delete desc;
 	}
 	return 0;

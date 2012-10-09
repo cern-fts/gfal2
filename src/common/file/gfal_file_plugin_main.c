@@ -316,7 +316,7 @@ int gfal_plugin_file_closedir(plugin_handle plugin_data, gfal_file_handle fh, GE
     if(res<0)
         gfal_plugin_file_report_error(__func__, err);
     else
-        free(fh);
+        gfal_file_handle_delete(fh);
     return res;
  }
 

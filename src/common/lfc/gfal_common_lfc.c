@@ -431,7 +431,7 @@ static int lfc_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err
 		g_set_error(err,0, sav_errno, "[%s] Error report from LFC %s", __func__, gfal_lfc_get_strerror(ops) );
 	}else{
 		g_free(fh->ext_data);
-		g_free(fh);
+		gfal_file_handle_delete(fh);
 	}
 	return ret;		
 }

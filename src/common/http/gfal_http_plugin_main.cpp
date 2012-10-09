@@ -150,21 +150,25 @@ int gfal_http_closedir(plugin_handle plugin_data, gfal_file_handle dir_desc,
                        GError** err)
 {
   Davix::CoreInterface* davix = static_cast<Davix::CoreInterface*>(plugin_data);
+  int ret = 0;
   
   try {
     davix->closedir(gfal_file_handle_get_fdesc(dir_desc));
-    return 0;
   }
   catch (Glib::Error& e) {
     GError* tmp_err;
     tmp_err = g_error_new(http_plugin_domain, e.code(), "%s", e.what().c_str());
     g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-    return -1;
+    ret = -1;
   }
   catch (...) {
     g_set_error(err, 0, EFAULT, "Unexpected exception catched on '%s'", __func__);
-    return -1;
+    ret = -1;
   }
+  
+  gfal_file_handle_delete(dir_desc);
+  
+  return ret;
 }
 
 

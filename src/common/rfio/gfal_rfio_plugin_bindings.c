@@ -148,6 +148,7 @@ int gfal_rfio_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err)
 	if(ret != 0){
 		rfio_report_error(h, __func__, err);
 	}
+    gfal_file_handle_delete(fh);
 	return ret;	
 }
 

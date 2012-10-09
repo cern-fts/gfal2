@@ -146,8 +146,8 @@ int gfal_dcap_closeG(plugin_handle handle, gfal_file_handle fd, GError ** err){
 	int ret= h->ops->close(GPOINTER_TO_INT(fd->fdesc));
 	if(ret != 0){
 		dcap_report_error(h, __func__, err);
-	}else
-		free(fd);
+	}
+    gfal_file_handle_delete(fd);
 	return ret;	
 }
 
@@ -226,7 +226,7 @@ int gfal_dcap_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err)
 	if(ret !=0){
 		dcap_report_error(h, __func__, err);		
 	}else{
-		g_free(fh);
+		gfal_file_handle_delete(fh);
 	}
 	return ret;	
 }

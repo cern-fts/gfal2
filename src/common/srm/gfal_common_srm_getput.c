@@ -46,7 +46,7 @@ static int gfal_srm_convert_filestatuses_to_srm_result(struct srmv2_pinfilestatu
 		if(statuses[i].explanation)
 			g_strlcpy((*resu)[i].err_str, statuses[i].explanation, GFAL_URL_MAX_LEN);
 		(*resu)[i].err_code = statuses[i].status;	
-		(*resu)[i].reqtoken = reqtoken;
+		(*resu)[i].reqtoken = g_strdup(reqtoken);
 	}
 	return 0;
 }
@@ -58,15 +58,22 @@ int gfal_srmv2_get_global(gfal_srm_plugin_t handle, gfal_srm_params_t params, st
 	GError* tmp_err=NULL;
 	int ret=0;
 	struct srm_preparetoget_output preparetoget_output;
+    
+    memset(&preparetoget_output, 0, sizeof(preparetoget_output));
 	
 	ret = gfal_srm_external_call.srm_prepare_to_get(context,input,&preparetoget_output);
 	if(ret < 0){
 		gfal_srm_report_error(context->errbuf, &tmp_err);
 	} else{
 		gfal_srm_convert_filestatuses_to_srm_result(preparetoget_output.filestatuses, preparetoget_output.token, ret, resu,  &tmp_err);
-    	gfal_srm_external_call.srm_srmv2_pinfilestatus_delete(preparetoget_output.filestatuses, ret);
-    	gfal_srm_external_call.srm_srm2__TReturnStatus_delete(preparetoget_output.retstatus);
 	}
+    
+    if (preparetoget_output.filestatuses != NULL)
+        gfal_srm_external_call.srm_srmv2_pinfilestatus_delete(preparetoget_output.filestatuses, ret);
+    if (preparetoget_output.retstatus != NULL)
+        gfal_srm_external_call.srm_srm2__TReturnStatus_delete(preparetoget_output.retstatus);
+    free(preparetoget_output.token);
+    
 	G_RETURN_ERR(ret, tmp_err, err);		
 }
 
@@ -78,15 +85,22 @@ int gfal_srmv2_put_global(gfal_srm_plugin_t handle, gfal_srm_params_t params, st
 	GError* tmp_err=NULL;
 	int ret=0;
 	struct srm_preparetoput_output preparetoput_output;
+    
+    memset(&preparetoput_output, 0, sizeof(preparetoput_output));
 	
 	ret = gfal_srm_external_call.srm_prepare_to_put(context, input, &preparetoput_output);
 	if(ret < 0){
 		gfal_srm_report_error(context->errbuf, &tmp_err);
 	} else{
 		gfal_srm_convert_filestatuses_to_srm_result(preparetoput_output.filestatuses, preparetoput_output.token, ret, resu, &tmp_err);
-    	gfal_srm_external_call.srm_srmv2_pinfilestatus_delete(preparetoput_output.filestatuses, ret);
-    	gfal_srm_external_call.srm_srm2__TReturnStatus_delete(preparetoput_output.retstatus);
 	}
+    
+    if (preparetoput_output.filestatuses != NULL)
+        gfal_srm_external_call.srm_srmv2_pinfilestatus_delete(preparetoput_output.filestatuses, ret);
+    if (preparetoput_output.retstatus != NULL)
+        gfal_srm_external_call.srm_srm2__TReturnStatus_delete(preparetoput_output.retstatus);
+    free(preparetoput_output.token);
+    
 	G_RETURN_ERR(ret, tmp_err, err);		
 }
 
@@ -191,6 +205,7 @@ int gfal_srm_getTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl
 			}else{
 				g_set_error(&tmp_err,0 , resu[0].err_code, " error on the turl request : %s ", resu[0].err_str);
 				ret = -1;
+                g_free(resu->reqtoken);
 			}
 			free(resu);
 		}
@@ -332,7 +347,7 @@ int gfal_srm_putTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl
 				g_set_error(&tmp_err,0 , resu[0].err_code, " error on the turl request : %s ", resu[0].err_str);
 				ret = -1;
 			}
-		
+            free(resu);
 		}
 		gfal_srm_params_free(params);
 	}

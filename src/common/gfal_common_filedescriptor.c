@@ -175,9 +175,6 @@ void gfal_file_handle_unlock(gfal_file_handle fh){
 void gfal_file_handle_delete(gfal_file_handle fh){
 	if(fh){
 		g_mutex_free(fh->lock);	
-		free(fh);
+		g_free(fh);
 	}
 }
-
-
-
