@@ -40,7 +40,7 @@ void gfal_dcap_destroyG(plugin_handle handle);
 gboolean gfal_dcap_check_url(plugin_handle ch, const char* url,  plugin_mode mode, GError** err);
 
 static int gfal_dcap_regex_compile(regex_t * rex, GError** err){
-	int ret = regcomp(rex, "^(dcap|gsidcap)://([:alnum:]|-|/|\.|_)+$",REG_ICASE | REG_EXTENDED);
+	int ret = regcomp(rex, "^(dcap|gsidcap)://([:alnum:]|-|/|.|_)+$",REG_ICASE | REG_EXTENDED);
 	g_return_val_err_if_fail(ret==0,-1,err,"[gfal_dcap_regex_compile] fail to compile regex, report this bug");	
 	return ret;
 }

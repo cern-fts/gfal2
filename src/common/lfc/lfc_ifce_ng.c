@@ -59,7 +59,7 @@ static long session_duration = 20;
 static pthread_mutex_t m_session = PTHREAD_MUTEX_INITIALIZER;
 
 int gfal_lfc_regex_compile(regex_t* rex, GError** err){
-	int ret = regcomp(rex, "^lfn:/([:alnum:]|-|/|\.|_)+", REG_ICASE | REG_EXTENDED);
+	int ret = regcomp(rex, "^lfn:/([:alnum:]|-|/|.|_)+", REG_ICASE | REG_EXTENDED);
 	g_return_val_err_if_fail(ret ==0,-1,err,"[gfal_lfc_check_lfn_url] fail to compile regex, report this bug");
 	return ret;
 }

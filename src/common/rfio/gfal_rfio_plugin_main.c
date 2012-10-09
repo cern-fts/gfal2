@@ -46,7 +46,7 @@ void gfal_rfio_destroyG(plugin_handle handle);
 
 
 int gfal_rfio_regex_compile(regex_t * rex, GError** err){
-	int ret = regcomp(rex, "^rfio://([:alnum:]|-|/|\.|_)+$",REG_ICASE | REG_EXTENDED);
+	int ret = regcomp(rex, "^rfio://([:alnum:]|-|/|.|_)+$",REG_ICASE | REG_EXTENDED);
 	g_return_val_err_if_fail(ret==0,-1,err,"[gfal_rfio_internal_check_url] fail to compile regex, report this bug");
 	return ret;	
 }

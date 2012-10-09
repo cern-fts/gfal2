@@ -1,4 +1,5 @@
 #include "g_config_manager.h"
+#include "../../common/gfal_common_errverbose.h"
 
 struct _GConfigManager{
     GList* configs;

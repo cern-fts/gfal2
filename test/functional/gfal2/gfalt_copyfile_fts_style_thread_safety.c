@@ -54,7 +54,7 @@ int internal_copy(gfal2_context_t* handle, gfalt_params_t* params, const char* s
 
 
 int main(int argc, char** argv){
-    int i, ret;
+    int ret;
     if( argc != 4 ){
         printf(" Usage %s [src_url] [checksum] [dir_dest] \n",argv[0]);
 		return 1;
@@ -82,13 +82,13 @@ int main(int argc, char** argv){
 // gfalt_set_dst_spacetoken(my_params, "DTEAMLCGUTILSTESTF", &tmp_err);     
 	 // begin copy
 
-     while(ret ==0){
+      ret = 0;
+      while(ret == 0){
         generate_random_uri(argv[3], "bigfile_fts_cancel", buff, 2048);
         if(internal_copy(&handle, &my_params, argv[1], buff) !=0)
-            return -1;
-    }
+          ret = -1;
+      }
 		
-	gfal2_context_free(handle);
-    return 0;
+	  gfal2_context_free(handle);
+      return ret;
 }
-

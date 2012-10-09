@@ -21,7 +21,6 @@ int main(int argc, char** argv){
 	
 	char * src_uri = argv[1];
 	char dst_uri[2048];
-	char dst_uri2[2048];
 
     gfalt_params_t params = gfalt_params_handle_new(NULL);
 
