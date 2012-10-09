@@ -87,7 +87,7 @@ int lfc_configure_environment(struct lfc_ops * ops, GError** err){
                     v1 =gfal2_get_opt_string(ops->handle, plugin_group, tab_envar_name[i], &tmp_err);
                     if(!tmp_err){
                         gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : setup env var value %s to %s", tab_envar_name[i],v1);
-                        g_setenv(tab_envar_name[i],v1,TRUE);
+                        lfc_setenv(tab_envar_name[i],v1,TRUE);
                         free(v1);
                     }
                     break;
@@ -97,7 +97,7 @@ int lfc_configure_environment(struct lfc_ops * ops, GError** err){
                         char v_str[20];
                         snprintf(v_str,20, "%d",v2);
                         gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : setup env var value %s to %d",tab_envar_name[i],v2);
-                        g_setenv(tab_envar_name[i],v_str,TRUE);
+                        lfc_setenv(tab_envar_name[i],v_str,TRUE);
                     }
                     break;
             default:
