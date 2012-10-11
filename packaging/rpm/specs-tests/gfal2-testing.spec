@@ -37,6 +37,9 @@ Requires:		srm-ifce-devel%{?_isa}
 Requires:		dcap-devel%{?_isa}
 #gridftp plugin dependencies
 Requires:		globus-gass-copy-devel%{?_isa}
+# globus testing tools
+Requires:               globus-proxy-utils
+
 
 %description
 test suite for gfal 2.0
