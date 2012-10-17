@@ -6,6 +6,12 @@
 #include "../gfal_common_plugin.h"
 #include "../gfal_types.h"
 
+struct GfalHttpInternal {
+    Davix::Context*       context;
+    Davix::DavPosix*      posix;
+    Davix::RequestParams* params;
+};
+
 
 const char* http_module_name = "http_plugin";
 GQuark http_plugin_domain = g_quark_from_static_string(http_module_name);
@@ -30,7 +36,11 @@ static const char* gfal_http_get_name(void)
 
 static void gfal_http_delete(plugin_handle plugin_data)
 {
-  delete static_cast<Davix::CoreInterface*>(plugin_data);
+  GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
+  delete davix->posix;
+  delete davix->params;
+  delete davix->context;
+  delete davix;
 }
 
 
@@ -38,22 +48,21 @@ static void gfal_http_delete(plugin_handle plugin_data)
 static int gfal_http_stat(plugin_handle plugin_data, const char* url,
                           struct stat* buf, GError** err)
 {
-  Davix::CoreInterface* davix = static_cast<Davix::CoreInterface*>(plugin_data);
+  GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
   
   try {
-    davix->stat(url, buf);
+    davix->posix->stat(davix->params, url, buf);
     return 0;
   }
   catch (Glib::Error& e) {
     GError* tmp_err;
     tmp_err = g_error_new(http_plugin_domain, e.code(), "%s", e.what().c_str());
     g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-    return -1;
   }
   catch (...) {
     g_set_error(err, 0, EFAULT, "Unexpected exception catched on '%s'", __func__);
-    return -1;
   }
+  return -1;
 }
 
 
@@ -104,56 +113,54 @@ static int gfal_http_access(plugin_handle plugin_data, const char* url,
 gfal_file_handle gfal_http_opendir(plugin_handle plugin_data, const char* url,
                                    GError** err)
 {
-  Davix::CoreInterface* davix = static_cast<Davix::CoreInterface*>(plugin_data);
+  GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
   
   try {
-    DAVIX_DIR* dir = davix->opendir(url);
+    DAVIX_DIR* dir = davix->posix->opendir(davix->params, url);
     return gfal_file_handle_new(http_module_name, dir);
   }
   catch (Glib::Error& e) {
     GError* tmp_err;
     tmp_err = g_error_new(http_plugin_domain, e.code(), "%s", e.what().c_str());
     g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-    return NULL;
   }
   catch (...) {
     g_set_error(err, 0, EFAULT, "Unexpected exception catched on '%s'", __func__);
-    return NULL;
   }
+  return NULL;
 }
 
 
 
 struct dirent* gfal_http_readdir(plugin_handle plugin_data,
-                                 gfal_file_handle dir_desc, GError** err)
+                                    gfal_file_handle dir_desc, GError** err)
 {
-  Davix::CoreInterface* davix = static_cast<Davix::CoreInterface*>(plugin_data);
+  GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
   
   try {
-    return davix->readdir(gfal_file_handle_get_fdesc(dir_desc));
+    return davix->posix->readdir(gfal_file_handle_get_fdesc(dir_desc));
   }
   catch (Glib::Error& e) {
     GError* tmp_err;
     tmp_err = g_error_new(http_plugin_domain, e.code(), "%s", e.what().c_str());
     g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-    return NULL;
   }
   catch (...) {
     g_set_error(err, 0, EFAULT, "Unexpected exception catched on '%s'", __func__);
-    return NULL;
   }
+  return NULL;
 }
 
 
 
 int gfal_http_closedir(plugin_handle plugin_data, gfal_file_handle dir_desc,
-                       GError** err)
+                          GError** err)
 {
-  Davix::CoreInterface* davix = static_cast<Davix::CoreInterface*>(plugin_data);
+  GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
   int ret = 0;
   
   try {
-    davix->closedir(gfal_file_handle_get_fdesc(dir_desc));
+    davix->posix->closedir(gfal_file_handle_get_fdesc(dir_desc));
   }
   catch (Glib::Error& e) {
     GError* tmp_err;
@@ -162,7 +169,7 @@ int gfal_http_closedir(plugin_handle plugin_data, gfal_file_handle dir_desc,
     ret = -1;
   }
   catch (...) {
-    g_set_error(err, 0, EFAULT, "Unexpected exception catched on '%s'", __func__);
+    g_set_error(err, 0, EFAULT, "Unexpected exception caught on '%s'", __func__);
     ret = -1;
   }
   
@@ -180,14 +187,19 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal_handle handle,
                                                   GError** err)
 {
   gfal_plugin_interface http_plugin;
+  GfalHttpInternal* http_internal = new GfalHttpInternal();
   
+  http_internal->context = new Davix::Context();
+  http_internal->params  = new Davix::RequestParams();
+  http_internal->posix   = new Davix::DavPosix(http_internal->context);
+
   *err = NULL;
   memset(&http_plugin, 0, sizeof(http_plugin));
   
   http_plugin.check_plugin_url = &gfal_http_check_url;
   http_plugin.getName          = &gfal_http_get_name;
   http_plugin.priority         = GFAL_PLUGIN_PRIORITY_DATA;
-  http_plugin.plugin_data      = Davix::davix_context_create();
+  http_plugin.plugin_data      = http_internal;
   http_plugin.plugin_delete    = &gfal_http_delete;
   
   http_plugin.statG     = &gfal_http_stat;
