@@ -99,6 +99,7 @@ struct lfc_ops {
 	int (*endsess) ();
 	int (*Cthread_init)();
 	int (*_Cthread_addcid)(char *, int, char *, int, Cth_pid_t *, unsigned, void *(*)(void *), int);
+    int (*set_env)(const char*, const char*, int);
 };
 
 

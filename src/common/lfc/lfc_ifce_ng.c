@@ -64,6 +64,15 @@ int gfal_lfc_regex_compile(regex_t* rex, GError** err){
 	return ret;
 }
 
+static void lfc_plugin_set_lfc_env(struct lfc_ops* ops,const char* var_name, const char* var_value ){
+    if(ops->set_env){
+        ops->set_env(var_name, var_value,TRUE);
+    }else{
+        g_setenv(var_name, var_value,TRUE);
+    }
+}
+
+
 int lfc_configure_environment(struct lfc_ops * ops, GError** err){
     GError * tmp_err=NULL;
     const char * tab_envar[] = { ops->lfc_endpoint_predefined, ops->lfc_conn_timeout,
@@ -87,7 +96,7 @@ int lfc_configure_environment(struct lfc_ops * ops, GError** err){
                     v1 =gfal2_get_opt_string(ops->handle, plugin_group, tab_envar_name[i], &tmp_err);
                     if(!tmp_err){
                         gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : setup env var value %s to %s", tab_envar_name[i],v1);
-                        lfc_setenv(tab_envar_name[i],v1,TRUE);
+                        lfc_plugin_set_lfc_env(ops, tab_envar_name[i],v1);
                         free(v1);
                     }
                     break;
@@ -97,7 +106,7 @@ int lfc_configure_environment(struct lfc_ops * ops, GError** err){
                         char v_str[20];
                         snprintf(v_str,20, "%d",v2);
                         gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : setup env var value %s to %d",tab_envar_name[i],v2);
-                        lfc_setenv(tab_envar_name[i],v_str,TRUE);
+                        lfc_plugin_set_lfc_env(ops, tab_envar_name[i],v_str);
                     }
                     break;
             default:
@@ -308,6 +317,13 @@ struct lfc_ops* gfal_load_lfc(const char* name, GError** err){
 	lfc_sym->getcomment = &lfc_getcomment;
 	lfc_sym->setcomment = &lfc_setcomment;
 	lfc_sym->_Cthread_addcid =&_Cthread_addcid;
+
+
+    // dyn resolution
+    void* lib_handle = dlopen(NULL, RTLD_LAZY);
+    lfc_sym->set_env = dlsym(lib_handle,"lfc_setenv");
+    dlclose(lib_handle);
+    errno =0;
 	G_RETURN_ERR(lfc_sym, tmp_err, err);
 }
 

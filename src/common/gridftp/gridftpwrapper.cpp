@@ -324,6 +324,8 @@ static int scan_errstring(const char *p) {
 		ret = ENOTDIR;
     else if (strstr(p, "ation not sup"))
         ret = ENOTSUP;
+    else if (strstr(p, "Login incorrect") || strstr(p, "Could not get virtual id"))
+        ret = EACCES;
     return ret;
 }
 
