@@ -41,6 +41,7 @@ plugin_handle init_gridftp_plugin_test(gfal_handle h){
 
 void load_gridftp(){
 	GError * tmp_err=NULL;
+    core_init();
 	gfal_handle h = gfal_initG(&tmp_err);
 	assert_true_with_message(tmp_err== NULL && h ," initialize gfal failed ");
 	

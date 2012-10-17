@@ -113,4 +113,7 @@ class GridftpModule
 
 };
 
+
+void core_init();
+
 #endif /* GRIDFTOMODULE_H */ 
