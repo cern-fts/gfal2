@@ -320,9 +320,10 @@ struct lfc_ops* gfal_load_lfc(const char* name, GError** err){
 
 
     // dyn resolution
-    void* lib_handle = dlopen(NULL, RTLD_LAZY);
+    void* lib_handle = dlopen("liblfc.so.1", RTLD_LAZY);
     lfc_sym->set_env = dlsym(lib_handle,"lfc_setenv");
-    dlclose(lib_handle);
+    if(lib_handle)
+        dlclose(lib_handle);
     errno =0;
 	G_RETURN_ERR(lfc_sym, tmp_err, err);
 }
