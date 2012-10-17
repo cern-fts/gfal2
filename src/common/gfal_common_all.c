@@ -42,6 +42,18 @@
 /* the version should be set by a "define" at the makefile level */
 static const char *gfalversion = VERSION_STR(VERSION);
 
+
+
+// initialization
+__attribute__((constructor))
+void core_init(){
+    if (!g_thread_supported())
+      g_thread_init(NULL);
+}
+
+
+
+
  /*
  * initiate a gfal's context with default parameters for use
  */
@@ -54,8 +66,6 @@ gfal_handle gfal_initG (GError** err)
 		g_set_error(err,0,ENOMEM, "[gfal_initG] bad allocation, no more memory free");
 		return NULL;
 	}
-	if(!g_thread_supported ())
-		g_thread_init(NULL);
 	handle->no_bdii_check=FALSE;
 	handle->plugin_opt.plugin_number= 0;
 	

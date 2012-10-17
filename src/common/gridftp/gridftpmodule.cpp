@@ -25,6 +25,15 @@ const Glib::Quark scope_globus_init("GridftpModule::init_globus");
 static Glib::Mutex mux_globus_init;
 
 
+// initialization
+__attribute__((constructor))
+void core_init(){
+    if (!g_thread_supported())
+      g_thread_init(NULL);
+    Glib::init();
+}
+
+
 
 // gfunction prototype : gonce 
 static void* init_globus(gpointer data){
