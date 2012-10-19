@@ -48,7 +48,8 @@ mkdir -p $PATH_TESTS
 
 for i in `seq $n_test`}
 do
-test_name="gfal2-ctest-number-$i"
+test_name_core=$(ctest -N -I ${i},${i} | grep  "[\\/|#][0-9]" | sed 's/[ \t]*$//g' | sed 's/.*\ \(.*\)$/\1/g')
+test_name="gfal2-ctest-${test_name_core}-$i"
 echo " generate test : $test_name"
 test_path=$PATH_TESTS/$test_name
 touch $test_path
