@@ -410,6 +410,7 @@ GridFTP_session* GridFTPFactory::gfal_globus_ftp_take_handle(const std::string &
 }
 
 void GridFTPFactory::gfal_globus_ftp_release_handle_internal(GridFTP_session* sess){
+    session_reuse = gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP, gridftp_session_reuse_config, NULL);
 	if(session_reuse)
 		recycle_session(sess);
 	else{
