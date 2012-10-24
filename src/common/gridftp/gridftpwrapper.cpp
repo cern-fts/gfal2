@@ -505,11 +505,11 @@ static bool check_timeout(const Glib::Quark & scope, GridFTP_Request_state* stat
 }*/
 
 void GridFTP_Request_state::poll_callback(const Glib::Quark &scope){
-    Glib::RWLock::ReaderLock l(mux_req_state);
     gfal_log(GFAL_VERBOSE_TRACE," -> go internal polling for request ");
     bool timeout= false;
-
+    Glib::RWLock::ReaderLock l(mux_req_state);
     {
+
         Glib::Mutex::Lock l(mux_callback_lock);
         // wait for a globus signal or for a timeout
         // if canceling logic -> wait until end
