@@ -21,7 +21,7 @@ void call_perf(gfalt_transfer_status_t h, const char* src, const char* dst, gpoi
     size_t trans=  gfalt_copy_get_bytes_transfered(h,NULL);
     time_t elapsed  = gfalt_copy_get_elapsed_time(h,NULL);
 
-    printf(" <%ld> perf marker avg : %ld, inst: %ld, elapsed: %ld, trans: %ld \n", time(NULL), avg, inst, trans, elapsed);
+    printf(" <%ld> perf marker avg : %ld, inst: %ld, elapsed: %ld, trans: %ld \n", time(NULL), avg, inst, elapsed, trans);
 }
 
 

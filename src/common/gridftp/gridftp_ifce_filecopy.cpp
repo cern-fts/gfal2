@@ -86,8 +86,8 @@ void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, gl
     Callback_handler::callback_args * args = (Callback_handler::callback_args *) user_args;
 
     GridFTP_Request_state* req = args->req;
-//  Glib::RWLock::ReaderLock l (req->mux_req_state); --> disable the security lock, globus seems to stuck internally with the pthread threading model
-//    Glib::Mutex::Lock l_call (req->mux_callback_lock);
+    Glib::RWLock::ReaderLock l (req->mux_req_state);
+//    Glib::Mutex::Lock l_call (req->mux_callback_lock); --> disable the security lock, globus seems to stuck internally with the pthread threading model
 
     gfalt_hook_transfer_plugin_t hook;
     hook.bytes_transfered = total_bytes;
