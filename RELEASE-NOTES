@@ -19,6 +19,7 @@ Trunk:
 - add a fallback mechanism in case of bdii bad resolution
 - correct several race conditions in the bdii layer
 - add thread safe support for set/get variables in liblfc
+- correct a deadlock problem with globus and gisftp plugin
 
 
 * Fri Jul 20 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-1
