@@ -5,6 +5,8 @@ SET(UNIT_TESTS FALSE
 	CACHE STRING "enable compilation of unit tests")
 SET(FUNCTIONAL_TESTS FALSE
 	CACHE STRING "functional tests for gfal ")
+SET(LOAD_TESTS FALSE
+        CACHE STRING "load tests for gfal ")
 	
 
 IF(ONLY_TESTS)
@@ -28,5 +30,7 @@ link_directories (${PROJECT_BINARY_DIR}/src /)
 
 execute_process(COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf_test  ${CMAKE_CURRENT_BINARY_DIR}/conf_test) 
 
+add_subdirectory(common)
 add_subdirectory(functional/gfal2)   
 add_subdirectory(functional/old)   
+add_subdirectory(loadtests)

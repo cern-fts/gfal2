@@ -1,8 +1,6 @@
 #
 # compilation lines for examples
 
-# lib test
-FILE(GLOB src_lib_test "gfal_lib_test.c")
 
 # list tests
 FILE(GLOB src_gfalchecksum_test "gfal_testchecksum.c")
