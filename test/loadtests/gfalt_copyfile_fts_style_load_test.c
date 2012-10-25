@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <gfal_api.h>
 #include <transfer/gfal_transfer.h>
+#include <common/gfal_lib_test.h>
 
 //
 // This test follows exactly the FTS 3.0 copy pattern and can simualte a long run of successive copy in different context
@@ -103,7 +104,7 @@ int main(int argc, char** argv){
 
         printf(" cleanup the copy ... %s",buff);
         if( (ret =gfal2_unlink(handle, buff, &tmp_err) ) < 0){
-            printf(" error message ", tmp_err->message);
+            printf(" error message %s", tmp_err->message);
             return -1;
         }
 
