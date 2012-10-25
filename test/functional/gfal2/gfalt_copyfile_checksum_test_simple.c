@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <transfer/gfal_transfer.h>
 
-#include "gfal_lib_test.h"
+#include <common/gfal_lib_test.h>
 
 int main(int argc, char** argv){
 	if( argc <3 ){

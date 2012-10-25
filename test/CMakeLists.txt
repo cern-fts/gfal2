@@ -30,7 +30,10 @@ link_directories (${PROJECT_BINARY_DIR}/src /)
 
 execute_process(COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf_test  ${CMAKE_CURRENT_BINARY_DIR}/conf_test) 
 
+#include common library for tests
 add_subdirectory(common)
+
+# incldues tests
 add_subdirectory(functional/gfal2)   
 add_subdirectory(functional/old)   
 add_subdirectory(loadtests)

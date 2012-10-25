@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <gfal_api.h>
 #include <transfer/gfal_transfer.h>
-#include "gfal_lib_test.h"
+#include <common/gfal_lib_test.h>
 
 
 void call_perf(gfalt_transfer_status_t h, const char* src, const char* dst, gpointer user_data){

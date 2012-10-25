@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <gfal_api.h>
 #include <stdlib.h>
-#include "gfal_lib_test.h"
+#include <common/gfal_lib_test.h>
 #define BLKLEN 65536
 
 /**
