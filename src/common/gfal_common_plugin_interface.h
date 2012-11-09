@@ -225,11 +225,14 @@ struct _gfal_plugin_interface{
 	 * 			
 	 *  @param plugin_data : internal plugin data
 	 *  @param url : url of the directory to create
+     *  @param mode : right mode of the created directory
+     *  @param rec_flag : recursive mode, if enabled the plugin MUST create the parent directories if needed,
+     *       if the rec_flag is not supported by this plugin, the plugin MUST return a negative value and set the GError errcode to ENOENT
 	 *  @param err : Error report, the code field of err should be set to errno value when possible
 	 *  @return 0 in case of success or -1 if error occures,
 	 *          err MUST be set in case of error
 	 * */	
-	int (*mkdirpG)(plugin_handle plugin_data, const char* url, mode_t, gboolean pflag, GError** err);  //function pointer for the mkdir call, if pflag is set, the call is considered like a recursive call for a full path creation
+    int (*mkdirpG)(plugin_handle plugin_data, const char* url, mode_t mode, gboolean rec_flag, GError** err);
 	/**
 	 *  OPTIONAL : gfal_rmdir function  support
 	 * 			

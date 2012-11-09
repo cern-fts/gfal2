@@ -23,6 +23,7 @@
 
 #include <externals/utils/uri_util.h>
 #include <transfer/gfal_transfer_types_internal.h>
+#include <file/gfal_file_api.h>
 
 const Glib::Quark scope_filecopy("GridFTP::Filecopy");
 const char * gridftp_checksum_transfer_config= "COPY_CHECKSUM_TYPE";
@@ -43,6 +44,36 @@ void gridftp_filecopy_delete_existing(GridFTP_session * sess, gfalt_params_t par
         }
     }
 	
+}
+
+// create the parent directory
+void gridftp_create_parent_copy(gfal2_context_t handle, gfalt_params_t params,
+                                    const char * gridftp_url){
+    const gboolean create_parent = gfalt_get_create_parent_dir(params, NULL);
+    if(create_parent){
+        gfal_log(GFAL_VERBOSE_TRACE, " -> [gridftp_create_parent_copy]");
+        GError * tmp_err=NULL;
+        char current_uri[GFAL_URL_MAX_LEN];
+        g_strlcpy(current_uri, gridftp_url, GFAL_URL_MAX_LEN);
+        const size_t s_uri = strlen(current_uri);
+        char* p_uri = current_uri + s_uri -1;
+        while( p_uri > current_uri && *p_uri == '/' ){ // remove trailing '/'
+            *p_uri = '\0';
+             p_uri--;
+        }
+        while( p_uri > current_uri && *p_uri != '/'){ // find the parent directory
+            p_uri--;
+        }
+        if(p_uri > current_uri){
+            *p_uri = '\0';
+             gfal_log(GFAL_VERBOSE_TRACE, "try to create directory %s", current_uri);
+             (void) gfal2_mkdir_rec(handle, current_uri, 0755, &tmp_err);
+             Gfal::gerror_to_cpp(&tmp_err);
+        }else{
+            throw Gfal::CoreException(scope_filecopy, "impossible to create directory " + std::string(current_uri) + " : invalid path", EINVAL);
+        }
+        gfal_log(GFAL_VERBOSE_TRACE, " [gridftp_create_parent_copy] <-");
+    }
 }
 
 void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, globus_off_t total_bytes, float throughput, float avg_throughput);
@@ -127,8 +158,10 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
 
     Callback_handler callback_handler(params, req.get(), src, dst);
 
-    if( gfalt_get_strict_copy_mode(params, NULL) == false)
+    if( gfalt_get_strict_copy_mode(params, NULL) == false){
         gridftp_filecopy_delete_existing(sess, params, dst);
+        gridftp_create_parent_copy(factory->get_handle(), params, dst);
+    }
 
     std::auto_ptr<Gass_attr_handler>  gass_attr_src(sess->generate_gass_copy_attr());
     std::auto_ptr<Gass_attr_handler>  gass_attr_dst(sess->generate_gass_copy_attr());

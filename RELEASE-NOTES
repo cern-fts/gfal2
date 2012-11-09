@@ -20,6 +20,8 @@ Trunk:
 - correct several race conditions in the bdii layer
 - add thread safe support for set/get variables in liblfc
 - correct a deadlock problem with globus and gisftp plugin
+- implement the mkdir_rec logic for general purpose
+- implement the parent folder creation logic with gridftp
 
 
 * Fri Jul 20 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-1

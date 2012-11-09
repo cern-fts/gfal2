@@ -58,7 +58,7 @@ extern "C"
  *  checksum calculation function for a file url
  *
  * @param handle : gfal2 context
- * @param url : url of the file
+ * @param uri : uri of the file
  * @param check_type : string of the checksum type ( \ref GFAL_CHKSUM_MD5, \ref GFAL_CHKSUM_SHA1, .. )
  * @param start_offset : offset in the file where the checksum calculation will start ( 0 : from begining )
  * @param data_length : size of data to compute for the checksum after start_offset ( 0 -: full file )
@@ -68,7 +68,7 @@ extern "C"
  * @return 0 if success, else -1 and err is be set
  *  see gfal2 error system for more information \ref gfal2_error_system
  */
-int gfal2_checksum(gfal2_context_t handle, const char* url, const char* check_type,
+int gfal2_checksum(gfal2_context_t handle, const char* uri, const char* check_type,
                  off_t start_offset, size_t data_length,
                 char * checksum_buffer, size_t buffer_length, GError ** err);
 
@@ -77,13 +77,13 @@ int gfal2_checksum(gfal2_context_t handle, const char* url, const char* check_ty
  *  check real user's permissions for a file
  *
  * @param handle : gfal2 context
- * @param url : url of the file
+ * @param uri : uri of the file
  * @param amode : mode of the access
  * @param err : GError error support
  * @return 0 if success, else -1 and err MUST be set properly
  *  see gfal2 error system for more information \ref gfal2_error_system
  */
-int gfal2_access(gfal2_context_t handle, const char *url, int amode, GError** err);
+int gfal2_access(gfal2_context_t handle, const char *uri, int amode, GError** err);
 
 /**
  * @brief change file access permissions
@@ -95,7 +95,7 @@ int gfal2_access(gfal2_context_t handle, const char *url, int amode, GError** er
  * @return return 0 if success else -1 and err is be set
  *  see gfal2 error system for more information \ref gfal2_error_system
  */
-int gfal2_chmod(gfal2_context_t handle, const char* url, mode_t mode, GError ** err);
+int gfal2_chmod(gfal2_context_t handle, const char* uri, mode_t mode, GError ** err);
 
 //
 //
@@ -106,20 +106,20 @@ int gfal2_rename(gfal2_context_t handle, const char *olduri, const char *newuri,
 //
 //
 //
-int gfal2_stat(gfal2_context_t handle, const char* path, struct stat* buff, GError ** err);
+int gfal2_stat(gfal2_context_t handle, const char* uri, struct stat* buff, GError ** err);
 
-int gfal2_lstat(gfal2_context_t handle, const char* path, struct stat* buff, GError ** err);
+int gfal2_lstat(gfal2_context_t handle, const char* uri, struct stat* buff, GError ** err);
 
-int gfal2_mkdirp(gfal2_context_t handle,  const char* path, mode_t mode, GError ** err);
-
-
-int gfal2_mkdir(gfal2_context_t handle,  const char* path, mode_t mode, GError ** err);
+int gfal2_mkdir_rec(gfal2_context_t handle,  const char* uri, mode_t mode, GError ** err);
 
 
-int gfal2_rmdir(gfal2_context_t handle, const char* path, GError ** err);
+int gfal2_mkdir(gfal2_context_t handle,  const char* uri, mode_t mode, GError ** err);
 
 
-DIR* gfal2_opendir(gfal2_context_t handle, const char* name, GError ** err);
+int gfal2_rmdir(gfal2_context_t handle, const char* uri, GError ** err);
+
+
+DIR* gfal2_opendir(gfal2_context_t handle, const char* uri, GError ** err);
 
 
 struct dirent* gfal2_readdir(gfal2_context_t handle, DIR* d, GError ** err);

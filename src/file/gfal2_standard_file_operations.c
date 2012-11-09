@@ -115,6 +115,70 @@ int gfal2_mkdir(gfal2_context_t handle,  const char* uri, mode_t mode, GError **
 }
 
 
+int gfal2_mkdir_rec(gfal2_context_t handle,  const char* uri, mode_t mode, GError ** err){
+    GError* tmp_err=NULL;
+    int res= -1;
+
+    if(uri == NULL || handle == NULL){
+       g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, " uri is an incorrect argument");
+    }else{
+       res = gfal_plugin_mkdirp(handle, uri, mode, TRUE, &tmp_err);
+       if(tmp_err){
+           if(tmp_err->code == EEXIST){
+               g_clear_error(&tmp_err);
+               res = 0;
+           }else if(tmp_err->code == ENOENT){
+               gfal_log(GFAL_VERBOSE_TRACE, "execute recusive directory creation for %s", uri);
+               GList* stack_uri = NULL;
+               char current_uri[GFAL_URL_MAX_LEN];
+               g_strlcpy(current_uri, uri, GFAL_URL_MAX_LEN);
+
+               while(tmp_err && tmp_err->code == ENOENT){
+                   stack_uri= g_list_prepend(stack_uri, g_strdup(current_uri));
+                   g_clear_error(&tmp_err);
+                   const size_t s_uri = strlen(current_uri);
+                   char* p_uri = current_uri + s_uri -1;
+                   while( p_uri > current_uri && *p_uri == '/' ){ // remove trailing '/'
+                       *p_uri = '\0';
+                        p_uri--;
+                   }
+                   while( p_uri > current_uri && *p_uri != '/'){ // find the parent directory
+                       p_uri--;
+                   }
+                   if(p_uri > current_uri){
+                       *p_uri = '\0';
+
+                        res = gfal_plugin_mkdirp(handle, current_uri, mode, FALSE, &tmp_err);
+                        if( res == 0){
+                          gfal_log(GFAL_VERBOSE_TRACE, "create directory %s", current_uri);
+                        }
+                   }
+
+               }
+
+               if(!tmp_err){
+                   res = 0;
+                   GList* tmp_list = stack_uri;
+                   while(tmp_list != NULL
+                         && res ==0){
+                       res = gfal_plugin_mkdirp(handle, (char*) tmp_list->data, mode, FALSE, &tmp_err);
+                       if(res == 0){
+                        gfal_log(GFAL_VERBOSE_TRACE, "create directory %s", current_uri);
+                       }
+                       tmp_list = g_list_next(tmp_list);
+                   }
+
+               }
+
+               g_list_free_full(stack_uri, g_free);
+           }
+       }
+
+    }
+    G_RETURN_ERR(res, tmp_err, err);
+}
+
+
 int gfal2_rmdir(gfal2_context_t handle, const char* uri, GError ** err){
     GError* tmp_err=NULL;
     int res= -1;
