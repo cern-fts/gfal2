@@ -59,21 +59,21 @@ static long session_duration = 20;
 static pthread_mutex_t m_session = PTHREAD_MUTEX_INITIALIZER;
 
 int gfal_lfc_regex_compile(regex_t* rex, GError** err){
-	int ret = regcomp(rex, "^lfn:/([:alnum:]|-|/|.|_)+", REG_ICASE | REG_EXTENDED);
+    int ret = regcomp(rex, "^(lfn:/|lfc://)([:alnum:]|-|/|.|_)+", REG_ICASE | REG_EXTENDED);
 	g_return_val_err_if_fail(ret ==0,-1,err,"[gfal_lfc_check_lfn_url] fail to compile regex, report this bug");
 	return ret;
 }
 
 static void lfc_plugin_set_lfc_env(struct lfc_ops* ops,const char* var_name, const char* var_value ){
-    if(ops->set_env){
+    if(ops->set_env){ // if new lfc library with set_env call, set at runtime
         ops->set_env(var_name, var_value,TRUE);
-    }else{
+    }else{ // else set it as env var !! NOT THREAD SAFE
         g_setenv(var_name, var_value,TRUE);
     }
 }
 
 
-int lfc_configure_environment(struct lfc_ops * ops, GError** err){
+int lfc_configure_environment(struct lfc_ops * ops, const char* host, GError** err){
     GError * tmp_err=NULL;
     const char * tab_envar[] = { ops->lfc_endpoint_predefined, ops->lfc_conn_timeout,
                            ops->lfc_conn_retry, ops->lfc_conn_try_int};
@@ -81,37 +81,49 @@ int lfc_configure_environment(struct lfc_ops * ops, GError** err){
                            LFC_ENV_VAR_CONRETRY, LFC_ENV_VAR_CONRETRYINT};
     const int tab_type[] = { 0, 1,
                            1, 1};
+    const char* tab_override[] = { host, NULL, NULL, NULL, NULL };
     const int n_var =4;
     const char * plugin_group = LFC_ENV_VAR_GROUP_PLUGIN;
     int i,ret;
-    char* v1;
-    int v2;
+
     ret = 0;
 
     for(i = 0; i < n_var;++i){
         if(tab_envar[i] == NULL){
             switch(tab_type[i]){
-                case 0:
-
-                    v1 =gfal2_get_opt_string(ops->handle, plugin_group, tab_envar_name[i], &tmp_err);
+                case 0:{
+                    char* v1 = NULL;
+                    char* value = NULL;
+                    if(tab_override[i] != NULL){
+                        value = (char*) tab_override[i];
+                    }else{
+                        value= v1 =gfal2_get_opt_string(ops->handle, plugin_group, tab_envar_name[i], &tmp_err);
+                    }
                     if(!tmp_err){
-                        gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : setup env var value %s to %s", tab_envar_name[i],v1);
-                        lfc_plugin_set_lfc_env(ops, tab_envar_name[i],v1);
-                        free(v1);
+                        gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : setup env var value %s to %s", tab_envar_name[i],value);
+                        lfc_plugin_set_lfc_env(ops, tab_envar_name[i],value);
+                        g_free(v1);
+                    }else{
+                        ret = -1;
                     }
                     break;
-                case 1:
+                }
+                case 1:{
+                    int v2;
                     v2 =gfal2_get_opt_integer(ops->handle, plugin_group, tab_envar_name[i], &tmp_err);
                     if(!tmp_err){
                         char v_str[20];
                         snprintf(v_str,20, "%d",v2);
                         gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : setup env var value %s to %d",tab_envar_name[i],v2);
                         lfc_plugin_set_lfc_env(ops, tab_envar_name[i],v_str);
+                    }else{
+                        ret = -1;
                     }
                     break;
-            default:
-                ret =-1;
-                g_set_error(&tmp_err,0,EINVAL, "Invalid value %s in configuration file ", tab_envar_name[i]);
+                 }
+                default:
+                    ret =-1;
+                    g_set_error(&tmp_err,0,EINVAL, "Invalid value %s in configuration file ", tab_envar_name[i]);
             }
         }
         if(tmp_err)
@@ -204,31 +216,6 @@ static int gfal_lfc_abortTransaction(struct lfc_ops* ops, GError ** err){
 	return 0;
 }
 
-/*
- * convert a guid to a lfn link with a call to the lfclib
- * */
- char* gfal_convert_guid_to_lfn(plugin_handle handle, char* guid, GError ** err){
-	GError* tmp_err=NULL;
-	char* lfn=NULL;
-	int size = 0;
-	struct lfc_ops* ops = (struct lfc_ops*) handle;	
-	gfal_lfc_init_thread(ops);
-	struct lfc_linkinfo* links = NULL;
-	if(ops->getlinks(NULL, guid, &size, &links) <0){
-		int sav_errno = gfal_lfc_get_errno(ops);
-        g_set_error(&tmp_err,0,sav_errno, "Error while getlinks() with lfclib, guid : %s, Error : %s ",guid, gfal_lfc_get_strerror(ops));
-	}else{
-		errno=0;
-		if(!links || strnlen(links[0].path, GFAL_LFN_MAX_LEN) >= GFAL_LFN_MAX_LEN){
-			g_set_error(&tmp_err,0,EINVAL, "Error no links associated with this guid or corrupted one : %s", guid);
-		}else
-            lfn =  g_strdup(links[0].path);
-	}
-	free(links);
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return lfn;
- }
  
  
  /*
@@ -266,10 +253,6 @@ int gfal_convert_guid_to_lfn_r(plugin_handle handle, const char* guid, char* buf
 	return ret;
  }
  
-/*
- *  Resolve the lfc symbols, allow mocking
- * 
- * */
 
 /*
  * load the shared library and link the symbol for the LFC usage

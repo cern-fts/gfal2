@@ -32,22 +32,28 @@ SET(srm_valid_storm_src_file "${srm_prefix_storm}")
 #SET(srm_prefix_EOS "srm://srm.pic.es/pnfs/pic.es/data/dteam")
 #SET(srm_valid_EOS_stat "${srm_prefix_castor}/testread0011")
 
+## gsiftp parameters
+#
 SET(gsiftp_prefix_dpm "gsiftp://cvitbdpm1.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(gsiftp_valid_dpm_stat "${gsiftp_prefix_dpm}/testread0011")
 SET(gsiftp_valid_dpm_src_file "${gsiftp_valid_dpm_stat}")
 SET(gsiftp_valid_dpm_chmod "${gsiftp_prefix_dpm}/test_change_right_gsidcap")
 SET(gsiftp_valid_dir_root "${gsiftp_prefix_dpm}")
 
+## lfc parameters
 SET(lfc_prefix "lfn:/grid/${MY_VO}")
 SET(lfc_stat_ok "${lfc_prefix}/testread0011")
 SET(lfc_chmod_ok "${lfc_prefix}/test_change_right")
 SET(lfc_valid_dir_root "${lfc_prefix}")
+SET(guid_stat_ok "guid:832d78b7-d4bd-4d7e-aefb-92ba9cc0dece")
 
+# dcap dcache parameters
 SET(dcap_prefix "gsidcap://cork.desy.de:22128/pnfs/desy.de/data/${MY_VO}/testgfal2")
 SET(dcap_stat_ok "${dcap_prefix}/testread0011")
 SET(dcap_chmod_ok "${dcap_prefix}/test_change_right")
 SET(dcap_valid_dir_root "${dcap_prefix}")
 
+#local file parameters
 SET(file_base_path "/tmp/")
 SET(file_prefix "file://${file_base_path}")
 FILE(WRITE "${file_base_path}/testread_0011" "hello world agdlkmgfmklmklklmvc;!:c;:!;:!xc;!:vx!;:bvx!;:!;:o=)=)à=àdg:;;:!:!;!:;b")
@@ -128,6 +134,8 @@ IF(PLUGIN_LFC)
 	chmod_test_all("LFC" ${lfc_chmod_ok} 0565 060 0360 0767)	
 	rmdir_test_all("LFC" ${lfc_valid_dir_root} ${lfc_stat_ok})		
 	test_readdir_full("LFC" ${lfc_valid_dir_root} )
+        #guid test
+        stat_test_all("GUID" ${guid_stat_ok})
 ENDIF(PLUGIN_LFC)
 
 

@@ -103,7 +103,7 @@ struct lfc_ops {
 };
 
 
-int lfc_configure_environment(struct lfc_ops * ops, GError** err);
+int lfc_configure_environment(struct lfc_ops * ops, const char* host, GError** err);
 
 
 int gfal_lfc_get_errno(struct lfc_ops* ops);

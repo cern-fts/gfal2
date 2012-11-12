@@ -248,7 +248,7 @@ ssize_t gfal2_listxattr (gfal2_context_t handle, const char *url, char *list, si
     GError* tmp_err=NULL;
     ssize_t res= -1;
 
-    if(url == NULL || handle == NULL || list == NULL ){
+    if(url == NULL || handle == NULL  ){
        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "handle or/and uri or/and list are incorrect arguments");
     }else{
        res = gfal_plugin_listxattrG(handle, url, list, size, &tmp_err);
