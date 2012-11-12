@@ -23,6 +23,10 @@
  * 
  **/
 
+#include <sys/stat.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 #include <glib.h>
 #include <common/gfal_common_internal.h>
@@ -31,6 +35,7 @@
 #include <common/gfal_types.h>
 
 #include <dcap.h>
+
 
 struct dcap_proto_ops {
 	int*	(*geterror)();
@@ -42,13 +47,7 @@ struct dcap_proto_ops {
 	void (*debug_level)(unsigned int);
 	void (*active_mode)();
 	off_t	(*lseek)(int, off_t, int);
-#if ! defined(linux) || defined(_LARGEFILE64_SOURCE)
-	off64_t	(*lseek64)(int, off64_t, int);
-#endif
-	int	(*lstat)(const char *, struct stat *);
-#if ! defined(linux) || defined(_LARGEFILE64_SOURCE)
-	int	(*lstat64)(const char *, struct stat64 *);
-#endif
+    int	(*lstat)(const char *, struct stat *);
 	int	(*mkdir)(const char *, mode_t);
 	int	(*open)(const char *, int, ...);
 	DIR	*(*opendir)(const char *);
@@ -57,16 +56,10 @@ struct dcap_proto_ops {
 	ssize_t (*pread)(int fildes, void *buf, size_t nbytes, off_t offset);
 	ssize_t (*pwrite)(int fildes, const void *buf, size_t nbytes, off_t offset);
 	struct dirent	*(*readdir)(DIR *);
-#if ! defined(linux) || defined(_LARGEFILE64_SOURCE)
-	struct dirent64	*(*readdir64)(DIR *);
-#endif
 	int	(*rename)(const char *, const char *);
 	int	(*rmdir)(const char *);
 	ssize_t	(*setfilchg)(int, const void *, size_t);
 	int	(*stat)(const char *, struct stat *);
-#if ! defined(linux) || defined(_LARGEFILE64_SOURCE)
-	int	(*stat64)(const char *, struct stat64 *);
-#endif
 	int	(*unlink)(const char *);
 	ssize_t	(*write)(int, const void *, size_t);
 };

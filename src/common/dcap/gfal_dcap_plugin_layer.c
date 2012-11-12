@@ -22,6 +22,15 @@
  * author Devresse Adrien
  */
 
+#if  defined __i386__ ||  defined _M_IX86
+    #define __USE_LARGEFILE64 1
+#endif
+
+
+#include <sys/stat.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 #include <regex.h>
 #include <time.h> 
@@ -48,26 +57,21 @@ struct dcap_proto_ops * gfal_dcap_internal_loader_base(GError** err){
 	pops->close = &dc_close;
 	pops->closedir = &dc_closedir;
 	pops->lseek = &dc_lseek;
-	pops->lseek64 = &dc_lseek64;
 	pops->lstat = &dc_lstat;
-	pops->lstat64 = &dc_lstat64;
 	pops->mkdir = &dc_mkdir;
 	pops->open = &dc_open;
 	pops->opendir = &dc_opendir;
 	pops->read = &dc_read;
 	pops->pread = &dc_pread;
 	pops->readdir = &dc_readdir;
-	pops->readdir64 = &dc_readdir64;
 	pops->rename = NULL;
 	pops->rmdir = &dc_rmdir;
 	pops->stat = &dc_stat;
-	pops->stat64 = &dc_stat64;
 	pops->unlink = &dc_unlink;
 	pops->write = &dc_write;
 	pops->pwrite = &dc_pwrite;
 	pops->debug_level= &dc_setDebugLevel;
 	pops->active_mode = &dc_setClientActive;
-	
 	//
 	pops->active_mode(); // switch to active mode to avoid firewalls problems
 	if( (gfal_get_verbose() & GFAL_VERBOSE_TRACE ) )

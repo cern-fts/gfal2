@@ -49,7 +49,7 @@ LIST(APPEND headers_main ${common_dir} ${posix_dir} ${global_dir}
 
 include_directories(${headers_main} ${GLIB2_PKG_INCLUDE_DIRS} 
 						${GTHREAD2_PKG_INCLUDE_DIRS})
-add_definitions( -DVERSION="${VERSION_STRING}" -Wall ${GLIB2_PKG_CFLAGS} ${GTHREAD2_PKG_CFLAGS} -D_LARGEFILE64_SOURCE)
+add_definitions( -DVERSION="${VERSION_STRING}" -Wall ${GLIB2_PKG_CFLAGS} ${GTHREAD2_PKG_CFLAGS})
 
 ## link to internal bdii system if IS_IFCE=false else to the is_interface
 IF (IS_IFCE)

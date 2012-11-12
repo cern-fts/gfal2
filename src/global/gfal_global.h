@@ -44,34 +44,38 @@ typedef gfal_handle gfal2_context_t;
 // backward compatibility
 typedef gfal2_context_t gfal_context_t;
 
-/**
-  @brief create a gfal 2 context
-  contexts are used for all gfal 2 operations
-  @param err : GError error report system
-  @return gfal2 context
-*/
+///
+///   @brief create a gfal2 context
+///   gfal2 context are needed for all gfal2 operations
+///   Thread-safe
+///
+///   @param err : GError error report system
+///   @return gfal2 context if success, NULL if error
+///
 gfal2_context_t gfal2_context_new(GError ** err);
 
-/**
-  free a gfal 2 context
-*/
+///
+///  free a gfal2 context
+///  It is safe to delete a NULL context
+///  Thread-safe
+///
 void gfal2_context_free(gfal2_context_t context);
 
 
-/**
-  @deprecated
-    same than gfal2_context_new but with old compatibility
-*/
+///   @deprecated
+///    same than gfal2_context_new but with old compatibility
+///
 gfal_context_t gfal_context_new(GError ** err);
-/**
-  @deprecated
-*/
+
+///  @deprecated
+///
 void gfal_context_free(gfal_context_t context);
 
 
-/**
-  give the gfal 2 core namespace quark
-*/
+///
+///  GQuark for the gfal2 core namespace
+///  GQuark are used by the GError gfal2 error system in order to determine the scope of one error
+///
 GQuark gfal2_get_core_quark();
 
 #ifdef __cplusplus
