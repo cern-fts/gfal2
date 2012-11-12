@@ -222,7 +222,7 @@ static int gfal_lfc_abortTransaction(struct lfc_ops* ops, GError ** err){
 		if(!links || strnlen(links[0].path, GFAL_LFN_MAX_LEN) >= GFAL_LFN_MAX_LEN){
 			g_set_error(&tmp_err,0,EINVAL, "Error no links associated with this guid or corrupted one : %s", guid);
 		}else
-			lfn =  strdup(links[0].path);
+            lfn =  g_strdup(links[0].path);
 	}
 	free(links);
 	if(tmp_err)

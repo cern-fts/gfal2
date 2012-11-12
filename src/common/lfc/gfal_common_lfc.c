@@ -70,7 +70,7 @@ static inline  char* lfc_urlconverter(const char * lfn_url, const char* prefix){
 	const int strsize = strnlen(lfn_url, GFAL_URL_MAX_LEN-1);
 	const int res_len = strsize-pref_len;
 	char* p, *pdest, *porg;
-	p = pdest = malloc(sizeof(char) * (res_len+1));
+    p = pdest = g_malloc(sizeof(char) * (res_len+1));
 	porg = (char*)lfn_url + pref_len;
 	while((pdest - p) <  res_len && (porg - lfn_url) < strsize){ // remove double sep, remove end sep
 		if((*porg == G_DIR_SEPARATOR && *(porg+1) == G_DIR_SEPARATOR) == FALSE &&
@@ -95,7 +95,7 @@ static char* url_converter(plugin_handle handle, const char * url,GError** err){
 	char buff_lfn[GFAL_URL_MAX_LEN];
 	int ret = gfal_convert_guid_to_lfn_r(handle, url + GFAL_LFC_GUID_PREFIX_LEN, buff_lfn, GFAL_URL_MAX_LEN, &tmp_err);
 	if(ret ==0)
-		return strdup(buff_lfn);
+        return g_strdup(buff_lfn);
 	if(tmp_err)
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
 	return NULL;
@@ -139,7 +139,7 @@ int lfc_chmodG(plugin_handle handle, const char* path, mode_t mode, GError** err
                 gsimplecache_remove_kstr(ops->cache_stat, url);
             }
         }
-        free(url);
+        g_free(url);
     }
     G_RETURN_ERR(ret, tmp_err, err);
 }
@@ -167,7 +167,7 @@ int lfc_accessG(plugin_handle handle, const char* lfn, int mode, GError** err){
             }else
                 errno=0;
         }
-        free(url);
+        g_free(url);
     }
     G_RETURN_ERR(ret, tmp_err, err);
 }
@@ -197,8 +197,8 @@ int lfc_renameG(plugin_handle handle, const char* oldpath, const char* newpath, 
         }else{
             gsimplecache_remove_kstr(ops->cache_stat, surl);
         }
-        free(surl);
-        free(durl);
+        g_free(durl);
+        g_free(durl);
     }
     G_RETURN_ERR(ret, tmp_err, err);
 }
@@ -226,8 +226,8 @@ int lfc_symlinkG(plugin_handle handle, const char* oldpath, const char* newpath,
             int sav_errno = gfal_lfc_get_errno(ops);
             g_set_error(&tmp_err,0,sav_errno, "Error report from LFC : %s",  gfal_lfc_get_strerror(ops) );
         }
-        free(surl);
-        free(durl);
+        g_free(durl);
+        g_free(durl);
     }
     G_RETURN_ERR(ret, tmp_err, err);
 }
@@ -254,7 +254,7 @@ int lfc_statG(plugin_handle handle, const char* path, struct stat* st, GError** 
                 ret= gfal_lfc_convert_statg(st, &statbuf, err);
                 errno=0;
             }
-            free(lfn);
+            g_free(lfn);
         }
      }
     G_RETURN_ERR(ret, tmp_err, err);
@@ -293,7 +293,7 @@ static int lfc_lstatG(plugin_handle handle, const char* path, struct stat* st, G
                 }
             }
         }
-        free(lfn);
+        g_free(lfn);
     }
     G_RETURN_ERR(ret, tmp_err, err);
 }
@@ -315,7 +315,7 @@ static int lfc_lstatG(plugin_handle handle, const char* path, struct stat* st, G
         if(lfn){
              ret =gfal_lfc_ifce_mkdirpG(ops, lfn, mode, pflag, &tmp_err);
 
-            free(lfn);
+            g_free(lfn);
         }
     }
     G_RETURN_ERR(ret, tmp_err, err);
@@ -341,7 +341,7 @@ static int lfc_lstatG(plugin_handle handle, const char* path, struct stat* st, G
                 sav_errno = (sav_errno==EEXIST)?ENOTEMPTY:sav_errno;		// convert wrong reponse code
                 g_set_error(err,0, sav_errno, "Error report from LFC %s", gfal_lfc_get_strerror(ops) );
             }
-            free(lfn);
+            g_free(lfn);
         }
     }
     G_RETURN_ERR(ret, tmp_err, err);
@@ -371,7 +371,7 @@ static gfal_file_handle lfc_opendirG(plugin_handle handle, const char* name, GEr
                 oh = g_new0(struct _lfc_opendir_handle,1);
                 g_strlcpy(oh->url, lfn, GFAL_URL_MAX_LEN );
             }
-            free(lfn);
+            g_free(lfn);
         }
     }
     G_RETURN_ERR(((d)?(gfal_file_handle_ext_new(lfc_getName(), (gpointer) d, (gpointer) oh)):NULL), tmp_err, err);
@@ -450,7 +450,7 @@ char ** lfc_getSURLG(plugin_handle handle, const char * path, GError** err){
         char * lfn = url_converter(handle, path, &tmp_err);
         if(lfn){
             resu = gfal_lfc_getSURL(ops, lfn, &tmp_err);
-            free(lfn);
+            g_free(lfn);
         }
     }
     G_RETURN_ERR(resu, tmp_err, err);
@@ -493,7 +493,7 @@ ssize_t lfc_getxattr_getguid(plugin_handle handle, const char* path, void* buff,
                     g_strlcpy(buff,statbuf.guid, size);
                     errno=0;
                 }
-                free(lfn);
+                g_free(lfn);
             }
         }
     }
@@ -511,7 +511,7 @@ ssize_t lfc_getxattr_getguid(plugin_handle handle, const char* path, void* buff,
 	char* lfn = url_converter(handle, path, &tmp_err);
 	if(lfn){
 		res = gfal_lfc_getComment(ops, lfn, buff, size, &tmp_err);
-		free(lfn);
+        g_free(lfn);
 	}
     G_RETURN_ERR(res, tmp_err, err);
  }
@@ -575,7 +575,7 @@ int lfc_setxattr_comment(plugin_handle handle, const char* path, const char* nam
 	char * lfn = url_converter(handle, path, &tmp_err);
 	if(lfn){				
 		res = gfal_lfc_setComment(ops, lfn, value, size, &tmp_err);
-		free(lfn);
+        g_free(lfn);
 	}
 	return res;							
 }
@@ -635,7 +635,7 @@ static int lfc_unlinkG(plugin_handle handle, const char* path, GError** err){
                 gsimplecache_remove_kstr(ops->cache_stat, lfn);	// remove the key associated in the buffer
                 errno=0;
             }
-              free(lfn);
+              g_free(lfn);
         }
 
     }
@@ -670,7 +670,7 @@ static ssize_t lfc_readlinkG(plugin_handle handle, const char* path, char* buff,
                 memcpy(buff+ GFAL_LFC_PREFIX_LEN, res_buff, MIN(ret,buffsiz-GFAL_LFC_PREFIX_LEN) );
             ret += GFAL_LFC_PREFIX_LEN;
         }
-        free(lfn);
+        g_free(lfn);
     }
     G_RETURN_ERR(ret, tmp_err, err);
 }
