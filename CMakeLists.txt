@@ -95,7 +95,8 @@ pkg_search_module(GLIBMM_PKG REQUIRED glibmm glibmm-2.6 glibmm-2.4)
 # general parameters for configuration
 add_definitions( -DGFAL_PLUGIN_DIR_DEFAULT="${PLUGIN_INSTALL_DIR}" )
 add_definitions( -DGFAL_CONFIG_DIR_DEFAULT="${SYSCONF_INSTALL_DIR}" )
-
+# add file offset 64 for 32 bits
+add_definitions( -D_FILE_OFFSET_BITS=64 )
 
 #install doc license
 install(FILES "LICENSE" "README" "RELEASE-NOTES" "VERSION" "DESCRIPTION"
