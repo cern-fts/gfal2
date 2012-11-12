@@ -32,7 +32,7 @@
 #include <common/gfal_common_errverbose.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_filedescriptor.h>
-#include <common//gfal_types.h>
+#include <common/gfal_types.h>
 #include "gfal_dcap_plugin_layer.h"
 #include "gfal_dcap_plugin_bindings.h"
 #include "gfal_dcap_plugin_main.h"
@@ -243,6 +243,6 @@ struct dirent* gfal_dcap_readdirG(plugin_handle handle, gfal_file_handle fh, GEr
 
 
 const char* gfal_dcap_getName(){
-	return "dcap";
+    return "dcap_plugin";
 }
 

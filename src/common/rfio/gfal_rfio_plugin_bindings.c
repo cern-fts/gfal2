@@ -155,6 +155,6 @@ int gfal_rfio_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err)
 
 
 const char* gfal_rfio_getName(){
-	return "rfio";
+    return "rfio_plugin";
 }
 

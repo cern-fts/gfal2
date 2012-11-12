@@ -30,10 +30,10 @@
 #include <time.h> 
 #include <dlfcn.h>
 #include <stdlib.h>
-#include "../gfal_common_internal.h"
-#include "../gfal_common_errverbose.h"
-#include "../gfal_common_plugin.h"
-#include "../gfal_types.h"
+#include <common/gfal_common_internal.h>
+#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_plugin.h>
+#include <common/gfal_types.h>
 #include "gfal_rfio_plugin_layer.h"
 
 static char* libdpm_name= "libdpm.so.1";
