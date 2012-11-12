@@ -46,6 +46,10 @@ SET(lfc_stat_ok "${lfc_prefix}/testread0011")
 SET(lfc_chmod_ok "${lfc_prefix}/test_change_right")
 SET(lfc_valid_dir_root "${lfc_prefix}")
 SET(guid_stat_ok "guid:832d78b7-d4bd-4d7e-aefb-92ba9cc0dece")
+SET(lfc_full_prefix "lfc://cvitblfc1.cern.ch/grid/${MY_VO}")
+SET(lfc_full_stat_ok "${lfc_full_prefix}/testread0011")
+SET(lfc_full_chmod_ok "${lfc_full_prefix}/test_change_right")
+SET(lfc_full_valid_dir_root "${lfc_full_prefix}")
 
 # dcap dcache parameters
 SET(dcap_prefix "gsidcap://cork.desy.de:22128/pnfs/desy.de/data/${MY_VO}/testgfal2")
@@ -136,6 +140,12 @@ IF(PLUGIN_LFC)
 	test_readdir_full("LFC" ${lfc_valid_dir_root} )
         #guid test
         stat_test_all("GUID" ${guid_stat_ok})
+        # lfc full url style test
+        stat_test_all( "LFC_FULL" ${lfc_full_stat_ok})
+        mkdir_test_all("LFC_FULL" ${lfc_full_prefix})
+        chmod_test_all("LFC_FULL" ${lfc_full_chmod_ok} 0565 060 0360 0767)
+        rmdir_test_all("LFC_FULL" ${lfc_full_valid_dir_root} ${lfc_full_stat_ok})
+        test_readdir_full("LFC_FULL" ${lfc_full_valid_dir_root} )
 ENDIF(PLUGIN_LFC)
 
 
