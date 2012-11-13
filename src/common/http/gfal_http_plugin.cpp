@@ -1,7 +1,7 @@
 #include "gfal_http_plugin.h"
 #include <errno.h>
 #include <davix_cpp.hpp>
-
+#include <status/davix_error.h>
 
 
 const char* http_module_name = "http_plugin";
@@ -100,10 +100,44 @@ void davix2gliberr(const Davix::DavixError* daverr, GError** err)
 }
 
 
+/// Authn implementation
+static int gfal_http_authn(davix_auth_t token, const davix_auth_info_t* t, void* userdata, davix_error_t* err)
+{
+  // Only PKCS12 supported
+  if (t->auth != DAVIX_CLI_CERT_PKCS12) {
+    davix_error_setup(err, http_module_name, ENOSYS,
+                      "Authentication mechanism not implemented");
+    return -1;
+  }
 
-/*
- * Init function
- */
+  // Convert X509 to PKCS12
+  char *ucert, *ukey;
+  ucert = ukey = getenv("X509_USER_PROXY");
+  if (!ucert) {
+    ucert = getenv("X509_USER_CERT");
+    ukey  = getenv("X509_USER_KEY");
+  }
+
+  if (!ucert || !ukey) {
+    davix_error_setup(err, http_module_name, EACCES,
+                      "Could not set the user's proxy or certificate");
+    return -1;
+  }
+
+  char p12file[PATH_MAX];
+  snprintf(p12file, sizeof(p12file), "/tmp/u%d.p12", geteuid());
+  if (convert_x509_to_p12(ukey, ucert, p12file, err) < 0) {
+    errno = EACCES;
+    return -1;
+  }
+
+  // Set certificate
+  return davix_auth_set_pkcs12_cli_cert(token, p12file, "", err);
+}
+
+
+
+/// Init function
 extern "C" gfal_plugin_interface gfal_plugin_init(gfal_handle handle,
                                                   GError** err)
 {
@@ -118,9 +152,10 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal_handle handle,
   memset(&http_plugin, 0, sizeof(http_plugin));
 
   // Configure params
-  http_internal->params->setSSLCAcheck(true);
+  http_internal->params->setSSLCAcheck(false); // THIS IS BAD! There should be a way of setting the CAPath
   http_internal->params->setTransparentRedirectionSupport(true);
   http_internal->params->setUserAgent("gfal2::http");
+  http_internal->params->setAuthentificationCallback(NULL, gfal_http_authn);
 
   // Bind metadata
   http_plugin.check_plugin_url = &gfal_http_check_url;

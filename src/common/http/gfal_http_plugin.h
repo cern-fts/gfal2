@@ -20,11 +20,14 @@ struct GfalHttpInternal {
 extern const char* http_module_name;
 extern GQuark http_plugin_domain;
 
-/// Initializes a GError from a DavixError
+// Initializes a GError from a DavixError
 void davix2gliberr(const Davix::DavixError* daverr, GError** err);
 
+// Converts a cert/key pair (X509) into a P12
+int convert_x509_to_p12(const char *privkey, const char *clicert, const char *p12cert, davix_error_t*);
 
-/** METADATA OPERATIONS **/
+
+// METADATA OPERATIONS
 void gfal_http_delete(plugin_handle plugin_data);
 
 int gfal_http_stat(plugin_handle plugin_data, const char* url, struct stat* buf, GError** err);
@@ -37,7 +40,7 @@ struct dirent* gfal_http_readdir(plugin_handle plugin_data, gfal_file_handle dir
 
 int gfal_http_closedir(plugin_handle plugin_data, gfal_file_handle dir_desc, GError** err);
 
-/** IO **/
+// IO
 gfal_file_handle gfal_http_fopen(plugin_handle plugin_data, const char* url, int flag, mode_t mode, GError** err);
 
 ssize_t gfal_http_fread(plugin_handle, gfal_file_handle fd, void* buff, size_t count, GError** err);
