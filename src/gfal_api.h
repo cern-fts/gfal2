@@ -23,6 +23,11 @@
  * @author Devresse Adrien
  * @version 2.0.0
  */
+
+// gfal2 uses 64 bits offset size  by default
+#ifndef _FILE_OFFSET_BITS
+#  define _FILE_OFFSET_BITS 64
+#endif
  
 #include <global/gfal_global.h>
 #include <config/gfal_config.h>

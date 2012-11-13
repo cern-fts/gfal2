@@ -22,6 +22,8 @@ Trunk:
 - correct a deadlock problem with globus and gisftp plugin
 - implement the mkdir_rec logic for general purpose
 - implement the parent folder creation logic with gridftp
+- add support for lfc://host/path URL style for the lfc plugin
+- switch off_t to 64bits size by default ( _FILE_OFFSET_BITS=64)
 
 
 * Fri Jul 20 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-1

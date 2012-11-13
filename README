@@ -2,11 +2,11 @@ How to compile GFAL 2.0 ?
 
 
 1.) Install dependencies
-On a clean SLCX system the following 'extra' packages are needed to be installed:
+On a clean SLCX/fedora/EL system the following 'extra' packages are needed to be installed:
 
-cmake, glib2, glib2-devel, openldap-devel, gcc-c++, openmp, openmpi-devel, pkgconfig, 
-lfc-devel, dcap-devel ,dpm-devel doxygen, globus-gass-copy-devel,, glibmm24-devel, 
-libattr-devel, cgreen-devel
+cmake, glib2, glib2-devel, openldap-devel, gcc-c++, openmp, openmp-devel, pkgconfig,
+lfc-devel, dcap-devel,dpm-devel doxygen, globus-gass-copy-devel, glibmm24-devel,
+libattr-devel,
 
 2.) Compile
 
@@ -15,7 +15,7 @@ cd [src_dir]
 mkdir build
 cd build
 cmake ../
-ccmake ../ # configure the plugin that you need : default = all !
+ccmake ../ # configure the plugin that you need : default = all ! and enable the test if wished
 make -j 8
 
 3.) Installation
