@@ -44,10 +44,10 @@ FileCopy::~FileCopy() {
 
 void FileCopy::start_copy(gfalt_params_t p, const std::string & src, const std::string & dst){
     gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::FileCopy ");
-    void * plug_data;
     GError * tmp_err=NULL;
     int res = -1;
-    plugin_filecopy_call p_copy = find_copy_plugin(src, dst, &plug_data); // get the filecopy call of the plugin
+    void * plugin_data=NULL;
+    plugin_filecopy_call p_copy = find_copy_plugin(src, dst, &plugin_data); // get the filecopy call of the plugin
     if(p_copy == NULL){
         if(gfalt_get_local_transfer_perm(p,NULL) ){
             start_local_copy(p, src, dst);
@@ -56,7 +56,7 @@ void FileCopy::start_copy(gfalt_params_t p, const std::string & src, const std::
             throw Gfal::CoreException(scope_copy, "no plugin is able to support a transfer from %s to %s", EPROTONOSUPPORT);
         }
     }else{
-        res = p_copy(plug_data, context, p, src.c_str(), dst.c_str(), &tmp_err);
+        res = p_copy(plugin_data, context, p, src.c_str(), dst.c_str(), &tmp_err);
     }
     //p->unlock();
     if(res <0 )
@@ -122,8 +122,9 @@ const plugin_filecopy_call FileCopy::find_copy_plugin(const std::string & src, c
             plugin_url_check2_call check_call = p_list->plugin_api->check_plugin_url_transfer;
             if(check_call != NULL){
                 gboolean compatible;
-                if( (compatible = check_call(*plugin_data, src.c_str(), dst.c_str(), GFAL_FILE_COPY) ) == TRUE){
+                if( (compatible = check_call(p_list->plugin_data, src.c_str(), dst.c_str(), GFAL_FILE_COPY) ) == TRUE){
                     g_free(start_list);
+                    *plugin_data = p_list->plugin_data;
                     return p_list->plugin_api->copy_file;
                 }
 
