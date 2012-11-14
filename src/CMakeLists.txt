@@ -248,7 +248,7 @@ add_definitions(${DAVIX_PKG_CFLAGS})
 
 add_library(plugin_http SHARED ${src_http} ${src_gsimplecache})
 
-target_link_libraries(plugin_http ${gfal2_link} ${DAVIX_PKG_LIBRARIES})
+target_link_libraries(plugin_http ${gfal2_link} ${DAVIX_PKG_LIBRARIES} ssl)
 
 
 set_target_properties(plugin_http   PROPERTIES  CLEAN_DIRECT_OUTPUT 1

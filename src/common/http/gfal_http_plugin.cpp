@@ -125,7 +125,7 @@ static int gfal_http_authn(davix_auth_t token, const davix_auth_info_t* t, void*
   }
 
   char p12file[PATH_MAX];
-  snprintf(p12file, sizeof(p12file), "/tmp/u%d.p12", geteuid());
+  snprintf(p12file, sizeof(p12file), "/tmp/p12_u%d.p12", geteuid());
   if (convert_x509_to_p12(ukey, ucert, p12file, err) < 0) {
     errno = EACCES;
     return -1;

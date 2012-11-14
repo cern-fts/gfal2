@@ -4,6 +4,7 @@
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/pkcs12.h>
+#include <openssl/ssl.h>
 #include <openssl/x509.h>
 #endif
 #include <stdlib.h>
@@ -151,73 +152,112 @@ int convert_x509_to_p12(const char *privkey, const char *clicert, const char *p1
 
 int convert_x509_to_p12(const char *privkey, const char *clicert, const char *p12cert, davix_error_t* err)
 {
-  X509      *cert;
-  PKCS12    *p12;
-  EVP_PKEY  *cert_privkey;
-  FILE      *certfile, *keyfile, *p12file;
-  int       bytes = 0;
+  SSL_CTX* ctx;
+  char errbuffer[128];
 
   OpenSSL_add_all_algorithms();
-  ERR_load_crypto_strings();
+  ERR_load_ERR_strings();
 
-  /* Read the private key file */
-  if ((cert_privkey = EVP_PKEY_new()) == NULL){
-    davix_error_setup(err, http_module_name, EACCES,
-                      "Error creating EVP_PKEY structure");
+  ctx = SSL_CTX_new(SSLv23_client_method());
+
+  // Set CA's
+  if (SSL_CTX_load_verify_locations(ctx, clicert, "/etc/grid-security/certificates") != 1) {
+    ERR_error_string_n(ERR_get_error(), errbuffer, sizeof(errbuffer));
+    davix_error_setup(err, http_module_name, EACCES, errbuffer);
+    SSL_CTX_free(ctx);
     return -1;
   }
-  if (! (keyfile = fopen(privkey, "r"))){
-    davix_error_setup(err, http_module_name, errno,
-                      "Could not read the user's private key");
+
+  // Load private key
+  EVP_PKEY* key;
+  FILE* keyfile = fopen(privkey, "r");
+  if (!keyfile) {
+    davix_error_setup(err, http_module_name, errno, "Could not open the user's private key");
+    SSL_CTX_free(ctx);
     return -1;
   }
-  if (! (cert_privkey = PEM_read_PrivateKey(keyfile, NULL, NULL, NULL))){
-    davix_error_setup(err, http_module_name, EACCES,
-                      "Could not load the user's private key");
-    return -1;
-  }
+
+  key = PEM_read_PrivateKey(keyfile, NULL, NULL, NULL);
   fclose(keyfile);
-
-  /* Read the user certificate */
-  if (! (certfile = fopen(clicert, "r"))){
-    davix_error_setup(err, http_module_name, errno,
-                      "Could not read the user's certificate");
+  if (!key) {
+    ERR_error_string_n(ERR_get_error(), errbuffer, sizeof(errbuffer));
+    davix_error_setup(err, http_module_name, EACCES, errbuffer);
+    SSL_CTX_free(ctx);
     return -1;
   }
-  if (! (cert = PEM_read_X509(certfile, NULL, NULL, NULL))){
-    davix_error_setup(err, http_module_name, EACCES,
-                      "Could not load the user's certificate");
+
+  // Load certificate
+  if (SSL_CTX_use_certificate_chain_file(ctx, clicert) != 1 ||
+      SSL_CTX_use_PrivateKey(ctx, key) != 1) {
+    ERR_error_string_n(ERR_get_error(), errbuffer, sizeof(errbuffer));
+    davix_error_setup(err, http_module_name, EACCES, errbuffer);
+    SSL_CTX_free(ctx);
+    EVP_PKEY_free(key);
     return -1;
   }
-  fclose(certfile);
 
-  /* Generate the p12 certificate */
+  if (SSL_CTX_check_private_key(ctx) != 1) {
+    davix_error_setup(err, http_module_name, EACCES, "User's certificate and key don't match");
+    SSL_CTX_free(ctx);
+    EVP_PKEY_free(key);
+    return -1;
+  }
+
+
+  // Generate the p12 certificate
+  SSL*    ssl = SSL_new(ctx);
+  PKCS12 *p12;
+  FILE   *p12file;
+  int     bytes = 0;
+
   if ((p12 = PKCS12_new()) == NULL){
     davix_error_setup(err, http_module_name, EACCES,
                       "Could not create the PKCS12 structure");
+    SSL_free(ssl);
+    SSL_CTX_free(ctx);
+    EVP_PKEY_free(key);
     return -1;
   }
-  p12 = PKCS12_create("", NULL, cert_privkey, cert, NULL, 0, 0, 0, 0, 0);
-  if ( p12 == NULL){
+  p12 = PKCS12_create("", NULL, key , SSL_get_certificate(ssl),
+                      ctx->extra_certs,
+                      0, 0, 0, 0, 0);
+
+  if ( p12 == NULL) {
     davix_error_setup(err, http_module_name, EACCES,
                       "Error generating a valid PKCS12 certificate");
+    PKCS12_free(p12);
+    SSL_free(ssl);
+    SSL_CTX_free(ctx);
+    EVP_PKEY_free(key);
     return -1;
   }
+
   if (! (p12file = fopen(p12cert, "w"))){
     davix_error_setup(err, http_module_name, errno,
                       "Could not write the p12 file");
+    PKCS12_free(p12);
+    SSL_free(ssl);
+    SSL_CTX_free(ctx);
+    EVP_PKEY_free(key);
     return -1;
   }
+
   bytes = i2d_PKCS12_fp(p12file, p12);
+  fclose(p12file);
   if (bytes <= 0){
     davix_error_setup(err, http_module_name, errno,
                       "Error writing the p12 file");
+    PKCS12_free(p12);
+    SSL_free(ssl);
+    SSL_CTX_free(ctx);
+    EVP_PKEY_free(key);
     return -1;
   }
-  fclose(p12file);
+
   PKCS12_free(p12);
-  X509_free(cert);
-  EVP_PKEY_free(cert_privkey);
+  SSL_free(ssl);
+  SSL_CTX_free(ctx);
+  EVP_PKEY_free(key);
 
   return 0;
 }
