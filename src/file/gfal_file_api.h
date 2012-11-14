@@ -90,16 +90,27 @@ int gfal2_access(gfal2_context_t handle, const char *uri, int amode, GError** er
  *
  *  gfal2_chmod changes the permissions of a file according to mode
  *
- * @param url : url of the file or the folder
+ * @param handle : gfal2 context object
+ * @param uri : url of the file or the folder
  * @param mode : right to configure
+ * @param err : GError error support
  * @return return 0 if success else -1 and err is be set
  *  see gfal2 error system for more information \ref gfal2_error_system
  */
 int gfal2_chmod(gfal2_context_t handle, const char* uri, mode_t mode, GError ** err);
 
-//
-//
-//
+/*!
+ * @brief  change the name or location of a file
+ *
+ *  gfal2_rename will rename olduri to newuri
+
+ * @param handle : gfal2 context object
+ * @param olduri : the old url of the file
+ * @param newurl : the new url of the file
+ * @param err : GError error support
+ * @return : return 0 if success, else -1 if errors.
+ *  see gfal2 error system for more information \ref gfal2_error_system
+*/
 int gfal2_rename(gfal2_context_t handle, const char *olduri, const char *newuri, GError ** err);
 
 //
