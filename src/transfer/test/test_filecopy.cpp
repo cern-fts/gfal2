@@ -35,7 +35,7 @@ void test_filecopy_instance(){
 	setenv("GFAL_PLUGIN_LIST", "libgfal_plugin_gridftp.so", TRUE);
 	gfal_handle handle = gfal_initG(NULL);
 	assert_true_with_message(handle != NULL, "must be a valid init ");
-	FileCopy *f = new FileCopy(new CoreLayer(handle));
+    FileCopy *f = new FileCopy(handle);
 	assert_true_with_message(f != NULL, "must be a valid filecopy instance ");
 	gfal_handle_freeG(handle);
 	delete f;

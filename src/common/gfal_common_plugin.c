@@ -189,6 +189,7 @@ plugin_pointer_handle gfal_plugins_list_handler(gfal_handle handle, GError** err
             gfal_plugin_interface* cata_list = plugin_list->data;
 			resu[i].dlhandle = cata_list->gfal_data;
 			resu[i].plugin_data = cata_list->plugin_data;
+            resu[i].plugin_api = cata_list;
 			g_strlcpy(resu[i].plugin_name, cata_list->getName(), GFAL_URL_MAX_LEN);
             i++;
             plugin_list = g_list_next(plugin_list);

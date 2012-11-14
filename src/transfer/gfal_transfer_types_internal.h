@@ -24,6 +24,8 @@
 #include <uuid/uuid.h>
 
 #include <exceptions/gfalcoreexception.hpp>
+#include <exceptions/cpp_to_gerror.hpp>
+#include <exceptions/gerror_to_cpp.h>
 
 #include <common/gfal_constants.h>
 #include <common/gfal_types.h>
@@ -34,7 +36,6 @@
 
 #include <transfer/gfal_transfer.h>
 #include <transfer/gfal_transfer_plugins.h>
-#include <transfer/gfalmaindecorator.h>
 
 
 struct _gfalt_params_t{
@@ -72,22 +73,19 @@ namespace Gfal{
 namespace Transfer{
 
 
-class FileCopy : public MainDecorator {
+class FileCopy {
 public:
-	FileCopy(PluginFactory* wrap);
+    FileCopy(gfal2_context_t context);
 	virtual ~FileCopy();
 	
 	void start_copy(gfalt_params_t p, const std::string & src, const std::string & dst);
 
     void start_local_copy(gfalt_params_t p, const std::string & src, const std::string & dst);
 	
-    virtual gfal_context_t get_context(){
-        return context;
-    }
 
 protected:
 	const plugin_filecopy_call find_copy_plugin(const std::string & src, const std::string & dst, void** plugin_data);
-    gfal_context_t context;
+    gfal2_context_t context;
 	
 }; 
 

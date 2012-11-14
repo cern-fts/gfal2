@@ -17,28 +17,37 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <common/gfal_common_plugin_interface.h>
+#include <common/gfal_common_plugin.h>
 #include <transfer/gfal_transfer_types_internal.h>
 #include <fdesc/gfal_file_handle.h>
+#include <exceptions/gerror_to_cpp.h>
+
 
 const Glib::Quark scope_copy("FileCopy::start_copy");
 const Glib::Quark scope_local_copy("FileCopy::local_copy");
 
 const long default_buffer_size= 200000;
 
-Gfal::Transfer::FileCopy::FileCopy(PluginFactory* wrap) :  MainDecorator(wrap), context(wrap->get_context()){
+
+namespace Gfal{
+
+namespace Transfer{
+
+
+FileCopy::FileCopy(gfal2_context_t context){
+    this->context = context;
+}
+
+FileCopy::~FileCopy() {
 
 }
 
-Gfal::Transfer::FileCopy::~FileCopy() {
-
-}
-
-void Gfal::Transfer::FileCopy::start_copy(gfalt_params_t p, const std::string & src, const std::string & dst){
-	gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::FileCopy ");	
-	void * plug_data;
-	GError * tmp_err=NULL;
+void FileCopy::start_copy(gfalt_params_t p, const std::string & src, const std::string & dst){
+    gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::FileCopy ");
+    void * plug_data;
+    GError * tmp_err=NULL;
     int res = -1;
-	plugin_filecopy_call p_copy = find_copy_plugin(src, dst, &plug_data); // get the filecopy call of the plugin
+    plugin_filecopy_call p_copy = find_copy_plugin(src, dst, &plug_data); // get the filecopy call of the plugin
     if(p_copy == NULL){
         if(gfalt_get_local_transfer_perm(p,NULL) ){
             start_local_copy(p, src, dst);
@@ -49,14 +58,14 @@ void Gfal::Transfer::FileCopy::start_copy(gfalt_params_t p, const std::string & 
     }else{
         res = p_copy(plug_data, context, p, src.c_str(), dst.c_str(), &tmp_err);
     }
-	//p->unlock();
-	if(res <0 )
-		throw Gfal::CoreException(scope_copy, std::string(tmp_err->message), tmp_err->code);
-	gfal_log(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::FileCopy ");
+    //p->unlock();
+    if(res <0 )
+        throw Gfal::CoreException(scope_copy, std::string(tmp_err->message), tmp_err->code);
+    gfal_log(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::FileCopy ");
 }
 
 
-void Gfal::Transfer::FileCopy::start_local_copy(gfalt_params_t p, const std::string & src, const std::string & dst){
+void FileCopy::start_local_copy(gfalt_params_t p, const std::string & src, const std::string & dst){
     gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::start_local_copy ");
     GError * tmp_err_src=NULL;
     GError * tmp_err_dst=NULL;
@@ -66,10 +75,10 @@ void Gfal::Transfer::FileCopy::start_local_copy(gfalt_params_t p, const std::str
     gfal_file_handle f_dst = NULL;
 
     gfal_log(GFAL_VERBOSE_TRACE, " open src file : %s ",src.c_str());
-    f_src = gfal_plugin_openG(this->get_context(),src.c_str(), O_RDONLY,0, &tmp_err_src);
+    f_src = gfal_plugin_openG(this->context,src.c_str(), O_RDONLY,0, &tmp_err_src);
     if(!tmp_err_src){
         gfal_log(GFAL_VERBOSE_TRACE, "  open dst file : %s ",dst.c_str());
-        f_dst = gfal_plugin_openG(this->get_context(),dst.c_str(), O_WRONLY | O_CREAT,0755, &tmp_err_dst);
+        f_dst = gfal_plugin_openG(this->context,dst.c_str(), O_WRONLY | O_CREAT,0755, &tmp_err_dst);
         ssize_t s_file=1;
         if(!tmp_err_dst){
             const unsigned long mbuffer = default_buffer_size;
@@ -77,13 +86,13 @@ void Gfal::Transfer::FileCopy::start_local_copy(gfalt_params_t p, const std::str
 
             gfal_log(GFAL_VERBOSE_TRACE, "  begin local transfer %s ->  %s with buffer size %ld",src.c_str(), dst.c_str(), mbuffer);
             while(s_file > 0 && !tmp_err_src && !tmp_err_dst){
-                    s_file = gfal_plugin_readG(this->get_context(),f_src, buff, mbuffer, &tmp_err_src);
+                    s_file = gfal_plugin_readG(this->context,f_src, buff, mbuffer, &tmp_err_src);
                     if(s_file > 0 && !tmp_err_src)
-                        gfal_plugin_writeG(this->get_context(),f_dst, buff, s_file, &tmp_err_dst);
+                        gfal_plugin_writeG(this->context,f_dst, buff, s_file, &tmp_err_dst);
             }
             g_free(buff);
-            gfal_plugin_closeG(this->get_context(), f_src, (tmp_err_src)?NULL:(&tmp_err_src));
-            gfal_plugin_closeG(this->get_context(), f_dst, (tmp_err_dst)?NULL:(&tmp_err_dst));
+            gfal_plugin_closeG(this->context, f_src, (tmp_err_src)?NULL:(&tmp_err_src));
+            gfal_plugin_closeG(this->context, f_dst, (tmp_err_dst)?NULL:(&tmp_err_dst));
         }
     }
 
@@ -101,25 +110,38 @@ void Gfal::Transfer::FileCopy::start_local_copy(gfalt_params_t p, const std::str
     gfal_log(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::start_local_copy ");
 }
 
-const plugin_filecopy_call Gfal::Transfer::FileCopy::find_copy_plugin(const std::string & src, const std::string & dst, void** plugin_data){
-	const VectorPlugin & p = this->get_plugin_links();
+const plugin_filecopy_call FileCopy::find_copy_plugin(const std::string & src, const std::string & dst, void** plugin_data){
 
-	
-	VectorPlugin::const_iterator it;
-	
-	for(it = p.begin(); it != p.end(); it++){
-			plugin_url_check2_call check_call = (*it)->get_sym_s<plugin_url_check2_call>("plugin_url_check2");
-			if(check_call != NULL){
-				gboolean compatible;
-				*plugin_data =(*it)->plugin_data(); 				
-				if( (compatible = check_call(*plugin_data, src.c_str(), dst.c_str(), GFAL_FILE_COPY) ) == TRUE){
-					return (*it)->get_sym_s<plugin_filecopy_call>("plugin_filecopy");					
-				}
-				
-			}
-	}
+
+    GError * tmp_err=NULL;
+    plugin_pointer_handle start_list, p_list;
+    start_list = p_list = gfal_plugins_list_handler(context, &tmp_err);
+    gerror_to_cpp(&tmp_err);
+
+    while(p_list->dlhandle != NULL){
+            plugin_url_check2_call check_call = p_list->plugin_api->check_plugin_url_transfer;
+            if(check_call != NULL){
+                gboolean compatible;
+                if( (compatible = check_call(*plugin_data, src.c_str(), dst.c_str(), GFAL_FILE_COPY) ) == TRUE){
+                    g_free(start_list);
+                    return p_list->plugin_api->copy_file;
+                }
+
+            }
+            p_list++;
+    }
+    g_free(start_list);
     return NULL;
 }
+
+
+
+
+} //end Transfer
+
+
+} // end Gfal
+
 
 
 
@@ -128,18 +150,8 @@ const plugin_filecopy_call Gfal::Transfer::FileCopy::find_copy_plugin(const std:
 extern "C" {
 
 static void filecopy_GDestroyer(gpointer p){
-    delete (static_cast<Gfal::Transfer::FileCopy*>(p));
+   // nothing
 
-}
-
-static Gfal::Transfer::FileCopy* init_Filecopy_from_handle(gfal2_context_t handle){
-    Gfal::Transfer::FileCopy* f=NULL;
-    if( ( f= (Gfal::Transfer::FileCopy*) handle->gfal_transfer_instance) == NULL){
-             f =new Gfal::Transfer::FileCopy(new Gfal::CoreLayer(handle));
-             handle->gfal_transfer_instance =  static_cast<gpointer>(f);
-             handle->gfal_transfer_destroyer = &filecopy_GDestroyer;
-    }
-    return f;
 }
 
 gfalt_transfer_status_t gfalt_transfer_status_create(const gfalt_hook_transfer_plugin_t * hook){
@@ -164,13 +176,13 @@ int gfalt_copy_file(gfal2_context_t handle, gfalt_params_t params,
 	gfalt_params_t p = NULL;
 	
 	CPP_GERROR_TRY
-        Gfal::Transfer::FileCopy* f = init_Filecopy_from_handle(handle);
+        Gfal::Transfer::FileCopy f(handle);
 		if(params == NULL){
 			p = gfalt_params_handle_new(NULL);
-            f->start_copy(p, src, dst);
+            f.start_copy(p, src, dst);
 		}
 		else{
-            f->start_copy(params, src, dst);
+            f.start_copy(params, src, dst);
 		}
 		ret = 0;
 	CPP_GERROR_CATCH(&tmp_err);

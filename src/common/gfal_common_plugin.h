@@ -44,10 +44,11 @@ extern "C"
 #endif  // __cplusplus
 
 typedef struct _plugin_pointer_handle{
-	void* dlhandle;
-	void* plugin_data;
-	char plugin_name[GFAL_URL_MAX_LEN];
-	char plugin_lib[GFAL_URL_MAX_LEN];
+    gfal_plugin_interface* plugin_api;                  // plugin official API
+    void* dlhandle;                                     // dlhandle of the plugin
+    void* plugin_data;                                  // plugin internal data
+    char plugin_name[GFAL_URL_MAX_LEN];                 // plugin name
+    char plugin_lib[GFAL_URL_MAX_LEN];                  // plugin library path
 } *plugin_pointer_handle;
 
 /*
