@@ -24,10 +24,11 @@ int convert_x509_to_p12(const char *privkey, const char *clicert, const char *p1
   gnutls_datum_t        data, keyid;
   struct stat           fstat;
   FILE                 *fhandler;
-  gnutls_x509_crt_t     cert;
+  gnutls_x509_crt_t     certs[10];
+  unsigned              ncerts;
   gnutls_x509_privkey_t key;
   gnutls_pkcs12_t       p12;
-  gnutls_pkcs12_bag_t   certbag, keybag;
+  gnutls_pkcs12_bag_t   certbag, keybag, additionalbags[10];
   int                   r, index;
   unsigned char         buffer[10 * 1024];
   size_t                buffer_size;
@@ -65,7 +66,7 @@ int convert_x509_to_p12(const char *privkey, const char *clicert, const char *p1
   gnutls_x509_privkey_get_key_id (key, 0, buffer, &buffer_size);
 
   keyid.size = buffer_size;
-  keyid.data = malloc(sizeof(unsigned char) * keyid.size);
+  keyid.data = (unsigned char*)malloc(sizeof(unsigned char) * keyid.size);
   memcpy(keyid.data, buffer, keyid.size);
 
   index = gnutls_pkcs12_bag_init(&keybag);
@@ -97,25 +98,34 @@ int convert_x509_to_p12(const char *privkey, const char *clicert, const char *p1
   }
 
   fread(data.data, sizeof(unsigned char), data.size, fhandler);
+  fclose(fhandler);
 
-  gnutls_x509_crt_init(&cert);
-  r = gnutls_x509_crt_import(cert, &data, GNUTLS_X509_FMT_PEM);
-  if (r < 0) {
+  ncerts = 10;
+  r = gnutls_x509_crt_list_import(certs, &ncerts, &data, GNUTLS_X509_FMT_PEM, 0);
+
+  if (r < 0 || ncerts < 1) {
     davix_error_setup(err, http_module_name, EACCES,
                       gnutls_strerror(r));
     return -1;
   }
 
   index = gnutls_pkcs12_bag_init(&certbag);
-  gnutls_pkcs12_bag_set_crt(certbag, cert);
+  gnutls_pkcs12_bag_set_crt(certbag, certs[0]);
   gnutls_pkcs12_bag_set_key_id(certbag, index, &keyid);
-
-  fclose(fhandler);
 
   /* Generate P12 */
   gnutls_pkcs12_init(&p12);
   gnutls_pkcs12_set_bag(p12, certbag);
   gnutls_pkcs12_set_bag(p12, keybag);
+
+  /* Additional certificates */
+  for (unsigned i = 1; i < ncerts; ++i) {
+    gnutls_pkcs12_bag_init(&(additionalbags[i]));
+    gnutls_pkcs12_bag_set_crt(additionalbags[i], certs[i]);
+    gnutls_pkcs12_set_bag(p12, additionalbags[i]);
+  }
+
+  /* Finish this */
   gnutls_pkcs12_generate_mac(p12, "");
 
   buffer_size = sizeof(buffer);
@@ -142,7 +152,11 @@ int convert_x509_to_p12(const char *privkey, const char *clicert, const char *p1
   gnutls_pkcs12_deinit(p12);
   gnutls_pkcs12_bag_deinit(certbag);
   gnutls_pkcs12_bag_deinit(keybag);
-  gnutls_x509_crt_deinit(cert);
+  for (unsigned i = 1; i < ncerts; ++i) {
+    gnutls_pkcs12_bag_deinit(additionalbags[i]);
+    gnutls_x509_crt_deinit(certs[i]);
+  }
+
   free(keyid.data);
 
   return 0;
