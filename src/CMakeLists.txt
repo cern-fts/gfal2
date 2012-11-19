@@ -24,8 +24,6 @@ FILE(GLOB src_srm "common/srm/*.c")
 FILE(GLOB src_rfio "common/rfio/*.c")
 #define dcap sources
 FILE(GLOB src_dcap "common/dcap/*.c")
-#define http source
-FILE(GLOB src_http "common/http/*.cpp")
 #define libcpp source
 FILE(GLOB src_libcpp "libcpp/*.cpp")
 #define logger source
@@ -240,27 +238,7 @@ ENDIF(PLUGIN_DCAP)
 
 
 IF(PLUGIN_HTTP)
-
-pkg_check_modules(DAVIX_PKG REQUIRED davix)
-include_directories(${DAVIX_PKG_INCLUDE_DIR})
-
-add_definitions(${DAVIX_PKG_CFLAGS})
-
-add_library(plugin_http SHARED ${src_http} ${src_gsimplecache})
-
-target_link_libraries(plugin_http ${gfal2_link} ${DAVIX_PKG_LIBRARIES} ssl)
-
-
-set_target_properties(plugin_http   PROPERTIES  CLEAN_DIRECT_OUTPUT 1
-                                                OUTPUT_NAME ${OUTPUT_NAME_HTTP}
-                                                LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
-)
-
-install(TARGETS plugin_http
-            LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
-install(FILES   "common/http/README_PLUGIN_HTTP"
-                DESTINATION ${DOC_INSTALL_DIR})
-
+    add_subdirectory(common/http)
 ENDIF(PLUGIN_HTTP)
 
 

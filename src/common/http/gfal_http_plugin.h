@@ -51,4 +51,10 @@ int gfal_http_fclose(plugin_handle, gfal_file_handle fd, GError ** err);
 
 off_t gfal_http_fseek(plugin_handle, gfal_file_handle fd, off_t offset, int whence, GError** err);
 
+// 3RD PARTY COPY
+int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params,
+                      const char* src, const char* dst, GError** err);
+
+int gfal_http_3rdcopy_check(plugin_handle plugin_data,  const char* src, const char* dst, gfal_url2_check check);
+
 #endif //_GFAL_HTTP_PLUGIN_H

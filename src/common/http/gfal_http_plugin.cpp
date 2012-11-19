@@ -177,5 +177,9 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal_handle handle,
   http_plugin.lseekG = &gfal_http_fseek;
   http_plugin.closeG = &gfal_http_fclose;
 
+  // Bind 3rd party copy
+  http_plugin.check_plugin_url_transfer = gfal_http_3rdcopy_check;
+  http_plugin.copy_file = gfal_http_3rdcopy;
+
   return http_plugin;
 }
