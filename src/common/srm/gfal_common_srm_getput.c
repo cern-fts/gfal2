@@ -142,7 +142,7 @@ int gfal_srm_putTURLS_srmv2_internal(gfal_srmv2_opt* opts , gfal_srm_params_t pa
 	size_t n_surl = g_strv_length (surls);									// n of surls
 	SRM_LONG64 filesize_tab[n_surl];
 	for(i=0; i < n_surl;++i)
-		filesize_tab[i] = opts->filesizes;
+        filesize_tab[i] = params->file_size;
 		
 	// set the structures datafields	
 	preparetoput_input.desiredpintime = opts->opt_srmv2_desiredpintime;		
@@ -295,7 +295,7 @@ int gfal_srm_getTURLS(gfal_srmv2_opt* opts, char** surls, gfal_srm_result** resu
 
 
 //  execute a put for thirdparty transfer turl
-int gfal_srm_put_rd3_turl(plugin_handle ch,  gfalt_params_t p, const char* surl, char* buff_turl, int size_turl, char** reqtoken, GError** err){
+int gfal_srm_put_rd3_turl(plugin_handle ch,  gfalt_params_t p, const char* surl, size_t surl_file_size, char* buff_turl, int size_turl, char** reqtoken, GError** err){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
 	gfal_srm_result* resu=NULL;
 	GError* tmp_err=NULL;

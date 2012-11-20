@@ -52,15 +52,15 @@ enum gfal_srm_proto {PROTO_SRM=0, PROTO_SRMv2, PROTO_ERROR_UNKNOW};
 /*
  * the state of the last request -> depreciated
  *  needed to get the response
- */ 
+ */
 typedef struct _gfal_request_state{
-	char *						srmv2_token;
-	struct srmv2_filestatus *	srmv2_statuses;
-	struct srmv2_pinfilestatus *srmv2_pinstatuses;
-	enum gfal_srm_proto current_request_proto;
-	char * 						request_endpoint; 
-	gboolean					finished;			// finished or not
-	int							number;				// number of files in request
+    char *						srmv2_token;
+    struct srmv2_filestatus *	srmv2_statuses;
+    struct srmv2_pinfilestatus *srmv2_pinstatuses;
+    enum gfal_srm_proto current_request_proto;
+    char * 						request_endpoint;
+    gboolean					finished;			// finished or not
+    int							number;				// number of files in request
  } gfal_request_state;
 
 
@@ -78,8 +78,7 @@ typedef struct _gfal_srmv2_opt{
 	regex_t rexurl;
 	regex_t rex_full;
 	gfal_handle handle;
-	gint64 filesizes;
-	gfal_request_state* last_request_state;
+    gfal_request_state* last_request_state;
 	GSimpleCache* cache;
 } gfal_srmv2_opt;
 
@@ -99,6 +98,7 @@ typedef struct _gfal_srm_params{
 	enum gfal_srm_proto proto_version;		// default protocol version
 	char * spacetokendesc;		// optional spacetokens desc for srmv2	 
 	int desiredpintime;			//	optional desired default endpoint
+    size_t file_size;
 }* gfal_srm_params_t;
 
 typedef void* srm_request_handle;

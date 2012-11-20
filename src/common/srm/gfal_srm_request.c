@@ -23,6 +23,7 @@ gfal_srm_params_t gfal_srm_params_new(gfal_srm_plugin_t handle, GError ** err ){
 	res->desiredpintime= handle->opt_srmv2_desiredpintime;
 	res->proto_version = handle->srm_proto_type;
     res->spacetokendesc= g_strdup(handle->opt_srmv2_spacetokendesc);
+    res->file_size = 0;
 	return res;
 }
 

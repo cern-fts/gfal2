@@ -149,7 +149,7 @@ int srm_plugin_put_3rdparty(plugin_handle handle, gfal2_context_t context,
 	if( srm_check_url(surl)){
         gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl src resolution start ");
 		if( (res = srm_plugin_prepare_dest_put(handle, context, params, surl, &tmp_err)) >=0){						
-            if(( res= gfal_srm_put_rd3_turl(handle, params, surl, buff , s_buff, reqtoken,  err))==0)
+            if(( res= gfal_srm_put_rd3_turl(handle, params, surl, 0, buff , s_buff, reqtoken,  err))==0)
                 gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl src resolution ended : %s -> %s", surl, buff);
 		}
 	}else{

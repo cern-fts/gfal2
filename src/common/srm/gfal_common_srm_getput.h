@@ -20,7 +20,7 @@
 #include <common/gfal_common_plugin_interface.h>
 #include <common/gfal_common_plugin.h>
 
-int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t params, const char* surl, char* buff_turl, int size_turl, char** reqtoken, GError** err);
+int gfal_srm_put_rd3_turl(plugin_handle ch,  gfalt_params_t p, const char* surl, size_t surl_file_size, char* buff_turl, int size_turl, char** reqtoken, GError** err);
 
 int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t params, const char* surl, char* buff_turl, int size_turl, char** reqtoken,  GError** err);
 
