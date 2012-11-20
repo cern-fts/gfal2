@@ -112,6 +112,10 @@ struct GridFTP_session_implem : public GridFTP_session{
 		globus_ftp_client_handleattr_set_gridftp2(&(_sess->attr_handle), v2); // define gridftp 2	
 	}
 
+    void set_ipv6(bool enable){
+        globus_ftp_client_operationattr_set_allow_ipv6(&(_sess->operation_attr_ftp), (globus_bool_t) enable);
+    }
+
     void set_dcau(const globus_ftp_control_dcau_t & _dcau ){
         _sess->dcau.mode = _dcau.mode;
         globus_ftp_client_operationattr_set_dcau(&(_sess->operation_attr_ftp), &(_sess->dcau));
