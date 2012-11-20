@@ -126,7 +126,7 @@ gboolean gfal2_get_opt_boolean(gfal2_context_t handle, const gchar *group_name,
 * @param bool : default value returned if not present
 * @return parameter value
 **/
-gboolean gfal_get_opt_boolean_with_default(gfal2_context_t handle, const gchar *group_name,
+gboolean gfal2_get_opt_boolean_with_default(gfal2_context_t handle, const gchar *group_name,
                                            const gchar *key, gboolean default_value);
 
 
