@@ -28,12 +28,13 @@
 #include <time.h> 
  
 #include "gfal_common_srm.h"
-#include "../gfal_common_internal.h"
-#include "../gfal_common_errverbose.h"
-#include "../gfal_common_plugin.h"
+#include <common/gfal_common_internal.h>
+#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_plugin.h>
 #include "gfal_common_srm_internal_layer.h"
 #include "gfal_common_srm_chmod.h"
 #include "gfal_common_srm_endpoint.h"
+#include "gfal_common_srm_internal_ls.h"
 
 /*
  * 
@@ -90,6 +91,8 @@ int	gfal_srm_chmodG(plugin_handle ch, const char * path , mode_t mode, GError** 
 	int ret=-1;	
 	char full_endpoint[GFAL_URL_MAX_LEN];
 	enum gfal_srm_proto srm_types;
+
+    gfal_srm_cache_stat_remove(ch, path);
 	if((gfal_srm_determine_endpoint(opts, path, full_endpoint, GFAL_URL_MAX_LEN, &srm_types, &tmp_err)) == 0){		// check & get endpoint										
 		gfal_log(GFAL_VERBOSE_NORMAL, "[gfal_srm_chmodG] endpoint %s", full_endpoint);
 

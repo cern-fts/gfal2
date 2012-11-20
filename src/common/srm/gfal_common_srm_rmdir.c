@@ -27,6 +27,7 @@
 #include "gfal_common_srm_internal_layer.h"
 #include "gfal_common_srm_stat.h"
 #include "gfal_common_srm_endpoint.h"
+#include "gfal_common_srm_internal_ls.h"
 
 #include <common/gfal_constants.h>
 #include <common/gfal_common_errverbose.h>
@@ -76,6 +77,7 @@ int gfal_srm_rmdirG(plugin_handle ch, const char* surl, GError** err){
 	enum gfal_srm_proto srm_type;
 	gfal_log(GFAL_VERBOSE_VERBOSE, "  -> [gfal_srm_rmdirG]");	
 		
+    gfal_srm_cache_stat_remove(ch, surl);
 	ret = gfal_srm_determine_endpoint(opts, surl, full_endpoint, GFAL_URL_MAX_LEN, &srm_type,  &tmp_err);
 	if( ret >=0 ){
 		if(srm_type == PROTO_SRMv2){

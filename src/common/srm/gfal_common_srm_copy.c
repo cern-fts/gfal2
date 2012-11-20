@@ -140,7 +140,7 @@ int srm_plugin_prepare_dest_put(plugin_handle handle, gfal2_context_t context,
 }
 
 int srm_plugin_put_3rdparty(plugin_handle handle, gfal2_context_t context,
-					gfalt_params_t params,  const char * surl, 
+                    gfalt_params_t params,  const char * surl,  size_t file_size_surl,
 					char* buff, size_t s_buff, 
 					char** reqtoken, GError ** err){
 	GError * tmp_err=NULL;
@@ -149,7 +149,7 @@ int srm_plugin_put_3rdparty(plugin_handle handle, gfal2_context_t context,
 	if( srm_check_url(surl)){
         gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl src resolution start ");
 		if( (res = srm_plugin_prepare_dest_put(handle, context, params, surl, &tmp_err)) >=0){						
-            if(( res= gfal_srm_put_rd3_turl(handle, params, surl, 0, buff , s_buff, reqtoken,  err))==0)
+            if(( res= gfal_srm_put_rd3_turl(handle, params, surl, file_size_surl, buff , s_buff, reqtoken,  err))==0)
                 gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl src resolution ended : %s -> %s", surl, buff);
 		}
 	}else{
@@ -252,7 +252,17 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
             }
             #pragma omp section
             {
-                int ret_put = srm_plugin_put_3rdparty(handle, context, params, dst, buff_turl_dst, GFAL_URL_MAX_LEN, &reqtoken, &tmp_err_put);
+                int ret_put =-1;
+                struct stat st_src;
+                memset(&st_src, 0, sizeof( struct stat));
+                if( gfal_srm_statG(handle, src, &st_src, &tmp_err_put) !=0){
+                   st_src.st_size =0;
+                   gfal_log(GFAL_VERBOSE_DEBUG, "Fail to stat src SRM url %s to determine file size, try with file_size=0", src);
+                   g_clear_error(&tmp_err_put);
+                }
+
+                ret_put = srm_plugin_put_3rdparty(handle, context, params, dst, st_src.st_size,
+                                                  buff_turl_dst, GFAL_URL_MAX_LEN, &reqtoken, &tmp_err_put);
                 if(!tmp_err_put && reqtoken != NULL)
                     put_waiting = TRUE;
                 if(ret_put == 0){ // srm resolution done to turl, do not check dest -> already done

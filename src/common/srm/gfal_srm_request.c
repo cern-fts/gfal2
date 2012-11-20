@@ -51,3 +51,7 @@ void gfal_srm_params_set_spacetoken(gfal_srm_params_t params, const char* spacet
 void gfal_srm_params_set_protocols(gfal_srm_params_t params, char** protocols){
 	params->protocols = protocols;
 }
+
+void gfal_srm_params_set_size(gfal_srm_params_t params, size_t file_size){
+    params->file_size = file_size;
+}

@@ -30,6 +30,7 @@
 
 #include "gfal_common_srm.h"
 #include "gfal_common_srm_internal_layer.h" 
+#include "gfal_common_srm_internal_ls.h"
 #include <common/gfal_common_internal.h>
 #include <common/gfal_common_errverbose.h>
 #include <common/gfal_common_plugin.h>
@@ -117,6 +118,7 @@ int gfal_srm_unlinkG(plugin_handle ch, const char * path, GError** err){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
 	
 	char* surls[] = { (char*) path, NULL};
+    gfal_srm_cache_stat_remove(ch, path);
 	int ret = gfal_srm_rm_internal(opts, surls, &tmp_err);
 	if(tmp_err)
 		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);

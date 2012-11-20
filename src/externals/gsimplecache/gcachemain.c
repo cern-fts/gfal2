@@ -29,6 +29,7 @@ struct _GSimpleCache_Handle{
 	GHashTable*  table;
 	GSimpleCache_CopyConstructor do_copy;
 	size_t size_item;
+    size_t max_number_item;
 	pthread_mutex_t mux;
 };
 
@@ -45,11 +46,12 @@ static gboolean hash_strings_are_equals(gconstpointer a, gconstpointer b){
 /**
  * Construct a new cache with a capacity of max_size bytes
  * */
-GSimpleCache* gsimplecache_new(guint64 max_size, GSimpleCache_CopyConstructor value_copy, size_t size_item){
+GSimpleCache* gsimplecache_new(guint64 max_number_item, GSimpleCache_CopyConstructor value_copy, size_t size_item){
 	GSimpleCache* ret = (GSimpleCache*) g_new(struct _GSimpleCache_Handle,1);
 	ret->table = g_hash_table_new_full(&g_str_hash, &hash_strings_are_equals, &free, &gsimplecache_destroy_item_internal );
 	ret->do_copy = value_copy;
 	ret->size_item = size_item;
+    ret->max_number_item = max_number_item;
 	pthread_mutex_init(&ret->mux,NULL);
 	return ret;
 }
@@ -79,12 +81,20 @@ static gboolean gsimplecache_remove_internal_kstr(GSimpleCache* cache, const cha
 		return g_hash_table_remove(cache->table, (gconstpointer) key);	
 }
 
+// simple lazy space maker, can be improved
+static void gsimplecache_manage_space(GSimpleCache* cache){
+    size_t len = (size_t) g_hash_table_size (cache->table);
+    if(len >= cache->max_number_item){
+        g_hash_table_remove_all(cache->table);
+    }
+}
 
 
 
 void gsimplecache_add_item_internal(GSimpleCache* cache, const char* key, void* item){
 	Internal_item* ret = gsimplecache_find_kstr_internal(cache, key);	
 	if(ret == NULL){
+        gsimplecache_manage_space(cache);
 		ret = malloc(sizeof(struct _Internal_item) + cache->size_item);
 		ret->ref_count = 2;
 		cache->do_copy(item, ret->item);

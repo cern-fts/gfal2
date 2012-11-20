@@ -18,7 +18,7 @@ typedef void (*GSimpleCache_CopyConstructor)(gpointer original, gpointer copy);
 
 typedef struct _GSimpleCache_Handle GSimpleCache;
 
-GSimpleCache* gsimplecache_new(guint64 max_size, GSimpleCache_CopyConstructor value_copy, size_t size_item);
+GSimpleCache* gsimplecache_new(guint64 max_number_item, GSimpleCache_CopyConstructor value_copy, size_t size_item);
 
 void gsimplecache_delete(GSimpleCache* cache);
 

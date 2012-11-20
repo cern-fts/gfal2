@@ -37,4 +37,7 @@ gchar* gfal_srm_params_get_spacetoken(gfal_srm_params_t params);
 void gfal_srm_params_set_spacetoken(gfal_srm_params_t params, const char* spacetoken);
 
 
+void gfal_srm_params_set_size(gfal_srm_params_t params, size_t file_size);
+
+
 #endif /* GFAL_SRM_REQUEST_H */ 

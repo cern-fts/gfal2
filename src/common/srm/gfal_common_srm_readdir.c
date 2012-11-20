@@ -33,32 +33,31 @@
 #include "gfal_common_srm_readdir.h"
 #include "gfal_common_srm_opendir.h" 
 #include "gfal_common_srm_internal_layer.h"
+#include "gfal_common_srm_internal_ls.h"
  
 
-inline static void gfal_srm_bufferize_request(plugin_handle ch, const char* surl, struct srmv2_mdfilestatus * statuses){
-	char buff_key[GFAL_URL_MAX_LEN];	
-	gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
-	gfal_srm_construct_key(surl, GFAL_SRM_LSTAT_PREFIX, buff_key, GFAL_URL_MAX_LEN);
-	struct stat* st = g_new(struct stat, 1);
+void gfal_srm_bufferize_request(plugin_handle ch, const char* surl, struct srmv2_mdfilestatus * statuses){
+
+    struct stat st;
 	if(sizeof(struct stat64) == sizeof(struct stat))
-		memcpy(st, &statuses->stat, sizeof(struct stat));
+        memcpy(&st, &statuses->stat, sizeof(struct stat));
 	else{
-		const struct stat64* stat_statuses = &statuses->stat;
-		st->st_dev = (dev_t) stat_statuses->st_dev;
-		st->st_ino = (ino_t) stat_statuses->st_ino;
-		st->st_mode = (mode_t) stat_statuses->st_mode;
-		st->st_nlink = (nlink_t) stat_statuses->st_nlink;
-		st->st_uid = (uid_t) stat_statuses->st_uid;
-		st->st_gid = (gid_t) stat_statuses->st_gid;
-		st->st_rdev = (dev_t) stat_statuses->st_rdev;
-		st->st_size = (off_t) stat_statuses->st_size;
-		st->st_blksize = (blkcnt_t) stat_statuses->st_blksize;
-		st->st_blocks = (blkcnt_t) stat_statuses->st_blocks;
-		st->st_atime = (time_t) stat_statuses->st_atime;
-		st->st_mtime = (time_t) stat_statuses->st_mtime;
-		st->st_ctime = (time_t) stat_statuses->st_ctime;
+        const struct stat64* stat_statuses = &statuses->stat;
+        st.st_dev = (dev_t) stat_statuses->st_dev;
+        st.st_ino = (ino_t) stat_statuses->st_ino;
+        st.st_mode = (mode_t) stat_statuses->st_mode;
+        st.st_nlink = (nlink_t) stat_statuses->st_nlink;
+        st.st_uid = (uid_t) stat_statuses->st_uid;
+        st.st_gid = (gid_t) stat_statuses->st_gid;
+        st.st_rdev = (dev_t) stat_statuses->st_rdev;
+        st.st_size = (off_t) stat_statuses->st_size;
+        st.st_blksize = (blkcnt_t) stat_statuses->st_blksize;
+        st.st_blocks = (blkcnt_t) stat_statuses->st_blocks;
+        st.st_atime = (time_t) stat_statuses->st_atime;
+        st.st_mtime = (time_t) stat_statuses->st_mtime;
+        st.st_ctime = (time_t) stat_statuses->st_ctime;
 	}
-	gsimplecache_add_item_kstr(opts->cache, buff_key, st);
+    gfal_srm_cache_stat_add(ch, surl, &st);
 }
 
 inline static struct dirent* gfal_srm_readdir_convert_result(plugin_handle ch, const char* surl, struct srmv2_mdfilestatus * statuses,  struct dirent* output, GError ** err){

@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
 * 
@@ -40,4 +40,10 @@ int gfal_statG_srmv2__generic_internal(gfal_srmv2_opt* opts, struct stat* buf,
 						
 int gfal_Locality_srmv2_generic_internal(	gfal_srmv2_opt* opts, 
 										const char* endpoint, const char* surl, TFileLocality* loc,
-										GError** err);						
+                                        GError** err);
+
+
+int gfal_srm_cache_stat_add(plugin_handle ch, const char* surl, struct stat * value);
+
+
+void gfal_srm_cache_stat_remove(plugin_handle ch, const char* surl);

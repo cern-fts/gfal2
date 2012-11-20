@@ -31,3 +31,4 @@
 
 
 struct dirent* gfal_srm_readdirG(plugin_handle handle, gfal_file_handle fh, GError** err);
+

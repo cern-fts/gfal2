@@ -151,4 +151,21 @@ int gfal_Locality_srmv2_generic_internal(	gfal_srmv2_opt* opts,
 	gfal_srm_ls_memory_management(&input, &output);
 	
 	G_RETURN_ERR(ret, tmp_err, err);
-}						
+}
+
+int gfal_srm_cache_stat_add(plugin_handle ch, const char* surl, struct stat * value){
+    char buff_key[GFAL_URL_MAX_LEN];
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    gfal_srm_construct_key(surl, GFAL_SRM_LSTAT_PREFIX, buff_key, GFAL_URL_MAX_LEN);
+    struct stat* st = g_new(struct stat, 1);
+    memcpy(st, value, sizeof(struct stat));
+    gsimplecache_add_item_kstr(opts->cache, buff_key, st);
+    return 0;
+}
+
+void gfal_srm_cache_stat_remove(plugin_handle ch, const char* surl){
+    char buff_key[GFAL_URL_MAX_LEN];
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    gfal_srm_construct_key(surl, GFAL_SRM_LSTAT_PREFIX, buff_key, GFAL_URL_MAX_LEN);
+    gsimplecache_remove_kstr(opts->cache, buff_key);
+}

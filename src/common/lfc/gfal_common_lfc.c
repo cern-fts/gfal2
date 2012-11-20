@@ -794,7 +794,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 
     lfc_configure_environment(ops, NULL, err);
 
-	ops->cache_stat = gsimplecache_new(50000000,&internal_stat_copy, sizeof(struct stat) );
+    ops->cache_stat = gsimplecache_new(5000,&internal_stat_copy, sizeof(struct stat) );
 	gfal_lfc_regex_compile(&(ops->rex), err);
 	lfc_plugin.plugin_data = (void*) ops;
     lfc_plugin.priority =GFAL_PLUGIN_PRIORITY_CATALOG;

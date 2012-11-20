@@ -305,6 +305,7 @@ int gfal_srm_put_rd3_turl(plugin_handle ch,  gfalt_params_t p, const char* surl,
 	gfal_srm_params_t params = gfal_srm_params_new(opts, & tmp_err);
     gfal_srm_params_set_spacetoken(params, gfalt_get_dst_spacetoken(p, NULL));
 	gfal_srm_params_set_protocols(params, opts->opt_srmv2_tp3_protocols);	
+    gfal_srm_params_set_size(params, surl_file_size);
 	if(params != NULL){
 		ret= gfal_srm_mTURLS_internal(opts, params, SRM_PUT, surls, &resu,  &tmp_err);
 		if(ret >=0){

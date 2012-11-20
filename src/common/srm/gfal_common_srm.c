@@ -159,7 +159,7 @@ void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal_handle handle){
 	opts->opt_srmv2_tp3_protocols = srm_turls_thirdparty_protocols; // thrid party protocols
 	opts->srm_proto_type = PROTO_SRMv2;
 	opts->handle = handle;	
-	opts->cache = gsimplecache_new(500000, &srm_internal_copy_stat, sizeof(struct stat));
+    opts->cache = gsimplecache_new(5000, &srm_internal_copy_stat, sizeof(struct stat));
 }
 
 
