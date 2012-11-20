@@ -227,7 +227,8 @@ gboolean gfal2_get_opt_boolean_with_default(gfal2_context_t handle, const gchar 
 
     gboolean res = gfal2_get_opt_boolean(handle, group_name, key, &tmp_err);
     if(tmp_err){
-        gfal_log(GFAL_VERBOSE_DEBUG, " impossible to get boolean parameter %s:%s, set to default value %s",group_name, key, ((default_value)?"TRUE":"FALSE") );
+        gfal_log(GFAL_VERBOSE_DEBUG, " impossible to get boolean parameter %s:%s, set to default value %s, err %s",group_name, key,
+                        ((default_value)?"TRUE":"FALSE"), tmp_err->message );
         g_clear_error(&tmp_err);
         res = default_value;
     }
