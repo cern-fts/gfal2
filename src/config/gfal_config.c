@@ -221,6 +221,18 @@ gboolean gfal2_get_opt_boolean(gfal_handle handle, const gchar *group_name,
     return res;
 }
 
+gboolean gfal_get_opt_boolean_with_default(gfal2_context_t handle, const gchar *group_name,
+                                           const gchar *key, gboolean default_value){
+    GError * tmp_err=NULL;
+
+    gboolean res = gfal2_get_opt_boolean(handle, group_name, key, &tmp_err);
+    if(tmp_err){
+        g_clear_error(&tmp_err);
+        res = default_value;
+    }
+    return res;
+}
+
 gint gfal2_set_opt_boolean(gfal_handle handle, const gchar *group_name,
                                   const gchar *key, gboolean value, GError **error){
     g_assert(handle != NULL);

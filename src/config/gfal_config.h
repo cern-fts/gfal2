@@ -115,6 +115,21 @@ gint gfal2_set_opt_boolean(gfal2_context_t handle, const gchar *group_name,
 gboolean gfal2_get_opt_boolean(gfal2_context_t handle, const gchar *group_name,
                                         const gchar *key, GError **error);
 
+
+/**
+* @brief similar to \ref gfal2_get_opt_boolean but return a default value if
+* an error occures
+*
+* @param handle : context of gfal 2.0
+* @param group_name : group name of the parameter
+* @param key : key of the parameter
+* @param bool : default value returned if not present
+* @return parameter value
+**/
+gboolean gfal_get_opt_boolean_with_default(gfal2_context_t handle, const gchar *group_name,
+                                           const gchar *key, gboolean default_value);
+
+
 /**
  * @brief set a list of string parameter in the current GFAL 2.0 configuration
  *  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
