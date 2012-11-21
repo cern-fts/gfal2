@@ -1,15 +1,13 @@
-%global checkout_tag 2012100315svn
-
 
 Name:				gfal2
-Version:			2.0.22
-Release:			1.%{checkout_tag}%{?dist}
+Version:			2.0.23
+Release:			1%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
 URL:				https://svnweb.cern.ch/trac/lcgutil/wiki/gfal2
 # svn export http://svn.cern.ch/guest/lcgutil/gfal2/trunk gfal2
-Source0:			http://grid-deployment.web.cern.ch/grid-deployment/dms/lcgutil/tar/%{name}/%{name}-%{version}-%{checkout_tag}.tar.gz
+Source0:			http://grid-deployment.web.cern.ch/grid-deployment/dms/lcgutil/tar/%{name}/%{name}-%{version}.tar.gz
 BuildRoot:			%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 #main lib dependencies
