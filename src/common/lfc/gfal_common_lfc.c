@@ -418,11 +418,10 @@ static gfal_file_handle lfc_opendirG(plugin_handle handle, const char* path, GEr
 	struct lfc_ops* ops = (struct lfc_ops*) handle;
 	lfc_opendir_handle oh=NULL;
     DIR* d = NULL;
-    int ret =-1;
     char *url_path=NULL, *url_host=NULL;
 
-    if( (ret = url_converter(handle, path, &url_host, &url_path, &tmp_err)) ==0){
-        ret= lfc_configure_environment(ops, url_host, &tmp_err);
+    if( url_converter(handle, path, &url_host, &url_path, &tmp_err) ==0 ){
+        lfc_configure_environment(ops, url_host, &tmp_err);
         if(!tmp_err){
             gfal_lfc_init_thread(ops);
             gfal_auto_maintain_session(ops, &tmp_err);
@@ -687,10 +686,9 @@ char* lfc_resolve_guid(plugin_handle handle, const char* guid, GError** err){
     GError * tmp_err=NULL;
     char *url_path=NULL, *url_host=NULL, *res = NULL;
     struct lfc_ops* ops = (struct lfc_ops*) handle;
-    int ret=-1;
 
-    if( ( ret = url_converter(handle, guid, &url_host, &url_path, &tmp_err)) ==0){
-        ret = lfc_configure_environment(ops, url_host, &tmp_err);
+    if( url_converter(handle, guid, &url_host, &url_path, &tmp_err) ==0){
+        lfc_configure_environment(ops, url_host, &tmp_err);
         if(!tmp_err){
             res = url_path;
         }

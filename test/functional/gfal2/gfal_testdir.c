@@ -16,6 +16,8 @@ int main(int argc, char **argv)
         return 1;
 	}
 
+	gfal_set_verbose(10);
+
 	if ((dir = gfal_opendir (argv[1])) == NULL) {
 		perror ("gfal_opendir");
         return 1;

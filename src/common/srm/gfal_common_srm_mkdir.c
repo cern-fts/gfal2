@@ -67,7 +67,7 @@ int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError*
 		if (srm_types == PROTO_SRMv2){			// check the proto version
             struct stat stat_dir;
             gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_mkdir_rec] check if directory %s already exist...", surl);
-            if( (ret = gfal_srm_statG(ch, surl, &stat_dir, &tmp_err)) == 0 && S_ISDIR(stat_dir.st_mode) ){
+            if( gfal_srm_statG(ch, surl, &stat_dir, &tmp_err) == 0 && S_ISDIR(stat_dir.st_mode) ){
                 ret =0;
             }else{
                 g_clear_error(&tmp_err);

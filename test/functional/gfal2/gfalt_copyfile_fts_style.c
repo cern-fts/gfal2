@@ -89,7 +89,8 @@ int main(int argc, char** argv){
             return -1;
     }
 		
-	gfal2_context_free(handle);
+    gfal2_context_free(handle);
+    gfalt_params_handle_delete(my_params, NULL);
     return 0;
 }
 

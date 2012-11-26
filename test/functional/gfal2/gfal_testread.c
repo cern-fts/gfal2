@@ -35,6 +35,9 @@ int main(int argc, char **argv)
 	}
 	printf ("read successful (errno = %d)\n", errno);
 
+	printf ("buffer: \n");
+	fputs(ibuf, stdout);
+
 	if ((gfal_close (fd)) < 0) {
 		gfal_posix_check_error();
 		exit (1);

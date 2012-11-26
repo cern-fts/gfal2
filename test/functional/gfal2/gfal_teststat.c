@@ -11,6 +11,7 @@ int main(int argc, char **argv)
 {
 	struct stat statbuf;
 
+    gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE);	// switch Gfal in verbose mode
 	if (argc != 2) {
 		fprintf (stderr, "usage: %s filename\n", argv[0]);
 		exit (1);
