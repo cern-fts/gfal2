@@ -34,6 +34,8 @@ int gfal_http_stat(plugin_handle plugin_data, const char* url, struct stat* buf,
 
 int gfal_http_access(plugin_handle plugin_data, const char* url, int mode, GError** err);
 
+int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, gboolean rec_flag, GError** err);
+
 gfal_file_handle gfal_http_opendir(plugin_handle plugin_data, const char* url, GError** err);
 
 struct dirent* gfal_http_readdir(plugin_handle plugin_data, gfal_file_handle dir_desc, GError** err);

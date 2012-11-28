@@ -28,7 +28,16 @@ int gfal_http_stat(plugin_handle plugin_data, const char* url,
   return 0;
 }
 
-
+int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, gboolean rec_flag, GError** err){
+  GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
+  Davix::DavixError* daverr = NULL;
+  if (davix->posix->mkdir(davix->params, url, mode, &daverr) != 0) {
+    davix2gliberr(daverr, err);
+    delete daverr;
+    return -1;
+  }
+  return 0;
+}
 
 int gfal_http_access(plugin_handle plugin_data, const char* url,
                      int mode, GError** err)
