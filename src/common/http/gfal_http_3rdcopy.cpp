@@ -9,6 +9,8 @@
 
 #include "DelegationSoapBinding.nsmap"
 
+const char * default_ca_path= "/etc/grid-security/certificates/";
+
 /// Do the delegation
 static char *gfal_http_delegate(const std::string& urlpp, Davix::DavixError** daverr)
 {
@@ -43,7 +45,7 @@ static char *gfal_http_delegate(const std::string& urlpp, Davix::DavixError** da
 
   capath = getenv("X509_CA_PATH");
   if (!capath)
-    capath = "/etc/grid-security/certificates/";
+    capath = (char*)default_ca_path ;
 
   // Cert and key need to be in the same file
   if (strcmp(ucert, ukey) == 0) {

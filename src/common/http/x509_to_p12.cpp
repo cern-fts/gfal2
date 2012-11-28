@@ -232,7 +232,7 @@ int convert_x509_to_p12(const char *privkey, const char *clicert, const char *p1
     EVP_PKEY_free(key);
     return -1;
   }
-  p12 = PKCS12_create("", NULL, key , SSL_get_certificate(ssl),
+  p12 = PKCS12_create((char*)"", NULL, key , SSL_get_certificate(ssl),
                       ctx->extra_certs,
                       0, 0, 0, 0, 0);
 
