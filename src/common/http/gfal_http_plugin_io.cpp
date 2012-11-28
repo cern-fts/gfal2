@@ -11,7 +11,7 @@ gfal_file_handle gfal_http_fopen(plugin_handle plugin_data, const char* url, int
   DAVIX_FD* fd = davix->posix->open(davix->params, url, flag, &daverr);
   if (fd == NULL) {
     davix2gliberr(daverr, err);
-    delete daverr;
+    Davix::DavixError::clearError(&daverr);
     return NULL;
   }
   return gfal_file_handle_new(http_module_name, fd);
@@ -28,7 +28,7 @@ ssize_t gfal_http_fread(plugin_handle plugin_data, gfal_file_handle fd, void* bu
   ssize_t reads = davix->posix->read(dfd, buff, count, &daverr);
   if (reads < 0) {
     davix2gliberr(daverr, err);
-    delete daverr;
+    Davix::DavixError::clearError(&daverr);
   }
 
   return reads;
@@ -45,7 +45,7 @@ ssize_t gfal_http_fwrite(plugin_handle plugin_data, gfal_file_handle fd, const v
   ssize_t writes = davix->posix->write(dfd, buff, count, &daverr);
   if (writes < 0) {
     davix2gliberr(daverr, err);
-    delete daverr;
+    Davix::DavixError::clearError(&daverr);
   }
 
   return writes;
@@ -62,7 +62,7 @@ int gfal_http_fclose(plugin_handle plugin_data, gfal_file_handle fd, GError ** e
 
   if (davix->posix->close(dfd, &daverr) != 0) {
     davix2gliberr(daverr, err);
-    delete daverr;
+    Davix::DavixError::clearError(&daverr);
     ret = -1;
   }
 
@@ -82,7 +82,7 @@ off_t gfal_http_fseek(plugin_handle plugin_data, gfal_file_handle fd, off_t offs
   off_t newOffset = davix->posix->lseek(dfd, offset, whence, &daverr);
   if (newOffset < 0) {
     davix2gliberr(daverr, err);
-    delete daverr;
+    Davix::DavixError::clearError(&daverr);
   }
 
   return newOffset;
