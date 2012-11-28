@@ -275,6 +275,13 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
 
   // Leave
   request->endRequest(&daverr);
+
+  if (request->getRequestCode() > 299) {
+    g_set_error(err, http_plugin_domain, EIO,
+                "COPY method failed with code '%d'", request->getRequestCode());
+    ret = -1;
+  }
+
   return ret;
 }
 
