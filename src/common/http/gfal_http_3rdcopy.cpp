@@ -182,6 +182,12 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
   }
   while (request->getAnswerHeader("Location", realSrc));
 
+  if (request->getRequestCode() > 299) {
+    g_set_error(err, http_plugin_domain, EACCES,
+                "HEAD failed with code '%d'", request->getRequestCode());
+    return -1;
+  }
+
   // Delegate on the final source
   std::string delegationEndpoint;
   if (!request->getAnswerHeader("Proxy-Delegation-Service", delegationEndpoint)) {
