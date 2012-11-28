@@ -19,8 +19,19 @@ static const char* gfal_http_get_name(void)
 static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
                                     plugin_mode operation, GError** err)
 {
-  return (strncmp("http:", url, 5) == 0 || strncmp("https:", url, 6) == 0 ||
-          strncmp("dav:", url, 4) == 0 || strncmp("davs:", url, 5) == 0);
+    switch(operation){
+        case GFAL_PLUGIN_ACCESS:
+        case GFAL_PLUGIN_OPEN:
+        case GFAL_PLUGIN_STAT:
+        case GFAL_PLUGIN_MKDIR:
+        case GFAL_PLUGIN_OPENDIR:
+        case GFAL_PLUGIN_RMDIR:
+        case GFAL_PLUGIN_UNLINK:
+            return (strncmp("http:", url, 5) == 0 || strncmp("https:", url, 6) == 0 ||
+                 strncmp("dav:", url, 4) == 0 || strncmp("davs:", url, 5) == 0);
+      default:
+        return false;
+    }
 }
 
 
