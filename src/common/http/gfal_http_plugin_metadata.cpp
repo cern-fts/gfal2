@@ -22,7 +22,7 @@ int gfal_http_stat(plugin_handle plugin_data, const char* url,
   Davix::DavixError* daverr = NULL;
   if (davix->posix->stat(davix->params, url, buf, &daverr) != 0) {
     davix2gliberr(daverr, err);
-    delete daverr;
+    Davix::DavixError::clearError(&daverr);
     return -1;
   }
   return 0;
@@ -33,11 +33,37 @@ int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, g
   Davix::DavixError* daverr = NULL;
   if (davix->posix->mkdir(davix->params, url, mode, &daverr) != 0) {
     davix2gliberr(daverr, err);
-    delete daverr;
+    Davix::DavixError::clearError(&daverr);
     return -1;
   }
   return 0;
 }
+
+int gfal_http_unlinkG(plugin_handle plugin_data, const char* url, GError** err){
+    GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
+    Davix::DavixError* daverr = NULL;
+    if (davix->posix->unlink(davix->params, url, &daverr) != 0) {
+      davix2gliberr(daverr, err);
+      Davix::DavixError::clearError(&daverr);
+      return -1;
+    }
+    return 0;
+}
+
+
+
+int gfal_http_rmdirG(plugin_handle plugin_data, const char* url, GError** err){
+    GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
+    Davix::DavixError* daverr = NULL;
+    if (davix->posix->rmdir(davix->params, url, &daverr) != 0) {
+      davix2gliberr(daverr, err);
+      Davix::DavixError::clearError(&daverr);
+      return -1;
+    }
+    return 0;
+}
+	
+	 
 
 int gfal_http_access(plugin_handle plugin_data, const char* url,
                      int mode, GError** err)
@@ -91,7 +117,7 @@ gfal_file_handle gfal_http_opendir(plugin_handle plugin_data, const char* url,
   DAVIX_DIR* dir = davix->posix->opendir(davix->params, url, &daverr);
   if (dir == NULL) {
     davix2gliberr(daverr, err);
-    delete daverr;
+    Davix::DavixError::clearError(&daverr);
     return NULL;
   }
   return gfal_file_handle_new(http_module_name, dir);
@@ -110,7 +136,7 @@ struct dirent* gfal_http_readdir(plugin_handle plugin_data,
                                             &daverr);
   if (de == NULL && daverr != NULL) {
     davix2gliberr(daverr, err);
-    delete daverr;
+    Davix::DavixError::clearError(&daverr);
   }
   return de;
 }
@@ -126,7 +152,7 @@ int gfal_http_closedir(plugin_handle plugin_data, gfal_file_handle dir_desc,
   
   if (davix->posix->closedir((DAVIX_DIR*)gfal_file_handle_get_fdesc(dir_desc), &daverr) != 0) {
     davix2gliberr(daverr, err);
-    delete daverr;
+    Davix::DavixError::clearError(&daverr);
     ret = -1;
   }
   gfal_file_handle_delete(dir_desc);

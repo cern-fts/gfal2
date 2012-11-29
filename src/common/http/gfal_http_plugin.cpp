@@ -178,6 +178,8 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal_handle handle,
   http_plugin.statG     = &gfal_http_stat;
   http_plugin.accessG   = &gfal_http_access;
   http_plugin.mkdirpG  = &gfal_http_mkdirpG;
+  http_plugin.unlinkG = &gfal_http_unlinkG;
+  http_plugin.rmdirG = &gfal_http_rmdirG;
   http_plugin.opendirG  = &gfal_http_opendir;
   http_plugin.readdirG  = &gfal_http_readdir;
   http_plugin.closedirG = &gfal_http_closedir;
