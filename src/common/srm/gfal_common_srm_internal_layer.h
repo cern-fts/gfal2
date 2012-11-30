@@ -38,6 +38,8 @@
 
 extern const char * srm_config_group;
 extern const char * srm_config_transfer_checksum;
+extern const char * srm_config_turl_protocols;
+extern const char * srm_config_3rd_party_turl_protocols;
 
 // request type for surl <-> turl translation 
 typedef enum _srm_req_type{

@@ -271,3 +271,22 @@ gint gfal2_set_opt_string_list(gfal_handle handle, const gchar *group_name,
     return res;
 }
 
+
+gchar ** gfal2_get_opt_string_list_with_default(gfal_handle handle, const gchar *group_name,
+                                          const gchar *key, gsize *length, char** default_value){
+    GError * tmp_err=NULL;
+
+    gchar** res = gfal2_get_opt_string_list(handle, group_name, key, length, &tmp_err);
+    if(tmp_err){
+
+        if(gfal_get_verbose() >= GFAL_VERBOSE_DEBUG){
+            gchar* list_default = g_strjoinv (",", default_value);
+            gfal_log(GFAL_VERBOSE_DEBUG, " impossible to get string_list parameter %s:%s, set to a default value %s, err %s",group_name, key,
+                            list_default, tmp_err->message );
+            g_free(list_default);
+        }
+        g_clear_error(&tmp_err);
+        res = g_strdupv(default_value);
+    }
+    return res;
+}

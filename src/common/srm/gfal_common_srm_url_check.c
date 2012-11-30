@@ -40,7 +40,7 @@ gboolean srm_check_url(const char * surl){
 
 gboolean srm_check_url_transport_compatible(plugin_handle handle, const char* url){
         gfal_srmv2_opt* opts = (gfal_srmv2_opt*) handle;
-        char** p_proto = opts->opt_srmv2_tp3_protocols;
+        char** p_proto = srm_get_3rdparty_turls_sup_protocol(opts->handle);
         while(*p_proto != NULL){
             const int proto_len = strlen(*p_proto);
             if(strncmp(url, *p_proto, proto_len) == 0)

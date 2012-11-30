@@ -19,7 +19,7 @@
 
 gfal_srm_params_t gfal_srm_params_new(gfal_srm_plugin_t handle, GError ** err ){
 	gfal_srm_params_t res = g_new0(struct _gfal_srm_params,1);
-	res->protocols = handle->opt_srmv2_protocols;
+    res->protocols = srm_get_turls_sup_protocol(handle->handle);
 	res->desiredpintime= handle->opt_srmv2_desiredpintime;
 	res->proto_version = handle->srm_proto_type;
     res->spacetokendesc= g_strdup(handle->opt_srmv2_spacetokendesc);
@@ -30,6 +30,7 @@ gfal_srm_params_t gfal_srm_params_new(gfal_srm_plugin_t handle, GError ** err ){
  void gfal_srm_params_free(gfal_srm_params_t params){
      if(params){
          g_free(params->spacetokendesc);
+         g_strfreev(params->protocols);
          g_free(params);
      }
  }
@@ -48,7 +49,10 @@ void gfal_srm_params_set_spacetoken(gfal_srm_params_t params, const char* spacet
     params->spacetokendesc = g_strdup(spacetoken);
 }
 
+
 void gfal_srm_params_set_protocols(gfal_srm_params_t params, char** protocols){
+    if(params->protocols)
+        g_strfreev(params->protocols);
 	params->protocols = protocols;
 }
 

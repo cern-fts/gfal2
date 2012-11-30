@@ -160,6 +160,10 @@ gint gfal2_set_opt_string_list(gfal_handle handle, const gchar *group_name,
 gchar ** gfal2_get_opt_string_list(gfal_handle handle, const gchar *group_name,
                                           const gchar *key, gsize *length, GError **error);
 
+gchar ** gfal2_get_opt_string_list_with_default(gfal_handle handle, const gchar *group_name,
+                                          const gchar *key, gsize *length, char** default_value);
+
+
 #ifdef __cplusplus
 }
 #endif  // __cplusplus

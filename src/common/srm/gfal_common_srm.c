@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
 * 
@@ -47,16 +47,36 @@
 #include <common/gfal_common_internal.h>
 #include <common/gfal_common_errverbose.h>
 #include <common/gfal_common_plugin.h>
+
 /*
  * 
  * list of the turls supported protocols
  */
-static char* srm_turls_sup_protocols[] = { "rfio", "gsidcap", "dcap", "kdcap", "gsiftp", "file", NULL };
+static char* srm_turls_sup_protocols_default[] = { "rfio", "gsidcap", "dcap", "kdcap", "gsiftp", "file", NULL };
 
 /*
  * list of protocols supporting third party transfer
  */
-char* srm_turls_thirdparty_protocols[] = { "gsiftp", NULL };
+char* srm_turls_thirdparty_protocols_default[] = { "gsiftp", NULL };
+
+char** srm_get_turls_sup_protocol(gfal2_context_t context){
+    gsize len;
+    return gfal2_get_opt_string_list_with_default(context,
+                                                  srm_config_group,
+                                                  srm_config_turl_protocols,
+                                                  &len,
+                                                  srm_turls_sup_protocols_default);
+}
+
+
+char** srm_get_3rdparty_turls_sup_protocol(gfal2_context_t context){
+    gsize len;
+    return gfal2_get_opt_string_list_with_default(context, srm_config_group,
+                                                    srm_config_turl_protocols,
+                                                    &len,
+                                                    srm_turls_thirdparty_protocols_default);
+}
+
 
 
 /*
@@ -154,9 +174,7 @@ static void srm_internal_copy_stat(gpointer origin, gpointer copy){
 void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal_handle handle){
 	memset(opts, 0, sizeof(gfal_srmv2_opt));
 	gfal_checker_compile(opts, NULL);
-	opts->opt_srmv2_protocols = srm_turls_sup_protocols;
     opts->opt_srmv2_desiredpintime = 0;
-	opts->opt_srmv2_tp3_protocols = srm_turls_thirdparty_protocols; // thrid party protocols
 	opts->srm_proto_type = PROTO_SRMv2;
 	opts->handle = handle;	
     opts->cache = gsimplecache_new(5000, &srm_internal_copy_stat, sizeof(struct stat));

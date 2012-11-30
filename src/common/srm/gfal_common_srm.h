@@ -72,8 +72,6 @@ typedef struct _gfal_request_state{
 typedef struct _gfal_srmv2_opt{
 	enum gfal_srm_proto srm_proto_type;		// default protocol version
 	int opt_srmv2_desiredpintime;			//	optional desired default endpoint
-	char** opt_srmv2_protocols;				// optional protocols list for manual set
-	char** opt_srmv2_tp3_protocols;
 	char * opt_srmv2_spacetokendesc;		// optional spacetokens desc for srmv2	 
 	regex_t rexurl;
 	regex_t rex_full;
@@ -102,6 +100,12 @@ typedef struct _gfal_srm_params{
 }* gfal_srm_params_t;
 
 typedef void* srm_request_handle;
+
+// default set of protocols for TURL in case of remote IO
+char** srm_get_turls_sup_protocol(gfal2_context_t context);
+
+// default set of protocols for TURL in case of third party transfer
+char** srm_get_3rdparty_turls_sup_protocol(gfal2_context_t context);
 
 const char* gfal_srm_getName();
 
