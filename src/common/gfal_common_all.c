@@ -66,7 +66,6 @@ gfal_handle gfal_initG (GError** err)
 		g_set_error(err,0,ENOMEM, "[gfal_initG] bad allocation, no more memory free");
 		return NULL;
 	}
-	handle->no_bdii_check=FALSE;
 	handle->plugin_opt.plugin_number= 0;
 	
     handle->conf = gfal_conf_new(&tmp_err);

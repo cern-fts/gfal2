@@ -43,15 +43,17 @@ pthread_mutex_t m_mds =PTHREAD_MUTEX_INITIALIZER;
 const char* bdii_env_var = "LCG_GFAL_INFOSYS";
 const char* bdii_config_var = "LCG_GFAL_INFOSYS";
 const char* bdii_config_group = "BDII";
+const char* bdii_config_enable="ENABLED";
+
 /*
  * set the bdii value of the handle specified
  */
 void gfal_set_nobdiiG(gfal_handle handle, gboolean no_bdii_chk){
-	handle->no_bdii_check = no_bdii_chk;
+    gfal2_set_opt_boolean(handle, bdii_config_group, bdii_config_enable, !no_bdii_chk, NULL);
 }
 
 gboolean gfal_get_nobdiiG(gfal_handle handle){
-	return handle->no_bdii_check;
+    return (!gfal2_get_opt_boolean_with_default(handle, bdii_config_group,bdii_config_enable,TRUE));
 }
 
 /*
@@ -62,19 +64,19 @@ void gfal_mds_set_infosys(gfal_handle handle, const char * infosys, GError** err
 	g_return_if_fail(handle && infosys);
 	// no manner to define infosys in is interface currently, just setup the env var, 
 	// TODO : change this in is-interface and integrated module
-    pthread_mutex_lock(&m_mds);
     g_setenv(bdii_env_var, infosys, TRUE);
-    pthread_mutex_unlock(&m_mds);
 }
 
 void gfal_mds_define_bdii_endpoint(gfal2_context_t handle,  GError** err){
     if(g_getenv(bdii_env_var) == NULL){
+        pthread_mutex_lock(&m_mds);
         gchar * bdii_host = gfal2_get_opt_string(handle,bdii_config_group, bdii_config_var,NULL);
         if(bdii_host ){
             gfal_log(GFAL_VERBOSE_DEBUG, " define LCG_GFAL_INFOSYS : %s", bdii_host);
             gfal_mds_set_infosys (handle, bdii_host, NULL);
         }
         g_free(bdii_host);
+        pthread_mutex_unlock(&m_mds);
     }
 }
 
@@ -151,6 +153,7 @@ int gfal_mds_isifce_wrapper(const char* base_url, gfal_mds_endpoint* endpoints, 
 
  int gfal_mds_resolve_srm_endpoint(gfal2_context_t handle, const char* base_url, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err){
     // define endpoint
+
 
 #if MDS_BDII_EXTERNAL // call the is interface if configured for
     gfal_mds_define_bdii_endpoint(handle, err);

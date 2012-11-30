@@ -86,20 +86,25 @@ int gfal_srm_determine_endpoint(gfal_srmv2_opt* opts, const char* surl, char* bu
 				}
 
             }else{
-                if(opts->handle->no_bdii_check == FALSE){
-                    if((ret = gfal_get_endpoint_and_setype_from_bdiiG(opts, surl, buff_endpoint, s_buff, srm_type, &tmp_err)) == 0){
-                        gfal_log(GFAL_VERBOSE_DEBUG, "Service endpoint resolution, resolved from BDII %s -> %s",surl, buff_endpoint);
-                    }else{
-                        gfal_log(GFAL_VERBOSE_VERBOSE, "WARNING : Error while bdii SRM service resolution : %s, Fallback on the default service path."
-                                  "This can lead to errors ! you should use FULL SURL format or register your endpoint into the BDII", tmp_err->message);
+                if( gfal_get_nobdiiG(opts->handle)
+                        || (( gfal_get_endpoint_and_setype_from_bdiiG(opts, surl, buff_endpoint, s_buff, srm_type, &tmp_err)) != 0)){
+                    if(tmp_err){
+                        gfal_log(GFAL_VERBOSE_VERBOSE, "WARNING : Error while bdii SRM service resolution : %s, fallback on the default service path."
+                                  "This can lead to wrong service path, you should use FULL SURL format or register your endpoint into the BDII", tmp_err->message);
                         g_clear_error(&tmp_err);
-                        ret = gfal_srm_guess_service_endpoint(opts, surl, buff_endpoint, s_buff, srm_type, &tmp_err);
-                        if(ret ==0){
-                            gfal_log(GFAL_VERBOSE_DEBUG, "Service endpoint resolution, set to default path %s -> %s",surl, buff_endpoint);
-                        }
+                    }else{
+                        gfal_log(GFAL_VERBOSE_VERBOSE, "WARNING : BDII usage disabled, fallback on the default service path."
+                                  "This can lead to wrong service path, you should use FULL SURL format or register your endpoint into the BDII");
+
                     }
-                }else
-                    g_set_error(&tmp_err,0,EINVAL,"no_bdii_check option is set, need a full endpoint in the first surl");
+                    ret = gfal_srm_guess_service_endpoint(opts, surl, buff_endpoint, s_buff, srm_type, &tmp_err);
+                    if(ret ==0){
+                        gfal_log(GFAL_VERBOSE_DEBUG, "Service endpoint resolution, set to default path %s -> %s",surl, buff_endpoint);
+                    }
+                }else{
+                    gfal_log(GFAL_VERBOSE_DEBUG, "Service endpoint resolution, resolved from BDII %s -> %s",surl, buff_endpoint);
+
+                }
           }
 
 	}
@@ -212,8 +217,10 @@ int  gfal_get_hostname_from_surlG(const char * surl, char* buff_hostname, size_t
 
 
 /*
- * @brief get endpoint from the bdii system only
- * @return 0 if success with endpoint and srm_type set correctly else -1 and err set
+ * get endpoint from the bdii system only
+ * 0 == success
+ * < 0 error
+ * > 0 : bddi disabled
  * 
  * */
 int gfal_get_endpoint_and_setype_from_bdiiG(gfal_srmv2_opt* opts, const char* surl, char* buff_endpoint, size_t s_buff, enum gfal_srm_proto* srm_type, GError** err){

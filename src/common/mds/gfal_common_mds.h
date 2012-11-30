@@ -63,7 +63,6 @@ void gfal_set_nobdiiG(gfal_handle handle, gboolean no_bdii_chk);
 
 gboolean gfal_get_nobdiiG(gfal_handle handle);
 
-void gfal_mds_set_infosys(gfal_handle handle, const char * infosys, GError** err);
  
  
  
