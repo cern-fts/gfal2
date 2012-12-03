@@ -1,6 +1,0 @@
-#!/bin/bash 
-source /etc/profile
-export LCG_GFAL_INFOSYS=certtb-bdii-top.cern.ch:2170
-export LFC_HOST=cvitblfc1.cern.ch
-export LD_LIBRARY_PATH=/usr/local/lib/:/usr/local/lib64/:
-`dirname $0`/test_verbose gfal2_test_write_posix_lfc_simple
