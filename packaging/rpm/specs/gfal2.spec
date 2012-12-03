@@ -17,7 +17,7 @@ BuildRequires:		glib2-devel
 BuildRequires:		glibmm24-devel
 BuildRequires:		libattr-devel
 BuildRequires:		openldap-devel
-BuildRequires:		davix-devel
+#BuildRequires:		davix-devel
 ## libuuid is in a different rpm for el5
 %if 0%{?el5}
 BuildRequires:		e2fsprogs-devel
