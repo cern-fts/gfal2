@@ -1,0 +1,67 @@
+.\" @(#)$RCSfile: gfal_set_timeout_sendreceive.man,v $ $Revision: 1.1 $ $Date: 2008/12/18 13:19:12 $ CERN Remi Mollon
+.\" Copyright (C) 2009 by CERN
+.\" All rights reserved
+.\"
+.TH GFAL_SET_TIMEOUT_* 3 "$Date: 2008/12/18 13:19:12 $" GFAL "Library Functions"
+
+.SH NAME
+gfal_set_timeout_* \- Set several timeouts
+
+.SH SYNOPSIS
+\fB#include "gfal_api.h"\fR
+.sp
+.BI "void gfal_set_timeout_connect (int " value );
+.sp
+.BI "void gfal_set_timeout_sendreceive (int " value );
+.sp
+.BI "void gfal_set_timeout_bdii (int " value );
+.sp
+.BI "void gfal_set_timeout_srm (int " value );
+
+.SH DESCRIPTION
+.B gfal_set_timeout_connect
+Sets the connect timeout, used when connecting to a remote host. The connection will be aborted
+if the remote host doesn't reply after
+.I value
+seconds.
+.sp
+.B gfal_set_timeout_sendreceive
+Sets the send/receive data timeout, used when transferring data to/from a remote host. The connection will be aborted
+if no data is transfered after 
+.I value
+seconds.
+.sp
+.B gfal_set_timeout_bdii
+Sets the BDII timeout, used when searching information into BDII. The connection will be aborted
+if the search is longer than 
+.I value
+seconds.
+.sp
+.B gfal_set_timeout_srm
+Sets the SRM timeout, used when doing an asynchronous SRM request. The request will be aborted
+if it is still queued after 
+.I value
+seconds.
+
+.SH SEE ALSO
+.BR gfal (3),
+.BR gfal_request_new (3),
+.BR gfal_internal_free (3),
+.BR gfal_init (3),
+.BR gfal_deletesurls (3),
+.BR gfal_removedir (3),
+.BR gfal_turlsfromsurls (3),
+.BR gfal_ls (3),
+.BR gfal_get (3),
+.BR gfal_getstatus (3),
+.BR gfal_prestage (3),
+.BR gfal_prestagestatus (3),
+.BR gfal_pin (3),
+.BR gfal_release (3),
+.BR gfal_abortrequest (3),
+.BR gfal_abortfiles (3),
+.BR gfal_set_xfer_done (3),
+.BR gfal_set_xfer_running (3),
+.BR gfal_get_ids (3),
+.BR gfal_set_ids (3),
+.BR gfal_get_results (3),

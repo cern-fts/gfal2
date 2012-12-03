@@ -1,0 +1,11 @@
+The Grid File Access Library 2.0 that offers a POSIX interface to the distributed files system supported by WLCG.
+
+Official documentation : https://svnweb.cern.ch/trac/lcgutil/wiki/gfal2
+
+Differents file systems are supported by a collections of GFAL 2.0's plugins, this is a non complete list :
+
+- LFC ( Logical File catalog) with lfn:// url
+- SRM ( Storage Resource Manager) with  srm://
+- RFIO ( remote file I/O) with rfio://
+- DCAP ( remote ftp for Dcache ) with gsidcap://
+- HTTP/Webdav  with cluster, third party copy and client side credential support.

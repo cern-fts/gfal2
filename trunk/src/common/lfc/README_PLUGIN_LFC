@@ -1,0 +1,8 @@
+ gfal 2.0 lfc  plugin :
+
+- features :
+
+ * meta-data management
+ * redirection to dcap / rfio for the data access 
+
+

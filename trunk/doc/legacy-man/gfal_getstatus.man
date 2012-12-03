@@ -1,0 +1,82 @@
+.\" @(#)$RCSfile: gfal_getstatus.man,v $ $Revision: 1.3 $ $Date: 2008/06/05 13:09:16 $ CERN Remi Mollon
+.\" Copyright (C) 2007 by CERN
+.\" All rights reserved
+.\"
+.TH GFAL_GETSTATUS 3 "$Date: 2008/06/05 13:09:16 $" GFAL "Library Functions"
+.SH NAME
+gfal_getstatus \- Asynchronous function to check status of a gfal_get request.
+.SH SYNOPSIS
+\fB#include "gfal_api.h"\fR
+.sp
+.BI "int gfal_getstatus (gfal_internal gfal, char *errbuf, int errbufsz);
+.SH DESCRIPTION
+.B gfal_getstatus
+is the asynchronous function which must be used to check the status of the 
+.I gfal_get(3)
+request and get the results.
+
+See 
+.I gfal_get_results(3)
+to be able to access results.
+
+.TP
+.I gfal
+.B gfal_internal
+object generated from user parameters and used for the 
+.B gfal_get(3)
+call.
+.TP
+.I errbuf
+allocated 
+.B char *
+pointer in which a detailed error message may be stored.
+.TP
+.I errbufsz
+size allocated ofr the pointer 
+.I errbuf
+
+.SH RETURN VALUE
+This routine returns 0 on a success, or -1 in case of error. In the latter case,
+.B errno
+is set appropriately. Moreover, you can get an error message from
+.I errbuf
+, if specified.
+
+.SH ERRORS
+.B errno
+indicates the type of error, but for detailled error message, you have to look into
+.IR errbuf .
+.TP 1.3i
+.B EINVAL
+The 
+.B gfal_internal
+object is incorrect. It may be caused by freeing a user parameter which was in use in it, or by modifying this object by hand.
+.TP
+.B EPROTONOSUPPORT
+You try to make an action with a protocol which is not supported by the system.
+.TP
+.B ENOMEM
+Not enough free memory.
+
+.SH SEE ALSO
+.BR gfal (3),
+.BR gfal_request_new (3),
+.BR gfal_internal_free (3),
+.BR gfal_init (3),
+.BR gfal_deletesurls (3),
+.BR gfal_removedir (3),
+.BR gfal_turlsfromsurls (3),
+.BR gfal_ls (3),
+.BR gfal_get (3),
+.BR gfal_getstatus (3),
+.BR gfal_prestage (3),
+.BR gfal_prestagestatus (3),
+.BR gfal_pin (3),
+.BR gfal_release (3),
+.BR gfal_abortrequest (3),
+.BR gfal_abortfiles (3),
+.BR gfal_set_xfer_done (3),
+.BR gfal_set_xfer_running (3),
+.BR gfal_get_ids (3),
+.BR gfal_set_ids (3),
+.BR gfal_get_results (3),

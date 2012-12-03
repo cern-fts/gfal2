@@ -1,0 +1,42 @@
+#!/bin/bash
+##
+# @author Adevresse
+# @version 0.0.1
+
+
+echo " ****************** script for functional Tests *******************"
+echo "WARNING: This tests need a voms proxy activated on dteam vo, a grid environnement"
+echo "Launch tests..... "
+which voms-proxy-info &> /dev/null
+if [ "$?" != "0" ]; then
+	echo " Error voms-proxy-info not found, grid env is not operational" >&2
+	exit -1
+fi
+voms-proxy-info &> /dev/null
+if [ "$?" != "0" ]; then
+	echo -e " Error : voms proxy not started, start it and retry \n\t\t example : voms-proxy-init --voms dteam" >&2
+	exit -1
+fi
+
+log=''
+resu=0
+dirn=`dirname $0`
+cd $dirn
+for f in `ls test_*.sh`
+do
+	./$f
+	r=$?
+	if [[ "$r" != "0" ]]; then
+		pr=" $f .........error code: $r [FAIL]"
+		resu=-1
+	else
+		pr=" $f .......... [OK]"
+	fi
+	echo $pr
+	log="$log\n$pr"
+done
+echo -e $log > testresult.txt
+if [[ "$resu" != "0" ]]; then
+	echo "Failure of the tests !!" >&2
+	exit -1
+fi
