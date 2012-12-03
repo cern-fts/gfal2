@@ -1,6 +1,6 @@
 
 Name:				gfal2
-Version:			2.0.23
+Version:			2.1.0
 Release:			1%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
@@ -267,6 +267,33 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Fri Nov 30 2012 Adrien Devresse <adevress at cern.ch> - 2.1.0-0
+ - One-globus session system for gsiftp plugin ( FTS 3.0 need )
+ - correct a major issue with the gass attribute system in gsiftp plugin
+ - change the lfc set/get env var for a one compatible with set/get opt
+ - add set/nb streams option for gsiftp
+ - add the mkdir rec function for SRM transfer
+ - correct an issue with opendir and srm_ls ( ENOTDIR error silent )
+ - correct a memory leak in the cache system
+ - correct timeout support for gsiftp transfer
+ - implement tcp buffer size support for gsiftp layer
+ - apply a correction on the SRM over-write logic, related to a BeStMan errcode problem on File Not Found with srmRm ( EOS )
+ - apply a fix on the transfer gsiftp timeout ( protection against multiple cancel )
+ - fix for SRM filesize problem ( defined to 0, workaround ) related to globus 426 error bad filesize
+ - secure the callback system for globus gass timeout
+ - base implementation of the http plugin
+ - improve reliability of the bdii resolution
+ - add a fallback mechanism in case of bdii bad resolution
+ - correct several race conditions in the bdii layer
+ - add thread safe support for set/get variables in liblfc
+ - correct a deadlock problem with globus and gisftp plugin
+ - implement the mkdir_rec logic for general purpose
+ - implement the parent folder creation logic with gridftp
+ - add support for lfc://host/path URL style for the lfc plugin
+ - switch off_t to 64bits size by default ( _FILE_OFFSET_BITS=64)
+ - provide a "nobdii" like option
+ - provide the choice of turl protocol resolution for srm plugin
+
 * Fri Jul 20 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-1
  - Official initial release candidate of gfal 2.0
  - Transfer API is official

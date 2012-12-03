@@ -1,6 +1,8 @@
 GFAL 2.0 RELEASE-NOTE:
 
-Trunk:
+Trunk :
+
+* Fri Nov 30 2012 Adrien Devresse <adevress at cern.ch> - 2.1.0-0
 - One-globus session system for gsiftp plugin ( FTS 3.0 need )
 - correct a major issue with the gass attribute system in gsiftp plugin
 - change the lfc set/get env var for a one compatible with set/get opt
@@ -24,6 +26,8 @@ Trunk:
 - implement the parent folder creation logic with gridftp
 - add support for lfc://host/path URL style for the lfc plugin
 - switch off_t to 64bits size by default ( _FILE_OFFSET_BITS=64)
+- provide a "nobdii" like option
+- provide the choice of turl protocol resolution for srm plugin
 
 
 * Fri Jul 20 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-1
