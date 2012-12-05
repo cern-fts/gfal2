@@ -72,7 +72,7 @@ char** srm_get_turls_sup_protocol(gfal2_context_t context){
 char** srm_get_3rdparty_turls_sup_protocol(gfal2_context_t context){
     gsize len;
     return gfal2_get_opt_string_list_with_default(context, srm_config_group,
-                                                    srm_config_turl_protocols,
+                                                    srm_config_3rd_party_turl_protocols,
                                                     &len,
                                                     srm_turls_thirdparty_protocols_default);
 }
