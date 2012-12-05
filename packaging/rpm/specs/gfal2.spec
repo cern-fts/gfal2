@@ -1,7 +1,7 @@
 
 Name:				gfal2
 Version:			2.1.0
-Release:			1%{?dist}
+Release:			2%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -267,6 +267,9 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Wed Dec 05 2012 Adrien Devresse <adevress at cern.ch> - 2.1.0-2
+ - fix an issue this surl to turl resolution for SRM third party copy
+
 * Fri Nov 30 2012 Adrien Devresse <adevress at cern.ch> - 2.1.0-0
  - One-globus session system for gsiftp plugin ( FTS 3.0 need )
  - correct a major issue with the gass attribute system in gsiftp plugin
