@@ -1,6 +1,6 @@
 #include "gfal_http_plugin.h"
 #include <errno.h>
-#include <davix_cpp.hpp>
+#include <davix.hpp>
 #include <status/davix_error.h>
 
 

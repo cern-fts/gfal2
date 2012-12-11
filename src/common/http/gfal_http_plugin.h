@@ -8,7 +8,7 @@
 #include "../gfal_types.h"
 
 
-#include <davix_cpp.hpp>
+#include <davix.hpp>
 
 
 struct GfalHttpInternal {

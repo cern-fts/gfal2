@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
-#include <status/davix_error.h>
+#include <davix.hpp>
 #include "gfal_http_plugin.h"
 
 // This function take a user certificate and a private key in x509 format and

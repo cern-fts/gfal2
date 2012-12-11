@@ -1,7 +1,6 @@
 #include <glib.h>
-#include <davix_cpp.hpp>
+#include <davix.hpp>
 #include <gridsite.h>
-#include <status/davix_error.h>
 #include <unistd.h>
 #include <stdsoap2.h>
 #include "gfal_http_plugin.h"
