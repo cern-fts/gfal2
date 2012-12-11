@@ -38,7 +38,7 @@ static char *gfal_http_delegate(const std::string& urlpp, Davix::DavixError** da
   }
 
   if (!ucert || !ukey) {
-    *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::credentialNotFound,
+    *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::CredentialNotFound,
                                     "Could not set the user's proxy or certificate");
     return NULL;
   }
@@ -107,35 +107,35 @@ static char *gfal_http_delegate(const std::string& urlpp, Davix::DavixError** da
               // Could not PUT
               err_aux = snprintf(err_buffer, sizeof(err_buffer), "Could not PUT the proxy: ");
               soap_sprint_fault(soap_put, err_buffer + err_aux, sizeof(err_buffer) - err_aux);
-              *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::authentificationError,
+              *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::AuthentificationError,
                                               err_buffer);
             }
         }
         else { // soap_put ssl error
           err_aux = snprintf(err_buffer, sizeof(err_buffer), "Connection error on proxy put: ");
           soap_sprint_fault(soap_put, err_buffer + err_aux, sizeof(err_buffer) - err_aux);
-          *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::authentificationError,
+          *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::AuthentificationError,
                                           err_buffer);
         }
 
         soap_free(soap_put);
       }
       else {
-        *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::authentificationError,
+        *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::AuthentificationError,
                                         "Could not generate the proxy");
       }
     }
     else { // Could not get ID
       err_aux = snprintf(err_buffer, sizeof(err_buffer), "Could not get proxy request: ");
       soap_sprint_fault(soap_get, err_buffer + err_aux, sizeof(err_buffer) - err_aux);
-      *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::authentificationError,
+      *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::AuthentificationError,
                                       err_buffer);
     }
   }
   else { // soap_get ssl error
     err_aux = snprintf(err_buffer, sizeof(err_buffer), "Could not connect to get the proxy request: ");
     soap_sprint_fault(soap_get, err_buffer + err_aux, sizeof(err_buffer) - err_aux);
-    *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::authentificationError,
+    *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::AuthentificationError,
                                     err_buffer);
   }
 
@@ -174,7 +174,7 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
     }
 
     request->setRequestMethod("HEAD");
-    request->set_parameters(requestParams);
+    request->setParameters(requestParams);
     request->executeRequest(&daverr);
     if (daverr) {
       davix2gliberr(daverr, err);
@@ -224,7 +224,7 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
     return -1;
   }
 
-  request->set_parameters(davix->params);
+  request->setParameters(davix->params);
   request->addHeaderField("Destination", dst);
   request->setRequestMethod("COPY");
 

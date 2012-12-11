@@ -58,7 +58,7 @@ static int davix2errno(Davix::StatusCode::Code code)
       errcode = EHOSTUNREACH;
       break;
 
-    case DAVIX_STATUS_CONNEXION_PROBLEM:
+    case DAVIX_STATUS_CONNECTION_PROBLEM:
       errcode = EHOSTDOWN;
       break;
 
@@ -66,7 +66,7 @@ static int davix2errno(Davix::StatusCode::Code code)
       errcode = ENOSYS;
       break;
 
-    case DAVIX_STATUS_CONNEXION_TIMEOUT:
+    case DAVIX_STATUS_CONNECTION_TIMEOUT:
     case DAVIX_STATUS_OPERATION_TIMEOUT:
       errcode = ETIMEDOUT;
       break;
