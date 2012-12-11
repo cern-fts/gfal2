@@ -1,4 +1,4 @@
-#include <glib/gerror.h>
+#include <glib.h>
 #include <unistd.h>
 #include "gfal_http_plugin.h"
 
