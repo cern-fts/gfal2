@@ -115,6 +115,7 @@ const plugin_filecopy_call FileCopy::find_copy_plugin(const std::string & src, c
 
     GError * tmp_err=NULL;
     plugin_pointer_handle start_list, p_list;
+    plugin_filecopy_call resu = NULL;
     start_list = p_list = gfal_plugins_list_handler(context, &tmp_err);
     gerror_to_cpp(&tmp_err);
 
@@ -124,15 +125,15 @@ const plugin_filecopy_call FileCopy::find_copy_plugin(const std::string & src, c
                 gboolean compatible;
                 if( (compatible = check_call(p_list->plugin_data, src.c_str(), dst.c_str(), GFAL_FILE_COPY) ) == TRUE){
                     *plugin_data = p_list->plugin_data;
-                    g_free(start_list);
-                    return p_list->plugin_api->copy_file;
+                    resu = p_list->plugin_api->copy_file;
+                    break;
                 }
 
             }
             p_list++;
     }
     g_free(start_list);
-    return NULL;
+    return resu;
 }
 
 
