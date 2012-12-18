@@ -123,8 +123,8 @@ const plugin_filecopy_call FileCopy::find_copy_plugin(const std::string & src, c
             if(check_call != NULL){
                 gboolean compatible;
                 if( (compatible = check_call(p_list->plugin_data, src.c_str(), dst.c_str(), GFAL_FILE_COPY) ) == TRUE){
-                    g_free(start_list);
                     *plugin_data = p_list->plugin_data;
+                    g_free(start_list);
                     return p_list->plugin_api->copy_file;
                 }
 

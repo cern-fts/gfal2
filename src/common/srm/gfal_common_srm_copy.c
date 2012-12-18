@@ -227,10 +227,10 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
     GError * tmp_err=NULL;
     int res = -1;
     gboolean put_waiting= FALSE;
-	char buff_turl_src[GFAL_URL_MAX_LEN];
-    char buff_src_checksum[GFAL_URL_MAX_LEN];
-	char buff_turl_dst[GFAL_URL_MAX_LEN];
-    char buff_dst_checksum[GFAL_URL_MAX_LEN];
+    char buff_turl_src[GFAL_URL_MAX_LEN]={0};
+    char buff_src_checksum[GFAL_URL_MAX_LEN]={0};
+    char buff_turl_dst[GFAL_URL_MAX_LEN]={0};
+    char buff_dst_checksum[GFAL_URL_MAX_LEN]={0};
 	char* reqtoken = NULL;
     gfalt_params_t params_turl = gfalt_params_handle_copy(params, &tmp_err);  // create underlying protocol parameters
     gfalt_set_checksum_check(params_turl, FALSE,NULL); // disable already does actions
@@ -255,10 +255,11 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
             {
                 int ret_put =-1;
                 struct stat st_src;
-                memset(&st_src, 0, sizeof( struct stat));
+                memset(&st_src, 0, sizeof(  struct stat));
                 if( gfal2_stat(context, src, &st_src, &tmp_err_put) !=0){
                    st_src.st_size =0;
-                   gfal_log(GFAL_VERBOSE_DEBUG, "Fail to stat src SRM url %s to determine file size, try with file_size=0", src);
+                   gfal_log(GFAL_VERBOSE_DEBUG, "Fail to stat src SRM url %s to determine file size, try with file_size=0, error %s",
+                            src, tmp_err->message);
                    g_clear_error(&tmp_err_put);
                 }
 
