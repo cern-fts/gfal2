@@ -67,9 +67,8 @@ int srm_plugin_delete_existing_copy(plugin_handle handle, gfalt_params_t params,
         struct stat st_dest_file;
         if( (res = gfal_srm_statG(handle, surl, &st_dest_file, &tmp_err)) == 0 ){
             gfal_log(GFAL_VERBOSE_TRACE, "   %s found, delete in order to replace it", surl);
-            if( gfal_srm_unlinkG(handle, surl, &tmp_err) ==0){
+            if( ( res = gfal_srm_unlinkG(handle, surl, &tmp_err)) ==0){
                 gfal_log(GFAL_VERBOSE_TRACE, "   %s deleted with sucess", surl);
-                res = 0;
             }else{
                 if(tmp_err && tmp_err->code == ENOENT){
                     g_clear_error(&tmp_err);
@@ -132,10 +131,8 @@ int srm_plugin_prepare_dest_put(plugin_handle handle, gfal2_context_t context,
 					gfalt_params_t params,  const char * surl, GError ** err){
 	GError * tmp_err=NULL;
 	int res = -1;						
-	if( (res = srm_plugin_delete_existing_copy(handle, params, surl, &tmp_err)) >=0){						
-			if( (res = srm_plugin_create_parent_copy(handle, params, surl, &tmp_err) ) >= 0){
-				res = 0;
-			}
+    if( (res = srm_plugin_delete_existing_copy(handle, params, surl, &tmp_err)) == 0
+        &&  (res = srm_plugin_create_parent_copy(handle, params, surl, &tmp_err) ) == 0){
 	}
 	G_RETURN_ERR(res, tmp_err, err);								
 }
@@ -149,8 +146,8 @@ int srm_plugin_put_3rdparty(plugin_handle handle, gfal2_context_t context,
 	
 	if( srm_check_url(surl)){
         gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl src resolution start ");
-		if( (res = srm_plugin_prepare_dest_put(handle, context, params, surl, &tmp_err)) >=0){						
-            if(( res= gfal_srm_put_rd3_turl(handle, params, surl, file_size_surl, buff , s_buff, reqtoken,  err))==0)
+        if( (res = srm_plugin_prepare_dest_put(handle, context, params, surl, &tmp_err)) ==0){
+            if(( res= gfal_srm_put_rd3_turl(handle, params, surl, file_size_surl, buff , s_buff, reqtoken,  &tmp_err))==0)
                 gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl src resolution ended : %s -> %s", surl, buff);
 		}
 	}else{
