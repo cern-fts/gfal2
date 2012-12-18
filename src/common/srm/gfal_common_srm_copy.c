@@ -25,6 +25,7 @@
 
 #include <common/gfal_types.h>
 #include <common/gfal_common_errverbose.h>
+#include <file/gfal_file_api.h>
 #include <transfer/gfal_transfer.h>
 #include <externals/utils/uri_util.h>
 
@@ -255,7 +256,7 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
                 int ret_put =-1;
                 struct stat st_src;
                 memset(&st_src, 0, sizeof( struct stat));
-                if( gfal_srm_statG(handle, src, &st_src, &tmp_err_put) !=0){
+                if( gfal2_stat(context, src, &st_src, &tmp_err_put) !=0){
                    st_src.st_size =0;
                    gfal_log(GFAL_VERBOSE_DEBUG, "Fail to stat src SRM url %s to determine file size, try with file_size=0", src);
                    g_clear_error(&tmp_err_put);
