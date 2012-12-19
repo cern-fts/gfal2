@@ -15,7 +15,7 @@ SET(srm_valid_dir_root "${srm_prefix_dpm}")
 SET(srm_valid_dpm_src_file "${srm_valid_dpm_stat}")
 
 # dcache parameters
-SET(srm_prefix_dcache "srm://cork.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/data/${MY_VO}/testgfal2")
+SET(srm_prefix_dcache "srm://sligo.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/data/${MY_VO}/testgfal2")
 SET(srm_valid_dcache_bigfile "${srm_prefix_dcache}/testbig")
 SET(srm_valid_dcache_stat "${srm_prefix_dcache}/testread0011")
 SET(srm_valid_dcache_chmod "${srm_prefix_dcache}/test_change_right")
