@@ -97,8 +97,8 @@ if (UNIX)
   )
 
   SET(SYSCONF_INSTALL_DIR
-    "${EXEC_INSTALL_PREFIX}/etc"
-    CACHE PATH "The ${APPLICATION_NAME} sysconfig install dir (default prefix/etc)"
+    "/etc"
+    CACHE PATH "The ${APPLICATION_NAME} sysconfig install dir /etc)"
   )
   SET(MAN_INSTALL_DIR
     "${SHARE_INSTALL_PREFIX}/man"
