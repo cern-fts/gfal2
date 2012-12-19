@@ -112,14 +112,8 @@ void davix2gliberr(const Davix::DavixError* daverr, GError** err)
 
 
 /// Authn implementation
-static int gfal_http_authn(davix_auth_t token, const davix_auth_info_t* t, void* userdata, davix_error_t* err)
-{
-  // Only PKCS12 supported
-  if (t->auth != DAVIX_CLI_CERT_PKCS12) {
-    davix_error_setup(err, http_module_name, ENOSYS,
-                      "Authentication mechanism not implemented");
-    return -1;
-  }
+int gfal_http_authn_cert_X509(void* userdata, const Davix::SessionInfo & info, Davix::X509Credential * cert, Davix::DavixError** err){
+
 
   // Convert X509 to PKCS12
   char *ucert, *ukey;
@@ -130,20 +124,23 @@ static int gfal_http_authn(davix_auth_t token, const davix_auth_info_t* t, void*
   }
 
   if (!ucert || !ukey) {
-    davix_error_setup(err, http_module_name, EACCES,
+    Davix::DavixError::setupError(err, http_module_name, Davix::StatusCode::AuthentificationError,
                       "Could not set the user's proxy or certificate");
     return -1;
   }
 
   char p12file[PATH_MAX];
   snprintf(p12file, sizeof(p12file), "/tmp/gfal_http_authn_p%d.p12", getpid());
-  if (convert_x509_to_p12(ukey, ucert, p12file, err) < 0) {
-    errno = EACCES;
+  if (convert_x509_to_p12(ukey, ucert, p12file, (davix_error_t*)err) < 0) {
+    Davix::DavixError::setupError(err, http_module_name, Davix::StatusCode::AuthentificationError,
+                                "Can not convert credential correctly");
     return -1;
   }
 
+
+  cert->loadFromFileP12(p12file, "", err);
   // Set certificate
-  return davix_auth_set_pkcs12_cli_cert(token, p12file, "", err);
+  return 0;
 }
 
 
@@ -166,7 +163,7 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal_handle handle,
   http_internal->params->setSSLCAcheck(false); // THIS IS BAD! There should be a way of setting the CAPath
   http_internal->params->setTransparentRedirectionSupport(true);
   http_internal->params->setUserAgent("gfal2::http");
-  http_internal->params->setAuthentificationCallback(NULL, gfal_http_authn);
+  http_internal->params->setClientCertCallbackX509(&gfal_http_authn_cert_X509, NULL);
 
   // Bind metadata
   http_plugin.check_plugin_url = &gfal_http_check_url;
