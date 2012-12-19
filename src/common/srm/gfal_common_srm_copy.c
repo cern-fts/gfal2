@@ -71,14 +71,11 @@ int srm_plugin_delete_existing_copy(plugin_handle handle, gfalt_params_t params,
                 gfal_log(GFAL_VERBOSE_TRACE, "   %s deleted with sucess", surl);
             }
         }
-        if(tmp_err->code == ENOENT){
+        if(tmp_err && tmp_err->code == ENOENT){
             gfal_log(GFAL_VERBOSE_TRACE, " %s dest does not exist, no over-write needed, begin copy", surl);
             g_clear_error(&tmp_err);
             res = 0;
-        }else{
-            res = -1;
         }
-		
 	}
 
 	G_RETURN_ERR(res, tmp_err, err);		
