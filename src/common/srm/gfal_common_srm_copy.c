@@ -69,19 +69,14 @@ int srm_plugin_delete_existing_copy(plugin_handle handle, gfalt_params_t params,
             gfal_log(GFAL_VERBOSE_TRACE, "   %s found, delete in order to replace it", surl);
             if( ( res = gfal_srm_unlinkG(handle, surl, &tmp_err)) ==0){
                 gfal_log(GFAL_VERBOSE_TRACE, "   %s deleted with sucess", surl);
-            }else{
-                if(tmp_err && tmp_err->code == ENOENT){
-                    g_clear_error(&tmp_err);
-                    res = 0;
-                }else{
-                    res = -1;
-                }
-
             }
-        }else if(tmp_err->code == ENOENT){
+        }
+        if(tmp_err->code == ENOENT){
             gfal_log(GFAL_VERBOSE_TRACE, " %s dest does not exist, no over-write needed, begin copy", surl);
             g_clear_error(&tmp_err);
             res = 0;
+        }else{
+            res = -1;
         }
 		
 	}
@@ -114,7 +109,6 @@ int srm_plugin_create_parent_copy(plugin_handle handle, gfalt_params_t params,
 			res = gfal_srm_mkdir_recG(handle, path_dir, 0755, &tmp_err);
 			if(res == 0)
 				gfal_log(GFAL_VERBOSE_TRACE, "parent path %s created with success", path_dir);			
-			res = 1;
 		}else{
 			g_set_error(&tmp_err, srm_quark_3rd_party(), EINVAL, "Invalid srm url %s",surl);
 			res= -1;
@@ -256,7 +250,7 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
                 if( gfal2_stat(context, src, &st_src, &tmp_err_put) !=0){
                    st_src.st_size =0;
                    gfal_log(GFAL_VERBOSE_DEBUG, "Fail to stat src SRM url %s to determine file size, try with file_size=0, error %s",
-                            src, tmp_err->message);
+                            src, tmp_err_put->message);
                    g_clear_error(&tmp_err_put);
                 }
 
