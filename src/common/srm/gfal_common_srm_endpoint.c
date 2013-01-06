@@ -86,7 +86,7 @@ int gfal_srm_determine_endpoint(gfal_srmv2_opt* opts, const char* surl, char* bu
 				}
 
             }else{
-                if( gfal_get_nobdiiG(opts->handle)
+                if( gfal_get_nobdiiG(opts->handle)==FALSE 
                         || (( ret= gfal_get_endpoint_and_setype_from_bdiiG(opts, surl, buff_endpoint, s_buff, srm_type, &tmp_err)) != 0)){
                     if(tmp_err){
                         gfal_log(GFAL_VERBOSE_VERBOSE, "WARNING : Error while bdii SRM service resolution : %s, fallback on the default service path."

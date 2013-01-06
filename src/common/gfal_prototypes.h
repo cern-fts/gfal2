@@ -34,8 +34,9 @@ extern "C"
 {
 #endif 
 
-// globals enums list
-// plugin check type
+/* globals enums list
+ plugin check type
+*/
 typedef enum _plugin_mode{
 	GFAL_PLUGIN_ALL=0,
 	GFAL_PLUGIN_ACCESS,
@@ -46,8 +47,8 @@ typedef enum _plugin_mode{
 	GFAL_PLUGIN_LSTAT,
 	GFAL_PLUGIN_MKDIR,
 	GFAL_PLUGIN_RMDIR,
-	GFAL_PLUGIN_OPENDIR,	 // concat of opendir readdir, closedir
-	GFAL_PLUGIN_OPEN, 		 // concat of open read, close
+	GFAL_PLUGIN_OPENDIR,	 /* concat of opendir readdir, closedir*/
+	GFAL_PLUGIN_OPEN, 		 /* concat of open read, close*/
 	GFAL_PLUGIN_RESOLVE_GUID,
 	GFAL_PLUGIN_GETXATTR,
 	GFAL_PLUGIN_SETXATTR,
@@ -70,20 +71,20 @@ enum _GFAL_TYPE { GFAL_TYPE_INT=0, GFAL_TYPE_STRING=1 };
 
 enum _GFAL_PARAM_FUNC{ GFAL_PARAM_SET=0, GFAL_PARAM_GET=1 };
 
- // plugin 
+ /* plugin */
 typedef struct _plugin_opts plugin_opts;
 typedef struct _gfal_plugin_interface gfal_plugin_interface;
 typedef gpointer plugin_handle;
 
 
-// file descrisptor
+/* file descrisptor */
 typedef struct _gfal_file_descriptor_container *gfal_fdesc_container_handle;
-//typedef enum _gfal_type_desc gfal_type_desc;
+/*typedef enum _gfal_type_desc gfal_type_desc;*/
 
-// dir part file descriptor
+/* dir part file descriptor*/
 typedef struct _gfal_file_handle_* gfal_file_handle;
 
-// main 
+/* main */
 typedef struct gfal_handle_* gfal_handle;
 typedef struct _gfal_descriptors_container gfal_descriptors_container;
 typedef struct _gfal_conf_container gfal_conf_container;
