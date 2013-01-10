@@ -65,10 +65,27 @@ void gridftp_create_parent_copy(gfal2_context_t handle, gfalt_params_t params,
             p_uri--;
         }
         if(p_uri > current_uri){
+            struct stat st;
             *p_uri = '\0';
-             gfal_log(GFAL_VERBOSE_TRACE, "try to create directory %s", current_uri);
-             (void) gfal2_mkdir_rec(handle, current_uri, 0755, &tmp_err);
-             Gfal::gerror_to_cpp(&tmp_err);
+
+            gfal2_stat(handle, current_uri, &st, &tmp_err);
+
+            if (tmp_err && tmp_err->code != ENOENT)
+                Gfal::gerror_to_cpp(&tmp_err);
+            else if (tmp_err)
+                g_error_free(tmp_err);
+            else if (!S_ISDIR(st.st_mode))
+                throw Gfal::CoreException(scope_filecopy,
+                                          "The parent of the destination file exists, but it is not a directory",
+                                          ENOTDIR);
+            else
+                return;
+
+            tmp_err = NULL;
+            gfal_log(GFAL_VERBOSE_TRACE, "try to create directory %s", current_uri);
+            (void) gfal2_mkdir_rec(handle, current_uri, 0755, &tmp_err);
+            Gfal::gerror_to_cpp(&tmp_err);
+
         }else{
             throw Gfal::CoreException(scope_filecopy, "impossible to create directory " + std::string(current_uri) + " : invalid path", EINVAL);
         }
