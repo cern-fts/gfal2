@@ -1,7 +1,7 @@
 
 Name:				gfal2
-Version:			2.1.0
-Release:			4%{?dist}
+Version:			2.1.1
+Release:			0%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -267,6 +267,10 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Thu Jan 10 2013 Adrien Devresse <adevress at cern.ch> - 2.1.1-0
+ - fix a minor memory issue with the gfal_transfer stack
+ - fix a wrong error report problem with srm third party copy
+
 * Wed Dec 05 2012 Adrien Devresse <adevress at cern.ch> - 2.1.0-2
  - fix an issue this surl to turl resolution for SRM third party copy
 
