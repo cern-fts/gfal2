@@ -5,6 +5,7 @@ include     (CheckLibraryExists)
 FILE(GLOB src_http "*.cpp")
 
 pkg_check_modules(GSOAP_SSL_PKG REQUIRED "gsoapssl++")
+pkg_check_modules(DAVIX_PKG REQUIRED "davix>=0.0.20")
 find_package(gSOAP REQUIRED)
 
 message(STATUS "Using gsoapssl flags ${GSOAP_SSL_PKG_CFLAGS}")
@@ -28,7 +29,7 @@ add_custom_command (OUTPUT soapC.cpp soapClient.cpp
 include_directories (${CMAKE_CURRENT_BINARY_DIR} ${GRIDSITE_INCLUDE_DIR}
                      ${GSOAP_INCLUDE_DIR})
 
-include_directories(/usr/include/davix)
+include_directories(${DAVIX_PKG_INCLUDE_DIRS})
 
 add_definitions(${GSOAP_SSL_PKG_CFLAGS})
 
@@ -37,7 +38,7 @@ add_library     (plugin_http SHARED ${src_http}
                                     ${CMAKE_CURRENT_BINARY_DIR}/soapC.cpp
                                     ${CMAKE_CURRENT_BINARY_DIR}/soapClient.cpp)
 
-target_link_libraries(plugin_http ${gfal2_link} davix gsoapssl++ gridsite)
+target_link_libraries(plugin_http ${gfal2_link} ${DAVIX_PKG_LIBRARIES} gsoapssl++ gridsite)
 
 
 set_target_properties(plugin_http   PROPERTIES  CLEAN_DIRECT_OUTPUT 1
