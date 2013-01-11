@@ -162,7 +162,7 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal_handle handle,
 
   // Configure params
   http_internal->params->addCertificateAuthorityPath( // TODO : thix should be configurable with gfal_get_opt system
-              (env_var = g_getenv("X509_CERT_DIR"))?env_var:"/etc/grid-security/certificates/");
+              (env_var = (char*) g_getenv("X509_CERT_DIR"))?env_var:"/etc/grid-security/certificates/");
 
   http_internal->params->setTransparentRedirectionSupport(true);
   http_internal->params->setUserAgent("gfal2::http");
