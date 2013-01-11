@@ -151,6 +151,7 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal_handle handle,
 {
   gfal_plugin_interface http_plugin;
   GfalHttpInternal* http_internal = new GfalHttpInternal();
+  char * env_var = NULL;
 
   http_internal->context = new Davix::Context();
   http_internal->params  = new Davix::RequestParams();
@@ -160,7 +161,9 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal_handle handle,
   memset(&http_plugin, 0, sizeof(http_plugin));
 
   // Configure params
-  http_internal->params->setSSLCAcheck(false); // THIS IS BAD! There should be a way of setting the CAPath
+  http_internal->params->addCertificateAuthorityPath( // TODO : thix should be configurable with gfal_get_opt system
+              (env_var = g_getenv("X509_CERT_DIR"))?env_var:"/etc/grid-security/certificates/");
+
   http_internal->params->setTransparentRedirectionSupport(true);
   http_internal->params->setUserAgent("gfal2::http");
   http_internal->params->setClientCertCallbackX509(&gfal_http_authn_cert_X509, NULL);
