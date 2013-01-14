@@ -30,6 +30,7 @@
 
 #include "gfal_common_srm.h"
 #include "gfal_common_srm_access.h"
+#include "gfal_common_srm_bringonline.h"
 #include "gfal_common_srm_internal_layer.h"
 #include "gfal_common_srm_access.h"
 #include "gfal_common_srm_mkdir.h"
@@ -148,6 +149,7 @@ static gboolean gfal_srm_check_url(plugin_handle handle, const char* url, plugin
 		case GFAL_PLUGIN_LISTXATTR:
         case GFAL_PLUGIN_CHECKSUM:
         case GFAL_PLUGIN_MKDIR_REC:
+        case GFAL_PLUGIN_BRING_ONLINE:
 			return (gfal_surl_checker(handle, url,  err)==0);
 		default:
 			return FALSE;		
@@ -215,6 +217,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
     srm_plugin.checksum_calcG = &gfal_srm_checksumG;
     srm_plugin.copy_file = &srm_plugin_filecopy;
     srm_plugin.check_plugin_url_transfer =&plugin_url_check2;
+    srm_plugin.bring_online = &gfal_srmv2_bring_onlineG;
 	return srm_plugin;
 }
 

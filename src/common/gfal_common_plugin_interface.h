@@ -397,6 +397,16 @@ struct _gfal_plugin_interface{
        *
     */
      int (*copy_file)(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params, const char* src, const char* dst, GError** );
+
+     /**
+      *
+      * OPTIONAL: Requests to stage a file to the fist layer on a hierarchical SE.
+      * @param plugin_data : internal plugin context
+      * @param url : The url of the file
+      * @param err:  GError error support
+      */
+     int (*bring_online)(plugin_handle plugin_data, const char* url, GError** err);
+
 	 // reserved for future usage
 	 //! @cond
      void* future[24];
@@ -450,6 +460,8 @@ int gfal_plugin_unlinkG(gfal_handle handle, const char* path, GError** err);
 ssize_t gfal_plugin_getxattrG(gfal_handle, const char*, const char*, void* buff, size_t s_buff, GError** err);
 ssize_t gfal_plugin_listxattrG(gfal_handle, const char*, char* list, size_t s_list, GError** err);
 int gfal_plugin_setxattrG(gfal_handle, const char*, const char*, const void*, size_t, int, GError**);
+
+int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri, GError ** err);
 //! @endcond
 
 #ifdef __cplusplus

@@ -1,5 +1,5 @@
 /* 
-* Copyright @ Members of the EMI Collaboration, 2010.
+* Copyright @ Members of the EMI Collaboration, 2013.
 * See www.eu-emi.eu for details on the copyright holders.
 * 
 * Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -18,22 +18,102 @@
 /*
  * @file gfal_common_srm_bringonline.c
  * @brief brings online functions layer from srm
- * @author Devresse Adrien
+ * @author Devresse Adrien, Alejandro Álvarez Ayllón
  * @version 2.0
  * @date 19/12/2011
  * */
  
 #define _GNU_SOURCE 
 
-#include <regex.h>
-#include <time.h> 
-
-// empty file for full bringsonline implementation in futurs
-
-#include "gfal_common_srm.h"
-
 #include <common/gfal_common_internal.h>
 #include <common/gfal_common_errverbose.h>
 #include <common/gfal_common_plugin.h>
+#include <regex.h>
+#include <time.h> 
+
+#include "gfal_common_srm.h"
+#include "gfal_common_srm_endpoint.h"
+#include "gfal_common_srm_internal_layer.h"
+#include "gfal_srm_request.h"
 
 
+
+static int gfal_srmv2_bring_online_internal(gfal_srmv2_opt* opts, const char* endpoint,
+                                            const char* surl, GError** err){
+    struct srm_bringonline_input  input;
+    struct srm_bringonline_output output;
+    GError                       *tmp_err = NULL;
+    gfal_srm_params_t             params = gfal_srm_params_new(opts, &tmp_err);
+
+    if (params != NULL) {
+        char          error_buffer[2048];
+        srm_context_t context = gfal_srm_ifce_context_setup(opts->handle, endpoint, error_buffer, sizeof(error_buffer), &tmp_err);
+
+        if (context) {
+            input.nbfiles        = 1;
+            input.surls          = (char**)&surl;
+            input.desiredpintime = opts->opt_srmv2_desiredpintime;
+            input.protocols      = gfal_srm_params_get_protocols(params);
+            input.spacetokendesc = gfal_srm_params_get_spacetoken(params);
+
+            int ret = gfal_srm_external_call.srm_bring_online(context, &input, &output);
+            if (ret < 0) {
+                gfal_srm_report_error(context->errbuf, &tmp_err);
+            }
+            else {
+                if (output.filestatuses[0].status != 0) {
+                    g_set_error(&tmp_err, 0,
+                                output.filestatuses[0].status,
+                                " error on the bring online request : %s ",
+                                output.filestatuses[0].explanation);
+                }
+            }
+            gfal_srm_external_call.srm_srmv2_pinfilestatus_delete(output.filestatuses, ret);
+            gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
+        }
+    }
+
+    if (tmp_err != NULL) {
+        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        return -1;
+    }
+    else {
+        return 0;
+    }
+}
+
+
+
+int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl, GError** err){
+    gfal_srmv2_opt*     opts = (gfal_srmv2_opt*) ch;
+    char                full_endpoint[GFAL_URL_MAX_LEN];
+    enum gfal_srm_proto srm_type;
+    int                 ret     = 0;
+    GError             *tmp_err = NULL;
+
+
+    ret = gfal_srm_determine_endpoint(opts, surl, full_endpoint,
+                                      sizeof(full_endpoint),
+                                      &srm_type,   &tmp_err);
+    if (ret >= 0) {
+        switch (srm_type) {
+        case PROTO_SRMv2:
+            ret = gfal_srmv2_bring_online_internal(opts, full_endpoint, surl, &tmp_err);
+            break;
+        case PROTO_SRM:
+            g_set_error(&tmp_err, 0, EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
+            break;
+        default:
+            g_set_error(&tmp_err, 0, EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
+            break;
+        }
+    }
+
+    if (tmp_err != NULL) {
+        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        return -1;
+    }
+    else {
+        return 0;
+    }
+}

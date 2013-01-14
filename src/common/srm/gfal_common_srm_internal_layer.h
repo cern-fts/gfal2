@@ -95,7 +95,9 @@ struct _gfal_srm_external_call{
 			struct srm_setpermission_input *input);
 
     void (*srm_set_timeout_connect) (int);
-	
+
+    int (*srm_bring_online)(struct srm_context *context,
+                            struct srm_bringonline_input *input, struct srm_bringonline_output *output);
 };
 
 extern struct _gfal_srm_external_call gfal_srm_external_call;
