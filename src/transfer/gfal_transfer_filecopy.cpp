@@ -151,11 +151,6 @@ const plugin_filecopy_call FileCopy::find_copy_plugin(const std::string & src, c
 
 extern "C" {
 
-static void filecopy_GDestroyer(gpointer p){
-   // nothing
-
-}
-
 gfalt_transfer_status_t gfalt_transfer_status_create(const gfalt_hook_transfer_plugin_t * hook){
     gfalt_transfer_status_t state = g_new0(struct _gfalt_transfer_status,1);
     state->hook = hook;

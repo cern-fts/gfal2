@@ -82,8 +82,6 @@ struct gfal_handle_ {		// define the protocole version of SRM choosen by default
 	//struct for the file descriptors
 	gfal_descriptors_container fdescs;
 	gfal_conf_t conf;
-    gpointer gfal_transfer_instance;
-    GDestroyNotify gfal_transfer_destroyer;
 };
 
 

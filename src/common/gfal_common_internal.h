@@ -38,15 +38,6 @@ void gfal_handle_freeG(gfal_handle handle);
 
 
 
-// conversion funcs
-char** gfal_GList_to_tab(GList* surls);
-int* gfal_GList_to_tab_int(GList* int_list);
-
-
-// convenience internal funcs
-void gfal_new_request_state(gfal_handle handle);
-int resolve_dlsym_listG(void* handle, void*** flist, const char** sym_list, int num, GError** err);
-gboolean is_valid_access_result(int status);
 
 
 #ifdef __cplusplus
