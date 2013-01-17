@@ -27,6 +27,7 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
         case GFAL_PLUGIN_OPENDIR:
         case GFAL_PLUGIN_RMDIR:
         case GFAL_PLUGIN_UNLINK:
+        case GFAL_PLUGIN_CHECKSUM:
             return (strncmp("http:", url, 5) == 0 || strncmp("https:", url, 6) == 0 ||
                  strncmp("dav:", url, 4) == 0 || strncmp("davs:", url, 5) == 0);
       default:
@@ -190,6 +191,9 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal_handle handle,
   http_plugin.writeG = &gfal_http_fwrite;
   http_plugin.lseekG = &gfal_http_fseek;
   http_plugin.closeG = &gfal_http_fclose;
+
+  // Checksum
+  http_plugin.checksum_calcG = &gfal_http_checksum;
 
   // Bind 3rd party copy
   http_plugin.check_plugin_url_transfer = gfal_http_3rdcopy_check;

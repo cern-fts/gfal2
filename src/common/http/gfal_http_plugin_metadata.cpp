@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <glib.h>
 #include <unistd.h>
 #include "gfal_http_plugin.h"
@@ -28,6 +29,8 @@ int gfal_http_stat(plugin_handle plugin_data, const char* url,
   return 0;
 }
 
+
+
 int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, gboolean rec_flag, GError** err){
   GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
   Davix::DavixError* daverr = NULL;
@@ -38,6 +41,8 @@ int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, g
   }
   return 0;
 }
+
+
 
 int gfal_http_unlinkG(plugin_handle plugin_data, const char* url, GError** err){
     GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
@@ -157,4 +162,70 @@ int gfal_http_closedir(plugin_handle plugin_data, gfal_file_handle dir_desc,
   }
   gfal_file_handle_delete(dir_desc);
   return ret;
+}
+
+
+
+int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* check_type,
+                       char * checksum_buffer, size_t buffer_length,
+                       off_t start_offset, size_t data_length,
+                       GError ** err)
+{
+    GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
+    Davix::DavixError* daverr = NULL;
+
+    if (start_offset != 0 || data_length != 0) {
+        g_set_error(err, http_plugin_domain, ENOTSUP,
+                    "[%s] HTTP does not support partial checksums",
+                    __func__);
+        return -1;
+    }
+
+    Davix::HttpRequest*  request = davix->context->createRequest(url, &daverr);
+    Davix::RequestParams requestParams(*davix->params);
+
+    request->setRequestMethod("HEAD");
+    request->addHeaderField("Want-Digest", check_type);
+    requestParams.setTransparentRedirectionSupport(false);
+    request->setParameters(requestParams);
+
+    request->executeRequest(&daverr);
+    if (daverr) {
+      davix2gliberr(daverr, err);
+      delete daverr;
+      return -1;
+    }
+
+    std::string digest;
+    request->getAnswerHeader("Digest", digest);
+    delete request;
+
+    if (digest.empty()) {
+        g_set_error(err, http_plugin_domain, ENOTSUP,
+                    "[%s] No Digest header found for '%s'",
+                    __func__, url);
+        return -1;
+    }
+
+    size_t valueOffset = digest.find('=');
+    if (valueOffset == std::string::npos) {
+        g_set_error(err, http_plugin_domain, ENOTSUP,
+                    "[%s] Malformed Digest header from '%s': %s",
+                    __func__, url, digest.c_str());
+        return -1;
+    }
+
+    std::string csumtype  = digest.substr(0, valueOffset);
+    std::string csumvalue = digest.substr(valueOffset + 1, std::string::npos);
+
+    if (strcasecmp(csumtype.c_str(), check_type) != 0) {
+        g_set_error(err, http_plugin_domain, ENOTSUP,
+                    "[%s] Asked for checksum %s, got %s: %s",
+                    __func__, check_type, csumtype.c_str(), url);
+        return -1;
+    }
+
+    strncpy(checksum_buffer, csumvalue.c_str(), buffer_length);
+
+    return 0;
 }
