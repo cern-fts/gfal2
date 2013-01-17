@@ -16,6 +16,7 @@
 */
 
 #include <file/gfal_file_api.h>
+#include <common/gfal_common_internal.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_errverbose.h>
 
@@ -33,16 +34,16 @@ int gfal2_checksum(gfal2_context_t handle, const char* url, const char* check_ty
         return -1;
     }
 
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     gfal_log(GFAL_VERBOSE_VERBOSE, " gfal2_checksum ->");
     int res = -1;
     GError * tmp_err=NULL;
     gfal_plugin_interface* p = gfal_find_catalog(handle, url, GFAL_PLUGIN_CHECKSUM, &tmp_err);
 
-
     if(p)
         res =  p->checksum_calcG(gfal_get_plugin_handle(p), url, check_type, checksum_buffer, buffer_length, start_offset,
                                     data_length, &tmp_err);
-
     gfal_log(GFAL_VERBOSE_VERBOSE, " gfal2_checksum <-");
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(res, tmp_err, err);
 }

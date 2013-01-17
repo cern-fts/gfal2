@@ -209,7 +209,12 @@ int gfal2_bring_online(gfal2_context_t context, const char* path, GError ** err)
 /// @return number of operations canceled
 int gfal2_cancel(gfal2_context_t context);
 
-
+/// @brief cancel status
+/// return true if  \ref gfal2_cancel has been called
+///
+///  @param context
+/// @return true if success
+gboolean gfal2_is_canceled(gfal2_context_t context);
 
 /////////////////////////////////////////////////////
 ///////////// R/W operations

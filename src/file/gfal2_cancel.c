@@ -15,6 +15,8 @@
 * limitations under the License.
 */
 
+#include <unistd.h>
+
 #include <file/gfal_file_api.h>
 
 #include <common/gfal_constants.h>
@@ -34,6 +36,15 @@
 
 
 int gfal2_cancel(gfal2_context_t context){
-    int n_cancel = 0;
-    return 0;
+    const int n_cancel = g_atomic_int_get(&(context->running_ops));
+    context->cancel = TRUE;
+    while( (g_atomic_int_get(&(context->running_ops))) > 0){
+        usleep(50);
+    }
+    context->cancel = FALSE;
+    return n_cancel;
+}
+
+gboolean gfal2_is_canceled(gfal2_context_t context){
+    return context->cancel;
 }

@@ -20,6 +20,7 @@
 #include <common/gfal_constants.h>
 #include <common/gfal_types.h>
 #include <common/gfal_common_plugin.h>
+#include <common/gfal_common_internal.h>
 #include <common/gfal_common_errverbose.h>
 #include <common/gfal_common_filedescriptor.h>
 #include <common/gfal_common_dir_handle.h>
@@ -47,7 +48,7 @@ inline static int gfal_rw_dir_handle_store(gfal_handle handle, gfal_file_handle 
 DIR* gfal2_opendir(gfal2_context_t handle, const char* name, GError ** err){
     GError* tmp_err=NULL;
     gfal_file_handle ret= NULL;
-
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, NULL, err);
     if(name == NULL || handle ==NULL){
         g_set_error(&tmp_err, 0, EFAULT, "uri  or/and handle are NULL");
     }else{
@@ -57,7 +58,7 @@ DIR* gfal2_opendir(gfal2_context_t handle, const char* name, GError ** err){
     int key = 0;
     if(ret)
         key = gfal_rw_dir_handle_store(handle, ret, &tmp_err);
-
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR( GINT_TO_POINTER(key), tmp_err, err);
 }
 
@@ -74,17 +75,18 @@ inline static struct dirent* gfal_rw_gfalfilehandle_readdir(gfal_handle handle, 
 struct dirent* gfal2_readdir(gfal2_context_t handle, DIR* dir, GError ** err){
     GError* tmp_err=NULL;
     struct dirent* res= NULL;
-
-   if(dir == NULL || handle ==NULL){
-       g_set_error(&tmp_err, 0, EFAULT, "file descriptor  or/and handle are NULL");
-   }else{
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, NULL, err);
+    if(dir == NULL || handle ==NULL){
+       g_set_error(&tmp_err, 0, EFAULT, "file descriptor or/and handle are NULL");
+    }else{
        gfal_fdesc_container_handle container= gfal_dir_handle_container_instance(&(handle->fdescs), &tmp_err);
        const int key = GPOINTER_TO_INT(dir);
        gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
        if( fh != NULL){
            res = gfal_rw_gfalfilehandle_readdir(handle, fh, &tmp_err);
        }
-   }
+    }
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(res, tmp_err, err);
 }
 
@@ -121,7 +123,7 @@ int gfal2_closedir(gfal2_context_t handle, DIR* d, GError ** err){
     int ret = -1;
 
     if(d == NULL || handle ==NULL){
-        g_set_error(&tmp_err, 0, EFAULT, "file descriptor  or/and handle are NULL");
+        g_set_error(&tmp_err, 0, EFAULT, "file descriptor or/and handle are NULL");
     }else{
         gfal_fdesc_container_handle container= gfal_dir_handle_container_instance(&(handle->fdescs), &tmp_err);
         int key = GPOINTER_TO_INT(d);

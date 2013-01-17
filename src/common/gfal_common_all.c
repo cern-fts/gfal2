@@ -68,18 +68,21 @@ gfal_handle gfal_initG (GError** err)
 	}
 	handle->plugin_opt.plugin_number= 0;
 	
-    handle->conf = gfal_conf_new(&tmp_err);
-    if(!tmp_err){
+    if( (handle->conf = gfal_conf_new(&tmp_err)) &&
+            !tmp_err){
         gfal_plugins_instance(handle, &tmp_err); // load and instanciate all the plugins
+
+        // cancel logic init
+        handle->cancel = FALSE;
+        handle->running_ops = 0;
     }
+
+
     if(tmp_err){
         g_free(handle);
         handle = NULL;
     }
-	
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return handle;
+    G_RETURN_ERR(handle, tmp_err, err);
 }
 
 //free a gfal's handle, safe if null
@@ -94,6 +97,28 @@ void gfal_handle_freeG (gfal_handle handle){
 	handle = NULL;
 }
 
+
+///
+///
+GQuark gfal_cancel_quark(){
+    return g_quark_from_string("[gfal2_cancel]");
+}
+
+//  increase number of the running task for the cancel logic
+// return negative value if task is canceled
+int gfal2_start_scope_cancel(gfal2_context_t context, GError** err){
+    if(context->cancel){
+        g_set_error(err, gfal_cancel_quark(), ECANCELED, "[gfal2_cancel] operation canceled by user");
+        return -1;
+    }
+    g_atomic_int_inc(&(context->running_ops));
+    return 0;
+}
+
+int gfal2_end_scope_cancel(gfal2_context_t context){
+    g_atomic_int_dec_and_test(&(context->running_ops));
+    return 0;
+}
 
 
 //return a string of the current gfal version

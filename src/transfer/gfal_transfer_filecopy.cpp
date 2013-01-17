@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <common/gfal_common_plugin_interface.h>
 #include <common/gfal_common_plugin.h>
+#include <common/gfal_common_internal.h>
 #include <transfer/gfal_transfer_types_internal.h>
 #include <fdesc/gfal_file_handle.h>
 #include <exceptions/gerror_to_cpp.h>
@@ -171,6 +172,8 @@ int gfalt_copy_file(gfal2_context_t handle, gfalt_params_t params,
 	GError * tmp_err=NULL;
 	int ret = -1;
 	gfalt_params_t p = NULL;
+
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
 	
 	CPP_GERROR_TRY
         Gfal::Transfer::FileCopy f(handle);
@@ -184,6 +187,9 @@ int gfalt_copy_file(gfal2_context_t handle, gfalt_params_t params,
 		ret = 0;
 	CPP_GERROR_CATCH(&tmp_err);
 	gfalt_params_handle_delete(p, NULL);
+
+    GFAL2_END_SCOPE_CANCEL(handle);
+
 	G_RETURN_ERR(ret, tmp_err, err);
 }
 

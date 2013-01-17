@@ -19,6 +19,7 @@
 
 #include <common/gfal_constants.h>
 #include <common/gfal_types.h>
+#include <common/gfal_common_internal.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_errverbose.h>
 
@@ -38,11 +39,13 @@ int gfal2_access(gfal2_context_t handle, const char *url, int amode, GError** er
     int resu = -1;
     GError* tmp_err=NULL;
 
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(url == NULL || handle == NULL){
         g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "handle or/and url are incorrect arguments");
     }else{
         resu = gfal_plugins_accessG(handle, (char*) url, amode, &tmp_err );
     }
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(((resu)?(-1):0), tmp_err, err);
 }
 
@@ -52,11 +55,13 @@ int gfal2_chmod(gfal2_context_t handle, const char* url, mode_t mode, GError ** 
     GError* tmp_err=NULL;
     int res= -1;
 
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(url == NULL || handle == NULL){
        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "handle or/and url are incorrect arguments");
     }else{
        res = gfal_plugin_chmodG(handle, url, mode, &tmp_err);
     }
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(res, tmp_err, err);
 }
 
@@ -67,12 +72,13 @@ int gfal2_rename(gfal2_context_t handle, const char *olduri, const char *newuri,
     GError* tmp_err = NULL;
     int ret=-1;
 
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if( olduri == NULL || newuri == NULL || handle == NULL){
         g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, " olduri/newuri/handle are incorrect arguments");
     }else{
         ret = gfal_plugin_renameG(handle, olduri, newuri, &tmp_err);
     }
-
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(((ret)?-1:0), tmp_err, err);
 }
 
@@ -82,22 +88,26 @@ int gfal2_rename(gfal2_context_t handle, const char *olduri, const char *newuri,
 int gfal2_stat(gfal2_context_t handle, const char* url, struct stat* buff, GError ** err){
     GError* tmp_err = NULL;
     int ret = -1;
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(url == NULL || handle == NULL || buff == NULL){
        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "handle or/and url or/and buff are incorrect arguments");
     }else{
         ret = gfal_plugin_statG(handle, url, buff, &tmp_err);
     }
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
 int gfal2_lstat(gfal2_context_t handle, const char* url, struct stat* buff, GError ** err){
     GError* tmp_err = NULL;
     int ret = -1;
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(url == NULL || handle == NULL || buff == NULL){
        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "handle or/and url or/and buff are incorrect arguments");
     }else{
         ret = gfal_plugin_lstatG(handle, url, buff, &tmp_err);
     }
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -105,12 +115,13 @@ int gfal2_lstat(gfal2_context_t handle, const char* url, struct stat* buff, GErr
 int gfal2_mkdir(gfal2_context_t handle,  const char* uri, mode_t mode, GError ** err){
     GError* tmp_err=NULL;
     int res= -1;
-
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(uri == NULL || handle == NULL){
        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, " uri is an incorrect argument");
     }else{
        res = gfal_plugin_mkdirp(handle, uri, mode, FALSE, &tmp_err);
     }
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(res, tmp_err, err);
 }
 
@@ -118,7 +129,7 @@ int gfal2_mkdir(gfal2_context_t handle,  const char* uri, mode_t mode, GError **
 int gfal2_mkdir_rec(gfal2_context_t handle,  const char* uri, mode_t mode, GError ** err){
     GError* tmp_err=NULL;
     int res= -1;
-
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(uri == NULL || handle == NULL){
        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, " uri is an incorrect argument");
     }else{
@@ -175,6 +186,7 @@ int gfal2_mkdir_rec(gfal2_context_t handle,  const char* uri, mode_t mode, GErro
        }
 
     }
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(res, tmp_err, err);
 }
 
@@ -182,12 +194,13 @@ int gfal2_mkdir_rec(gfal2_context_t handle,  const char* uri, mode_t mode, GErro
 int gfal2_rmdir(gfal2_context_t handle, const char* uri, GError ** err){
     GError* tmp_err=NULL;
     int res= -1;
-
-   if(uri == NULL || handle == NULL){
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
+    if(uri == NULL || handle == NULL){
        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, " path is an incorrect argument");
-   }else{
+    }else{
        res = gfal_plugin_rmdirG(handle, uri, &tmp_err);
-   }
+    }
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(res, tmp_err, err);
 }
 
@@ -195,13 +208,13 @@ int gfal2_rmdir(gfal2_context_t handle, const char* uri, GError ** err){
 int gfal2_symlink(gfal2_context_t handle, const char* olduri, const char * newuri, GError ** err){
     GError* tmp_err = NULL;
     int ret=-1;
-
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if( olduri == NULL || newuri == NULL || handle == NULL ){
         g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, " olduri and/or newuri and/or handle are incorrect arguments");
     }else{
         ret = gfal_plugin_symlinkG(handle, olduri, newuri, &tmp_err);
     }
-
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(((ret)?-1:0), tmp_err, err);
 }
 
@@ -210,12 +223,13 @@ ssize_t gfal2_getxattr (gfal2_context_t handle, const char *url, const char *nam
                         void *value, size_t size, GError ** err){
     GError* tmp_err=NULL;
     ssize_t res= -1;
-
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(url == NULL || handle == NULL || name == NULL ){
        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "url or/and handle or/and name are incorrect arguments");
     }else{
        res = gfal_plugin_getxattrG(handle, url, name, value, size, &tmp_err);
     }
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(res, tmp_err, err);
 }
 
@@ -223,37 +237,40 @@ ssize_t gfal2_getxattr (gfal2_context_t handle, const char *url, const char *nam
 ssize_t gfal2_readlink(gfal2_context_t handle, const char* uri, char* buff, size_t buffsiz, GError ** err){
     GError* tmp_err = NULL;
     ssize_t ret = -1;
-
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(uri ==NULL || buff==NULL || handle == NULL){
         g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, " uri and/or buff or/and handle are incorrect arguments");
     }else{
         ret = gfal_plugin_readlinkG(handle, uri, buff, buffsiz, &tmp_err);
     }
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
 int gfal2_unlink(gfal2_context_t handle, const char* uri, GError ** err){
     GError* tmp_err = NULL;
     ssize_t ret = -1;
-
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(uri == NULL || handle == NULL){
         g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, " uri and/or handle are incorrect arguments");
     }else{
         ret = gfal_plugin_unlinkG(handle, uri, &tmp_err);
     }
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
 ssize_t gfal2_listxattr (gfal2_context_t handle, const char *url, char *list, size_t size, GError ** err){
     GError* tmp_err=NULL;
     ssize_t res= -1;
-
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(url == NULL || handle == NULL  ){
        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "handle or/and uri or/and list are incorrect arguments");
     }else{
        res = gfal_plugin_listxattrG(handle, url, list, size, &tmp_err);
 
     }
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(res, tmp_err, err);
 }
 
@@ -261,23 +278,25 @@ int gfal2_setxattr (gfal2_context_t handle, const char *uri, const char *name,
                const void *value, size_t size, int flags, GError ** err){
     GError* tmp_err=NULL;
     int res= -1;
-
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(uri == NULL || name == NULL|| handle ==NULL){
        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "uri or/and name or/and handle are an incorrect arguments");
     }else{
        res = gfal_plugin_setxattrG(handle, uri, name, value, size, flags, &tmp_err);;
     }
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(res, tmp_err, err);
 }
 
 int gfal2_bring_online(gfal2_context_t handle, const char* uri, GError ** err){
     GError* tmp_err=NULL;
     int res= -1;
-
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(uri == NULL || handle ==NULL){
        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "uri or/and name or/and handle are an incorrect arguments");
     }else{
        res = gfal_plugin_bring_onlineG(handle, uri, &tmp_err);;
     }
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(res, tmp_err, err);
 }
