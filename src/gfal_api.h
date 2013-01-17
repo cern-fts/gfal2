@@ -28,12 +28,32 @@
 #ifndef _FILE_OFFSET_BITS
 #  define _FILE_OFFSET_BITS 64
 #endif
- 
+
+//
+// global context operations
+//
 #include <global/gfal_global.h>
+
+//
+// parameter and configuration api
+//
 #include <config/gfal_config.h>
+
+//
+// log  api
+//
 #include <logger/gfal_logger.h>
-#include <posix/gfal_posix_api.h> 
+
+//
+// main gfal 2.0 API for file operations
+//
 #include <file/gfal_file_api.h>
+
+//
+// gfal 1.0 compatibility layer
+//
+#include <posix/gfal_posix_api.h> 
+
  
 
 #endif  //_GFAL2_API_
