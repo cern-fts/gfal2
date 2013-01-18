@@ -47,8 +47,10 @@ static const char *gfalversion = VERSION_STR(VERSION);
 // initialization
 __attribute__((constructor))
 void core_init(){
+#if  (!GLIB_CHECK_VERSION (2, 32, 0))
     if (!g_thread_supported())
       g_thread_init(NULL);
+#endif
 }
 
 

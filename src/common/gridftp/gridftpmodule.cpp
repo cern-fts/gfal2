@@ -28,8 +28,10 @@ static Glib::Mutex mux_globus_init;
 // initialization
 __attribute__((constructor))
 void core_init(){
+#if  (!GLIB_CHECK_VERSION (2, 32, 0))
     if (!g_thread_supported())
       g_thread_init(NULL);
+#endif
     Glib::init();
 }
 
@@ -41,8 +43,6 @@ static void* init_globus(gpointer data){
     globus_result_t result = GLOBUS_SUCCESS;
      if( (  result = globus_module_activate(GLOBUS_GASS_COPY_MODULE) ) != GLOBUS_SUCCESS)
     	throw Gfal::CoreException(scope_globus_init, "Error globus init, globus gass", result);
-//   if( ( result = globus_module_activate(GLOBUS_GSI_GSSAPI_MODULE) ) != GLOBUS_SUCCESS)
-//		throw Gfal::CoreException(scope_globus_init, "Error globus init, globus gssapi", result);
 	 if( ( result = globus_module_activate(GLOBUS_FTP_CLIENT_MODULE)) != GLOBUS_SUCCESS)
         throw Gfal::CoreException(scope_globus_init, "Error globus init, globus ftp", result);
      if( ( result = globus_module_activate(GLOBUS_FTP_CLIENT_DEBUG_PLUGIN_MODULE)) != GLOBUS_SUCCESS)
@@ -55,8 +55,6 @@ static void* deinit_globus(gpointer data){
     globus_result_t result = GLOBUS_SUCCESS;  
      if( (  result = globus_module_deactivate(GLOBUS_GASS_COPY_MODULE) ) != GLOBUS_SUCCESS)
     	throw Gfal::CoreException(scope_globus_init, "Error globus deinit, globus gass", result);
-//     if( ( result = globus_module_deactivate(GLOBUS_GSI_GSSAPI_MODULE) ) != GLOBUS_SUCCESS)
-//		throw Gfal::CoreException(scope_globus_init, "Error globus deinit, globus gssapi", result);
      if( ( result = globus_module_deactivate(GLOBUS_FTP_CLIENT_MODULE)) != GLOBUS_SUCCESS)
 		throw Gfal::CoreException(scope_globus_init, "Error globus deinit, globus ftp", result);
      if( ( result = globus_module_deactivate(GLOBUS_FTP_CLIENT_DEBUG_PLUGIN_MODULE)) != GLOBUS_SUCCESS)
