@@ -49,6 +49,8 @@
 #include <common/gfal_common_errverbose.h>
 #include <common/gfal_common_plugin.h>
 
+#include <file/gfal_file_api.h>
+
 /*
  * 
  * list of the turls supported protocols
@@ -319,6 +321,14 @@ int gfal_srm_convert_filestatuses_to_GError(struct srmv2_filestatus* statuses, i
 void gfal_srm_report_error(char* errbuff, GError** err){
 	int errcode = (errno != ECOMM && errno != 0)?errno:ECOMM;
     g_set_error(err,0, errcode, "srm-ifce err: %s, err: %s", strerror(errcode), errbuff);
+}
+
+gboolean gfal_srm_check_cancel(gfal2_context_t context, GError** err){
+    if(gfal2_is_canceled(context)){
+        g_set_error(err, 0, ECANCELED, "SRM operation canceled");
+        return TRUE;
+    }
+    return FALSE;
 }
 
 

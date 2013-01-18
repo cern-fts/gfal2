@@ -223,8 +223,8 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
     gfalt_params_t params_turl = gfalt_params_handle_copy(params, &tmp_err);  // create underlying protocol parameters
     gfalt_set_checksum_check(params_turl, FALSE,NULL); // disable already does actions
 
-    GError * tmp_err_get, *tmp_err_put,*tmp_err_chk_src;
-    tmp_err_chk_src= tmp_err_get = tmp_err_put = NULL;
+    GError * tmp_err_get, *tmp_err_put,*tmp_err_chk_src, *tmp_err_cancel;
+    tmp_err_chk_src= tmp_err_get = tmp_err_put = tmp_err_cancel= NULL;
 
     #pragma omp parallel num_threads(3)
     {
@@ -264,7 +264,9 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
 
     }
 
-   if( !gfal_error_keep_first_err(&tmp_err, &tmp_err_get, &tmp_err_chk_src, &tmp_err_put,NULL) ){ // do the first resolution
+    gfal_srm_check_cancel(context, &tmp_err_cancel);
+
+   if( !gfal_error_keep_first_err(&tmp_err, &tmp_err_get, &tmp_err_chk_src, &tmp_err_put, &tmp_err_cancel, NULL) ){ // do the first resolution
 
             if(!tmp_err){
                 res = gfalt_copy_file(context, params_turl, buff_turl_src, buff_turl_dst, &tmp_err);

@@ -432,17 +432,14 @@ void GridFTPFactory::gfal_globus_ftp_release_handle(GridFTP_session* h){
 	delete h;
 }
 
-// gridftp callback generic implementation
-void globus_basic_client_callback (void * user_arg, 
-				globus_ftp_client_handle_t *		handle,
-				globus_object_t *				error){
-	GridFTP_Request_state* state = (GridFTP_Request_state*) user_arg;	
+static void gfal_globus_prototype_callback(void* user_args, globus_object_t *error){
+    GridFTP_Request_state* state = (GridFTP_Request_state*) user_args;
     Glib::RWLock::ReaderLock l (state->mux_req_state);
     Glib::Mutex::Lock l_call(state->mux_callback_lock);
-    gfal_log(GFAL_VERBOSE_TRACE,"gridFTP operation done");
+
 
     if(state->get_req_status() == GRIDFTP_REQUEST_FINISHED){
-        gfal_log(GFAL_VERBOSE_TRACE,"gass operation already finished ! error !");
+        gfal_log(GFAL_VERBOSE_TRACE,"gridFTP operation already finished ! error !");
     }else{
         if(error != GLOBUS_SUCCESS){
             gfal_globus_store_error(state, error);
@@ -454,27 +451,21 @@ void globus_basic_client_callback (void * user_arg,
     }
 }
 
+// gridftp callback generic implementation
+void globus_basic_client_callback (void * user_arg, 
+				globus_ftp_client_handle_t *		handle,
+				globus_object_t *				error){
+    gfal_log(GFAL_VERBOSE_TRACE," gridFTP operation done");
+    gfal_globus_prototype_callback(user_arg, error);
+}
+
 // gass operation callback implementation
 void globus_gass_basic_client_callback(
         void * callback_arg,
         globus_gass_copy_handle_t * handle,
         globus_object_t * error){
-    GridFTP_Request_state* state = (GridFTP_Request_state*) callback_arg;
-    Glib::RWLock::ReaderLock l (state->mux_req_state);
-    Glib::Mutex::Lock l_call(state->mux_callback_lock);
     gfal_log(GFAL_VERBOSE_TRACE,"gass operation done");
-
-    if(state->get_req_status() == GRIDFTP_REQUEST_FINISHED){
-        gfal_log(GFAL_VERBOSE_TRACE,"gass operation already finished ! error !");
-    }else{
-        if(error != GLOBUS_SUCCESS){
-            gfal_globus_store_error(state, error);
-        }else{
-            state->set_error_code(0);
-        }
-        state->set_req_status(GRIDFTP_REQUEST_FINISHED);
-        state->signal_callback_main.broadcast();
-    }
+    gfal_globus_prototype_callback( callback_arg, error);
 }
 
 // cancel any gass operation synchronously associated with this gridftp session object
@@ -491,26 +482,11 @@ void globus_gass_cancel_sync(const Glib::Quark & scope, GridFTP_Request_state* r
                                                       globus_gass_basic_client_callback,
                                                       req);
         gfal_globus_check_result(scope, res);
-
     }
     req->poll_callback(scope);
     gfal_log(GFAL_VERBOSE_TRACE,"  gass operation cancel  <- ");
 }
 
-/*
-static bool check_timeout(const Glib::Quark & scope, GridFTP_Request_state* state){
-    if(timespec_isset(&state->end_time) == TRUE && state->canceling == FALSE){ //check timeout
-        struct timespec current_time;
-        clock_gettime(CLOCK_MONOTONIC, &current_time);
-        if(timespec_cmp(&state->end_time, &current_time, <) ==TRUE ){
-            gfal_log(GFAL_VERBOSE_TRACE,"timeout, transfer canceled");
-            state->canceling = TRUE;
-            globus_gass_cancel_sync(scope, state);
-            return true;
-        }
-    }
-    return false;
-}*/
 
 void GridFTP_Request_state::poll_callback(const Glib::Quark &scope){
     gfal_log(GFAL_VERBOSE_TRACE," -> go internal polling for request ");
@@ -575,8 +551,6 @@ void gridftp_wait_for_read(const Glib::Quark & scope, GridFTP_stream_state* stat
 void gridftp_wait_for_write(const Glib::Quark & scope, GridFTP_stream_state* state, off_t end_write){
     state->wait_callback_stream(scope);
 }
-
-
 
 static void gfal_griftp_stream_read_callback(void *user_arg, globus_ftp_client_handle_t *handle, globus_object_t *error, globus_byte_t *buffer,
 				globus_size_t length, globus_off_t offset, globus_bool_t eof){

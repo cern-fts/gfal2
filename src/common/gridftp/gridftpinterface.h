@@ -63,8 +63,8 @@ struct GridFTP_session{
 class GridFTPFactoryInterface
 {
 	public:
-		GridFTPFactoryInterface();
-		virtual ~GridFTPFactoryInterface();
+        GridFTPFactoryInterface(){}
+        virtual ~GridFTPFactoryInterface(){}
 
 		virtual gfal_handle get_handle()=0;	
 		
