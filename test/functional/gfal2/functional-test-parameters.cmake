@@ -52,7 +52,7 @@ SET(lfc_full_chmod_ok "${lfc_full_prefix}/test_change_right")
 SET(lfc_full_valid_dir_root "${lfc_full_prefix}")
 
 # dcap dcache parameters
-SET(dcap_prefix "gsidcap://cork.desy.de:22128/pnfs/desy.de/data/${MY_VO}/testgfal2")
+SET(dcap_prefix "gsidcap://sligo.desy.de:22128/pnfs/desy.de/data/${MY_VO}/testgfal2")
 SET(dcap_stat_ok "${dcap_prefix}/testread0011")
 SET(dcap_chmod_ok "${dcap_prefix}/test_change_right")
 SET(dcap_valid_dir_root "${dcap_prefix}")
