@@ -85,6 +85,8 @@ struct gfal_handle_ {		// define the protocole version of SRM choosen by default
     // cancel logic
     volatile gint running_ops;
     gboolean cancel;
+    GMutex* mux_cancel;
+    GHookList cancel_hooks;
 };
 
 

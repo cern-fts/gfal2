@@ -49,6 +49,12 @@
 //
 #include <file/gfal_file_api.h>
 
+
+//
+// operation control api
+//
+#include <cancel/gfal_cancel.h>
+
 //
 // gfal 1.0 compatibility layer
 //

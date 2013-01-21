@@ -118,6 +118,8 @@ struct GridFTP_Request_state{
     void poll_callback(const Glib::Quark & scope);
     void wait_callback(const Glib::Quark & scope);
     void err_report(const Glib::Quark &scope);
+
+    void cancel_operation(const Glib::Quark &scope, const std::string & msg = "");
 };
 
 struct GridFTP_stream_state : public GridFTP_Request_state{
@@ -224,9 +226,6 @@ class GridFTPFactory : public GridFTPFactoryInterface
 		
 	friend struct GridFTP_session_implem;
 };
-
-
-void globus_gass_cancel_sync(const Glib::Quark & scope, GridFTP_Request_state* req);
 
 void globus_basic_client_callback (void * user_arg, 
 				globus_ftp_client_handle_t *		handle,

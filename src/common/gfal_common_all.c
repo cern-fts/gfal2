@@ -77,6 +77,8 @@ gfal_handle gfal_initG (GError** err)
         // cancel logic init
         handle->cancel = FALSE;
         handle->running_ops = 0;
+        handle->mux_cancel = g_mutex_new();
+        g_hook_list_init(&handle->cancel_hooks, sizeof(GHook));
     }
 
 
@@ -95,31 +97,10 @@ void gfal_handle_freeG (gfal_handle handle){
 	gfal_dir_handle_container_delete(&(handle->fdescs));
 	gfal_conf_delete(handle->conf);
     g_list_free(handle->plugin_opt.sorted_plugin);
+    g_mutex_free(handle->mux_cancel);
+    g_hook_list_clear(&handle->cancel_hooks);
 	g_free(handle);
 	handle = NULL;
-}
-
-
-///
-///
-GQuark gfal_cancel_quark(){
-    return g_quark_from_string("[gfal2_cancel]");
-}
-
-//  increase number of the running task for the cancel logic
-// return negative value if task is canceled
-int gfal2_start_scope_cancel(gfal2_context_t context, GError** err){
-    if(context->cancel){
-        g_set_error(err, gfal_cancel_quark(), ECANCELED, "[gfal2_cancel] operation canceled by user");
-        return -1;
-    }
-    g_atomic_int_inc(&(context->running_ops));
-    return 0;
-}
-
-int gfal2_end_scope_cancel(gfal2_context_t context){
-    g_atomic_int_dec_and_test(&(context->running_ops));
-    return 0;
 }
 
 

@@ -45,7 +45,7 @@
 #include "gfal_common_srm_copy.h"
 #include "gfal_common_srm_url_check.h"
 
-#include <common/gfal_common_internal.h>
+#include <cancel/gfal_cancel.h>
 #include <common/gfal_common_errverbose.h>
 #include <common/gfal_common_plugin.h>
 

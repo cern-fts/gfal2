@@ -6,6 +6,7 @@ SET(IS_IFCE FALSE)
 add_subdirectory(global)
 add_subdirectory(config)
 add_subdirectory(file)
+add_subdirectory(cancel)
 add_subdirectory(externals/utils)
 add_subdirectory(externals/g_config_manager)
 add_subdirectory(fdesc)
@@ -65,7 +66,7 @@ ENDIF(IS_IFCE)
 
 LIST(APPEND main_libs ${src_posix} ${src_common} ${src_global} ${src_config}
          ${mds_source} ${src_uri} ${src_logger} ${src_g_shared_map}
-         ${src_file} )
+         ${src_file} ${src_cancel})
 
 
 IF (MAIN_CORE)

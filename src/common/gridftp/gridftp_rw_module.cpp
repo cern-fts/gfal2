@@ -88,10 +88,9 @@ inline int gridftp_rw_valid_get(const Glib::Quark & scope, GridFTP_File_desc* de
 		if(desc->is_eof()){
             static_cast<GridFTP_Request_state*>(desc->stream.get())->wait_callback(scope);
 		}else{
-				gfal_log(GFAL_VERBOSE_TRACE," not a full read -> kill the connexion ");
+                gfal_log(GFAL_VERBOSE_TRACE,"not a full read -> kill the connexion ");
 				try{
-					globus_ftp_client_abort(desc->stream->sess->get_ftp_handle());
-                    static_cast<GridFTP_Request_state*>(desc->stream.get())->wait_callback(scope);
+                    desc->stream->cancel_operation(scope, "Not a full read, connexion killed");
 				}catch(Glib::Error & e ){
 					// silent !!
 				}
