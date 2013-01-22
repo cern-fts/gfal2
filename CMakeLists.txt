@@ -82,8 +82,6 @@ SET(ONLY_TESTS FALSE
 
 
 # libs checks
-SET(CGREEN_LIBRARIES "cgreen")
-
 pkg_check_modules(GLIB2_PKG REQUIRED glib-2.0)
 pkg_check_modules(GTHREAD2_PKG REQUIRED gthread-2.0)
 
