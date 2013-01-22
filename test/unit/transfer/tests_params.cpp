@@ -23,7 +23,6 @@
 #include <transfer/gfal_transfer_plugins.h>
 #include <common/gfal_types.h>
 #include <glibmm.h>
-#include <cgreen/cgreen.h>	
 #include <glib.h>
 
 
@@ -34,7 +33,7 @@ int get_locked_errcode(){
 	return EBUSY;
 }
 
-void create_params(){
+TEST(gfalTransfer, testparam){
 	GError * tmp_err=NULL;
 	gfalt_params_t  p = gfalt_params_handle_new(&tmp_err);
 	g_assert(p != NULL);
@@ -51,41 +50,41 @@ void create_params(){
 }
 
 
-void test_timeout_c(){
+TEST(gfalTransfer, testtimeout){
 	GError * tmp_err=NULL;
 	gfalt_params_t p = gfalt_params_handle_new(&tmp_err);
-	assert_true_with_message( p != NULL && tmp_err==NULL, "bad initialization ");
+    ASSERT_TRUE( p != NULL && tmp_err==NULL);
 	long res = gfalt_get_timeout(p, &tmp_err);
-	assert_true_with_message( res == GFALT_DEFAULT_TRANSFERT_TIMEOUT && tmp_err==NULL, "bad timeout value %ld %ld ", res, tmp_err);
+    ASSERT_TRUE( res == GFALT_DEFAULT_TRANSFERT_TIMEOUT && tmp_err==NULL);
 	guint64  r = (guint64) rand();
 	gfalt_set_timeout(p, r, &tmp_err);
-	assert_true_with_message( gfalt_get_timeout(p, &tmp_err)  == r, "bad timeout get ");	
+    ASSERT_TRUE( gfalt_get_timeout(p, &tmp_err)  == r);
 	gfalt_params_handle_delete(p,NULL);
 }
 
 
-void test_nbstreams_c(){
+TEST(gfalTransfer, testnbstream){
 	GError * tmp_err=NULL;
 	gfalt_params_t p = gfalt_params_handle_new(&tmp_err);
-	assert_true_with_message( p != NULL && tmp_err==NULL, "bad initialization ");
+    ASSERT_TRUE( p != NULL && tmp_err==NULL);
 	long res = gfalt_get_nbstreams(p, &tmp_err);
-	assert_true_with_message( res == GFALT_DEFAULT_NB_STREAM && tmp_err==NULL, "bad nbstreams value %ld %ld ", res, tmp_err);
+    ASSERT_TRUE( res == GFALT_DEFAULT_NB_STREAM && tmp_err==NULL);
 	long  r = rand();
 	gfalt_set_nbstreams(p, r, &tmp_err);
-	assert_true_with_message( gfalt_get_nbstreams(p, &tmp_err)  == r, "bad timeout get ");	
+    ASSERT_TRUE( gfalt_get_nbstreams(p, &tmp_err)  == r);
 	gfalt_params_handle_delete(p,NULL);
 }
 
-void test_local_transfers(){
+TEST(gfalTransfer, testlocaltransfer){
     GError * tmp_err=NULL;
     gfalt_params_t p = gfalt_params_handle_new(&tmp_err);
-    assert_true_with_message( p != NULL && tmp_err==NULL, "bad initialization ");
+    ASSERT_TRUE( p != NULL && tmp_err==NULL);
     gboolean res = gfalt_get_local_transfer_perm(p, &tmp_err);
-    assert_true_with_message( res == TRUE && tmp_err==NULL, "def value should be true");
+    ASSERT_TRUE( res == TRUE && tmp_err==NULL);
 
     int ret = gfalt_set_local_transfer_perm(p, FALSE, &tmp_err);
     res = gfalt_get_local_transfer_perm(p, &tmp_err);
-    assert_true_with_message( res == FALSE && ret == FALSE && tmp_err==NULL, "should be false");
+    ASSERT_TRUE( res == FALSE && ret == FALSE && tmp_err==NULL);
     gfalt_params_handle_delete(p,NULL);
 }
 

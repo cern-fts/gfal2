@@ -16,6 +16,8 @@
 */
 
 
+#include <gtest/gtest.h>
+
 #ifndef TESTS_PARAMS_H
 #define TESTS_PARAMS_H
 

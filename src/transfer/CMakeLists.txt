@@ -16,7 +16,6 @@ SET(gfal2_link "gfal2")
 IF (MAIN_TRANSFER)
 
 
-
 	LIST(APPEND header_transfer "gfal_transfer.h" "gfal_transfer_types.h")
 
 	include_directories( "../ " "../libcpp/" ${GLIB2_PKG_INCLUDE_DIRS} 
@@ -49,4 +48,3 @@ ENDIF  (MAIN_TRANSFER)
 
 
 link_directories (${CMAKE_BINARY_DIR}/src) 
-add_subdirectory (test)
