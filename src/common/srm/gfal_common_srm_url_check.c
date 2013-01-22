@@ -52,7 +52,7 @@ gboolean srm_check_url_transport_compatible(plugin_handle handle, const char* ur
 
 
 gboolean plugin_url_check2(plugin_handle handle, const char* src, const char* dst, gfal_url2_check type ){
-	g_return_val_if_fail(handle != NULL,FALSE);
+    g_return_val_if_fail(handle != NULL && src != NULL && dst != NULL,FALSE);
 	gboolean res = FALSE;
     gboolean src_srm = srm_check_url(src);
     gboolean dst_srm = srm_check_url(dst);

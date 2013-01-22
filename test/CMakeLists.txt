@@ -21,6 +21,8 @@ IF(UNIT_TESTS OR FUNCTIONAL_TESTS)
 add_subdirectory(gtest-1.6.0)
 ENDIF(UNIT_TESTS OR FUNCTIONAL_TESTS)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/gtest-1.6.0/include)
+
 
 #mock src
 FILE(GLOB src_mock "mock/*.c")
@@ -40,3 +42,4 @@ add_subdirectory(common)
 add_subdirectory(functional/gfal2)   
 add_subdirectory(functional/old)   
 add_subdirectory(loadtests)
+add_subdirectory(unit)

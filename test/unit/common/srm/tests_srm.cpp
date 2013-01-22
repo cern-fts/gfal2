@@ -17,37 +17,43 @@
 
 
 #include "tests_srm.h"
-#include <cgreen/cgreen.h>
-#include <glib.h>
+#include <gtest/gtest.h>
+#include <gfal_api.h>
 #include <common/gfal_types.h>
+
 #include <common/gfal_common_internal.h>
+
+extern "C"{
+
 #include <common/srm/gfal_common_srm_url_check.h>
 #include <common/srm/gfal_common_srm.h>
 
+}
 
 
 
 
 
-void test_srm_url_check(){
+
+TEST(gfalPlugin, srmTest){
 	GError * tmp_err=NULL;
 	gfal_handle handle = gfal_initG(&tmp_err);
-	assert_true_with_message(tmp_err== NULL && handle ," initialize gfal failed ");
+    ASSERT_TRUE(tmp_err== NULL && handle);
 	
 	gfal_srmv2_opt opts;
 	gfal_srm_opt_initG(&opts, handle);
-	gboolean res = plugin_url_check2(&opts, NULL, NULL, GFAL_FILE_COPY);
-	assert_true_with_message(res == FALSE ," bad url");
+    gboolean res = plugin_url_check2(&opts, NULL, NULL, GFAL_FILE_COPY);
+    ASSERT_TRUE(res == FALSE);
 	res = plugin_url_check2(&opts, "srm://blabla.com/tata", "srm://blabla.com/toto", GFAL_FILE_COPY);
-	assert_true_with_message(res == TRUE ,"good url");
+    ASSERT_TRUE(res == TRUE);
 	res = plugin_url_check2(&opts, NULL , "srm://blabla.com/toto", GFAL_FILE_COPY);
-	assert_true_with_message(res == FALSE ," one bad url");
+    ASSERT_TRUE(res == FALSE);
 	res = plugin_url_check2(&opts, "fsdfds", "srm://blabla.com/toto", GFAL_FILE_COPY);
-	assert_true_with_message(res == FALSE ,"bad protocol format");
+    ASSERT_TRUE(res == FALSE );
 	res = plugin_url_check2(&opts, "srm://blabla.com/toto", "dsffds", GFAL_FILE_COPY);
-	assert_true_with_message(res == FALSE ,"bad protocol format 2");
+    ASSERT_TRUE(res == FALSE);
 	res = plugin_url_check2(&opts, "sr", "", GFAL_FILE_COPY);
-	assert_true_with_message(res == FALSE ,"short url test");	
+    ASSERT_TRUE(res == FALSE);
 	gfal_handle_freeG(handle);
 }
 

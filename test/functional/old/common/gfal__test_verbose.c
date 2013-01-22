@@ -22,8 +22,8 @@
 #include "gfal_common_errverbose.h"
 
 
- 	
 
+// stupid test for library link test
 void gfal2_test_verbose_set_get()
 {
 	gfal_set_verbose(GFAL_VERBOSE_DEBUG);

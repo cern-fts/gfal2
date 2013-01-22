@@ -46,8 +46,7 @@ SET(gfal2_link "gfal2")
 LIST(APPEND headers_main ${common_dir} ${posix_dir} ${global_dir} 
 			${mds_dir}  ${externals_dir})
 
-include_directories(${headers_main} ${GLIB2_PKG_INCLUDE_DIRS} 
-						${GTHREAD2_PKG_INCLUDE_DIRS})
+include_directories(${headers_main} )
 add_definitions( -DVERSION="${VERSION_STRING}" -Wall ${GLIB2_PKG_CFLAGS} ${GTHREAD2_PKG_CFLAGS})
 
 ## link to internal bdii system if IS_IFCE=false else to the is_interface
@@ -245,5 +244,4 @@ ENDIF(PLUGIN_HTTP)
 
 add_subdirectory(transfer)                         
 add_subdirectory(common/gridftp)    
-add_subdirectory(common/srm/test)
 add_subdirectory(common/file)
