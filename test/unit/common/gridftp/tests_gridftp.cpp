@@ -21,12 +21,13 @@
 #include <common/gridftp/gridftp_plugin_main.h>
 #include <common/gridftp/gridftpinterface.h>
 #include <common/gridftp/gridftpmodule.h>
-#include <cgreen/cgreen.h>
+#include <gtest/gtest.h>
 
 gfal_handle init_gfal_handle(){
 	GError * tmp_err=NULL;
 	gfal_handle h = gfal_initG(&tmp_err);
-	assert_true_with_message(tmp_err== NULL && h ," initialize gfal failed ");
+    g_assert(tmp_err == NULL);
+    g_assert( h != NULL);
 	return h;
 }
 
@@ -35,32 +36,32 @@ plugin_handle init_gridftp_plugin_test(gfal_handle h){
 
 	
 	plugin_handle p = plugin_load(h, &tmp_err);	
-	assert_true_with_message(  p && tmp_err ==NULL ," must be a good init");
+    g_assert(  p && tmp_err ==NULL );
 	return p;	
 }
 
-void load_gridftp(){
+TEST(gfalGridFTP, load_gridftp){
 	GError * tmp_err=NULL;
     core_init();
 	gfal_handle h = gfal_initG(&tmp_err);
-	assert_true_with_message(tmp_err== NULL && h ," initialize gfal failed ");
+    ASSERT_TRUE(tmp_err== NULL && h );
 	
 	plugin_handle p = plugin_load(h, &tmp_err);
-	assert_true_with_message(  p && tmp_err ==NULL ," must be a good init");
+    ASSERT_TRUE(  p && tmp_err ==NULL );
 	plugin_unload(p);
 	
 	gfal_handle_freeG(h);
 }
 
 
-void handle_creation(){
+TEST(gfalGridFTP,handle_creation){
 	GError * tmp_err=NULL;
 	gfal_handle h = gfal_initG(&tmp_err);
-	assert_true_with_message(tmp_err== NULL && h ," initialize gfal failed ");
+    ASSERT_TRUE(tmp_err== NULL && h );
 	
 	GridFTPFactoryInterface* f = new GridFTPFactory(h);
 	GridftpModule* copy = new GridftpModule(  f);	
-	assert_true_with_message(copy != NULL, " must be a valid ");
+    ASSERT_TRUE(copy != NULL);
 	// create and delete properly
 	GridFTP_session* sess = f->gfal_globus_ftp_take_handle("gsiftp://fsdfdsfsd/fsdfds");
 	f->gfal_globus_ftp_release_handle(sess);
@@ -73,7 +74,7 @@ void handle_creation(){
 }
 
 
-void gridftp_parseURL(){
+TEST(gfalGridFTP,gridftp_parseURL){
 	// check null handle, must not segfault
 	plugin_url_check2(NULL, "gsiftp://myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
 
@@ -81,14 +82,14 @@ void gridftp_parseURL(){
 	plugin_handle p = init_gridftp_plugin_test(a);
 	// check with URL null, must not segfault and return false
 	bool res = plugin_url_check2(p, NULL, NULL, GFAL_FILE_COPY);	
-	assert_true_with_message(res == FALSE, " must be a bad URL ");
+    ASSERT_TRUE(res == FALSE);
 	
 	res = plugin_url_check2(p, "gsiftp://myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
-	assert_true_with_message(res == TRUE, " must two good URL ");
+    ASSERT_TRUE(res == TRUE);
 	res = plugin_url_check2(p, "myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
-	assert_true_with_message(res == FALSE, " first URL should be bad ");
+    ASSERT_TRUE(res == FALSE);
 	res = plugin_url_check2(p,  "gsiftp://myurl.com/mypath/myfile", "myurl.com/mypath/myfile", GFAL_FILE_COPY);
-	assert_true_with_message(res == FALSE, " first URL shoudl be bad ");
+    ASSERT_TRUE(res == FALSE);
 	plugin_unload(p);
 	
 	gfal_handle_freeG(a);
