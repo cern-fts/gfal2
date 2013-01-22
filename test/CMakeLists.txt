@@ -16,7 +16,10 @@ IF(ONLY_TESTS)
 	SET(OUTPUT_NAME_TRANSFER ${GFAL2_TRANSFER_PKG_LIBRARIES})	
 ENDIF(ONLY_TESTS)
 
-
+IF(UNIT_TESTS OR FUNCTIONAL_TESTS)
+# incldues tests
+add_subdirectory(gtest-1.6.0)
+ENDIF(UNIT_TESTS OR FUNCTIONAL_TESTS)
 
 
 #mock src
@@ -33,7 +36,7 @@ execute_process(COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf
 #include common library for tests
 add_subdirectory(common)
 
-# incldues tests
+
 add_subdirectory(functional/gfal2)   
 add_subdirectory(functional/old)   
 add_subdirectory(loadtests)
