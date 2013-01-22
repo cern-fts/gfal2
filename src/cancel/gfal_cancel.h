@@ -37,7 +37,7 @@ extern "C"
 #endif 
 
 typedef struct gfal_cancel_token_s* gfal_cancel_token_t;
-typedef void gfal_cancel_hook_cb(gfal2_context_t context, void* userdata);
+typedef void (*gfal_cancel_hook_cb)(gfal2_context_t context, void* userdata);
 
 /// @brief cancel operation
 ///

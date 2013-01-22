@@ -69,14 +69,40 @@ int gfal2_end_scope_cancel(gfal2_context_t context){
 }
 
 
+struct gfal_hook_data_s{
+    void* userdata;
+    gfal2_context_t context;
+    gfal_cancel_hook_cb cb;
+};
+
+
+static void gfal_ghook_cancel_wrapper(gpointer data){
+  struct gfal_hook_data_s* d  = data;
+  d->cb(d->context, d->userdata);
+}
 
 gfal_cancel_token_t gfal2_register_cancel_callback(gfal2_context_t context, gfal_cancel_hook_cb cb, void* userdata){
-    return NULL;
+    g_assert(context && cb);
+    g_mutex_lock(context->mux_cancel);
+    GHook* h = g_hook_alloc(&context->cancel_hooks);
+    struct gfal_hook_data_s* d = g_new(struct gfal_hook_data_s,1);
+    d->context = context;
+    d->userdata = userdata;
+    d->cb = cb;
+    h->data = d;
+    h->destroy = &g_free;
+    h->func = &gfal_ghook_cancel_wrapper;
+    g_mutex_unlock(context->mux_cancel);
+    return (gfal_cancel_token_t) h;
 }
 
 
 void gfal2_remove_cancel_callback(gfal2_context_t context, gfal_cancel_token_t token){
-
+    g_assert(context && token);
+    g_mutex_lock(context->mux_cancel);
+    GHook* cb = (GHook*) token;
+    g_hook_free(&context->cancel_hooks, cb);
+    g_mutex_unlock(context->mux_cancel);
 }
 
 ///
