@@ -36,7 +36,6 @@ ENDIF(PLUGIN_FILE)
 link_directories (${CMAKE_BINARY_DIR}/plugins) 
 link_directories (${CMAKE_BINARY_DIR}/src) 
 
-add_subdirectory (test)
 
 
 

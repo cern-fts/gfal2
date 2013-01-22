@@ -13,7 +13,7 @@ link_directories (${CMAKE_BINARY_DIR}/src)
 IF (PLUGIN_GRIDFTP)
 	FILE(GLOB src_test_gridftp "*.c*")
 
-     pkg_check_modules(GLOBUS_GASS_COPY_PKG REQUIRED globus-gass-copy)
+        pkg_check_modules(GLOBUS_GASS_COPY_PKG REQUIRED globus-gass-copy)
 
         include_directories( "../ " "../libcpp/" ${GLIB2_PKG_INCLUDE_DIRS}
                                                 ${GTHREAD2_PKG_INCLUDE_DIRS}  ${GLIBMM_PKG_INCLUDE_DIRS})
