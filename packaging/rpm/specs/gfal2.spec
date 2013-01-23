@@ -167,9 +167,15 @@ make clean
 %setup -q
 
 %build
-%cmake -DDOC_INSTALL_DIR=%{_docdir}/%{name}-%{version} .
+%cmake \
+-DDOC_INSTALL_DIR=%{_docdir}/%{name}-%{version} \
+-DUNIT_TESTS=TRUE \
+.
 make %{?_smp_mflags}
 make doc
+
+%check
+ctest -V
 
 %install
 rm -rf %{buildroot}
