@@ -92,6 +92,7 @@ gfal_cancel_token_t gfal2_register_cancel_callback(gfal2_context_t context, gfal
     h->data = d;
     h->destroy = &g_free;
     h->func = &gfal_ghook_cancel_wrapper;
+    g_hook_append(&context->cancel_hooks, h);
     g_mutex_unlock(context->mux_cancel);
     return (gfal_cancel_token_t) h;
 }
@@ -101,7 +102,7 @@ void gfal2_remove_cancel_callback(gfal2_context_t context, gfal_cancel_token_t t
     g_assert(context && token);
     g_mutex_lock(context->mux_cancel);
     GHook* cb = (GHook*) token;
-    g_hook_free(&context->cancel_hooks, cb);
+    g_hook_destroy_link(&context->cancel_hooks, cb);
     g_mutex_unlock(context->mux_cancel);
 }
 
