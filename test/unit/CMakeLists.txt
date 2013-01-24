@@ -7,6 +7,7 @@ add_subdirectory(common/srm)
 add_subdirectory(common/gridftp)
 add_subdirectory(common/file)
 add_subdirectory(global)
+add_subdirectory(cancel)
 add_subdirectory(transfer)
 
 endif(UNIT_TESTS)
