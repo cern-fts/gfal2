@@ -175,6 +175,9 @@ make %{?_smp_mflags}
 make doc
 
 %check
+
+setenv LD_LIBRARY_PATH %{buildroot}/src:\$LD_LIBRARY_PATH
+setenv LD_LIBRARY_PATH %{buildroot}/plugins:\$LD_LIBRARY_PATH
 ctest -V
 
 %install
