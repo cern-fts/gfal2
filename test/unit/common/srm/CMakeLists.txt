@@ -16,7 +16,7 @@ IF (PLUGIN_SRM)
         target_link_libraries(unit_test_srm_plugin ${OUTPUT_NAME_MAIN}
                     ${SRM_IFCE_PKG_LIBRARIES} ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_SRM} m
                     gfal2 gtest gtest_main)
-	
+	add_dependencies(unit_test_srm_plugin plugin_srm)	
 	add_test(test_srm_check_url unit_test_srm_plugin srm_url_check)
 
 

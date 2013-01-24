@@ -175,9 +175,10 @@ make %{?_smp_mflags}
 make doc
 
 %check
-
-setenv LD_LIBRARY_PATH %{buildroot}/src:\$LD_LIBRARY_PATH
-setenv LD_LIBRARY_PATH %{buildroot}/plugins:\$LD_LIBRARY_PATH
+export GFAL_PLUGIN_DIR=${PWD}/plugins/
+export GFAL_CONFIG_DIR=${PWD}/test/conf_test/
+export LD_LIBRARY_PATH=${PWD}/src:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=${PWD}/plugins:${LD_LIBRARY_PATH}
 ctest -V
 
 %install

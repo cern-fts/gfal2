@@ -26,7 +26,8 @@ IF (PLUGIN_GRIDFTP)
                                 ${OUTPUT_NAME_GRIDFTP} m
                                 gtest gtest_main)
 	
-        add_test(unit_test_gridftp_plugin unit_test_gridftp_plugin_exe )
+	add_dependencies(unit_test_gridftp_plugin_exe plugin_gridftp)
+	add_test(unit_test_gridftp_plugin unit_test_gridftp_plugin_exe )
 	
 ENDIF  (PLUGIN_GRIDFTP)
 
