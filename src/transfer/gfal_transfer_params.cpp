@@ -286,30 +286,6 @@ time_t gfalt_copy_get_elapsed_time(gfalt_transfer_status_t s, GError ** err){
 }
 
 
-int plugin_trigger_event(gfalt_params_t params, GQuark domain,
-                         gfal_event_side_t side, GQuark stage,
-                         const char* fmt, ...) {
-  if (params->event_callback) {
-    struct _gfalt_event event;
-    char buffer[512] = {0};
-
-    event.domain = domain;
-    event.side   = side;
-    event.stage  = stage;
-    event.timestamp = std::time(NULL);
-
-    va_list msg_args;
-    va_start(msg_args, fmt);
-    vsnprintf(buffer, sizeof(buffer), fmt, msg_args);
-    va_end(msg_args);
-    event.description = buffer;
-
-    params->event_callback(&event, params->user_data);
-  }
-  return 0;
-}
-
-
 /*
 int gfalt_set_uuid(gfalt_params_t, uuid_t uuid, GError** err);
 
