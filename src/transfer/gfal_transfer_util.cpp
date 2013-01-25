@@ -39,11 +39,14 @@ int plugin_trigger_event(gfalt_params_t params, GQuark domain,
   if (params->event_callback) {
     struct _gfalt_event event;
     char buffer[512] = {0};
+    GTimeVal tmst;
+
+    g_get_current_time(&tmst);
 
     event.domain = domain;
     event.side   = side;
     event.stage  = stage;
-    event.timestamp = std::time(NULL);
+    event.timestamp = tmst.tv_sec * 1000 + tmst.tv_usec;
 
     va_list msg_args;
     va_start(msg_args, fmt);

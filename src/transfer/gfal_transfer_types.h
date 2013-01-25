@@ -21,6 +21,7 @@
  
 #include <stdlib.h>
 #include <glib.h>
+#include <sys/time.h>
 
 #define GFALT_DEFAULT_TRANSFERT_TIMEOUT 180
 #define GFALT_DEFAULT_NB_STREAM			0
@@ -78,7 +79,7 @@ typedef enum {GFAL_EVENT_SOURCE = 0,
  */
 struct _gfalt_event {
   gfal_event_side_t side;         /*< Which side triggered the stage change */
-  time_t            timestamp;    /*< Timestamp */
+  gint64            timestamp;    /*< Timestamp in milliseconds */
   GQuark            stage;        /*< Stage. You can check the predefined ones. */
   GQuark            domain;       /*< Domain/protocol of this stage. i.e. SRM*/
   const char       *description;  /*< Additional description */
