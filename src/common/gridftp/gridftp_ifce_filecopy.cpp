@@ -222,12 +222,13 @@ void gridftp_checksum_transfer_verify(const char * src_chk, const char* dst_chk,
 }
 
 // clear dest if error occures in transfer, does not clean if dest file if set as already exist before any transfer
-void gridftp_auto_clean_filecopy(gfal2_context_t context, gfalt_params_t params, GError* checked_error, const char* dst){
+void GridftpModule::autoCleanFileCopy(gfalt_params_t params, GError* checked_error, const char* dst){
     if(checked_error && checked_error->code != EEXIST){
-        GError * tmp_err=NULL;
-        gfal_log(GFAL_VERBOSE_TRACE, "\t\tError in transfer, clean destionation file %s ", dst);
-        if( gfal2_unlink(context, dst, &tmp_err) < 0){
-            gfal_log(GFAL_VERBOSE_TRACE, "\t\tError in transfer, clean destionation file %s ", tmp_err->message);
+        gfal_log(GFAL_VERBOSE_TRACE, "\t\tError in transfer, clean destination file %s ", dst);
+        try{
+            this->unlink(dst);
+        }catch(...){
+           gfal_log(GFAL_VERBOSE_TRACE, "\t\tFailure in cleaning ...");
         }
     }
 }
@@ -305,7 +306,7 @@ int GridftpModule::filecopy(gfalt_params_t params, const char* src, const char* 
 
 
     if(gfal_error_keep_first_err(&tmp_err,&tmp_err_chk_copy , &tmp_err_chk_src, &tmp_err_chk_dst, NULL)){
-        gridftp_auto_clean_filecopy(_handle_factory->get_handle(), params, tmp_err, dst);
+        autoCleanFileCopy( params, tmp_err, dst);
         Gfal::gerror_to_cpp(&tmp_err);
     }
 

@@ -554,6 +554,7 @@ void GridFTP_Request_state::cancel_operation_async(const Glib::Quark &scope, con
     }
     gfal_globus_check_result(scope, res);
     this->set_error_code(ECANCELED);
+    this->set_error("Operation canceled");
 }
 
 void GridFTP_stream_state::poll_callback_stream(const Glib::Quark & scope){
