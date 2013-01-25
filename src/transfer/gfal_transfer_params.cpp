@@ -16,6 +16,7 @@
 #include <transfer/gfal_transfer_types_internal.h>
 #include <transfer/gfal_cpp_wrapper.h>
 #include <cerrno>
+#include <ctime>
 
 const Glib::Quark scope_transfer_param("Gfal::Transfer::Params");
 
@@ -33,7 +34,8 @@ void gfalt_params_handle_init(gfalt_params_t p, GError ** err){
     p->local_transfers=true;
     p->strict_mode = false;
     p->parent_dir_create = false;
-	uuid_clear(p->uuid);		
+	uuid_clear(p->uuid);
+	p->event_callback = NULL;
 }
 
 gfalt_params_t gfalt_params_handle_copy(gfalt_params_t params, GError ** err){
@@ -148,6 +150,17 @@ gint gfalt_set_monitor_callback(gfalt_params_t params, gfalt_monitor_func callba
 gfalt_monitor_func gfalt_get_monitor_callback(gfalt_params_t params, GError** err){
     g_return_val_err_if_fail(params != NULL, NULL, err, "[BUG] invalid params handle");
     return params->callback;
+}
+
+gint gfalt_set_event_callback(gfalt_params_t params, gfalt_event_func callback, GError** err){
+  g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+  params->event_callback = callback;
+  return 0;
+}
+
+gfalt_event_func gfalt_get_event_callback (gfalt_params_t params, GError** err){
+  g_return_val_err_if_fail(params != NULL, NULL, err, "[BUG] invalid params handle");
+  return params->event_callback;
 }
 
 guint gfalt_get_nbstreams(gfalt_params_t params, GError** err){
@@ -272,6 +285,28 @@ time_t gfalt_copy_get_elapsed_time(gfalt_transfer_status_t s, GError ** err){
     return s->hook->transfer_time;
 }
 
+
+int plugin_trigger_event(gfalt_params_t params, GQuark domain,
+                         gfal_event_side_t side, GQuark stage,
+                         const char* fmt, ...) {
+  if (params->event_callback) {
+    struct _gfalt_event event;
+    char buffer[512] = {0};
+
+    event.domain = domain;
+    event.side   = side;
+    event.stage  = stage;
+    event.timestamp = std::time(NULL);
+
+    va_list msg_args;
+    va_start(msg_args, fmt);
+    vsnprintf(buffer, sizeof(buffer), fmt, msg_args);
+    va_end(msg_args);
+
+    params->event_callback(&event, params->user_data);
+  }
+  return 0;
+}
 
 
 /*

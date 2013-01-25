@@ -36,6 +36,15 @@ extern "C"
 #endif  // __cplusplus
 
 
+/// Convenience method for event callback
+/// @param params The transfer parameters.
+/// @param domain The plugin domain.
+/// @param side   The side that triggered the change, if any.
+/// @param stage  The new stage.
+/// @param fmt    A format string for a message
+int plugin_trigger_event(gfalt_params_t params, GQuark domain,
+                         gfal_event_side_t side, GQuark stage,
+                         const char* fmt, ...);
 
 //
 // full list of functions that are re-searched by GFAL 2.0 in the plugins

@@ -56,9 +56,41 @@ typedef struct _gfalt_transfer_status* gfalt_transfer_status_t;
 typedef void (*gfalt_monitor_func)(gfalt_transfer_status_t h, const char* src, const char* dst, gpointer user_data)  ;
 
 
+/**
+ * @brief Predefined stages.
+ */
+extern GQuark GFAL_EVENT_PREPARE_ENTER;
+extern GQuark GFAL_EVENT_PREPARE_EXIT;
+extern GQuark GFAL_EVENT_TRANSFER_ENTER;
+extern GQuark GFAL_EVENT_TRANSFER_EXIT;
+extern GQuark GFAL_EVENT_CLOSE_ENTER;
+extern GQuark GFAL_EVENT_CLOSE_EXIT;
+extern GQuark GFAL_EVENT_CHECKSUM_ENTER;
+extern GQuark GFAL_EVENT_CHECKSUM_EXIT;
+extern GQuark GFAL_EVENT_CANCEL_ENTER;
+extern GQuark GFAL_EVENT_CANCEL_EXIT;
 
+typedef enum {GFAL_EVENT_SOURCE,
+              GFAL_EVENT_DESTINATION,
+              GFAL_EVENT_NONE} gfal_event_side_t;
+/**
+ * @brief Event message.
+ */
+struct _gfalt_event {
+  gfal_event_side_t side;         /*< Which side triggered the stage change */
+  time_t            timestamp;    /*< Timestamp */
+  GQuark            stage;        /*< Stage. You can check the predefined ones. */
+  GQuark            domain;       /*< Domain/protocol of this stage. i.e. SRM*/
+  const char       *description;  /*< Additional description */
+};
+typedef struct _gfalt_event* gfalt_event_t;
 
-
+/**
+ * This function is called when a transfer changes its stage.
+ * @param e : Event message.
+ * @param user_data : external pointer provided before
+ */
+typedef void (*gfalt_event_func)(const gfalt_event_t e, gpointer user_data);
 
 
 

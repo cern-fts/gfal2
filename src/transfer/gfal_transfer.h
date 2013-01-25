@@ -237,7 +237,7 @@ gpointer gfalt_get_user_data(gfalt_params_t,  GError** err);
      
 /**
  * @brief define a callback for monitoring the current transfer
- * The default value is NULL and no monitoring will occures
+ * The default value is NULL and no monitoring will occur
 */
 gint gfalt_set_monitor_callback(gfalt_params_t params, gfalt_monitor_func callback, GError** err);
 
@@ -245,6 +245,17 @@ gint gfalt_set_monitor_callback(gfalt_params_t params, gfalt_monitor_func callba
  * @brief get the current monitor callback
 */
 gfalt_monitor_func gfalt_get_monitor_callback(gfalt_params_t params, GError** err);
+
+/**
+ * @brief Define a callback for event monitoring
+ * The default value is NULL and no monitoring will occur
+ */
+gint gfalt_set_event_callback(gfalt_params_t params, gfalt_event_func callback, GError** err);
+
+/**
+ * @brief Get the current event monitor callback.
+ */
+gfalt_event_func gfalt_get_event_callback (gfalt_params_t params, GError** err);
 
 
 //

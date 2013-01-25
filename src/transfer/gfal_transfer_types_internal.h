@@ -61,6 +61,9 @@ struct _gfalt_params_t{
 	gpointer user_data;			// user data information for the monitoring callback
 	gfalt_monitor_func callback;
 	size_t buffer_size; // internal buffer size per flow for non-third party transfer
+
+	// Event callback
+	gfalt_event_func event_callback;
 };
 
 
