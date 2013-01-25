@@ -27,6 +27,7 @@
 #include <common/gfal_common_errverbose.h>
 #include <file/gfal_file_api.h>
 #include <transfer/gfal_transfer.h>
+#include <transfer/gfal_transfer_plugins.h>
 #include <externals/utils/uri_util.h>
 
 #include "gfal_common_srm_getput.h"
@@ -38,6 +39,10 @@
 
 GQuark srm_quark_3rd_party(){
     return g_quark_from_static_string("srm_plugin::filecopy");
+}
+
+GQuark srm_domain() {
+  return g_quark_from_static_string("SRM");
 }
 
 int srm_plugin_get_3rdparty(plugin_handle handle, gfalt_params_t params, const char * surl,
@@ -226,6 +231,10 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
     GError * tmp_err_get, *tmp_err_put,*tmp_err_chk_src, *tmp_err_cancel;
     tmp_err_chk_src= tmp_err_get = tmp_err_put = tmp_err_cancel= NULL;
 
+    plugin_trigger_event(params, srm_domain(),
+                         GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_ENTER,
+                         "");
+
     #pragma omp parallel num_threads(3)
     {
 
@@ -233,7 +242,13 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
         {
             #pragma omp section
             {
+                plugin_trigger_event(params, srm_domain(),
+                                     GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER,
+                                     "");
                 srm_plugin_check_checksum(handle, context, params, src, buff_src_checksum, &tmp_err_chk_src);
+                plugin_trigger_event(params, srm_domain(),
+                                     GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT,
+                                     "");
             }
             #pragma omp section
             {
@@ -266,6 +281,10 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
 
     gfal_srm_check_cancel(context, &tmp_err_cancel);
 
+    plugin_trigger_event(params, srm_domain(),
+                         GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_EXIT,
+                         "");
+
    if( !gfal_error_keep_first_err(&tmp_err, &tmp_err_get, &tmp_err_chk_src, &tmp_err_put, &tmp_err_cancel, NULL) ){ // do the first resolution
 
             if(!tmp_err){
@@ -273,15 +292,32 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
                 if( res == 0 && put_waiting){
                     gfal_log(GFAL_VERBOSE_TRACE, "\ttransfer executed, execute srm put done"); // commit transaction
 
+                    plugin_trigger_event(params, srm_domain(),
+                                         GFAL_EVENT_DESTINATION, GFAL_EVENT_CLOSE_ENTER,
+                                         "%s", dst);
+
                     res= gfal_srm_putdone_simple(handle, dst, reqtoken, &tmp_err);
                     if(res ==0){
                         put_waiting = FALSE;
+
+                        plugin_trigger_event(params, srm_domain(),
+                                             GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER,
+                                             "");
+
                         if( (res = srm_plugin_check_checksum(handle, context, params, dst, buff_dst_checksum, &tmp_err)) ==0 ){  // try to get resu checksum
                             res= srm_compare_checksum_transfer(params, src, dst,
                                                               buff_src_checksum,
                                                               buff_dst_checksum, &tmp_err);
                         }
+
+                        plugin_trigger_event(params, srm_domain(),
+                                             GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_EXIT,
+                                             "");
                     }
+
+                    plugin_trigger_event(params, srm_domain(),
+                                         GFAL_EVENT_DESTINATION, GFAL_EVENT_CLOSE_EXIT,
+                                         "%s", dst);
                 }
 
             }
