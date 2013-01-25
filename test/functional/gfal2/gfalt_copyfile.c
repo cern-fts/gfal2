@@ -14,8 +14,8 @@ void event_callback(const gfalt_event_t e, gpointer user_data)
                                    "DST",
                                    "BTH"};
 
-  printf("[%s:%ld] %s\t%s\t%s\n",
-         side_str[e->side], e->timestamp,
+  printf("[%ld] %s %s\t%s\t%s\n",
+         e->timestamp, side_str[e->side],
          g_quark_to_string(e->domain), g_quark_to_string(e->stage),
          e->description);
 }
