@@ -19,7 +19,7 @@
  
 #include "gridftpmodule.h"
 
-bool gridftp_module_file_exist(GridFTP_session* sess, const char * url);
+bool gridftp_module_file_exist(gfal2_context_t context, GridFTP_session* sess, const char * url);
 
 
 

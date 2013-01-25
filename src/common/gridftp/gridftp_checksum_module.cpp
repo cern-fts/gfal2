@@ -53,6 +53,7 @@ void GridftpModule::checksum(const char* url, const char* check_type,
         throw Gfal::CoreException(scope_checksum,"buffer length for checksum calculation is not enought",ENOBUFS);
 
     req->start();
+    GridFTPOperationCanceler canceler(_handle_factory->get_handle(), req.get());
     globus_result_t res = globus_ftp_client_cksm(
                 req->sess->get_ftp_handle(),
                 url,

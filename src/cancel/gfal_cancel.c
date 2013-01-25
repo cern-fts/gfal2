@@ -39,11 +39,11 @@ int gfal2_cancel(gfal2_context_t context){
     const int n_cancel = g_atomic_int_get(&(context->running_ops));
     context->cancel = TRUE;
     g_hook_list_invoke(&context->cancel_hooks, TRUE);
+    g_mutex_unlock(context->mux_cancel);
     while( (g_atomic_int_get(&(context->running_ops))) > 0){
         usleep(50);
     }
     context->cancel = FALSE;
-    g_mutex_unlock(context->mux_cancel);
     return n_cancel;
 }
 

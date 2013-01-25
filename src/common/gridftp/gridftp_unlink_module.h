@@ -18,7 +18,7 @@
 
 #include "gridftpmodule.h"
 
-void gridftp_unlink_internal(GridFTP_session* sess, const char * path, bool own_session=true);
+void gridftp_unlink_internal(gfal2_context_t context, GridFTP_session* sess, const char * path, bool own_session=true);
 
 extern "C" int gfal_gridftp_unlinkG(plugin_handle handle, const char* url, GError** err);
 

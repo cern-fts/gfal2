@@ -5,7 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <gfal_api.h>
+#include <signal.h>
 #include <transfer/gfal_transfer.h>
+
+gfal2_context_t handle=NULL;
 
 
 void event_callback(const gfalt_event_t e, gpointer user_data)
@@ -22,13 +25,24 @@ void event_callback(const gfalt_event_t e, gpointer user_data)
 }
 
 
+
+// setup interrupt
+void sigint_cancel(int param)
+{
+  printf("User pressed Ctrl+C\n");
+  if(handle)
+    gfal2_cancel(handle);
+}
+
+
 int main(int argc, char** argv){
+    signal(SIGINT, &sigint_cancel);
 	if( argc <3 ){
 		printf(" Usage %s [src_url] [dst_url] \n",argv[0]);
 		return 1;
 	}
 	GError * tmp_err = NULL; // classical GError/glib error management
-	gfal2_context_t handle;
+
 	
 	// initialize gfal
     gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE | GFAL_VERBOSE_TRACE_PLUGIN);

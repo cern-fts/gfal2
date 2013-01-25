@@ -18,11 +18,12 @@
 
 const Glib::Quark scope_unlink("GridftpModule::unlink");
 
-void gridftp_unlink_internal(GridFTP_session* sess, const char * path, bool own_session){
+void gridftp_unlink_internal(gfal2_context_t context, GridFTP_session* sess, const char * path, bool own_session){
 
 	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::unlink] ");	
 	std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(sess, own_session)); // get connexion session
-	
+    GridFTPOperationCanceler(context, req.get());
+
     req->start();
 	globus_result_t res = globus_ftp_client_delete(
 				req->sess->get_ftp_handle(),
@@ -42,7 +43,7 @@ void GridftpModule::unlink(const char* path)
 	if(path== NULL )
 		throw Glib::Error(scope_unlink, EINVAL, "Invalid arguments path");
 	
-	gridftp_unlink_internal(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)),
+    gridftp_unlink_internal(_handle_factory->get_handle(), this->_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)),
 							path,
 							true);
 	

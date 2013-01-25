@@ -19,13 +19,13 @@
 
 const Glib::Quark scope_exist("GridftpModule::file_exist");
 
-bool gridftp_module_file_exist(GridFTP_session* sess, const char * url){
+bool gridftp_module_file_exist(gfal2_context_t context, GridFTP_session* sess, const char * url){
 	
 	gfal_log(GFAL_VERBOSE_TRACE,"   -> [gridftp_module_file_exist]");
 	
 
 	std::auto_ptr<GridFTP_Request_state> req(new GridFTP_Request_state(sess, false));
-
+    GridFTPOperationCanceler canceler(context, req.get());
 
     req->start();
 	globus_result_t res = globus_ftp_client_exists(

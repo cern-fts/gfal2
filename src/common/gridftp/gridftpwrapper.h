@@ -18,6 +18,7 @@
 #include <ctime>
 #include <externals/utils/time_utils.h>
 #include <glib.h>
+#include <cancel/gfal_cancel.h>
 #include "gridftpmodule.h"
 
 
@@ -47,6 +48,8 @@ struct GridFTP_Request_state{
     GridFTP_Request_state(GridFTP_session * s, bool own_session=true,  GridFtp_request_type request_type = GRIDFTP_REQUEST_FTP);
 	virtual ~GridFTP_Request_state();
 
+    // cancel token
+    gfal_cancel_token_t cancel_token;
     // ftp session
 	std::auto_ptr<GridFTP_session> sess;  
     // request type
@@ -120,6 +123,8 @@ struct GridFTP_Request_state{
     void err_report(const Glib::Quark &scope);
 
     void cancel_operation(const Glib::Quark &scope, const std::string & msg = "");
+
+    void cancel_operation_async(const Glib::Quark &scope, const std::string & msg = "");
 };
 
 struct GridFTP_stream_state : public GridFTP_Request_state{
@@ -179,6 +184,18 @@ struct GridFTP_stream_state : public GridFTP_Request_state{
 
     void poll_callback_stream(const Glib::Quark & scope);
     void wait_callback_stream(const Glib::Quark & scope);
+};
+
+class GridFTPOperationCanceler{
+public:
+    GridFTPOperationCanceler(gfal2_context_t context, GridFTP_Request_state* state);
+    ~GridFTPOperationCanceler();
+
+private:
+    GridFTP_Request_state* _state;
+    gfal_cancel_token_t _cancel_token;
+    gfal2_context_t _context;
+
 };
 
 				

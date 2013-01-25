@@ -29,14 +29,14 @@ const Glib::Quark scope_filecopy("GridFTP::Filecopy");
 const Glib::Quark gsiftp_domain("GSIFTP");
 const char * gridftp_checksum_transfer_config= "COPY_CHECKSUM_TYPE";
 
-void gridftp_filecopy_delete_existing(GridFTP_session * sess, gfalt_params_t params, const char * url){
+void gridftp_filecopy_delete_existing(gfal2_context_t context, GridFTP_session * sess, gfalt_params_t params, const char * url){
 	const bool replace = gfalt_get_replace_existing_file(params,NULL);
-    bool exist = gridftp_module_file_exist(sess, url);
+    bool exist = gridftp_module_file_exist(context, sess, url);
     if(exist){
 
         if(replace){
             gfal_log(GFAL_VERBOSE_TRACE, " File %s already exist, delete it for override ....",url);
-            gridftp_unlink_internal(sess, url, false);
+            gridftp_unlink_internal(context, sess, url, false);
             gfal_log(GFAL_VERBOSE_TRACE, " File %s deleted with success, proceed to copy ....",url);
         }else{
             char err_buff[GFAL_ERRMSG_LEN];
@@ -177,7 +177,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
     Callback_handler callback_handler(params, req.get(), src, dst);
 
     if( gfalt_get_strict_copy_mode(params, NULL) == false){
-        gridftp_filecopy_delete_existing(sess, params, dst);
+        gridftp_filecopy_delete_existing(factory->get_handle(), sess, params, dst);
         gridftp_create_parent_copy(factory->get_handle(), params, dst);
     }
 
@@ -186,6 +186,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
 
     req->start();
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);
+    GridFTPOperationCanceler canceler(factory->get_handle(), req.get());
     gfal_globus_result_t res = globus_gass_copy_register_url_to_url(
         sess->get_gass_handle(),
         (char*)src,
@@ -217,6 +218,17 @@ void gridftp_checksum_transfer_verify(const char * src_chk, const char* dst_chk,
             throw Gfal::CoreException(scope_filecopy, ss.str(),EIO);
         }
 
+    }
+}
+
+// clear dest if error occures in transfer, does not clean if dest file if set as already exist before any transfer
+void gridftp_auto_clean_filecopy(gfal2_context_t context, gfalt_params_t params, GError* checked_error, const char* dst){
+    if(checked_error && checked_error->code != EEXIST){
+        GError * tmp_err=NULL;
+        gfal_log(GFAL_VERBOSE_TRACE, "\t\tError in transfer, clean destionation file %s ", dst);
+        if( gfal2_unlink(context, dst, &tmp_err) < 0){
+            gfal_log(GFAL_VERBOSE_TRACE, "\t\tError in transfer, clean destionation file %s ", tmp_err->message);
+        }
     }
 }
 
@@ -293,6 +305,7 @@ int GridftpModule::filecopy(gfalt_params_t params, const char* src, const char* 
 
 
     if(gfal_error_keep_first_err(&tmp_err,&tmp_err_chk_copy , &tmp_err_chk_src, &tmp_err_chk_dst, NULL)){
+        gridftp_auto_clean_filecopy(_handle_factory->get_handle(), params, tmp_err, dst);
         Gfal::gerror_to_cpp(&tmp_err);
     }
 
