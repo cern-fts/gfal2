@@ -26,6 +26,7 @@
 #include <file/gfal_file_api.h>
 
 const Glib::Quark scope_filecopy("GridFTP::Filecopy");
+const Glib::Quark gsiftp_domain("GSIFTP");
 const char * gridftp_checksum_transfer_config= "COPY_CHECKSUM_TYPE";
 
 void gridftp_filecopy_delete_existing(GridFTP_session * sess, gfalt_params_t params, const char * url){
@@ -229,6 +230,7 @@ int GridftpModule::filecopy(gfalt_params_t params, const char* src, const char* 
     char checksum_dst[GFAL_URL_MAX_LEN]={0};
     char checksum_user_defined[GFAL_URL_MAX_LEN];
     char checksum_type_user_define[GFAL_URL_MAX_LEN];
+
     gboolean checksum_check = gfalt_get_checksum_check(params, &tmp_err);
     Gfal::gerror_to_cpp(&tmp_err);
     struct scoped_free{
@@ -260,16 +262,28 @@ int GridftpModule::filecopy(gfalt_params_t params, const char* src, const char* 
         {
             #pragma omp section  // calc src checksum
             {
+              plugin_trigger_event(params, gsiftp_domain,
+                                   GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER,
+                                   "%s", chk_algo.checksum_algo);
                CPP_GERROR_TRY
                if(checksum_check)
                     checksum(src, chk_algo.checksum_algo, checksum_src, GFAL_URL_MAX_LEN, 0,0);
                CPP_GERROR_CATCH(&tmp_err_chk_src);
+               plugin_trigger_event(params, gsiftp_domain,
+                                    GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT,
+                                    "%s", chk_algo.checksum_algo);
             }
             #pragma omp section // start transfert and replace logic
             {
+                  plugin_trigger_event(params, gsiftp_domain,
+                                       GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
+                                       "");
                   CPP_GERROR_TRY
                   gridftp_filecopy_copy_file_internal(_handle_factory, params, src, dst);
                   CPP_GERROR_CATCH(&tmp_err_chk_copy);
+                  plugin_trigger_event(params, gsiftp_domain,
+                                       GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
+                                       "");
             }
         }
     }
@@ -280,10 +294,18 @@ int GridftpModule::filecopy(gfalt_params_t params, const char* src, const char* 
     }
 
     // calc checksum for dst
+    plugin_trigger_event(params, gsiftp_domain,
+                         GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER,
+                         "%s", chk_algo.checksum_algo);
     if(checksum_check){
         checksum(dst, chk_algo.checksum_algo, checksum_dst, GFAL_URL_MAX_LEN, 0,0);
         gridftp_checksum_transfer_verify(checksum_src, checksum_dst, checksum_user_defined);
     }
+
+    plugin_trigger_event(params, gsiftp_domain,
+                         GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_EXIT,
+                         "%s", chk_algo.checksum_algo);
+
     return 0;
 }
 
