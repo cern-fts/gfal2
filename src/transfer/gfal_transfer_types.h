@@ -70,7 +70,7 @@ extern GQuark GFAL_EVENT_CHECKSUM_EXIT;
 extern GQuark GFAL_EVENT_CANCEL_ENTER;
 extern GQuark GFAL_EVENT_CANCEL_EXIT;
 
-typedef enum {GFAL_EVENT_SOURCE,
+typedef enum {GFAL_EVENT_SOURCE = 0,
               GFAL_EVENT_DESTINATION,
               GFAL_EVENT_NONE} gfal_event_side_t;
 /**

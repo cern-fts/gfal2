@@ -18,5 +18,13 @@
 #include <transfer/gfal_transfer_internal.h>
 
 
-
-
+GQuark GFAL_EVENT_PREPARE_ENTER = g_quark_from_static_string("PREPARE:ENTER");
+GQuark GFAL_EVENT_PREPARE_EXIT = g_quark_from_static_string("PREPARE:EXIT");
+GQuark GFAL_EVENT_TRANSFER_ENTER = g_quark_from_static_string("TRANSFER:ENTER");
+GQuark GFAL_EVENT_TRANSFER_EXIT = g_quark_from_static_string("TRANSFER:EXIT");
+GQuark GFAL_EVENT_CLOSE_ENTER = g_quark_from_static_string("CLOSE:ENTER");
+GQuark GFAL_EVENT_CLOSE_EXIT = g_quark_from_static_string("CLOSE:EXIT");
+GQuark GFAL_EVENT_CHECKSUM_ENTER = g_quark_from_static_string("CHECKSUM:ENTER");
+GQuark GFAL_EVENT_CHECKSUM_EXIT = g_quark_from_static_string("CHECKSUM:EXIT");
+GQuark GFAL_EVENT_CANCEL_ENTER = g_quark_from_static_string("CANCEL:ENTER");
+GQuark GFAL_EVENT_CANCEL_EXIT = g_quark_from_static_string("CANCEL:EXIT");

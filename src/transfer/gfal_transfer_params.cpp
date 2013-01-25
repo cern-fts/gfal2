@@ -302,6 +302,7 @@ int plugin_trigger_event(gfalt_params_t params, GQuark domain,
     va_start(msg_args, fmt);
     vsnprintf(buffer, sizeof(buffer), fmt, msg_args);
     va_end(msg_args);
+    event.description = buffer;
 
     params->event_callback(&event, params->user_data);
   }
