@@ -17,6 +17,8 @@
 
 #include <string>
 #include <sstream>
+#include <ctime>
+#include <csignal>
 
 #include "gridftp_exist.h"
 #include "gridftp_ifce_filecopy.h"
@@ -28,6 +30,7 @@
 const Glib::Quark scope_filecopy("GridFTP::Filecopy");
 const Glib::Quark gsiftp_domain("GSIFTP");
 const char * gridftp_checksum_transfer_config= "COPY_CHECKSUM_TYPE";
+const char * gridftp_perf_marker_timeout_config= "PERF_MARKER_TIMEOUT";
 
 void gridftp_filecopy_delete_existing(gfal2_context_t context, GridFTP_session * sess, gfalt_params_t params, const char * url){
 	const bool replace = gfalt_get_replace_existing_file(params,NULL);
@@ -98,28 +101,61 @@ void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, gl
 
 struct Callback_handler{
 
-    Callback_handler(gfalt_params_t params, GridFTP_Request_state* req, const char* src, const char* dst){
+    Callback_handler(gfal2_context_t context,
+                     gfalt_params_t params, GridFTP_Request_state* req,
+                     const char* src, const char* dst) :
+        args(NULL){
         GError * tmp_err=NULL;
-        args.callback = gfalt_get_monitor_callback(params, &tmp_err);
+        gfalt_monitor_func callback = gfalt_get_monitor_callback(params, &tmp_err);
         Gfal::gerror_to_cpp(&tmp_err);
 
-        args.req = req;
-        args.user_args = gfalt_get_user_data(params, &tmp_err);
-        args.src = src;
-        args.dst = dst;
-        args.start_time = time(NULL);
-        Gfal::gerror_to_cpp(&tmp_err);
-        if(args.callback){
+        if(callback){
+            args = new callback_args();
+            memset(&args->timer_spec,0, sizeof(struct itimerspec));
+            args->timeout_timer = NULL;
+            args->callback = callback;
+            args->req = req;
+            args->user_args = gfalt_get_user_data(params, &tmp_err);
+            Gfal::gerror_to_cpp(&tmp_err);
+            args->src = src;
+            args->dst = dst;
+            args->start_time = time(NULL);
+            args->timer_spec.it_value.tv_sec = gfal2_get_opt_integer_with_default(context, GRIDFTP_CONFIG_GROUP,
+                                                                                  gridftp_perf_marker_timeout_config, 180);
             Glib::RWLock::ReaderLock l (req->mux_req_state);
-            Glib::Mutex::Lock l_call (req->mux_callback_lock);
-            globus_gass_copy_register_performance_cb(args.req->sess->get_gass_handle(), gsiftp_rd3p_callback, (gpointer) &args);
+            globus_gass_copy_register_performance_cb(args->req->sess->get_gass_handle(), gsiftp_rd3p_callback, (gpointer) args);
+            if(args->timer_spec.it_value.tv_sec > 0){
+                struct sigevent timer_event;
+                memset(&timer_event,0, sizeof(struct sigevent));
+                timer_event.sigev_notify = SIGEV_THREAD;
+                timer_event.sigev_value.sival_ptr = args;
+                timer_event.sigev_notify_function = &Callback_handler::func_timer;
+
+                timer_create(CLOCK_MONOTONIC, &timer_event,&args->timeout_timer); // setup timer for cancel if inactivity
+                timer_settime(args->timeout_timer,0, &args->timer_spec, NULL);
+            }
+        }
+
+
+    }
+
+    static void func_timer(union sigval v){
+        callback_args* args = (callback_args*) v.sival_ptr;
+        if( args->req != NULL){
+            args->req->cancel_operation_async(scope_filecopy, "gsiftp performance marker timeout, cancel");
+            timer_settime(args->timeout_timer,0, &args->timer_spec, NULL); // re-arm for deletion
+        }else{ // safe deletion
+            delete args;
         }
     }
 
     virtual ~Callback_handler(){
-        Glib::RWLock::ReaderLock l (args.req->mux_req_state);
-        Glib::Mutex::Lock l_call (args.req->mux_callback_lock);
-        globus_gass_copy_register_performance_cb(args.req->sess->get_gass_handle(), NULL, NULL);
+        Glib::RWLock::ReaderLock l (args->req->mux_req_state);
+        globus_gass_copy_register_performance_cb(args->req->sess->get_gass_handle(), NULL, NULL);
+        if(args && args->timer_spec.it_value.tv_sec  <= 0) // set args for deletion if timer enabled
+            delete args;
+        else
+            args->req = NULL;
     }
     struct callback_args{
         gfalt_monitor_func callback;
@@ -128,7 +164,9 @@ struct Callback_handler{
         const char* src;
         const char* dst;
         time_t start_time;
-    } args;
+        timer_t timeout_timer;
+        struct itimerspec timer_spec;
+    } *args;
 };
 
 void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, globus_off_t total_bytes, float throughput, float avg_throughput){
@@ -136,7 +174,9 @@ void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, gl
 
     GridFTP_Request_state* req = args->req;
     Glib::RWLock::ReaderLock l (req->mux_req_state);
-//    Glib::Mutex::Lock l_call (req->mux_callback_lock); --> disable the security lock, globus seems to stuck internally with the pthread threading model
+    if(args->timer_spec.it_value.tv_sec > 0){ // if globus perf marker timer enabled, re-arm it
+        timer_settime(args->timeout_timer,0, &args->timer_spec, NULL);
+    }
 
     gfalt_hook_transfer_plugin_t hook;
     hook.bytes_transfered = total_bytes;
@@ -174,7 +214,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
     sess->set_tcp_buffer_size(tcp_buffer_size);
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] setup gsiftp buffer size to %d", tcp_buffer_size);
 
-    Callback_handler callback_handler(params, req.get(), src, dst);
+    Callback_handler callback_handler(factory->get_handle(), params, req.get(), src, dst);
 
     if( gfalt_get_strict_copy_mode(params, NULL) == false){
         gridftp_filecopy_delete_existing(factory->get_handle(), sess, params, dst);

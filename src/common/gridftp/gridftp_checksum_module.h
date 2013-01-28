@@ -22,6 +22,8 @@
 #include "gridftpmodule.h"
 
 
+
+
 extern "C" int gfal_gridftp_checksumG(plugin_handle handle, const char* url, const char* check_type,
                        char * checksum_buffer, size_t buffer_length,
                        off_t start_offset, size_t data_length,
