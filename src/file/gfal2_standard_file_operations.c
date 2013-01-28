@@ -288,14 +288,16 @@ int gfal2_setxattr (gfal2_context_t handle, const char *uri, const char *name,
     G_RETURN_ERR(res, tmp_err, err);
 }
 
-int gfal2_bring_online(gfal2_context_t handle, const char* uri, GError ** err){
+int gfal2_bring_online(gfal2_context_t handle, const char* uri,
+                       time_t pintime, time_t timeout,
+                       GError ** err){
     GError* tmp_err=NULL;
     int res= -1;
     GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(uri == NULL || handle ==NULL){
        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "uri or/and name or/and handle are an incorrect arguments");
     }else{
-       res = gfal_plugin_bring_onlineG(handle, uri, &tmp_err);;
+       res = gfal_plugin_bring_onlineG(handle, uri, pintime, timeout, &tmp_err);;
     }
     GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(res, tmp_err, err);

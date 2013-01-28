@@ -39,7 +39,9 @@
 
 
 static int gfal_srmv2_bring_online_internal(gfal_srmv2_opt* opts, const char* endpoint,
-                                            const char* surl, GError** err){
+                                            const char* surl,
+                                            time_t pintime, time_t timeout,
+                                            GError** err){
     struct srm_bringonline_input  input;
     struct srm_bringonline_output output;
     GError                       *tmp_err = NULL;
@@ -50,9 +52,13 @@ static int gfal_srmv2_bring_online_internal(gfal_srmv2_opt* opts, const char* en
         srm_context_t context = gfal_srm_ifce_context_setup(opts->handle, endpoint, error_buffer, sizeof(error_buffer), &tmp_err);
 
         if (context) {
+            context->timeout      = timeout;
+            context->timeout_conn = timeout;
+            context->timeout_ops  = timeout;
+
             input.nbfiles        = 1;
             input.surls          = (char**)&surl;
-            input.desiredpintime = opts->opt_srmv2_desiredpintime;
+            input.desiredpintime = pintime;
             input.protocols      = gfal_srm_params_get_protocols(params);
             input.spacetokendesc = gfal_srm_params_get_spacetoken(params);
 
@@ -84,7 +90,9 @@ static int gfal_srmv2_bring_online_internal(gfal_srmv2_opt* opts, const char* en
 
 
 
-int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl, GError** err){
+int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl,
+                             time_t pintime, time_t timeout,
+                             GError** err){
     gfal_srmv2_opt*     opts = (gfal_srmv2_opt*) ch;
     char                full_endpoint[GFAL_URL_MAX_LEN];
     enum gfal_srm_proto srm_type;
@@ -94,11 +102,13 @@ int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl, GError** err){
 
     ret = gfal_srm_determine_endpoint(opts, surl, full_endpoint,
                                       sizeof(full_endpoint),
-                                      &srm_type,   &tmp_err);
+                                      &srm_type, &tmp_err);
     if (ret >= 0) {
         switch (srm_type) {
         case PROTO_SRMv2:
-            ret = gfal_srmv2_bring_online_internal(opts, full_endpoint, surl, &tmp_err);
+            ret = gfal_srmv2_bring_online_internal(opts, full_endpoint, surl,
+                                                   pintime, timeout,
+                                                   &tmp_err);
             break;
         case PROTO_SRM:
             g_set_error(&tmp_err, 0, EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");

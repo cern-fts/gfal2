@@ -403,9 +403,13 @@ struct _gfal_plugin_interface{
       * OPTIONAL: Requests to stage a file to the fist layer on a hierarchical SE.
       * @param plugin_data : internal plugin context
       * @param url : The url of the file
+      * @param pintime : Time the file should stay in the cache
+      * @param timeout : Operation timeout
       * @param err:  GError error support
       */
-     int (*bring_online)(plugin_handle plugin_data, const char* url, GError** err);
+     int (*bring_online)(plugin_handle plugin_data, const char* url,
+                         time_t pintime, time_t timeout,
+                         GError** err);
 
 	 // reserved for future usage
 	 //! @cond
@@ -461,7 +465,9 @@ ssize_t gfal_plugin_getxattrG(gfal_handle, const char*, const char*, void* buff,
 ssize_t gfal_plugin_listxattrG(gfal_handle, const char*, char* list, size_t s_list, GError** err);
 int gfal_plugin_setxattrG(gfal_handle, const char*, const char*, const void*, size_t, int, GError**);
 
-int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri, GError ** err);
+int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri,
+                              time_t pintime, time_t timeout,
+                              GError ** err);
 //! @endcond
 
 #ifdef __cplusplus

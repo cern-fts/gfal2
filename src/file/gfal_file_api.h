@@ -196,7 +196,9 @@ ssize_t gfal2_listxattr (gfal2_context_t context, const char *path, char *list, 
 int gfal2_setxattr (gfal2_context_t context, const char *path, const char *name,
                const void *value, size_t size, int flags, GError ** err);
 
-int gfal2_bring_online(gfal2_context_t context, const char* path, GError ** err);
+int gfal2_bring_online(gfal2_context_t context, const char* path,
+                       time_t pintime, time_t timeout,
+                       GError ** err);
 
 
 /////////////////////////////////////////////////////

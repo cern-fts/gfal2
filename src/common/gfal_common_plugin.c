@@ -934,7 +934,9 @@ int gfal_plugin_setxattrG(gfal_handle handle, const char* path, const char* name
 	return resu;		
 }
 
-int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri, GError ** err){
+int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri,
+                              time_t pintime, time_t timeout,
+                              GError ** err){
     GError* tmp_err=NULL;
     int resu = -1;
 
@@ -942,7 +944,7 @@ int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri, GError **
         return gfal_plugin_checker_safe(cata_list, uri, GFAL_PLUGIN_BRING_ONLINE, terr);
     }
     int bringonline_executor(gfal_plugin_interface* cata_list, GError** terr){
-        resu = cata_list->bring_online(cata_list->plugin_data, uri, terr);
+        resu = cata_list->bring_online(cata_list->plugin_data, uri, pintime, timeout, terr);
         return resu;
     }
 

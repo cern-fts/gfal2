@@ -47,7 +47,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    if (gfal2_bring_online(handle, surl, &error) < 0) {
+    if (gfal2_bring_online(handle, surl, 28800, 28800, &error) < 0) {
         printf("Bring online failed: %s (%d)\n", error->message, error->code);
     }
     else {
