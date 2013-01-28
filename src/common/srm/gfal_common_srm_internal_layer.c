@@ -28,7 +28,8 @@ const char * srm_config_transfer_checksum= "COPY_CHECKSUM_TYPE";
 const char * srm_ops_timeout_key= "OPERATION_TIMEOUT";
 const char * srm_conn_timeout_key= "CONN_TIMEOUT";
 const char * srm_config_turl_protocols= "TURL_PROTOCOLS";
-const char* srm_config_3rd_party_turl_protocols= "TURL_3RD_PARTY_PROTOCOLS";
+const char * srm_config_3rd_party_turl_protocols= "TURL_3RD_PARTY_PROTOCOLS";
+const char * srm_config_keep_alive = "KEEP_ALIVE";
 
 #include "gfal_common_srm_internal_layer.h"
 // hotfix for the old srm lib 
@@ -39,7 +40,7 @@ void disable_srm_srm2__TReturnStatus_delete(struct srm2__TReturnStatus* status){
 
 
 struct _gfal_srm_external_call gfal_srm_external_call = { 
-    .srm_context_init = &srm_context_init,
+    .srm_context_init = &srm_context_init2,
     .srm_ls = &srm_ls,
     .srm_rmdir = &srm_rmdir,
     .srm_mkdir = &srm_mkdir,
@@ -63,7 +64,20 @@ int gfal_srm_ifce_context_init(struct srm_context* context, gfal_context_t handl
                                 char* errbuff, size_t s_errbuff, GError** err){
     gint timeout;
     GError * tmp_err=NULL;
-    gfal_srm_external_call.srm_context_init(context, (char*) endpoint, errbuff, s_errbuff, gfal_get_verbose());
+
+    gboolean keep_alive = gfal2_get_opt_boolean(handle, srm_config_group,
+                                                srm_config_keep_alive, &tmp_err);
+    if (tmp_err) {
+      g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+      return -1;
+    }
+
+    gfal_log(GFAL_VERBOSE_DEBUG, " SRM connexion keep-alive %d", keep_alive);
+
+    gfal_srm_external_call.srm_context_init(context, (char*) endpoint,
+                                            errbuff, s_errbuff, gfal_get_verbose(),
+                                            keep_alive);
+
     timeout =  gfal2_get_opt_integer(handle, srm_config_group, srm_ops_timeout_key, &tmp_err);
     if(!tmp_err){
         gfal_log(GFAL_VERBOSE_DEBUG, " SRM operation timeout %d", timeout);
@@ -76,6 +90,7 @@ int gfal_srm_ifce_context_init(struct srm_context* context, gfal_context_t handl
             context->timeout_conn = timeout;
         }
     }
+
     if(!tmp_err)
         return 0;
     G_RETURN_ERR(-1, tmp_err, err);

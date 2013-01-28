@@ -54,7 +54,8 @@ typedef enum _srm_req_type{
  */
 struct _gfal_srm_external_call{
 	
-	void (*srm_context_init)(struct srm_context *context,char *srm_endpoint,char *errbuf,int errbufsz,int verbose);
+	void (*srm_context_init)(struct srm_context *context,char *srm_endpoint,
+	                         char *errbuf,int errbufsz,int verbose, int keep_alive);
 	
 	int (*srm_ls)(struct srm_context *context,
 		struct srm_ls_input *input,struct srm_ls_output *output);
