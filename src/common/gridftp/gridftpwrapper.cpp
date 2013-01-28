@@ -422,7 +422,8 @@ void gfal_globus_store_error(GridFTP_Request_state * state, globus_object_t *err
 		char * glob_str=NULL;	
 		state->set_error_code(gfal_globus_error_convert(error, &glob_str));
 		if(glob_str){
-			state->set_error(glob_str);
+            if(state->get_error().empty())
+                state->set_error(glob_str);
 			g_free(glob_str);
 		}else{
 			state->set_error("Uknow Globus Error, bad error report");
@@ -510,8 +511,8 @@ void GridFTP_Request_state::poll_callback(const Glib::Quark &scope){
 
     if(timeout && this->canceling==FALSE){
        gfal_log(GFAL_VERBOSE_TRACE,"gfal gridftp operation timeout occures ! cancel the operation ...");
-        cancel_operation(scope, "gfal gridftp internal operation timeout, operation canceled");
-        this->set_error_code(ETIMEDOUT);
+       cancel_operation(scope, "gfal gridftp internal operation timeout, operation canceled");
+       this->set_error_code(ETIMEDOUT);
     }
 
     gfal_log(GFAL_VERBOSE_TRACE," <- out of gass polling for request ");
@@ -554,7 +555,7 @@ void GridFTP_Request_state::cancel_operation_async(const Glib::Quark &scope, con
     }
     gfal_globus_check_result(scope, res);
     this->set_error_code(ECANCELED);
-    this->set_error("Operation canceled");
+    this->set_error(msg);
 }
 
 void GridFTP_stream_state::poll_callback_stream(const Glib::Quark & scope){
