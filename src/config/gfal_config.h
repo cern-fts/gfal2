@@ -75,6 +75,19 @@ gint gfal2_get_opt_integer(gfal2_context_t handle, const gchar *group_name,
                                  const gchar *key, GError **error);
 
 /**
+* @brief similar to \ref gfal2_get_opt_integer but return a default value if
+* an error occures
+*
+* @param handle : context of gfal 2.0
+* @param group_name : group name of the parameter
+* @param key : key of the parameter
+* @param default_value : default value returned if not present
+* @return parameter value
+**/
+gint gfal2_get_opt_integer_with_default(gfal2_context_t context, const gchar *group_name,
+                                        const gchar *key, gint default_value);
+
+/**
  * @brief set an integer parameter in the current GFAL 2.0 configuration
  *  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
  *

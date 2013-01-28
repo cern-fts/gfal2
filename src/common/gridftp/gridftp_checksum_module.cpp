@@ -17,8 +17,10 @@
 
 
 #include "gridftp_stat_module.h"
+#include <config/gfal_config.h>
 
 const Glib::Quark scope_checksum("Gridftp_checksum_module::checksum");
+const char * gridftp_checksum_calc_timeout= "CHECKSUM_CALC_TIMEOUT";
 
 extern "C" int gfal_gridftp_checksumG(plugin_handle handle, const char* url, const char* check_type,
                        char * checksum_buffer, size_t buffer_length,
@@ -41,17 +43,27 @@ extern "C" int gfal_gridftp_checksumG(plugin_handle handle, const char* url, con
 }
 
 
+static void gridftp_checksum_set_timeout(gfal2_context_t context, GridFTP_Request_state* req){
+    const gint timeout = gfal2_get_opt_integer_with_default(context, GRIDFTP_CONFIG_GROUP, gridftp_checksum_calc_timeout, 1800);
+    gfal_log(GFAL_VERBOSE_TRACE,"Setup checksum timeout to %d", timeout);
+    struct timespec t;
+    t.tv_sec = timeout;
+    t.tv_nsec =0;
+    req->init_timeout(&t);
+}
+
 void GridftpModule::checksum(const char* url, const char* check_type,
                        char * checksum_buffer, size_t buffer_length,
                        off_t start_offset, size_t data_length){
-
     gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::checksum] ");
     gfal_log(GFAL_VERBOSE_DEBUG," Checksum calculation %s for url %s", check_type, url);
-    std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(url))));
+    std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(url)),
+                                                                        GRIDFTP_REQUEST_FTP));
 
     if(buffer_length < 16)
         throw Gfal::CoreException(scope_checksum,"buffer length for checksum calculation is not enought",ENOBUFS);
 
+    gridftp_checksum_set_timeout(_handle_factory->get_handle(), req.get());
     req->start();
     GridFTPOperationCanceler canceler(_handle_factory->get_handle(), req.get());
     globus_result_t res = globus_ftp_client_cksm(

@@ -196,6 +196,20 @@ gint gfal2_get_opt_integer(gfal_handle handle, const gchar *group_name,
     return res;
 }
 
+gint gfal2_get_opt_integer_with_default(gfal2_context_t context, const gchar *group_name,
+                                        const gchar *key, gint default_value){
+    GError * tmp_err=NULL;
+
+    gint res = gfal2_get_opt_integer(context, group_name, key, &tmp_err);
+    if(tmp_err){
+        gfal_log(GFAL_VERBOSE_DEBUG, " impossible to get integer parameter %s:%s, set to default value %d, err %s", group_name, key,
+                        default_value, tmp_err->message );
+        g_clear_error(&tmp_err);
+        res = default_value;
+    }
+    return res;
+}
+
 gint gfal2_set_opt_integer(gfal_handle handle, const gchar *group_name,
                                   const gchar *key, gint value,
                                   GError** error){
