@@ -150,12 +150,14 @@ struct Callback_handler{
     }
 
     virtual ~Callback_handler(){
-        Glib::RWLock::ReaderLock l (args->req->mux_req_state);
-        globus_gass_copy_register_performance_cb(args->req->sess->get_gass_handle(), NULL, NULL);
-        if(args && args->timer_spec.it_value.tv_sec  <= 0) // set args for deletion if timer enabled
-            delete args;
-        else
-            args->req = NULL;
+        if(args){
+            Glib::RWLock::ReaderLock l (args->req->mux_req_state);
+            globus_gass_copy_register_performance_cb(args->req->sess->get_gass_handle(), NULL, NULL);
+            if(args->timer_spec.it_value.tv_sec  <= 0) // set args for deletion if timer enabled
+                delete args;
+            else
+                args->req = NULL;
+        }
     }
     struct callback_args{
         gfalt_monitor_func callback;
