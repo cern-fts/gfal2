@@ -1,6 +1,6 @@
 
 Name:				gfal2
-Version:			2.1.1
+Version:			2.1.2
 Release:			2%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
