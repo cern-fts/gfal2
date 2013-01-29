@@ -38,20 +38,17 @@ int gfal_mkdir_srmv2_internal(gfal_srmv2_opt* opts, char* endpoint, const char* 
 	char errbuf[GFAL_ERRMSG_LEN]={0};
 
 	errno =0;	
-    gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
-                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err);
-    mkdir_input.dir_name = (char*) path;
-   	res  = gfal_srm_external_call.srm_mkdir(&context, &mkdir_input);
+    if( gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
+                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err) ==0){
+        mkdir_input.dir_name = (char*) path;
+        res  = gfal_srm_external_call.srm_mkdir(&context, &mkdir_input);
 
-   	if(res <0){
-		gfal_srm_report_error(errbuf, &tmp_err);
-		res = -1;
-	}
-   //	g_printerr(" filename %s endpoint %s res %d mode %o \n", path, endpoint, res, mode);
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return res;
-	
+        if(res <0){
+            gfal_srm_report_error(errbuf, &tmp_err);
+            res = -1;
+        }
+    }
+    G_RETURN_ERR(res, tmp_err, err);
 }
 
 int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError** err){

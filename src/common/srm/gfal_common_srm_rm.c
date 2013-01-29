@@ -47,40 +47,35 @@ static int gfal_srm_rm_srmv2_internal(gfal_srmv2_opt* opts, const char* full_end
 	int i;
 	int ret=-1;
 
-    gfal_srm_ifce_context_init(&context, opts->handle, full_endpoint,
-                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err);
+    if( gfal_srm_ifce_context_init(&context, opts->handle, full_endpoint,
+                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err) == 0){
+        input.nbfiles = nb_request;
+        input.surls = surls;
 
-	input.nbfiles = nb_request;
-	input.surls = surls;
+        ret = gfal_srm_external_call.srm_rm(&context,&input, &output);
 
-	ret = gfal_srm_external_call.srm_rm(&context,&input, &output);	
-	
-	if(ret == nb_request){
-		ret =0;
-		struct srmv2_filestatus* statuses = output.statuses;
-		for(i=0; i < nb_request;++i){
-			if(statuses[i].status!=0){
-				if(statuses[i].explanation != NULL)
-					g_set_error(&tmp_err, 0, statuses[i].status," error reported from srm_ifce, %s ", statuses[i].explanation );
-				else
-					g_set_error(&tmp_err, 0, EINVAL ," error reported from srm_ifce with corrputed memory ! ");
-				ret = -1;
-				break;
-			}
-		}
-			
-		gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
-		gfal_srm_external_call.srm_srmv2_filestatus_delete(output.statuses, ret);
-	}else{
-		gfal_srm_report_error(errbuf, &tmp_err);
-		ret= -1;		
-	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;	
-	
-	
-	
+        if(ret == nb_request){
+            ret =0;
+            struct srmv2_filestatus* statuses = output.statuses;
+            for(i=0; i < nb_request;++i){
+                if(statuses[i].status!=0){
+                    if(statuses[i].explanation != NULL)
+                        g_set_error(&tmp_err, 0, statuses[i].status," error reported from srm_ifce, %s ", statuses[i].explanation );
+                    else
+                        g_set_error(&tmp_err, 0, EINVAL ," error reported from srm_ifce with corrputed memory ! ");
+                    ret = -1;
+                    break;
+                }
+            }
+
+            gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
+            gfal_srm_external_call.srm_srmv2_filestatus_delete(output.statuses, ret);
+        }else{
+            gfal_srm_report_error(errbuf, &tmp_err);
+            ret= -1;
+        }
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 int gfal_srm_rm_internal(gfal_srmv2_opt* opts, char** surls, GError** err){

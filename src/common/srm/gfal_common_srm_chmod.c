@@ -70,15 +70,14 @@ static int gfal_srmv2_chmod_internal(gfal_srmv2_opt* opts, char* endpoint, const
 	// set the structures datafields	
 	gfal_srmv2_configure_set_permission(opts, path, mode, &perms_input);
 
-    gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
-                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err);
-	
-
-    if( (ret = gfal_srm_external_call.srm_setpermission(&context , &perms_input)) < 0){
-		gfal_srm_report_error(errbuf, &tmp_err);
-	} else{
-    	 ret = 0;
-	}
+    if( gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
+                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err) ==0){
+        if( (ret = gfal_srm_external_call.srm_setpermission(&context , &perms_input)) < 0){
+            gfal_srm_report_error(errbuf, &tmp_err);
+        } else{
+             ret = 0;
+        }
+    }
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
