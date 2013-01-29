@@ -62,15 +62,14 @@ int gfal_srm_ls_internal(gfal_srmv2_opt* opts, const char* endpoint,
 	char errbuf[GFAL_ERRMSG_LEN]={0};	
 	int ret;							
 
-    gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
-                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err);	// init context
-		
-	
-	if( (ret = gfal_srm_external_call.srm_ls(&context, input, output) ) < 0){
-		gfal_srm_report_error(errbuf, &tmp_err);
-		ret = -1;			
-	}
-								
+    if(gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
+                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err) ==0){
+        if( (ret = gfal_srm_external_call.srm_ls(&context, input, output) ) < 0){
+            gfal_srm_report_error(errbuf, &tmp_err);
+            ret = -1;
+        }
+    }
+
 	G_RETURN_ERR(ret, tmp_err, err);										
 }
 

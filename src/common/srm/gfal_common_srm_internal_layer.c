@@ -65,8 +65,8 @@ int gfal_srm_ifce_context_init(struct srm_context* context, gfal_context_t handl
     gint timeout;
     GError * tmp_err=NULL;
 
-    gboolean keep_alive = gfal2_get_opt_boolean(handle, srm_config_group,
-                                                srm_config_keep_alive, &tmp_err);
+    gboolean keep_alive = gfal2_get_opt_boolean_with_default(handle, srm_config_group,
+                                                srm_config_keep_alive, false);
     if (tmp_err) {
       g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
       return -1;
