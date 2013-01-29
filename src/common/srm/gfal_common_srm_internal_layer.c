@@ -64,13 +64,9 @@ int gfal_srm_ifce_context_init(struct srm_context* context, gfal_context_t handl
                                 char* errbuff, size_t s_errbuff, GError** err){
     gint timeout;
     GError * tmp_err=NULL;
-
-    gboolean keep_alive = gfal2_get_opt_boolean_with_default(handle, srm_config_group,
-                                                srm_config_keep_alive, false);
-    if (tmp_err) {
-      g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-      return -1;
-    }
+    int ret = -1;
+    const gboolean keep_alive = gfal2_get_opt_boolean_with_default(handle, srm_config_group,
+                                                srm_config_keep_alive, FALSE);
 
     gfal_log(GFAL_VERBOSE_DEBUG, " SRM connexion keep-alive %d", keep_alive);
 
@@ -91,9 +87,10 @@ int gfal_srm_ifce_context_init(struct srm_context* context, gfal_context_t handl
         }
     }
 
-    if(!tmp_err)
-        return 0;
-    G_RETURN_ERR(-1, tmp_err, err);
+    if(!tmp_err){
+        ret = 0;
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
