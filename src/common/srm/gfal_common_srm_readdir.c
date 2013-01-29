@@ -89,41 +89,38 @@ int gfal_srm_readdir_internal(plugin_handle ch, gfal_srm_opendir_handle oh, int 
 	int ret =-1;
 	int offset = oh->dir_offset;
 	char* tab_surl[] = { (char*) oh->surl, NULL};
+
 	
-    gfal_srm_ifce_context_init(&context, opts->handle, oh->endpoint,
-                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err);	// init context
-	
-	input.nbfiles = 1;
-	input.surls = tab_surl;
-	input.numlevels = 1;
-	input.offset = &offset;
-	input.count = nb_files;
+    if( gfal_srm_ifce_context_init(&context, opts->handle, oh->endpoint,
+                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err) == 0){	// init context
+        input.nbfiles = 1;
+        input.surls = tab_surl;
+        input.numlevels = 1;
+        input.offset = &offset;
+        input.count = nb_files;
+        ret = gfal_srm_external_call.srm_ls(&context,&input,&output);					// execute ls
 
-	ret = gfal_srm_external_call.srm_ls(&context,&input,&output);					// execute ls
+        if(ret >=0){
+            srmv2_mdstatuses = output.statuses;
+            if(srmv2_mdstatuses[0].status != 0){
+                g_set_error(err, 0, srmv2_mdstatuses->status, "[%s] Error reported from srm_ifce : %d %s", __func__,
+                            srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
+                resu = -1;
 
-	if(ret >=0){
-		srmv2_mdstatuses = output.statuses;
-		if(srmv2_mdstatuses[0].status != 0){
-			g_set_error(err, 0, srmv2_mdstatuses->status, "[%s] Error reported from srm_ifce : %d %s", __func__, 
-						srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
-			resu = -1;	
-
-		}else {
-			oh->resu_offset = oh->dir_offset;
-			oh->srm_ls_resu = &srmv2_mdstatuses[0];
-			//cache system
-			resu = 0;
-		}	
-	}else{
-		gfal_srm_report_error(errbuf, &tmp_err);
-		resu=-1;
-	}
-
-	gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
+            }else {
+                oh->resu_offset = oh->dir_offset;
+                oh->srm_ls_resu = &srmv2_mdstatuses[0];
+                //cache system
+                resu = 0;
+            }
+        }else{
+            gfal_srm_report_error(errbuf, &tmp_err);
+            resu=-1;
+        }
+        gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
+    }
 		
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return resu;	
+    G_RETURN_ERR(resu, tmp_err, err);
 }
 
 struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch, gfal_srm_opendir_handle oh, GError** err){

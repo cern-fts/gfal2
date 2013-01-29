@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
 * 
@@ -44,37 +44,36 @@ int gfal_access_srmv2_internal(gfal_srmv2_opt*  opts, char* endpoint, const char
 	char* tab_surl[] = { (char*)surl, NULL};
 
 
-    gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
-                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err);
 
-	checkpermission_input.nbfiles = nb_request;
-	checkpermission_input.amode = mode;
-	checkpermission_input.surls = tab_surl;
+    if (gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
+                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err)  == 0){
+        checkpermission_input.nbfiles = nb_request;
+        checkpermission_input.amode = mode;
+        checkpermission_input.surls = tab_surl;
 
-	ret = gfal_srm_external_call.srm_check_permission(&context,&checkpermission_input, &resu);	
-	if(ret != nb_request){
-		gfal_srm_report_error(errbuf, &tmp_err);
-		return -1;
-	}
-	for(i=0; i< nb_request; ++i){
-		if( resu[i].status ){
-			if( strnlen(resu[i].surl, GFAL_URL_MAX_LEN) >= GFAL_URL_MAX_LEN || strnlen(resu[i].explanation, GFAL_URL_MAX_LEN) >= GFAL_URL_MAX_LEN){
-				g_set_error(&tmp_err, 0, resu[i].status, " Memory corruption in the libgfal_srm_ifce answer, fatal");			
-			}else{
-				g_set_error(&tmp_err, 0, resu[i].status, "Error %d : %s  \
-, file %s: %s", resu[i].status, strerror(resu[i].status), resu[i].surl, resu[i].explanation);
-			}
-			ret= -1;
-			break;
-		}
-		ret = 0;
-	}
-	errno = 0;
-	//g_printerr(" resu : %d , status %d, strerror : %s, explanation : %s \n", ret, resu[0].status, strerror(resu[0].status), resu[0].explanation);
-	gfal_srm_external_call.srm_srmv2_filestatus_delete(resu, nb_request);
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]",__func__);
-	return ret;
+        ret = gfal_srm_external_call.srm_check_permission(&context,&checkpermission_input, &resu);
+        if(ret != nb_request){
+            gfal_srm_report_error(errbuf, &tmp_err);
+            return -1;
+        }
+        for(i=0; i< nb_request; ++i){
+            if( resu[i].status ){
+                if( strnlen(resu[i].surl, GFAL_URL_MAX_LEN) >= GFAL_URL_MAX_LEN || strnlen(resu[i].explanation, GFAL_URL_MAX_LEN) >= GFAL_URL_MAX_LEN){
+                    g_set_error(&tmp_err, 0, resu[i].status, " Memory corruption in the libgfal_srm_ifce answer, fatal");
+                }else{
+                    g_set_error(&tmp_err, 0, resu[i].status, "Error %d : %s  \
+    , file %s: %s", resu[i].status, strerror(resu[i].status), resu[i].surl, resu[i].explanation);
+                }
+                ret= -1;
+                break;
+            }
+            ret = 0;
+        }
+        errno = 0;
+        //g_printerr(" resu : %d , status %d, strerror : %s, explanation : %s \n", ret, resu[0].status, strerror(resu[0].status), resu[0].explanation);
+        gfal_srm_external_call.srm_srmv2_filestatus_delete(resu, nb_request);
+    }
+    G_RETURN_ERR(ret, tmp_err,err);
 }
 
 

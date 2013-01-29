@@ -41,31 +41,28 @@ int gfal_srmv2_rmdir_internal(gfal_srmv2_opt* opts, char* endpoint, const char* 
 	char errbuf[GFAL_ERRMSG_LEN]={0};
 	int ret = -1;
 	
-    gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
-                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err);
 
-	rmdir_input.recursive = 0;
-	rmdir_input.surl = (char*)surl;
+    if(gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
+                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err) ==0){
+        rmdir_input.recursive = 0;
+        rmdir_input.surl = (char*)surl;
 
-	if( gfal_srm_external_call.srm_rmdir(&context, &rmdir_input, &rmdir_output) >=0){
-		const int sav_errno = rmdir_output.statuses[0].status;
-		if( sav_errno ){
-			g_set_error(&tmp_err, 0, sav_errno, " Error report from the srm_ifce %s ", strerror(sav_errno));
-			ret = -1;
-		}else{
-			ret =0;
-		}
-		gfal_srm_external_call.srm_srmv2_filestatus_delete(rmdir_output.statuses,1);
-		gfal_srm_external_call.srm_srm2__TReturnStatus_delete (rmdir_output.retstatus);
-	}else{
-		gfal_srm_report_error(errbuf, &tmp_err);
-		ret=-1;		
-	}
-	
-	
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;
+        if( gfal_srm_external_call.srm_rmdir(&context, &rmdir_input, &rmdir_output) >=0){
+            const int sav_errno = rmdir_output.statuses[0].status;
+            if( sav_errno ){
+                g_set_error(&tmp_err, 0, sav_errno, " Error report from the srm_ifce %s ", strerror(sav_errno));
+                ret = -1;
+            }else{
+                ret =0;
+            }
+            gfal_srm_external_call.srm_srmv2_filestatus_delete(rmdir_output.statuses,1);
+            gfal_srm_external_call.srm_srm2__TReturnStatus_delete (rmdir_output.retstatus);
+        }else{
+            gfal_srm_report_error(errbuf, &tmp_err);
+            ret=-1;
+        }
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
@@ -106,9 +103,7 @@ int gfal_srm_rmdirG(plugin_handle ch, const char* surl, GError** err){
 	}
 	gfal_log(GFAL_VERBOSE_VERBOSE, "  [gfal_srm_rmdirG] <-");	
 	
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 

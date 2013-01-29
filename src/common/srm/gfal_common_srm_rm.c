@@ -47,7 +47,6 @@ static int gfal_srm_rm_srmv2_internal(gfal_srmv2_opt* opts, const char* full_end
 	int i;
 	int ret=-1;
 
-
     gfal_srm_ifce_context_init(&context, opts->handle, full_endpoint,
                                   errbuf, GFAL_ERRMSG_LEN, &tmp_err);
 

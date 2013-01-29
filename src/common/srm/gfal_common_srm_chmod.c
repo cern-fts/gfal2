@@ -73,16 +73,13 @@ static int gfal_srmv2_chmod_internal(gfal_srmv2_opt* opts, char* endpoint, const
     gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
                                   errbuf, GFAL_ERRMSG_LEN, &tmp_err);
 	
-	
-	ret = gfal_srm_external_call.srm_setpermission(&context , &perms_input);
-	if(ret < 0){
+
+    if( (ret = gfal_srm_external_call.srm_setpermission(&context , &perms_input)) < 0){
 		gfal_srm_report_error(errbuf, &tmp_err);
 	} else{
     	 ret = 0;
 	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;		
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 int	gfal_srm_chmodG(plugin_handle ch, const char * path , mode_t mode, GError** err){

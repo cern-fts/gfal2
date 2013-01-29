@@ -55,44 +55,44 @@ static int gfal_checksumG_srmv2_internal(gfal_srmv2_opt* opts, const char* endpo
 	int ret=-1;
 	char* tab_surl[] = { (char*)surl, NULL};
 	
-    gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
-                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err);
+
+    if( gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
+                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err) == 0){
 	
-	input.nbfiles = nb_request;
-	input.surls = tab_surl;
-	input.numlevels = 0;
-	input.offset = 0;
-	input.count = 0;
+        input.nbfiles = nb_request;
+        input.surls = tab_surl;
+        input.numlevels = 0;
+        input.offset = 0;
+        input.count = 0;
 
-	ret = gfal_srm_external_call.srm_ls(&context,&input,&output);					// execute ls
+        ret = gfal_srm_external_call.srm_ls(&context,&input,&output);					// execute ls
 
-	if(ret >=0){
-		srmv2_mdstatuses = output.statuses;
-        if(srmv2_mdstatuses->status != 0){
-            g_set_error(&tmp_err, srm_checksum_quark(), errno, "Error reported from srm_ifce : %d %s",
-                            srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
-            ret = -1;
-        }else{
-            if(srmv2_mdstatuses->checksum && srmv2_mdstatuses->checksumtype){
-                g_strlcpy(buf_checksum, srmv2_mdstatuses->checksum, s_checksum);
-                g_strlcpy(buf_chktype, srmv2_mdstatuses->checksumtype, s_chktype);
+        if(ret >=0){
+            srmv2_mdstatuses = output.statuses;
+            if(srmv2_mdstatuses->status != 0){
+                g_set_error(&tmp_err, srm_checksum_quark(), errno, "Error reported from srm_ifce : %d %s",
+                                srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
+                ret = -1;
             }else{
-                if(s_checksum > 0)
-                    buf_checksum='\0';
-                if(s_chktype > 0)
-                    buf_chktype ='\0';
+                if(srmv2_mdstatuses->checksum && srmv2_mdstatuses->checksumtype){
+                    g_strlcpy(buf_checksum, srmv2_mdstatuses->checksum, s_checksum);
+                    g_strlcpy(buf_chktype, srmv2_mdstatuses->checksumtype, s_chktype);
+                }else{
+                    if(s_checksum > 0)
+                        buf_checksum='\0';
+                    if(s_chktype > 0)
+                        buf_chktype ='\0';
+                }
+                ret = 0;
             }
-            ret = 0;
+        }else{
+            gfal_srm_report_error(errbuf, &tmp_err);
+            ret=-1;
         }
-	}else{
-		gfal_srm_report_error(errbuf, &tmp_err);
-		ret=-1;
-	}
-	gfal_srm_external_call.srm_srmv2_mdfilestatus_delete(srmv2_mdstatuses, 1);
-	gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;	
+        gfal_srm_external_call.srm_srmv2_mdfilestatus_delete(srmv2_mdstatuses, 1);
+        gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 /*
