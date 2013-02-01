@@ -59,7 +59,7 @@ int internal_copy(gfal2_context_t* handle, gfalt_params_t* params, const char* s
 int main(int argc, char** argv){
     int i;
     if( argc <4 ){
-        printf(" Usage %s [src_url] [checksum] [dst_dir] [nbtime] \n",argv[0]);
+        printf(" Usage %s [src_url] [checksum] [dst_url] [dst_url] [dst_url]... \n",argv[0]);
 		return 1;
 	}
 	GError * tmp_err = NULL; // classical GError/glib error management
