@@ -17,7 +17,6 @@ BuildRequires:		glib2-devel
 BuildRequires:		glibmm24-devel
 BuildRequires:		libattr-devel
 BuildRequires:		openldap-devel
-BuildRequires:		davix-devel
 ## libuuid is in a different rpm for el5
 %if 0%{?el5}
 BuildRequires:		e2fsprogs-devel
@@ -34,6 +33,9 @@ BuildRequires:		srm-ifce-devel
 BuildRequires:		dcap-devel
 #gridftp plugin dependencies
 BuildRequires:		globus-gass-copy-devel
+#http plugin dependencies
+BuildRequires:		davix-devel
+BuildRequires:          gsoap-devel
 
 Requires:			%{name}-core = %{version}-%{release}
 Requires:			%{name}-transfer = %{version}-%{release}
