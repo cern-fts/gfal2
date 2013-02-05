@@ -36,6 +36,7 @@ BuildRequires:		globus-gass-copy-devel
 #http plugin dependencies
 BuildRequires:		davix-devel
 BuildRequires:          gsoap-devel
+BuildRequires:		gridsite-devel
 
 Requires:			%{name}-core = %{version}-%{release}
 Requires:			%{name}-transfer = %{version}-%{release}
