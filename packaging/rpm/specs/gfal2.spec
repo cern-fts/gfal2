@@ -42,7 +42,7 @@ Requires:			%{name}-transfer = %{version}-%{release}
 GFAL 2.0 offers an a single and simple POSIX-like API 
 for the file operations in grids and cloud environments. 
 The set of supported protocols depends 
-of the %{name} plugin install.
+of the %{name} installed plugins.
 
 %package core
 Summary:			Core of the Grid File access Library 2.0
@@ -59,9 +59,8 @@ Group:				Applications/Internet
 Requires:			%{name}-core%{?_isa} = %{version}-%{release}
 
 %description transfer
-%{name}-transfer is the high level API for file transfer operations \
-in %{name}. Transfer monitoring and third party transfers \
-are supported.
+%{name}-transfer is the high level API for file transfer operations
+in %{name}. It supports third-party copy.
 
 %package devel
 Summary:			Development files of %{name}
