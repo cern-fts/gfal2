@@ -31,6 +31,9 @@ include_directories (${CMAKE_CURRENT_BINARY_DIR} ${GRIDSITE_INCLUDE_DIR}
 
 include_directories(${DAVIX_PKG_INCLUDE_DIRS})
 
+# link
+link_directories( ${DAVIX_PKG_LIBRARY_DIRS})
+
 add_definitions(${GSOAP_SSL_PKG_CFLAGS})
 
 add_library     (plugin_http SHARED ${src_http}
