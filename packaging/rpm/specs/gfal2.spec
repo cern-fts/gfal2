@@ -1,7 +1,7 @@
 
 Name:				gfal2
-Version:			2.1.3
-Release:			4%{?dist}
+Version:			2.1.5
+Release:			0%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -282,6 +282,15 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Mon Feb 11 2013 Adrien Devresse <adevress at cern.ch> - 2.1.5-0
+ - FTS 3.0 EMI 3 release sync
+ - include event hooks support
+ - include cancel logic support
+ - include performance marker auto-cancel for gsiftp
+ - include checksum timeout support for gsiftp
+ - include srm session re-use support
+
+
 * Thu Jan 10 2013 Adrien Devresse <adevress at cern.ch> - 2.1.1-0
  - fix a minor memory issue with the gfal_transfer stack
  - fix a wrong error report problem with srm third party copy
