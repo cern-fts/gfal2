@@ -270,11 +270,11 @@ make DESTDIR=%{buildroot} install
 %{_docdir}/%{name}-%{version}/README_PLUGIN_GRIDFTP
 %config(noreplace) %{_sysconfdir}/%{name}.d/gsiftp_plugin.conf
 
-# %files plugin-http
-# %defattr (-,root,root)
-# %{_libdir}/%{name}-plugins/libgfal_plugin_http.so*
-# %{_docdir}/%{name}-%{version}/README_PLUGIN_HTTP
-# %config(noreplace) %{_sysconfdir}/%{name}.d/http_plugin.conf
+%files plugin-http
+%defattr (-,root,root)
+%{_libdir}/%{name}-plugins/libgfal_plugin_http.so*
+%{_docdir}/%{name}-%{version}/README_PLUGIN_HTTP
+%config(noreplace) %{_sysconfdir}/%{name}.d/http_plugin.conf
 
 %files all
 %defattr (-,root,root)
