@@ -195,6 +195,7 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
     g_set_error(err, http_plugin_domain, EACCES,
                 "Can not determine the delegation endpoint for '%s; ",
                 realSrc.c_str());
+    return -1;
   }
   delete request;
   request = NULL;
