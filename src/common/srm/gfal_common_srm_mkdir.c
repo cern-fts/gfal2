@@ -70,7 +70,10 @@ int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError*
                 g_clear_error(&tmp_err);
                 gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_mkdir_rec] try to create directory %s", surl);
                 if( (ret= gfal_mkdir_srmv2_internal(opts, full_endpoint, (char*)surl, mode, &tmp_err)) !=0){
-                    ret = 0;
+                    if(tmp_err && tmp_err->code == EEXIST){
+                        g_clear_error(&tmp_err);
+                        ret = 0;
+                    }
                 }
             }
 	
