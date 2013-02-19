@@ -7,6 +7,10 @@
 #include <gfal_api.h>
 #include <transfer/gfal_transfer.h>
 
+
+gfal2_context_t handle = NULL;
+
+
 void mycall_perf(gfalt_transfer_status_t h, const char* src, const char* dst, gpointer user_data){
     printf(" %s -> %s  : avg byterate : %ld/s, instant byterate : %ld/s, size transfered %ld, time : %ld \n",src,
            dst, gfalt_copy_get_average_baudrate(h,NULL), gfalt_copy_get_instant_baudrate(h,NULL),
@@ -16,14 +20,25 @@ void mycall_perf(gfalt_transfer_status_t h, const char* src, const char* dst, gp
 }
 
 
+// setup interrupt
+void sigint_cancel(int param)
+{
+  printf("User pressed Ctrl+C\n");
+  if(handle)
+    gfal2_cancel(handle);
+}
+
+
 
 int main(int argc, char** argv){
+
+    signal(SIGINT, &sigint_cancel);
 	if( argc <3 ){
 		printf(" Usage %s [src_url] [dst_url] \n",argv[0]);
 		return 1;
 	}
 	GError * tmp_err = NULL; // classical GError/glib error management
-	gfal2_context_t handle;
+
 	int ret=-1;
 	
 	// initialize gfal
