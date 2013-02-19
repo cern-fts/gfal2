@@ -99,6 +99,10 @@ void gridftp_create_parent_copy(gfal2_context_t handle, gfalt_params_t params,
 
 void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, globus_off_t total_bytes, float throughput, float avg_throughput);
 
+//
+// Performance callback object
+// contain the performance callback parameter
+// an the auto cancel logic on performance callback inaticity
 struct Callback_handler{
 
     Callback_handler(gfal2_context_t context,
@@ -108,66 +112,82 @@ struct Callback_handler{
         GError * tmp_err=NULL;
         gfalt_monitor_func callback = gfalt_get_monitor_callback(params, &tmp_err);
         Gfal::gerror_to_cpp(&tmp_err);
+        gpointer user_args = gfalt_get_user_data(params, &tmp_err);
+        Gfal::gerror_to_cpp(&tmp_err);
 
         if(callback){
-            args = new callback_args();
-            memset(&args->timer_spec,0, sizeof(struct itimerspec));
-            args->timeout_timer = NULL;
-            args->callback = callback;
-            args->req = req;
-            args->user_args = gfalt_get_user_data(params, &tmp_err);
-            Gfal::gerror_to_cpp(&tmp_err);
-            args->src = src;
-            args->dst = dst;
-            args->start_time = time(NULL);
-            args->timer_spec.it_value.tv_sec = gfal2_get_opt_integer_with_default(context, GRIDFTP_CONFIG_GROUP,
-                                                                                  gridftp_perf_marker_timeout_config, 180);
-            Glib::RWLock::ReaderLock l (req->mux_req_state);
-            globus_gass_copy_register_performance_cb(args->req->sess->get_gass_handle(), gsiftp_rd3p_callback, (gpointer) args);
-            if(args->timer_spec.it_value.tv_sec > 0){
-                struct sigevent timer_event;
-                memset(&timer_event,0, sizeof(struct sigevent));
-                timer_event.sigev_notify = SIGEV_THREAD;
-                timer_event.sigev_value.sival_ptr = args;
-                timer_event.sigev_notify_function = &Callback_handler::func_timer;
-
-                timer_create(CLOCK_MONOTONIC, &timer_event,&args->timeout_timer); // setup timer for cancel if inactivity
-                timer_settime(args->timeout_timer,0, &args->timer_spec, NULL);
-            }
+            args = new callback_args(context, callback, user_args, src, dst, req, &tmp_err);
         }
 
 
     }
 
-    static void func_timer(union sigval v){
-        callback_args* args = (callback_args*) v.sival_ptr;
-        if( args->req != NULL){
-            args->req->cancel_operation_async(scope_filecopy, "gsiftp performance marker timeout, cancel");
-            timer_settime(args->timeout_timer,0, &args->timer_spec, NULL); // re-arm for deletion
-        }else{ // safe deletion
-            delete args;
+    static void* func_timer(void* v){
+        callback_args* args = (callback_args*) v;
+        while( time(NULL) < args->timeout_time){
+            if( pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL) != 0){
+                gfal_log(GFAL_VERBOSE_TRACE, " thread setcancelstate error, interrupt perf marker timer");
+                return NULL;
+            }
+            usleep(500000);
+            if( pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL) != 0){
+                gfal_log(GFAL_VERBOSE_TRACE, " thread setcancelstate error, interrupt perf marker timer");
+                return NULL;
+            }
         }
+
+        args->req->cancel_operation_async(scope_filecopy, "gsiftp performance marker timeout, cancel");
+
+        return NULL;
     }
 
     virtual ~Callback_handler(){
         if(args){
-            Glib::RWLock::ReaderLock l (args->req->mux_req_state);
-            globus_gass_copy_register_performance_cb(args->req->sess->get_gass_handle(), NULL, NULL);
-            if(args->timer_spec.it_value.tv_sec  <= 0) // set args for deletion if timer enabled
-                delete args;
-            else
-                args->req = NULL;
+            delete args;
         }
     }
     struct callback_args{
+        callback_args(gfal2_context_t context, const gfalt_monitor_func mcallback, gpointer muser_args,
+                      const char* msrc, const char* mdst, GridFTP_Request_state* mreq,
+                      GError** err) :
+            callback(mcallback),
+            user_args(muser_args),
+            req(mreq),
+            src(msrc),
+            dst(mdst),
+            start_time(time(NULL)),
+            timeout_value(gfal2_get_opt_integer_with_default(context, GRIDFTP_CONFIG_GROUP,
+                                                             gridftp_perf_marker_timeout_config, 180)),
+            timeout_time(time(NULL) + timeout_value),
+            timer_pthread()
+        {
+            Glib::RWLock::ReaderLock l (req->mux_req_state);
+            globus_gass_copy_register_performance_cb(req->sess->get_gass_handle(), gsiftp_rd3p_callback, (gpointer) this);
+
+            if(timeout_value > 0){
+                pthread_create(&timer_pthread, NULL, Callback_handler::func_timer, this);
+            }
+        }
+
+        virtual ~callback_args(){
+            if(timeout_value > 0){
+                void * res;
+                pthread_cancel(timer_pthread);
+                pthread_join(timer_pthread, &res);
+            }
+            Glib::RWLock::ReaderLock l (req->mux_req_state);
+            globus_gass_copy_register_performance_cb(req->sess->get_gass_handle(), NULL, NULL);
+        }
+
         gfalt_monitor_func callback;
         gpointer user_args;
         GridFTP_Request_state* req;
         const char* src;
         const char* dst;
         time_t start_time;
-        timer_t timeout_timer;
-        struct itimerspec timer_spec;
+        int timeout_value;
+        time_t timeout_time;
+        pthread_t timer_pthread;
     } *args;
 };
 
@@ -176,8 +196,9 @@ void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, gl
 
     GridFTP_Request_state* req = args->req;
     Glib::RWLock::ReaderLock l (req->mux_req_state);
-    if(args->timer_spec.it_value.tv_sec > 0){ // if globus perf marker timer enabled, re-arm it
-        timer_settime(args->timeout_timer,0, &args->timer_spec, NULL);
+    if(args->timeout_value > 0){
+        gfal_log(GFAL_VERBOSE_TRACE, "Performance marker received, re-arm timer");
+        args->timeout_time = time(NULL) + args->timeout_value;
     }
 
     gfalt_hook_transfer_plugin_t hook;
