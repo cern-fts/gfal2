@@ -235,7 +235,7 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
                          GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_ENTER,
                          "");
 
-    #pragma omp parallel num_threads(3)
+    #pragma omp parallel num_threads(1)
     {
 
          #pragma omp sections
