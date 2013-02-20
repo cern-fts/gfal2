@@ -39,7 +39,7 @@
 
 static int gfal_srm_rm_srmv2_internal(gfal_srmv2_opt* opts, const char* full_endpoint, char** surls, GError** err){
 	GError* tmp_err=NULL;
-	struct srm_context context;
+    srm_context_t context;
 	struct srm_rm_input input;
 	struct srm_rm_output output;
 	const int nb_request=1;
@@ -47,12 +47,11 @@ static int gfal_srm_rm_srmv2_internal(gfal_srmv2_opt* opts, const char* full_end
 	int i;
 	int ret=-1;
 
-    if( gfal_srm_ifce_context_init(&context, opts->handle, full_endpoint,
-                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err) == 0){
+    if(  (context =  gfal_srm_ifce_context_setup(opts->handle, full_endpoint, errbuf, GFAL_ERRMSG_LEN, &tmp_err)) != NULL){
         input.nbfiles = nb_request;
         input.surls = surls;
 
-        ret = gfal_srm_external_call.srm_rm(&context,&input, &output);
+        ret = gfal_srm_external_call.srm_rm(context,&input, &output);
 
         if(ret == nb_request){
             ret =0;
@@ -74,6 +73,7 @@ static int gfal_srm_rm_srmv2_internal(gfal_srmv2_opt* opts, const char* full_end
             gfal_srm_report_error(errbuf, &tmp_err);
             ret= -1;
         }
+        gfal_srm_ifce_context_release(context);
     }
     G_RETURN_ERR(ret, tmp_err, err);
 }

@@ -57,17 +57,17 @@ int gfal_srm_ls_internal(gfal_srmv2_opt* opts, const char* endpoint,
 						 struct srm_ls_input* input, struct srm_ls_output* output, 
 						 GError** err){
 	GError* tmp_err=NULL;
-	struct srm_context context;
+    srm_context_t context;
 	
 	char errbuf[GFAL_ERRMSG_LEN]={0};	
 	int ret;							
 
-    if(gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
-                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err) ==0){
-        if( (ret = gfal_srm_external_call.srm_ls(&context, input, output) ) < 0){
+    if( (context =  gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_ERRMSG_LEN, &tmp_err)) != NULL){
+        if( (ret = gfal_srm_external_call.srm_ls(context, input, output) ) < 0){
             gfal_srm_report_error(errbuf, &tmp_err);
             ret = -1;
         }
+        gfal_srm_ifce_context_release(context);
     }
 
 	G_RETURN_ERR(ret, tmp_err, err);										

@@ -32,21 +32,21 @@
 
 int gfal_mkdir_srmv2_internal(gfal_srmv2_opt* opts, char* endpoint, const char* path, mode_t mode, GError** err){
 	struct srm_mkdir_input mkdir_input;
-	struct srm_context context;	
+    srm_context_t context;
 	int res = -1;
 	GError* tmp_err=NULL;
 	char errbuf[GFAL_ERRMSG_LEN]={0};
 
 	errno =0;	
-    if( gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
-                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err) ==0){
+    if(  (context =  gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_ERRMSG_LEN, &tmp_err)) != NULL){
         mkdir_input.dir_name = (char*) path;
-        res  = gfal_srm_external_call.srm_mkdir(&context, &mkdir_input);
+        res  = gfal_srm_external_call.srm_mkdir(context, &mkdir_input);
 
         if(res <0){
             gfal_srm_report_error(errbuf, &tmp_err);
             res = -1;
         }
+        gfal_srm_ifce_context_release(context);
     }
     G_RETURN_ERR(res, tmp_err, err);
 }

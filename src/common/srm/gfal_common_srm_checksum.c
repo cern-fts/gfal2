@@ -46,7 +46,7 @@ static int gfal_checksumG_srmv2_internal(gfal_srmv2_opt* opts, const char* endpo
 								 && buf_checksum && buf_chktype,
                                 -1, err, "[gfal_checksumG_srmv2_internal] Invalid input parameters : endpoint, surl, checksum, checksum_type");
 	GError* tmp_err=NULL;
-	struct srm_context context;
+    srm_context_t context;
 	struct srm_ls_input input;
 	struct srm_ls_output output;
 	struct srmv2_mdfilestatus *srmv2_mdstatuses=NULL;
@@ -56,8 +56,7 @@ static int gfal_checksumG_srmv2_internal(gfal_srmv2_opt* opts, const char* endpo
 	char* tab_surl[] = { (char*)surl, NULL};
 	
 
-    if( gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
-                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err) == 0){
+    if(  (context =  gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_ERRMSG_LEN, &tmp_err)) != NULL){
 	
         input.nbfiles = nb_request;
         input.surls = tab_surl;
@@ -65,7 +64,7 @@ static int gfal_checksumG_srmv2_internal(gfal_srmv2_opt* opts, const char* endpo
         input.offset = 0;
         input.count = 0;
 
-        ret = gfal_srm_external_call.srm_ls(&context,&input,&output);					// execute ls
+        ret = gfal_srm_external_call.srm_ls(context,&input,&output);					// execute ls
 
         if(ret >=0){
             srmv2_mdstatuses = output.statuses;
@@ -91,6 +90,7 @@ static int gfal_checksumG_srmv2_internal(gfal_srmv2_opt* opts, const char* endpo
         }
         gfal_srm_external_call.srm_srmv2_mdfilestatus_delete(srmv2_mdstatuses, 1);
         gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
+        gfal_srm_ifce_context_release(context);
     }
     G_RETURN_ERR(ret, tmp_err, err);
 }

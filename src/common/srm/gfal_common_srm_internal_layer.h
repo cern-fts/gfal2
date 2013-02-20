@@ -54,9 +54,6 @@ typedef enum _srm_req_type{
  */
 struct _gfal_srm_external_call{
 	
-	void (*srm_context_init)(struct srm_context *context,char *srm_endpoint,
-	                         char *errbuf,int errbufsz,int verbose, int keep_alive);
-	
 	int (*srm_ls)(struct srm_context *context,
 		struct srm_ls_input *input,struct srm_ls_output *output);
 
@@ -123,13 +120,9 @@ int gfal_srm_unlinkG(plugin_handle ch, const char * path, GError** err);
 void gfal_srm_report_error(char* errbuff, GError** err);
 
 
-int gfal_srm_ifce_context_init(struct srm_context* context, gfal_context_t handle, const char* endpoint,
-                                char* errbuff, size_t s_errbuff, GError** err);
-
 
 srm_context_t gfal_srm_ifce_context_setup(gfal_context_t handle, const char* endpoint,
                                                 char* errbuff, size_t s_errbuff, GError** err);
 
 void gfal_srm_ifce_context_release(srm_context_t context);
 
-int gfal_srm_ifce_context_deinit(struct srm_context* context);

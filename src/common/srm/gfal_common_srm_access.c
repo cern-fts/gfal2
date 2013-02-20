@@ -34,7 +34,7 @@
 
 int gfal_access_srmv2_internal(gfal_srmv2_opt*  opts, char* endpoint, const char* surl, int mode,  GError** err){
 	GError* tmp_err=NULL;
-	struct srm_context context;
+    srm_context_t context;
 	struct srm_checkpermission_input checkpermission_input;
 	struct srmv2_filestatus *resu;
 	const int nb_request=1;
@@ -45,15 +45,15 @@ int gfal_access_srmv2_internal(gfal_srmv2_opt*  opts, char* endpoint, const char
 
 
 
-    if (gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
-                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err)  == 0){
+    if ( (context =  gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_ERRMSG_LEN, &tmp_err)) != NULL){
         checkpermission_input.nbfiles = nb_request;
         checkpermission_input.amode = mode;
         checkpermission_input.surls = tab_surl;
 
-        ret = gfal_srm_external_call.srm_check_permission(&context,&checkpermission_input, &resu);
+        ret = gfal_srm_external_call.srm_check_permission(context,&checkpermission_input, &resu);
         if(ret != nb_request){
             gfal_srm_report_error(errbuf, &tmp_err);
+            gfal_srm_ifce_context_release(context);
             return -1;
         }
         for(i=0; i< nb_request; ++i){
@@ -73,6 +73,7 @@ int gfal_access_srmv2_internal(gfal_srmv2_opt*  opts, char* endpoint, const char
         //g_printerr(" resu : %d , status %d, strerror : %s, explanation : %s \n", ret, resu[0].status, strerror(resu[0].status), resu[0].explanation);
         gfal_srm_external_call.srm_srmv2_filestatus_delete(resu, nb_request);
     }
+    gfal_srm_ifce_context_release(context);
     G_RETURN_ERR(ret, tmp_err,err);
 }
 

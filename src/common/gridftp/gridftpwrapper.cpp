@@ -553,7 +553,7 @@ void GridFTP_Request_state::cancel_operation_async(const Glib::Quark &scope, con
 
         res = globus_ftp_client_abort(this->sess->get_ftp_handle());
     }
-    gfal_globus_check_result(scope, res);
+   // gfal_globus_check_result(scope, res);
     this->set_error_code(ECANCELED);
     this->set_error(msg);
 }

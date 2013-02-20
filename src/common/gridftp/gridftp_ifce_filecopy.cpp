@@ -237,8 +237,6 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
     sess->set_tcp_buffer_size(tcp_buffer_size);
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] setup gsiftp buffer size to %d", tcp_buffer_size);
 
-    Callback_handler callback_handler(factory->get_handle(), params, req.get(), src, dst);
-
     if( gfalt_get_strict_copy_mode(params, NULL) == false){
         gridftp_filecopy_delete_existing(factory->get_handle(), sess, params, dst);
         gridftp_create_parent_copy(factory->get_handle(), params, dst);
@@ -246,6 +244,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
 
     std::auto_ptr<Gass_attr_handler>  gass_attr_src(sess->generate_gass_copy_attr());
     std::auto_ptr<Gass_attr_handler>  gass_attr_dst(sess->generate_gass_copy_attr());
+    Callback_handler callback_handler(factory->get_handle(), params, req.get(), src, dst);
 
     req->start();
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);

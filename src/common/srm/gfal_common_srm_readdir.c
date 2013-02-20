@@ -80,7 +80,7 @@ int gfal_srm_readdir_internal(plugin_handle ch, gfal_srm_opendir_handle oh, int 
 	g_return_val_err_if_fail(ch && oh, -1, err, "[gfal_srmv2_opendir_internal] invaldi args");
 	GError* tmp_err=NULL;
 	int resu =-1;
-	struct srm_context context;
+    srm_context_t context;
 	struct srm_ls_input input;
 	struct srm_ls_output output;
 	struct srmv2_mdfilestatus *srmv2_mdstatuses=NULL;
@@ -91,14 +91,13 @@ int gfal_srm_readdir_internal(plugin_handle ch, gfal_srm_opendir_handle oh, int 
 	char* tab_surl[] = { (char*) oh->surl, NULL};
 
 	
-    if( gfal_srm_ifce_context_init(&context, opts->handle, oh->endpoint,
-                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err) == 0){	// init context
+    if(  (context =  gfal_srm_ifce_context_setup(opts->handle, oh->endpoint, errbuf, GFAL_ERRMSG_LEN, &tmp_err)) != NULL){	// init context
         input.nbfiles = 1;
         input.surls = tab_surl;
         input.numlevels = 1;
         input.offset = &offset;
         input.count = nb_files;
-        ret = gfal_srm_external_call.srm_ls(&context,&input,&output);					// execute ls
+        ret = gfal_srm_external_call.srm_ls(context,&input,&output);					// execute ls
 
         if(ret >=0){
             srmv2_mdstatuses = output.statuses;
@@ -118,6 +117,7 @@ int gfal_srm_readdir_internal(plugin_handle ch, gfal_srm_opendir_handle oh, int 
             resu=-1;
         }
         gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
+        gfal_srm_ifce_context_release(context);
     }
 		
     G_RETURN_ERR(resu, tmp_err, err);

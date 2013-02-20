@@ -34,7 +34,7 @@
 
 
 int gfal_srmv2_rmdir_internal(gfal_srmv2_opt* opts, char* endpoint, const char* surl, GError** err){
-	struct srm_context context;
+    srm_context_t context;
 	struct srm_rmdir_input rmdir_input;
 	struct srm_rmdir_output rmdir_output;
 	GError* tmp_err=NULL;
@@ -42,12 +42,11 @@ int gfal_srmv2_rmdir_internal(gfal_srmv2_opt* opts, char* endpoint, const char* 
 	int ret = -1;
 	
 
-    if(gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
-                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err) ==0){
+    if( (context =  gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_ERRMSG_LEN, &tmp_err)) != NULL){
         rmdir_input.recursive = 0;
         rmdir_input.surl = (char*)surl;
 
-        if( gfal_srm_external_call.srm_rmdir(&context, &rmdir_input, &rmdir_output) >=0){
+        if( gfal_srm_external_call.srm_rmdir(context, &rmdir_input, &rmdir_output) >=0){
             const int sav_errno = rmdir_output.statuses[0].status;
             if( sav_errno ){
                 g_set_error(&tmp_err, 0, sav_errno, " Error report from the srm_ifce %s ", strerror(sav_errno));
@@ -61,6 +60,7 @@ int gfal_srmv2_rmdir_internal(gfal_srmv2_opt* opts, char* endpoint, const char* 
             gfal_srm_report_error(errbuf, &tmp_err);
             ret=-1;
         }
+        gfal_srm_ifce_context_release(context);
     }
     G_RETURN_ERR(ret, tmp_err, err);
 }

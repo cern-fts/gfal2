@@ -60,7 +60,7 @@ static int gfal_srmv2_chmod_internal(gfal_srmv2_opt* opts, char* endpoint, const
 	g_return_val_err_if_fail(opts && endpoint && path,-1,err,"[gfal_srmv2_chmod_internal] invalid args ");
 			
 	GError* tmp_err=NULL;
-	struct srm_context context;
+    srm_context_t context;
 	int ret=0;
 	struct srm_setpermission_input perms_input;
 	const int err_size = 2048;
@@ -70,13 +70,13 @@ static int gfal_srmv2_chmod_internal(gfal_srmv2_opt* opts, char* endpoint, const
 	// set the structures datafields	
 	gfal_srmv2_configure_set_permission(opts, path, mode, &perms_input);
 
-    if( gfal_srm_ifce_context_init(&context, opts->handle, endpoint,
-                                  errbuf, GFAL_ERRMSG_LEN, &tmp_err) ==0){
-        if( (ret = gfal_srm_external_call.srm_setpermission(&context , &perms_input)) < 0){
+    if(  (context =  gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_ERRMSG_LEN, &tmp_err)) != NULL){
+        if( (ret = gfal_srm_external_call.srm_setpermission(context , &perms_input)) < 0){
             gfal_srm_report_error(errbuf, &tmp_err);
         } else{
              ret = 0;
         }
+        gfal_srm_ifce_context_release(context);
     }
     G_RETURN_ERR(ret, tmp_err, err);
 }

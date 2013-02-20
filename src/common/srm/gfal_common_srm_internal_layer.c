@@ -40,7 +40,6 @@ void disable_srm_srm2__TReturnStatus_delete(struct srm2__TReturnStatus* status){
 
 
 struct _gfal_srm_external_call gfal_srm_external_call = { 
-    .srm_context_init = &srm_context_init2,
     .srm_ls = &srm_ls,
     .srm_rmdir = &srm_rmdir,
     .srm_mkdir = &srm_mkdir,
@@ -60,71 +59,38 @@ struct _gfal_srm_external_call gfal_srm_external_call = {
 };
 
 
-int gfal_srm_ifce_context_init(struct srm_context* context, gfal_context_t handle, const char* endpoint,
-                                char* errbuff, size_t s_errbuff, GError** err){
-    gint timeout;
-    GError * tmp_err=NULL;
-    int ret = -1;
-    const gboolean keep_alive = gfal2_get_opt_boolean_with_default(handle, srm_config_group,
-                                                srm_config_keep_alive, FALSE);
-
-    gfal_log(GFAL_VERBOSE_DEBUG, " SRM connexion keep-alive %d", keep_alive);
-
-    gfal_srm_external_call.srm_context_init(context, (char*) endpoint,
-                                            errbuff, s_errbuff, gfal_get_verbose(),
-                                            keep_alive);
-
-    timeout =  gfal2_get_opt_integer(handle, srm_config_group, srm_ops_timeout_key, &tmp_err);
-    if(!tmp_err){
-        gfal_log(GFAL_VERBOSE_DEBUG, " SRM operation timeout %d", timeout);
-        context->timeout = timeout;
-        context->timeout_ops = timeout;
-
-        timeout = gfal2_get_opt_integer(handle, srm_config_group, srm_conn_timeout_key, &tmp_err);
-        if(!tmp_err){
-            gfal_log(GFAL_VERBOSE_DEBUG, " SRM connexion timeout %d", timeout);
-            context->timeout_conn = timeout;
-        }
-    }
-
-    if(!tmp_err){
-        ret = 0;
-    }
-    G_RETURN_ERR(ret, tmp_err, err);
-}
-
-
 srm_context_t gfal_srm_ifce_context_setup(gfal_context_t handle, const char* endpoint,
                                                 char* errbuff, size_t s_errbuff, GError** err){
-    srm_context_t context = srm_context_new(endpoint, errbuff, s_errbuff, gfal_get_verbose());
+
     gint timeout;
-    GError * tmp_err=NULL;
-    timeout =  gfal2_get_opt_integer(handle, srm_config_group, srm_ops_timeout_key, &tmp_err);
-    if(!tmp_err){
+    srm_context_t context=NULL;
+    GError* tmp_err=NULL;
+
+    const gboolean keep_alive = gfal2_get_opt_boolean_with_default(handle, srm_config_group,
+                                                srm_config_keep_alive, FALSE);
+    gfal_log(GFAL_VERBOSE_DEBUG, " SRM connexion keep-alive %d", keep_alive);
+
+    context = srm_context_new2(endpoint, errbuff, s_errbuff, gfal_get_verbose(),keep_alive);
+
+    if(context != NULL){
+        timeout =  gfal2_get_opt_integer_with_default(handle, srm_config_group, srm_ops_timeout_key, 180);
         gfal_log(GFAL_VERBOSE_DEBUG, " SRM operation timeout %d", timeout);
         context->timeout = timeout;
         context->timeout_ops = timeout;
 
-        timeout = gfal2_get_opt_integer(handle, srm_config_group, srm_conn_timeout_key, &tmp_err);
-        if(!tmp_err){
-            gfal_log(GFAL_VERBOSE_DEBUG, " SRM connexion timeout %d", timeout);
-            context->timeout_conn = timeout;
-        }
+        timeout = gfal2_get_opt_integer_with_default(handle, srm_config_group, srm_conn_timeout_key, 60);
+        gfal_log(GFAL_VERBOSE_DEBUG, " SRM connexion timeout %d", timeout);
+        context->timeout_conn = timeout;
+    }else{
+        g_set_error(&tmp_err, 0, EINVAL, "Impossible to create srm context");
     }
-    if(tmp_err){
-        srm_context_free(context);
-        context = NULL;
-    }
+
 
     G_RETURN_ERR(context, tmp_err, err);
 }
 
 void gfal_srm_ifce_context_release(srm_context_t context){
-    srm_context_free(context);
+   srm_context_free(context);
 }
 
-
-int gfal_srm_ifce_context_deinit(struct srm_context* context){
-    return 0;
-}
 
