@@ -35,6 +35,8 @@
 
 int gfal2_cancel(gfal2_context_t context){
     g_assert(context);
+    if(context->cancel == TRUE) // avoid recursive calls
+        return 0;
     g_mutex_lock(context->mux_cancel);
     const int n_cancel = g_atomic_int_get(&(context->running_ops));
     context->cancel = TRUE;
