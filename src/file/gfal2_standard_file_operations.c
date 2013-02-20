@@ -105,7 +105,10 @@ int gfal2_lstat(gfal2_context_t handle, const char* url, struct stat* buff, GErr
     if(url == NULL || handle == NULL || buff == NULL){
        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "handle or/and url or/and buff are incorrect arguments");
     }else{
-        ret = gfal_plugin_lstatG(handle, url, buff, &tmp_err);
+        if( ( ret = gfal_plugin_lstatG(handle, url, buff, &tmp_err)) != 0
+             && tmp_err && tmp_err->code== EPROTONOSUPPORT){ // protocol does not support lstat, try to map to stat
+            ret = gfal2_stat(handle, url, buff, err);
+        }
     }
     GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(ret, tmp_err, err);
