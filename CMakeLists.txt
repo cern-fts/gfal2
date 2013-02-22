@@ -17,7 +17,7 @@ SET(PLUGIN_FILE TRUE
         CACHE STRING "enable compilation of the local File plugin")
 SET(PLUGIN_GRIDFTP TRUE
         CACHE STRING "enable compilation of the GRIDFTP plugin")
-SET(PLUGIN_HTTP TRUE
+SET(PLUGIN_HTTP FALSE
         CACHE STRING "enable compilation of the HTTP plugin")
 
 SET(MAIN_TRANSFER TRUE
