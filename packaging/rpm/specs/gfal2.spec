@@ -1,7 +1,7 @@
 
 Name:				gfal2
-Version:			2.1.5
-Release:			3%{?dist}
+Version:			2.1.6
+Release:			0%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -282,6 +282,12 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Fri Feb 22 2013 Adrien Devresse <adevress at cern.ch> - 2.1.6-0
+ - FTS 3.0 EMI 3 update
+ - minor fix on the cancel logic
+ - change the performance marker auto-cancel threading model
+ - change the performance marker default timeout value
+
 * Mon Feb 11 2013 Adrien Devresse <adevress at cern.ch> - 2.1.5-0
  - FTS 3.0 EMI 3 release sync
  - include event hooks support

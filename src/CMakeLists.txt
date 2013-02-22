@@ -160,8 +160,6 @@ ENDIF(PLUGIN_LFC)
 
 IF(PLUGIN_SRM)
 
-pkg_check_modules(SRM_IFCE_PKG REQUIRED srm-ifce>=1.15.0)
-
 add_definitions( ${SRM_IFCE_PKG_CFLAGS} ${OpenMP_C_FLAGS} )
 include_directories( ${SRM_IFCE_PKG_INCLUDE_DIR} ${OpenMP_INCLUDE_DIRS})
 
@@ -237,9 +235,8 @@ ENDIF(PLUGIN_DCAP)
 
 
 
-IF(PLUGIN_HTTP)
-    add_subdirectory(common/http)
-ENDIF(PLUGIN_HTTP)
+
+add_subdirectory(common/http)
 
 
 add_subdirectory(transfer)                         

@@ -8,11 +8,6 @@ FILE(GLOB src_gridftp "*.c*")
 
 
 IF(PLUGIN_GRIDFTP)
-
-pkg_check_modules(GLOBUS_GASS_COPY_PKG REQUIRED globus-gass-copy)
-
-#FILE(GLOB gridFTP_scripts "../dist/scripts/gfal_plugin_dcap/*sh")
-
 add_definitions( ${GLOBUS_GASS_COPY_PKG_CFLAGS}    ${OpenMP_C_FLAGS})
 add_library(plugin_gridftp  SHARED ${src_gridftp} ${src_libcpp} ${src_exceptions})
 

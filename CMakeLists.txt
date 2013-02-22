@@ -72,7 +72,7 @@ set(OUTPUT_NAME_HTTP "gfal_plugin_http")
 
 set(VERSION_MAJOR  2)
 set(VERSION_MINOR  1)
-set(VERSION_PATCH 5)
+set(VERSION_PATCH 6)
 set(VERSION_STRING ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 
@@ -84,10 +84,22 @@ SET(ONLY_TESTS FALSE
 # libs checks
 pkg_check_modules(GLIB2_PKG REQUIRED glib-2.0)
 pkg_check_modules(GTHREAD2_PKG REQUIRED gthread-2.0)
-
 pkg_check_modules(UUID_PKG REQUIRED uuid)
-
 pkg_search_module(GLIBMM_PKG REQUIRED glibmm glibmm-2.6 glibmm-2.4)
+
+IF(PLUGIN_SRM)
+pkg_check_modules(SRM_IFCE_PKG REQUIRED srm-ifce>=1.15.0)
+ENDIF(PLUGIN_SRM)
+
+IF(PLUGIN_HTTP)
+pkg_check_modules(GSOAP_SSL_PKG REQUIRED "gsoapssl++")
+pkg_check_modules(DAVIX_PKG REQUIRED "davix>=0.0.20")
+find_package(gSOAP REQUIRED)
+ENDIF(PLUGIN_HTTP)
+
+IF(PLUGIN_GRIDFTP)
+pkg_check_modules(GLOBUS_GASS_COPY_PKG REQUIRED globus-gass-copy)
+ENDIF(PLUGIN_GRIDFTP)
 
 
 # general parameters for configuration
@@ -112,6 +124,9 @@ IF(NOT ONLY_TESTS)
 	add_subdirectory (doc)
 	add_subdirectory (src)
 ENDIF(NOT ONLY_TESTS)
+
+
+
 add_subdirectory (test)
 add_subdirectory (testing)
 

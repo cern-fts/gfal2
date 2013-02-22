@@ -1,12 +1,10 @@
 cmake_minimum_required (VERSION 2.6)
 
+IF(PLUGIN_HTTP)
+
 include     (CheckLibraryExists)
 
 FILE(GLOB src_http "*.cpp")
-
-pkg_check_modules(GSOAP_SSL_PKG REQUIRED "gsoapssl++")
-pkg_check_modules(DAVIX_PKG REQUIRED "davix>=0.0.20")
-find_package(gSOAP REQUIRED)
 
 message(STATUS "Using gsoapssl flags ${GSOAP_SSL_PKG_CFLAGS}")
 
@@ -53,3 +51,6 @@ install(TARGETS plugin_http
             LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
 install(FILES "README_PLUGIN_HTTP"
             DESTINATION ${DOC_INSTALL_DIR})
+
+
+ENDIF(PLUGIN_HTTP)
