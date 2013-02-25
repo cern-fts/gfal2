@@ -73,6 +73,10 @@ static int gfal_srmv2_bring_online_internal(gfal_srmv2_opt* opts, const char* en
                                 " error on the bring online request : %s ",
                                 output.filestatuses[0].explanation);
                 }
+                else {
+                    gfal2_set_opt_string(opts->handle, "SRM PLUGIN", "BRING_ONLINE_TOKEN",
+                                         output.token, NULL);
+                }
             }
             gfal_srm_external_call.srm_srmv2_pinfilestatus_delete(output.filestatuses, ret);
             gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
@@ -141,15 +145,26 @@ static int gfal_srmv2_release_file_internal(gfal_srmv2_opt* opts, const char* en
     struct srmv2_filestatus      *statuses;
     GError                       *tmp_err = NULL;
     gfal_srm_params_t             params = gfal_srm_params_new(opts, &tmp_err);
+    char                         *token = NULL;
 
     if (params != NULL) {
           char          error_buffer[2048];
           srm_context_t context = gfal_srm_ifce_context_setup(opts->handle, endpoint, error_buffer, sizeof(error_buffer), &tmp_err);
 
+          // Try to recover the token
+          token = gfal2_get_opt_string(opts->handle, "SRM PLUGIN", "BRING_ONLINE_TOKEN", NULL);
+
+          if (token)
+              gfal_log(GFAL_VERBOSE_VERBOSE, "Release file with token %s", token);
+          else
+              gfal_log(GFAL_VERBOSE_VERBOSE, "Release file without token");
+
+          // Perform
           if (context) {
               input.nbfiles  = 1;
               input.reqtoken = NULL;
               input.surls    = (char**)&surl;
+              input.reqtoken = token;
 
               int ret = gfal_srm_external_call.srm_release_files(context, &input, &statuses);
 
