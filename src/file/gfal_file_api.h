@@ -200,6 +200,8 @@ int gfal2_bring_online(gfal2_context_t context, const char* path,
                        time_t pintime, time_t timeout,
                        GError ** err);
 
+int gfal2_release_file(gfal2_context_t context, const char* path, GError ** err);
+
 
 /////////////////////////////////////////////////////
 ///////////// R/W operations

@@ -8,13 +8,15 @@ int main(int argc, char **argv)
     const char *surl, *protocols[10];
     int nprotocols, i;
 
+    // Set verbosity
     gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE);
     if (argc < 2) {
         fprintf (stderr, "usage: %s filename [protocol [protocol|...]\n", argv[0]);
-        fprintf (stderr, "Protocols are optional. By default: rfio");
+        fprintf (stderr, "Protocols are optional. By default: rfio\n");
         exit (1);
     }
 
+    // Parse arguments
     surl = argv[1];
     if (argc > 2) {
         nprotocols = argc - 2;
@@ -32,7 +34,7 @@ int main(int argc, char **argv)
         printf("\t%s\n", protocols[i]);
     }
 
-
+    // Set up handle
     handle = gfal2_context_new(&error);
     if (!handle) {
         fprintf(stderr, " bad initialization %d : %s.\n", error->code, error->message);
@@ -42,11 +44,12 @@ int main(int argc, char **argv)
     gfal2_set_opt_string_list(handle, "SRM PLUGIN", "TURL_PROTOCOLS",
                               protocols, nprotocols, &error);
     if (error) {
-        fprintf(stderr, " Could not set the protocol list: %s\n",
+        fprintf(stderr, "Could not set the protocol list: %s\n",
                 error->message);
         return -1;
     }
 
+    // Bring online
     if (gfal2_bring_online(handle, surl, 28800, 28800, &error) < 0) {
         printf("Bring online failed: %s (%d)\n", error->message, error->code);
     }
@@ -54,6 +57,17 @@ int main(int argc, char **argv)
         printf("Bring online succeeded!\n");
     }
 
+    // Release
+    if (!error) {
+        if (gfal2_release_file(handle, surl, &error) < 0) {
+            printf("Release failed: %s (%d)\n", error->message, error->code);
+        }
+        else {
+            printf("Release succeeded!\n");
+        }
+    }
+
+    // Free
     gfal2_context_free(handle);
     return 0;
 }

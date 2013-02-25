@@ -55,7 +55,8 @@ struct _gfal_srm_external_call gfal_srm_external_call = {
     .srm_setpermission= &srm_setpermission,
     .srm_rm = &srm_rm,
     .srm_set_timeout_connect = &srm_set_timeout_connect,
-    .srm_bring_online = &srm_bring_online
+    .srm_bring_online = &srm_bring_online,
+    .srm_release_files = &srm_release_files
 };
 
 

@@ -32,3 +32,6 @@
 int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl,
                              time_t pintime, time_t timeout,
                              GError** err);
+
+int gfal_srmv2_release_fileG(plugin_handle ch, const char* surl,
+                             GError** err);

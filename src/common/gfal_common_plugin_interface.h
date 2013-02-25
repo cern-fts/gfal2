@@ -411,9 +411,18 @@ struct _gfal_plugin_interface{
                          time_t pintime, time_t timeout,
                          GError** err);
 
+     /**
+      * OPTIONAL: Releases a previously staged file (mandatory if bring online is supported)
+      * @param plugin_data : internal plugin context
+      * @param url : The url of the file
+      * @param err:  GError error support
+      */
+     int (*release_file)(plugin_handle plugin_data, const char* url,
+                         GError** err);
+
 	 // reserved for future usage
 	 //! @cond
-     void* future[24];
+     void* future[16];
 	 //! @endcond
 };
 
@@ -468,6 +477,9 @@ int gfal_plugin_setxattrG(gfal_handle, const char*, const char*, const void*, si
 int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri,
                               time_t pintime, time_t timeout,
                               GError ** err);
+
+int gfal_plugin_release_fileG(gfal2_context_t handle, const char* uri, GError ** err);
+
 //! @endcond
 
 #ifdef __cplusplus
