@@ -220,6 +220,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
     srm_plugin.copy_file = &srm_plugin_filecopy;
     srm_plugin.check_plugin_url_transfer =&plugin_url_check2;
     srm_plugin.bring_online = &gfal_srmv2_bring_onlineG;
+    srm_plugin.bring_online_poll = &gfal_srmv2_bring_online_pollG;
     srm_plugin.release_file = &gfal_srmv2_release_fileG;
 	return srm_plugin;
 }

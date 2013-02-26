@@ -202,9 +202,15 @@ int gfal2_setxattr (gfal2_context_t context, const char *path, const char *name,
 
 int gfal2_bring_online(gfal2_context_t context, const char* path,
                        time_t pintime, time_t timeout,
+                       char* token, size_t tsize,
+                       int async,
                        GError ** err);
 
-int gfal2_release_file(gfal2_context_t context, const char* path, GError ** err);
+int gfal2_bring_online_poll(gfal2_context_t context, const char* path,
+                            const char* token, GError ** err);
+
+int gfal2_release_file(gfal2_context_t context, const char* path,
+                       const char* token, GError ** err);
 
 
 /////////////////////////////////////////////////////

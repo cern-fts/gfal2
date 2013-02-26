@@ -405,19 +405,37 @@ struct _gfal_plugin_interface{
       * @param url : The url of the file
       * @param pintime : Time the file should stay in the cache
       * @param timeout : Operation timeout
+      * @param token Where to put the retrieved token.
+      * @param tsize The size of the buffer pointed by token.
+      * @param async If true (!= 0), the call will not block. The caller will need
+      *              to use bring_online_poll later.
       * @param err:  GError error support
+      * @return      -1 on error (and err is set). 0 on success. 1 if the file has been staged.
       */
      int (*bring_online)(plugin_handle plugin_data, const char* url,
                          time_t pintime, time_t timeout,
+                         char* token, size_t tsize,
+                         int async,
                          GError** err);
+
+     /**
+      * OPTIONAL: Polling the bring_online request (mandatory if bring online is supported)
+      * @param url   The same URL as was passed to bring_online_async
+      * @param token The token as returned by bring_online_async
+      * @return      -1 on error (and err is set). 0 on success. 1 if the file has been staged.
+      */
+     int (*bring_online_poll)(plugin_handle plugin_data, const char* url,
+                              const char* token, GError** err);
 
      /**
       * OPTIONAL: Releases a previously staged file (mandatory if bring online is supported)
       * @param plugin_data : internal plugin context
-      * @param url : The url of the file
-      * @param err:  GError error support
+      * @param url :  The url of the file
+      * @param token: The request token. If NULL,
+      * @param err:   GError error support
       */
      int (*release_file)(plugin_handle plugin_data, const char* url,
+                         const char* token,
                          GError** err);
 
      /**
@@ -435,7 +453,7 @@ struct _gfal_plugin_interface{
 
 	 // reserved for future usage
 	 //! @cond
-     void* future[22];
+     void* future[21];
 	 //! @endcond
 };
 
@@ -490,9 +508,15 @@ int gfal_plugin_setxattrG(gfal_handle, const char*, const char*, const void*, si
 
 int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri,
                               time_t pintime, time_t timeout,
+                              char* token, size_t tsize,
+                              int async,
                               GError ** err);
 
-int gfal_plugin_release_fileG(gfal2_context_t handle, const char* uri, GError ** err);
+int gfal_plugin_bring_online_pollG(gfal2_context_t handle, const char* uri,
+                                   const char* token, GError ** err);
+
+int gfal_plugin_release_fileG(gfal2_context_t handle, const char* uri,
+                              const char* token, GError ** err);
 
 //! @endcond
 

@@ -31,7 +31,12 @@
 
 int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl,
                              time_t pintime, time_t timeout,
+                             char* token, size_t tsize,
+                             int async,
                              GError** err);
 
+int gfal_srmv2_bring_online_pollG(plugin_handle ch, const char* surl,
+                                  const char* token, GError** err);
+
 int gfal_srmv2_release_fileG(plugin_handle ch, const char* surl,
-                             GError** err);
+                             const char* token, GError** err);

@@ -97,6 +97,12 @@ struct _gfal_srm_external_call{
     int (*srm_bring_online)(struct srm_context *context,
                             struct srm_bringonline_input *input, struct srm_bringonline_output *output);
 
+    int (*srm_bring_online_async)(struct srm_context *context,
+                                  struct srm_bringonline_input *input, struct srm_bringonline_output *output);
+
+    int (*srm_bring_online_status)(struct srm_context *context,
+                                   struct srm_bringonline_input *input,struct srm_bringonline_output *output);
+
     int (*srm_release_files)(struct srm_context *context,
                              struct srm_releasefiles_input *input,
                              struct srmv2_filestatus **statuses);

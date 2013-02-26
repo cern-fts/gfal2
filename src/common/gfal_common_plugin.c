@@ -966,6 +966,8 @@ int gfal_plugin_setxattrG(gfal_handle handle, const char* path, const char* name
 
 int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri,
                               time_t pintime, time_t timeout,
+                              char* token, size_t tsize,
+                              int async,
                               GError ** err){
     GError* tmp_err=NULL;
     int resu = -1;
@@ -974,7 +976,11 @@ int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri,
         return gfal_plugin_checker_safe(cata_list, uri, GFAL_PLUGIN_BRING_ONLINE, terr);
     }
     int bringonline_executor(gfal_plugin_interface* cata_list, GError** terr){
-        resu = cata_list->bring_online(cata_list->plugin_data, uri, pintime, timeout, terr);
+        resu = cata_list->bring_online(cata_list->plugin_data, uri,
+                                       pintime, timeout,
+                                       token, tsize,
+                                       async,
+                                       terr);
         return resu;
     }
 
@@ -984,7 +990,28 @@ int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri,
     return resu;
 }
 
-int gfal_plugin_release_fileG(gfal2_context_t handle, const char* uri, GError ** err) {
+int gfal_plugin_bring_online_pollG(gfal2_context_t handle, const char* uri,
+                                   const char* token, GError ** err) {
+    GError* tmp_err=NULL;
+    int resu = -1;
+
+    gboolean bringonline_checker(gfal_plugin_interface* cata_list, GError** terr){
+        return gfal_plugin_checker_safe(cata_list, uri, GFAL_PLUGIN_BRING_ONLINE, terr);
+    }
+    int bringonline_executor(gfal_plugin_interface* cata_list, GError** terr){
+        resu = cata_list->bring_online_poll(cata_list->plugin_data, uri,
+                                            token, terr);
+        return resu;
+    }
+
+    gfal_plugins_operation_executor(handle, &bringonline_checker, &bringonline_executor, &tmp_err);
+    if(tmp_err)
+        g_propagate_prefixed_error(err, tmp_err, "[%s]",__func__);
+    return resu;
+}
+
+int gfal_plugin_release_fileG(gfal2_context_t handle, const char* uri,
+                              const char* token, GError ** err) {
   GError* tmp_err=NULL;
   int resu = -1;
 
@@ -992,7 +1019,7 @@ int gfal_plugin_release_fileG(gfal2_context_t handle, const char* uri, GError **
       return gfal_plugin_checker_safe(cata_list, uri, GFAL_PLUGIN_BRING_ONLINE, terr);
   }
   int release_executor(gfal_plugin_interface* cata_list, GError** terr){
-      resu = cata_list->release_file(cata_list->plugin_data, uri, terr);
+      resu = cata_list->release_file(cata_list->plugin_data, uri, token, terr);
       return resu;
   }
 
