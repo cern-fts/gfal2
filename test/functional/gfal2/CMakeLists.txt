@@ -42,7 +42,6 @@ SET(COPY_DST "${CMAKE_CURRENT_BINARY_DIR}/")
 
 IF (FUNCTIONAL_TESTS)
 
-  #  pkg_search_module(NETTLE_PKG REQUIRED nettle)
 
         include_directories( "${CMAKE_SOURCE_DIR}/src "  "${CMAKE_SOURCE_DIR}/src/posix/"
                     ${GLIB2_PKG_INCLUDE_DIRS} ${NETTLE_PKG_INCLUDE_DIRS} )
@@ -52,9 +51,6 @@ IF (FUNCTIONAL_TESTS)
 
         add_executable(gfal_access        ${src_gfalaccess} )
         target_link_libraries(gfal_access ${OUTPUT_NAME_MAIN} )
-
-   #     add_executable(gfal_checksum_test        ${src_gfalchecksum_test} ${src_lib_test} )
-    #    target_link_libraries(gfal_checksum_test ${OUTPUT_NAME_MAIN} ${NETTLE_PKG_LIBRARIES})
 
         add_executable(gfal_checksum_tool        ${src_gfal_checksum_tool})
         target_link_libraries(gfal_checksum_tool ${OUTPUT_NAME_MAIN})

@@ -833,6 +833,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	lfc_plugin.listxattrG = &lfc_listxattrG;
 	lfc_plugin.readlinkG = &lfc_readlinkG;
 	lfc_plugin.unlinkG = &lfc_unlinkG;
+    lfc_plugin.readdirppG= &lfc_readdirppG;
 	
 	
 	if(init_thread== FALSE){ // initiate Cthread system

@@ -435,7 +435,7 @@ struct _gfal_plugin_interface{
 
 	 // reserved for future usage
 	 //! @cond
-     void* future[12];
+     void* future[22];
 	 //! @endcond
 };
 
