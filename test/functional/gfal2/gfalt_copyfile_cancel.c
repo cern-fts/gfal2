@@ -67,6 +67,29 @@ int spawn_copy(pthread_t* thread, gfal2_context_t handle,
 
 
 
+void monitor_callback(gfalt_transfer_status_t h,
+                      const char* source, const char* destination,
+                      gpointer udata)
+{
+    // We don't care about the performance data. We just want to trigger
+    // all those internal locks.
+    (void)h;
+    (void)source;
+    (void)destination;
+    (void)udata;
+}
+
+
+
+void event_callback(const gfalt_event_t e, gpointer user_data)
+{
+    fprintf(stderr, "[%s] %s %s\n", g_quark_to_string(e->domain),
+            g_quark_to_string(e->stage),
+            e->description);
+}
+
+
+
 int main(int argc, char** argv)
 {
     const char     *source;
@@ -75,6 +98,7 @@ int main(int argc, char** argv)
     gfalt_params_t  transfer_params = NULL;
     GError         *error = NULL, *copier_error = NULL;
     pthread_t       copier_thread;
+    int             i;
 
     // Parse params
     if (argc != 3) {
@@ -94,6 +118,8 @@ int main(int argc, char** argv)
     if (!transfer_params)
         goto unwind_context;
     gfalt_set_replace_existing_file(transfer_params, TRUE, NULL);
+    gfalt_set_monitor_callback(transfer_params, monitor_callback, NULL);
+    gfalt_set_event_callback(transfer_params, event_callback, NULL);
 
     // Spawn the thread that will do the copy
     printf("Spawning the copy '%s' => '%s'\n", source, destination);
@@ -105,7 +131,12 @@ int main(int argc, char** argv)
 
     // Give it some time
     printf("Waiting some time before canceling\n");
-    sleep(2);
+    for (i = 0; i < 30; ++i) {
+        fputc('.', stdout);
+        fflush(stdout);
+        sleep(1);
+    }
+    fputc('\n', stdout);
 
     // Cancel
     printf("Calling gfal2_cancel.\n");
