@@ -166,7 +166,7 @@ IF (FUNCTIONAL_TESTS)
                 target_link_libraries(gfal_copyfile ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
                 
                 add_executable(gfal_copyfile_cancel ${src_gfaltcopy_cancel} )
-                target_link_libraries(gfal_copyfile_cancel ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
+                target_link_libraries(gfal_copyfile_cancel ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN} ${CMAKE_THREAD_LIBS_INIT} pthread)
 
                 add_executable(gfal_copyfile_fts ${src_gfaltcopy_fts} )
                 target_link_libraries(gfal_copyfile_fts ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
