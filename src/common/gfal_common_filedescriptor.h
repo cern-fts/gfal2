@@ -29,6 +29,7 @@
 #include <pthread.h>
 #include <common/gfal_prototypes.h>
 #include <common/gfal_constants.h>
+#include <fdesc/gfal_file_handle.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -46,6 +47,7 @@ struct _gfal_file_handle_{
 	off_t offset;
 	gpointer ext_data;
 	gpointer fdesc;	
+    gchar* path;
 };
 
  // low level funcs
@@ -64,10 +66,6 @@ gpointer gfal_get_file_desc(gfal_fdesc_container_handle fhandle, int key, GError
 gfal_file_handle gfal_file_handle_bind(gfal_fdesc_container_handle h, int file_desc, GError** err);
 
 // convenience funcs
-
-gfal_file_handle gfal_file_handle_new(const char* module_name, gpointer fdesc);
-
-gfal_file_handle gfal_file_handle_ext_new(const char* module_name, gpointer fdesc, gpointer ext_data);
 
 
 void gfal_file_handle_delete(gfal_file_handle fh);

@@ -16,6 +16,10 @@ int main(int argc, char **argv)
 	char *file;
 	char buff[2048];
 	char buff2[2048];
+    int count=0;
+    GError * tmp_err=NULL;
+    struct dirent* d;
+    struct stat st;
 
 	if (argc < 2) {
 		fprintf (stderr, "usage: %s dir_base \n", argv[0]);
@@ -55,13 +59,12 @@ int main(int argc, char **argv)
 		}
 	}
 	
+    //// simple opendir
 	if((p = gfal_opendir(buff) ) == NULL){
 		gfal_posix_check_error();		
 		g_assert_not_reached();	
 	}
 	
-	int count=0;
-	struct dirent* d;
 	while( ( d= gfal_readdir(p))){
 		g_assert( gfal_posix_code_error() == 0);
 		g_assert(  (strstr(d->d_name,"elem_") != NULL) ||
@@ -76,6 +79,60 @@ int main(int argc, char **argv)
 	
 	g_assert( gfal_closedir(p) == 0);
 	g_assert( gfal_posix_code_error() == 0);
+
+    //// simple opendir
+    if((p = gfal_opendir(buff) ) == NULL){
+        gfal_posix_check_error();
+        g_assert_not_reached();
+    }
+
+    count=0;
+    d= NULL;
+
+    while( ( d= gfal_readdir(p))){
+        g_assert( gfal_posix_code_error() == 0);
+        g_assert(  (strstr(d->d_name,"elem_") != NULL) ||
+                 *d->d_name == '.');
+        printf(" +1 iterate %s", d->d_name);
+        g_assert(strchr(d->d_name, '/') == NULL);
+        count++;
+
+    }
+    printf(" count : %d", count);
+    g_assert( count >= n && count < n+3); // take care of .. and . if available
+
+    g_assert( gfal_closedir(p) == 0);
+
+
+   //// advanced opendir pp
+
+    if((p = gfal_opendir(buff) ) == NULL){
+        gfal_posix_check_error();
+        g_assert_not_reached();
+    }
+
+    count=0;
+    d= NULL;
+
+    while( ( d= gfal2_readdirpp(gfal_posix_get_context(), p, &st, &tmp_err))){
+        g_assert( gfal_posix_code_error() == 0);
+        g_assert(tmp_err == NULL);
+        g_assert(  (strstr(d->d_name,"elem_") != NULL) ||
+                 *d->d_name == '.');
+        printf(" +1 iterate %s", d->d_name);
+        g_assert(strchr(d->d_name, '/') == NULL);
+        g_assert(S_ISDIR(st.st_mode));
+        count++;
+
+    }
+    printf(" count : %d", count);
+    g_assert( count >= n && count < n+3); // take care of .. and . if available
+
+    g_assert( gfal_closedir(p) == 0);
+
+
+
+
 	
 	gfal_closedir(p); // do it again for crash test
 	

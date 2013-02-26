@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#define _GNU_SOURCE
+
 /*
  * @file gfal_common_srm_access.c
  * @brief file for the access function on the srm url type

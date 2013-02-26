@@ -59,7 +59,7 @@ gfal_file_handle GridftpModule::opendir(const char* path)
 	desc->list = std::string(desc->buff);
 	
 	gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::opendir] ");	
-	return gfal_file_handle_ext_new(plugin_name(), (gpointer) desc.release(), NULL);
+    return gfal_file_handle_new2(plugin_name(), (gpointer) desc.release(), NULL, path);
 }
 
 // try to extract dir information

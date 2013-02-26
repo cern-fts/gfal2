@@ -47,6 +47,11 @@ gfal_file_handle gfal_file_handle_new(const char* module_name, gpointer fdesc);
 gfal_file_handle gfal_file_handle_ext_new(const char* module_name, gpointer fdesc, gpointer user_data);
 
 /**
+* same than \ref gfal_file_handle_new but allows to store user data in the gfal file descriptor
+*/
+gfal_file_handle gfal_file_handle_new2(const char *module_name, gpointer fdesc, gpointer user_data, const char *file_path);
+
+/**
 * return the file descriptor of this gfal file handle
 */
 gpointer gfal_file_handle_get_fdesc(gfal_file_handle fh);

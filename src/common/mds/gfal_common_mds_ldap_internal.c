@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#define _GNU_SOURCE
+
  
 /*
  * @file gfal_common_mds_ldap_internal.c

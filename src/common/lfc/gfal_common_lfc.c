@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#define _GNU_SOURCE
+
  
  /*
   * 
@@ -438,10 +438,14 @@ static gfal_file_handle lfc_opendirG(plugin_handle handle, const char* path, GEr
     }
     g_free(url_path);
     g_free(url_host);
-    G_RETURN_ERR(((d)?(gfal_file_handle_ext_new(lfc_getName(), (gpointer) d, (gpointer) oh)):NULL), tmp_err, err);
+    G_RETURN_ERR(((d)?(gfal_file_handle_new2(lfc_getName(), (gpointer) d, (gpointer) oh, path)):NULL), tmp_err, err);
 }
 
-static struct dirent* lfc_convert_dirent_struct(struct lfc_ops *ops , struct dirent* dir , struct Cns_direnstat* filestat, const char* url){
+static struct dirent* lfc_convert_dirent_struct(struct lfc_ops *ops , struct dirent* dir , struct stat* st,
+                                                struct Cns_direnstat* filestat, const char* url){
+    struct stat st2;
+    if(st == NULL)
+        st = &st2;
 	if(filestat == NULL)
 		return NULL;
 	GSimpleCache* cache = ops->cache_stat;
@@ -450,37 +454,50 @@ static struct dirent* lfc_convert_dirent_struct(struct lfc_ops *ops , struct dir
 	g_strlcat(fullurl, "/", GFAL_URL_MAX_LEN);
 	g_strlcat(fullurl, filestat->d_name, GFAL_URL_MAX_LEN);
 	
-	struct stat st;
-	st.st_mode = (mode_t) filestat->filemode;
-	st.st_nlink = (nlink_t) filestat->nlink;
-	st.st_uid = (uid_t)filestat->uid;
-	st.st_gid = (gid_t)filestat->gid;
-	st.st_size = (off_t) filestat->filesize;
-	st.st_blocks = 0;
-	st.st_blksize = 0;
-	gsimplecache_add_item_kstr(cache, fullurl, (void*) &st);
+
+    st->st_mode = (mode_t) filestat->filemode;
+    st->st_nlink = (nlink_t) filestat->nlink;
+    st->st_uid = (uid_t)filestat->uid;
+    st->st_gid = (gid_t)filestat->gid;
+    st->st_size = (off_t) filestat->filesize;
+    st->st_blocks = 0;
+    st->st_blksize = 0;
+    gsimplecache_add_item_kstr(cache, fullurl, (void*) st);
 	dir->d_off +=1;
 	g_strlcpy(dir->d_name, filestat->d_name, NAME_MAX);
 	return dir;
 }
 
+
+/*
+ * Execute a readdirpp func on the lfc
+ * */
+static struct dirent* lfc_readdirppG(plugin_handle handle, gfal_file_handle fh, struct stat* st, GError** err){
+    g_return_val_err_if_fail( handle && fh , NULL, err, "[lfc_rmdirG] Invalid value in args handle/path");
+    GError* tmp_err=NULL;
+    int sav_errno =0;
+    struct lfc_ops *ops = (struct lfc_ops*) handle;
+    gfal_lfc_init_thread(ops);
+    gfal_auto_maintain_session(ops, &tmp_err);
+    lfc_opendir_handle oh = (lfc_opendir_handle )fh->ext_data;
+    struct dirent* ret=  lfc_convert_dirent_struct(ops, ((struct dirent*) &oh->current_dir), st, (ops->readdirx( (lfc_DIR*)fh->fdesc)), oh->url);
+    if(ret ==NULL && (sav_errno =gfal_lfc_get_errno(ops)) ){
+        g_set_error(err,0, sav_errno, "[%s] Error report from LFC %s", __func__, gfal_lfc_get_strerror(ops) );
+    }
+    return ret;
+}
+
+
 /*
  * Execute a readdir func on the lfc
  * */
 static struct dirent* lfc_readdirG(plugin_handle handle, gfal_file_handle fh, GError** err){
-	g_return_val_err_if_fail( handle && fh , NULL, err, "[lfc_rmdirG] Invalid value in args handle/path");
-	GError* tmp_err=NULL;	
-	int sav_errno =0;
-	struct lfc_ops *ops = (struct lfc_ops*) handle;
-	gfal_lfc_init_thread(ops);
-	gfal_auto_maintain_session(ops, &tmp_err);
-	lfc_opendir_handle oh = (lfc_opendir_handle )fh->ext_data;
-	struct dirent* ret=  lfc_convert_dirent_struct(ops, ((struct dirent*) &oh->current_dir), (ops->readdirx( (lfc_DIR*)fh->fdesc)), oh->url);
-	if(ret ==NULL && (sav_errno =gfal_lfc_get_errno(ops)) ){
-		g_set_error(err,0, sav_errno, "[%s] Error report from LFC %s", __func__, gfal_lfc_get_strerror(ops) );
-	}
-	return ret;
+    return lfc_readdirppG(handle, fh, NULL, err);
 }
+
+
+
+
 
 /*
  * execute an closedir func on the lfc

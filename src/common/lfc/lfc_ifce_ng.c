@@ -22,7 +22,7 @@
 * main internal file of the lfc plugin module
 * author : Adrien Devresse
  */
-#define _GNU_SOURCE
+
 #define GFAL_LFN_MAX_LEN	2048
 
 #include <errno.h>

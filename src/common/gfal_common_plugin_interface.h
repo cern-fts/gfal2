@@ -420,9 +420,22 @@ struct _gfal_plugin_interface{
      int (*release_file)(plugin_handle plugin_data, const char* url,
                          GError** err);
 
+     /**
+      *  OPTIONAL : gfal_readdirpp function support
+      *             Allow directory listing + get meta-data in one operation
+      *
+      *  @param plugin_data : internal plugin data
+      *  @param dir_desc : directory descriptor to use
+      *  @param st : struct stat to fill
+      *  @param err : Error report, the code field of err should be set to errno value when possible
+      *  @return dirent information in case of success or NULL if end of listing or error,
+      *          err MUST be set in case of error
+      * */
+     struct dirent* (*readdirppG)(plugin_handle plugin_data, gfal_file_handle dir_desc, struct stat* st, GError** err);
+
 	 // reserved for future usage
 	 //! @cond
-     void* future[16];
+     void* future[12];
 	 //! @endcond
 };
 
@@ -453,6 +466,7 @@ int gfal_plugin_mkdirp(gfal_handle handle, const char* path, mode_t mode, gboole
 
 
 gfal_file_handle gfal_plugin_opendirG(gfal_handle handle, const char* name, GError** err);
+struct dirent* gfal_plugin_readdirppG(gfal_handle handle, gfal_file_handle fh, struct stat* st, GError** err);
 int gfal_plugin_closedirG(gfal_handle handle, gfal_file_handle fh, GError** err);
 struct dirent* gfal_plugin_readdirG(gfal_handle handle, gfal_file_handle fh, GError** err);
  	

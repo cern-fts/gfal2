@@ -21,7 +21,7 @@
  * author Devresse Adrien
  */
  
-#define _GNU_SOURCE 
+ 
 
 #include <regex.h>
 #include <time.h> 
@@ -199,7 +199,7 @@ gfal_file_handle gfal_plugin_file_opendir(plugin_handle plugin_data, const char*
         gfal_plugin_file_report_error(__func__, err);
     }
     if(ret)
-        resu = gfal_file_handle_new(gfal_file_plugin_getName(), (gpointer) ret);
+        resu = gfal_file_handle_new2(gfal_file_plugin_getName(), (gpointer) ret, NULL, path);
     return resu;
 }
 

@@ -21,7 +21,7 @@
  * @author Devresse Adrien
  * */
 
-#define _GNU_SOURCE
+
 
 #include <stdio.h>
 #include <string.h>

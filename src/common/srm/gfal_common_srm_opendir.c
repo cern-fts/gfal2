@@ -24,7 +24,7 @@
  * */
 
 
-#define _GNU_SOURCE
+
 
 #include <string.h>
 #include <dirent.h>
@@ -58,7 +58,7 @@ gfal_file_handle gfal_srm_opendir_internal(gfal_srmv2_opt* opts, char* endpoint,
 				*(p-1) = '\0';
 			g_strlcpy(h->endpoint, endpoint, GFAL_URL_MAX_LEN);
 			h->dir_offset = 0;
-			resu = gfal_file_handle_new(gfal_srm_getName(), (gpointer) h);
+            resu = gfal_file_handle_new2(gfal_srm_getName(), (gpointer) h, NULL, surl);
 		}else{
 			g_set_error(&tmp_err, 0, ENOTDIR, "srm-plugin: %s is not a directory, impossible to list content", surl);
 		}

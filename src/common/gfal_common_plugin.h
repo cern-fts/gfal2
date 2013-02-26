@@ -37,6 +37,8 @@
 #include <transfer/gfal_transfer_types.h>
 
 
+#define GFAL2_PLUGIN_SCOPE "GFAL2::PLUGIN"
+
  
 #ifdef __cplusplus
 extern "C"
@@ -69,6 +71,9 @@ plugin_pointer_handle gfal_plugins_list_handler(gfal_handle, GError** err);
 int gfal_plugins_instance(gfal_handle, GError** err);
 char** gfal_plugins_get_list(gfal_handle, GError** err);
 int gfal_plugins_delete(gfal_handle, GError** err);
+
+
+gboolean gfal_feature_is_supported(void * ptr, GQuark scope, const char* func_name, GError** err);
 
 
 // find a compatible catalog or return NULL + error

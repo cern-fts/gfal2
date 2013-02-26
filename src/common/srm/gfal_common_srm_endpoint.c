@@ -23,7 +23,7 @@
  * @date 22/06/2011
  * */
  
-#define _GNU_SOURCE
+
 
 #include <time.h>
 #include <string.h>

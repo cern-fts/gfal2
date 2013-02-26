@@ -21,7 +21,7 @@
  * author : Devresse Adrien
  */
 
-#define _GNU_SOURCE
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,6 +40,10 @@
 #error "GFAL_PLUGIN_DIR_DEFAULT should be define at compile time"
 #endif
 
+
+
+
+
 /*
  * function to use in order to create a new plugin interface
  *  permit to keep the ABI compatibility
@@ -54,6 +58,14 @@ gfal_plugin_interface* gfal_plugin_interface_new(){
 
 plugin_handle gfal_get_plugin_handle(gfal_plugin_interface* cata_list){
     return cata_list->plugin_data;
+}
+
+gboolean gfal_feature_is_supported(void * ptr, GQuark scope, const char* func_name, GError** err){
+    if(ptr == NULL){
+       g_set_error(err, scope,EPROTONOSUPPORT, "[%s] Protocol not supported or path/url invalid", func_name);
+       return FALSE;
+    }
+    return TRUE;
 }
 
 //convenience function for safe calls to the plugin checkers
@@ -717,6 +729,24 @@ struct dirent* gfal_plugin_readdirG(gfal_handle handle, gfal_file_handle fh, GEr
 		g_propagate_prefixed_error(err, tmp_err, "[%s]",__func__);
 	return ret; 
 }
+
+
+// Execute a readdir function on the appropriate plugin
+struct dirent* gfal_plugin_readdirppG(gfal_handle handle, gfal_file_handle fh, struct stat* st, GError** err){
+    g_return_val_err_if_fail(handle && fh, NULL,err, "[gfal_plugin_readdirppG] Invalid args ");
+    GError* tmp_err=NULL;
+    struct dirent* ret = NULL;
+    gfal_plugin_interface* if_cata = gfal_plugin_getModuleFromHandle(handle, fh, &tmp_err);
+
+    if(!tmp_err){
+        if(gfal_feature_is_supported(if_cata->readdirppG, g_quark_from_string(GFAL2_PLUGIN_SCOPE) , __func__, &tmp_err))
+            ret = if_cata->readdirppG(if_cata->plugin_data, fh, st, &tmp_err);
+    }
+    if(tmp_err)
+        g_propagate_prefixed_error(err, tmp_err, "[%s]",__func__);
+    return ret;
+}
+
 
 
 

@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#define _GNU_SOURCE
+
  
 /*
   @file gfal_common_lfc_open.c

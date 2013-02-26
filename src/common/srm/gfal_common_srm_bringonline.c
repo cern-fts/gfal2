@@ -23,7 +23,7 @@
  * @date 19/12/2011
  * */
  
-#define _GNU_SOURCE 
+ 
 
 #include <common/gfal_common_internal.h>
 #include <common/gfal_common_errverbose.h>

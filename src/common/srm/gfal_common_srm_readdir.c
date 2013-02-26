@@ -23,7 +23,7 @@
  * @date 14/06/2011
  * */
 #define GFAL_FILENAME_MAX FILENAME_MAX
-#define _GNU_SOURCE
+
 
 #include <string.h>
 #include <stdio.h>

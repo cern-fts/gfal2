@@ -22,7 +22,7 @@
   * @version 2.0.0
   * @date 18/04/2011
   * */
-#define _GNU_SOURCE
+
 
 #define GFAL_MDS_MAX_SRM_ENDPOINT 100
 

@@ -22,7 +22,7 @@
  * @date 06/07/2011
  * */
  
- #define _GNU_SOURCE 
+  
 
 #include <regex.h>
 #include <time.h> 

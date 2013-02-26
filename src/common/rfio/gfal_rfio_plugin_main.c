@@ -25,7 +25,7 @@
  * 
  **/
  
-#define _GNU_SOURCE
+
 
 
 #include <regex.h>

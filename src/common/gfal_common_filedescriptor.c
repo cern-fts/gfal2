@@ -116,6 +116,7 @@ gfal_file_handle gfal_file_handle_new(const char*  module_name, gpointer fdesc){
 	f->offset = 0;
 	f->fdesc = fdesc;
 	f->ext_data = NULL;
+    f->path = NULL;
 	return f;
 }
 
@@ -126,6 +127,14 @@ gfal_file_handle gfal_file_handle_ext_new(const char*  module_name, gpointer fde
 	gfal_file_handle f = gfal_file_handle_new(module_name, fdesc);
 	f->ext_data = ext_data;
 	return f;
+}
+
+
+gfal_file_handle gfal_file_handle_new2(const char *module_name, gpointer fdesc, gpointer user_data, const char *file_path){
+    gfal_file_handle f = gfal_file_handle_ext_new(module_name, fdesc, user_data);
+    if(file_path)
+        f->path = g_strdup(file_path);
+    return f;
 }
  
 
@@ -175,6 +184,7 @@ void gfal_file_handle_unlock(gfal_file_handle fh){
 void gfal_file_handle_delete(gfal_file_handle fh){
 	if(fh){
 		g_mutex_free(fh->lock);	
+        g_free(fh->path);
 		g_free(fh);
 	}
 }

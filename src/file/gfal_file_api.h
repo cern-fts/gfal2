@@ -174,6 +174,10 @@ DIR* gfal2_opendir(gfal2_context_t context, const char* url, GError ** err);
 struct dirent* gfal2_readdir(gfal2_context_t context, DIR* d, GError ** err);
 
 
+struct dirent* gfal2_readdirpp(gfal2_context_t context, DIR* d, struct stat* st, GError ** err);
+
+
+
 int gfal2_closedir(gfal2_context_t context, DIR* d, GError ** err);
 
 

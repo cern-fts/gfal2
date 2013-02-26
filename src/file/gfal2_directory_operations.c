@@ -15,6 +15,7 @@
 * limitations under the License.
 */
 
+#include <string.h>
 #include <file/gfal_file_api.h>
 
 #include <common/gfal_constants.h>
@@ -87,6 +88,53 @@ struct dirent* gfal2_readdir(gfal2_context_t handle, DIR* dir, GError ** err){
        }
     }
     GFAL2_END_SCOPE_CANCEL(handle);
+    G_RETURN_ERR(res, tmp_err, err);
+}
+
+
+//
+//
+inline static struct dirent* gfal_rw_gfalfilehandle_readdirpp(gfal_handle context, gfal_file_handle fh, struct stat* st, GError** err){
+    g_return_val_err_if_fail(context && fh, NULL, err, "[gfal_posix_gfalfilehandle_readdirpp] incorrect args");
+    GError *tmp_err=NULL;
+    struct dirent* ret = gfal_plugin_readdirppG(context, fh, st, &tmp_err);
+    if( tmp_err  && tmp_err->code == EPROTONOSUPPORT
+         && fh->path != NULL){ // try to simulate readdirpp
+        g_clear_error(&tmp_err);
+        ret = gfal_rw_gfalfilehandle_readdir(context, fh, &tmp_err);
+        if(!tmp_err && ret != NULL){
+            const size_t s_path= strlen( fh->path);
+            const size_t s_d_name = strlen(ret->d_name);
+            char buffer[ s_d_name +s_path +2];
+            char* p =  mempcpy(buffer, fh->path, s_path);
+            *p = '/';
+            p = memcpy(++p, ret->d_name, s_d_name);
+            *p = '\0';
+
+            if( gfal2_stat(context, buffer, st, &tmp_err) < 0){
+                ret = NULL;
+            }
+        }
+    }
+
+    G_RETURN_ERR(ret, tmp_err, err);
+}
+
+struct dirent* gfal2_readdirpp(gfal2_context_t context, DIR* dir, struct stat* st, GError ** err){
+    GError* tmp_err=NULL;
+    struct dirent* res= NULL;
+    GFAL2_BEGIN_SCOPE_CANCEL(context, NULL, err);
+    if(dir == NULL || context ==NULL){
+       g_set_error(&tmp_err, 0, EFAULT, "file descriptor or/and handle are NULL");
+    }else{
+       gfal_fdesc_container_handle container= gfal_dir_handle_container_instance(&(context->fdescs), &tmp_err);
+       const int key = GPOINTER_TO_INT(dir);
+       gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
+       if( fh != NULL){
+           res = gfal_rw_gfalfilehandle_readdirpp(context, fh, st, &tmp_err);
+       }
+    }
+    GFAL2_END_SCOPE_CANCEL(context);
     G_RETURN_ERR(res, tmp_err, err);
 }
 
