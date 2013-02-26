@@ -23,6 +23,7 @@ FILE(GLOB src_gfaltestrmdirfull "gfal_test_rmdir_full.c")
 FILE(GLOB src_test_readdir_full "gfal_test_readdir_full.c")
 FILE(GLOB src_gfalmkdir_full "gfal_mkdir_full.c")
 FILE(GLOB src_gfaltcopy "gfalt_copyfile.c")
+FILE(GLOB src_gfaltcopy_cancel "gfalt_copyfile_cancel.c")
 FILE(GLOB src_gfaltcopy_fts "gfalt_copyfile_fts_style.c")
 FILE(GLOB src_gfaltcopy_fts_thread "gfalt_copyfile_fts_style_thread_safety.c")
 FILE(GLOB src_gfaltcopy_test "gfalt_copyfile_test.c")
@@ -46,33 +47,33 @@ IF (FUNCTIONAL_TESTS)
         include_directories( "${CMAKE_SOURCE_DIR}/src "  "${CMAKE_SOURCE_DIR}/src/posix/"
                     ${GLIB2_PKG_INCLUDE_DIRS} ${NETTLE_PKG_INCLUDE_DIRS} )
 
-        add_executable(gfal_stat	${src_gfalstat} )
-	target_link_libraries(gfal_stat ${OUTPUT_NAME_MAIN} )
+        add_executable(gfal_stat        ${src_gfalstat} )
+        target_link_libraries(gfal_stat ${OUTPUT_NAME_MAIN} )
 
-        add_executable(gfal_access	${src_gfalaccess} )
-	target_link_libraries(gfal_access ${OUTPUT_NAME_MAIN} )
+        add_executable(gfal_access        ${src_gfalaccess} )
+        target_link_libraries(gfal_access ${OUTPUT_NAME_MAIN} )
 
-   #     add_executable(gfal_checksum_test	${src_gfalchecksum_test} ${src_lib_test} )
+   #     add_executable(gfal_checksum_test        ${src_gfalchecksum_test} ${src_lib_test} )
     #    target_link_libraries(gfal_checksum_test ${OUTPUT_NAME_MAIN} ${NETTLE_PKG_LIBRARIES})
 
-        add_executable(gfal_checksum_tool	${src_gfal_checksum_tool})
+        add_executable(gfal_checksum_tool        ${src_gfal_checksum_tool})
         target_link_libraries(gfal_checksum_tool ${OUTPUT_NAME_MAIN})
-	
-	FUNCTION(stat_test_all name valid)
-		add_test(gfal_stat_${name} gfal_stat ${valid})
-	ENDFUNCTION(stat_test_all valid)
+        
+        FUNCTION(stat_test_all name valid)
+                add_test(gfal_stat_${name} gfal_stat ${valid})
+        ENDFUNCTION(stat_test_all valid)
 
         FUNCTION(test_gfal_test_del_nonex name dir_path)
                 add_test(gfal_test_del_nonex_${name} gfal_test_del_nonex ${dir_path})
-	ENDFUNCTION(test_gfal_test_del_nonex name path)	
+        ENDFUNCTION(test_gfal_test_del_nonex name path)        
 
         FUNCTION(test_gfal_test_del name dir_path)
                 add_test(gfal_test_del_${name} gfal_test_del ${dir_path})
-	ENDFUNCTION(test_gfal_test_del name path)	
+        ENDFUNCTION(test_gfal_test_del name path)        
 
         FUNCTION(test_gfal_test_mkdir_unlink name dir_path)
                 add_test(gfal_test_mkdir_unlink_${name} gfal_test_mkdir_unlink ${dir_path})
-	ENDFUNCTION(test_gfal_test_mkdir_unlink name path)	
+        ENDFUNCTION(test_gfal_test_mkdir_unlink name path)        
 
         FUNCTION(checksum_test_all name valid)
        #         add_test(gfal_checksum_${name} gfal_checksum_test ${valid})
@@ -81,102 +82,102 @@ IF (FUNCTIONAL_TESTS)
         FUNCTION(checksum_test_simple name valid_file algo)
                 add_test(gfal_checksum_simple_${name} gfal_checksum_tool ${valid_file} ${algo})
         ENDFUNCTION(checksum_test_simple name valid_file algo)
-	
-	FUNCTION(chmod_test_all name valid right1 right2 right3 right4)
-		add_test(gfal_test_right_change_${name} gfal_test_right_change ${valid} ${right1} ${right2} ${right3} ${right4})
-	ENDFUNCTION(chmod_test_all name valid right1 right2 right3 right4)	
-	
+        
+        FUNCTION(chmod_test_all name valid right1 right2 right3 right4)
+                add_test(gfal_test_right_change_${name} gfal_test_right_change ${valid} ${right1} ${right2} ${right3} ${right4})
+        ENDFUNCTION(chmod_test_all name valid right1 right2 right3 right4)        
+        
 
-	FUNCTION(rmdir_test_all name valid_dir valid_file)
-		add_test(gfal_test_rmdir_full_${name} gfal_test_rmdir_full ${valid_dir} ${valid_file} )
-	ENDFUNCTION(rmdir_test_all name valid right1 right2 right3 right4)	
-	
-	FUNCTION(test_readdir_full name valid)
-		add_test(gfal_test_readdir_full_${name} gfal_test_readdir_full ${valid})
-	ENDFUNCTION(test_readdir_full valid)	
+        FUNCTION(rmdir_test_all name valid_dir valid_file)
+                add_test(gfal_test_rmdir_full_${name} gfal_test_rmdir_full ${valid_dir} ${valid_file} )
+        ENDFUNCTION(rmdir_test_all name valid right1 right2 right3 right4)        
+        
+        FUNCTION(test_readdir_full name valid)
+                add_test(gfal_test_readdir_full_${name} gfal_test_readdir_full ${valid})
+        ENDFUNCTION(test_readdir_full valid)        
 
-	FUNCTION(rwt_test_all name path size)
-		add_test(gfal_rw_size_${name} gfal_rw_full ${path} ${size})
-	ENDFUNCTION(rwt_test_all name path size)
-	
-	FUNCTION(rwt_test_seq name path size size_read)
-		add_test(gfal_rw_seq_${name} gfal_rw_seq ${path} ${size} ${size_read})		
-	ENDFUNCTION(rwt_test_seq name path size size_read)
-		
-	add_executable(gfal_read	${src_gfalread} )
-	target_link_libraries(gfal_read ${OUTPUT_NAME_MAIN} )
-	
-	add_executable(gfal_write	${src_gfalwrite} )
-	target_link_libraries(gfal_write ${OUTPUT_NAME_MAIN} )	
+        FUNCTION(rwt_test_all name path size)
+                add_test(gfal_rw_size_${name} gfal_rw_full ${path} ${size})
+        ENDFUNCTION(rwt_test_all name path size)
+        
+        FUNCTION(rwt_test_seq name path size size_read)
+                add_test(gfal_rw_seq_${name} gfal_rw_seq ${path} ${size} ${size_read})                
+        ENDFUNCTION(rwt_test_seq name path size size_read)
+                
+        add_executable(gfal_read        ${src_gfalread} )
+        target_link_libraries(gfal_read ${OUTPUT_NAME_MAIN} )
+        
+        add_executable(gfal_write        ${src_gfalwrite} )
+        target_link_libraries(gfal_write ${OUTPUT_NAME_MAIN} )        
 
-	add_executable(gfal_rw	${src_gfalrw} )
-	target_link_libraries(gfal_rw ${OUTPUT_NAME_MAIN} )
+        add_executable(gfal_rw        ${src_gfalrw} )
+        target_link_libraries(gfal_rw ${OUTPUT_NAME_MAIN} )
 
         add_executable(gfal_test_del_nonex   ${src_gfal_test_del_nonex} ${src_lib_test})
-	target_link_libraries(gfal_test_del_nonex ${OUTPUT_NAME_MAIN} )
+        target_link_libraries(gfal_test_del_nonex ${OUTPUT_NAME_MAIN} )
 
         add_executable(gfal_test_del   ${src_gfal_test_del} ${src_lib_test})
-	target_link_libraries(gfal_test_del ${OUTPUT_NAME_MAIN} )
-	
+        target_link_libraries(gfal_test_del ${OUTPUT_NAME_MAIN} )
+        
         add_executable(gfal_test_mkdir_unlink   ${src_gfal_test_mkdir_unlink} ${src_lib_test})
-	target_link_libraries(gfal_test_mkdir_unlink ${OUTPUT_NAME_MAIN} )
+        target_link_libraries(gfal_test_mkdir_unlink ${OUTPUT_NAME_MAIN} )
 
-	add_executable(gfal_rw_full	${src_gfal_rw_full} )
-	target_link_libraries(gfal_rw_full ${OUTPUT_NAME_MAIN} )	
-	
-	add_executable(gfal_rw_seq	${src_gfal_rw_seq} )
-	target_link_libraries(gfal_rw_seq ${OUTPUT_NAME_MAIN} )		
-	
-	add_executable(gfal_testget	${src_gfalget} )
-	target_link_libraries(gfal_testget ${OUTPUT_NAME_MAIN} )
-	
-	add_executable(gfal_testchmod	${src_gfal_testchmod} )
-	target_link_libraries(gfal_testchmod ${OUTPUT_NAME_MAIN} )	
+        add_executable(gfal_rw_full        ${src_gfal_rw_full} )
+        target_link_libraries(gfal_rw_full ${OUTPUT_NAME_MAIN} )        
+        
+        add_executable(gfal_rw_seq        ${src_gfal_rw_seq} )
+        target_link_libraries(gfal_rw_seq ${OUTPUT_NAME_MAIN} )                
+        
+        add_executable(gfal_testget        ${src_gfalget} )
+        target_link_libraries(gfal_testget ${OUTPUT_NAME_MAIN} )
+        
+        add_executable(gfal_testchmod        ${src_gfal_testchmod} )
+        target_link_libraries(gfal_testchmod ${OUTPUT_NAME_MAIN} )        
 
-	add_executable(gfal_createdir	${src_gfaltestcreatedir} )
-	target_link_libraries(gfal_createdir ${OUTPUT_NAME_MAIN} )
-	
+        add_executable(gfal_createdir        ${src_gfaltestcreatedir} )
+        target_link_libraries(gfal_createdir ${OUTPUT_NAME_MAIN} )
+        
 
-	add_executable(gfal_test_mkdir_full	${src_gfalmkdir_full} )
-	target_link_libraries(gfal_test_mkdir_full ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})
-	
-	add_executable(gfal_test_right_change ${src_gfaltestrightchange})
-	target_link_libraries(gfal_test_right_change ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})	
-	
-	add_executable(gfal_test_rmdir_full ${src_gfaltestrmdirfull})
-	target_link_libraries(gfal_test_rmdir_full ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})	
+        add_executable(gfal_test_mkdir_full        ${src_gfalmkdir_full} )
+        target_link_libraries(gfal_test_mkdir_full ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})
+        
+        add_executable(gfal_test_right_change ${src_gfaltestrightchange})
+        target_link_libraries(gfal_test_right_change ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})        
+        
+        add_executable(gfal_test_rmdir_full ${src_gfaltestrmdirfull})
+        target_link_libraries(gfal_test_rmdir_full ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})        
 
-	add_executable(gfal_test_readdir_full	${src_test_readdir_full} )
-	target_link_libraries(gfal_test_readdir_full ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})
+        add_executable(gfal_test_readdir_full        ${src_test_readdir_full} )
+        target_link_libraries(gfal_test_readdir_full ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})
 
-    add_executable(gfal_ls ${src_testdir})
-    target_link_libraries(gfal_ls ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})
+		add_executable(gfal_ls ${src_testdir})
+		target_link_libraries(gfal_ls ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})
    
-    add_executable(gfal_bring_online ${src_bring_online})
-    target_link_libraries(gfal_bring_online ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})
+	    add_executable(gfal_bring_online ${src_bring_online})
+	    target_link_libraries(gfal_bring_online ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})
 
-	FUNCTION(mkdir_test_all name prefix)
-		add_test(gfal_mkdir_full_${name} gfal_test_mkdir_full ${prefix})
-	ENDFUNCTION(mkdir_test_all name prefix)	
-	
-	IF (MAIN_TRANSFER)
+        FUNCTION(mkdir_test_all name prefix)
+                add_test(gfal_mkdir_full_${name} gfal_test_mkdir_full ${prefix})
+        ENDFUNCTION(mkdir_test_all name prefix)        
+        
+        IF (MAIN_TRANSFER)
 
-		add_executable(gfal_copyfile ${src_gfaltcopy} )
-		target_link_libraries(gfal_copyfile ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
+                add_executable(gfal_copyfile ${src_gfaltcopy} )
+                target_link_libraries(gfal_copyfile ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
+                
+                add_executable(gfal_copyfile_cancel ${src_gfaltcopy_cancel} )
+                target_link_libraries(gfal_copyfile_cancel ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
 
                 add_executable(gfal_copyfile_fts ${src_gfaltcopy_fts} )
                 target_link_libraries(gfal_copyfile_fts ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
 
-
                 add_executable(gfal_copyfile_fts_thread ${src_gfaltcopy_fts_thread} ${src_lib_test})
                 target_link_libraries(gfal_copyfile_fts_thread ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
 
-
-
                 add_executable(gfal_copyfile_perf ${src_gfaltcopy_perf} )
                 target_link_libraries(gfal_copyfile_perf ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
-		
-		add_executable(gfal_copyfile_test ${src_gfaltcopy_test} ${src_lib_test})
+                
+                add_executable(gfal_copyfile_test ${src_gfaltcopy_test} ${src_lib_test})
                 target_link_libraries(gfal_copyfile_test ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
 
                 add_executable(gfal_copyfile_thead_safety_test ${src_gfaltcopy_test_thread_safety_timeout} ${src_lib_test})
@@ -184,30 +185,30 @@ IF (FUNCTIONAL_TESTS)
 
                 add_executable(gfal_copyfile_test_timeout ${src_gfaltcopy_test_timeout} ${src_lib_test})
                 target_link_libraries(gfal_copyfile_test_timeout ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
-		
-		add_executable(gfal_copyfile_mkdir_test ${src_gfaltcopy_mkdir_test} ${src_lib_test})
-		target_link_libraries(gfal_copyfile_mkdir_test ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})		
-		
-		add_executable(copyfile_replace ${src_copyfile_replace} ${src_lib_test})
-		target_link_libraries(copyfile_replace ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
+                
+                add_executable(gfal_copyfile_mkdir_test ${src_gfaltcopy_mkdir_test} ${src_lib_test})
+                target_link_libraries(gfal_copyfile_mkdir_test ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})                
+                
+                add_executable(copyfile_replace ${src_copyfile_replace} ${src_lib_test})
+                target_link_libraries(copyfile_replace ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
 
                 add_executable(copyfile_checksum ${src_copyfile_checksum} ${src_lib_test})
                 target_link_libraries(copyfile_checksum ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
 
                 add_executable(copyfile_checksum_user ${src_copyfile_checksum_user} ${src_lib_test})
                 target_link_libraries(copyfile_checksum_user ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
-		
-#		copy_files(${COPY_SRC} ${COPY_DST})
-#		add_test(functional_copyfile gfal2_copyfile.sh)
-#		add_test(functional_copyfile_srm gfal2_copyfile_srm.sh)
-		
-	FUNCTION(copy_file_test_full name src_file dir_src)
+                
+#                copy_files(${COPY_SRC} ${COPY_DST})
+#                add_test(functional_copyfile gfal2_copyfile.sh)
+#                add_test(functional_copyfile_srm gfal2_copyfile_srm.sh)
+                
+        FUNCTION(copy_file_test_full name src_file dir_src)
                 add_test(copyfile_checksum_${name} copyfile_checksum ${src_file} ${dir_src})
                 add_test(copyfile_checksum_user_${name} copyfile_checksum_user ${src_file} ${dir_src})
-		add_test(copyfile_replace_${name} copyfile_replace ${src_file} ${dir_src})
-		add_test(copyfile_test_${name} gfal_copyfile_test ${src_file} ${dir_src})
-		add_test(copyfile_test_mkdir_${name} gfal_copyfile_mkdir_test ${src_file} ${dir_src})		
-	ENDFUNCTION(copy_file_test_full name dir_src)
+                add_test(copyfile_replace_${name} copyfile_replace ${src_file} ${dir_src})
+                add_test(copyfile_test_${name} gfal_copyfile_test ${src_file} ${dir_src})
+                add_test(copyfile_test_mkdir_${name} gfal_copyfile_mkdir_test ${src_file} ${dir_src})                
+        ENDFUNCTION(copy_file_test_full name dir_src)
 
 
         FUNCTION(copy_file_test_simple name src_file dir_src)
@@ -221,6 +222,6 @@ IF (FUNCTIONAL_TESTS)
 
         ENDIF (MAIN_TRANSFER)
 
-	include(functional-test-parameters.cmake)	
-	
+        include(functional-test-parameters.cmake)        
+        
 ENDIF  (FUNCTIONAL_TESTS)
