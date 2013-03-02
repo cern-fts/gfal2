@@ -21,7 +21,9 @@
 
 //GOnce my_once = G_ONCE_INIT;
 
-const Glib::Quark scope_globus_init("GridftpModule::init_globus");
+static Glib::Quark gfal_gridftp_scope_globus_init(){
+    return Glib::Quark("GridftpModule::init_globus");
+}
 static Glib::Mutex mux_globus_init;
 
 
@@ -42,11 +44,11 @@ static void* init_globus(gpointer data){
     Glib::Mutex::Lock l(mux_globus_init);
     globus_result_t result = GLOBUS_SUCCESS;
      if( (  result = globus_module_activate(GLOBUS_GASS_COPY_MODULE) ) != GLOBUS_SUCCESS)
-    	throw Gfal::CoreException(scope_globus_init, "Error globus init, globus gass", result);
+        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(), "Error globus init, globus gass", result);
 	 if( ( result = globus_module_activate(GLOBUS_FTP_CLIENT_MODULE)) != GLOBUS_SUCCESS)
-        throw Gfal::CoreException(scope_globus_init, "Error globus init, globus ftp", result);
+        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(), "Error globus init, globus ftp", result);
      if( ( result = globus_module_activate(GLOBUS_FTP_CLIENT_DEBUG_PLUGIN_MODULE)) != GLOBUS_SUCCESS)
-        throw Gfal::CoreException(scope_globus_init, "Error globus init, globus ftp debug", result);
+        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(), "Error globus init, globus ftp debug", result);
 	return NULL;
 }
 
@@ -54,11 +56,11 @@ static void* deinit_globus(gpointer data){
     Glib::Mutex::Lock l(mux_globus_init);
     globus_result_t result = GLOBUS_SUCCESS;  
      if( (  result = globus_module_deactivate(GLOBUS_GASS_COPY_MODULE) ) != GLOBUS_SUCCESS)
-    	throw Gfal::CoreException(scope_globus_init, "Error globus deinit, globus gass", result);
+        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(), "Error globus deinit, globus gass", result);
      if( ( result = globus_module_deactivate(GLOBUS_FTP_CLIENT_MODULE)) != GLOBUS_SUCCESS)
-		throw Gfal::CoreException(scope_globus_init, "Error globus deinit, globus ftp", result);
+        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(), "Error globus deinit, globus ftp", result);
      if( ( result = globus_module_deactivate(GLOBUS_FTP_CLIENT_DEBUG_PLUGIN_MODULE)) != GLOBUS_SUCCESS)
-        throw Gfal::CoreException(scope_globus_init, "Error globus deinit, globus ftp debug", result);
+        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(), "Error globus deinit, globus ftp debug", result);
 	return NULL;
 }
 

@@ -16,13 +16,15 @@
 
 #include "gridftp_rmdir_module.h"
 
-const Glib::Quark scope_rmdir("GridftpModule::rmdir");
+static Glib::Quark gfal_gridftp_scope_rmdir(){
+    return Glib::Quark("GridftpModule::rmdir");
+}
 
 
 void GridftpModule::rmdir(const char* path)
 {
 	if(path== NULL )
-		throw Glib::Error(scope_rmdir, EINVAL, "Invalid arguments path");
+        throw Glib::Error(gfal_gridftp_scope_rmdir(), EINVAL, "Invalid arguments path");
 	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::rmdir] ");
 	
 	try{
@@ -35,9 +37,9 @@ void GridftpModule::rmdir(const char* path)
 					NULL,
 					globus_basic_client_callback,
 					req.get());
-		gfal_globus_check_result(scope_rmdir, res);
+        gfal_globus_check_result(gfal_gridftp_scope_rmdir(), res);
 		// wait for answer
-        req->wait_callback(scope_rmdir);
+        req->wait_callback(gfal_gridftp_scope_rmdir());
 	}catch(Glib::Error & e){
 		if(e.code() == EEXIST) // false ENOTEMPTY errno, do conversion
 			throw Glib::Error(e.domain(), ENOTEMPTY, e.what());

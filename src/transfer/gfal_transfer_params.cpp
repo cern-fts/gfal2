@@ -18,7 +18,6 @@
 #include <cerrno>
 #include <ctime>
 
-const Glib::Quark scope_transfer_param("Gfal::Transfer::Params");
 
 // external C bindings
 extern "C" {

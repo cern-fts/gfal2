@@ -17,7 +17,9 @@
 
 #include "gridftp_exist.h"
 
-const Glib::Quark scope_exist("GridftpModule::file_exist");
+static Glib::Quark gfal_gridftp_scope_exist(){
+    return Glib::Quark ("GridftpModule::file_exist");
+}
 
 bool gridftp_module_file_exist(gfal2_context_t context, GridFTP_session* sess, const char * url){
 	
@@ -34,8 +36,8 @@ bool gridftp_module_file_exist(gfal2_context_t context, GridFTP_session* sess, c
                 req->sess->get_op_attr_ftp(),
 				globus_basic_client_callback,
 				req.get());
-	gfal_globus_check_result(scope_exist, res);
-    req->poll_callback(scope_exist);
+    gfal_globus_check_result(gfal_gridftp_scope_exist(), res);
+    req->poll_callback(gfal_gridftp_scope_exist());
 
 	gfal_log(GFAL_VERBOSE_TRACE,"   <- [gridftp_module_file_exist]");	
 	switch(req->get_error_code()){
@@ -44,7 +46,7 @@ bool gridftp_module_file_exist(gfal2_context_t context, GridFTP_session* sess, c
 		case ENOENT:
 			return false;
 		default:
-            req->err_report(scope_exist);
+            req->err_report(gfal_gridftp_scope_exist());
 		
 	}
 	return false;	

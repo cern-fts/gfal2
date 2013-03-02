@@ -27,8 +27,16 @@
 #include <transfer/gfal_transfer_types_internal.h>
 #include <file/gfal_file_api.h>
 
-const Glib::Quark scope_filecopy("GridFTP::Filecopy");
-const Glib::Quark gsiftp_domain("GSIFTP");
+static Glib::Quark gfal_gridftp_scope_filecopy(){
+    return Glib::Quark("GridFTP::Filecopy");
+}
+
+static Glib::Quark gfal_gsiftp_domain(){
+    return Glib::Quark("GSIFTP");
+}
+
+
+
 const char * gridftp_checksum_transfer_config= "COPY_CHECKSUM_TYPE";
 const char * gridftp_perf_marker_timeout_config= "PERF_MARKER_TIMEOUT";
 
@@ -44,7 +52,7 @@ void gridftp_filecopy_delete_existing(gfal2_context_t context, GridFTP_session *
         }else{
             char err_buff[GFAL_ERRMSG_LEN];
             snprintf(err_buff, GFAL_ERRMSG_LEN, " Destination already exist %s, Cancel", url);
-            throw Gfal::CoreException(scope_filecopy, err_buff, EEXIST);
+            throw Gfal::CoreException(gfal_gridftp_scope_filecopy(), err_buff, EEXIST);
         }
     }
 	
@@ -79,7 +87,7 @@ void gridftp_create_parent_copy(gfal2_context_t handle, gfalt_params_t params,
             else if (tmp_err)
                 g_error_free(tmp_err);
             else if (!S_ISDIR(st.st_mode))
-                throw Gfal::CoreException(scope_filecopy,
+                throw Gfal::CoreException(gfal_gridftp_scope_filecopy(),
                                           "The parent of the destination file exists, but it is not a directory",
                                           ENOTDIR);
             else
@@ -91,7 +99,7 @@ void gridftp_create_parent_copy(gfal2_context_t handle, gfalt_params_t params,
             Gfal::gerror_to_cpp(&tmp_err);
 
         }else{
-            throw Gfal::CoreException(scope_filecopy, "impossible to create directory " + std::string(current_uri) + " : invalid path", EINVAL);
+            throw Gfal::CoreException(gfal_gridftp_scope_filecopy(), "impossible to create directory " + std::string(current_uri) + " : invalid path", EINVAL);
         }
         gfal_log(GFAL_VERBOSE_TRACE, " [gridftp_create_parent_copy] <-");
     }
@@ -136,7 +144,7 @@ struct Callback_handler{
             }
         }
 
-        args->req->cancel_operation_async(scope_filecopy, "gsiftp performance marker timeout, cancel");
+        args->req->cancel_operation_async(gfal_gridftp_scope_filecopy(), "gsiftp performance marker timeout, cancel");
 
         return NULL;
     }
@@ -260,7 +268,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
     );
 
     gfal_globus_check_result("GridFTPFileCopyModule::filecopy", res);
-    req->wait_callback(scope_filecopy);
+    req->wait_callback(gfal_gridftp_scope_filecopy());
     return 0;
 
 }
@@ -270,14 +278,14 @@ void gridftp_checksum_transfer_verify(const char * src_chk, const char* dst_chk,
         if(strncasecmp(src_chk, dst_chk,GFAL_URL_MAX_LEN) != 0){
             std::ostringstream ss;
             ss << "SRC and DST checksum are different: " << src_chk << " " << dst_chk ;
-            throw Gfal::CoreException(scope_filecopy, ss.str(), EIO);
+            throw Gfal::CoreException(gfal_gridftp_scope_filecopy(), ss.str(), EIO);
         }
     }else{
         if(strncasecmp(src_chk, user_defined_chk, GFAL_URL_MAX_LEN) != 0
                 || strncasecmp(dst_chk, user_defined_chk, GFAL_URL_MAX_LEN) != 0){
             std::ostringstream ss;
             ss << "USER_DEFINE, SRC and DST checksum are different " << user_defined_chk << " " << src_chk << " " << dst_chk;
-            throw Gfal::CoreException(scope_filecopy, ss.str(),EIO);
+            throw Gfal::CoreException(gfal_gridftp_scope_filecopy(), ss.str(),EIO);
         }
 
     }
@@ -339,13 +347,13 @@ int GridftpModule::filecopy(gfalt_params_t params, const char* src, const char* 
             {
                CPP_GERROR_TRY
                if(checksum_check) {
-                    plugin_trigger_event(params, gsiftp_domain,
+                    plugin_trigger_event(params, gfal_gsiftp_domain(),
                                          GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER,
                                          "%s", chk_algo.checksum_algo);
 
                     checksum(src, chk_algo.checksum_algo, checksum_src, GFAL_URL_MAX_LEN, 0,0);
 
-                    plugin_trigger_event(params, gsiftp_domain,
+                    plugin_trigger_event(params, gfal_gsiftp_domain(),
                                                         GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT,
                                                         "%s", chk_algo.checksum_algo);
                }
@@ -353,13 +361,13 @@ int GridftpModule::filecopy(gfalt_params_t params, const char* src, const char* 
             }
             #pragma omp section // start transfert and replace logic
             {
-                  plugin_trigger_event(params, gsiftp_domain,
+                  plugin_trigger_event(params, gfal_gsiftp_domain(),
                                        GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
                                        "");
                   CPP_GERROR_TRY
                   gridftp_filecopy_copy_file_internal(_handle_factory, params, src, dst);
                   CPP_GERROR_CATCH(&tmp_err_chk_copy);
-                  plugin_trigger_event(params, gsiftp_domain,
+                  plugin_trigger_event(params, gfal_gsiftp_domain(),
                                        GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
                                        "");
             }
@@ -374,14 +382,14 @@ int GridftpModule::filecopy(gfalt_params_t params, const char* src, const char* 
 
     // calc checksum for dst
     if(checksum_check){
-        plugin_trigger_event(params, gsiftp_domain,
+        plugin_trigger_event(params, gfal_gsiftp_domain(),
                              GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER,
                              "%s", chk_algo.checksum_algo);
 
         checksum(dst, chk_algo.checksum_algo, checksum_dst, GFAL_URL_MAX_LEN, 0,0);
         gridftp_checksum_transfer_verify(checksum_src, checksum_dst, checksum_user_defined);
 
-        plugin_trigger_event(params, gsiftp_domain,
+        plugin_trigger_event(params, gfal_gsiftp_domain(),
                              GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_EXIT,
                              "%s", chk_algo.checksum_algo);
     }

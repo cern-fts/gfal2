@@ -24,8 +24,13 @@
 #include <exceptions/gerror_to_cpp.h>
 
 
-const Glib::Quark scope_copy("FileCopy::start_copy");
-const Glib::Quark scope_local_copy("FileCopy::local_copy");
+static Glib::Quark get_scope_copy(){
+    return Glib::Quark("FileCopy::start_copy");
+}
+
+static Glib::Quark get_scope_local_copy(){
+    return Glib::Quark("FileCopy::local_copy");
+}
 
 const long default_buffer_size= 200000;
 
@@ -54,14 +59,14 @@ void FileCopy::start_copy(gfalt_params_t p, const std::string & src, const std::
             start_local_copy(p, src, dst);
             res = 0;
         }else{
-            throw Gfal::CoreException(scope_copy, "no plugin is able to support a transfer from %s to %s", EPROTONOSUPPORT);
+            throw Gfal::CoreException(get_scope_copy(), "no plugin is able to support a transfer from %s to %s", EPROTONOSUPPORT);
         }
     }else{
         res = p_copy(plugin_data, context, p, src.c_str(), dst.c_str(), &tmp_err);
     }
     //p->unlock();
     if(res <0 )
-        throw Gfal::CoreException(scope_copy, std::string(tmp_err->message), tmp_err->code);
+        throw Gfal::CoreException(get_scope_copy(), std::string(tmp_err->message), tmp_err->code);
     gfal_log(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::FileCopy ");
 }
 
@@ -99,10 +104,10 @@ void FileCopy::start_local_copy(gfalt_params_t p, const std::string & src, const
 
 
     if(tmp_err_src){
-        g_set_error(&tmp_err_out,scope_local_copy.id(),tmp_err_src->code, "Local transfer error on SRC %s : %s",src.c_str(),tmp_err_src->message);
+        g_set_error(&tmp_err_out, get_scope_local_copy().id(),tmp_err_src->code, "Local transfer error on SRC %s : %s",src.c_str(),tmp_err_src->message);
         g_clear_error(&tmp_err_src);
     }else if (tmp_err_dst){
-        g_set_error(&tmp_err_out,scope_local_copy.id(),tmp_err_dst->code, "Local transfer error on DST %s : %s",dst.c_str(),tmp_err_dst->message);
+        g_set_error(&tmp_err_out, get_scope_local_copy().id(),tmp_err_dst->code, "Local transfer error on DST %s : %s",dst.c_str(),tmp_err_dst->message);
         g_clear_error(&tmp_err_dst);
     }
     if(tmp_err_out)

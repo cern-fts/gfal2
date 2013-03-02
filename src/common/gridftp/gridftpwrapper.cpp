@@ -23,9 +23,6 @@ const char* gridftp_session_reuse_config= "SESSION_REUSE";
 const char* gridftp_dcau_config= "DCAU";
 const char* gridftp_ipv6_config= "IPV6";
 
-const Glib::Quark scope_readder("gfal_griftp_stream_read");
-const Glib::Quark scope_request("GridftpModule::request");
-
 struct RwStatus{
 	off_t init;
 	off_t finish;

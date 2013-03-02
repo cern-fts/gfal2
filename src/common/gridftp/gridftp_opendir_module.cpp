@@ -18,7 +18,9 @@
 #include "gridftp_opendir_module.h"
 
 
-const Glib::Quark scope_opendir("GridftpModule::opendir");
+static Glib::Quark gfal_gridftp_scope_opendir(){
+    return Glib::Quark("GridftpModule::opendir");
+}
 
 const size_t readdir_len = 65000;
 
@@ -51,9 +53,9 @@ gfal_file_handle GridftpModule::opendir(const char* path)
 				NULL,
 				globus_basic_client_callback,
     			static_cast<GridFTP_Request_state*>(desc->stream.get()));
-	gfal_globus_check_result(scope_opendir, res);
+    gfal_globus_check_result(gfal_gridftp_scope_opendir(), res);
 	
-	r_size= gridftp_read_stream(scope_opendir, (desc->stream.get()),
+    r_size= gridftp_read_stream(gfal_gridftp_scope_opendir(), (desc->stream.get()),
 				desc->buff, readdir_len); // initiate reading stream
 	*(desc->buff + r_size) = '\0';
 	desc->list = std::string(desc->buff);
@@ -83,7 +85,7 @@ struct dirent * GridftpModule::readdir(gfal_file_handle  fh){
 	Glib::Mutex::Lock locker(desc->stream->lock);
 		
 	while(gridftp_readdir_desc_parser(desc) == 0){
-		if( (r_size = gridftp_read_stream(scope_opendir, (desc->stream.get()),
+        if( (r_size = gridftp_read_stream(gfal_gridftp_scope_opendir(), (desc->stream.get()),
 				desc->buff, readdir_len)) == 0) // end of stream
 				return NULL;
 		*(desc->buff + r_size) = '\0';			

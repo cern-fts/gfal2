@@ -19,7 +19,12 @@
 #include "gridftp_stat_module.h"
 #include <config/gfal_config.h>
 
-const Glib::Quark scope_checksum("Gridftp_checksum_module::checksum");
+static Glib::Quark gfal_gridftp_scope_checksum(){
+    return Glib::Quark("Gridftp_checksum_module::checksum");
+}
+
+
+
 const char * gridftp_checksum_calc_timeout= "CHECKSUM_CALC_TIMEOUT";
 
 extern "C" int gfal_gridftp_checksumG(plugin_handle handle, const char* url, const char* check_type,
@@ -61,7 +66,7 @@ void GridftpModule::checksum(const char* url, const char* check_type,
                                                                         GRIDFTP_REQUEST_FTP));
 
     if(buffer_length < 16)
-        throw Gfal::CoreException(scope_checksum,"buffer length for checksum calculation is not enought",ENOBUFS);
+        throw Gfal::CoreException(gfal_gridftp_scope_checksum(),"buffer length for checksum calculation is not enought",ENOBUFS);
 
     gridftp_checksum_set_timeout(_handle_factory->get_handle(), req.get());
     req->start();
@@ -76,9 +81,9 @@ void GridftpModule::checksum(const char* url, const char* check_type,
                 check_type,
                 globus_basic_client_callback,
                 req.get());
-    gfal_globus_check_result(scope_checksum, res);
+    gfal_globus_check_result(gfal_gridftp_scope_checksum(), res);
     // wait for answer
-    req->wait_callback(scope_checksum);
+    req->wait_callback(gfal_gridftp_scope_checksum());
     gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::checksum] ");
 }
 

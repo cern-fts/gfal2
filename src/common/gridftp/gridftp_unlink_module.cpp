@@ -16,7 +16,9 @@
 #include "gridftpmodule.h"
 #include "gridftp_unlink_module.h"
 
-const Glib::Quark scope_unlink("GridftpModule::unlink");
+static Glib::Quark gfal_gridftp_scope_unlink(){
+    return Glib::Quark("GridftpModule::unlink");
+}
 
 void gridftp_unlink_internal(gfal2_context_t context, GridFTP_session* sess, const char * path, bool own_session){
 
@@ -31,9 +33,9 @@ void gridftp_unlink_internal(gfal2_context_t context, GridFTP_session* sess, con
 				NULL,
 				globus_basic_client_callback,
 				req.get());
-	gfal_globus_check_result(scope_unlink, res);
+    gfal_globus_check_result(gfal_gridftp_scope_unlink(), res);
 	// wait for answer
-    req->wait_callback(scope_unlink);
+    req->wait_callback(gfal_gridftp_scope_unlink());
 	gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::unlink] ");		
 }
 
@@ -41,7 +43,7 @@ void gridftp_unlink_internal(gfal2_context_t context, GridFTP_session* sess, con
 void GridftpModule::unlink(const char* path)
 {
 	if(path== NULL )
-		throw Glib::Error(scope_unlink, EINVAL, "Invalid arguments path");
+        throw Glib::Error(gfal_gridftp_scope_unlink(), EINVAL, "Invalid arguments path");
 	
     gridftp_unlink_internal(_handle_factory->get_handle(), this->_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)),
 							path,
