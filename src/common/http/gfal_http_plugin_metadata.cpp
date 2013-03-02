@@ -5,23 +5,15 @@
 
 
 
-void gfal_http_delete(plugin_handle plugin_data)
-{
-  GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
-  delete davix->posix;
-  delete davix->params;
-  delete davix->context;
-  delete davix;
-}
 
 
 
 int gfal_http_stat(plugin_handle plugin_data, const char* url,
                    struct stat* buf, GError** err)
 {
-  GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
+  GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
   Davix::DavixError* daverr = NULL;
-  if (davix->posix->stat(davix->params, url, buf, &daverr) != 0) {
+  if (davix->posix.stat(&davix->params, url, buf, &daverr) != 0) {
     davix2gliberr(daverr, err);
     Davix::DavixError::clearError(&daverr);
     return -1;
@@ -32,9 +24,9 @@ int gfal_http_stat(plugin_handle plugin_data, const char* url,
 
 
 int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, gboolean rec_flag, GError** err){
-  GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
+  GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
   Davix::DavixError* daverr = NULL;
-  if (davix->posix->mkdir(davix->params, url, mode, &daverr) != 0) {
+  if (davix->posix.mkdir(&davix->params, url, mode, &daverr) != 0) {
     davix2gliberr(daverr, err);
     Davix::DavixError::clearError(&daverr);
     return -1;
@@ -45,9 +37,9 @@ int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, g
 
 
 int gfal_http_unlinkG(plugin_handle plugin_data, const char* url, GError** err){
-    GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
+    GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
-    if (davix->posix->unlink(davix->params, url, &daverr) != 0) {
+    if (davix->posix.unlink(&davix->params, url, &daverr) != 0) {
       davix2gliberr(daverr, err);
       Davix::DavixError::clearError(&daverr);
       return -1;
@@ -58,9 +50,9 @@ int gfal_http_unlinkG(plugin_handle plugin_data, const char* url, GError** err){
 
 
 int gfal_http_rmdirG(plugin_handle plugin_data, const char* url, GError** err){
-    GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
+    GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
-    if (davix->posix->rmdir(davix->params, url, &daverr) != 0) {
+    if (davix->posix.rmdir(&davix->params, url, &daverr) != 0) {
       davix2gliberr(daverr, err);
       Davix::DavixError::clearError(&daverr);
       return -1;
@@ -116,10 +108,10 @@ int gfal_http_access(plugin_handle plugin_data, const char* url,
 gfal_file_handle gfal_http_opendir(plugin_handle plugin_data, const char* url,
                                    GError** err)
 {
-  GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
+  GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
   Davix::DavixError* daverr = NULL;
   
-  DAVIX_DIR* dir = davix->posix->opendir(davix->params, url, &daverr);
+  DAVIX_DIR* dir = davix->posix.opendir(&davix->params, url, &daverr);
   if (dir == NULL) {
     davix2gliberr(daverr, err);
     Davix::DavixError::clearError(&daverr);
@@ -133,11 +125,11 @@ gfal_file_handle gfal_http_opendir(plugin_handle plugin_data, const char* url,
 struct dirent* gfal_http_readdir(plugin_handle plugin_data,
                                  gfal_file_handle dir_desc, GError** err)
 {
-  GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
+  GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
   Davix::DavixError* daverr = NULL;
   
   daverr = NULL;
-  struct dirent* de = davix->posix->readdir((DAVIX_DIR*)gfal_file_handle_get_fdesc(dir_desc),
+  struct dirent* de = davix->posix.readdir((DAVIX_DIR*)gfal_file_handle_get_fdesc(dir_desc),
                                             &daverr);
   if (de == NULL && daverr != NULL) {
     davix2gliberr(daverr, err);
@@ -151,11 +143,11 @@ struct dirent* gfal_http_readdir(plugin_handle plugin_data,
 int gfal_http_closedir(plugin_handle plugin_data, gfal_file_handle dir_desc,
                           GError** err)
 {
-  GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
+  GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
   Davix::DavixError* daverr = NULL;
   int ret = 0;
   
-  if (davix->posix->closedir((DAVIX_DIR*)gfal_file_handle_get_fdesc(dir_desc), &daverr) != 0) {
+  if (davix->posix.closedir((DAVIX_DIR*)gfal_file_handle_get_fdesc(dir_desc), &daverr) != 0) {
     davix2gliberr(daverr, err);
     Davix::DavixError::clearError(&daverr);
     ret = -1;
@@ -171,7 +163,7 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
                        off_t start_offset, size_t data_length,
                        GError ** err)
 {
-    GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
+    GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
 
     if (start_offset != 0 || data_length != 0) {
@@ -181,8 +173,8 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
         return -1;
     }
 
-    Davix::HttpRequest*  request = davix->context->createRequest(url, &daverr);
-    Davix::RequestParams requestParams(*davix->params);
+    Davix::HttpRequest*  request = davix->context.createRequest(url, &daverr);
+    Davix::RequestParams requestParams(davix->params);
 
     request->setRequestMethod("HEAD");
     request->addHeaderField("Want-Digest", check_type);

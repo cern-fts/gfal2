@@ -152,11 +152,11 @@ static char *gfal_http_delegate(const std::string& urlpp, Davix::DavixError** da
 int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params,
                       const char* src, const char* dst, GError** err)
 {
-  GfalHttpInternal* davix = static_cast<GfalHttpInternal*>(plugin_data);
+  GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
   Davix::DavixError* daverr = NULL;
 
   // Follow jumps until final source
-  Davix::RequestParams requestParams(*davix->params);
+  Davix::RequestParams requestParams(davix->params);
   Davix::HttpRequest* request = NULL;
   std::string realSrc(src);
 
@@ -165,7 +165,7 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
   do {
     delete request;
     gfal_log(GFAL_VERBOSE_TRACE, "\t\t%s: Next hop = '%s'", __func__, realSrc.c_str());
-    request = davix->context->createRequest(realSrc, &daverr);
+    request = davix->context.createRequest(realSrc, &daverr);
     if (daverr) {
       davix2gliberr(daverr, err);
       delete daverr;
@@ -217,14 +217,14 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
   // Note: Must be always HTTPS
   realSrc = std::string("https://") + srcUri.getHost() + "/" + srcUri.getPath() + "?" + srcUri.getQuery() + std::string("&delegation=") + delegation_id;
 
-  request = davix->context->createRequest(realSrc, &daverr);
+  request = davix->context.createRequest(realSrc, &daverr);
   if (daverr) {
     davix2gliberr(daverr, err);
     delete daverr;
     return -1;
   }
 
-  request->setParameters(davix->params);
+  request->setParameters(&davix->params);
   request->addHeaderField("Destination", dst);
   request->setRequestMethod("COPY");
 

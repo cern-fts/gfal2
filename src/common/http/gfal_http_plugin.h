@@ -12,10 +12,26 @@
 
 
 struct GfalHttpInternal {
-    Davix::Context*       context;
-    Davix::DavPosix*      posix;
-    Davix::RequestParams* params;
+    GfalHttpInternal();
+
+    Davix::Context       context;
+    Davix::DavPosix      posix;
+    Davix::RequestParams params;
 };
+
+
+struct GfalHttpPluginData{
+    GfalHttpPluginData();
+    ~GfalHttpPluginData();
+
+    GfalHttpInternal* davix;
+    GMutex* _init_mux;
+};
+
+
+GfalHttpInternal* gfal_http_get_plugin_context(gpointer plugin_data);
+
+void gfal_http_context_delete(gpointer plugin_data);
 
 extern const char* http_module_name;
 extern GQuark http_plugin_domain;

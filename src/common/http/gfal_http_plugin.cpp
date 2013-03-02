@@ -8,10 +8,63 @@ const char* http_module_name = "http_plugin";
 GQuark http_plugin_domain = g_quark_from_static_string(http_module_name);
 
 
+int gfal_http_authn_cert_X509(void* userdata, const Davix::SessionInfo & info, Davix::X509Credential * cert, Davix::DavixError** err);
 
 static const char* gfal_http_get_name(void)
 {
   return http_module_name;
+}
+
+
+GfalHttpInternal::GfalHttpInternal() :
+    context(),
+    posix(&context),
+    params()
+{
+    char * env_var = NULL;
+    // Configure params
+    params.addCertificateAuthorityPath( // TODO : thix should be configurable with gfal_get_opt system
+                (env_var = (char*) g_getenv("X509_CERT_DIR"))?env_var:"/etc/grid-security/certificates/");
+
+    params.setTransparentRedirectionSupport(true);
+    params.setUserAgent("gfal2::http");
+    params.setClientCertCallbackX509(&gfal_http_authn_cert_X509, NULL);
+}
+
+
+
+GfalHttpPluginData::GfalHttpPluginData() :
+    davix(NULL),
+    _init_mux(g_mutex_new())
+{}
+
+GfalHttpPluginData::~GfalHttpPluginData()
+{
+    delete davix;
+    g_mutex_clear(_init_mux);
+}
+
+GfalHttpInternal* gfal_http_get_plugin_context(gpointer plugin_data){
+    GfalHttpPluginData* data = static_cast<GfalHttpPluginData*>(plugin_data);
+    if(data->davix == NULL){
+        g_mutex_lock(data->_init_mux);
+        if(data->davix == NULL){
+            data->davix = new GfalHttpInternal();
+        }
+        g_mutex_unlock(data->_init_mux);
+    }
+    return data->davix;
+
+}
+
+void gfal_http_context_delete(gpointer plugin_data){
+    GfalHttpPluginData* data = static_cast<GfalHttpPluginData*>(plugin_data);
+    delete data;
+}
+
+void gfal_http_delete(plugin_handle plugin_data)
+{
+    gfal_http_context_delete(plugin_data);
 }
 
 
@@ -151,29 +204,17 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal_handle handle,
                                                   GError** err)
 {
   gfal_plugin_interface http_plugin;
-  GfalHttpInternal* http_internal = new GfalHttpInternal();
-  char * env_var = NULL;
-
-  http_internal->context = new Davix::Context();
-  http_internal->params  = new Davix::RequestParams();
-  http_internal->posix   = new Davix::DavPosix(http_internal->context);
 
   *err = NULL;
   memset(&http_plugin, 0, sizeof(http_plugin));
 
-  // Configure params
-  http_internal->params->addCertificateAuthorityPath( // TODO : thix should be configurable with gfal_get_opt system
-              (env_var = (char*) g_getenv("X509_CERT_DIR"))?env_var:"/etc/grid-security/certificates/");
 
-  http_internal->params->setTransparentRedirectionSupport(true);
-  http_internal->params->setUserAgent("gfal2::http");
-  http_internal->params->setClientCertCallbackX509(&gfal_http_authn_cert_X509, NULL);
 
   // Bind metadata
   http_plugin.check_plugin_url = &gfal_http_check_url;
   http_plugin.getName          = &gfal_http_get_name;
   http_plugin.priority         = GFAL_PLUGIN_PRIORITY_DATA;
-  http_plugin.plugin_data      = http_internal;
+  http_plugin.plugin_data      = new GfalHttpPluginData();
   http_plugin.plugin_delete    = &gfal_http_delete;
 
   http_plugin.statG     = &gfal_http_stat;
