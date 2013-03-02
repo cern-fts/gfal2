@@ -35,7 +35,7 @@ extern "C"
 
 
 
-#define MAX_PLUGIN_LIST 64 		
+#define MAX_PLUGIN_LIST 15
 #define GFAL_MODULE_NAME_SIZE 	1024	
 #define GFAL_NEWFILE_SIZE         1024
 
