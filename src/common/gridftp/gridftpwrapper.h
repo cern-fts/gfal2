@@ -124,7 +124,7 @@ struct GridFTP_Request_state{
 
     void cancel_operation(const Glib::Quark &scope, const std::string & msg = "");
 
-    void cancel_operation_async(const Glib::Quark &scope, const std::string & msg = "");
+    int cancel_operation_async(const Glib::Quark &scope, const std::string & msg = "");
 };
 
 struct GridFTP_stream_state : public GridFTP_Request_state{
@@ -132,15 +132,21 @@ struct GridFTP_stream_state : public GridFTP_Request_state{
     off_t offset; // file offset in the stream
 	bool eof;     // end of file reached
     Gridftp_request_status stream_status;
+    Glib::Mutex mux_stream_callback;
+    Glib::Cond  cond_stream_callback;
     
  public:
    
+   // ownership lock
    Glib::Mutex lock;
    
 	GridFTP_stream_state(GridFTP_session * s) : GridFTP_Request_state(s)	{
 		offset =0;
 		eof = false;
+        stream_status = GRIDFTP_REQUEST_NOT_LAUNCHED;
 	}
+
+    virtual ~GridFTP_stream_state();
 	
 	bool finished(){
         Glib::Mutex::Lock locker(internal_lock);
@@ -184,6 +190,9 @@ struct GridFTP_stream_state : public GridFTP_Request_state{
 
     void poll_callback_stream(const Glib::Quark & scope);
     void wait_callback_stream(const Glib::Quark & scope);
+
+    friend void gfal_stream_callback_prototype(void *user_arg, globus_ftp_client_handle_t *handle, globus_object_t *error, globus_byte_t *buffer,
+                                                globus_size_t length, globus_off_t offset, globus_bool_t eof, const char* err_msg_offset);
 };
 
 class GridFTPOperationCanceler{
