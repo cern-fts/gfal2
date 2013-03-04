@@ -46,7 +46,7 @@ int plugin_trigger_event(gfalt_params_t params, GQuark domain,
     event.domain = domain;
     event.side   = side;
     event.stage  = stage;
-    event.timestamp = tmst.tv_sec * 1000 + tmst.tv_usec;
+    event.timestamp = tmst.tv_sec * 1000 + tmst.tv_usec / 1000;
 
     va_list msg_args;
     va_start(msg_args, fmt);
