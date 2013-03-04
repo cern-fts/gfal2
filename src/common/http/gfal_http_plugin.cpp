@@ -41,7 +41,7 @@ GfalHttpPluginData::GfalHttpPluginData() :
 GfalHttpPluginData::~GfalHttpPluginData()
 {
     delete davix;
-    g_mutex_clear(_init_mux);
+    g_mutex_free(_init_mux);
 }
 
 GfalHttpInternal* gfal_http_get_plugin_context(gpointer plugin_data){
