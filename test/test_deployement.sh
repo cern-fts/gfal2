@@ -4,17 +4,12 @@
 
 set -e
 
-PATH_TESTS=/usr/tests/functional/gfal2
-CERT_PATH=$HOME/user-cert.pem
-KEY_PATH=$HOME/user-key.pem
+
+PROXY_PATH=$(ls /tmp/x509up_u$UID*)
+
+echo "Proxy path found to $PROXY_PATH"
 
 echo "## start test deployement"
-
-if [[ ! -a "$CERT_PATH" ]] || [[ ! -a "$KEY_PATH" ]]; then
-echo "cert or private key does not exist ! at $CERT_PATH and $KEY_PATH, FATAL"
-exit 1
-fi
-
 
 gfal_dir=$(dirname $0)/
 gfal_dir=$(readlink -f "$gfal_dir/../")
@@ -59,8 +54,7 @@ echo " " >> $test_path
 echo "## test credential ..."  >> $test_path
 echo "voms-proxy-info -all" >> $test_path
 echo "## setup credential path  ..."  >> $test_path
-echo "export X509_USER_KEY=$KEY_PATH" >> $test_path
-echo "export X509_USER_CERT=$CERT_PATH" >> $test_path
+echo "export X509_USER_PROXY=$PROXY_PATH" >> $test_path
 
 echo "## print env ..."  >> $test_path
 echo "env" >> $test_path
