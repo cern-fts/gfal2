@@ -64,7 +64,7 @@ ELSE (IS_IFCE)
 ENDIF(IS_IFCE)
 
 LIST(APPEND main_libs ${src_posix} ${src_common} ${src_global} ${src_config}
-         ${mds_source} ${src_uri} ${src_logger} ${src_g_shared_map}
+          ${src_uri} ${src_logger} ${src_g_shared_map}
          ${src_file} ${src_cancel})
 
 
@@ -73,7 +73,7 @@ IF (MAIN_CORE)
 	add_library(gfal2  SHARED ${main_libs} )
 	target_link_libraries(gfal2	${UUID_PKG_LIBRARIES} "stdc++" ) # hotfix for libc TLS init bug in EPEL 5 
 	target_link_libraries(gfal2 ${GLIB2_PKG_LIBRARIES} ${GTHREAD2_PKG_LIBRARIES} 
-							${is_ifce_link}  "dl" )
+                                                          "dl" )
 	set_target_properties(gfal2	 	PROPERTIES
 									VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
 									SOVERSION ${VERSION_MAJOR}
@@ -160,11 +160,11 @@ ENDIF(PLUGIN_LFC)
 
 IF(PLUGIN_SRM)
 
-add_definitions( ${SRM_IFCE_PKG_CFLAGS} ${OpenMP_C_FLAGS} )
-include_directories( ${SRM_IFCE_PKG_INCLUDE_DIR} ${OpenMP_INCLUDE_DIRS})
+add_definitions( ${SRM_IFCE_PKG_CFLAGS} ${OpenMP_C_FLAGS})
+include_directories( ${SRM_IFCE_PKG_INCLUDE_DIR} ${OpenMP_INCLUDE_DIRS} ${is_ifce_link})
 
-add_library(plugin_srm  SHARED ${src_srm} ${src_gsimplecache} ${src_uri} )
-target_link_libraries(plugin_srm ${gfal2_link} ${SRM_IFCE_PKG_LIBRARIES} ${OpenMP_LIBRARIES} gomp gfal2_transfer)
+add_library(plugin_srm  SHARED ${src_srm} ${src_gsimplecache} ${src_uri}  ${mds_source} )
+target_link_libraries(plugin_srm ${gfal2_link} ${SRM_IFCE_PKG_LIBRARIES} ${OpenMP_LIBRARIES} ${is_ifce_link} gomp gfal2_transfer)
 
 
 set_target_properties(plugin_srm	 	PROPERTIES

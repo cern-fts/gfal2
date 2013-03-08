@@ -68,20 +68,20 @@ typedef struct _plugin_pointer_handle{
  * */
 plugin_pointer_handle gfal_plugins_list_handler(gfal_handle, GError** err);
 
-int gfal_plugins_instance(gfal_handle, GError** err);
-char** gfal_plugins_get_list(gfal_handle, GError** err);
-int gfal_plugins_delete(gfal_handle, GError** err);
+plugin_handle gfal_get_plugin_handle(gfal_plugin_interface* p_interface);
 
+int gfal_plugins_instance(gfal_handle, GError** err);
+
+char** gfal_plugins_get_list(gfal_handle, GError** err);
+
+int gfal_plugins_delete(gfal_handle, GError** err);
 
 gboolean gfal_feature_is_supported(void * ptr, GQuark scope, const char* func_name, GError** err);
 
-
 // find a compatible catalog or return NULL + error
-gfal_plugin_interface* gfal_find_catalog(gfal_handle handle,
+gfal_plugin_interface* gfal_find_plugin(gfal_handle handle,
                                          const char * url,
                                          plugin_mode acc_mode, GError** err);
-
-plugin_handle gfal_get_plugin_handle(gfal_plugin_interface* p_interface);
 
 // default plugin checker for a given operation and call_type
 gboolean gfal_plugin_checker_safe(gfal_plugin_interface* cata_list, const char* path, plugin_mode call_type, GError** terr );
