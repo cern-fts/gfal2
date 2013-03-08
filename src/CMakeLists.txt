@@ -49,19 +49,6 @@ LIST(APPEND headers_main ${common_dir} ${posix_dir} ${global_dir}
 include_directories(${headers_main} )
 add_definitions( -DVERSION="${VERSION_STRING}" -Wall ${GLIB2_PKG_CFLAGS} ${GTHREAD2_PKG_CFLAGS})
 
-## link to internal bdii system if IS_IFCE=false else to the is_interface
-IF (IS_IFCE)
-
-	SET(is_ifce_link	"is_ifce")
-	add_definitions(-DMDS_BDII_EXTERNAL=1)
-	SET(mds_source "common/mds/gfal_common_mds.c")
-
-ELSE (IS_IFCE)
-	add_definitions(-DMDS_BDII_EXTERNAL=0)
-	FILE(GLOB mds_source "common/mds/*.c")
-	SET(is_ifce_link	"ldap_r")
-	
-ENDIF(IS_IFCE)
 
 LIST(APPEND main_libs ${src_posix} ${src_common} ${src_global} ${src_config}
           ${src_uri} ${src_logger} ${src_g_shared_map}
@@ -159,6 +146,22 @@ ENDIF(PLUGIN_LFC)
 
 
 IF(PLUGIN_SRM)
+
+
+## link to internal bdii system if IS_IFCE=false else to the is_interface
+IF (IS_IFCE)
+
+        SET(is_ifce_link	"is_ifce")
+        add_definitions(-DMDS_BDII_EXTERNAL=1)
+        SET(mds_source "common/mds/gfal_common_mds.c")
+
+ELSE (IS_IFCE)
+        add_definitions(-DMDS_BDII_EXTERNAL=0)
+        FILE(GLOB mds_source "common/mds/*.c")
+        SET(is_ifce_link	"ldap_r")
+
+ENDIF(IS_IFCE)
+
 
 add_definitions( ${SRM_IFCE_PKG_CFLAGS} ${OpenMP_C_FLAGS})
 include_directories( ${SRM_IFCE_PKG_INCLUDE_DIR} ${OpenMP_INCLUDE_DIRS} ${is_ifce_link})
