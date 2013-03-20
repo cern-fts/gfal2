@@ -562,10 +562,12 @@ int GridFTP_Request_state::cancel_operation_async(const Glib::Quark &scope, cons
         gfal_globus_check_result(scope, res);
     }catch(Gfal::CoreException & e){
         gfal_log(GFAL_VERBOSE_TRACE,"gridftp error trigerred while cancel: %s", e.message_only());
+        this->sess->disableReuse();
         ret = -1;
     }catch(...){
         gfal_log(GFAL_VERBOSE_TRACE,"gridftp error trigerred while cancel: Unknown");
-        ret = -1;
+        this->sess->disableReuse();           
+        ret = -1;     
     }
 
     this->set_error_code(ECANCELED);
@@ -596,8 +598,10 @@ void GridFTP_stream_state::wait_callback_stream(const Glib::Quark & scope){
 
 
 GridFTP_stream_state::~GridFTP_stream_state(){
-    if(req_status == GRIDFTP_REQUEST_RUNNING)
+    if(req_status == GRIDFTP_REQUEST_RUNNING){
         cancel_operation(gfal_gridftp_scope_req_state(), "ReqStream Destroyer");
+        poll_callback(gfal_gridftp_scope_req_state());
+	}
     while(this->stream_status == GRIDFTP_REQUEST_RUNNING )
         usleep(1);
 }

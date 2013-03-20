@@ -55,10 +55,11 @@ gfal_file_handle GridftpModule::opendir(const char* path)
     			static_cast<GridFTP_Request_state*>(desc->stream.get()));
     gfal_globus_check_result(gfal_gridftp_scope_opendir(), res);
 	
+
     r_size= gridftp_read_stream(gfal_gridftp_scope_opendir(), (desc->stream.get()),
-				desc->buff, readdir_len); // initiate reading stream
-	*(desc->buff + r_size) = '\0';
-	desc->list = std::string(desc->buff);
+                desc->buff, readdir_len); // initiate reading stream
+    *(desc->buff + r_size) = '\0';
+    desc->list = std::string(desc->buff);
 	
 	gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::opendir] ");	
     return gfal_file_handle_new2(plugin_name(), (gpointer) desc.release(), NULL, path);
