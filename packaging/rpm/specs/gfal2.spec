@@ -1,7 +1,7 @@
 
 Name:				gfal2
 Version:			2.2.0
-Release:			0%{?dist}
+Release:			1%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -34,9 +34,9 @@ BuildRequires:		dcap-devel
 #gridftp plugin dependencies
 BuildRequires:		globus-gass-copy-devel
 #http plugin dependencies
-BuildRequires:		davix-devel
-BuildRequires:          gsoap-devel
-BuildRequires:		gridsite-devel
+#BuildRequires:		davix-devel
+#BuildRequires:          gsoap-devel
+#BuildRequires:		gridsite-devel
 
 Requires:			%{name}-core = %{version}-%{release}
 Requires:			%{name}-transfer = %{version}-%{release}
@@ -138,14 +138,14 @@ Provide the gridftp support (GSIFTP://) for %{name}.
 The gridftp plugin provides the POSIX operations and 
 the third party transfer support on the GSIFTP URLs.
 
-%package plugin-http
-Summary:			Provide the HTTP/DAV support for %{name}
-Group:				Applications/Internet
-Requires:			%{name}-core%{?_isa} = %{version}-%{release}
+#%package plugin-http
+#Summary:			Provide the HTTP/DAV support for %{name}
+#Group:				Applications/Internet
+#Requires:			%{name}-core%{?_isa} = %{version}-%{release}
 
-%description plugin-http
-Provide the HTTP and WevDAV support for %{name}.
-this plugin is able to do third-party copy with Webdav
+#%description plugin-http
+#Provide the HTTP and WevDAV support for %{name}.
+#this plugin is able to do third-party copy with Webdav
 
 %package all
 Summary:			Meta package for GFAL 2.0 install
@@ -157,7 +157,7 @@ Requires:			%{name}-plugin-dcap%{?_isa} = %{version}-%{release}
 Requires:			%{name}-plugin-srm%{?_isa} = %{version}-%{release} 
 Requires:			%{name}-plugin-rfio%{?_isa} = %{version}-%{release} 
 Requires:			%{name}-plugin-gridftp%{?_isa} = %{version}-%{release} 
-Requires:           %{name}-plugin-http%{?_isa} = %{version}-%{release}
+#Requires:           %{name}-plugin-http%{?_isa} = %{version}-%{release}
 
 
 %description all
@@ -270,11 +270,12 @@ make DESTDIR=%{buildroot} install
 %{_docdir}/%{name}-%{version}/README_PLUGIN_GRIDFTP
 %config(noreplace) %{_sysconfdir}/%{name}.d/gsiftp_plugin.conf
 
-%files plugin-http
-%defattr (-,root,root)
-%{_libdir}/%{name}-plugins/libgfal_plugin_http.so*
-%{_docdir}/%{name}-%{version}/README_PLUGIN_HTTP
-%config(noreplace) %{_sysconfdir}/%{name}.d/http_plugin.conf
+
+#%files plugin-http
+#%defattr (-,root,root)
+#%{_libdir}/%{name}-plugins/libgfal_plugin_http.so*
+#%{_docdir}/%{name}-%{version}/README_PLUGIN_HTTP
+#%config(noreplace) %{_sysconfdir}/%{name}.d/http_plugin.conf
 
 %files all
 %defattr (-,root,root)
@@ -282,6 +283,9 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Wed Mar 20 2013 Adrien Devresse <adevress at cern.ch> - 2.2.0-1
+ - disable http plugin for EMI
+
 * Wed Mar 20 2013 Adrien Devresse <adevress at cern.ch> - 2.2.0-0
  - fix thread safety issue with gsiftp plugin
  - add the bring online API
