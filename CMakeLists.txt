@@ -37,8 +37,6 @@ include(MacroAddDoxygen REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 
-find_package(OpenMP REQUIRED)
-
 #enable testing
 INCLUDE(CTest)
 

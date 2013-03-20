@@ -45,11 +45,14 @@ extern "C"
 
 /**
  * Prototype of the plugins entry point
+ *
+ *  return gfal_plugin_interface must be allocated with \êef gfal_plugin_interface_new
+ *
  * @param handle : gfal_handle of the current call
  * @param err : Error report in case of fatal error while the plugin load.
  * 
  * */
-typedef gfal_plugin_interface (*gfal_plugin_init_t)(gfal_handle handle, GError** err);
+typedef gfal_plugin_interface* (*gfal_plugin_init_t)(gfal_handle handle, GError** err);
 
 
 /**
@@ -61,14 +64,14 @@ typedef gfal_plugin_interface (*gfal_plugin_init_t)(gfal_handle handle, GError**
  */
 struct _gfal_plugin_interface{
 	 //! @cond
-	 // internal gfal data : touching this causes the death of a little cat
+     // internal gfal data : touching this triggers the death of a kitty
 	void * gfal_data;
 	//! @endcond
 	
     // plugin management
 
 	/**
-	 *  plugin reserved pointer, free to use for plugin's personnal datas
+     *  plugin reserved pointer, free to use for plugin's internal data, passed to any function
 	 * 
 	 * */
 	plugin_handle plugin_data;

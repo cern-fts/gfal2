@@ -58,7 +58,7 @@ LIST(APPEND main_libs ${src_posix} ${src_common} ${src_global} ${src_config}
 IF (MAIN_CORE)
 
 	add_library(gfal2  SHARED ${main_libs} )
-	target_link_libraries(gfal2	${UUID_PKG_LIBRARIES} "stdc++" ) # hotfix for libc TLS init bug in EPEL 5 
+        target_link_libraries(gfal2	${UUID_PKG_LIBRARIES} "stdc++" ) # hotfix for libc TLS init bug in EPEL 5
 	target_link_libraries(gfal2 ${GLIB2_PKG_LIBRARIES} ${GTHREAD2_PKG_LIBRARIES} 
                                                           "dl" )
 	set_target_properties(gfal2	 	PROPERTIES
@@ -163,11 +163,11 @@ ELSE (IS_IFCE)
 ENDIF(IS_IFCE)
 
 
-add_definitions( ${SRM_IFCE_PKG_CFLAGS} ${OpenMP_C_FLAGS})
-include_directories( ${SRM_IFCE_PKG_INCLUDE_DIR} ${OpenMP_INCLUDE_DIRS} ${is_ifce_link})
+add_definitions( ${SRM_IFCE_PKG_CFLAGS} )
+include_directories( ${SRM_IFCE_PKG_INCLUDE_DIR} ${is_ifce_link})
 
 add_library(plugin_srm  SHARED ${src_srm} ${src_gsimplecache} ${src_uri}  ${mds_source} )
-target_link_libraries(plugin_srm ${gfal2_link} ${SRM_IFCE_PKG_LIBRARIES} ${OpenMP_LIBRARIES} ${is_ifce_link} gomp gfal2_transfer)
+target_link_libraries(plugin_srm ${gfal2_link} ${SRM_IFCE_PKG_LIBRARIES} ${is_ifce_link} gomp gfal2_transfer)
 
 
 set_target_properties(plugin_srm	 	PROPERTIES

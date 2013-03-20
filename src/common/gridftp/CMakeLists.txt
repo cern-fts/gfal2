@@ -8,7 +8,7 @@ FILE(GLOB src_gridftp "*.c*")
 
 
 IF(PLUGIN_GRIDFTP)
-add_definitions( ${GLOBUS_GASS_COPY_PKG_CFLAGS}    ${OpenMP_C_FLAGS})
+add_definitions( ${GLOBUS_GASS_COPY_PKG_CFLAGS}  )
 add_library(plugin_gridftp  SHARED ${src_gridftp} ${src_libcpp} ${src_exceptions})
 
 target_link_libraries(plugin_gridftp ${gfal2_link}
@@ -18,7 +18,6 @@ target_link_libraries(plugin_gridftp ${gfal2_link}
 include_directories( ${GLOBUS_GASS_COPY_PKG_INCLUDE_DIRS}
 				${GRIDFTP_IFCE_INCLUDE_DIRS} 	 
 				${GLIBMM_PKG_INCLUDE_DIRS}
-                                ${OpenMP_INCLUDE_DIRS}
 				)
 
 

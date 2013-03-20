@@ -83,8 +83,9 @@ gfal_plugin_interface* gfal_find_plugin(gfal_handle handle,
                                          const char * url,
                                          plugin_mode acc_mode, GError** err);
 
-// default plugin checker for a given operation and call_type
-gboolean gfal_plugin_checker_safe(gfal_plugin_interface* cata_list, const char* path, plugin_mode call_type, GError** terr );
+
+
+gfal_plugin_interface* gfal_plugin_map_file_handle(gfal_handle handle, gfal_file_handle fh, GError** err);
 
 #ifdef __cplusplus
 }

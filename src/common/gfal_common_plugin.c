@@ -50,7 +50,7 @@
  *  must be use in ALL the plugin's "gfal_plugin_init" functions
  */
 gfal_plugin_interface* gfal_plugin_interface_new(){
-	size_t s_plugin = sizeof(gfal_plugin_interface) *2;
+    size_t s_plugin = sizeof(gfal_plugin_interface)+1;
 	gfal_plugin_interface* ret = malloc( s_plugin); // bigger allocation that needed for futur extensions
 	memset(ret, 0,s_plugin);
 	return ret;
@@ -127,7 +127,7 @@ int gfal_plugins_delete(gfal_handle handle, GError** err){
 
 
 // return the proper plugin linked to this file handle
-static gfal_plugin_interface* gfal_plugin_getModuleFromHandle(gfal_handle handle, gfal_file_handle fh, GError** err){
+gfal_plugin_interface* gfal_plugin_map_file_handle(gfal_handle handle, gfal_file_handle fh, GError** err){
 	GError* tmp_err=NULL;
 	int i;
 	gfal_plugin_interface* cata_list=NULL;
@@ -565,7 +565,7 @@ int gfal_plugin_closedirG(gfal_handle handle, gfal_file_handle fh, GError** err)
 	g_return_val_err_if_fail(handle && fh, -1,err, "[gfal_plugin_closedirG] Invalid args ");	
 	GError* tmp_err=NULL;
 	int ret = -1;
-	gfal_plugin_interface* if_cata = gfal_plugin_getModuleFromHandle(handle, fh, &tmp_err);
+    gfal_plugin_interface* if_cata = gfal_plugin_map_file_handle(handle, fh, &tmp_err);
 	if(!tmp_err)
 		ret = if_cata->closedirG(if_cata->plugin_data, fh, &tmp_err);
     G_RETURN_ERR(ret, tmp_err, err);
@@ -591,7 +591,7 @@ int gfal_plugin_closeG(gfal_handle handle, gfal_file_handle fh, GError** err){
 	g_return_val_err_if_fail(handle && fh, -1,err, "[gfal_plugin_closeG] Invalid args ");	
 	GError* tmp_err=NULL;
 	int ret = -1;
-	gfal_plugin_interface* if_cata = gfal_plugin_getModuleFromHandle(handle, fh, &tmp_err);
+    gfal_plugin_interface* if_cata = gfal_plugin_map_file_handle(handle, fh, &tmp_err);
 	if(!tmp_err)
 		ret = if_cata->closeG(if_cata->plugin_data, fh, &tmp_err);
 
@@ -603,7 +603,7 @@ struct dirent* gfal_plugin_readdirG(gfal_handle handle, gfal_file_handle fh, GEr
 	g_return_val_err_if_fail(handle && fh, NULL,err, "[gfal_plugin_readdirG] Invalid args ");	
 	GError* tmp_err=NULL;
 	struct dirent* ret = NULL;
-	gfal_plugin_interface* if_cata = gfal_plugin_getModuleFromHandle(handle, fh, &tmp_err);
+    gfal_plugin_interface* if_cata = gfal_plugin_map_file_handle(handle, fh, &tmp_err);
 	if(!tmp_err)
 		ret = if_cata->readdirG(if_cata->plugin_data, fh, &tmp_err);
 
@@ -616,7 +616,7 @@ struct dirent* gfal_plugin_readdirppG(gfal_handle handle, gfal_file_handle fh, s
     g_return_val_err_if_fail(handle && fh, NULL,err, "[gfal_plugin_readdirppG] Invalid args ");
     GError* tmp_err=NULL;
     struct dirent* ret = NULL;
-    gfal_plugin_interface* if_cata = gfal_plugin_getModuleFromHandle(handle, fh, &tmp_err);
+    gfal_plugin_interface* if_cata = gfal_plugin_map_file_handle(handle, fh, &tmp_err);
 
     if(!tmp_err){
         if(gfal_feature_is_supported(if_cata->readdirppG, g_quark_from_string(GFAL2_PLUGIN_SCOPE) , __func__, &tmp_err))
@@ -675,7 +675,7 @@ int gfal_plugin_readG(gfal_handle handle, gfal_file_handle fh, void* buff, size_
 	g_return_val_err_if_fail(handle && fh && buff && s_buff> 0, -1,err, "[gfal_plugin_readG] Invalid args ");	
 	GError* tmp_err=NULL;
 	int ret = -1;
-	gfal_plugin_interface* if_cata = gfal_plugin_getModuleFromHandle(handle, fh, &tmp_err);
+    gfal_plugin_interface* if_cata = gfal_plugin_map_file_handle(handle, fh, &tmp_err);
 	if(!tmp_err)
 		ret = if_cata->readG(if_cata->plugin_data, fh, buff, s_buff,  &tmp_err);
     G_RETURN_ERR(ret, tmp_err, err);
@@ -706,7 +706,7 @@ ssize_t gfal_plugin_preadG(gfal_handle handle, gfal_file_handle fh, void* buff, 
 	g_return_val_err_if_fail(handle && fh && buff, -1,err, "[gfal_plugin_preadG] Invalid args ");	
 	GError* tmp_err=NULL;
 	ssize_t ret = -1;
-	gfal_plugin_interface* if_cata = gfal_plugin_getModuleFromHandle(handle, fh, &tmp_err);
+    gfal_plugin_interface* if_cata = gfal_plugin_map_file_handle(handle, fh, &tmp_err);
 	if(!tmp_err){
 		if(if_cata->preadG)
 			ret = if_cata->preadG(if_cata->plugin_data, fh, buff, s_buff, offset,  &tmp_err);
@@ -746,7 +746,7 @@ ssize_t gfal_plugin_pwriteG(gfal_handle handle, gfal_file_handle fh, void* buff,
 	g_return_val_err_if_fail(handle && fh && buff, -1,err, "[gfal_plugin_pwriteG] Invalid args ");	
 	GError* tmp_err=NULL;
 	ssize_t ret = -1;
-	gfal_plugin_interface* if_cata = gfal_plugin_getModuleFromHandle(handle, fh, &tmp_err);
+    gfal_plugin_interface* if_cata = gfal_plugin_map_file_handle(handle, fh, &tmp_err);
 	if(!tmp_err){
 		if(if_cata->pwriteG)
 			ret = if_cata->pwriteG(if_cata->plugin_data, fh, buff, s_buff, offset,  &tmp_err);
@@ -764,7 +764,7 @@ int gfal_plugin_lseekG(gfal_handle handle, gfal_file_handle fh, off_t offset, in
 	g_return_val_err_if_fail(handle && fh , -1,err, "[gfal_plugin_lseekG] Invalid args ");	
 	GError* tmp_err=NULL;
 	int ret = -1;
-	gfal_plugin_interface* if_cata = gfal_plugin_getModuleFromHandle(handle, fh, &tmp_err);
+    gfal_plugin_interface* if_cata = gfal_plugin_map_file_handle(handle, fh, &tmp_err);
 	if(!tmp_err)
 		ret = if_cata->lseekG(if_cata->plugin_data, fh, offset, whence,  &tmp_err);
     G_RETURN_ERR(ret, tmp_err, err);
@@ -776,7 +776,7 @@ int gfal_plugin_writeG(gfal_handle handle, gfal_file_handle fh, void* buff, size
 	g_return_val_err_if_fail(handle && fh && buff && s_buff> 0, -1,err, "[gfal_plugin_writeG] Invalid args ");	
 	GError* tmp_err=NULL;
 	int ret = -1;
-	gfal_plugin_interface* if_cata = gfal_plugin_getModuleFromHandle(handle, fh, &tmp_err);
+    gfal_plugin_interface* if_cata = gfal_plugin_map_file_handle(handle, fh, &tmp_err);
 	if(!tmp_err)
 		ret = if_cata->writeG(if_cata->plugin_data, fh,buff, s_buff, &tmp_err);
     G_RETURN_ERR(ret, tmp_err, err);

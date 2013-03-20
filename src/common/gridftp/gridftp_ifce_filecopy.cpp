@@ -338,41 +338,35 @@ int GridftpModule::filecopy(gfalt_params_t params, const char* src, const char* 
         gfal_log(GFAL_VERBOSE_DEBUG, "\t\tChecksum Algorithm for transfer verification %s", chk_algo.checksum_algo);
     }
 
-    const int n_sess = 1;
-    #pragma omp parallel num_threads(n_sess)
-    {
-        #pragma omp sections
+
+       // parallelizable sections
         {
-            #pragma omp section  // calc src checksum
-            {
-               CPP_GERROR_TRY
-               if(checksum_check) {
-                    plugin_trigger_event(params, gfal_gsiftp_domain(),
-                                         GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER,
-                                         "%s", chk_algo.checksum_algo);
+           CPP_GERROR_TRY
+           if(checksum_check) {
+                plugin_trigger_event(params, gfal_gsiftp_domain(),
+                                     GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER,
+                                     "%s", chk_algo.checksum_algo);
 
-                    checksum(src, chk_algo.checksum_algo, checksum_src, GFAL_URL_MAX_LEN, 0,0);
+                checksum(src, chk_algo.checksum_algo, checksum_src, GFAL_URL_MAX_LEN, 0,0);
 
-                    plugin_trigger_event(params, gfal_gsiftp_domain(),
-                                                        GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT,
-                                                        "%s", chk_algo.checksum_algo);
-               }
-               CPP_GERROR_CATCH(&tmp_err_chk_src);
-            }
-            #pragma omp section // start transfert and replace logic
-            {
-                  plugin_trigger_event(params, gfal_gsiftp_domain(),
-                                       GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
-                                       "");
-                  CPP_GERROR_TRY
-                  gridftp_filecopy_copy_file_internal(_handle_factory, params, src, dst);
-                  CPP_GERROR_CATCH(&tmp_err_chk_copy);
-                  plugin_trigger_event(params, gfal_gsiftp_domain(),
-                                       GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
-                                       "");
-            }
+                plugin_trigger_event(params, gfal_gsiftp_domain(),
+                                                    GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT,
+                                                    "%s", chk_algo.checksum_algo);
+           }
+           CPP_GERROR_CATCH(&tmp_err_chk_src);
         }
-    }
+
+        {
+              plugin_trigger_event(params, gfal_gsiftp_domain(),
+                                   GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
+                                   "");
+              CPP_GERROR_TRY
+              gridftp_filecopy_copy_file_internal(_handle_factory, params, src, dst);
+              CPP_GERROR_CATCH(&tmp_err_chk_copy);
+              plugin_trigger_event(params, gfal_gsiftp_domain(),
+                                   GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
+                                   "");
+        }
 
 
     if(gfal_error_keep_first_err(&tmp_err,&tmp_err_chk_copy , &tmp_err_chk_src, &tmp_err_chk_dst, NULL)){

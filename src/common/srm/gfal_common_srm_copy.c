@@ -235,49 +235,44 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
                          GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_ENTER,
                          "");
 
-    #pragma omp parallel num_threads(1)
-    {
 
-         #pragma omp sections
+
+       // PARALLELIZABLE SECTIONS
         {
-            #pragma omp section
-            {
-                plugin_trigger_event(params, srm_domain(),
-                                     GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER,
-                                     "");
-                srm_plugin_check_checksum(handle, context, params, src, buff_src_checksum, &tmp_err_chk_src);
-                plugin_trigger_event(params, srm_domain(),
-                                     GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT,
-                                     "");
-            }
-            #pragma omp section
-            {
-                srm_plugin_get_3rdparty(handle, params, src, buff_turl_src, GFAL_URL_MAX_LEN, &tmp_err_get);
-            }
-            #pragma omp section
-            {
-                int ret_put =-1;
-                struct stat st_src;
-                memset(&st_src, 0, sizeof(  struct stat));
-                if( gfal2_stat(context, src, &st_src, &tmp_err_put) !=0){
-                   st_src.st_size =0;
-                   gfal_log(GFAL_VERBOSE_DEBUG, "Fail to stat src SRM url %s to determine file size, try with file_size=0, error %s",
-                            src, tmp_err_put->message);
-                   g_clear_error(&tmp_err_put);
-                }
+            plugin_trigger_event(params, srm_domain(),
+                                 GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER,
+                                 "");
+            srm_plugin_check_checksum(handle, context, params, src, buff_src_checksum, &tmp_err_chk_src);
+            plugin_trigger_event(params, srm_domain(),
+                                 GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT,
+                                 "");
+        }
 
-                ret_put = srm_plugin_put_3rdparty(handle, context, params, dst, st_src.st_size,
-                                                  buff_turl_dst, GFAL_URL_MAX_LEN, &reqtoken, &tmp_err_put);
-                if(!tmp_err_put && reqtoken != NULL)
-                    put_waiting = TRUE;
-                if(ret_put == 0){ // srm resolution done to turl, do not check dest -> already done
-                    gfalt_set_replace_existing_file(params_turl,FALSE, NULL);
-                    gfalt_set_strict_copy_mode(params_turl, TRUE, NULL);
-                }
+        {
+            srm_plugin_get_3rdparty(handle, params, src, buff_turl_src, GFAL_URL_MAX_LEN, &tmp_err_get);
+        }
+
+        {
+            int ret_put =-1;
+            struct stat st_src;
+            memset(&st_src, 0, sizeof(  struct stat));
+            if( gfal2_stat(context, src, &st_src, &tmp_err_put) !=0){
+               st_src.st_size =0;
+               gfal_log(GFAL_VERBOSE_DEBUG, "Fail to stat src SRM url %s to determine file size, try with file_size=0, error %s",
+                        src, tmp_err_put->message);
+               g_clear_error(&tmp_err_put);
+            }
+
+            ret_put = srm_plugin_put_3rdparty(handle, context, params, dst, st_src.st_size,
+                                              buff_turl_dst, GFAL_URL_MAX_LEN, &reqtoken, &tmp_err_put);
+            if(!tmp_err_put && reqtoken != NULL)
+                put_waiting = TRUE;
+            if(ret_put == 0){ // srm resolution done to turl, do not check dest -> already done
+                gfalt_set_replace_existing_file(params_turl,FALSE, NULL);
+                gfalt_set_strict_copy_mode(params_turl, TRUE, NULL);
             }
         }
 
-    }
 
     gfal_srm_check_cancel(context, &tmp_err_cancel);
 
