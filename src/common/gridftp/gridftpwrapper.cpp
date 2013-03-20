@@ -160,7 +160,10 @@ struct GridFTP_session_implem : public GridFTP_session{
 	virtual ~GridFTP_session_implem(){
         if(_sess != NULL){
             clean();
-			factory->gfal_globus_ftp_release_handle_internal(this);
+            if(_isDirty)
+                this->purge();
+            else
+                factory->gfal_globus_ftp_release_handle_internal(this);
         }
 	}
 	

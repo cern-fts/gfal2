@@ -42,8 +42,13 @@ struct Gass_attr_handler{
 
 
 struct GridFTP_session{
+
+    GridFTP_session()  :
+        _isDirty(false)
+    {}
 	
-	virtual ~GridFTP_session(){}
+    virtual ~GridFTP_session()
+    {}
 	
 
 	virtual globus_ftp_client_handle_t* get_ftp_handle()=0;
@@ -56,6 +61,13 @@ struct GridFTP_session{
     virtual void set_nb_stream(const unsigned int nbstream)=0;
 
     virtual void set_tcp_buffer_size(const guint64 tcp_buffer_size)=0;
+
+    virtual void disableReuse(){
+        _isDirty = true;
+    }
+
+
+    bool _isDirty;
 
 };
 
