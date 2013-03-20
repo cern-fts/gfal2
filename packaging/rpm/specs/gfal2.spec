@@ -1,6 +1,6 @@
 
 Name:				gfal2
-Version:			2.1.9
+Version:			2.2.0
 Release:			0%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
@@ -282,6 +282,17 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Wed Mar 20 2013 Adrien Devresse <adevress at cern.ch> - 2.2.0-0
+ - fix thread safety issue with gsiftp plugin
+ - add the bring online API
+ - support for the http plugin by default
+ - remove executable stack need
+ - remove openMP dependency
+ - add synchronous cancellation API
+ - add gsiftp performance marker timeout
+ - support for srm session reuse
+ - reduce memory footprint
+
 * Fri Feb 22 2013 Adrien Devresse <adevress at cern.ch> - 2.1.6-0
  - FTS 3.0 EMI 3 update
  - minor fix on the cancel logic

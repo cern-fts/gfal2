@@ -2,6 +2,17 @@ GFAL 2.0 RELEASE-NOTE:
 
 Trunk :
 
+* Wed Mar 20 2013 Adrien Devresse <adevress at cern.ch> - 2.2.0-0
+ - fix thread safety issue with gsiftp plugin
+ - add the bring online API
+ - support for the http plugin by default
+ - remove executable stack need
+ - remove openMP dependency
+ - add synchronous cancellation API
+ - add gsiftp performance marker timeout
+ - support for srm session reuse
+ - reduce memory footprint
+
 * Thu Jan 10 2013 Adrien Devresse <adevress at cern.ch> - 2.1.1-0
  - fix a minor memory issue with the gfal_transfer stack
  - fix a wrong error report problem with srm third party copy
