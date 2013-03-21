@@ -16,7 +16,7 @@ SET(gfal2_link "gfal2")
 IF (MAIN_TRANSFER)
 
 
-	LIST(APPEND header_transfer "gfal_transfer.h" "gfal_transfer_types.h")
+	LIST(APPEND header_transfer "gfal_transfer.h" "gfal_transfer_types.h" "gfal_transfer_plugins.h")
 
 	include_directories( "../ " "../libcpp/" ${GLIB2_PKG_INCLUDE_DIRS} 
 						${GTHREAD2_PKG_INCLUDE_DIRS}  ${GLIBMM_PKG_INCLUDE_DIRS})
