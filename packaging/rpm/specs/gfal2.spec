@@ -73,6 +73,7 @@ Requires:			%{name}-transfer%{?_isa} = %{version}-%{release}
 Requires:			glib2-devel%{?_isa}
 Requires:			libattr-devel%{?_isa} 
 Requires:			pkgconfig
+Requires:			glibmm24-devel%{?_isa}
 
 %description devel
 development files for %{name}
