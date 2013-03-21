@@ -50,6 +50,8 @@ static int gfal_srmv2_bring_online_internal(gfal_srmv2_opt* opts, const char* en
     gfal_srm_params_t             params = gfal_srm_params_new(opts, &tmp_err);
     int                           status;
 
+    memset(&output, 0, sizeof(output));
+
     if (params != NULL) {
         char          error_buffer[2048];
         srm_context_t context = gfal_srm_ifce_context_setup(opts->handle, endpoint, error_buffer, sizeof(error_buffer), &tmp_err);
@@ -93,8 +95,12 @@ static int gfal_srmv2_bring_online_internal(gfal_srmv2_opt* opts, const char* en
             }
             gfal_srm_external_call.srm_srmv2_pinfilestatus_delete(output.filestatuses, ret);
             gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
+            free(output.token);
+
+            gfal_srm_ifce_context_release(context);
         }
     }
+    gfal_srm_params_free(params);
 
     if (tmp_err != NULL) {
         g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
@@ -190,6 +196,9 @@ static int gfal_srmv2_bring_online_poll_internal(gfal_srmv2_opt* opts, const cha
                     break;
             }
         }
+        gfal_srm_external_call.srm_srmv2_pinfilestatus_delete(output.filestatuses, ret);
+        gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
+        gfal_srm_ifce_context_release(context);
     }
 
     if (tmp_err != NULL) {
