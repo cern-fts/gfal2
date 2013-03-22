@@ -1,6 +1,7 @@
 GFAL 2.0 RELEASE-NOTE:
 
 Trunk :
+- remove credential converter from http plugin
 
 * Wed Mar 20 2013 Adrien Devresse <adevress at cern.ch> - 2.2.0-0
  - fix thread safety issue with gsiftp plugin
