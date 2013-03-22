@@ -1,7 +1,6 @@
 #include "gfal_http_plugin.h"
 #include <errno.h>
 #include <davix.hpp>
-#include <status/davix_error.h>
 
 
 const char* http_module_name = "http_plugin";
@@ -183,18 +182,8 @@ int gfal_http_authn_cert_X509(void* userdata, const Davix::SessionInfo & info, D
     return -1;
   }
 
-  char p12file[PATH_MAX];
-  snprintf(p12file, sizeof(p12file), "/tmp/gfal_http_authn_p%d.p12", getpid());
-  if (convert_x509_to_p12(ukey, ucert, p12file, (davix_error_t*)err) < 0) {
-    Davix::DavixError::setupError(err, http_module_name, Davix::StatusCode::AuthentificationError,
-                                "Can not convert credential correctly");
-    return -1;
-  }
-
-
-  cert->loadFromFileP12(p12file, "", err);
   // Set certificate
-  return 0;
+  return cert->loadFromFilePEM(ukey, ucert, "", err);
 }
 
 
