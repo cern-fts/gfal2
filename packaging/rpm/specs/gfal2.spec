@@ -1,7 +1,7 @@
 
 Name:				gfal2
 Version:			2.2.0
-Release:			0%{?dist}
+Release:			1%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -283,6 +283,8 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Mon Mar 25 2013 Michail Salichos <msalichoat cern.ch> - 2.2.0-1
+ - fix memory leaks in bringonline SRM op
 * Wed Mar 20 2013 Adrien Devresse <adevress at cern.ch> - 2.2.0-0
  - fix thread safety issue with gsiftp plugin
  - add the bring online API
