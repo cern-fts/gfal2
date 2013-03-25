@@ -69,6 +69,7 @@ IF (MAIN_CORE)
 	)
 	add_PkgConfigFile_for_Library("gfal2.pc" gfal2 
 										HEADER_DIRS "gfal2"
+                                                                                CFLAGS " -D_FILE_OFFSET_BITS=64 "
 										DESCRIPTION "GFAL 2.0 pkgconfig file"
 										REQUIRES "glib-2.0")	
 	add_executable(gfal2_version ${src_version})
