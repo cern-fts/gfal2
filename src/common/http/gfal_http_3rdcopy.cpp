@@ -140,6 +140,7 @@ std::string gfal_http_3rdcopy_full_delegation_endpoint(const std::string ref,
 
 Davix::HttpRequest* gfal_http_3rdcopy_do_copy(GfalHttpInternal* davix,
         gfalt_params_t params, const std::string& src, const std::string& dst,
+        std::string &finalSource,
         GError** err)
 {
     Davix::DavixError* daverr = NULL;
@@ -188,6 +189,7 @@ Davix::HttpRequest* gfal_http_3rdcopy_do_copy(GfalHttpInternal* davix,
         }
 
     } while (request->getAnswerHeader("Location", nextSrc));
+    finalSource = nextSrc;
 
     if (daverr) {
         davix2gliberr(daverr, err);
@@ -305,6 +307,119 @@ int gfal_http_3rdcopy_performance_marks(const char* src, const char* dst,
 
 
 
+int gfal_http_exists(plugin_handle plugin_data,
+                     const char *dst,
+                     GError** err)
+{
+    GError *nestedError = NULL;
+    struct stat st;
+    gfal_http_stat(plugin_data, dst, &st, &nestedError);
+
+    if (nestedError && nestedError->code == ENOENT) {
+        g_error_free(nestedError);
+        return 0;
+    }
+    else if (nestedError) {
+        g_propagate_prefixed_error(err, nestedError, "[%s]", __func__);
+        return -1;
+    }
+    else {
+        return 1;
+    }
+}
+
+
+
+int gfal_http_3rdcopy_overwrite(plugin_handle plugin_data,
+                                gfalt_params_t params,
+                                const char *dst,
+                                GError** err)
+{
+    GError *nestedError = NULL;
+
+    if (!gfalt_get_replace_existing_file(params,NULL))
+        return 0;
+
+    int exists = gfal_http_exists(plugin_data, dst, &nestedError);
+
+    if (exists < 0) {
+        g_propagate_prefixed_error(err, nestedError, "[%s]", __func__);
+        return -1;
+    }
+    else if (exists == 1) {
+        gfal_http_unlinkG(plugin_data, dst, &nestedError);
+        if (nestedError) {
+            g_propagate_prefixed_error(err, nestedError, "[%s]", __func__);
+            return -1;
+        }
+
+        gfal_log(GFAL_VERBOSE_TRACE,
+                 "File %s deleted with success (overwrite set)", dst);
+    }
+    return 0;
+}
+
+
+
+char* gfal_http_get_parent(const char* url)
+{
+    char *parent = g_strdup(url);
+    char *slash = strrchr(parent, '/');
+    if (slash) {
+        *slash = '\0';
+    }
+    else {
+        g_free(parent);
+        parent = NULL;
+    }
+    return parent;
+}
+
+
+
+int gfal_http_3rdcopy_make_parent(plugin_handle plugin_data,
+                                  gfalt_params_t params,
+                                  const char* dst,
+                                  GError** err)
+{
+    GError *nestedError = NULL;
+
+    if (!gfalt_get_create_parent_dir(params, NULL))
+        return 0;
+
+    char *parent = gfal_http_get_parent(dst);
+    if (!parent) {
+        *err = g_error_new(http_plugin_domain, EINVAL,
+                           "[%s] Could not get the parent directory of %s",
+                           __func__, dst);
+        return -1;
+    }
+
+    int exists = gfal_http_exists(plugin_data, parent, &nestedError);
+    // Error
+    if (exists < 0) {
+        g_propagate_prefixed_error(err, nestedError, "[%s]", __func__);
+        return -1;
+    }
+    // Does exist
+    else if (exists == 1) {
+        return 0;
+    }
+    // Does not exist
+    else {
+        gfal_http_mkdirpG(plugin_data, parent, 0755, TRUE, &nestedError);
+        if (nestedError) {
+            g_propagate_prefixed_error(err, nestedError, "[%s]", __func__);
+            return -1;
+        }
+        gfal_log(GFAL_VERBOSE_TRACE,
+                 "[%s] Created parent directory %s", __func__, parent);
+        return 0;
+    }
+}
+
+
+
 int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
         gfalt_params_t params, const char* src, const char* dst, GError** err)
 {
@@ -314,8 +429,19 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
                          GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_ENTER,
                          "%s => %s", src, dst);
 
+    // When this flag is set, the plugin should handle overwriting,
+    // parent directory creation,...
+    if (!gfalt_get_strict_copy_mode(params, NULL)) {
+        if (gfal_http_3rdcopy_overwrite(plugin_data, params, dst, err) != 0 ||
+            gfal_http_3rdcopy_make_parent(plugin_data, params, dst, err) != 0)
+            return -1;
+    }
+
+    std::string finalSource;
     Davix::HttpRequest* request = gfal_http_3rdcopy_do_copy(davix, params,
-                                                            src, dst, err);
+                                                            src, dst,
+                                                            finalSource,
+                                                            err);
     if (!request)
         return -1;
 
@@ -325,7 +451,7 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
 
     plugin_trigger_event(params, http_plugin_domain,
                          GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
-                         "%s => %s", src, dst);
+                         "%s => %s", finalSource.c_str(), dst);
 
     int r = gfal_http_3rdcopy_performance_marks(src, dst, params, request, err);
     delete request;
@@ -334,7 +460,7 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
 
     plugin_trigger_event(params, http_plugin_domain,
                          GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
-                         "%s => %s", src, dst);
+                         "%s => %s", finalSource.c_str(), dst);
 
     return 0;
 }

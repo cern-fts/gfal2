@@ -56,6 +56,7 @@ int main(int argc, char** argv){
 	// Params
 	gfalt_params_t params = gfalt_params_handle_new(NULL);
 	gfalt_set_replace_existing_file(params, TRUE, NULL);
+	gfalt_set_create_parent_dir(params, TRUE, NULL);
 
 	// Register callback
 	gfalt_set_event_callback(params, event_callback, &tmp_err);
