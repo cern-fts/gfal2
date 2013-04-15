@@ -151,6 +151,9 @@ Davix::HttpRequest* gfal_http_3rdcopy_do_copy(GfalHttpInternal* davix,
     requestParams.setTransparentRedirectionSupport(false);
     requestParams.setClientCertCallbackX509(&gfal_http_authn_cert_X509, NULL);
 
+    char nstreams[8];
+    snprintf(nstreams, sizeof(nstreams), "%d", gfalt_get_nbstreams(params, NULL));
+
     Davix::HttpRequest* request = NULL;
 
     do {
@@ -165,6 +168,7 @@ Davix::HttpRequest* gfal_http_3rdcopy_do_copy(GfalHttpInternal* davix,
 
         request->setRequestMethod("COPY");
         request->addHeaderField("Destination", dst);
+        request->addHeaderField("X-Number-Of-Streams", nstreams);
         request->setParameters(requestParams);
         request->beginRequest(&daverr);
         if (daverr)
