@@ -1,295 +1,351 @@
-#include <glib.h>
 #include <davix.hpp>
-#include <gridsite.h>
 #include <unistd.h>
-#include <stdsoap2.h>
 #include "gfal_http_plugin.h"
-#include "soapH.h"
+#include "../transfer/gfal_transfer_plugins.h"
 
-#include "DelegationSoapBinding.nsmap"
+struct PerformanceMarker {
+    int    index, count;
 
-const char * default_ca_path= "/etc/grid-security/certificates/";
+    time_t begin, latest;
+    off_t  transferred;
 
-/// Do the delegation
-static char *gfal_http_delegate(const std::string& urlpp, Davix::DavixError** daverr)
+    off_t transferAvg;
+    off_t transferInstant;
+
+    PerformanceMarker(): index(0), count(0), begin(0), latest(0),
+            transferred(0),
+            transferAvg(0), transferInstant(0) {}
+};
+
+struct PerformanceData {
+    time_t begin, latest;
+
+    int markerCount;
+    PerformanceMarker* array;
+
+    PerformanceData(): begin(0), latest(0),
+            markerCount(0), array(NULL) {}
+
+    ~PerformanceData() {
+        delete array;
+    }
+
+    void update(const PerformanceMarker& in) {
+        if (markerCount != in.count) {
+            delete array;
+            markerCount = in.count;
+            array = new PerformanceMarker[markerCount];
+        }
+        if (in.index < 0 || in.index > markerCount)
+            return;
+
+        PerformanceMarker& marker = array[in.index];
+
+        if (marker.begin == 0)
+            marker.begin = in.latest;
+
+        // Calculate differences
+        time_t absElapsed  = in.latest - marker.begin;
+        time_t diffElapsed = in.latest - marker.latest;
+        off_t  diffSize    = in.transferred - marker.transferred;
+
+        // Update
+        marker.index       = in.index;
+        marker.count       = in.count;
+        marker.latest      = in.latest;
+        marker.transferred = in.transferred;
+        if (absElapsed)
+            marker.transferAvg = marker.transferred / absElapsed;
+        if (diffElapsed)
+            marker.transferInstant = diffSize / diffElapsed;
+
+        if (begin == 0 || begin < marker.begin)
+            begin = marker.begin;
+        if (latest < marker.latest)
+            latest = marker.latest;
+    }
+
+    time_t absElapsed() const {
+        return latest - begin;
+    }
+
+    off_t avgTransfer(void) const {
+        off_t total = 0;
+        for (int i = 0; i < markerCount; ++i)
+            total += array[i].transferAvg;
+        return total;
+    }
+
+    off_t diffTransfer() const {
+        off_t total = 0;
+        for (int i = 0; i < markerCount; ++i)
+            total += array[i].transferInstant;
+        return total;
+    }
+
+    off_t totalTransferred() const {
+        off_t total = 0;
+        for (int i = 0; i < markerCount; ++i)
+            total += array[i].transferred;
+        return total;
+    }
+};
+
+
+
+std::string gfal_http_3rdcopy_full_url(const std::string ref,
+        const std::string& uri)
 {
-  char                               *delegation_id = NULL;
-  std::string                        *reqtxt  = NULL;
-  char                               *certtxt = NULL;
-  char                               *keycert = NULL;
-  struct soap                        *soap_get = NULL, *soap_put = NULL;
-  struct tns__getNewProxyReqResponse  getNewProxyReqResponse;
-  struct tns__putProxyResponse        putProxyResponse;
-  char                               *ucert = NULL, *ukey = NULL, *capath = NULL;
-  int                                 lifetime;
-  const char* url = urlpp.c_str();
-  char        err_buffer[512];
-  size_t      err_aux;
+    std::string final;
 
-  // TODO: Get from the environment or something
-  lifetime = 12 * 60 * 60; // 12h
-
-  // Get certificate
-  ucert = ukey = getenv("X509_USER_PROXY");
-  if (!ucert) {
-    ucert = getenv("X509_USER_CERT");
-    ukey  = getenv("X509_USER_KEY");
-  }
-
-  if (!ucert || !ukey) {
-    *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::CredentialNotFound,
-                                    "Could not set the user's proxy or certificate");
-    return NULL;
-  }
-
-  capath = getenv("X509_CA_PATH");
-  if (!capath)
-    capath = (char*)default_ca_path ;
-
-  // Cert and key need to be in the same file
-  if (strcmp(ucert, ukey) == 0) {
-    keycert = strdup(ucert);
-  }
-  else {
-    FILE *ifp, *ofp;
-    int   fd;
-    char  c;
-
-    keycert = strdup("/tmp/.XXXXXX");
-
-    fd = mkstemp(keycert);
-    ofp = fdopen(fd, "w");
-
-    ifp = fopen(ukey, "r");
-    while ((c = fgetc(ifp)) != EOF) fputc(c, ofp);
-    fclose(ifp);
-
-    ifp = fopen(ukey, "r");
-    while ((c = fgetc(ifp)) != EOF) fputc(c, ofp);
-    fclose(ifp);
-
-    fclose(ofp);
-  }
-
-  // Initialize SSL
-  ERR_load_crypto_strings ();
-  OpenSSL_add_all_algorithms();
-
-  // Request a new delegation ID
-  soap_get = soap_new();
-  soap_get->keep_alive = 1;
-
-  if (soap_ssl_client_context(soap_get, SOAP_SSL_DEFAULT, keycert, "",
-                              NULL, capath, NULL) == 0) {
-    soap_call_tns__getNewProxyReq(soap_get,
-                                  url,
-                                  "http://www.gridsite.org/namespaces/delegation-1",
-                                  getNewProxyReqResponse);
-
-    if(soap_get->error == 0) {
-      reqtxt        = getNewProxyReqResponse.getNewProxyReqReturn->proxyRequest;
-      delegation_id = strdup(getNewProxyReqResponse.getNewProxyReqReturn->delegationID->c_str());
-
-      // Generate proxy
-      if (GRSTx509MakeProxyCert(&certtxt, stderr, (char*)reqtxt->c_str(),
-                                ucert, ukey, lifetime) == GRST_RET_OK) {
-        // Submit the proxy
-        soap_put = soap_new();
-
-        if (soap_ssl_client_context(soap_put, SOAP_SSL_DEFAULT, keycert, "",
-                              NULL, capath, NULL) == 0) {
-            soap_call_tns__putProxy(soap_put,
-                                    url,
-                                    "http://www.gridsite.org/namespaces/delegation-1",
-                                    delegation_id, certtxt, putProxyResponse);
-            if (soap_put->error) {
-              // Could not PUT
-              err_aux = snprintf(err_buffer, sizeof(err_buffer), "Could not PUT the proxy: ");
-              soap_sprint_fault(soap_put, err_buffer + err_aux, sizeof(err_buffer) - err_aux);
-              *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::AuthentificationError,
-                                              err_buffer);
-            }
-        }
-        else { // soap_put ssl error
-          err_aux = snprintf(err_buffer, sizeof(err_buffer), "Connection error on proxy put: ");
-          soap_sprint_fault(soap_put, err_buffer + err_aux, sizeof(err_buffer) - err_aux);
-          *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::AuthentificationError,
-                                          err_buffer);
-        }
-
-        soap_free(soap_put);
-      }
-      else {
-        *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::AuthentificationError,
-                                        "Could not generate the proxy");
-      }
+    if (uri.substr(0, 7).compare("http://") == 0) {
+        final = uri;
     }
-    else { // Could not get ID
-      err_aux = snprintf(err_buffer, sizeof(err_buffer), "Could not get proxy request: ");
-      soap_sprint_fault(soap_get, err_buffer + err_aux, sizeof(err_buffer) - err_aux);
-      *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::AuthentificationError,
-                                      err_buffer);
+    else if (uri.substr(0, 8).compare("https://") == 0) {
+        final = uri;
     }
-  }
-  else { // soap_get ssl error
-    err_aux = snprintf(err_buffer, sizeof(err_buffer), "Could not connect to get the proxy request: ");
-    soap_sprint_fault(soap_get, err_buffer + err_aux, sizeof(err_buffer) - err_aux);
-    *daverr = new Davix::DavixError(http_module_name, Davix::StatusCode::AuthentificationError,
-                                    err_buffer);
-  }
-
-  // Clean soap_get
-  soap_free(soap_get);
-  free(keycert);
-  free(certtxt);
-
-  // Return delegation ID
-  return delegation_id;
-}
-
-
-
-int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params,
-                      const char* src, const char* dst, GError** err)
-{
-  GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
-  Davix::DavixError* daverr = NULL;
-
-  // Follow jumps until final source
-  Davix::RequestParams requestParams(davix->params);
-  Davix::HttpRequest* request = NULL;
-  std::string realSrc(src);
-
-  requestParams.setTransparentRedirectionSupport(false);
-
-  do {
-    delete request;
-    gfal_log(GFAL_VERBOSE_TRACE, "\t\t%s: Next hop = '%s'", __func__, realSrc.c_str());
-    request = davix->context.createRequest(realSrc, &daverr);
-    if (daverr) {
-      davix2gliberr(daverr, err);
-      delete daverr;
-      return -1;
-    }
-
-    request->setRequestMethod("HEAD");
-    request->setParameters(requestParams);
-    request->executeRequest(&daverr);
-    if (daverr) {
-      davix2gliberr(daverr, err);
-      delete daverr;
-      return -1;
-    }
-  }
-  while (request->getAnswerHeader("Location", realSrc));
-
-  if (request->getRequestCode() > 299) {
-    g_set_error(err, http_plugin_domain, EACCES,
-                "HEAD failed with code '%d'", request->getRequestCode());
-    return -1;
-  }
-
-  // Delegate on the final source
-  std::string delegationEndpoint;
-  if (!request->getAnswerHeader("Proxy-Delegation-Service", delegationEndpoint)) {
-    g_set_error(err, http_plugin_domain, EACCES,
-                "Can not determine the delegation endpoint for '%s; ",
-                realSrc.c_str());
-    return -1;
-  }
-  delete request;
-  request = NULL;
-
-  Davix::Uri srcUri(realSrc);
-  delegationEndpoint = std::string("https://") + srcUri.getHost() + "/" + delegationEndpoint;
-  gfal_log(GFAL_VERBOSE_TRACE, "\t\t%s: Delegation endpoint = '%s'", __func__, delegationEndpoint.c_str());
-
-  char* delegation_id = gfal_http_delegate(delegationEndpoint, &daverr);
-  if (delegation_id == NULL) {
-    davix2gliberr(daverr, err);
-    delete daverr;
-    return -1;
-  }
-
-  gfal_log(GFAL_VERBOSE_TRACE, "\t\t%s: Got delegation ID '%s'", __func__, delegation_id);
-
-  // Perform the actual copy
-  // Note: Must be always HTTPS
-  realSrc = std::string("https://") + srcUri.getHost() + "/" + srcUri.getPath() + "?" + srcUri.getQuery() + std::string("&delegation=") + delegation_id;
-
-  request = davix->context.createRequest(realSrc, &daverr);
-  if (daverr) {
-    davix2gliberr(daverr, err);
-    delete daverr;
-    return -1;
-  }
-
-  request->setParameters(&davix->params);
-  request->addHeaderField("Destination", dst);
-  request->setRequestMethod("COPY");
-
-  gfal_log(GFAL_VERBOSE_TRACE, "\t\t%s: Using method 'COPY'", __func__);
-  gfal_log(GFAL_VERBOSE_TRACE, "\t\t%s: Using final source '%s'", __func__, realSrc.c_str());
-  gfal_log(GFAL_VERBOSE_TRACE, "\t\t%s: Using destination '%s'", __func__, dst);
-
-  if (request->beginRequest(&daverr) < 0) {
-    davix2gliberr(daverr, err);
-    delete daverr;
-    return -1;
-  }
-
-  // Read feedback
-  int ret = 0;
-  std::string line;
-  char buffer;
-  while (request->readBlock(&buffer, 1, &daverr) == 1) {
-    if (buffer == '\n') {
-      const char *strPtr = line.c_str();
-
-      if (strncasecmp("success", strPtr, 7) == 0) {
-        break;
-      }
-      else if (strncasecmp("aborted", strPtr, 7) == 0 ||
-               strncasecmp("failed", strPtr, 6) == 0) {
-        ret = -1;
-        g_set_error(err, http_plugin_domain, EIO,
-                    "%s", strPtr);
-        break;
-      }
-      else {
-        long long partial, total;
-        if (sscanf(strPtr, "%lld/%lld", &partial, &total) == 2) {
-            gfal_log(GFAL_VERBOSE_TRACE, "\t\t%s: %lld/%lld", __func__, partial, total);
+    else if (uri[0] == '/') {
+        size_t colon = ref.find(':');
+        size_t slash = std::string::npos;
+        if (colon != std::string::npos)
+            slash = ref.find('/', colon + 3);
+        if (slash != std::string::npos) {
+            std::string base = ref.substr(0, slash);
+            final = base + uri;
         }
-        else {
-          gfal_log(GFAL_VERBOSE_TRACE, "\t\t%s: Got unexpected line: '%s'", __func__, strPtr);
-        }
-      }
-
-      line.clear();
     }
     else {
-      line.append(&buffer, 1);
+        final = ref + uri;
     }
-  }
 
-  // Leave
-  request->endRequest(&daverr);
-
-  if (request->getRequestCode() > 299) {
-    g_set_error(err, http_plugin_domain, EIO,
-                "COPY method failed with code '%d'", request->getRequestCode());
-    ret = -1;
-  }
-
-  return ret;
+    return final;
 }
 
 
 
-int gfal_http_3rdcopy_check(plugin_handle plugin_data,  const char* src, const char* dst, gfal_url2_check check)
+std::string gfal_http_3rdcopy_full_delegation_endpoint(const std::string ref,
+        const std::string& uri, GError** err)
 {
-  if (check != GFAL_FILE_COPY) return 0;
+    std::string final = gfal_http_3rdcopy_full_url(ref, uri);
+    if (final.substr(7).compare("http://") == 0) {
+        g_error_new(http_plugin_domain, EINVAL,
+                    "Plain http can not be used for delegation (%s)",
+                    uri.c_str());
+        final.clear();
+    }
+    return final;
+}
 
-  return (strncmp(src, "https://", 8) == 0 && strncmp(dst, "https://", 8) == 0);
+
+
+Davix::HttpRequest* gfal_http_3rdcopy_do_copy(GfalHttpInternal* davix,
+        gfalt_params_t params, const std::string& src, const std::string& dst,
+        GError** err)
+{
+    Davix::DavixError* daverr = NULL;
+    std::string nextSrc(src), prevSrc(src);
+    std::string delegationEndpoint;
+
+    Davix::RequestParams requestParams(davix->params);
+    requestParams.setTransparentRedirectionSupport(false);
+    requestParams.setClientCertCallbackX509(&gfal_http_authn_cert_X509, NULL);
+
+    Davix::HttpRequest* request = NULL;
+
+    do {
+        nextSrc = gfal_http_3rdcopy_full_url(prevSrc, nextSrc);
+        prevSrc = nextSrc;
+        delete request;
+        gfal_log(GFAL_VERBOSE_TRACE, "\t\t%s: Next hop = '%s'", __func__,
+                nextSrc.c_str());
+        request = davix->context.createRequest(nextSrc, &daverr);
+        if (daverr)
+            break;
+
+        request->setRequestMethod("COPY");
+        request->addHeaderField("Destination", dst);
+        request->setParameters(requestParams);
+        request->beginRequest(&daverr);
+        if (daverr)
+            break;
+
+        // If we get a X-Delegate-To, before continuing, delegate
+        if (request->getAnswerHeader("X-Delegate-To", delegationEndpoint)) {
+            delegationEndpoint = gfal_http_3rdcopy_full_delegation_endpoint(src,
+                    delegationEndpoint, err);
+            if (*err)
+                break;
+
+            gfal_log(GFAL_VERBOSE_TRACE, "\t\t%s: Got delegation endpoint %s",
+                    __func__, delegationEndpoint.c_str());
+            gfal_http_delegate(delegationEndpoint, err);
+
+            if (*err)
+                break;
+
+            gfal_log(GFAL_VERBOSE_TRACE, "\t\t%s: Delegated successfully",
+                    __func__);
+        }
+
+    } while (request->getAnswerHeader("Location", nextSrc));
+
+    if (daverr) {
+        davix2gliberr(daverr, err);
+        delete daverr;
+    }
+    else if (!*err && request->getRequestCode() >= 300) {
+        *err = g_error_new(http_plugin_domain, EIO,
+                           "Invalid status code: %d", request->getRequestCode());
+    }
+
+    if (*err) {
+        delete request;
+        request = NULL;
+    }
+
+    return request;
+}
+
+
+
+void gfal_http_3rdcopy_do_callback(const char* src, const char* dst,
+                                   gfalt_monitor_func callback, void* udata,
+                                   const PerformanceData& perfData)
+{
+    if (callback) {
+        gfalt_hook_transfer_plugin_t hook;
+
+        hook.average_baudrate = static_cast<size_t>(perfData.avgTransfer());
+        hook.bytes_transfered = static_cast<size_t>(perfData.totalTransferred());
+        hook.instant_baudrate = static_cast<size_t>(perfData.diffTransfer());
+        hook.transfer_time    = perfData.absElapsed();
+
+        gfalt_transfer_status_t state = gfalt_transfer_status_create(&hook);
+        callback(state, src, dst, udata);
+        gfalt_transfer_status_delete(state);
+    }
+}
+
+
+
+int gfal_http_3rdcopy_performance_marks(const char* src, const char* dst,
+        gfalt_params_t params,
+        Davix::HttpRequest* request, GError** err)
+{
+    Davix::DavixError* daverr = NULL;
+    char buffer[1024], *p;
+    size_t line_len;
+
+    gfalt_monitor_func callback = gfalt_get_monitor_callback(params, NULL);
+    void* udata = gfalt_get_user_data(params, NULL);
+
+    PerformanceMarker holder;
+    PerformanceData   performance;
+    time_t lastPerfCallback = time(NULL);
+
+    while ((line_len = request->readLine(buffer, sizeof(buffer), &daverr)) >= 0 && !daverr) {
+        buffer[line_len] = '\0';
+        // Skip heading whitespaces
+        p = buffer;
+        while (*p && p < buffer+sizeof(buffer) && isspace(*p))
+            ++p;
+
+        if (strncasecmp("Perf Marker", p, 11) == 0) {
+            memset(&holder, 0, sizeof(holder));
+        }
+        else if (strncasecmp("Timestamp:", p, 10) == 0) {
+            holder.latest = atol(p + 10);
+        }
+        else if (strncasecmp("Stripe Index:", p, 13) == 0) {
+            holder.index = atoi(p + 13);
+        }
+        else if (strncasecmp("Stripe Bytes Transferred:", p, 25) == 0) {
+            holder.transferred = atol(p + 26);
+        }
+        else if (strncasecmp("Total Stripe Count:", p, 19) == 0) {
+            holder.count = atoi(p + 20);
+        }
+        else if (strncasecmp("End", p, 3) == 0) {
+            performance.update(holder);
+            time_t now = time(NULL);
+            if (now - lastPerfCallback >= 1) {
+                gfal_http_3rdcopy_do_callback(src, dst, callback, udata,
+                                              performance);
+                lastPerfCallback = now;
+            }
+        }
+        else if (strncasecmp("success", p, 7) == 0) {
+            break;
+        }
+        else if (strncasecmp("aborted", p, 7) == 0) {
+            g_set_error(err, http_plugin_domain, ECANCELED,
+                        "Transfer aborted in the remote end");
+            break;
+        }
+        else if (strncasecmp("failed", p, 6) == 0) {
+            g_set_error(err, http_plugin_domain, EIO,
+                        "Transfer failed: %s", p);
+            break;
+        }
+        else {
+            g_set_error(err, http_plugin_domain, EPROTO,
+                        "Unexpected message from remote host: %s", p);
+            break;
+        }
+    }
+    request->endRequest(&daverr);
+
+    if (!*err && daverr) {
+        davix2gliberr(daverr, err);
+        delete daverr;
+    }
+
+    return *err != NULL;
+}
+
+
+
+int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
+        gfalt_params_t params, const char* src, const char* dst, GError** err)
+{
+    GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
+
+    plugin_trigger_event(params, http_plugin_domain,
+                         GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_ENTER,
+                         "%s => %s", src, dst);
+
+    Davix::HttpRequest* request = gfal_http_3rdcopy_do_copy(davix, params,
+                                                            src, dst, err);
+    if (!request)
+        return -1;
+
+    plugin_trigger_event(params, http_plugin_domain,
+                         GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_EXIT,
+                         "%s => %s", src, dst);
+
+    plugin_trigger_event(params, http_plugin_domain,
+                         GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
+                         "%s => %s", src, dst);
+
+    int r = gfal_http_3rdcopy_performance_marks(src, dst, params, request, err);
+    delete request;
+    if (r != 0)
+        return -1;
+
+    plugin_trigger_event(params, http_plugin_domain,
+                         GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
+                         "%s => %s", src, dst);
+
+    return 0;
+}
+
+
+
+int gfal_http_3rdcopy_check(plugin_handle plugin_data, const char* src,
+        const char* dst, gfal_url2_check check)
+{
+    if (check != GFAL_FILE_COPY)
+        return 0;
+
+    return (strncmp(src, "https://", 8) == 0 && strncmp(dst, "https://", 8) == 0);
 }

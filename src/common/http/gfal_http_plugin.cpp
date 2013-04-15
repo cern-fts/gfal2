@@ -7,8 +7,6 @@ const char* http_module_name = "http_plugin";
 GQuark http_plugin_domain = g_quark_from_static_string(http_module_name);
 
 
-int gfal_http_authn_cert_X509(void* userdata, const Davix::SessionInfo & info, Davix::X509Credential * cert, Davix::DavixError** err);
-
 static const char* gfal_http_get_name(void)
 {
   return http_module_name;
@@ -165,25 +163,48 @@ void davix2gliberr(const Davix::DavixError* daverr, GError** err)
 
 
 /// Authn implementation
-int gfal_http_authn_cert_X509(void* userdata, const Davix::SessionInfo & info, Davix::X509Credential * cert, Davix::DavixError** err){
+void gfal_http_get_ucert(std::string& ucert, std::string& ukey)
+{
+    char default_proxy[64];
 
+    // Try explicit environment for proxy first
+    if (getenv("X509_USER_PROXY")) {
+        ucert = ukey = getenv("X509_USER_PROXY");
+        return;
+    }
 
-  // Convert X509 to PKCS12
-  char *ucert, *ukey;
-  ucert = ukey = getenv("X509_USER_PROXY");
-  if (!ucert) {
-    ucert = getenv("X509_USER_CERT");
-    ukey  = getenv("X509_USER_KEY");
-  }
+    // Try with default location
+    snprintf(default_proxy, sizeof(default_proxy), "/tmp/x509up_u%d",
+            geteuid());
 
-  if (!ucert || !ukey) {
-    Davix::DavixError::setupError(err, http_module_name, Davix::StatusCode::AuthentificationError,
-                      "Could not set the user's proxy or certificate");
-    return -1;
-  }
+    if (access(default_proxy, R_OK) == 0) {
+        ucert = ukey = default_proxy;
+        return;
+    }
 
-  // Set certificate
-  return cert->loadFromFilePEM(ukey, ucert, "", err);
+    // Last, try with X509_* environment
+    if (getenv("X509_USER_CERT"))
+        ucert = getenv("X509_USER_CERT");
+    if (getenv("X509_USER_KEY"))
+        ukey  = getenv("X509_USER_KEY");
+}
+
+int gfal_http_authn_cert_X509(void* userdata, const Davix::SessionInfo & info,
+        Davix::X509Credential * cert, Davix::DavixError** err)
+{
+    std::string ucert, ukey;
+    gfal_http_get_ucert(ucert, ukey);
+
+    // No luck
+    if (ucert.empty() || ukey.empty()) {
+        Davix::DavixError::setupError(err, http_module_name,
+                Davix::StatusCode::AuthentificationError,
+                "Could not set the user's proxy or certificate");
+        return -1;
+    }
+
+    // Set certificate
+    return cert->loadFromFilePEM(ukey, ucert, "", err);
 }
 
 

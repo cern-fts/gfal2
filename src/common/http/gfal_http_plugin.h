@@ -39,9 +39,9 @@ extern GQuark http_plugin_domain;
 // Initializes a GError from a DavixError
 void davix2gliberr(const Davix::DavixError* daverr, GError** err);
 
-// Converts a cert/key pair (X509) into a P12
-int convert_x509_to_p12(const char *privkey, const char *clicert, const char *p12cert, davix_error_t*);
-
+// X509 callback
+void gfal_http_get_ucert(std::string& ucert, std::string& ukey);
+int gfal_http_authn_cert_X509(void* userdata, const Davix::SessionInfo & info, Davix::X509Credential * cert, Davix::DavixError** err);
 
 // METADATA OPERATIONS
 void gfal_http_delete(plugin_handle plugin_data);
@@ -80,6 +80,8 @@ int gfal_http_checksum(plugin_handle data, const char* url, const char* check_ty
                        GError ** err);
 
 // 3RD PARTY COPY
+char *gfal_http_delegate(const std::string& urlpp, GError** daverr);
+
 int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params,
                       const char* src, const char* dst, GError** err);
 
