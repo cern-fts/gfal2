@@ -419,6 +419,74 @@ int gfal_http_3rdcopy_make_parent(plugin_handle plugin_data,
 }
 
 
+// dst may be NULL. In that case, the user-defined checksum
+// is compared with the source checksum.
+// If dst != NULL, then user-defined is ignored
+int gfal_http_3rdcopy_checksum(plugin_handle plugin_data,
+                               gfalt_params_t params,
+                               const char *src, const char *dst,
+                               GError** err)
+{
+    if (!gfalt_get_checksum_check(params, NULL))
+        return 0;
+
+    char checksum_type[1024];
+    char checksum_value[1024];
+    gfalt_get_user_defined_checksum(params,
+                                    checksum_type, sizeof(checksum_type),
+                                    checksum_value, sizeof(checksum_value),
+                                    NULL);
+    if (!checksum_type[0])
+        strcpy(checksum_type, "MD5");
+
+    GError *nestedError = NULL;
+    char src_checksum[1024];
+    gfal_http_checksum(plugin_data, src, checksum_type,
+                       src_checksum, sizeof(src_checksum),
+                       0, 0, &nestedError);
+    if (nestedError) {
+        g_propagate_prefixed_error(err, nestedError, "[%s]", __func__);
+        return -1;
+    }
+
+    if (!dst) {
+        if (checksum_value[0] && strcasecmp(src_checksum, checksum_value) != 0) {
+            *err = g_error_new(http_plugin_domain, EINVAL,
+                               "[%s] Source and user-defined %s do not match (%s != %s)",
+                               __func__, checksum_type, src_checksum, checksum_value);
+            return -1;
+        }
+        else if (checksum_value[0]) {
+            gfal_log(GFAL_VERBOSE_TRACE,
+                     "[%s] Source and user-defined %s match: %s",
+                     __func__, checksum_type, checksum_value);
+        }
+    }
+    else {
+        char dst_checksum[1024];
+        gfal_http_checksum(plugin_data, dst, checksum_type,
+                           dst_checksum, sizeof(dst_checksum),
+                           0, 0, &nestedError);
+        if (nestedError) {
+            g_propagate_prefixed_error(err, nestedError, "[%s]", __func__);
+            return -1;
+        }
+
+        if (strcasecmp(src_checksum, dst_checksum) != 0) {
+            *err = g_error_new(http_plugin_domain, EINVAL,
+                                       "[%s] Source and destination %s do not match (%s != %s)",
+                                       __func__, checksum_type, src_checksum, dst_checksum);
+            return -1;
+        }
+
+        gfal_log(GFAL_VERBOSE_TRACE,
+                 "[%s] Source and destination %s match: %s",
+                 __func__, checksum_type, src_checksum);
+    }
+    return 0;
+}
+
+
 
 int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
         gfalt_params_t params, const char* src, const char* dst, GError** err)
@@ -432,6 +500,15 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
     // When this flag is set, the plugin should handle overwriting,
     // parent directory creation,...
     if (!gfalt_get_strict_copy_mode(params, NULL)) {
+        plugin_trigger_event(params, http_plugin_domain,
+                             GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER,
+                             "");
+        if (gfal_http_3rdcopy_checksum(plugin_data, params, src, NULL, err) != 0)
+            return -1;
+        plugin_trigger_event(params, http_plugin_domain,
+                             GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT,
+                             "");
+
         if (gfal_http_3rdcopy_overwrite(plugin_data, params, dst, err) != 0 ||
             gfal_http_3rdcopy_make_parent(plugin_data, params, dst, err) != 0)
             return -1;
@@ -461,6 +538,19 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
     plugin_trigger_event(params, http_plugin_domain,
                          GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
                          "%s => %s", finalSource.c_str(), dst);
+
+    if (!gfalt_get_strict_copy_mode(params, NULL)) {
+        plugin_trigger_event(params, http_plugin_domain,
+                             GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER,
+                             "");
+        if (gfal_http_3rdcopy_checksum(plugin_data, params, src, dst, err) != 0)
+            return -1;
+        plugin_trigger_event(params, http_plugin_domain,
+                                     GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER,
+                                     "");
+    }
+
+
 
     return 0;
 }
