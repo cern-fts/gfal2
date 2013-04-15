@@ -178,7 +178,7 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
 
     request->setRequestMethod("HEAD");
     request->addHeaderField("Want-Digest", check_type);
-    requestParams.setTransparentRedirectionSupport(false);
+    requestParams.setTransparentRedirectionSupport(true);
     request->setParameters(requestParams);
 
     request->executeRequest(&daverr);
