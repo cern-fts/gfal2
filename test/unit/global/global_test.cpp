@@ -15,7 +15,9 @@ TEST(gfalGlobal, test_verbose){
 TEST(gfalGlobal, testLoad){
     GError* tmp_err=NULL;
     gfal2_context_t c = gfal2_context_new(&tmp_err);
-    ASSERT_EQ(tmp_err, (GError*)NULL);
+    if (tmp_err)
+        printf("%s\n", tmp_err->message);
+    ASSERT_EQ((GError*)NULL, tmp_err);
     ASSERT_TRUE(c != NULL);
     gfal2_context_free(c);
     c = NULL;

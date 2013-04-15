@@ -39,7 +39,11 @@ add_library     (plugin_http SHARED ${src_http}
                                     ${CMAKE_CURRENT_BINARY_DIR}/soapC.cpp
                                     ${CMAKE_CURRENT_BINARY_DIR}/soapClient.cpp)
 
-target_link_libraries(plugin_http ${gfal2_link} ${DAVIX_PKG_LIBRARIES} gsoapssl++ gridsite)
+target_link_libraries(plugin_http ${gfal2_link}
+                                  gfal2_transfer
+                                  ${DAVIX_PKG_LIBRARIES}
+                                  gsoapssl++
+                                  gridsite)
 
 
 set_target_properties(plugin_http   PROPERTIES  CLEAN_DIRECT_OUTPUT 1
