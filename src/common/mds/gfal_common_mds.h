@@ -49,6 +49,7 @@ typedef struct _gfal_mds_endpoint{
 extern const char* bdii_env_var;
 extern const char* bdii_config_var;
 extern const char* bdii_config_group;
+extern const char* bdii_config_timeout;
 
 // 
 int gfal_mds_resolve_srm_endpoint(gfal_context_t handle, const char* base_url, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err);

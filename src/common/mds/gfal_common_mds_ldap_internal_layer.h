@@ -72,8 +72,9 @@ struct _gfal_mds_ldap{
 	int (*ldap_msgfree)( LDAPMessage *msg );
 	
 	void (*ber_free)(BerElement *ber, int freebuf);
-
 	
+	int (*ldap_set_option)(LDAP *ld, int option, const void *invalue);
+
 };
 
 extern struct _gfal_mds_ldap gfal_mds_ldap;

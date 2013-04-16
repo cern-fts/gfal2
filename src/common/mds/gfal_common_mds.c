@@ -40,10 +40,11 @@
 
 pthread_mutex_t m_mds =PTHREAD_MUTEX_INITIALIZER; 
 
-const char* bdii_env_var = "LCG_GFAL_INFOSYS";
-const char* bdii_config_var = "LCG_GFAL_INFOSYS";
-const char* bdii_config_group = "BDII";
-const char* bdii_config_enable="ENABLED";
+const char* bdii_env_var        = "LCG_GFAL_INFOSYS";
+const char* bdii_config_var     = "LCG_GFAL_INFOSYS";
+const char* bdii_config_group   = "BDII";
+const char* bdii_config_enable  = "ENABLED";
+const char* bdii_config_timeout = "TIMEOUT";
 
 /*
  * set the bdii value of the handle specified

@@ -50,7 +50,7 @@ static const char* SRM_PREFIX_NAME="SRM";
 static pthread_mutex_t mux_init_lap = PTHREAD_MUTEX_INITIALIZER;
 
 
-LDAP* gfal_mds_ldap_connect(const char* uri, GError** err){
+LDAP* gfal_mds_ldap_connect(gfal2_context_t context, const char* uri, GError** err){
 	g_return_val_err_if_fail(uri != NULL, NULL, err, "invalid arg uri");
 	LDAP* ld=NULL;
 	GError* tmp_err=NULL;
@@ -61,6 +61,15 @@ LDAP* gfal_mds_ldap_connect(const char* uri, GError** err){
 
 		 g_set_error(&tmp_err, 0, ECOMM, "Error with contacting ldap %s : %s", uri, ldap_err2string(rc)); 
 	}else{
+	    struct timeval timeout = {0};
+
+	    timeout.tv_sec = gfal2_get_opt_integer_with_default(context, bdii_config_group,
+	                                                        bdii_config_timeout, -1);
+	    gfal_mds_ldap.ldap_set_option(ld, LDAP_OPT_NETWORK_TIMEOUT, &timeout);
+	    gfal_mds_ldap.ldap_set_option(ld, LDAP_OPT_TIMEOUT, &timeout);
+
+	    gfal_log(GFAL_VERBOSE_TRACE, " use BDII TIMEOUT : %ld", timeout.tv_sec);
+
 		gfal_log(GFAL_VERBOSE_VERBOSE, "  Try to bind with the bdii %s", uri);
 		struct berval cred= { .bv_val = NULL, .bv_len = 0 };
 		if( (rc = gfal_mds_ldap.ldap_sasl_bind_s( ld,  NULL, LDAP_SASL_SIMPLE, &cred, NULL, NULL, NULL)) != LDAP_SUCCESS){
@@ -257,7 +266,7 @@ int gfal_mds_bdii_get_srm_endpoint(gfal2_context_t context, const char* base_url
 	LDAP* ld;
 	gfal_log(GFAL_VERBOSE_TRACE, " gfal_mds_bdii_get_srm_endpoint ->");
     if( gfal_mds_get_ldapuri(context, uri, GFAL_URL_MAX_LEN, &tmp_err) >= 0){
-		if( (ld = gfal_mds_ldap_connect(uri, &tmp_err)) != NULL){
+		if( (ld = gfal_mds_ldap_connect(context, uri, &tmp_err)) != NULL){
 			LDAPMessage * res;
 			char buff_filter[GFAL_URL_MAX_LEN];
 			snprintf(buff_filter, GFAL_URL_MAX_LEN, srm_endpoint_filter, base_url, base_url); // construct the request

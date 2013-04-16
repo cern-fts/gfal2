@@ -31,7 +31,7 @@
 
 
 
-LDAP* gfal_mds_ldap_connect(const char* uri, GError** err);
+LDAP* gfal_mds_ldap_connect(gfal2_context_t context, const char* uri, GError** err);
 
 int gfal_mds_get_ldapuri(gfal2_context_t context, char* buff, size_t s_buff, GError** err);
 

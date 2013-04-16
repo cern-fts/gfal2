@@ -45,5 +45,5 @@ struct _gfal_mds_ldap gfal_mds_ldap={
 	.ldap_msgfree = ldap_msgfree,
 	.ber_free = ber_free,
 	.ldap_count_entries = ldap_count_entries,
-	
+	.ldap_set_option = ldap_set_option
 };
