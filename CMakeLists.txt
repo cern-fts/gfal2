@@ -105,12 +105,8 @@ add_definitions( -DGFAL_PLUGIN_DIR_DEFAULT="${PLUGIN_INSTALL_DIR}" )
 add_definitions( -DGFAL_CONFIG_DIR_DEFAULT="${SYSCONF_INSTALL_DIR}" )
 # add file offset 64 for 32 bits
 add_definitions( -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_GNU_SOURCE)
-ADD_DEFINITIONS( -D_GLIBCXX_DEBUG_PEDANTIC -DDEBUG=1 -g3  -O0 -D_GLIBXX_DEBUG -D_GLIBCPP_DEBUG -D_GLIBXX_DEBUG_PEDANTIC -D_GLIBCXX_DEBUG_PEDANTIC -D_GLIBCXX_CONCEPT_CHECKS -D_GLIBCPP_DEBUG_PEDANTIC -D_GLIBCPP_CONCEPT_CHECKS)
 
 include_directories( ${GLIB2_PKG_INCLUDE_DIRS} ${GTHREAD2_PKG_INCLUDE_DIRS})
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ftrapv -findirect-inlining -ftree-switch-conversion -ftree-builtin-call-dce -fconserve-stack")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftrapv -findirect-inlining -ftree-switch-conversion -ftree-builtin-call-dce -fconserve-stack")
 
 
 #install doc license
