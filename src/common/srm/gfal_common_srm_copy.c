@@ -54,6 +54,7 @@ int srm_plugin_get_3rdparty(plugin_handle handle, gfalt_params_t params, const c
         gfal_log(GFAL_VERBOSE_TRACE, "\t\tGET surl -> turl dst resolution start");
         if( (res =gfal_srm_get_rd3_turl(handle, params, surl, buff , s_buff, NULL,  err)) == 0){
             gfal_log(GFAL_VERBOSE_TRACE, "\t\tGET surl -> turl dst resolution ended : %s -> %s", surl, buff);
+	    gfal_log(GFAL_VERBOSE_VERBOSE, "INFO turl: %s -> %s", surl, buff);
 		}
 	}else{
 		res =0;

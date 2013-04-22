@@ -1,7 +1,7 @@
 
 Name:				gfal2
 Version:			2.2.0
-Release:			2%{?dist}
+Release:			3%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -283,6 +283,8 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Mon Apr 22 2013 Michail Salichos <msalicho at cern.ch> - 2.2.0-3
+ - change gridftp error string pattern to satisfy Griffin
 * Wed Apr 10 2013 Michail Salichos <msalicho at cern.ch> - 2.2.0-2
  - display turls in verbose mode, needed by fts3
 * Mon Mar 25 2013 Michail Salichos <msalicho at cern.ch> - 2.2.0-1
