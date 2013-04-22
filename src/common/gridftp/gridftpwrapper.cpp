@@ -344,7 +344,7 @@ static int scan_errstring(const char *p) {
     int ret = ECOMM;
     if (p == NULL) return ret;
 
-    if (strstr(p, "o such file") || strstr(p, "File not found"))
+    if (strstr(p, "o such file") || strstr(p, "not found"))
         ret = ENOENT;
     else if (strstr(p, "ermission denied") || strstr(p, "credential"))
         ret = EACCES;
