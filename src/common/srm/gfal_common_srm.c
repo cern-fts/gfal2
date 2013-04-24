@@ -39,6 +39,7 @@
 #include "gfal_common_srm_opendir.h"
 #include "gfal_common_srm_open.h"
 #include "gfal_common_srm_readdir.h"
+#include "gfal_common_srm_rename.h"
 #include "gfal_common_srm_chmod.h"
 #include "gfal_common_srm_getxattr.h"
 #include "gfal_common_srm_checksum.h"
@@ -152,6 +153,7 @@ static gboolean gfal_srm_check_url(plugin_handle handle, const char* url, plugin
         case GFAL_PLUGIN_CHECKSUM:
         case GFAL_PLUGIN_MKDIR_REC:
         case GFAL_PLUGIN_BRING_ONLINE:
+        case GFAL_PLUGIN_RENAME:
 			return (gfal_surl_checker(handle, url,  err)==0);
 		default:
 			return FALSE;		
@@ -222,6 +224,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
     srm_plugin.bring_online = &gfal_srmv2_bring_onlineG;
     srm_plugin.bring_online_poll = &gfal_srmv2_bring_online_pollG;
     srm_plugin.release_file = &gfal_srmv2_release_fileG;
+    srm_plugin.renameG = &gfal_srm_renameG;
 	return srm_plugin;
 }
 

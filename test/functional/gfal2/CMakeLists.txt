@@ -36,6 +36,7 @@ FILE(GLOB src_copyfile_checksum "gfalt_copyfile_checksum_test_simple.c")
 FILE(GLOB src_copyfile_checksum_user "gfalt_copyfile_checksum_test_userdefined.c")
 FILE(GLOB src_testdir "gfal_testdir.c")
 FILE(GLOB src_bring_online "gfal_bring_online.c")
+FILE(GLOB src_mv "gfal_mv.c")
 
 SET(COPY_SRC "*.sh")
 SET(COPY_DST "${CMAKE_CURRENT_BINARY_DIR}/")
@@ -151,6 +152,9 @@ IF (FUNCTIONAL_TESTS)
    
 	    add_executable(gfal_bring_online ${src_bring_online})
 	    target_link_libraries(gfal_bring_online ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})
+	    
+	    add_executable(gfal_mv ${src_mv})
+        target_link_libraries(gfal_mv ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})
 
         FUNCTION(mkdir_test_all name prefix)
                 add_test(gfal_mkdir_full_${name} gfal_test_mkdir_full ${prefix})

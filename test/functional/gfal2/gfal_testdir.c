@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "gfal_api.h"
+#include "gfal_posix_internal.h"
 
 int main(int argc, char **argv)
 {
@@ -20,6 +21,7 @@ int main(int argc, char **argv)
 
 	if ((dir = gfal_opendir (argv[1])) == NULL) {
 		perror ("gfal_opendir");
+		fprintf(stderr, "%s\n", (*gfal_posix_get_last_error())->message);
         return 1;
 	}
 
