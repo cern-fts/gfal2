@@ -15,8 +15,10 @@
 * limitations under the License.
 */
 
-
+#include <config/gfal_config.h>
+#include <globus_ftp_client.h>
 #include "gridftp_stat_module.h"
+#include "gridftpwrapper.h"
 
 static Glib::Quark gfal_gridftp_scope_stat(){
     return Glib::Quark("Gridftp_stat_module::stat");
@@ -76,6 +78,41 @@ void GridftpModule::access(const char*  path, int mode){
 	gfal_log(GFAL_VERBOSE_TRACE," <- [Gridftp_stat_module::access] ");	
 }
 
+static mode_t _str2mode_triad(const char* buffer)
+{
+    mode_t mode = 0;
+    if (buffer[0] == 'r')
+        mode |= S_IREAD;
+    if (buffer[1] == 'w')
+        mode |= S_IWRITE;
+    switch (buffer[2]) {
+        case 'x':
+            mode |= S_IEXEC;
+            break;
+        case 't': case 's':
+            mode |= S_IEXEC;
+        case 'T': case 'S':
+            mode |= S_ISUID;
+            break;
+    }
+    return mode;
+}
+
+static mode_t _str2mode(const char* buffer)
+{
+    return (_str2mode_triad(buffer + 1)) |
+           (_str2mode_triad(buffer + 4) >> 3) |
+           (_str2mode_triad(buffer + 7) >> 6);
+}
+
+static void _setStatTimeout(gfal2_context_t context, GridFTP_Request_state* req){
+    struct timespec t;
+    t.tv_sec = gfal2_get_opt_integer_with_default(context, GRIDFTP_CONFIG_GROUP, "STAT_TIMEOUT", 600);
+    t.tv_nsec =0;
+    gfal_log(GFAL_VERBOSE_TRACE, "Set stat timeout to %d", t.tv_sec);
+    req->init_timeout(&t);
+}
+
 void GridftpModule::internal_globus_gass_stat(const char* path,  gfal_globus_stat_t * gl_stat){
 
 	gfal_log(GFAL_VERBOSE_TRACE," -> [Gridftp_stat_module::globus_gass_stat] ");	
@@ -83,10 +120,56 @@ void GridftpModule::internal_globus_gass_stat(const char* path,  gfal_globus_sta
 
     std::auto_ptr<Gass_attr_handler>  gass_attr_src( sess->generate_gass_copy_attr());
 
-    globus_result_t res= globus_gass_copy_stat(sess->get_gass_handle(), (char*)path, &(gass_attr_src->attr_gass), gl_stat);
-	gfal_globus_check_result("GridFTPFileCopyModule::internal_globus_gass_stat", res);
-		
-	errno =0; // clean bad errno number
+    globus_byte_t *buffer = NULL;
+    globus_size_t buflen = 0;
+    std::auto_ptr<GridFTP_Request_state> req(new GridFTP_Request_state(sess.get(), false));
+
+    _setStatTimeout(_handle_factory->get_handle(), req.get());
+
+    globus_result_t res = globus_ftp_client_stat(sess->get_ftp_handle(),
+                                                 path, sess->get_op_attr_ftp(),
+                                                 &buffer, &buflen,
+                                                 globus_basic_client_callback,
+                                                 req.get());
+    gfal_globus_check_result(gfal_gridftp_scope_stat(), res);
+    req->poll_callback(gfal_gridftp_scope_stat());
+
+    char     mode[12], trash[64];
+    unsigned count;
+
+    errno = req->get_error_code();
+    switch(errno){
+        case 0:
+            gfal_log(GFAL_VERBOSE_TRACE,"   <- [internal_globus_gass_stat] Got '%s'", buffer);
+            // Expected: -rw-r--r--   1     root     root         1604 Nov 11 19:13 passwd
+            if (sscanf((char*)buffer, "%s %u %s %s %lu",
+                       mode, &count, trash, trash, &(gl_stat->size)) != 5) {
+                errno = EIO;
+            }
+            else {
+                // Modification time
+                gl_stat->mdtm = -1;
+                // File type
+                switch (mode[0]) {
+                    case '-':
+                        gl_stat->type = GLOBUS_GASS_COPY_GLOB_ENTRY_FILE;
+                        break;
+                    case 'd':
+                        gl_stat->type = GLOBUS_GASS_COPY_GLOB_ENTRY_DIR;
+                        break;
+                    default:
+                        gl_stat->type = GLOBUS_GASS_COPY_GLOB_ENTRY_OTHER;
+                }
+                // Mode
+                gl_stat->mode = _str2mode(mode);
+            }
+            break;
+        default:
+            req->err_report(gfal_gridftp_scope_stat());
+
+    }
+
+    globus_free(buffer);
 	gfal_log(GFAL_VERBOSE_TRACE," <- [Gridftp_stat_module::globus_gass_stat] ");		
 }
 

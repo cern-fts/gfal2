@@ -515,7 +515,7 @@ void GridFTP_Request_state::poll_callback(const Glib::Quark &scope){
     }
 
     if(timeout && this->canceling==FALSE){
-       gfal_log(GFAL_VERBOSE_TRACE,"gfal gridftp operation timeout occures ! cancel the operation ...");
+       gfal_log(GFAL_VERBOSE_TRACE,"gfal gridftp operation timeout occurred ! cancel the operation ...");
        cancel_operation(scope, "gfal gridftp internal operation timeout, operation canceled");
        this->set_error_code(ETIMEDOUT);
     }
