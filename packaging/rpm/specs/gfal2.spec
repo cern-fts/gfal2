@@ -1,7 +1,7 @@
 
 Name:				gfal2
 Version:			2.2.0
-Release:			3%{?dist}
+Release:			4%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -283,12 +283,18 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Fri Apr 26 2013 Michail Salichos <msalicho at cern.ch> - 2.2.0-4
+ - replace gass stat with gridftp stat
+
 * Mon Apr 22 2013 Michail Salichos <msalicho at cern.ch> - 2.2.0-3
  - change gridftp error string pattern to satisfy Griffin
+
 * Wed Apr 10 2013 Michail Salichos <msalicho at cern.ch> - 2.2.0-2
  - display turls in verbose mode, needed by fts3
+
 * Mon Mar 25 2013 Michail Salichos <msalicho at cern.ch> - 2.2.0-1
  - fix memory leaks in bringonline SRM op
+ 
 * Wed Mar 20 2013 Adrien Devresse <adevress at cern.ch> - 2.2.0-0
  - fix thread safety issue with gsiftp plugin
  - add the bring online API
