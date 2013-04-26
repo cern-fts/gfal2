@@ -48,7 +48,7 @@ char *gfal_http_delegate(const std::string& urlpp, GError** err)
   else {
     FILE *ifp, *ofp;
     int   fd;
-    char  c;
+    int  c;
 
     keycert = strdup("/tmp/.XXXXXX");
 
