@@ -42,6 +42,7 @@
 #include "gridftp_unlink_module.h"
 #include "gridftp_rw_module.h"
 #include "gridftp_checksum_module.h"
+#include "gridftp_rename_module.h"
 
 typedef globus_gass_copy_glob_stat_t gfal_globus_stat_t;
 
@@ -88,6 +89,8 @@ class GridftpModule
                                char * checksum_buffer, size_t buffer_length,
                                off_t start_offset, size_t data_length);
 
+        // Rename
+        virtual void rename(const char* src, const char* dst);
 		
 		// rmdir query on path
 	    virtual void rmdir(const char* path);	
