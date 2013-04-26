@@ -107,7 +107,7 @@ static mode_t _str2mode(const char* buffer)
 
 static void _setStatTimeout(gfal2_context_t context, GridFTP_Request_state* req){
     struct timespec t;
-    t.tv_sec = gfal2_get_opt_integer_with_default(context, GRIDFTP_CONFIG_GROUP, "STAT_TIMEOUT", 600);
+    t.tv_sec = gfal2_get_opt_integer_with_default(context, GRIDFTP_CONFIG_GROUP, "STAT_TIMEOUT", 300);
     t.tv_nsec =0;
     gfal_log(GFAL_VERBOSE_TRACE, "Set stat timeout to %d", t.tv_sec);
     req->init_timeout(&t);
