@@ -225,10 +225,10 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
                                         const char* src, const char* dst){
     using namespace Gfal::Transfer;
     GError * tmp_err=NULL;
-    struct timespec ops_timeout;
 
-    ops_timeout.tv_nsec =0;
-    ops_timeout.tv_sec = gfalt_get_timeout(params, &tmp_err); Gfal::gerror_to_cpp(&tmp_err);
+    const time_t timeout = gfalt_get_timeout(params, &tmp_err);
+    Gfal::gerror_to_cpp(&tmp_err);
+
     const unsigned int nbstream = gfalt_get_nbstreams(params, &tmp_err); Gfal::gerror_to_cpp(&tmp_err);
     const guint64 tcp_buffer_size = gfalt_get_tcp_buffer_size(params, &tmp_err); Gfal::gerror_to_cpp(&tmp_err);
 
@@ -240,8 +240,6 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
 
     sess->set_nb_stream( nbstream);
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] setup gsiftp number of streams to %d", nbstream);
-    req->init_timeout(&ops_timeout);
-    gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] setup gsiftp timeout to %ld s and %ld ns", ops_timeout.tv_sec, ops_timeout.tv_nsec);
     sess->set_tcp_buffer_size(tcp_buffer_size);
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] setup gsiftp buffer size to %d", tcp_buffer_size);
 
@@ -268,7 +266,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
     );
 
     gfal_globus_check_result("GridFTPFileCopyModule::filecopy", res);
-    req->wait_callback(gfal_gridftp_scope_filecopy());
+    req->wait_callback(gfal_gridftp_scope_filecopy(), timeout);
     return 0;
 
 }

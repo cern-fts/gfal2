@@ -48,14 +48,6 @@ extern "C" int gfal_gridftp_checksumG(plugin_handle handle, const char* url, con
 }
 
 
-static void gridftp_checksum_set_timeout(gfal2_context_t context, GridFTP_Request_state* req){
-    const gint timeout = gfal2_get_opt_integer_with_default(context, GRIDFTP_CONFIG_GROUP, gridftp_checksum_calc_timeout, 1800);
-    gfal_log(GFAL_VERBOSE_TRACE,"Setup checksum timeout to %d", timeout);
-    struct timespec t;
-    t.tv_sec = timeout;
-    t.tv_nsec =0;
-    req->init_timeout(&t);
-}
 
 void GridftpModule::checksum(const char* url, const char* check_type,
                        char * checksum_buffer, size_t buffer_length,
@@ -68,7 +60,6 @@ void GridftpModule::checksum(const char* url, const char* check_type,
     if(buffer_length < 16)
         throw Gfal::CoreException(gfal_gridftp_scope_checksum(),"buffer length for checksum calculation is not enought",ENOBUFS);
 
-    gridftp_checksum_set_timeout(_handle_factory->get_handle(), req.get());
     req->start();
     GridFTPOperationCanceler canceler(_handle_factory->get_handle(), req.get());
     globus_result_t res = globus_ftp_client_cksm(
@@ -82,8 +73,11 @@ void GridftpModule::checksum(const char* url, const char* check_type,
                 globus_basic_client_callback,
                 req.get());
     gfal_globus_check_result(gfal_gridftp_scope_checksum(), res);
-    // wait for answer
-    req->wait_callback(gfal_gridftp_scope_checksum());
+    // wait for answer with a timeout
+    const time_t timeout = gfal2_get_opt_integer_with_default(_handle_factory->get_handle(),
+                                                              GRIDFTP_CONFIG_GROUP,
+                                                              gridftp_checksum_calc_timeout, 1800);
+    req->wait_callback(gfal_gridftp_scope_checksum(), timeout);
     gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::checksum] ");
 }
 

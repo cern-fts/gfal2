@@ -529,7 +529,17 @@ void GridFTP_Request_state::err_report(const Glib::Quark &scope){
 }
 
 
-void GridFTP_Request_state::wait_callback(const Glib::Quark &scope){
+void GridFTP_Request_state::wait_callback(const Glib::Quark &scope, time_t timeout){
+    struct timespec st_timeout;
+
+    st_timeout.tv_nsec = 0;
+    st_timeout.tv_sec  = timeout;
+
+    gfal_log(GFAL_VERBOSE_TRACE,
+             "   [GridFTP_Request_state::wait_callback] setup gsiftp timeout to %ld seconds",
+             timeout);
+
+    init_timeout(&st_timeout);
     poll_callback(scope);
     err_report(scope);
 }

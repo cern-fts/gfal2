@@ -44,6 +44,24 @@ struct GridFTP_Request_state{
    
    Gridftp_request_status req_status;
    
+   inline void init_timeout(struct timespec * time_offset){
+       if( time_offset  && timespec_isset(time_offset)){
+           end_time.assign_current_time();
+           end_time.add_seconds(time_offset->tv_sec);
+           end_time.add_microseconds(time_offset->tv_nsec/1000);
+       }else{
+         end_time = Glib::TimeVal(0,0);
+       }
+   }
+
+   inline void set_end_time(struct timespec * my_end_time){
+       if(my_end_time && timespec_isset(my_end_time)){
+           end_time = Glib::TimeVal(my_end_time->tv_sec, my_end_time->tv_nsec/1000);
+       }else{
+         end_time = Glib::TimeVal(0,0);
+       }
+   }
+
  public:
     GridFTP_Request_state(GridFTP_session * s, bool own_session=true,  GridFtp_request_type request_type = GRIDFTP_REQUEST_FTP);
 	virtual ~GridFTP_Request_state();
@@ -67,25 +85,6 @@ struct GridFTP_Request_state{
 
     inline void start(){
         this->req_status = GRIDFTP_REQUEST_RUNNING;
-    }
-
-    //
-    inline void init_timeout(struct timespec * time_offset){
-        if( time_offset  && timespec_isset(time_offset)){
-            end_time.assign_current_time();
-            end_time.add_seconds(time_offset->tv_sec);
-            end_time.add_microseconds(time_offset->tv_nsec/1000);
-        }else{
-          end_time = Glib::TimeVal(0,0);
-        }
-    }
-
-    inline void set_end_time(struct timespec * my_end_time){
-        if(my_end_time && timespec_isset(my_end_time)){
-            end_time = Glib::TimeVal(my_end_time->tv_sec, my_end_time->tv_nsec/1000);
-        }else{
-          end_time = Glib::TimeVal(0,0);
-        }
     }
     
     inline int get_error_code(void) {
@@ -119,7 +118,7 @@ struct GridFTP_Request_state{
     }
 
     void poll_callback(const Glib::Quark & scope);
-    void wait_callback(const Glib::Quark & scope);
+    void wait_callback(const Glib::Quark & scope, time_t timeout = 300);
     void err_report(const Glib::Quark &scope);
 
     void cancel_operation(const Glib::Quark &scope, const std::string & msg = "");

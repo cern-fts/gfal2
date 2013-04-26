@@ -105,14 +105,6 @@ static mode_t _str2mode(const char* buffer)
            (_str2mode_triad(buffer + 7) >> 6);
 }
 
-static void _setStatTimeout(gfal2_context_t context, GridFTP_Request_state* req){
-    struct timespec t;
-    t.tv_sec = gfal2_get_opt_integer_with_default(context, GRIDFTP_CONFIG_GROUP, "STAT_TIMEOUT", 300);
-    t.tv_nsec =0;
-    gfal_log(GFAL_VERBOSE_TRACE, "Set stat timeout to %d", t.tv_sec);
-    req->init_timeout(&t);
-}
-
 void GridftpModule::internal_globus_gass_stat(const char* path,  gfal_globus_stat_t * gl_stat){
 
 	gfal_log(GFAL_VERBOSE_TRACE," -> [Gridftp_stat_module::globus_gass_stat] ");	
@@ -123,8 +115,6 @@ void GridftpModule::internal_globus_gass_stat(const char* path,  gfal_globus_sta
     globus_byte_t *buffer = NULL;
     globus_size_t buflen = 0;
     std::auto_ptr<GridFTP_Request_state> req(new GridFTP_Request_state(sess.get(), false));
-
-    _setStatTimeout(_handle_factory->get_handle(), req.get());
 
     globus_result_t res = globus_ftp_client_stat(sess->get_ftp_handle(),
                                                  path, sess->get_op_attr_ftp(),
