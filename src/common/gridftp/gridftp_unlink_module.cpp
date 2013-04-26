@@ -24,7 +24,7 @@ void gridftp_unlink_internal(gfal2_context_t context, GridFTP_session* sess, con
 
 	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::unlink] ");	
 	std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(sess, own_session)); // get connexion session
-    GridFTPOperationCanceler(context, req.get());
+    GridFTPOperationCanceler canceler(context, req.get());
 
     req->start();
 	globus_result_t res = globus_ftp_client_delete(
