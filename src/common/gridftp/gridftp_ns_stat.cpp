@@ -127,36 +127,28 @@ void GridftpModule::internal_globus_gass_stat(const char* path,  gfal_globus_sta
     char     mode[12], trash[64];
     unsigned count;
 
-    errno = req->get_error_code();
-    switch(errno){
-        case 0:
-            gfal_log(GFAL_VERBOSE_TRACE,"   <- [internal_globus_gass_stat] Got '%s'", buffer);
-            // Expected: -rw-r--r--   1     root     root         1604 Nov 11 19:13 passwd
-            if (sscanf((char*)buffer, "%s %u %s %s %lu",
-                       mode, &count, trash, trash, &(gl_stat->size)) != 5) {
-                errno = EIO;
-            }
-            else {
-                // Modification time
-                gl_stat->mdtm = -1;
-                // File type
-                switch (mode[0]) {
-                    case '-':
-                        gl_stat->type = GLOBUS_GASS_COPY_GLOB_ENTRY_FILE;
-                        break;
-                    case 'd':
-                        gl_stat->type = GLOBUS_GASS_COPY_GLOB_ENTRY_DIR;
-                        break;
-                    default:
-                        gl_stat->type = GLOBUS_GASS_COPY_GLOB_ENTRY_OTHER;
-                }
-                // Mode
-                gl_stat->mode = _str2mode(mode);
-            }
-            break;
-        default:
-            req->err_report(gfal_gridftp_scope_stat());
-
+    gfal_log(GFAL_VERBOSE_TRACE,"   <- [internal_globus_gass_stat] Got '%s'", buffer);
+    // Expected: -rw-r--r--   1     root     root         1604 Nov 11 19:13 passwd
+    if (sscanf((char*)buffer, "%s %u %s %s %lu",
+               mode, &count, trash, trash, &(gl_stat->size)) != 5) {
+        errno = EIO;
+    }
+    else {
+        // Modification time
+        gl_stat->mdtm = -1;
+        // File type
+        switch (mode[0]) {
+            case '-':
+                gl_stat->type = GLOBUS_GASS_COPY_GLOB_ENTRY_FILE;
+                break;
+            case 'd':
+                gl_stat->type = GLOBUS_GASS_COPY_GLOB_ENTRY_DIR;
+                break;
+            default:
+                gl_stat->type = GLOBUS_GASS_COPY_GLOB_ENTRY_OTHER;
+        }
+        // Mode
+        gl_stat->mode = _str2mode(mode);
     }
 
     globus_free(buffer);

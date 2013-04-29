@@ -35,18 +35,18 @@ bool gridftp_module_file_exist(gfal2_context_t context, GridFTP_session* sess, c
 				globus_basic_client_callback,
 				req.get());
     gfal_globus_check_result(gfal_gridftp_scope_exist(), res);
-    req->wait_callback(gfal_gridftp_scope_exist());
 
-	gfal_log(GFAL_VERBOSE_TRACE,"   <- [gridftp_module_file_exist]");	
-	switch(req->get_error_code()){
-		case 0:
-			return true;
-		case ENOENT:
-			return false;
-		default:
-            req->err_report(gfal_gridftp_scope_exist());
-		
-	}
-	return false;	
+    int error_code = 0;
+    try {
+        req->wait_callback(gfal_gridftp_scope_exist());
+    }
+    catch (Gfal::CoreException& e) {
+        error_code = e.code();
+        if (error_code != ENOENT)
+            throw;
+    }
+
+    gfal_log(GFAL_VERBOSE_TRACE,"   <- [gridftp_module_file_exist]");
+    return (error_code == 0);
 	
 }
