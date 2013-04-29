@@ -1,7 +1,7 @@
 
 Name:				gfal2
 Version:			2.2.0
-Release:			4%{?dist}
+Release:			5%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -283,6 +283,9 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Mon Apr 29 2013 Michail Salichos <msalicho at cern.ch> - 2.2.0-5
+ - make all gridftp ops async to avoid stalling processes
+ 
 * Fri Apr 26 2013 Michail Salichos <msalicho at cern.ch> - 2.2.0-4
  - replace gass stat with gridftp stat
 
