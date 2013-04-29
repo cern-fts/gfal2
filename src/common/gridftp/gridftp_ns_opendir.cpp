@@ -14,9 +14,9 @@
  */
 
 
-#include "gridftp_plugin_loader.h"
-#include "gridftp_opendir_module.h"
-
+#include "../common/gfal_common_filedescriptor.h"
+#include "gridftp_namespace.h"
+#include "gridftp_plugin.h"
 
 static Glib::Quark gfal_gridftp_scope_opendir(){
     return Glib::Quark("GridftpModule::opendir");
@@ -62,7 +62,7 @@ gfal_file_handle GridftpModule::opendir(const char* path)
     desc->list = std::string(desc->buff);
 	
 	gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::opendir] ");	
-    return gfal_file_handle_new2(plugin_name(), (gpointer) desc.release(), NULL, path);
+    return gfal_file_handle_new2(gridftp_plugin_name(), (gpointer) desc.release(), NULL, path);
 }
 
 // try to extract dir information

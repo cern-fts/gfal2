@@ -16,7 +16,7 @@
 */
 
 
-#include "gridftp_stat_module.h"
+#include "gridftp_namespace.h"
 #include <config/gfal_config.h>
 
 static Glib::Quark gfal_gridftp_scope_checksum(){

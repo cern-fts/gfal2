@@ -17,11 +17,13 @@
 
 
 #include "tests_gridftp.h"
-#include <common/gridftp/gridftp_plugin_loader.h>
-#include <common/gridftp/gridftp_plugin_main.h>
+#include <common/gfal_common_internal.h>
+#include <common/gridftp/gridftp_plugin.h>
 #include <common/gridftp/gridftpinterface.h>
 #include <common/gridftp/gridftpmodule.h>
 #include <gtest/gtest.h>
+
+
 
 gfal_handle init_gfal_handle(){
 	GError * tmp_err=NULL;
@@ -35,7 +37,7 @@ plugin_handle init_gridftp_plugin_test(gfal_handle h){
 	GError * tmp_err=NULL;
 
 	
-	plugin_handle p = plugin_load(h, &tmp_err);	
+	plugin_handle p = gridftp_plugin_load(h, &tmp_err);
     g_assert(  p && tmp_err ==NULL );
 	return p;	
 }
@@ -46,9 +48,9 @@ TEST(gfalGridFTP, load_gridftp){
 	gfal_handle h = gfal_initG(&tmp_err);
     ASSERT_TRUE(tmp_err== NULL && h );
 	
-	plugin_handle p = plugin_load(h, &tmp_err);
+	plugin_handle p = gridftp_plugin_load(h, &tmp_err);
     ASSERT_TRUE(  p && tmp_err ==NULL );
-	plugin_unload(p);
+    gridftp_plugin_unload(p);
 	
 	gfal_handle_freeG(h);
 }
@@ -76,21 +78,21 @@ TEST(gfalGridFTP,handle_creation){
 
 TEST(gfalGridFTP,gridftp_parseURL){
 	// check null handle, must not segfault
-	plugin_url_check2(NULL, "gsiftp://myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
+    gridftp_check_url_transfer(NULL, "gsiftp://myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
 
 	gfal_handle a= init_gfal_handle()	;
 	plugin_handle p = init_gridftp_plugin_test(a);
 	// check with URL null, must not segfault and return false
-	bool res = plugin_url_check2(p, NULL, NULL, GFAL_FILE_COPY);	
+	bool res = gridftp_check_url_transfer(p, NULL, NULL, GFAL_FILE_COPY);
     ASSERT_TRUE(res == FALSE);
 	
-	res = plugin_url_check2(p, "gsiftp://myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
+	res = gridftp_check_url_transfer(p, "gsiftp://myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
     ASSERT_TRUE(res == TRUE);
-	res = plugin_url_check2(p, "myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
+	res = gridftp_check_url_transfer(p, "myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
     ASSERT_TRUE(res == FALSE);
-	res = plugin_url_check2(p,  "gsiftp://myurl.com/mypath/myfile", "myurl.com/mypath/myfile", GFAL_FILE_COPY);
+	res = gridftp_check_url_transfer(p,  "gsiftp://myurl.com/mypath/myfile", "myurl.com/mypath/myfile", GFAL_FILE_COPY);
     ASSERT_TRUE(res == FALSE);
-	plugin_unload(p);
+	gridftp_plugin_unload(p);
 	
 	gfal_handle_freeG(a);
 }

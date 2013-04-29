@@ -33,18 +33,11 @@
 #include "gridftpinterface.h"
 #include "gridftpwrapper.h"
 
-#include "gridftp_ifce_filecopy.h"
-#include "gridftp_stat_module.h"
-#include "gridftp_mkdir_module.h"
-#include "gridftp_chmod_module.h"
-#include "gridftp_rmdir_module.h"
-#include "gridftp_opendir_module.h"
-#include "gridftp_unlink_module.h"
-#include "gridftp_rw_module.h"
-#include "gridftp_checksum_module.h"
-#include "gridftp_rename_module.h"
+#include "gridftp_filecopy.h"
+#include "gridftp_namespace.h"
 
 typedef globus_gass_copy_glob_stat_t gfal_globus_stat_t;
+
 
 
 class GridftpModule 

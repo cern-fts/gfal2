@@ -16,10 +16,11 @@
 #include <string>
 #include <sstream>
 
-#include "gridftp_plugin_loader.h"
-#include "gridftp_rw_module.h"
-#include "gridftp_exist.h"
-
+#include "../fdesc/gfal_file_handle.h"
+#include "../gfal_common_filedescriptor.h"
+#include "gridftp_io.h"
+#include "gridftp_namespace.h"
+#include "gridftp_plugin.h"
 
 static Glib::Quark gfal_gridftp_scope_open(){
     return Glib::Quark ("GridftpModule::open");
@@ -217,7 +218,7 @@ gfal_file_handle GridftpModule::open(const char* url, int flag, mode_t mode)
 	}
 
 	gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::open] ");	
-	return gfal_file_handle_ext_new(plugin_name(), (gpointer) desc.release(), NULL);
+	return gfal_file_handle_ext_new(gridftp_plugin_name(), (gpointer) desc.release(), NULL);
 }
 
 ssize_t GridftpModule::read(gfal_file_handle handle, void* buffer, size_t count){

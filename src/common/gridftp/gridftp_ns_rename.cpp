@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "gridftp_rename_module.h"
+#include "gridftp_namespace.h"
 #include "gridftpwrapper.h"
 
 static const Glib::Quark gfal_gridftp_scope_rename("GridftpModule::rmdir");

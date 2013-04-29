@@ -20,6 +20,7 @@
 #include <glib.h>
 #include <cancel/gfal_cancel.h>
 #include "gridftpmodule.h"
+#include "gridftpinterface.h"
 
 
 #define GRIDFTP_CONFIG_GROUP "GRIDFTP PLUGIN"

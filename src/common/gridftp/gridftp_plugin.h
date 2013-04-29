@@ -1,14 +1,14 @@
 #pragma once
-#ifndef GRIDFTP_RMDIR_MODULE_H
-#define GRIDFTP_RMDIR_MODULE_H
+#ifndef GRIDFTP_PLUGIN_H
+#define GRIDFTP_PLUGIN_H
 /*
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,9 +16,21 @@
  * limitations under the License.
  */
 
-#include "gridftpmodule.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
+const char *gridftp_plugin_name();
 
-extern "C" int gfal_gridftp_rmdirG(plugin_handle handle, const char* url , GError** err);
+plugin_handle gridftp_plugin_load(gfal_handle handle, GError ** err);
 
-#endif /* GRIDFTP_RMDIR_MODULE_H */ 
+void gridftp_plugin_unload(plugin_handle handle);
+
+gboolean gridftp_check_url_transfer(plugin_handle handle, const char* src,
+                                        const char* dst, gfal_url2_check type);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* GRIDFTP_PLUGIN_H */

@@ -17,7 +17,7 @@
 
 #include <config/gfal_config.h>
 #include <globus_ftp_client.h>
-#include "gridftp_stat_module.h"
+#include "gridftp_namespace.h"
 #include "gridftpwrapper.h"
 
 static Glib::Quark gfal_gridftp_scope_stat(){

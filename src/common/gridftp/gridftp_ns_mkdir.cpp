@@ -14,50 +14,49 @@
  */
 
 
-#include "gridftp_chmod_module.h"
+#include "gridftp_namespace.h"
 
-static Glib::Quark gfal_gridftp_scope_chmod(){
-    return Glib::Quark("GridftpModule::chmod");
+
+static Glib::Quark gfal_gridftp_scope_mkdir(){
+    return Glib::Quark("GridftpModule::mkdir");
 }
 
-
-void GridftpModule::chmod(const char* path, mode_t mode)
+void GridftpModule::mkdir(const char* path, mode_t mode)
 {
-	if(path== NULL )
-        throw Glib::Error(gfal_gridftp_scope_chmod(), EINVAL, "Invalid arguments path or mode ");
-	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::chmod] ");
+	if (path == NULL)
+        throw Glib::Error(gfal_gridftp_scope_mkdir(), EINVAL, "Invalid arguments path or mode ");
+	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::mkdir] ");
 	
 	std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)))); // get connexion session
 	
     req->start();
-	globus_result_t res = globus_ftp_client_chmod(
+	globus_result_t res = globus_ftp_client_mkdir(
 				req->sess->get_ftp_handle(),
 				path,
-				mode,
 				NULL,
 				globus_basic_client_callback,
     			req.get());
-    gfal_globus_check_result(gfal_gridftp_scope_chmod(), res);
+	gfal_globus_check_result("GridftpModule::mkdir", res);
 	// wait for answer
-    req->wait_callback(gfal_gridftp_scope_chmod());
+    req->wait_callback(gfal_gridftp_scope_mkdir());
 
-	gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::chmod] ");	
+	gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::mkdir] ");	
 	
 }
 
 
-extern "C" int gfal_gridftp_chmodG(plugin_handle handle, const char* path , mode_t mode, GError** err){
+extern "C" int gfal_gridftp_mkdirG(plugin_handle handle , const char* path , mode_t mode , gboolean pflag, GError** err){
 	g_return_val_err_if_fail( handle != NULL && path != NULL
-			, -1, err, "[gfal_gridftp_chmodG][gridftp] einval params");
+			, -1, err, "[gfal_gridftp_mkdirG][gridftp] einval params");
 
 	GError * tmp_err=NULL;
 	int ret = -1;
-	gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_chmod]");
+	gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_mkdirG]");
 	CPP_GERROR_TRY
-		(static_cast<GridftpModule*>(handle))->chmod(path, mode);
+		(static_cast<GridftpModule*>(handle))->mkdir(path, mode);
 		ret = 0;
 	CPP_GERROR_CATCH(&tmp_err);
-	gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_chmod]<-");
+	gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_mkdirG]<-");
 	G_RETURN_ERR(ret, tmp_err, err);	
 }
 

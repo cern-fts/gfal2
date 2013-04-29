@@ -18,16 +18,70 @@
 
 
 #include "gridftpmodule.h"
-
-#include "gridftp_plugin_main.h"
-#include "gridftp_stat_module.h"
-
-
+#include "gridftp_namespace.h"
+#include "gridftp_io.h"
+#include "gridftp_plugin.h"
 
 
 extern "C"{
-	
-plugin_handle plugin_load(gfal_handle handle, GError ** err){
+
+
+
+static bool is_gridftp_uri(const char* src)
+{
+    static const char gridftp_prefix[] = "gsiftp://";
+    return (strncmp(src, gridftp_prefix, sizeof(gridftp_prefix) - 1) == 0);
+}
+
+
+
+gboolean gridftp_check_url_transfer(plugin_handle handle, const char* src,
+                                    const char* dst, gfal_url2_check type)
+{
+    g_return_val_if_fail(handle != NULL,FALSE);
+    gboolean res = FALSE;
+
+    if( src != NULL && dst != NULL){
+        if (type == GFAL_FILE_COPY && is_gridftp_uri(src) && is_gridftp_uri(dst))
+            res = TRUE;
+    }
+    return res;
+}
+
+
+
+int gridftp_check_url(plugin_handle handle, const char* src, plugin_mode check,
+                      GError ** err)
+{
+    gboolean res = FALSE;
+    if(is_gridftp_uri(src)) {
+        switch(check){
+            case GFAL_PLUGIN_ACCESS:
+            case GFAL_PLUGIN_STAT:
+            case GFAL_PLUGIN_LSTAT:
+            case GFAL_PLUGIN_MKDIR:
+            case GFAL_PLUGIN_CHMOD:
+            case GFAL_PLUGIN_RMDIR:
+            case GFAL_PLUGIN_OPENDIR:
+            case GFAL_PLUGIN_UNLINK:
+            case GFAL_PLUGIN_OPEN:
+            case GFAL_PLUGIN_CHECKSUM:
+            case GFAL_PLUGIN_RENAME:
+                res = TRUE;
+                break;
+            default:
+                break;
+
+        }
+    }
+    return res;
+
+}
+
+
+
+plugin_handle gridftp_plugin_load(gfal_handle handle, GError ** err)
+{
 	GError * tmp_err=NULL;
 	plugin_handle h = NULL;
 	CPP_GERROR_TRY
@@ -39,11 +93,11 @@ plugin_handle plugin_load(gfal_handle handle, GError ** err){
 	CPP_GERROR_CATCH(&tmp_err);
 	
 	G_RETURN_ERR(h, tmp_err, err);
-	
 }
 
 
-void plugin_unload(plugin_handle handle){
+void gridftp_plugin_unload(plugin_handle handle)
+{
 	if(handle){
 		try{
 			delete (static_cast<GridftpModule*>(handle));
@@ -53,13 +107,13 @@ void plugin_unload(plugin_handle handle){
 	}
 }
 
-/**
- * simply return the name of the plugin
- */
-const char * plugin_name(){
+
+
+const char *gridftp_plugin_name()
+{
 	return "plugin_gridftp";
-	
 }
+
 
 /**
  * Map function for the gridftp interface
@@ -72,12 +126,12 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	
 	gfal_plugin_interface ret;
 	memset(&ret, 0, sizeof(gfal_plugin_interface));
-	plugin_handle r = plugin_load(handle, &tmp_err);
+	plugin_handle r = gridftp_plugin_load(handle, &tmp_err);
 
 	ret.plugin_data = r;
-	ret.check_plugin_url = &plugin_url_check_with_gerror;
-	ret.plugin_delete = &plugin_unload;
-	ret.getName = &plugin_name;
+	ret.check_plugin_url = &gridftp_check_url;
+	ret.plugin_delete = &gridftp_plugin_unload;
+	ret.getName = &gridftp_plugin_name;
 	ret.accessG = &gfal_gridftp_accessG;
 	ret.statG = & gfal_gridftp_statG;
 	ret.lstatG = &gfal_gridftp_statG;
@@ -95,7 +149,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	ret.lseekG = &gfal_gridftp_lseekG;
     ret.checksum_calcG = &gfal_gridftp_checksumG;
     ret.copy_file = &gridftp_plugin_filecopy;
-    ret.check_plugin_url_transfer = &plugin_url_check2;
+    ret.check_plugin_url_transfer = &gridftp_check_url_transfer;
     ret.renameG = &gfal_gridftp_renameG;
 	
 	G_RETURN_ERR(ret, tmp_err, err);

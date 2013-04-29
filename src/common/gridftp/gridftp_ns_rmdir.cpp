@@ -14,7 +14,7 @@
  */
 
 
-#include "gridftp_rmdir_module.h"
+#include "gridftp_namespace.h"
 
 static Glib::Quark gfal_gridftp_scope_rmdir(){
     return Glib::Quark("GridftpModule::rmdir");

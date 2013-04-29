@@ -13,9 +13,7 @@
  * limitations under the License.
  */
 
-#include "gridftpmodule.h"
-
-#include "gridftp_exist.h"
+#include "gridftp_namespace.h"
 
 static Glib::Quark gfal_gridftp_scope_exist(){
     return Glib::Quark ("GridftpModule::file_exist");

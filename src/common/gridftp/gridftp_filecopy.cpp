@@ -20,8 +20,8 @@
 #include <ctime>
 #include <csignal>
 
-#include "gridftp_exist.h"
-#include "gridftp_ifce_filecopy.h"
+#include "gridftp_namespace.h"
+#include "gridftp_filecopy.h"
 
 #include <externals/utils/uri_util.h>
 #include <transfer/gfal_transfer_types_internal.h>
