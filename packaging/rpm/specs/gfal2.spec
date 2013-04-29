@@ -35,7 +35,7 @@ BuildRequires:		dcap-devel
 BuildRequires:		globus-gass-copy-devel
 #http plugin dependencies
 BuildRequires:		davix-devel
-BuildRequires:          gsoap-devel
+BuildRequires:		gsoap-devel
 BuildRequires:		gridsite-devel
 
 Requires:			%{name}-core = %{version}-%{release}
@@ -73,7 +73,6 @@ Requires:			%{name}-transfer%{?_isa} = %{version}-%{release}
 Requires:			glib2-devel%{?_isa}
 Requires:			libattr-devel%{?_isa} 
 Requires:			pkgconfig
-Requires:			glibmm24-devel%{?_isa}
 
 %description devel
 development files for %{name}
