@@ -63,6 +63,8 @@ struct GridFTP_Request_state{
        }
    }
 
+   void poll_callback(const Glib::Quark & scope);
+
  public:
     GridFTP_Request_state(GridFTP_session * s, bool own_session=true,  GridFtp_request_type request_type = GRIDFTP_REQUEST_FTP);
 	virtual ~GridFTP_Request_state();
@@ -118,8 +120,8 @@ struct GridFTP_Request_state{
       req_status = st;
     }
 
-    void poll_callback(const Glib::Quark & scope);
     void wait_callback(const Glib::Quark & scope, time_t timeout = 300);
+
     void err_report(const Glib::Quark &scope);
 
     void cancel_operation(const Glib::Quark &scope, const std::string & msg = "");

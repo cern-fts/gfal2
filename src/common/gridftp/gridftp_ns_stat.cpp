@@ -122,7 +122,7 @@ void GridftpModule::internal_globus_gass_stat(const char* path,  gfal_globus_sta
                                                  globus_basic_client_callback,
                                                  req.get());
     gfal_globus_check_result(gfal_gridftp_scope_stat(), res);
-    req->poll_callback(gfal_gridftp_scope_stat());
+    req->wait_callback(gfal_gridftp_scope_stat());
 
     char     mode[12], trash[64];
     unsigned count;
