@@ -1,7 +1,6 @@
 
 Name:				gfal2
-Version:			2.2.0
-Release:			1%{?dist}
+Version:			2.2.1
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -283,8 +282,8 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
-* Wed Mar 20 2013 Adrien Devresse <adevress at cern.ch> - 2.2.0-1
- - disable http plugin for EMI
+* Tue Apr 30 2013 Adrien Devresse <adevress at cern.ch> - 2.2.1-0
+ - export transfer plugin API ( needed for xrootd plugin )
 
 * Wed Mar 20 2013 Adrien Devresse <adevress at cern.ch> - 2.2.0-0
  - fix thread safety issue with gsiftp plugin
