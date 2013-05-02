@@ -22,6 +22,7 @@ const char* gridftp_version_config = "GRIDFTP_V2";
 const char* gridftp_session_reuse_config= "SESSION_REUSE";
 const char* gridftp_dcau_config= "DCAU";
 const char* gridftp_ipv6_config= "IPV6";
+const char* gridftp_delay_passv_config = "DELAY_PASSV";
 
 struct RwStatus{
 	off_t init;
@@ -116,6 +117,10 @@ struct GridFTP_session_implem : public GridFTP_session{
 
     void set_ipv6(bool enable){
         globus_ftp_client_operationattr_set_allow_ipv6(&(_sess->operation_attr_ftp), (globus_bool_t) enable);
+    }
+
+    void set_delayed_pass(bool enable){
+        globus_ftp_client_operationattr_set_delayed_pasv(&(_sess->operation_attr_ftp),  (globus_bool_t) enable);
     }
 
     void set_dcau(const globus_ftp_control_dcau_t & _dcau ){
@@ -408,7 +413,8 @@ GridFTP_session* GridFTPFactory::get_new_handle(const std::string & hostname){
     if(tmp_err)
         throw Glib::Error(tmp_err);
 
-    bool ipv6 = gfal2_get_opt_boolean_with_default(_handle, GRIDFTP_CONFIG_GROUP, gridftp_ipv6_config, false);
+    const bool ipv6 = gfal2_get_opt_boolean_with_default(_handle, GRIDFTP_CONFIG_GROUP, gridftp_ipv6_config, false);
+    const bool delay_passv = gfal2_get_opt_boolean_with_default(_handle, GRIDFTP_CONFIG_GROUP, gridftp_delay_passv_config, true);
 
     dcau_param.mode = (gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP, gridftp_dcau_config, &tmp_err))?GLOBUS_FTP_CONTROL_DCAU_DEFAULT:GLOBUS_FTP_CONTROL_DCAU_NONE;
     if(tmp_err)
@@ -419,6 +425,7 @@ GridFTP_session* GridFTPFactory::get_new_handle(const std::string & hostname){
 	sess->set_gridftpv2(gridftp_v2);
     sess->set_dcau(dcau_param);
     sess->set_ipv6(ipv6);
+    sess->set_delayed_pass(delay_passv);
 	return sess.release();
 }
 
