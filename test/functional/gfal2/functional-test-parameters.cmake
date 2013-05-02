@@ -3,11 +3,11 @@
 
 ## STAT Tests
 
-SET(MY_VO "testers.eu-emi.eu")
+SET(MY_VO "dteam")
 SET(MY_VO_STORM "${MY_VO}")
 
 #dpm parameters
-SET(srm_prefix_dpm "srm://cvitbdpm1.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
+SET(srm_prefix_dpm "srm://grid05.lal.in2p3.fr/dpm/lal.in2p3.fr/home/${MY_VO}/gfal2-tests")
 SET(srm_valid_dpm_stat "${srm_prefix_dpm}/testread0011")
 SET(srm_valid_dpm_bigfile "${srm_prefix_dpm}/testbig")
 SET(srm_valid_dpm_chmod "${srm_prefix_dpm}/test_change_right")
@@ -15,7 +15,7 @@ SET(srm_valid_dir_root "${srm_prefix_dpm}")
 SET(srm_valid_dpm_src_file "${srm_valid_dpm_stat}")
 
 # dcache parameters
-SET(srm_prefix_dcache "srm://sligo.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/data/${MY_VO}/testgfal2")
+SET(srm_prefix_dcache "srm://dcache-se-desy.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/${MY_VO}/gfal2-tests")
 SET(srm_valid_dcache_bigfile "${srm_prefix_dcache}/testbig")
 SET(srm_valid_dcache_stat "${srm_prefix_dcache}/testread0011")
 SET(srm_valid_dcache_chmod "${srm_prefix_dcache}/test_change_right")
@@ -23,7 +23,7 @@ SET(srm_valid_dcache_dir_root "${srm_prefix_dcache}")
 SET(srm_valid_dcache_src_file "${srm_valid_dcache_stat}")
 
 # storm parameters
-SET(srm_prefix_storm "srm://emitestbed03.cnaf.infn.it:8444/srm/managerv2?SFN=/${MY_VO_STORM}/gfal2tests")
+SET(srm_prefix_storm "srm://storm-01.roma3.infn.it/${MY_VO_STORM}/gfal2-tests")
 SET(srm_valid_storm_stat "${srm_prefix_storm}/testread0011")
 SET(srm_valid_storm_chmod "${srm_prefix_storm}/test_change_right")
 SET(srm_valid_storm_dir_root "${srm_prefix_storm}")
@@ -34,7 +34,7 @@ SET(srm_valid_storm_src_file "${srm_prefix_storm}")
 
 ## gsiftp parameters
 #
-SET(gsiftp_prefix_dpm "gsiftp://cvitbdpm1.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
+SET(gsiftp_prefix_dpm "gsiftp://dcache-door-desy09.desy.de:2811/pnfs/desy.de/${MY_VO}/gfal2-tests")
 SET(gsiftp_valid_dpm_stat "${gsiftp_prefix_dpm}/testread0011")
 SET(gsiftp_valid_dpm_src_file "${gsiftp_valid_dpm_stat}")
 SET(gsiftp_valid_dpm_chmod "${gsiftp_prefix_dpm}/test_change_right_gsidcap")
@@ -52,7 +52,7 @@ SET(lfc_full_chmod_ok "${lfc_full_prefix}/test_change_right")
 SET(lfc_full_valid_dir_root "${lfc_full_prefix}")
 
 # dcap dcache parameters
-SET(dcap_prefix "gsidcap://sligo.desy.de:22128/pnfs/desy.de/data/${MY_VO}/testgfal2")
+SET(dcap_prefix "gsidcap://dcache-door-desy09.desy.de:22128/pnfs/desy.de/${MY_VO}/gfal2-tests/testread0011")
 SET(dcap_stat_ok "${dcap_prefix}/testread0011")
 SET(dcap_chmod_ok "${dcap_prefix}/test_change_right")
 SET(dcap_valid_dir_root "${dcap_prefix}")
