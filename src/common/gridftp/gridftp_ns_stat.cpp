@@ -78,31 +78,234 @@ void GridftpModule::access(const char*  path, int mode){
 	gfal_log(GFAL_VERBOSE_TRACE," <- [Gridftp_stat_module::access] ");	
 }
 
-static mode_t _str2mode_triad(const char* buffer)
+// Adapted from http://cvs.globus.org/viewcvs.cgi/gass/copy/source/globus_gass_copy_glob.c
+static
+int copy_mdtm_to_timet(char * mdtm_str, int * time_out)
 {
-    mode_t mode = 0;
-    if (buffer[0] == 'r')
-        mode |= S_IREAD;
-    if (buffer[1] == 'w')
-        mode |= S_IWRITE;
-    switch (buffer[2]) {
-        case 'x':
-            mode |= S_IEXEC;
-            break;
-        case 't': case 's':
-            mode |= S_IEXEC;
-        case 'T': case 'S':
-            mode |= S_ISUID;
-            break;
+    char * p;
+    struct tm tm;
+    struct tm gmt_now_tm;
+    struct tm * gmt_now_tm_p;
+    time_t offset;
+    time_t gmt_now;
+    time_t now;
+    time_t file_time;
+    int rc;
+
+    p = mdtm_str;
+
+    memset(&tm, '\0', sizeof(struct tm));
+
+    /* 4 digit year */
+    rc = sscanf(p, "%04d", &tm.tm_year);
+    if (rc != 1) {
+        goto error_exit;
     }
-    return mode;
+    tm.tm_year -= 1900;
+    p += 4;
+
+    /* 2 digit month [01-12] */
+    rc = sscanf(p, "%02d", &tm.tm_mon);
+    if (rc != 1) {
+        goto error_exit;
+    }
+    tm.tm_mon--;
+    p += 2;
+
+    /* 2 digit day/month [01-31] */
+    rc = sscanf(p, "%02d", &tm.tm_mday);
+    if (rc != 1) {
+        goto error_exit;
+    }
+    p += 2;
+
+    /* 2 digit hour [00-23] */
+    rc = sscanf(p, "%02d", &tm.tm_hour);
+    if (rc != 1) {
+        goto error_exit;
+    }
+    p += 2;
+
+    /* 2 digit minute [00-59] */
+    rc = sscanf(p, "%02d", &tm.tm_min);
+    if (rc != 1) {
+        goto error_exit;
+    }
+    p += 2;
+
+    /* 2 digit second [00-60] */
+    rc = sscanf(p, "%02d", &tm.tm_sec);
+    if (rc != 1) {
+        goto error_exit;
+    }
+    p += 2;
+
+    file_time = mktime(&tm);
+    if (file_time == (time_t) -1) {
+        goto error_exit;
+    }
+
+    now = time(&now);
+    if (now == (time_t) -1) {
+        goto error_exit;
+    }
+
+    memset(&gmt_now_tm, '\0', sizeof(struct tm));
+    gmt_now_tm_p = globus_libc_gmtime_r(&now, &gmt_now_tm);
+    if (gmt_now_tm_p == NULL) {
+        goto error_exit;
+    }
+
+    gmt_now = mktime(&gmt_now_tm);
+    if (gmt_now == (time_t) -1) {
+        goto error_exit;
+    }
+
+    offset = now - gmt_now;
+
+    *time_out = file_time + offset;
+
+    return 0;
+
+ error_exit:
+    return -1;
 }
 
-static mode_t _str2mode(const char* buffer)
+static globus_result_t parse_mlst_line(char *line,
+        gfal_globus_stat_t *stat_info)
 {
-    return (_str2mode_triad(buffer + 1)) |
-           (_str2mode_triad(buffer + 4) >> 3) |
-           (_str2mode_triad(buffer + 7) >> 6);
+    globus_result_t result;
+    int i;
+    char * space;
+    char * filename;
+    char * startline;
+    char * startfact;
+    char * endfact;
+    char * factval;
+
+    char * unique_id = NULL;
+    char * mode_s = NULL;
+    char * symlink_target = NULL;
+    char * modify_s = NULL;
+    char * size_s = NULL;
+    globus_gass_copy_glob_entry_t type;
+
+    startline = line;
+
+    space = strchr(startline, ' ');
+    if (space == GLOBUS_NULL) {
+        result = globus_error_put(
+                globus_error_construct_string(GLOBUS_GASS_COPY_MODULE,
+                        GLOBUS_NULL, "[%s]: Bad MLSD response", __func__));
+
+        goto error_invalid_mlsd;
+    }
+    *space = '\0';
+    filename = space + 1;
+    startfact = startline;
+
+    while (startfact != space) {
+        endfact = strchr(startfact, ';');
+        if (endfact) {
+            *endfact = '\0';
+        }
+        else {
+            /*
+             older MLST-draft spec says ending fact can be missing
+             the final semicolon... not a problem to support this,
+             no need to die.  (ncftpd does this)
+
+             result = globus_error_put(
+             globus_error_construct_string(
+             GLOBUS_GASS_COPY_MODULE,
+             GLOBUS_NULL,
+             "[%s]: Bad MLSD response",
+             myname));
+
+             goto error_invalid_mlsd;
+             */
+
+            endfact = space - 1;
+        }
+
+        factval = strchr(startfact, '=');
+        if (!factval) {
+            result = globus_error_put(
+                    globus_error_construct_string(GLOBUS_GASS_COPY_MODULE,
+                            GLOBUS_NULL, "[%s]: Bad MLSD response", __func__));
+
+            goto error_invalid_mlsd;
+        }
+        *(factval++) = '\0';
+
+        for (i = 0; startfact[i] != '\0'; i++) {
+            startfact[i] = tolower(startfact[i]);
+        }
+
+        if (strcmp(startfact, "type") == 0) {
+            if (strcasecmp(factval, "dir") == 0) {
+                type = GLOBUS_GASS_COPY_GLOB_ENTRY_DIR;
+            }
+            else if (strcasecmp(factval, "file") == 0) {
+                type = GLOBUS_GASS_COPY_GLOB_ENTRY_FILE;
+            }
+            else {
+                type = GLOBUS_GASS_COPY_GLOB_ENTRY_OTHER;
+            }
+        }
+        if (strcmp(startfact, "unique") == 0) {
+            unique_id = factval;
+        }
+        if (strcmp(startfact, "unix.mode") == 0) {
+            mode_s = factval;
+        }
+        if (strcmp(startfact, "modify") == 0) {
+            modify_s = factval;
+        }
+        if (strcmp(startfact, "size") == 0) {
+            size_s = factval;
+        }
+        if (strcmp(startfact, "unix.slink") == 0) {
+            symlink_target = factval;
+        }
+
+        startfact = endfact + 1;
+    }
+
+    stat_info->type = type;
+    stat_info->unique_id = globus_libc_strdup(unique_id);
+    stat_info->symlink_target = globus_libc_strdup(symlink_target);
+    stat_info->mode = -1;
+    stat_info->size = -1;
+    stat_info->mdtm = -1;
+
+    if (mode_s) {
+        stat_info->mode = strtoul(mode_s, NULL, 0);
+    }
+
+    if (size_s) {
+        off_t size;
+        int rc;
+
+        rc = sscanf(size_s, "%ld", &size);
+        if (rc == 1) {
+            stat_info->size = size;
+        }
+    }
+
+    if (modify_s) {
+        int mdtm;
+
+        if (copy_mdtm_to_timet(modify_s, &mdtm) == GLOBUS_SUCCESS) {
+            stat_info->mdtm = mdtm;
+        }
+    }
+
+    return GLOBUS_SUCCESS;
+
+    error_invalid_mlsd:
+
+    return result;
 }
 
 void GridftpModule::internal_globus_gass_stat(const char* path,  gfal_globus_stat_t * gl_stat){
@@ -116,43 +319,24 @@ void GridftpModule::internal_globus_gass_stat(const char* path,  gfal_globus_sta
     globus_size_t buflen = 0;
     std::auto_ptr<GridFTP_Request_state> req(new GridFTP_Request_state(sess.get(), false));
 
-    globus_result_t res = globus_ftp_client_stat(sess->get_ftp_handle(),
+    globus_result_t res = globus_ftp_client_mlst(sess->get_ftp_handle(),
                                                  path, sess->get_op_attr_ftp(),
                                                  &buffer, &buflen,
                                                  globus_basic_client_callback,
                                                  req.get());
+
     gfal_globus_check_result(gfal_gridftp_scope_stat(), res);
     req->wait_callback(gfal_gridftp_scope_stat());
 
-    char     mode[12], trash[64];
-    unsigned count;
+    gfal_log(GFAL_VERBOSE_TRACE,
+             "   <- [Gridftp_stat_module::internal_globus_gass_stat] Got '%s'",
+             buffer);
 
-    gfal_log(GFAL_VERBOSE_TRACE,"   <- [internal_globus_gass_stat] Got '%s'", buffer);
-    // Expected: -rw-r--r--   1     root     root         1604 Nov 11 19:13 passwd
-    if (sscanf((char*)buffer, "%s %u %s %s %lu",
-               mode, &count, trash, trash, &(gl_stat->size)) != 5) {
-        errno = EIO;
-    }
-    else {
-        // Modification time
-        gl_stat->mdtm = -1;
-        // File type
-        switch (mode[0]) {
-            case '-':
-                gl_stat->type = GLOBUS_GASS_COPY_GLOB_ENTRY_FILE;
-                break;
-            case 'd':
-                gl_stat->type = GLOBUS_GASS_COPY_GLOB_ENTRY_DIR;
-                break;
-            default:
-                gl_stat->type = GLOBUS_GASS_COPY_GLOB_ENTRY_OTHER;
-        }
-        // Mode
-        gl_stat->mode = _str2mode(mode);
-    }
-
+    parse_mlst_line((char*)buffer, gl_stat);
     globus_free(buffer);
-	gfal_log(GFAL_VERBOSE_TRACE," <- [Gridftp_stat_module::globus_gass_stat] ");		
+
+	gfal_log(GFAL_VERBOSE_TRACE,
+	        " <- [Gridftp_stat_module::internal_globus_gass_stat] ");
 }
 
 
