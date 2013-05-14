@@ -78,6 +78,7 @@ int main(int argc, char** argv){
      gfalt_set_monitor_callback(my_params, &call_perf,&tmp_err);
      gfalt_set_nbstreams(my_params, 0, &tmp_err);
      gfalt_set_timeout(my_params,10, &tmp_err);
+     gfalt_set_create_parent_dir(my_params, TRUE, NULL);
 	// gfalt_set_src_spacetoken(my_params, "DTEAMLCGUTILSTEST", &tmp_err);     
 // gfalt_set_dst_spacetoken(my_params, "DTEAMLCGUTILSTESTF", &tmp_err);     
 	 // begin copy
