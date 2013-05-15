@@ -27,11 +27,15 @@ bool gridftp_module_file_exist(gfal2_context_t context, GridFTP_session* sess, c
 	std::auto_ptr<GridFTP_Request_state> req(new GridFTP_Request_state(sess, false));
     GridFTPOperationCanceler canceler(context, req.get());
 
+    globus_byte_t *buffer = NULL;
+    globus_size_t buflen = 0;
+
     req->start();
-	globus_result_t res = globus_ftp_client_exists(
+	globus_result_t res = globus_ftp_client_mlst(
 				req->sess->get_ftp_handle(),
 				url,
                 req->sess->get_op_attr_ftp(),
+                &buffer, &buflen,
 				globus_basic_client_callback,
 				req.get());
     gfal_globus_check_result(gfal_gridftp_scope_exist(), res);
@@ -39,6 +43,7 @@ bool gridftp_module_file_exist(gfal2_context_t context, GridFTP_session* sess, c
     int error_code = 0;
     try {
         req->wait_callback(gfal_gridftp_scope_exist());
+        globus_free(buffer);
     }
     catch (Gfal::CoreException& e) {
         error_code = e.code();
