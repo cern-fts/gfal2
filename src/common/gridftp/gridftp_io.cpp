@@ -186,7 +186,7 @@ gfal_file_handle GridftpModule::open(const char* url, int flag, mode_t mode)
 	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::open] ");	
 	globus_result_t res;
 	if(is_read_only(desc->open_flags) // check ENOENT condition for R_ONLY 
-        && gridftp_module_file_exist(_handle_factory->get_handle(),     desc->stream->sess.get(), url) == false){
+        && gridftp_module_file_exist(_handle_factory->get_handle(), url) == false){
 				char err_buff[2048];
 				snprintf(err_buff, 2048, " gridftp open error : %s on url %s", strerror(ENOENT), url);
                 throw Gfal::CoreException(gfal_gridftp_scope_open(), err_buff, ENOENT);

@@ -24,8 +24,7 @@ extern "C"
 {
 #endif
 
-bool gridftp_module_file_exist(gfal2_context_t context, GridFTP_session* sess,
-        const char * url);
+bool gridftp_module_file_exist(plugin_handle handle, const char* name);
 
 int gfal_gridftp_statG(plugin_handle handle, const char* name,
         struct stat* buff, GError ** err);

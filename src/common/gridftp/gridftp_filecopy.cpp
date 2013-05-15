@@ -42,7 +42,7 @@ const char * gridftp_perf_marker_timeout_config= "PERF_MARKER_TIMEOUT";
 
 void gridftp_filecopy_delete_existing(gfal2_context_t context, GridFTP_session * sess, gfalt_params_t params, const char * url){
 	const bool replace = gfalt_get_replace_existing_file(params,NULL);
-    bool exist = gridftp_module_file_exist(context, sess, url);
+    bool exist = gridftp_module_file_exist(context, url);
     if(exist){
 
         if(replace){
