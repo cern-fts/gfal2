@@ -100,7 +100,7 @@ class GridftpModule
         void autoCleanFileCopy(gfalt_params_t params, GError* checked_error, const char* dst);
 
 		 // Execute a file transfer operation for gridftp URLs
-		virtual int filecopy(gfalt_params_t params, const char* src, const char* dst);
+		virtual void filecopy(gfalt_params_t params, const char* src, const char* dst);
 		
 
 				 
