@@ -239,22 +239,29 @@ gint gfalt_set_user_defined_checksum(gfalt_params_t params, const gchar* chktype
     g_free(params->user_checksum_type);
     params->user_checksum= NULL;
     params->user_checksum_type= NULL;
-    if(chktype && checksum){
-         params->user_checksum = g_strdup(checksum);
-         params->user_checksum_type = g_strdup(chktype);
-    }
+
+    if (chktype)
+        params->user_checksum_type = g_strdup(chktype);
+    if (checksum)
+        params->user_checksum = g_strdup(checksum);
+
     return 0;
 }
 
 gint gfalt_get_user_defined_checksum(gfalt_params_t params, gchar* chktype_buff, size_t chk_type_len,
                                 gchar* checksum_buff, size_t checksum_len, GError** err){
     g_assert(chktype_buff && checksum_buff);
-    if(!params->user_checksum || !params->user_checksum_type){
-        *checksum_buff = *chktype_buff = '\0';
-    }else{
-        g_strlcpy(chktype_buff, params->user_checksum_type, chk_type_len);
+
+    if (params->user_checksum)
         g_strlcpy(checksum_buff, params->user_checksum, checksum_len);
-    }
+    else
+        checksum_buff[0] = '\0';
+
+    if (params->user_checksum_type)
+        g_strlcpy(chktype_buff, params->user_checksum_type, chk_type_len);
+    else
+        chktype_buff[0] = '\0';
+
     return 0;
 }
 
