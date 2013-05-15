@@ -275,14 +275,16 @@ void gridftp_checksum_transfer_verify(const char * src_chk, const char* dst_chk,
     if(*user_defined_chk == '\0'){
         if(strncasecmp(src_chk, dst_chk,GFAL_URL_MAX_LEN) != 0){
             std::ostringstream ss;
-            ss << "SRC and DST checksum are different: " << src_chk << " " << dst_chk ;
+            ss << "SRC and DST checksum are different. Source: " << src_chk << " Destination: " << dst_chk ;
             throw Gfal::CoreException(gfal_gridftp_scope_filecopy(), ss.str(), EIO);
         }
     }else{
         if(strncasecmp(src_chk, user_defined_chk, GFAL_URL_MAX_LEN) != 0
                 || strncasecmp(dst_chk, user_defined_chk, GFAL_URL_MAX_LEN) != 0){
             std::ostringstream ss;
-            ss << "USER_DEFINE, SRC and DST checksum are different " << user_defined_chk << " " << src_chk << " " << dst_chk;
+            ss << "USER_DEFINE, SRC and DST checksum are different. User defined: "
+               << user_defined_chk << " Source: " << src_chk
+               << " Destination: " << dst_chk;
             throw Gfal::CoreException(gfal_gridftp_scope_filecopy(), ss.str(),EIO);
         }
 
