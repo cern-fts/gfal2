@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <gfal_api.h>
 #include <transfer/gfal_transfer.h>
 
@@ -56,38 +57,59 @@ int internal_copy(gfal2_context_t* handle, gfalt_params_t* params, const char* s
 }
 
 
-int main(int argc, char** argv){
-    int i;
-    if( argc <4 ){
-        printf(" Usage %s [src_url] [checksum] [dst_url] [dst_url] [dst_url]... \n",argv[0]);
-		return 1;
-	}
-	GError * tmp_err = NULL; // classical GError/glib error management
-	gfal2_context_t handle;
-	
-	// initialize gfal
-    gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE | GFAL_VERBOSE_DEBUG);
-	 if( (handle = gfal2_context_new(&tmp_err)) == NULL ) {
-		 printf(" bad initialization %d : %s.\n", tmp_err->code,tmp_err->message);
-		 return -1;
-	 }
-
-     // creat params
-     gfalt_params_t my_params = gfalt_params_handle_new(NULL);
-     gfalt_set_replace_existing_file(my_params, TRUE, NULL);
-     gfalt_set_checksum_check(my_params, TRUE, NULL);
-     gfalt_set_user_defined_checksum(my_params,"ADLER32",argv[2], NULL);
-     gfalt_set_monitor_callback(my_params, &call_perf,&tmp_err);
-     gfalt_set_nbstreams(my_params, 4, &tmp_err);
-     gfalt_set_timeout(my_params,360, &tmp_err);
-	// gfalt_set_src_spacetoken(my_params, "DTEAMLCGUTILSTEST", &tmp_err);     
-// gfalt_set_dst_spacetoken(my_params, "DTEAMLCGUTILSTESTF", &tmp_err);     
-	 // begin copy
-
-    for(i=3; i < argc; ++i){
-        if(internal_copy(&handle, &my_params, argv[1], argv[i]) !=0)
-            return -1;
+int main(int argc, char** argv)
+{
+    if (argc < 3) {
+        printf(" Usage %s [src_url] [dst_url] [checksum]\n", argv[0]);
+        return 1;
     }
+
+    GError * tmp_err = NULL;
+    gfal2_context_t handle;
+
+    // initialize gfal
+    gfal_set_verbose(
+            GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE | GFAL_VERBOSE_DEBUG);
+    if ((handle = gfal2_context_new(&tmp_err)) == NULL ) {
+        printf(" bad initialization %d : %s.\n", tmp_err->code,
+                tmp_err->message);
+        return -1;
+    }
+
+    // Process args
+    char* source = argv[1];
+    char* destination = argv[2];
+
+    char* checksum_type = NULL;
+    char* checksum_value = NULL;
+    if (argc >= 4) {
+        checksum_type = g_strdup(argv[3]);
+        checksum_value = strchr(checksum_type, ':');
+
+        if (checksum_value) {
+            *checksum_value = '\0';
+            ++checksum_value;
+        }
+    }
+
+    // creat params
+    gfalt_params_t my_params = gfalt_params_handle_new(NULL );
+    gfalt_set_replace_existing_file(my_params, TRUE, NULL );
+    gfalt_set_checksum_check(my_params, TRUE, NULL );
+    gfalt_set_monitor_callback(my_params, &call_perf, &tmp_err);
+    gfalt_set_nbstreams(my_params, 4, &tmp_err);
+    gfalt_set_timeout(my_params, 360, &tmp_err);
+
+    if (checksum_type || checksum_value) {
+        gfalt_set_user_defined_checksum(my_params, checksum_type,
+                checksum_value, NULL);
+
+        printf("Using checksum %s:%s\n", checksum_type, checksum_value);
+    }
+
+    // begin copy
+    if(internal_copy(&handle, &my_params, source, destination) != 0)
+        return -1;
 		
     gfal2_context_free(handle);
     gfalt_params_handle_delete(my_params, NULL);
