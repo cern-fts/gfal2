@@ -1,6 +1,6 @@
 
 Name:				gfal2
-Version:			2.2.1
+Version:			2.2.2
 Release:			1%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
@@ -282,6 +282,9 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Thu May 16 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-1
+ - replace gridftp exists with mlst
+
 * Tue Apr 30 2013 Adrien Devresse <adevress at cern.ch> - 2.2.1-0
  - export transfer plugin API ( needed for xrootd plugin )
 
