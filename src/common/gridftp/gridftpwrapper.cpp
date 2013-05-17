@@ -120,7 +120,7 @@ struct GridFTP_session_implem : public GridFTP_session{
     }
 
     void set_delayed_pass(bool enable){
-        globus_ftp_client_operationattr_set_delayed_pasv(&(_sess->operation_attr_ftp),  (globus_bool_t) enable);
+        globus_ftp_client_operationattr_set_delayed_pasv(&(_sess->operation_attr_ftp),  (globus_bool_t) (enable)?GLOBUS_TRUE:GLOBUS_FALSE);
     }
 
     void set_dcau(const globus_ftp_control_dcau_t & _dcau ){
