@@ -36,7 +36,7 @@ TEST(gfalGlobal, url_parsing){
     ASSERT_STREQ("dcache-door-desy09.desy.de:2811", buffer);
 
     ret = gfal_hostname_from_uri(bad_url, buffer, GFAL_URL_MAX_LEN, &tmp_err);
-    ASSERT_LT(0,ret);
+    ASSERT_GT(0,ret);
     ASSERT_TRUE(tmp_err != NULL);
 
 }
