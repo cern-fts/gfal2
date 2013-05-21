@@ -128,7 +128,7 @@ ssize_t gridftp_rw_internal_pread(GridFTPFactoryInterface * factory, GridFTP_Fil
 	globus_result_t res = globus_ftp_client_partial_get( // start req
 				stream->sess->get_ftp_handle(),
 				desc->url.c_str(),
-				NULL,
+                stream->sess->get_op_attr_ftp(),
 				NULL,
 				offset,
 				offset + s_buff,
@@ -154,7 +154,7 @@ ssize_t gridftp_rw_internal_pwrite(GridFTPFactoryInterface * factory, GridFTP_Fi
 	globus_result_t res = globus_ftp_client_partial_put( // start req
 				stream->sess->get_ftp_handle(),
 				desc->url.c_str(),
-				NULL,
+                stream->sess->get_op_attr_ftp(),
 				NULL,
 				offset,
 				offset + s_buff,
@@ -197,7 +197,7 @@ gfal_file_handle GridftpModule::open(const char* url, int flag, mode_t mode)
 		 res = globus_ftp_client_get( // start req
 					desc->stream->sess->get_ftp_handle(),
 					url,
-					NULL,
+                    desc->stream->sess->get_op_attr_ftp(),
 					NULL,
 					globus_basic_client_callback,
 					static_cast<GridFTP_Request_state*>(desc->stream.get()));
@@ -207,7 +207,7 @@ gfal_file_handle GridftpModule::open(const char* url, int flag, mode_t mode)
 		res = globus_ftp_client_put( // bet on a full write
 					desc->stream->sess->get_ftp_handle(),
 					url,
-					NULL,
+                    desc->stream->sess->get_op_attr_ftp(),
 					NULL,
 					globus_basic_client_callback,
 					static_cast<GridFTP_Request_state*>(desc->stream.get()));	
