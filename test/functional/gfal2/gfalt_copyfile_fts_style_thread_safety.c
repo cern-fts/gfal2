@@ -70,7 +70,7 @@ int main(int argc, char** argv){
 		 return -1;
 	 }
 
-    gfal2_set_opt_boolean(handle, "GRIDFTP PLUGIN", "SESSION_REUSE", TRUE, NULL);
+     //gfal2_set_opt_boolean(handle, "GRIDFTP PLUGIN", "SESSION_REUSE", TRUE, NULL);
      // creat params
      gfalt_params_t my_params = gfalt_params_handle_new(NULL);
      gfalt_set_replace_existing_file(my_params, TRUE, NULL);
