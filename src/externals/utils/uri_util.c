@@ -30,7 +30,7 @@ int gfal_hostname_from_uri(const char * uri, char* buff_hostname, size_t s_buff,
 	char* p1, *p2; 
 	p1= strstr(uri, "://");
 	if( p1 != NULL){
-
+        p1+=3;
 		while(*p1 != '\0' && *p1 == '/') // end of initial separators
 			p1++;
 

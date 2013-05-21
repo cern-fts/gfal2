@@ -54,6 +54,28 @@ struct Gass_attr_handler_implem : public Gass_attr_handler{
 };
 
 struct GridFTP_session_implem : public GridFTP_session{
+
+    GridFTP_session_implem(GridFTPFactory* f, const std::string & thostname) :
+        factory(f),
+        hostname(thostname){
+        init();
+    }
+
+    GridFTP_session_implem( GridFTP_session_implem *src) :
+    factory(src->factory),
+    hostname(src->hostname),
+      _sess(src->_sess)
+    {   }
+
+    virtual ~GridFTP_session_implem(){
+        if(_sess != NULL){
+            clean();
+            if(_isDirty)
+                this->purge();
+            else
+                factory->gfal_globus_ftp_release_handle_internal(this);
+        }
+    }
 	
 	void init(){
 		_sess = new Session_handler();
@@ -148,29 +170,6 @@ struct GridFTP_session_implem : public GridFTP_session{
             _sess->tcp_buffer_size.fixed.size = tcp_buffer_size;
         }
     }
-
-	GridFTP_session_implem(GridFTPFactory* f, const std::string & hostname){
-		this->factory = f;
-		this->hostname = hostname;
-		init();	
-	}
-	
-	GridFTP_session_implem( GridFTP_session_implem *src){
-		this->factory = src->factory;
-		this->hostname = src->hostname;
-		this->_sess = src->_sess;
-
-	}
-	
-	virtual ~GridFTP_session_implem(){
-        if(_sess != NULL){
-            clean();
-            if(_isDirty)
-                this->purge();
-            else
-                factory->gfal_globus_ftp_release_handle_internal(this);
-        }
-	}
 	
 	virtual globus_ftp_client_handle_t* get_ftp_handle(){
 		globus_result_t res = globus_gass_copy_get_ftp_handle(&(_sess->gass_handle), &(_sess->handle_ftp));
@@ -230,10 +229,13 @@ struct GridFTP_session_implem : public GridFTP_session{
         globus_ftp_control_tcpbuffer_t tcp_buffer_size;
 	};
 	
-	Session_handler* _sess;
+
 	// internal fields	
+    GridFTPFactory* factory;
 	std::string hostname;		
-	GridFTPFactory* factory;
+
+    // sess
+    Session_handler* _sess;
 };
 
 
@@ -316,11 +318,11 @@ GridFTP_session* GridFTPFactory::get_recycled_handle(const std::string & hostnam
     GridFTP_session* res= NULL;
     std::multimap<std::string, GridFTP_session*>::iterator it=sess_cache.find(hostname); // try to find a session explicitely associated with this handle
     if(it == sess_cache.end()){ // if no session found, take a generic one
-        gfal_log(GFAL_VERBOSE_TRACE, "recycled unamed generic session found .... ");
+        gfal_log(GFAL_VERBOSE_TRACE, "no session associated with this hostname, try find generic one .... ");
         it = sess_cache.begin();
     }
     if(it != sess_cache.end()){
-        gfal_log(GFAL_VERBOSE_TRACE, "gridftp session for %s found in  cache !", hostname.c_str());
+        gfal_log(GFAL_VERBOSE_TRACE, "gridftp session for: %s found in  cache !", hostname.c_str());
         res = (*it).second;
         sess_cache.erase(it);
     }else{
@@ -721,7 +723,8 @@ ssize_t gridftp_write_stream(const Glib::Quark & scope,
 
 std::string gridftp_hostname_from_url(const char * url){
 	GError * tmp_err=NULL;
-	char buffer[GFAL_URL_MAX_LEN];
+    char buffer[GFAL_URL_MAX_LEN];
+    buffer[0] ='\0';
 	const int res = gfal_hostname_from_uri(url, buffer, GFAL_URL_MAX_LEN, &tmp_err);
 	if(res < 0)
 		throw Glib::Error(tmp_err);
