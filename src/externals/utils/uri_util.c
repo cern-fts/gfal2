@@ -38,7 +38,8 @@ int gfal_hostname_from_uri(const char * uri, char* buff_hostname, size_t s_buff,
 			p2 =p1;
 			while(*p2 != '\0' && *p2!= '/')
 				p2++;
-			return g_strlcpy(buff_hostname, p1, MIN(p2-p1+1,s_buff));
+            g_strlcpy(buff_hostname, p1, MIN(p2-p1+1,s_buff));
+            return 0;
 		}
 	}
 	g_set_error(err, scope_uri(), EINVAL, "Incorrect URI, no hostname");	
