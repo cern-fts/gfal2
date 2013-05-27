@@ -49,7 +49,7 @@ static std::string hostname_to_ip(const char * hostname)
          
     if ( (he = gethostbyname( hostname ) ) == NULL) 
     {        
-        return "hostname not resolved";
+        return std::string("hostname not resolved");
     }
  
     addr_list = (struct in_addr **) he->h_addr_list;
@@ -61,7 +61,7 @@ static std::string hostname_to_ip(const char * hostname)
         return ip;
     }
      
-    return "hostname not resolved";
+    return std::string("hostname not resolved");
 }
 
 static std::string returnHostname(const std::string &uri){
