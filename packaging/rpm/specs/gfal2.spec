@@ -1,7 +1,7 @@
 
 Name:				gfal2
 Version:			2.2.2
-Release:			4%{?dist}
+Release:			5%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -282,6 +282,9 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Thu May 27 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-5
+ - log IP and port of gridftp server
+ 
 * Thu May 16 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-1
  - replace gridftp exists with mlst
 
