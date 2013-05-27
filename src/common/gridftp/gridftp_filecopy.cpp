@@ -27,12 +27,46 @@
 #include <transfer/gfal_transfer_types_internal.h>
 #include <file/gfal_file_api.h>
 
+#include<sys/socket.h>
+#include<errno.h> //For errno - the error number
+#include<netdb.h> //hostent
+#include<arpa/inet.h>
+
 static Glib::Quark gfal_gridftp_scope_filecopy(){
     return Glib::Quark("GridFTP::Filecopy");
 }
 
 static Glib::Quark gfal_gsiftp_domain(){
     return Glib::Quark("GSIFTP");
+}
+
+static std::string hostname_to_ip(const char * hostname)
+{
+    struct hostent *he;
+    struct in_addr **addr_list;
+    int i;
+    char ip[100]={0};
+         
+    if ( (he = gethostbyname( hostname ) ) == NULL) 
+    {        
+        return "hostname not resolved";
+    }
+ 
+    addr_list = (struct in_addr **) he->h_addr_list;
+     
+    for(i = 0; addr_list[i] != NULL; i++) 
+    {
+        //Return the first one;
+        strcpy(ip , inet_ntoa(*addr_list[i]) );
+        return ip;
+    }
+     
+    return "hostname not resolved";
+}
+
+static std::string returnHostname(const std::string &uri){
+	Uri u0 = Uri::Parse(uri);
+	return  hostname_to_ip(u0.Host.c_str()) + ":" + u0.Port;	
 }
 
 const char * gridftp_checksum_transfer_config= "COPY_CHECKSUM_TYPE";
@@ -374,13 +408,13 @@ void GridftpModule::filecopy(gfalt_params_t params, const char* src, const char*
     {
         CPP_GERROR_TRY
             plugin_trigger_event(params, gfal_gsiftp_domain(), GFAL_EVENT_NONE,
-                                 GFAL_EVENT_TRANSFER_ENTER, "%s => %s", src, dst);
+                                 GFAL_EVENT_TRANSFER_ENTER, "(%s)%s => (%s)%s", returnHostname(src).c_str(), src, returnHostname(dst).c_str(), dst);
 
             gridftp_filecopy_copy_file_internal(_handle_factory, params,
                                                 src, dst);
 
             plugin_trigger_event(params, gfal_gsiftp_domain(), GFAL_EVENT_NONE,
-                                 GFAL_EVENT_TRANSFER_EXIT, "%s => %s", src, dst);
+                                 GFAL_EVENT_TRANSFER_EXIT, "(%s)%s => (%s)%s", returnHostname(src).c_str(), src, returnHostname(dst).c_str(), dst);
         CPP_GERROR_CATCH(&transfer_error);
     }
 
