@@ -27,10 +27,13 @@
 #include <transfer/gfal_transfer_types_internal.h>
 #include <file/gfal_file_api.h>
 
-#include<sys/socket.h>
-#include<errno.h> //For errno - the error number
-#include<netdb.h> //hostent
-#include<arpa/inet.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <netdb.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 
 static Glib::Quark gfal_gridftp_scope_filecopy(){
     return Glib::Quark("GridFTP::Filecopy");
@@ -40,33 +43,46 @@ static Glib::Quark gfal_gsiftp_domain(){
     return Glib::Quark("GSIFTP");
 }
 
-static std::string hostname_to_ip(const char * hostname)
+/*IPv6 compatible lookup*/
+std::string lookup_host (const char *host)
 {
-    struct hostent *he;
-    struct in_addr **addr_list;
-    int i;
-    char ip[100]={0};
-         
-    if ( (he = gethostbyname( hostname ) ) == NULL) 
-    {        
-        return std::string("hostname not resolved");
-    }
- 
-    addr_list = (struct in_addr **) he->h_addr_list;
-     
-    for(i = 0; addr_list[i] != NULL; i++) 
+  struct addrinfo hints, *res;
+  int errcode;
+  char addrstr[100]={0};
+  void *ptr;
+
+  memset (&hints, 0, sizeof (hints));
+  hints.ai_family = PF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags |= AI_CANONNAME;
+
+  errcode = getaddrinfo (host, NULL, &hints, &res);
+
+  while (res)
     {
-        //Return the first one;
-        strcpy(ip , inet_ntoa(*addr_list[i]) );
-        return ip;
+      inet_ntop (res->ai_family, res->ai_addr->sa_data, addrstr, 100);
+
+      switch (res->ai_family)
+        {
+        case AF_INET:
+          ptr = &((struct sockaddr_in *) res->ai_addr)->sin_addr;
+          break;
+        case AF_INET6:
+          ptr = &((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
+          break;
+        }
+      inet_ntop (res->ai_family, ptr, addrstr, 100);      
+      res = res->ai_next;
     }
-     
-    return std::string("hostname not resolved");
+
+  return std::string(addrstr);
 }
+
+
 
 static std::string returnHostname(const std::string &uri){
 	Uri u0 = Uri::Parse(uri);
-	return  hostname_to_ip(u0.Host.c_str()) + ":" + u0.Port;	
+	return  lookup_host(u0.Host.c_str()) + ":" + u0.Port;	
 }
 
 const char * gridftp_checksum_transfer_config= "COPY_CHECKSUM_TYPE";
