@@ -424,13 +424,13 @@ void GridftpModule::filecopy(gfalt_params_t params, const char* src, const char*
     {
         CPP_GERROR_TRY
             plugin_trigger_event(params, gfal_gsiftp_domain(), GFAL_EVENT_NONE,
-                                 GFAL_EVENT_TRANSFER_ENTER, "(%s)%s => (%s)%s", returnHostname(src).c_str(), src, returnHostname(dst).c_str(), dst);
+                                 GFAL_EVENT_TRANSFER_ENTER, "(%s) %s => (%s) %s", returnHostname(src).c_str(), src, returnHostname(dst).c_str(), dst);
 
             gridftp_filecopy_copy_file_internal(_handle_factory, params,
                                                 src, dst);
 
             plugin_trigger_event(params, gfal_gsiftp_domain(), GFAL_EVENT_NONE,
-                                 GFAL_EVENT_TRANSFER_EXIT, "(%s)%s => (%s)%s", returnHostname(src).c_str(), src, returnHostname(dst).c_str(), dst);
+                                 GFAL_EVENT_TRANSFER_EXIT, "(%s) %s => (%s) %s", returnHostname(src).c_str(), src, returnHostname(dst).c_str(), dst);
         CPP_GERROR_CATCH(&transfer_error);
     }
 
