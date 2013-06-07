@@ -60,7 +60,7 @@ int gfal_srm_ls_internal(gfal_srmv2_opt* opts, const char* endpoint,
     srm_context_t context;
 	
 	char errbuf[GFAL_ERRMSG_LEN]={0};	
-	int ret;							
+	int ret = -1;							
 
     if( (context =  gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_ERRMSG_LEN, &tmp_err)) != NULL){
         if( (ret = gfal_srm_external_call.srm_ls(context, input, output) ) < 0){
