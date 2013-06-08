@@ -27,12 +27,14 @@ struct PerformanceData {
             markerCount(0), array(NULL) {}
 
     ~PerformanceData() {
-        delete array;
+        if(array)
+        	delete [] array;
     }
 
     void update(const PerformanceMarker& in) {
         if (markerCount != in.count) {
-            delete array;
+            if(array)
+	    	delete [] array;
             markerCount = in.count;
             array = new PerformanceMarker[markerCount];
         }
