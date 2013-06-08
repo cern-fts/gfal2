@@ -49,7 +49,7 @@ std::string lookup_host (const char *host)
   struct addrinfo hints, *res;
   int errcode;
   char addrstr[100]={0};
-  void *ptr;
+  void *ptr = NULL;
 
   memset (&hints, 0, sizeof (hints));
   hints.ai_family = PF_UNSPEC;
@@ -71,7 +71,8 @@ std::string lookup_host (const char *host)
           ptr = &((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
           break;
         }
-      inet_ntop (res->ai_family, ptr, addrstr, 100);      
+      if(ptr)	
+      	inet_ntop (res->ai_family, ptr, addrstr, 100);      
       res = res->ai_next;
     }
 
