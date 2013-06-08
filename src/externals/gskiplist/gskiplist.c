@@ -193,7 +193,7 @@ gpointer gskiplist_search_internal(GSkiplist* sk, gpointer key){
 	cmp_value = gskiplist_compare(sk, node, key);         
     }
  
-    if( cmp_value == 0){ // equal to the next value to the next value -> insert and delete the old
+    if( cmp_value == 0 && node){ // equal to the next value to the next value -> insert and delete the old
 	  return node->data;
     }
     node = prev_node;

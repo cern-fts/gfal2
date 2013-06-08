@@ -271,11 +271,12 @@ static int gfal_srmv2_release_file_internal(gfal_srmv2_opt* opts, const char* en
               gfal_log(GFAL_VERBOSE_VERBOSE, "Release file without token");
 
           // Perform
-          if (context) {
+          if (context ) {
               input.nbfiles  = 1;
               input.reqtoken = NULL;
               input.surls    = (char**)&surl;
-              input.reqtoken = (char*)token;
+	      if(token)
+              	input.reqtoken = (char*)token;
 
               int ret = gfal_srm_external_call.srm_release_files(context, &input, &statuses);
 
