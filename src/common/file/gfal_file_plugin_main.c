@@ -215,7 +215,7 @@ struct dirent* gfal_plugin_file_readdir(plugin_handle plugin_data, gfal_file_han
 gfal_file_handle gfal_plugin_file_open(plugin_handle plugin_data, const char* path, int flag, mode_t mode, GError** err){
     errno =0;
     const int ret = open(path + file_prefix_len(), flag, mode);
-    if(ret <=0){
+    if(ret < 0){
         gfal_plugin_file_report_error(__func__, err);
         return NULL;
     }else{

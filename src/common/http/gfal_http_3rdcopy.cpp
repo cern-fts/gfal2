@@ -185,10 +185,16 @@ Davix::HttpRequest* gfal_http_3rdcopy_do_copy(GfalHttpInternal* davix,
 
             gfal_log(GFAL_VERBOSE_TRACE, "\t\t%s: Got delegation endpoint %s",
                     __func__, delegationEndpoint.c_str());
-            gfal_http_delegate(delegationEndpoint, err);
+            char *dlg_id = gfal_http_delegate(delegationEndpoint, err);
 
-            if (*err)
+            if (*err){
+	        if(dlg_id)
+			free(dlg_id);
                 break;
+	    }
+	    
+	   if(dlg_id)
+		free(dlg_id);
 
             gfal_log(GFAL_VERBOSE_TRACE, "\t\t%s: Delegated successfully",
                     __func__);

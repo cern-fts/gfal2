@@ -48,7 +48,7 @@ static int gfal_srmv2_bring_online_internal(gfal_srmv2_opt* opts, const char* en
     struct srm_bringonline_output output;
     GError                       *tmp_err = NULL;
     gfal_srm_params_t             params = gfal_srm_params_new(opts, &tmp_err);
-    int                           status;
+    int                           status = 0;
 
     memset(&output, 0, sizeof(output));
 
@@ -67,7 +67,7 @@ static int gfal_srmv2_bring_online_internal(gfal_srmv2_opt* opts, const char* en
             input.protocols      = gfal_srm_params_get_protocols(params);
             input.spacetokendesc = gfal_srm_params_get_spacetoken(params);
 
-            int ret;
+            int ret = 0;
 
             if (async)
                 ret = gfal_srm_external_call.srm_bring_online_async(context, &input, &output);

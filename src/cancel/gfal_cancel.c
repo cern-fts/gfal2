@@ -34,8 +34,7 @@
 
 
 int gfal2_cancel(gfal2_context_t context){
-    g_assert(context);
-    if(context->cancel == TRUE) // avoid recursive calls
+    if(context && context->cancel == TRUE) // avoid recursive calls
         return 0;
     g_mutex_lock(context->mux_cancel);
     const int n_cancel = g_atomic_int_get(&(context->running_ops));
@@ -57,7 +56,7 @@ gboolean gfal2_is_canceled(gfal2_context_t context){
 //  increase number of the running task for the cancel logic
 // return negative value if task is canceled
 int gfal2_start_scope_cancel(gfal2_context_t context, GError** err){
-    if(context->cancel){
+    if(context && context->cancel){
         g_set_error(err, gfal_cancel_quark(), ECANCELED, "[gfal2_cancel] operation canceled by user");
         return -1;
     }
@@ -66,7 +65,8 @@ int gfal2_start_scope_cancel(gfal2_context_t context, GError** err){
 }
 
 int gfal2_end_scope_cancel(gfal2_context_t context){
-    g_atomic_int_dec_and_test(&(context->running_ops));
+    if(context)
+    	g_atomic_int_dec_and_test(&(context->running_ops));
     return 0;
 }
 

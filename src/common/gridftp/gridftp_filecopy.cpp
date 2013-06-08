@@ -355,7 +355,7 @@ void GridftpModule::autoCleanFileCopy(gfalt_params_t params, GError* checked_err
 
 void GridftpModule::filecopy(gfalt_params_t params, const char* src, const char* dst)
 {
-    char checksum_type[GFAL_URL_MAX_LEN];
+    char checksum_type[GFAL_URL_MAX_LEN]={0};
     char checksum_user_defined[GFAL_URL_MAX_LEN];
     char checksum_src[GFAL_URL_MAX_LEN] = { 0 };
     char checksum_dst[GFAL_URL_MAX_LEN] = { 0 };
@@ -379,6 +379,7 @@ void GridftpModule::filecopy(gfalt_params_t params, const char* src, const char*
             Gfal::gerror_to_cpp(&get_default_error);
 
             strncpy(checksum_type, default_checksum_type, sizeof(checksum_type));
+	    checksum_type[GFAL_URL_MAX_LEN-1] = '\0';
             g_free(default_checksum_type);
 
             gfal_log(GFAL_VERBOSE_TRACE,

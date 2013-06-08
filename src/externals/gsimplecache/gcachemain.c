@@ -99,6 +99,7 @@ void gsimplecache_add_item_internal(GSimpleCache* cache, const char* key, void* 
 		ret->ref_count = 2;
 		cache->do_copy(item, ret->item);
 		g_hash_table_insert(cache->table, strdup(key), ret);
+		g_free(item);
 	}else{
 		(ret->ref_count)++;
 	}

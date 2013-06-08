@@ -188,7 +188,7 @@ static globus_result_t parse_mlst_line(char *line,
     char * symlink_target = NULL;
     char * modify_s = NULL;
     char * size_s = NULL;
-    globus_gass_copy_glob_entry_t type;
+    globus_gass_copy_glob_entry_t type = GLOBUS_GASS_COPY_GLOB_ENTRY_FILE;
 
     startline = line;
 
