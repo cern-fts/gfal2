@@ -46,10 +46,14 @@ static Glib::Quark gfal_gsiftp_domain(){
 /*IPv6 compatible lookup*/
 std::string lookup_host (const char *host)
 {
-  struct addrinfo hints, *res;
+  struct addrinfo hints, *res=NULL;
   int errcode;
   char addrstr[100]={0};
   void *ptr = NULL;
+  
+  if(!host){
+  	return std::string("cant.be.resolved");  
+  }
 
   memset (&hints, 0, sizeof (hints));
   hints.ai_family = PF_UNSPEC;
@@ -57,6 +61,9 @@ std::string lookup_host (const char *host)
   hints.ai_flags |= AI_CANONNAME;
 
   errcode = getaddrinfo (host, NULL, &hints, &res);
+  if (errcode != 0){
+  	return std::string("cant.be.resolved");
+  }
 
   while (res)
     {
@@ -71,12 +78,20 @@ std::string lookup_host (const char *host)
           ptr = &((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
           break;
         }
-      if(ptr)	
+      if(ptr){	
       	inet_ntop (res->ai_family, ptr, addrstr, 100);      
+	}
+
       res = res->ai_next;
     }
-
-  return std::string(addrstr);
+    
+  if(res)
+  	freeaddrinfo(res);
+  
+  if(strlen(addrstr) < 7)
+  	std::string("cant.be.resolved");
+  else
+  	return std::string(addrstr);
 }
 
 
