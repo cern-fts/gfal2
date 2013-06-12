@@ -1,7 +1,7 @@
 
 Name:				gfal2
 Version:			2.2.2
-Release:			9%{?dist}
+Release:			10%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -282,10 +282,11 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
-* Mon Jun 10 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-9
+* Mon Jun 10 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-10
  - fixed memory leaks and variables initialization
  - moved event exit message outside try-catch block
  - fix potential crash when can't resolve IP from hostname
+ - LCGUTIL-142: gfal2_context_t wrapped in shared_ptr to avoid early destruction
 
 * Thu Jun 06 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-6
  - log IP and port of gridftp server in IPv4/IPv6 compatible way
