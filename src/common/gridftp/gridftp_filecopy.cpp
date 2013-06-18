@@ -208,7 +208,12 @@ struct Callback_handler{
             }
         }
 
-        args->req->cancel_operation_async(gfal_gridftp_scope_filecopy(), "gsiftp performance marker timeout, cancel");
+        std::stringstream msg;
+        msg << "Transfer canceled because the gsiftp performance marker timeout of "
+            << args->timeout_value
+            << "seconds has been exceeded.";
+        args->req->cancel_operation_async(gfal_gridftp_scope_filecopy(),
+                                          msg.str());
 
         return NULL;
     }
