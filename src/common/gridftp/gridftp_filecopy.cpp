@@ -89,7 +89,7 @@ std::string lookup_host (const char *host)
   	freeaddrinfo(res);
   
   if(strlen(addrstr) < 7)
-  	std::string("cant.be.resolved");
+  	return std::string("cant.be.resolved");
   else
   	return std::string(addrstr);
 }
