@@ -113,7 +113,7 @@ IF(PLUGIN_SRM)
        # checksum_test_simple("SRM_DCACHE_MD5" ${srm_valid_dcache_stat} MD5) Dcache does not support dynamic checksum calculation
 	mkdir_test_all("SRM_DPM" ${srm_prefix_dpm})
 	mkdir_test_all("SRM_DCACHE" ${srm_prefix_dcache})
-        chmod_test_all("SRM_DPM" ${srm_valid_dir_root} 0565 060 360 767)
+        chmod_test_all("SRM_DPM" ${srm_valid_dir_root} 0575 070 370 777)
 	rmdir_test_all("SRM_DPM" ${srm_valid_dir_root} ${srm_valid_dpm_stat})	
 	test_readdir_full("SRM_DPM" ${srm_valid_dir_root} )	
 	rwt_test_all("SRM_DPM" ${srm_valid_dir_root} 4578)
