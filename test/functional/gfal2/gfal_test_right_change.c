@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <glib.h>
 #include <gfal_api.h>
+#include <common/gfal_lib_test.h>
 
 int main(int argc, char **argv)
 {
@@ -15,6 +16,7 @@ int main(int argc, char **argv)
 	mode_t mode;
 	char *file;
 	struct stat initial_stat, current_stat;
+    char buff[2048];
 	
 	if (argc < 3) {
 		fprintf (stderr, "usage: %s file mode1 mode2 mode3 mode4\n", argv[0]);
@@ -24,10 +26,17 @@ int main(int argc, char **argv)
 	file = argv[1];
 	gfal_set_verbose(GFAL_VERBOSE_TRACE);
 
+    generate_random_uri(file, "right_change_test_generated", buff, 2048);
+
+    printf("Creating directory for right check %s \n", buff);
+    if( gfal_mkdir(buff, 0755) < 0){
+        gfal_posix_check_error();
+        g_assert_not_reached();
+    }
 
 	for(i=2; i < argc; ++i){
 		printf ("Checking initial right of %s  ...\n", file);		
-		if (gfal_stat (file, &initial_stat) < 0) {
+        if (gfal_stat (buff, &initial_stat) < 0) {
 			gfal_posix_check_error();
 			g_assert_not_reached();
 		}
@@ -40,12 +49,12 @@ int main(int argc, char **argv)
 		}
 		printf ("Changing mode of '%s' to %o ...\n", file, mode);
 		
-		if (gfal_chmod (file, mode) < 0) {
+        if (gfal_chmod (buff, mode) < 0) {
 			gfal_posix_check_error();
 			g_assert_not_reached();
 		}
 
-		if (gfal_stat (file, &current_stat) < 0) {
+        if (gfal_stat (buff, &current_stat) < 0) {
 			gfal_posix_check_error();
 			g_assert_not_reached();
 		}		
@@ -54,12 +63,12 @@ int main(int argc, char **argv)
 	    g_assert(mode == (current_stat.st_mode & 0777));
 	    
 	    printf(" rolling back the change ....");  
-		if (gfal_chmod (file, initial_stat.st_mode) < 0) {
+        if (gfal_chmod (buff, initial_stat.st_mode) < 0) {
 			gfal_posix_check_error();
 			g_assert_not_reached();			
 		}
 		
-		if (gfal_stat (file, &current_stat) < 0) {
+        if (gfal_stat (buff, &current_stat) < 0) {
 			gfal_posix_check_error();
 			g_assert_not_reached();
 		}			

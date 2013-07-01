@@ -138,7 +138,7 @@ IF (FUNCTIONAL_TESTS)
         add_executable(gfal_test_mkdir_full        ${src_gfalmkdir_full} )
         target_link_libraries(gfal_test_mkdir_full ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})
         
-        add_executable(gfal_test_right_change ${src_gfaltestrightchange})
+        add_executable(gfal_test_right_change ${src_gfaltestrightchange} ${src_lib_test})
         target_link_libraries(gfal_test_right_change ${OUTPUT_NAME_MAIN} ${GLIB2_PKG_LIBRARIES})        
         
         add_executable(gfal_test_rmdir_full ${src_gfaltestrmdirfull})
