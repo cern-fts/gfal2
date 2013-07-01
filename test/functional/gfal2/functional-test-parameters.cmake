@@ -34,7 +34,7 @@ SET(srm_valid_storm_src_file "${srm_prefix_storm}")
 
 ## gsiftp parameters
 #
-SET(gsiftp_prefix_dpm "gsiftp://dcache-door-desy09.desy.de:2811/pnfs/desy.de/${MY_VO}/gfal2-tests")
+SET(gsiftp_prefix_dpm "gsiftp://lxfsra10a01.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(gsiftp_valid_dpm_stat "${gsiftp_prefix_dpm}/testread0011")
 SET(gsiftp_valid_dpm_src_file "${gsiftp_valid_dpm_stat}")
 SET(gsiftp_valid_dpm_chmod "${gsiftp_prefix_dpm}/test_change_right_gsidcap")
