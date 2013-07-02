@@ -79,6 +79,8 @@ SET(ONLY_TESTS FALSE
 	CACHE STRING "enable or disable out of project dir")
 
 
+IF(NOT ONLY_TESTS)
+
 # libs checks
 pkg_check_modules(GLIB2_PKG REQUIRED glib-2.0)
 pkg_check_modules(GTHREAD2_PKG REQUIRED gthread-2.0)
@@ -118,9 +120,9 @@ FILE(GLOB lst_conf_files "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/*.conf")
 install(FILES ${lst_conf_files}
 			DESTINATION ${SYSCONF_INSTALL_DIR}/gfal2.d/)
 
-IF(NOT ONLY_TESTS)
-	add_subdirectory (doc)
-	add_subdirectory (src)
+
+add_subdirectory (doc)
+add_subdirectory (src)
 ENDIF(NOT ONLY_TESTS)
 
 
