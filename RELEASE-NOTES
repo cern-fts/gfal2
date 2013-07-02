@@ -1,7 +1,37 @@
 GFAL 2.0 RELEASE-NOTE:
 
-Trunk :
-- remove credential converter from http plugin
+* Tue Jul 02 2013 Adrien Devresse <adevress at cern.ch> - 2.3.0-0
+- [LCGUTIL-99] gfal2_cancel crashes gfal2 if called twice
+- [LCGUTIL-135] GFAL 2.0 : Migrate the http plugin support for PEM from the old manual one to the new Davix one
+- [LCGUTIL-143] GFAL 2.0 : Regression bug of the stat() call against the dcache instance
+- [LCGUTIL-145] GridFTP plugin tries to delete the destination when getting the source checksum fails (!)
+- [LCGUTIL-147] GFAL 2.0 : bug on the session re-use mechanism
+- [LCGUTIL-165] GFAL 2.0 : enable HTTP/Webdav support by default, packaged on EPEL with davix
+- [LCGUTIL-179] manpage-section-mismatch
+- [LCGUTIL-141] GFAL 2 : add a flag in the gsiftp standard option in order to allow the gsiftp redirection, this is needed for the DPM gsiftp redirection mechanism
+- [LCGUTIL-51]  GFAL 2.0 : implement the last missing operation : srm_mv logic for file renaming
+- [LCGUTIL-144] GFAL 2.0 : Update all functional test for a post-EMI usage
+- First version fully compatible with a standard FTS 3.0 release
+- Minor error correction from coverity  report
+- bug fixes related to gridFTP thread safety for meta-data operations.
+
+* Thu Jul 02 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-11
+ - pass gfal2 to coverity and fix minor issues reported
+
+* Mon Jun 10 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-10
+ - fixed memory leaks and variables initialization
+ - moved event exit message outside try-catch block
+ - fix potential crash when can't resolve IP from hostname
+ - LCGUTIL-142: gfal2_context_t wrapped in shared_ptr to avoid early destruction
+
+* Thu Jun 06 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-6
+ - log IP and port of gridftp server in IPv4/IPv6 compatible way
+
+* Thu May 27 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-5
+ - log IP and port of gridftp server
+
+* Thu May 16 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-1
+ - replace gridftp exists with mlst
 
 * Wed Mar 20 2013 Adrien Devresse <adevress at cern.ch> - 2.2.0-0
  - fix thread safety issue with gsiftp plugin
