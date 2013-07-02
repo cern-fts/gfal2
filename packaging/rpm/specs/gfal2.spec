@@ -1,7 +1,7 @@
 
 Name:				gfal2
 Version:			2.2.2
-Release:			10%{?dist}
+Release:			11%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -282,6 +282,9 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Thu Jul 02 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-11
+ - pass gfal2 to coverity and fix minor issues reported
+
 * Mon Jun 10 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-10
  - fixed memory leaks and variables initialization
  - moved event exit message outside try-catch block
