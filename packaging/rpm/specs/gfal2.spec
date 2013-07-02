@@ -157,7 +157,7 @@ Requires:			%{name}-plugin-dcap%{?_isa} = %{version}-%{release}
 Requires:			%{name}-plugin-srm%{?_isa} = %{version}-%{release} 
 Requires:			%{name}-plugin-rfio%{?_isa} = %{version}-%{release} 
 Requires:			%{name}-plugin-gridftp%{?_isa} = %{version}-%{release} 
-Requires:           %{name}-plugin-http%{?_isa} = %{version}-%{release}
+Requires:                       %{name}-plugin-http%{?_isa} = %{version}-%{release}
 
 
 %description all
