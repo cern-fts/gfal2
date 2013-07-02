@@ -7,7 +7,7 @@ SET(MY_VO "dteam")
 SET(MY_VO_STORM "${MY_VO}")
 
 #dpm parameters
-SET(srm_prefix_dpm "srm://grid05.lal.in2p3.fr/dpm/lal.in2p3.fr/home/${MY_VO}/gfal2-tests")
+SET(srm_prefix_dpm "srm://lxfsra10a01.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/gfal2-tests") ## partial endpoint, test auto-resolve
 SET(srm_valid_dpm_stat "${srm_prefix_dpm}/testread0011")
 SET(srm_valid_dpm_bigfile "${srm_prefix_dpm}/testbig")
 SET(srm_valid_dpm_chmod "${srm_prefix_dpm}/test_change_right")
