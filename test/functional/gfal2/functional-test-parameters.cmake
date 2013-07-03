@@ -23,7 +23,7 @@ SET(srm_valid_dcache_dir_root "${srm_prefix_dcache}")
 SET(srm_valid_dcache_src_file "${srm_valid_dcache_stat}")
 
 # storm parameters
-SET(srm_prefix_storm "srm://storm-01.roma3.infn.it/${MY_VO_STORM}/gfal2-tests")
+SET(srm_prefix_storm "srm://prod-se-01.pd.infn.it:8444/${MY_VO_STORM}/gfal2-tests")
 SET(srm_valid_storm_stat "${srm_prefix_storm}/testread0011")
 SET(srm_valid_storm_chmod "${srm_prefix_storm}/test_change_right")
 SET(srm_valid_storm_dir_root "${srm_prefix_storm}")
