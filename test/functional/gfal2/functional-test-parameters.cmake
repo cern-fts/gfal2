@@ -10,7 +10,6 @@ SET(MY_VO_STORM "${MY_VO}")
 SET(srm_prefix_dpm "srm://lxfsra10a01.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/gfal2-tests") ## partial endpoint, test auto-resolve
 SET(srm_valid_dpm_stat "${srm_prefix_dpm}/testread0011")
 SET(srm_valid_dpm_bigfile "${srm_prefix_dpm}/testbig")
-SET(srm_valid_dpm_chmod "${srm_prefix_dpm}/test_change_right")
 SET(srm_valid_dir_root "${srm_prefix_dpm}")
 SET(srm_valid_dpm_src_file "${srm_valid_dpm_stat}")
 
@@ -18,26 +17,20 @@ SET(srm_valid_dpm_src_file "${srm_valid_dpm_stat}")
 SET(srm_prefix_dcache "srm://dcache-se-desy.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/${MY_VO}/gfal2-tests")
 SET(srm_valid_dcache_bigfile "${srm_prefix_dcache}/testbig")
 SET(srm_valid_dcache_stat "${srm_prefix_dcache}/testread0011")
-SET(srm_valid_dcache_chmod "${srm_prefix_dcache}/test_change_right")
 SET(srm_valid_dcache_dir_root "${srm_prefix_dcache}")
 SET(srm_valid_dcache_src_file "${srm_valid_dcache_stat}")
 
 # storm parameters
 SET(srm_prefix_storm "srm://prod-se-01.pd.infn.it:8444/${MY_VO_STORM}/gfal2-tests")
 SET(srm_valid_storm_stat "${srm_prefix_storm}/testread0011")
-SET(srm_valid_storm_chmod "${srm_prefix_storm}/test_change_right")
 SET(srm_valid_storm_dir_root "${srm_prefix_storm}")
 SET(srm_valid_storm_src_file "${srm_prefix_storm}")
-
-#SET(srm_prefix_EOS "srm://srm.pic.es/pnfs/pic.es/data/dteam")
-#SET(srm_valid_EOS_stat "${srm_prefix_castor}/testread0011")
 
 ## gsiftp parameters
 #
 SET(gsiftp_prefix_dpm "gsiftp://lxfsra10a01.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(gsiftp_valid_dpm_stat "${gsiftp_prefix_dpm}/testread0011")
 SET(gsiftp_valid_dpm_src_file "${gsiftp_valid_dpm_stat}")
-SET(gsiftp_valid_dpm_chmod "${gsiftp_prefix_dpm}/test_change_right_gsidcap")
 SET(gsiftp_valid_dir_root "${gsiftp_prefix_dpm}")
 
 ## lfc parameters
@@ -54,14 +47,12 @@ SET(lfc_full_valid_dir_root "${lfc_full_prefix}")
 # dcap dcache parameters
 SET(dcap_prefix "gsidcap://dcache-door-desy09.desy.de:22128/pnfs/desy.de/${MY_VO}/gfal2-tests/testread0011")
 SET(dcap_stat_ok "${dcap_prefix}/testread0011")
-SET(dcap_chmod_ok "${dcap_prefix}/test_change_right")
 SET(dcap_valid_dir_root "${dcap_prefix}")
 
 #local file parameters
 SET(file_base_path "/tmp/")
 SET(file_prefix "file://${file_base_path}")
 FILE(WRITE "${file_base_path}/testread_0011" "hello world agdlkmgfmklmklklmvc;!:c;:!;:!xc;!:vx!;:bvx!;:!;:o=)=)à=àdg:;;:!:!;!:;b")
-FILE(WRITE "${file_base_path}/test_change_right" "testblabl")
 SET(file_stat_ok "${file_prefix}/testread_0011")
 SET(file_valid_chmod "${file_prefix}/test_change_right")
 
