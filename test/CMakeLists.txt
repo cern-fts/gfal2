@@ -16,14 +16,6 @@ IF(ONLY_TESTS)
 	SET(OUTPUT_NAME_TRANSFER ${GFAL2_TRANSFER_PKG_LIBRARIES})	
 ENDIF(ONLY_TESTS)
 
-IF(UNIT_TESTS OR FUNCTIONAL_TESTS)
-# incldues tests
-add_subdirectory(gtest-1.6.0)
-ENDIF(UNIT_TESTS OR FUNCTIONAL_TESTS)
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/gtest-1.6.0/include)
-
-
 #mock src
 FILE(GLOB src_mock "mock/*.c")
 SET(headers_mock "mock/")

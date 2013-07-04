@@ -39,7 +39,7 @@ Requires:		dcap-devel%{?_isa}
 Requires:		globus-gass-copy-devel%{?_isa}
 # globus testing tools
 Requires:               globus-proxy-utils
-
+Requires:		gtest-devel
 
 %description
 test suite for gfal 2.0
