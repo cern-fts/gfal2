@@ -5,8 +5,8 @@ SET(UNIT_TESTS FALSE
 	CACHE STRING "enable compilation of unit tests")
 SET(FUNCTIONAL_TESTS FALSE
 	CACHE STRING "functional tests for gfal ")
-SET(LOAD_TESTS FALSE
-        CACHE STRING "load tests for gfal ")
+SET(STRESS_TESTS FALSE
+        CACHE STRING "stress tests for gfal ")
 	
 
 IF(ONLY_TESTS)
