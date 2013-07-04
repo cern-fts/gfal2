@@ -112,7 +112,7 @@ include_directories( ${GLIB2_PKG_INCLUDE_DIRS} ${GTHREAD2_PKG_INCLUDE_DIRS})
 
 
 #install doc license
-install(FILES "LICENSE" "README" "RELEASE-NOTES" "VERSION" "DESCRIPTION"
+install(FILES "LICENSE" "README" "RELEASE-NOTES" "DESCRIPTION"
 			DESTINATION ${DOC_INSTALL_DIR})
 			
 # install configuration files
