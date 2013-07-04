@@ -61,16 +61,17 @@ SET(ONLY_TESTS FALSE
 # libs checks
 pkg_check_modules(GLIB2_PKG REQUIRED glib-2.0)
 pkg_check_modules(GTHREAD2_PKG REQUIRED gthread-2.0)
-pkg_search_module(GLIBMM_PKG REQUIRED glibmm glibmm-2.6 glibmm-2.4)
 
 # include directories
 include_directories(${GLIB2_PKG_INCLUDE_DIRS})
 include_directories(${GTHREAD2_PKG_INCLUDE_DIRS})
-include_directories(${GLIBMM_PKG_INCLUDE_DIRS})
 
 # Core and plugins
 IF(NOT ONLY_TESTS)
+    pkg_search_module(GLIBMM_PKG REQUIRED glibmm glibmm-2.6 glibmm-2.4)
     pkg_check_modules(UUID_PKG REQUIRED uuid)
+
+    include_directories(${GLIBMM_PKG_INCLUDE_DIRS})
 
    # general parameters for configuration
     add_definitions( -DGFAL_PLUGIN_DIR_DEFAULT="${PLUGIN_INSTALL_DIR}" )
