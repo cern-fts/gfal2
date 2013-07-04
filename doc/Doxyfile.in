@@ -459,13 +459,14 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = @CMAKE_SOURCE_DIR@/doc/src/ @CMAKE_SOURCE_DIR@/src/posix/gfal_posix_api.h
-INPUT                  += @CMAKE_SOURCE_DIR@/src/gfal_api.h @CMAKE_SOURCE_DIR@/src/transfer/gfal_transfer.h
-INPUT                  += @CMAKE_SOURCE_DIR@/src/transfer/gfal_transfer_types.h
-INPUT                  += @CMAKE_SOURCE_DIR@/src/logger/gfal_logger.h @CMAKE_SOURCE_DIR@/src/common/gfal_constants.h
-INPUT                  += @CMAKE_SOURCE_DIR@/src/global/gfal_global.h
-INPUT                  += @CMAKE_SOURCE_DIR@/src/common/gfal_common_plugin_interface.h
-INPUT                  += @CMAKE_SOURCE_DIR@/src/config/gfal_config.h
+INPUT                  = @CMAKE_SOURCE_DIR@/doc/src
+INPUT                  += @CMAKE_SOURCE_DIR@/src/core/posix/gfal_posix_api.h
+INPUT                  += @CMAKE_SOURCE_DIR@/src/core/gfal_api.h @CMAKE_SOURCE_DIR@/src/core/transfer/gfal_transfer.h
+INPUT                  += @CMAKE_SOURCE_DIR@/src/core/transfer/gfal_transfer_types.h
+INPUT                  += @CMAKE_SOURCE_DIR@/src/core/logger/gfal_logger.h @CMAKE_SOURCE_DIR@/src/core/common/gfal_constants.h
+INPUT                  += @CMAKE_SOURCE_DIR@/src/core/global/gfal_global.h
+INPUT                  += @CMAKE_SOURCE_DIR@/src/core/common/gfal_common_plugin_interface.h
+INPUT                  += @CMAKE_SOURCE_DIR@/src/core/config/gfal_config.h
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 

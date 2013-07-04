@@ -1,8 +1,9 @@
 #include <davix.hpp>
 #include <unistd.h>
-#include "gfal_http_plugin.h"
 #include <transfer/gfal_transfer_plugins.h>
 #include <cstdio>
+#include <common/gfal_common_errverbose.h>
+#include "gfal_http_plugin.h"
 
 struct PerformanceMarker {
     int    index, count;
