@@ -41,5 +41,5 @@ add_subdirectory(common)
 
 add_subdirectory(functional/gfal2)   
 add_subdirectory(functional/old)   
-add_subdirectory(loadtests)
+add_subdirectory(stress-test)
 add_subdirectory(unit)

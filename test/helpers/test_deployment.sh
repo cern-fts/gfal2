@@ -5,7 +5,7 @@
 set -e
 
 
-PROXY_PATH=$(ls /tmp/x509up_u$UID*)
+PROXY_PATH=${X509_USER_PROXY-`ls /tmp/x509up_u$UID*`}
 
 echo "Proxy path found to $PROXY_PATH"
 
