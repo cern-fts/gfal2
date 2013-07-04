@@ -98,10 +98,6 @@ IF (MAIN_CORE)
                     "common/gfal_types.h"
 			DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/common ) # install headers common
 
-	FILE(GLOB l_examples "../testing/example/*.c")
-	install(FILES ${l_examples}
-			DESTINATION ${DOC_INSTALL_DIR}/examples/ ) # install examples 
-			
 	install(FILES 	"global/gfal_global.h"
 			DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/global)
 

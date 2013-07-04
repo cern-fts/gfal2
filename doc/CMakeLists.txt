@@ -6,10 +6,12 @@ IF(MAIN_DOC)
 
 	file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/build/html/")
 	addDoxyGeneration("Doxyfile.in")
-	SET( l_doc "${CMAKE_CURRENT_BINARY_DIR}/build/html/")
 
-	install(DIRECTORY ${l_doc}
-			DESTINATION ${DOC_INSTALL_DIR}/html/) # install examples 
+	install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/build/html/"
+			DESTINATION ${DOC_INSTALL_DIR}/html/)
+
+	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/"
+			DESTINATION ${DOC_INSTALL_DIR}/examples)
 
 ENDIF(MAIN_DOC)
 
