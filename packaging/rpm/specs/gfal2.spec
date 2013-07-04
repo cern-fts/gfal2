@@ -204,7 +204,6 @@ make DESTDIR=%{buildroot} install
 %defattr (-,root,root)
 %{_bindir}/gfal2_version
 %{_docdir}/%{name}-%{version}/DESCRIPTION
-%{_docdir}/%{name}-%{version}/VERSION
 %{_mandir}/man1/gfal2_version.1*
 
 %files core
