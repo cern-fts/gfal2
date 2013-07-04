@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <gfal_api.h>
-#include <posix/gfal_posix_internal.h>
+#include <posix/gfal_posix_api.h>
 
 int main(int argc, char **argv)
 {
@@ -16,8 +16,10 @@ int main(int argc, char **argv)
     const char *dst = argv[2];
 
     if (gfal_rename(src, dst) != 0) {
+        char errbuffer[512];
         perror ("gfal_rename");
-        fprintf(stderr, "%s\n", (*gfal_posix_get_last_error())->message);
+        gfal_posix_strerror_r(errbuffer, sizeof(errbuffer));
+        fprintf(stderr, "%s\n", errbuffer);
         return 1;
     }
 

@@ -9,15 +9,17 @@ SET(STRESS_TESTS FALSE
         CACHE STRING "stress tests for gfal ")
 	
 
-IF(ONLY_TESTS)
+if(ONLY_TESTS)
 	pkg_check_modules(GFAL2_PKG REQUIRED gfal2)
 	pkg_check_modules(GFAL2_TRANSFER_PKG REQUIRED gfal_transfer)
-	SET(GFAL2_LINK ${GFAL2_PKG_LIBRARIES})
-	SET(GFAL2_TRANSFER_LINK ${GFAL2_TRANSFER_PKG_LIBRARIES})	
-ELSE(ONLY_TESTS)
-  SET(GFAL2_LINK gfal2)
-  SET(GFAL2_TRANSFER_LINK gfal2_transfer)
-ENDIF(ONLY_TESTS)
+	set(GFAL2_LINK ${GFAL2_PKG_LIBRARIES})
+	set(GFAL2_TRANSFER_LINK ${GFAL2_TRANSFER_PKG_LIBRARIES})
+    include_directories(${GFAL2_PKG_INCLUDE_DIRS})
+    include_directories(${GFAL2_TRANSFER_PKG_INCLUDE_DIRS})
+else(ONLY_TESTS)
+  set(GFAL2_LINK gfal2)
+  set(GFAL2_TRANSFER_LINK gfal2_transfer)
+endif(ONLY_TESTS)
 
 execute_process(COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf_test  ${CMAKE_CURRENT_BINARY_DIR}/conf_test) 
 

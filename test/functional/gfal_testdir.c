@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <gfal_api.h>
-#include <posix/gfal_posix_internal.h>
+#include <posix/gfal_posix_api.h>
 
 int main(int argc, char **argv)
 {
@@ -20,9 +20,11 @@ int main(int argc, char **argv)
 	gfal_set_verbose(10);
 
 	if ((dir = gfal_opendir (argv[1])) == NULL) {
+    char errbuffer[512];
 		perror ("gfal_opendir");
-		fprintf(stderr, "%s\n", (*gfal_posix_get_last_error())->message);
-        return 1;
+    gfal_posix_strerror_r(errbuffer, sizeof(errbuffer));
+		fprintf(stderr, "%s\n", errbuffer);
+    return 1;
 	}
 
     
