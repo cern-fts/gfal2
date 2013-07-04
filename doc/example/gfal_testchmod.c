@@ -8,7 +8,7 @@
 #include <errno.h>
 #include "gfal_api.h"
 
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	int mode, error = 0;
 	char *file;
