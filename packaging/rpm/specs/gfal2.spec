@@ -37,6 +37,8 @@ BuildRequires:		globus-gass-copy-devel
 BuildRequires:		davix-devel
 BuildRequires:		gsoap-devel
 BuildRequires:		gridsite-devel
+#tests dependencies
+BuildRequires:		gtest-devel  
 
 Requires:			%{name}-core = %{version}-%{release}
 Requires:			%{name}-transfer = %{version}-%{release}
@@ -182,7 +184,7 @@ make doc
 %check
 export GFAL_PLUGIN_DIR=${PWD}/plugins/
 export GFAL_CONFIG_DIR=${PWD}/test/conf_test/
-export LD_LIBRARY_PATH=${PWD}/src:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=${PWD}/src/core:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH=${PWD}/plugins:${LD_LIBRARY_PATH}
 ctest -V
 

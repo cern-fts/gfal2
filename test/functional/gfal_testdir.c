@@ -4,8 +4,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "gfal_api.h"
-#include "gfal_posix_internal.h"
+#include <gfal_api.h>
+#include <posix/gfal_posix_internal.h>
 
 int main(int argc, char **argv)
 {

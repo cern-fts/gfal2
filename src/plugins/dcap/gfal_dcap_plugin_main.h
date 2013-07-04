@@ -16,12 +16,25 @@
 */
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <gfal_api.h>
+/*
+ * gfal_dcap_plugin_main.h
+ * header for the external dcap plugin for gfal ( based on the old dcap part in gfal legacy )
+ * author Devresse Adrien
+ */
 
-int main(int argc, char **argv)
-{
-	printf("GFAL-client-%s\n", gfal_version());
-	return (0);
-}
+#include <regex.h>
+#include <common/gfal_common_plugin.h>
+#include <common/gfal_types.h>
+
+typedef struct _gfal_plugin_dcap_handle{
+	gfal_handle handle;
+	struct dcap_proto_ops* ops;
+	regex_t rex;
+}* gfal_plugin_dcap_handle;
+
+
+
+// Entry point of the plugin
+gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err);
+
+

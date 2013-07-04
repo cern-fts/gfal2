@@ -1,3 +1,4 @@
+#pragma once
 /* 
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
@@ -15,13 +16,19 @@
 * limitations under the License.
 */
 
+/*
+ * @file gfal_common_srm_readdir.h
+ * @brief header file for the readdir function on the srm url type
+ * @author Devresse Adrien
+ * @version 2.0
+ * @date 14/06/2011
+ * */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <gfal_api.h>
+#include <glib.h>
+#include <dirent.h>
+#include <common/gfal_common_filedescriptor.h>
 
-int main(int argc, char **argv)
-{
-	printf("GFAL-client-%s\n", gfal_version());
-	return (0);
-}
+
+
+struct dirent* gfal_srm_readdirG(plugin_handle handle, gfal_file_handle fh, GError** err);
+

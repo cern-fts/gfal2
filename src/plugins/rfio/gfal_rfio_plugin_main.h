@@ -16,12 +16,32 @@
 */
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <gfal_api.h>
+/**
+ * @file gfal_rfio_plugin_main.c
+ * @brief header file for the external rfio's plugin for gfal ( based on the old rfio part in gfal legacy )
+ * @author Devresse Adrien
+ * @version 0.1
+ * @date 30/06/2011
+ * 
+ **/
 
-int main(int argc, char **argv)
-{
-	printf("GFAL-client-%s\n", gfal_version());
-	return (0);
-}
+
+#include <regex.h>
+#include <time.h> 
+#include <common/gfal_types.h>
+
+typedef struct _gfal_plugin_rfio_handle{
+	gfal_handle handle;
+	struct rfio_proto_ops* rf;
+	regex_t rex;
+}* gfal_plugin_rfio_handle;
+
+
+gboolean gfal_rfio_check_url(plugin_handle, const char* url,  plugin_mode mode, GError** err);
+
+
+
+gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err);
+
+
+

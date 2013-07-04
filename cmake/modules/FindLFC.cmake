@@ -25,8 +25,9 @@ find_library(LFC_LIBRARIES
 # LFC Include Directories
 # -----------------------------------------------------
 find_path(LFC_INCLUDE_DIR 
-    NAMES lfc/lfc_api.h 
+    NAMES lfc_api.h 
     HINTS ${LFC_LOCATION} ${LFC_LOCATION}/include ${LFC_LOCATION}/include/*
+          /usr/include/lfc
     DOC "The LFC include directory"
 )
 if(LFC_INCLUDE_DIR)

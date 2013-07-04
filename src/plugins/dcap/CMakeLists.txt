@@ -1,0 +1,29 @@
+cmake_minimum_required (VERSION 2.6)
+
+
+if (PLUGIN_DCAP)
+    file (GLOB src_dcap "*.c*")
+
+    find_package(DCAP REQUIRED)
+    include_directories(${DCAP_INCLUDE_DIR})
+
+    add_definitions(-D_REENTRANT)
+    add_definitions(${DCAP_CFLAGS})
+
+    add_library(plugin_dcap SHARED ${src_dcap})
+
+    target_link_libraries(plugin_dcap ${OUTPUT_NAME}${DCAP_LIBRARIES})
+
+    set_target_properties(plugin_dcap PROPERTIES   
+                            CLEAN_DIRECT_OUTPUT 1
+                            OUTPUT_NAME "gfal_plugin_dcap"
+                            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins)
+
+    install(TARGETS plugin_dcap
+            LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
+
+    install(FILES  "README_PLUGIN_DCAP"
+            DESTINATION ${DOC_INSTALL_DIR})
+
+endif (PLUGIN_DCAP)
+

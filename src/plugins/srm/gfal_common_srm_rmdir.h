@@ -1,3 +1,4 @@
+#pragma once
 /* 
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
@@ -15,13 +16,16 @@
 * limitations under the License.
 */
 
+/*
+ * @file gfal_common_srm_rmdir.h
+ * @brief header file for the rmdir function on the srm url type
+ * @author Devresse Adrien
+ * @version 2.0
+ * @date 22/05/2011
+ * */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <gfal_api.h>
+#include <glib.h>
+#include <common/gfal_types.h>
+#include "gfal_common_srm_internal_layer.h" 
 
-int main(int argc, char **argv)
-{
-	printf("GFAL-client-%s\n", gfal_version());
-	return (0);
-}
+int gfal_srm_rmdirG(plugin_handle handle, const char* surl, GError** err); 
