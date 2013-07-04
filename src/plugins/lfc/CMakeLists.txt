@@ -10,7 +10,7 @@ if (PLUGIN_LFC)
     file (GLOB src_lfc "*.c*")
     add_library (plugin_lfc SHARED ${src_lfc})
 
-    target_link_libraries(plugin_lfc ${OUTPUT_NAME}gfal2_utils gfal2_mds ${LFC_LIBRARIES} ${UUID_PKG_LIBRARIES})
+    target_link_libraries(plugin_lfc gfal2 gfal2_utils gfal2_mds ${LFC_LIBRARIES} ${UUID_PKG_LIBRARIES})
 
     set_target_properties(plugin_lfc PROPERTIES
                             CLEAN_DIRECT_OUTPUT 1

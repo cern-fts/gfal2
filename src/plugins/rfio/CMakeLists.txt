@@ -10,7 +10,7 @@ if (PLUGIN_RFIO)
 
     add_library (plugin_rfio SHARED ${src_rfio})
 
-    target_link_libraries (plugin_rfio ${OUTPUT_NAME}gfal2_utils ${DPM_LIBRARIES})
+    target_link_libraries (plugin_rfio gfal2 gfal2_utils ${DPM_LIBRARIES})
 
     set_target_properties(plugin_rfio PROPERTIES
                             CLEAN_DIRECT_OUTPUT 1

@@ -8,7 +8,7 @@ if (PLUGIN_GRIDFTP)
     add_definitions( ${GLOBUS_GASS_COPY_PKG_CFLAGS})
     add_library (plugin_gridftp SHARED ${src_gridftp})
 
-    target_link_libraries(plugin_gridftp ${OUTPUT_NAME}${OUTPUT_NAME_TRANSFER} gfal2_utils
+    target_link_libraries(plugin_gridftp gfal2 gfal2_transfer gfal2_utils
 			              ${GLOBUS_GASS_COPY_PKG_LIBRARIES}
                           gomp)
     include_directories(${GLOBUS_GASS_COPY_PKG_INCLUDE_DIRS}

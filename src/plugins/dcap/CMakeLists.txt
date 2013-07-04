@@ -12,7 +12,7 @@ if (PLUGIN_DCAP)
 
     add_library(plugin_dcap SHARED ${src_dcap})
 
-    target_link_libraries(plugin_dcap ${OUTPUT_NAME}${DCAP_LIBRARIES})
+    target_link_libraries(plugin_dcap gfal2 ${DCAP_LIBRARIES})
 
     set_target_properties(plugin_dcap PROPERTIES   
                             CLEAN_DIRECT_OUTPUT 1

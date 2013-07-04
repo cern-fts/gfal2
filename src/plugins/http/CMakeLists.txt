@@ -39,7 +39,7 @@ if (PLUGIN_HTTP)
                                     ${CMAKE_CURRENT_BINARY_DIR}/soapClient.cpp)
 
     target_link_libraries(plugin_http gfal2
-                                      ${OUTPUT_NAME_TRANSFER}
+                                      gfal2_transfer
                                       gfal2_utils
                                       ${DAVIX_PKG_LIBRARIES}
                                       gsoapssl++

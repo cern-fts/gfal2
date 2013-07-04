@@ -9,7 +9,7 @@ if (PLUGIN_SRM)
     include_directories( ${SRM_IFCE_PKG_INCLUDE_DIR})
 
     add_library(plugin_srm SHARED ${src_srm})
-    target_link_libraries(plugin_srm ${OUTPUT_NAME}gfal2_utils gfal2_mds ${OUTPUT_NAME_TRANSFER}
+    target_link_libraries(plugin_srm gfal2 gfal2_transfer gfal2_utils gfal2_mds
                                      ${SRM_IFCE_PKG_LIBRARIES} ${is_ifce_link} gomp)
 
     set_target_properties(plugin_srm PROPERTIES

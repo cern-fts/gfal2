@@ -22,7 +22,7 @@ IF (PLUGIN_GRIDFTP)
 
         add_executable(unit_test_gridftp_plugin_exe	${src_test_gridftp} )
 	
-        target_link_libraries(unit_test_gridftp_plugin_exe ${OUTPUT_NAME_MAIN} gfal_transfer
+        target_link_libraries(unit_test_gridftp_plugin_exe ${GFAL2_LINK} ${GFAL2_TRANSFER_LINK}
                                 plugin_gridftp m
                                 gtest gtest_main)
 	
