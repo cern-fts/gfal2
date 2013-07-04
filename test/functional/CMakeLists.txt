@@ -110,20 +110,20 @@ IF (FUNCTIONAL_TESTS)
         add_executable(gfal_rw        ${src_gfalrw} )
         target_link_libraries(gfal_rw ${OUTPUT_NAME_MAIN} )
 
-        add_executable(gfal_test_del_nonex   ${src_gfal_test_del_nonex} ${src_lib_test})
-        target_link_libraries(gfal_test_del_nonex ${OUTPUT_NAME_MAIN} )
+        add_executable(gfal_test_del_nonex   ${src_gfal_test_del_nonex})
+        target_link_libraries(gfal_test_del_nonex ${OUTPUT_NAME_MAIN} test_shared)
 
-        add_executable(gfal_test_del   ${src_gfal_test_del} ${src_lib_test})
-        target_link_libraries(gfal_test_del ${OUTPUT_NAME_MAIN} )
+        add_executable(gfal_test_del   ${src_gfal_test_del}) 
+        target_link_libraries(gfal_test_del ${OUTPUT_NAME_MAIN} test_shared)
         
-        add_executable(gfal_test_mkdir_unlink   ${src_gfal_test_mkdir_unlink} ${src_lib_test})
-        target_link_libraries(gfal_test_mkdir_unlink ${OUTPUT_NAME_MAIN} )
+        add_executable(gfal_test_mkdir_unlink   ${src_gfal_test_mkdir_unlink})
+        target_link_libraries(gfal_test_mkdir_unlink ${OUTPUT_NAME_MAIN} test_shared)
 
         add_executable(gfal_rw_full        ${src_gfal_rw_full} )
         target_link_libraries(gfal_rw_full ${OUTPUT_NAME_MAIN} )        
         
         add_executable(gfal_rw_seq        ${src_gfal_rw_seq} )
-        target_link_libraries(gfal_rw_seq ${OUTPUT_NAME_MAIN} )                
+        target_link_libraries(gfal_rw_seq ${OUTPUT_NAME_MAIN} test_shared) 
         
         add_executable(gfal_testget        ${src_gfalget} )
         target_link_libraries(gfal_testget ${OUTPUT_NAME_MAIN} )
@@ -172,31 +172,31 @@ IF (FUNCTIONAL_TESTS)
                 target_link_libraries(gfal_copyfile_fts ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
 
                 add_executable(gfal_copyfile_fts_thread ${src_gfaltcopy_fts_thread} ${src_lib_test})
-                target_link_libraries(gfal_copyfile_fts_thread ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
+                target_link_libraries(gfal_copyfile_fts_thread ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN} test_shared)
 
                 add_executable(gfal_copyfile_perf ${src_gfaltcopy_perf} )
                 target_link_libraries(gfal_copyfile_perf ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
                 
                 add_executable(gfal_copyfile_test ${src_gfaltcopy_test} ${src_lib_test})
-                target_link_libraries(gfal_copyfile_test ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
+                target_link_libraries(gfal_copyfile_test ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN} test_shared)
 
                 add_executable(gfal_copyfile_thead_safety_test ${src_gfaltcopy_test_thread_safety_timeout} ${src_lib_test})
-                target_link_libraries(gfal_copyfile_thead_safety_test ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
+                target_link_libraries(gfal_copyfile_thead_safety_test ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN} test_shared)
 
                 add_executable(gfal_copyfile_test_timeout ${src_gfaltcopy_test_timeout} ${src_lib_test})
-                target_link_libraries(gfal_copyfile_test_timeout ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
+                target_link_libraries(gfal_copyfile_test_timeout ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN} test_shared)
                 
                 add_executable(gfal_copyfile_mkdir_test ${src_gfaltcopy_mkdir_test} ${src_lib_test})
-                target_link_libraries(gfal_copyfile_mkdir_test ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})                
+                target_link_libraries(gfal_copyfile_mkdir_test ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN} test_shared)
                 
-                add_executable(copyfile_replace ${src_copyfile_replace} ${src_lib_test})
-                target_link_libraries(copyfile_replace ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
+                add_executable(copyfile_replace ${src_copyfile_replace})
+                target_link_libraries(copyfile_replace ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN} test_shared)
 
-                add_executable(copyfile_checksum ${src_copyfile_checksum} ${src_lib_test})
-                target_link_libraries(copyfile_checksum ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
+                add_executable(copyfile_checksum ${src_copyfile_checksum})
+                target_link_libraries(copyfile_checksum ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN} test_shared)
 
-                add_executable(copyfile_checksum_user ${src_copyfile_checksum_user} ${src_lib_test})
-                target_link_libraries(copyfile_checksum_user ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN})
+                add_executable(copyfile_checksum_user ${src_copyfile_checksum_user})
+                target_link_libraries(copyfile_checksum_user ${OUTPUT_NAME_TRANSFER} ${OUTPUT_NAME_MAIN} test_shared)
                 
 #                copy_files(${COPY_SRC} ${COPY_DST})
 #                add_test(functional_copyfile gfal2_copyfile.sh)

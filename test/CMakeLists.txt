@@ -16,22 +16,19 @@ IF(ONLY_TESTS)
 	SET(OUTPUT_NAME_TRANSFER ${GFAL2_TRANSFER_PKG_LIBRARIES})	
 ENDIF(ONLY_TESTS)
 
-#mock src
-FILE(GLOB src_mock "mock/*.c")
-SET(headers_mock "mock/")
-
-include_directories( ${headers_mock} "." ${PROJECT_SOURCE_DIR}/src/externals ${GFAL2_PKG_INCLUDE_DIRS})
-
-link_directories (${PROJECT_BINARY_DIR}/src /)
-
-
 execute_process(COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf_test  ${CMAKE_CURRENT_BINARY_DIR}/conf_test) 
 
-#include common library for tests
+# Common methods for the tests
 add_subdirectory(common)
+include_directories(.)
+include_directories(../src/externals)
 
-
-add_subdirectory(functional/gfal2)   
-add_subdirectory(functional/old)   
+# Tests
+add_subdirectory(functional)
 add_subdirectory(stress-test)
 add_subdirectory(unit)
+
+# Disabled
+# It may be interesting to adapt, so keep them
+# add_subdirectory(old-gfal-tests)
+
