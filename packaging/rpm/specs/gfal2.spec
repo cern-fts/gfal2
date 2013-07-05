@@ -1,7 +1,8 @@
 
 Name:				gfal2
 Version:			2.3.0
-Release:			0%{?dist}
+# https://fedoraproject.org/wiki/Packaging:NamingGuidelines#Release_Tag
+Release:			1%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -40,8 +41,8 @@ BuildRequires:		gridsite-devel
 #tests dependencies
 BuildRequires:		gtest-devel  
 
-Requires:			%{name}-core = %{version}-%{release}
-Requires:			%{name}-transfer = %{version}-%{release}
+Requires:			%{name}-core%{?_isa} = %{version}-%{release}
+Requires:			%{name}-transfer%{?_isa} = %{version}-%{release}
 
 %description
 GFAL 2.0 offers an a single and simple POSIX-like API 
@@ -52,6 +53,8 @@ of the %{name} installed plugins.
 %package core
 Summary:			Core of the Grid File access Library 2.0
 Group:				Applications/Internet
+# explicit dep for dyn load of ldap, bdii dependency
+# https://fedoraproject.org/wiki/Packaging:Guidelines#Explicit_Requires
 Requires:			openldap%{?_isa}
 
 %description core
@@ -81,8 +84,7 @@ development files for %{name}
 
 %package doc
 Summary:			Documentation for %{name}
-Group:				Applications/Internet
-Requires:			%{name}-core%{?_isa} = %{version}-%{release} 
+Group:				Documentation
 
 %description doc
 documentation, Doxygen and examples of %{name} .
@@ -203,13 +205,11 @@ make DESTDIR=%{buildroot} install
 
 
 %files
-%defattr (-,root,root)
 %{_bindir}/gfal2_version
 %{_docdir}/%{name}-%{version}/DESCRIPTION
 %{_mandir}/man1/gfal2_version.1*
 
 %files core
-%defattr (-,root,root)
 %{_libdir}/libgfal2.so.*
 %dir %{_libdir}/%{name}-plugins
 %dir %{_docdir}/%{name}-%{version}
@@ -221,15 +221,11 @@ make DESTDIR=%{buildroot} install
 %config(noreplace) %{_sysconfdir}/%{name}.d/gfal2_core.conf
 
 %files transfer
-%defattr (-,root,root)
 %{_libdir}/libgfal_transfer.so.*
 %{_docdir}/%{name}-%{version}/README_TRANSFER
 
 %files devel
-%defattr (-,root,root)
-%dir %{_includedir}/%{name}
-%{_includedir}/%{name}/*.h
-%{_includedir}/%{name}/*/*.h
+%{_includedir}/%{name}/
 %{_libdir}/pkgconfig/gfal2.pc
 %{_libdir}/pkgconfig/gfal_transfer.pc
 %{_libdir}/libgfal2.so
@@ -237,48 +233,40 @@ make DESTDIR=%{buildroot} install
 %{_docdir}/%{name}-%{version}/RELEASE-NOTES
 
 %files doc
-%defattr (-,root,root)
-%{_docdir}/%{name}-%{version}/html/*
-%{_docdir}/%{name}-%{version}/examples/*.c
+%{_docdir}/%{name}-%{version}/html/
+%{_docdir}/%{name}-%{version}/examples/
 
 %files plugin-lfc
-%defattr (-,root,root)
 %{_libdir}/%{name}-plugins/libgfal_plugin_lfc.so*
 %{_docdir}/%{name}-%{version}/README_PLUGIN_LFC
 %config(noreplace) %{_sysconfdir}/%{name}.d/lfc_plugin.conf
 
 %files plugin-rfio
-%defattr (-,root,root)
 %{_libdir}/%{name}-plugins/libgfal_plugin_rfio.so*
 %{_docdir}/%{name}-%{version}/README_PLUGIN_RFIO
 %config(noreplace) %{_sysconfdir}/%{name}.d/rfio_plugin.conf
 
 %files plugin-dcap
-%defattr (-,root,root)
 %{_libdir}/%{name}-plugins/libgfal_plugin_dcap.so*
 %{_docdir}/%{name}-%{version}/README_PLUGIN_DCAP
 %config(noreplace) %{_sysconfdir}/%{name}.d/dcap_plugin.conf
 
 %files plugin-srm
-%defattr (-,root,root)
 %{_libdir}/%{name}-plugins/libgfal_plugin_srm.so*
 %{_docdir}/%{name}-%{version}/README_PLUGIN_SRM
 %config(noreplace) %{_sysconfdir}/%{name}.d/srm_plugin.conf
 
 %files plugin-gridftp
-%defattr (-,root,root)
 %{_libdir}/%{name}-plugins/libgfal_plugin_gridftp.so*
 %{_docdir}/%{name}-%{version}/README_PLUGIN_GRIDFTP
 %config(noreplace) %{_sysconfdir}/%{name}.d/gsiftp_plugin.conf
 
 %files plugin-http
-%defattr (-,root,root)
 %{_libdir}/%{name}-plugins/libgfal_plugin_http.so*
 %{_docdir}/%{name}-%{version}/README_PLUGIN_HTTP
 %config(noreplace) %{_sysconfdir}/%{name}.d/http_plugin.conf
 
 %files all
-%defattr (-,root,root)
 %{_docdir}/%{name}-%{version}/README
 
 
