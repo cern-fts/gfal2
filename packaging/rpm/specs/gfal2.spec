@@ -53,9 +53,6 @@ of the %{name} installed plugins.
 %package core
 Summary:			Core of the Grid File access Library 2.0
 Group:				Applications/Internet
-# explicit dep for dyn load of ldap, bdii dependency
-# https://fedoraproject.org/wiki/Packaging:Guidelines#Explicit_Requires
-Requires:			openldap%{?_isa}
 
 %description core
 The main library of %{name}. 
@@ -126,6 +123,7 @@ URLs, the dcap protocol is used on the DCACHE storage system
 Summary:			Provide the srm access for %{name}
 Group:				Applications/Internet
 Requires:			%{name}-core%{?_isa} = %{version}-%{release} 
+
 
 %description plugin-srm
 Provide the srm support (SRM://) for %{name}. 
