@@ -58,7 +58,7 @@ int main(int argc, char** argv)
             error = NULL;
         }
 
-        while (j) {
+        while (j > 0) {
             fprintf(stdout, "Result %d: [%s] %s\n",
                     j, type2str(endpoints[j - 1].type), endpoints[j - 1].url);
             --j;
