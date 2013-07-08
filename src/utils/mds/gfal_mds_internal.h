@@ -41,6 +41,7 @@ int gfal_mds_get_srm_types_endpoint(LDAP* ld, LDAPMessage *result, gfal_mds_endp
 
 int gfal_mds_bdii_get_srm_endpoint(gfal2_context_t handle, const char* base_url, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err);
 
+#ifndef MDS_WITHOUT_CACHE
 /** Tries to resolve the available endpoints from a cache file
  *  compatible with FTS3 bdii cache format
  *  @return The number of entries found, -1 on error.
@@ -48,6 +49,7 @@ int gfal_mds_bdii_get_srm_endpoint(gfal2_context_t handle, const char* base_url,
 int gfal_mds_cache_resolve_endpoint(gfal2_context_t handle, const char* host,
                                     gfal_mds_endpoint* endpoints, size_t s_endpoints,
                                     GError** err);
+#endif
 
 #ifdef __cplusplus
 }

@@ -155,6 +155,7 @@ int gfal_mds_isifce_wrapper(const char* base_url, gfal_mds_endpoint* endpoints, 
  int gfal_mds_resolve_srm_endpoint(gfal2_context_t handle, const char* base_url,
          gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err)
  {
+#ifndef MDS_WITHOUT_CACHE
      int cached_result = gfal_mds_cache_resolve_endpoint(handle, base_url,
                              endpoints, s_endpoint, err);
      if (cached_result < 0) {
@@ -164,6 +165,7 @@ int gfal_mds_isifce_wrapper(const char* base_url, gfal_mds_endpoint* endpoints, 
          gfal_log(GFAL_VERBOSE_DEBUG, "%s found in the cache!", base_url);
          return cached_result;
      }
+#endif
 
 
 #if MDS_BDII_EXTERNAL // call the is interface if configured for
