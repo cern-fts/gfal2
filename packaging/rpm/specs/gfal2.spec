@@ -18,6 +18,7 @@ BuildRequires:		glib2-devel
 BuildRequires:		glibmm24-devel
 BuildRequires:		libattr-devel
 BuildRequires:		openldap-devel
+BuildRequires:		pugixml-devel
 ## libuuid is in a different rpm for el5
 %if 0%{?el5}
 BuildRequires:		e2fsprogs-devel
@@ -39,7 +40,7 @@ BuildRequires:		davix-devel
 BuildRequires:		gsoap-devel
 BuildRequires:		gridsite-devel
 #tests dependencies
-BuildRequires:		gtest-devel  
+BuildRequires:		gtest-devel
 
 Requires:			%{name}-core%{?_isa} = %{version}-%{release}
 Requires:			%{name}-transfer%{?_isa} = %{version}-%{release}

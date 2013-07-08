@@ -31,6 +31,10 @@
 #include <common/gfal_types.h>
 #include <config/gfal_config.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef MDS_BDII_EXTERNAL
 #define MDS_BDII_EXTERNAL 0
 #endif
@@ -64,6 +68,8 @@ void gfal_set_nobdiiG(gfal_handle handle, gboolean no_bdii_chk);
 
 gboolean gfal_get_nobdiiG(gfal_handle handle);
 
- 
+#ifdef __cplusplus
+}
+#endif
  
  

@@ -5,7 +5,7 @@ add_definitions (-fPIC)
 if (IS_IFCE)
     add_definitions (-DMDS_BDII_EXTERNAL=1)
     set (is_ifce_link "is_ifce")
-    set (src_mds "gfal_mds.c")
+    set (src_mds "gfal_mds.c" "gfal_mds_cache.cpp")
 else (IS_IFCE)
     add_definitions (-DMDS_BDII_EXTERNAL=0)
     set (is_ifce_link "ldap_r")
@@ -15,6 +15,6 @@ endif (IS_IFCE)
 
 add_library (gfal2_mds STATIC ${src_mds})
 
-target_link_libraries (gfal2_mds ${is_ifce_link})
+target_link_libraries (gfal2_mds ${is_ifce_link} pugixml)
 
 add_subdirectory (tests)

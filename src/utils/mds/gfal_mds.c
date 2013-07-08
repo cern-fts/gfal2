@@ -36,7 +36,7 @@
 #include <common/gfal_common_internal.h>
 #include <config/gfal_config.h>
 
-#include "gfal_mds_ldap_internal.h"
+#include "gfal_mds_internal.h"
 
 pthread_mutex_t m_mds =PTHREAD_MUTEX_INITIALIZER; 
 
@@ -152,8 +152,18 @@ int gfal_mds_isifce_wrapper(const char* base_url, gfal_mds_endpoint* endpoints, 
 
 #endif
 
- int gfal_mds_resolve_srm_endpoint(gfal2_context_t handle, const char* base_url, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err){
-    // define endpoint
+ int gfal_mds_resolve_srm_endpoint(gfal2_context_t handle, const char* base_url,
+         gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err)
+ {
+     int cached_result = gfal_mds_cache_resolve_endpoint(handle, base_url,
+                             endpoints, s_endpoint, err);
+     if (cached_result < 0) {
+         return cached_result;
+     }
+     else if (cached_result > 0) {
+         gfal_log(GFAL_VERBOSE_DEBUG, "%s found in the cache!", base_url);
+         return cached_result;
+     }
 
 
 #if MDS_BDII_EXTERNAL // call the is interface if configured for

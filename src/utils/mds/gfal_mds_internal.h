@@ -29,7 +29,9 @@
 #include <common/gfal_common_errverbose.h>
 #include "gfal_mds.h"
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 LDAP* gfal_mds_ldap_connect(gfal2_context_t context, const char* uri, GError** err);
 
@@ -38,3 +40,15 @@ int gfal_mds_get_ldapuri(gfal2_context_t context, char* buff, size_t s_buff, GEr
 int gfal_mds_get_srm_types_endpoint(LDAP* ld, LDAPMessage *result, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err);
 
 int gfal_mds_bdii_get_srm_endpoint(gfal2_context_t handle, const char* base_url, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err);
+
+/** Tries to resolve the available endpoints from a cache file
+ *  compatible with FTS3 bdii cache format
+ *  @return The number of entries found, -1 on error.
+ */
+int gfal_mds_cache_resolve_endpoint(gfal2_context_t handle, const char* host,
+                                    gfal_mds_endpoint* endpoints, size_t s_endpoints,
+                                    GError** err);
+
+#ifdef __cplusplus
+}
+#endif
