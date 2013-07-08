@@ -17,3 +17,4 @@ add_library (gfal2_mds STATIC ${src_mds})
 
 target_link_libraries (gfal2_mds ${is_ifce_link})
 
+add_subdirectory (tests)
