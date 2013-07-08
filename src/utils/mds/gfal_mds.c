@@ -36,7 +36,7 @@
 #include <common/gfal_common_internal.h>
 #include <config/gfal_config.h>
 
-#include "gfal_common_mds_ldap_internal.h"
+#include "gfal_mds_ldap_internal.h"
 
 pthread_mutex_t m_mds =PTHREAD_MUTEX_INITIALIZER; 
 

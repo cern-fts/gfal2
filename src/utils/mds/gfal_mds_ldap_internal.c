@@ -32,8 +32,8 @@
 #include <lber.h>
 #include <ldap.h>
 #include <common/gfal_common_errverbose.h>
-#include "gfal_common_mds_ldap_internal.h"
-#include "gfal_common_mds_ldap_internal_layer.h"
+#include "gfal_mds_ldap_internal.h"
+#include "gfal_mds_ldap_internal_layer.h"
 
 
 

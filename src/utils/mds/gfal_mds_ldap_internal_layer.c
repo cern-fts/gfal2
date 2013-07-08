@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <lber.h>
 #include <ldap.h>
-#include "gfal_common_mds_ldap_internal_layer.h"
+#include "gfal_mds_ldap_internal_layer.h"
 
 
 

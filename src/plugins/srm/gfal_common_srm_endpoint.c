@@ -33,7 +33,7 @@
 #include <errno.h>
 #include <common/gfal_common_internal.h>
 #include <common/gfal_common_errverbose.h>
-#include <mds/gfal_common_mds.h>
+#include <mds/gfal_mds.h>
 
 #include "gfal_common_srm_endpoint.h"
 

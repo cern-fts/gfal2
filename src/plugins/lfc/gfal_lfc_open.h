@@ -28,7 +28,7 @@
 
 #include <regex.h>
 #include <glib.h>
-#include "gfal_common_lfc.h"
+#include "gfal_lfc.h"
 #include "lfc_ifce_ng.h"
 
 

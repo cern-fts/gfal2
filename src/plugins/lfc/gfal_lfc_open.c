@@ -34,7 +34,7 @@
 #include <common/gfal_common_internal.h>
 #include <common/gfal_common_errverbose.h>
 #include <common/gfal_common_filedescriptor.h>
-#include "gfal_common_lfc.h"
+#include "gfal_lfc.h"
 #include "lfc_ifce_ng.h"
 
 
