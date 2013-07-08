@@ -80,7 +80,9 @@ int gfal_mds_cache_resolve_endpoint(gfal2_context_t handle, const char* host,
     pugi::xpath_node_set allEndpoints = cache.document_element().select_nodes("/entry/hostname");
     pugi::xpath_node_set::const_iterator i;
     size_t endpointIndex = 0;
-    for (i = allEndpoints.begin(); i != allEndpoints.end(); ++i) {
+    for (i = allEndpoints.begin();
+         i != allEndpoints.end() && endpointIndex < s_endpoints;
+         ++i) {
         const char* endpoint = i->node().child_value();
 
         // httpg
