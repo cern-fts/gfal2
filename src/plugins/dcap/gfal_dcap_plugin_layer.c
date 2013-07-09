@@ -41,7 +41,9 @@
 #include <common/gfal_types.h>
 #include "gfal_dcap_plugin_layer.h"
 
-
+typedef int (*lstat_t)(const char *, struct stat *);
+typedef struct dirent *(*readdir_t)(DIR *);
+typedef int (*stat_t)(const char *, struct stat *);
 
 struct dcap_proto_ops * gfal_dcap_internal_loader_base(GError** err){
 	struct dcap_proto_ops * pops = NULL;
@@ -57,16 +59,16 @@ struct dcap_proto_ops * gfal_dcap_internal_loader_base(GError** err){
 	pops->close = &dc_close;
 	pops->closedir = &dc_closedir;
 	pops->lseek = &dc_lseek;
-	pops->lstat = &dc_lstat;
+	pops->lstat = (lstat_t)&dc_lstat;
 	pops->mkdir = &dc_mkdir;
 	pops->open = &dc_open;
 	pops->opendir = &dc_opendir;
 	pops->read = &dc_read;
 	pops->pread = &dc_pread;
-	pops->readdir = &dc_readdir;
+	pops->readdir = (readdir_t)&dc_readdir;
 	pops->rename = NULL;
 	pops->rmdir = &dc_rmdir;
-	pops->stat = &dc_stat;
+	pops->stat = (stat_t)&dc_stat;
 	pops->unlink = &dc_unlink;
 	pops->write = &dc_write;
 	pops->pwrite = &dc_pwrite;

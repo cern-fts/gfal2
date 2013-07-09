@@ -66,7 +66,7 @@ int gfal2_start_scope_cancel(gfal2_context_t context, GError** err){
 
 int gfal2_end_scope_cancel(gfal2_context_t context){
     if(context)
-    	g_atomic_int_dec_and_test(&(context->running_ops));
+    	(void)g_atomic_int_dec_and_test(&(context->running_ops));
     return 0;
 }
 
