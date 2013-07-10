@@ -8,7 +8,7 @@ if (IS_IFCE)
     set (src_mds "gfal_mds.c")
 else (IS_IFCE)
     add_definitions (-DMDS_BDII_EXTERNAL=0)
-    set (is_ifce_link "ldap_r")
+    set (is_ifce_link "ldap_r;lber")
     set (src_mds "gfal_mds.c" "gfal_mds_internal.c" "gfal_mds_ldap_internal_layer.c")
 endif (IS_IFCE)
 
