@@ -1,6 +1,6 @@
 
 Name:				gfal2
-Version:			2.3.0
+Version:			2.4.0
 # https://fedoraproject.org/wiki/Packaging:NamingGuidelines#Release_Tag
 Release:			1%{?dist}
 Summary:			Grid file access library 2.0
