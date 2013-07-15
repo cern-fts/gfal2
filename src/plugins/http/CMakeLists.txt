@@ -6,6 +6,7 @@ if (PLUGIN_HTTP)
 
     pkg_check_modules(GSOAP_SSL_PKG REQUIRED "gsoapssl++")
     pkg_check_modules(DAVIX_PKG REQUIRED "davix>=0.0.20")
+    pkg_check_modules(DAVIX_COPY_PKG REQUIRED "davix_copy>=0.0.20")
     find_package(gSOAP REQUIRED)
     message(STATUS "Using gsoapssl flags ${GSOAP_SSL_PKG_CFLAGS}")
 
@@ -27,9 +28,11 @@ if (PLUGIN_HTTP)
     include_directories (${CMAKE_CURRENT_BINARY_DIR} ${GRIDSITE_INCLUDE_DIR}
                          ${GSOAP_INCLUDE_DIR})
     include_directories(${DAVIX_PKG_INCLUDE_DIRS})
+    include_directories(${DAVIX_COPY_PKG_INCLUDE_DIRS})
 
     # link
     link_directories( ${DAVIX_PKG_LIBRARY_DIRS})
+    link_directories( ${DAVIX_COPY_PKG_LIBRARY_DIRS})
     add_definitions(${GSOAP_SSL_PKG_CFLAGS})
 
     # Build plugin
@@ -42,6 +45,7 @@ if (PLUGIN_HTTP)
                                       gfal2_transfer
                                       gfal2_utils
                                       ${DAVIX_PKG_LIBRARIES}
+                                      ${DAVIX_COPY_PKG_LIBRARIES}
                                       gsoapssl++
                                       gridsite)
 
