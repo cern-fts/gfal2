@@ -25,30 +25,41 @@
 
 const char* bdii_cache_file = "CACHE_FILE";
 
-
-static mds_type_endpoint gfal_mds_type_from_endpoint(const char* endpoint)
+static mds_type_endpoint gfal_mds_cache_type(const std::string& type,
+                                const std::string &version)
 {
-    if (strncmp("https", endpoint, 5) == 0) {
+    if (strcasecmp(type.c_str(), "srm") == 0) {
+        if (version.compare(0, 2, "1.") == 0)
+            return SRMv1;
+        else if (version.compare(0, 2, "2.") == 0)
+            return SRMv2;
+        else
+            return UnknownEndpointType;
+    }
+    else if (strcasecmp(type.c_str(), "webdav") == 0) {
         return WebDav;
     }
     else {
-        const char* managerV = strrchr(endpoint, '/');
-        if (managerV && strncmp("managerv2", managerV + 1, 9) == 0)
-            return SRMv2;
-        else
-            return SRMv1;
+        return UnknownEndpointType;
     }
 }
 
-
 static void gfal_mds_cache_insert(gfal_mds_endpoint* endpoints, size_t s_endpoints,
-                                  size_t index, const char* endpoint)
+                                  size_t index, const pugi::xml_node& entry)
 {
     if (index > s_endpoints)
         return;
 
-    strncpy(endpoints[index].url, endpoint, sizeof(endpoints[index].url));
-    endpoints[index].type = gfal_mds_type_from_endpoint(endpoint);
+    std::string endpoint = entry.child("endpoint").last_child().value();
+    std::string type     = entry.child("type").last_child().value();
+    std::string version  = entry.child("version").last_child().value();
+
+    mds_type_endpoint typeEnum = gfal_mds_cache_type(type, version);
+
+    if (!endpoint.empty() && typeEnum != UnknownEndpointType) {
+        strncpy(endpoints[index].url, endpoint.c_str(), sizeof(endpoints[index].url));
+        endpoints[index].type = typeEnum;
+    }
 }
 
 int gfal_mds_cache_resolve_endpoint(gfal2_context_t handle, const char* host,
@@ -73,22 +84,28 @@ int gfal_mds_cache_resolve_endpoint(gfal2_context_t handle, const char* host,
         return 0;
     }
 
-    // Iterate. Get all httpg://<host> and https://<host> we see
-    std::string withHttpg = std::string("httpg://") + host + ":";
-    std::string withHttps = std::string("https://") + host + ":";
+    // Iterate. Get all endpoints and check if the contain the requested host
+    size_t hostLen = strlen(host);
 
-    pugi::xpath_node_set allEndpoints = cache.document_element().select_nodes("/entry/hostname");
+    pugi::xpath_node_set allEndpoints = cache.document_element().select_nodes("/entry/endpoint");
     pugi::xpath_node_set::const_iterator i;
     size_t endpointIndex = 0;
     for (i = allEndpoints.begin();
          i != allEndpoints.end() && endpointIndex < s_endpoints;
          ++i) {
         const char* endpoint = i->node().child_value();
+        const char* hostname = strstr(endpoint, "://");
+        if (hostname) hostname += 3;
+        else hostname = endpoint;
 
-        // httpg
-        if (strncasecmp(withHttpg.c_str(), endpoint, withHttpg.size()) == 0 ||
-            strncasecmp(withHttps.c_str(), endpoint, withHttps.size()) == 0)
-            gfal_mds_cache_insert(endpoints, s_endpoints, endpointIndex++, endpoint);
+        if (strncasecmp(hostname, host, hostLen) == 0) {
+            std::string xpathQuery("/entry[endpoint='");
+            xpathQuery += endpoint;
+            xpathQuery += "']";
+
+            pugi::xpath_node entry = cache.document_element().select_single_node(xpathQuery.c_str());
+            gfal_mds_cache_insert(endpoints, s_endpoints, endpointIndex++, entry.node());
+        }
     }
 
     // Done here

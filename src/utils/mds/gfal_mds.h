@@ -39,7 +39,7 @@ extern "C" {
 #define MDS_BDII_EXTERNAL 0
 #endif
 
-typedef enum { SRMv2=0, SRMv1, WebDav } mds_type_endpoint;
+typedef enum { SRMv2=0, SRMv1, WebDav, UnknownEndpointType } mds_type_endpoint;
 
 /*
  * @struct gfal_mds_endpoint
