@@ -162,7 +162,11 @@ int gfal_mds_isifce_wrapper(const char* base_url, gfal_mds_endpoint* endpoints, 
          return cached_result;
      }
      else if (cached_result > 0) {
-         gfal_log(GFAL_VERBOSE_DEBUG, "%s found in the cache!", base_url);
+         int i;
+         gfal_log(GFAL_VERBOSE_VERBOSE, "%s found in the cache!", base_url);
+         for (i = 0; i < cached_result; ++i) {
+             gfal_log(GFAL_VERBOSE_VERBOSE, "\tFound %s", endpoints[i].url);
+         }
          return cached_result;
      }
 #endif
