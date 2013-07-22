@@ -72,7 +72,7 @@ int gfal_mds_cache_resolve_endpoint(gfal2_context_t handle, const char* host,
     if (!cache_file)
         return 0;
 
-    gfal_log(GFAL_VERBOSE_DEBUG, "BDII CACHE_FILE set to %s", cache_file);
+    gfal_log(GFAL_VERBOSE_VERBOSE, "BDII CACHE_FILE set to %s", cache_file);
 
     // Open the file, but do not fail if it can not be open
     // (A cache may not be present!)
