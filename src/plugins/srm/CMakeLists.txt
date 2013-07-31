@@ -3,7 +3,6 @@ cmake_minimum_required (VERSION 2.6)
 
 if (PLUGIN_SRM)
     file (GLOB src_srm "*.c*")
-message("----------------------------------------- ${gfal2_mds_def} sdffsdfsd ")
     pkg_check_modules(SRM_IFCE_PKG REQUIRED srm-ifce>=1.15.0)
     add_definitions( ${SRM_IFCE_PKG_CFLAGS} )
     add_definitions(${gfal2_mds_def})
