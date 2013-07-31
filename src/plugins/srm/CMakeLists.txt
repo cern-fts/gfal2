@@ -3,13 +3,14 @@ cmake_minimum_required (VERSION 2.6)
 
 if (PLUGIN_SRM)
     file (GLOB src_srm "*.c*")
-
+message("----------------------------------------- ${gfal2_mds_def} sdffsdfsd ")
     pkg_check_modules(SRM_IFCE_PKG REQUIRED srm-ifce>=1.15.0)
     add_definitions( ${SRM_IFCE_PKG_CFLAGS} )
+    add_definitions(${gfal2_mds_def})
     include_directories( ${SRM_IFCE_PKG_INCLUDE_DIR})
 
-    add_library(plugin_srm SHARED ${src_srm})
-    target_link_libraries(plugin_srm gfal2 gfal2_transfer gfal2_utils gfal2_mds
+    add_library(plugin_srm SHARED ${src_srm} ${gfal2_mds_src} )
+    target_link_libraries(plugin_srm gfal2 gfal2_transfer ${mds_cache_link}
                                      ${SRM_IFCE_PKG_LIBRARIES} ${is_ifce_link} gomp)
 
     set_target_properties(plugin_srm PROPERTIES

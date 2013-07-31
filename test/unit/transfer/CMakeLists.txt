@@ -14,7 +14,7 @@ IF (MAIN_TRANSFER)
     add_executable(unit_test_transfer_params_exe    ${src_test_transfer} )
   
     target_link_libraries(unit_test_transfer_params_exe ${GFAL2_LINK} ${GFAL2_TRANSFER_LINK} m
-                          gtest gtest_main)
+                          ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES})
     
     add_test(unit_test_transfer_params unit_test_transfer_params_exe)
     

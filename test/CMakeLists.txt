@@ -14,6 +14,7 @@ if(ONLY_TESTS)
 	pkg_check_modules(GFAL2_TRANSFER_PKG REQUIRED gfal_transfer)
 	set(GFAL2_LINK ${GFAL2_PKG_LIBRARIES})
 	set(GFAL2_TRANSFER_LINK ${GFAL2_TRANSFER_PKG_LIBRARIES})
+        pkg_search_module(GLIBMM_PKG REQUIRED glibmm glibmm-2.6 glibmm-2.4)
     include_directories(${GFAL2_PKG_INCLUDE_DIRS})
     include_directories(${GFAL2_TRANSFER_PKG_INCLUDE_DIRS})
 else(ONLY_TESTS)
@@ -29,9 +30,10 @@ include_directories(.)
 include_directories(../src/externals)
 
 # Tests
+add_subdirectory(unit)
 add_subdirectory(functional)
 add_subdirectory(stress-test)
-add_subdirectory(unit)
+
 
 # Disabled
 # It may be interesting to adapt, so keep them

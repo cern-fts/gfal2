@@ -43,7 +43,6 @@ if (PLUGIN_HTTP)
 
     target_link_libraries(plugin_http gfal2
                                       gfal2_transfer
-                                      gfal2_utils
                                       ${DAVIX_PKG_LIBRARIES}
                                       ${DAVIX_COPY_PKG_LIBRARIES}
                                       gsoapssl++

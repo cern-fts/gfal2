@@ -4,12 +4,18 @@ file (GLOB src_exceptions   "exceptions/*.c*")
 file (GLOB src_gsimplecache "gsimplecache/*.c*")
 file (GLOB src_uri          "uri/*.c*")
 
-add_definitions (-fPIC)
 
-add_library (gfal2_utils STATIC ${src_exceptions}
-                                ${src_gsimplecache}
+LIST(APPEND gfal2_utils_src ${src_exceptions})
+
+LIST(APPEND gfal2_utils_c_src   ${src_gsimplecache}
                                 ${src_uri})
-
 
 add_subdirectory (mds)
 
+set(gfal2_mds_src ${gfal2_mds_src} PARENT_SCOPE)
+set(gfal2_utils_c_src ${gfal2_utils_c_src} PARENT_SCOPE)
+
+set(mds_cache_link ${mds_cache_link} PARENT_SCOPE)
+set(is_ifce_link  ${is_ifce_link} PARENT_SCOPE )
+set(gfal2_utils_src ${gfal2_utils_src} PARENT_SCOPE)
+set(gfal2_mds_def ${gfal2_mds_def} PARENT_SCOPE)

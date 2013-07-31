@@ -1,6 +1,7 @@
 
 if(UNIT_TESTS)
 
+find_package(GTEST)
 include_directories(${PROJECT_SOURCE_DIR}/src ".")
 
 add_subdirectory(plugins/srm)

@@ -4,6 +4,9 @@ cmake_minimum_required (VERSION 2.6)
 # included at linking time
 add_subdirectory (utils)
 
+set(gfal2_utils_src ${gfal2_utils_src} PARENT_SCOPE)
+set(gfal2_utils_c_src ${gfal2_utils_c_src} PARENT_SCOPE)
+
 # Core library
 if (MAIN_CORE)
 	add_subdirectory (core)
