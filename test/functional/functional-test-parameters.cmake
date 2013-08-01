@@ -16,6 +16,7 @@ SET(srm_prefix_storm "srm://prod-se-01.pd.infn.it:8444/${MY_VO_STORM}/gfal2-test
 SET(dcap_prefix "gsidcap://dcache-door-desy09.desy.de:22128/pnfs/desy.de/${MY_VO}/gfal2-tests/testread0011")
 SET(srm_prefix_dcache "srm://dcache-se-desy.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/${MY_VO}/gfal2-tests")
 SET(lfc_prefix "lfn:/grid/${MY_VO}")
+SET(lfc_host_name "prod-lfc-shared-central.cern.ch")
 SET(gsiftp_prefix_dpm "gsiftp://lxfsra10a01.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(srm_prefix_dpm "srm://lxfsra10a01.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/gfal2-tests") ## partial endpoint, test auto-resolve
 
@@ -27,6 +28,7 @@ SET(srm_prefix_storm "srm://prod-se-01.pd.infn.it:8444/${MY_VO_STORM}/gfal2-test
 SET(dcap_prefix "gsidcap://dcache-door-desy09.desy.de:22128/pnfs/desy.de/${MY_VO}/gfal2-tests/testread0011")
 SET(srm_prefix_dcache "srm://dcache-se-desy.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/${MY_VO}/gfal2-tests")
 SET(lfc_prefix "lfn:/grid/${MY_VO}")
+SET(lfc_host_name "prod-lfc-shared-central.cern.ch")
 SET(gsiftp_prefix_dpm "gsiftp://lpsc-se-dpm-server.in2p3.fr/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
 SET(srm_prefix_dpm "srm://lpsc-se-dpm-server.in2p3.fr:8446/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
 
@@ -60,8 +62,8 @@ SET(gsiftp_valid_dir_root "${gsiftp_prefix_dpm}")
 SET(lfc_stat_ok "${lfc_prefix}/testread0011")
 SET(lfc_chmod_ok "${lfc_prefix}/test_change_right")
 SET(lfc_valid_dir_root "${lfc_prefix}")
-SET(guid_stat_ok "guid:832d78b7-d4bd-4d7e-aefb-92ba9cc0dece")
-SET(lfc_full_prefix "lfc://cvitblfc1.cern.ch/grid/${MY_VO}")
+SET(guid_stat_ok "guid:f2f49f94-a4fc-4bad-95d7-cc9479b0123b")
+SET(lfc_full_prefix "lfc://${lfc_host_name}/grid/${MY_VO}")
 SET(lfc_full_stat_ok "${lfc_full_prefix}/testread0011")
 SET(lfc_full_chmod_ok "${lfc_full_prefix}/test_change_right")
 SET(lfc_full_valid_dir_root "${lfc_full_prefix}")
