@@ -48,7 +48,7 @@ SET(srm_valid_dcache_src_file "${srm_valid_dcache_stat}")
 
 # storm parameters
 
-SET(srm_valid_storm_stat "${srm_prefix_storm}/testread0011")
+SET(srm_valid_storm_stat "${srm_prefix_storm}/testread00111")
 SET(srm_valid_storm_dir_root "${srm_prefix_storm}")
 SET(srm_valid_storm_src_file "${srm_prefix_storm}")
 
