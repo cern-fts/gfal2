@@ -235,7 +235,8 @@ IF (MAIN_TRANSFER)
         copy_file_test_simple("FILE_TO_STORM" ${file_stat_ok}  ${srm_prefix_storm})
 
         # generic timeout tests
-        copy_file_test_timeout("SRM_DPM"    "${srm_valid_dcache_bigfile}" "${srm_valid_dir_root}")
-        copy_file_test_timeout("SRM_DCACHE" "${srm_valid_dcache_bigfile}" "${srm_valid_dcache_dir_root}" )
-        copy_file_test_timeout("SRM_STORM" "${srm_valid_dcache_bigfile}" "${srm_prefix_storm}" )
+        # not reliable test, disable auto execution
+        #copy_file_test_timeout("SRM_DPM"    "${srm_valid_dcache_bigfile}" "${srm_valid_dir_root}")
+        #copy_file_test_timeout("SRM_DCACHE" "${srm_valid_dcache_bigfile}" "${srm_valid_dcache_dir_root}" )
+        #copy_file_test_timeout("SRM_STORM" "${srm_valid_dcache_bigfile}" "${srm_prefix_storm}" )
 ENDIF (MAIN_TRANSFER)
