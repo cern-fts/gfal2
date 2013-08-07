@@ -39,9 +39,7 @@ BuildRequires:		dcap-devel
 #gridftp plugin dependencies
 BuildRequires:		globus-gass-copy-devel
 #http plugin dependencies
-BuildRequires:		davix-devel
-BuildRequires:		gsoap-devel
-BuildRequires:		gridsite-devel
+BuildRequires:		davix-devel >= 0.2.5
 #tests dependencies
 BuildRequires:		gtest-devel
 

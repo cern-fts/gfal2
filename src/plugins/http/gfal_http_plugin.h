@@ -77,8 +77,6 @@ int gfal_http_checksum(plugin_handle data, const char* url, const char* check_ty
                        off_t start_offset, size_t data_length,
                        GError ** err);
 
-// 3RD PARTY COPY
-char *gfal_http_delegate(const std::string& urlpp, GError** daverr);
 
 int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params,
                       const char* src, const char* dst, GError** err);
