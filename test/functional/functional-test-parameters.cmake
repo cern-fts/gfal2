@@ -13,7 +13,7 @@ IF(TESTBED_ENVIRONMENT)
 ## Testbed environment
 SET(file_base_path "/tmp/")
 SET(srm_prefix_storm "srm://prod-se-01.pd.infn.it:8444/${MY_VO_STORM}/gfal2-tests")
-SET(dcap_prefix "gsidcap://dcache-door-desy09.desy.de:22128/pnfs/desy.de/${MY_VO}/gfal2-tests/testread0011")
+SET(dcap_prefix "gsidcap://dcache-door-desy09.desy.de:22128/pnfs/desy.de/${MY_VO}/gfal2-tests/")
 SET(srm_prefix_dcache "srm://dcache-se-desy.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/${MY_VO}/gfal2-tests")
 SET(lfc_prefix "lfn:/grid/${MY_VO}")
 SET(lfc_host_name "prod-lfc-shared-central.cern.ch")
@@ -25,7 +25,7 @@ ELSE(TESTBED_ENVIRONMENT)
 ## Production environment : default
 SET(file_base_path "/tmp/")
 SET(srm_prefix_storm "srm://prod-se-01.pd.infn.it:8444/${MY_VO_STORM}/gfal2-tests")
-SET(dcap_prefix "gsidcap://dcache-door-desy09.desy.de:22128/pnfs/desy.de/${MY_VO}/gfal2-tests/testread0011")
+SET(dcap_prefix "gsidcap://dcache-door-desy09.desy.de:22128/pnfs/desy.de/${MY_VO}/gfal2-tests/")
 SET(srm_prefix_dcache "srm://dcache-se-desy.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/${MY_VO}/gfal2-tests")
 SET(lfc_prefix "lfn:/grid/${MY_VO}")
 SET(lfc_host_name "prod-lfc-shared-central.cern.ch")
@@ -164,8 +164,11 @@ ENDIF(PLUGIN_LFC)
 
 IF(PLUGIN_DCAP)
 	stat_test_all( "DCAP" ${dcap_stat_ok})
-	mkdir_test_all("DCAP" ${dcap_prefix})	
-        chmod_test_all("DCAP" ${dcap_prefix} 0565 000 0320 0767)
+
+        mkdir_test_all("DCAP" ${dcap_prefix})
+        # disable not supported by most of the server, impossible to test
+        # chmod_test_all("DCAP" ${dcap_prefix} 0565 000 0320 0767)
+        # disable not supported by most of the server, impossible to test
 	#test_readdir_full("DCAP" ${dcap_valid_dir_root} )	
 	#rmdir_test_all("DCAP" ${dcap_valid_dir_root} ${dcap_stat_ok})	
 	rwt_test_all("DCAP" ${dcap_valid_dir_root} 4578)	
