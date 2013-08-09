@@ -5,10 +5,12 @@
 
 SET(MY_VO "dteam")
 SET(MY_VO_STORM "${MY_VO}")
+SET(TEST_ENVIRONMENT "PRODUCTION"
+        CACHE STRING "Define the target for functional test")
 
 ## Global environment
 
-IF(TESTBED_ENVIRONMENT)
+IF(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
 ## Testbed environment
 SET(file_base_path "/tmp/")
@@ -20,7 +22,20 @@ SET(lfc_host_name "prod-lfc-shared-central.cern.ch")
 SET(gsiftp_prefix_dpm "gsiftp://lxfsra10a01.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(srm_prefix_dpm "srm://lxfsra10a01.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/gfal2-tests") ## partial endpoint, test auto-resolve
 
-ELSE(TESTBED_ENVIRONMENT)
+
+ELSEIF(TEST_ENVIRONMENT STREQUAL "TESTBED_TRUNK")
+
+## Testbed trunk environment
+SET(file_base_path "/tmp/")
+SET(srm_prefix_storm "srm://prod-se-01.pd.infn.it:8444/${MY_VO_STORM}/gfal2-tests")
+SET(dcap_prefix "gsidcap://dcache-door-desy09.desy.de:22128/pnfs/desy.de/${MY_VO}/gfal2-tests/")
+SET(srm_prefix_dcache "srm://dcache-se-desy.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/${MY_VO}/gfal2-tests")
+SET(lfc_prefix "lfn:/grid/${MY_VO}")
+SET(lfc_host_name "prod-lfc-shared-central.cern.ch")
+SET(gsiftp_prefix_dpm "gsiftp://lxfsra04a04.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
+SET(srm_prefix_dpm "srm://lxfsra04a04.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/gfal2-tests") ## partial endpoint, test auto-resolve
+
+ELSE(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
 ## Production environment : default
 SET(file_base_path "/tmp/")
@@ -32,7 +47,7 @@ SET(lfc_host_name "prod-lfc-shared-central.cern.ch")
 SET(gsiftp_prefix_dpm "gsiftp://lpsc-se-dpm-server.in2p3.fr/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
 SET(srm_prefix_dpm "srm://lpsc-se-dpm-server.in2p3.fr:8446/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
 
-ENDIF(TESTBED_ENVIRONMENT)
+ENDIF(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
 #dpm parameters
 SET(srm_valid_dpm_stat "${srm_prefix_dpm}/testread0011")
