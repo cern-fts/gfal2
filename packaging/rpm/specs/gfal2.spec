@@ -1,3 +1,5 @@
+# unversionned doc dir F20 change https://fedoraproject.org/wiki/Changes/UnversionedDocdirs
+%{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
 Name:				gfal2
 Version:			2.4.1
@@ -177,7 +179,7 @@ make clean
 
 %build
 %cmake \
--DDOC_INSTALL_DIR=%{_docdir}/%{name}-%{version} \
+-DDOC_INSTALL_DIR=%{_pkgdocdir} \
 -DUNIT_TESTS=TRUE \
 .
 make %{?_smp_mflags}
@@ -206,23 +208,23 @@ make DESTDIR=%{buildroot} install
 
 %files
 %{_bindir}/gfal2_version
-%{_docdir}/%{name}-%{version}/DESCRIPTION
+%{_pkgdocdir}/DESCRIPTION
 %{_mandir}/man1/gfal2_version.1*
 
 %files core
 %{_libdir}/libgfal2.so.*
 %dir %{_libdir}/%{name}-plugins
-%dir %{_docdir}/%{name}-%{version}
+%dir %{_pkgdocdir}
 %dir %{_sysconfdir}/%{name}.d
 %{_libdir}/%{name}-plugins/libgfal_plugin_file.so*
-%{_docdir}/%{name}-%{version}/README_PLUGIN_FILE
-%{_docdir}/%{name}-%{version}/LICENSE
+%{_pkgdocdir}/README_PLUGIN_FILE
+%{_pkgdocdir}/LICENSE
 %config(noreplace) %{_sysconfdir}/%{name}.d/bdii.conf
 %config(noreplace) %{_sysconfdir}/%{name}.d/gfal2_core.conf
 
 %files transfer
 %{_libdir}/libgfal_transfer.so.*
-%{_docdir}/%{name}-%{version}/README_TRANSFER
+%{_pkgdocdir}-/README_TRANSFER
 
 %files devel
 %{_includedir}/%{name}/
@@ -230,44 +232,44 @@ make DESTDIR=%{buildroot} install
 %{_libdir}/pkgconfig/gfal_transfer.pc
 %{_libdir}/libgfal2.so
 %{_libdir}/libgfal_transfer.so
-%{_docdir}/%{name}-%{version}/RELEASE-NOTES
+%{_pkgdocdir}/RELEASE-NOTES
 
 %files doc
-%{_docdir}/%{name}-%{version}/html/
-%{_docdir}/%{name}-%{version}/examples/
+%{_pkgdocdir}/html/
+%{_pkgdocdir}/examples/
 
 %files plugin-lfc
 %{_libdir}/%{name}-plugins/libgfal_plugin_lfc.so*
-%{_docdir}/%{name}-%{version}/README_PLUGIN_LFC
+%{_pkgdocdir}/README_PLUGIN_LFC
 %config(noreplace) %{_sysconfdir}/%{name}.d/lfc_plugin.conf
 
 %files plugin-rfio
 %{_libdir}/%{name}-plugins/libgfal_plugin_rfio.so*
-%{_docdir}/%{name}-%{version}/README_PLUGIN_RFIO
+%{_pkgdocdir}/README_PLUGIN_RFIO
 %config(noreplace) %{_sysconfdir}/%{name}.d/rfio_plugin.conf
 
 %files plugin-dcap
 %{_libdir}/%{name}-plugins/libgfal_plugin_dcap.so*
-%{_docdir}/%{name}-%{version}/README_PLUGIN_DCAP
+%{_pkgdocdir}/README_PLUGIN_DCAP
 %config(noreplace) %{_sysconfdir}/%{name}.d/dcap_plugin.conf
 
 %files plugin-srm
 %{_libdir}/%{name}-plugins/libgfal_plugin_srm.so*
-%{_docdir}/%{name}-%{version}/README_PLUGIN_SRM
+%{_pkgdocdir}/README_PLUGIN_SRM
 %config(noreplace) %{_sysconfdir}/%{name}.d/srm_plugin.conf
 
 %files plugin-gridftp
 %{_libdir}/%{name}-plugins/libgfal_plugin_gridftp.so*
-%{_docdir}/%{name}-%{version}/README_PLUGIN_GRIDFTP
+%{_pkgdocdir}/README_PLUGIN_GRIDFTP
 %config(noreplace) %{_sysconfdir}/%{name}.d/gsiftp_plugin.conf
 
 %files plugin-http
 %{_libdir}/%{name}-plugins/libgfal_plugin_http.so*
-%{_docdir}/%{name}-%{version}/README_PLUGIN_HTTP
+%{_pkgdocdir}/README_PLUGIN_HTTP
 %config(noreplace) %{_sysconfdir}/%{name}.d/http_plugin.conf
 
 %files all
-%{_docdir}/%{name}-%{version}/README
+%{_pkgdocdir}/README
 
 
 %changelog
