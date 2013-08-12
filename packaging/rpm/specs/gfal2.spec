@@ -224,7 +224,7 @@ make DESTDIR=%{buildroot} install
 
 %files transfer
 %{_libdir}/libgfal_transfer.so.*
-%{_pkgdocdir}-/README_TRANSFER
+%{_pkgdocdir}/README_TRANSFER
 
 %files devel
 %{_includedir}/%{name}/
