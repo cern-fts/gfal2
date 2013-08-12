@@ -1,4 +1,5 @@
 #include <davix.hpp>
+#include <copy/davixcopy.hpp>
 #include <unistd.h>
 #include <transfer/gfal_transfer_plugins.h>
 #include <cstdio>
