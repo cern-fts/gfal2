@@ -4,7 +4,7 @@
 Name:				gfal2
 Version:			2.4.1
 # https://fedoraproject.org/wiki/Packaging:NamingGuidelines#Release_Tag
-Release:			1%{?dist}
+Release:			2%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -86,6 +86,10 @@ development files for %{name}
 %package doc
 Summary:			Documentation for %{name}
 Group:				Documentation
+%if 0%{?fedora} > 10 || 0%{?rhel}>5
+BuildArch:                      noarch
+%endif
+
 
 %description doc
 documentation, Doxygen and examples of %{name} .
@@ -94,6 +98,7 @@ documentation, Doxygen and examples of %{name} .
 Summary:			Provide the lfc support for %{name}
 Group:				Applications/Internet
 Requires:			%{name}-core%{?_isa} = %{version}-%{release} 
+
 
 %description plugin-lfc
 Provide the lfc support (LFN://) for %{name}.
