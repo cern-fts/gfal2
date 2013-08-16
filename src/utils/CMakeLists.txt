@@ -3,12 +3,13 @@ cmake_minimum_required (VERSION 2.6)
 file (GLOB src_exceptions   "exceptions/*.c*")
 file (GLOB src_gsimplecache "gsimplecache/*.c*")
 file (GLOB src_uri          "uri/*.c*")
-
+file (GLOB src_checksums    "checksums/*.c*")
 
 LIST(APPEND gfal2_utils_src ${src_exceptions})
 
 LIST(APPEND gfal2_utils_c_src   ${src_gsimplecache}
-                                ${src_uri})
+                                ${src_uri}
+                                ${src_checksums})
 
 add_subdirectory (mds)
 

@@ -2,6 +2,7 @@
 #include <copy/davixcopy.hpp>
 #include <unistd.h>
 #include <transfer/gfal_transfer_plugins.h>
+#include <checksums/checksums.h>
 #include <cstdio>
 #include <common/gfal_common_errverbose.h>
 #include "gfal_http_plugin.h"
@@ -165,7 +166,7 @@ int gfal_http_3rdcopy_checksum(plugin_handle plugin_data,
     }
 
     if (!dst) {
-        if (checksum_value[0] && strcasecmp(src_checksum, checksum_value) != 0) {
+        if (checksum_value[0] && gfal_compare_checksums(src_checksum, checksum_value, sizeof(checksum_value)) != 0) {
             *err = g_error_new(http_plugin_domain, EINVAL,
                                "[%s] Source and user-defined %s do not match (%s != %s)",
                                __func__, checksum_type, src_checksum, checksum_value);
@@ -187,7 +188,7 @@ int gfal_http_3rdcopy_checksum(plugin_handle plugin_data,
             return -1;
         }
 
-        if (strcasecmp(src_checksum, dst_checksum) != 0) {
+        if (gfal_compare_checksums(src_checksum, dst_checksum, sizeof(dst_checksum)) != 0) {
             *err = g_error_new(http_plugin_domain, EINVAL,
                                        "[%s] Source and destination %s do not match (%s != %s)",
                                        __func__, checksum_type, src_checksum, dst_checksum);

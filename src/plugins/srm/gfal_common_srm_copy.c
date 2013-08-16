@@ -23,6 +23,7 @@
  * */
 #include <omp.h>
 
+#include <checksums/checksums.h>
 #include <common/gfal_types.h>
 #include <common/gfal_common_errverbose.h>
 #include <file/gfal_file_api.h>
@@ -171,7 +172,7 @@ int srm_plugin_check_checksum(plugin_handle handle, gfal2_context_t context,
        const gboolean user_defined = (*buff_user_defined!='\0' && *buff_user_defined_type!='\0');
 
        if(!user_defined){
-           chk_type=  gfal2_get_opt_string(context, srm_config_group,srm_config_transfer_checksum,&tmp_err);
+           chk_type = gfal2_get_opt_string(context, srm_config_group,srm_config_transfer_checksum,&tmp_err);
            gfal_log(GFAL_VERBOSE_TRACE, "\t\tNo checksum type defined by user, take it from configuration : %s", chk_type);
        }else{
            chk_type=g_strdup(buff_user_defined_type);
@@ -181,7 +182,7 @@ int srm_plugin_check_checksum(plugin_handle handle, gfal2_context_t context,
                               buff_chk, GFAL_URL_MAX_LEN,
                               0, 0,
                               &tmp_err))==0){
-           if(user_defined && strncasecmp(buff_user_defined,buff_chk,GFAL_URL_MAX_LEN ) != 0){
+           if(user_defined && gfal_compare_checksums(buff_user_defined, buff_chk, GFAL_URL_MAX_LEN ) != 0){
                g_set_error(&tmp_err, srm_quark_3rd_party(),EIO, "Checksum of %s and user defined checksum does not match %s %s",
                            src, buff_chk, buff_user_defined);
            }
@@ -199,7 +200,7 @@ int srm_compare_checksum_transfer(gfalt_params_t params, const char* src, const 
     int res = 0;
 
     if(gfalt_get_checksum_check(params, err)){
-        if( strncasecmp(src_buff_checksum, dst_buff_checksum,GFAL_URL_MAX_LEN) !=0){
+        if( gfal_compare_checksums(src_buff_checksum, dst_buff_checksum, GFAL_URL_MAX_LEN) !=0){
             g_set_error(err, srm_quark_3rd_party(),EIO, "Checksum of %s and %s does not match %s %s",
                         src, dst, src_buff_checksum, dst_buff_checksum);
             res =-1;
