@@ -157,6 +157,7 @@ int srm_plugin_put_3rdparty(plugin_handle handle, gfal2_context_t context,
 
 int srm_plugin_check_checksum(plugin_handle handle, gfal2_context_t context,
                               gfalt_params_t params,
+                              gboolean allow_empty_checksum,
                               const char* src, char* buff_chk, GError ** err){
 
     char buff_user_defined[GFAL_URL_MAX_LEN]={0};
@@ -178,17 +179,32 @@ int srm_plugin_check_checksum(plugin_handle handle, gfal2_context_t context,
            chk_type=g_strdup(buff_user_defined_type);
        }
 
-       if( chk_type && (res = gfal_srm_checksumG(handle, src, chk_type,
-                              buff_chk, GFAL_URL_MAX_LEN,
-                              0, 0,
-                              &tmp_err))==0){
-           if(user_defined && gfal_compare_checksums(buff_user_defined, buff_chk, GFAL_URL_MAX_LEN ) != 0){
-               g_set_error(&tmp_err, srm_quark_3rd_party(),EIO, "Checksum of %s and user defined checksum does not match %s %s",
-                           src, buff_chk, buff_user_defined);
-           }
-       }
-       g_free(chk_type);
+       if (chk_type)
+       {
+           res = gfal_srm_checksumG_fallback(handle, src, chk_type,
+                       buff_chk, GFAL_URL_MAX_LEN,
+                       0, 0,
+                       !allow_empty_checksum,
+                       &tmp_err);
 
+           if ((res != 0 || buff_chk[0] == '\0') && allow_empty_checksum)
+           {
+               gfal_log(GFAL_VERBOSE_VERBOSE, "\t\tNo checksum returned, but SRM plugin set to tolerate empty checksums on the source");
+               res = 0;
+               if (tmp_err)
+                   g_error_free(tmp_err);
+               tmp_err = NULL;
+           }
+           else if (res == 0 && user_defined && gfal_compare_checksums(buff_user_defined, buff_chk, GFAL_URL_MAX_LEN ) != 0)
+           {
+               g_set_error(&tmp_err, srm_quark_3rd_party(), EIO,
+                           "Checksum of %s and user defined checksum do not match %s %s",
+                           src, buff_chk, buff_user_defined);
+               res = -1;
+           }
+
+           g_free(chk_type);
+       }
     }
     G_RETURN_ERR(res, tmp_err, err);
 }
@@ -203,9 +219,9 @@ int srm_compare_checksum_transfer(gfalt_params_t params, const char* src, const 
         if( gfal_compare_checksums(src_buff_checksum, dst_buff_checksum, GFAL_URL_MAX_LEN) !=0){
             g_set_error(err, srm_quark_3rd_party(),EIO, "Checksum of %s and %s does not match %s %s",
                         src, dst, src_buff_checksum, dst_buff_checksum);
-            res =-1;
+            res = -1;
         }else{
-            res =0;
+            res = 0;
         }
     }
     return res;
@@ -229,6 +245,8 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
     gfalt_params_t params_turl = gfalt_params_handle_copy(params, &tmp_err);  // create underlying protocol parameters
     gfalt_set_checksum_check(params_turl, FALSE,NULL); // disable already does actions
 
+    gboolean allow_empty_source_checksum = gfal2_get_opt_boolean(context, "SRM PLUGIN", "ALLOW_EMPTY_SOURCE_CHECKSUM", NULL);
+
     GError * tmp_err_get, *tmp_err_put,*tmp_err_chk_src, *tmp_err_cancel;
     tmp_err_chk_src= tmp_err_get = tmp_err_put = tmp_err_cancel= NULL;
 
@@ -243,7 +261,10 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
             plugin_trigger_event(params, srm_domain(),
                                  GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER,
                                  "");
-            srm_plugin_check_checksum(handle, context, params, src, buff_src_checksum, &tmp_err_chk_src);
+            srm_plugin_check_checksum(handle, context, params,
+                                      allow_empty_source_checksum,
+                                      src, buff_src_checksum,
+                                      &tmp_err_chk_src);
             plugin_trigger_event(params, srm_domain(),
                                  GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT,
                                  "");
@@ -299,11 +320,14 @@ int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
                         plugin_trigger_event(params, srm_domain(),
                                              GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER,
                                              "");
-
-                        if( (res = srm_plugin_check_checksum(handle, context, params, dst, buff_dst_checksum, &tmp_err)) ==0 ){  // try to get resu checksum
+                        // try to get result checksum
+                        res = srm_plugin_check_checksum(handle, context, params, FALSE, dst, buff_dst_checksum, &tmp_err);
+                        if(res == 0 && (buff_src_checksum[0] != '\0' || !allow_empty_source_checksum))
+                        {
                             res= srm_compare_checksum_transfer(params, src, dst,
                                                               buff_src_checksum,
-                                                              buff_dst_checksum, &tmp_err);
+                                                              buff_dst_checksum,
+                                                              &tmp_err);
                         }
 
                         plugin_trigger_event(params, srm_domain(),

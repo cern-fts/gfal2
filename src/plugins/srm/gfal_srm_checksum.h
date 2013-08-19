@@ -33,6 +33,11 @@ int gfal_srm_cheksumG_internal(plugin_handle ch, const char* surl,
 											char* buf_checksum, size_t s_checksum,
 											char* buf_chktype, size_t s_chktype, GError** err);
 
+int gfal_srm_checksumG_fallback(plugin_handle handle, const char* url, const char* check_type,
+                       char * checksum_buffer, size_t buffer_length,
+                       off_t start_offset, size_t data_length,
+                       gboolean turl_fallback,
+                       GError ** err);
 
 int gfal_srm_checksumG(plugin_handle handle, const char* url, const char* check_type,
                        char * checksum_buffer, size_t buffer_length,

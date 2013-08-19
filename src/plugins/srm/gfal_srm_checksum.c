@@ -129,9 +129,10 @@ int gfal_srm_cheksumG_internal(plugin_handle ch, const char* surl,
 }
 
 
-int gfal_srm_checksumG(plugin_handle handle, const char* url, const char* check_type,
+int gfal_srm_checksumG_fallback(plugin_handle handle, const char* url, const char* check_type,
                        char * checksum_buffer, size_t buffer_length,
                        off_t start_offset, size_t data_length,
+                       gboolean turl_fallback,
                        GError ** err){
     gfal_log(GFAL_VERBOSE_TRACE, " [gfal_srm_checksumG] ->");
     gfal_log(GFAL_VERBOSE_DEBUG, "[gfal_srm_checksumG] try to get checksum %s for %s", check_type, url);
@@ -142,13 +143,15 @@ int gfal_srm_checksumG(plugin_handle handle, const char* url, const char* check_
     const gboolean srm_url = srm_check_url(url);
     int res =  -1;
 
-    if(srm_url && start_offset==0 && data_length==0 ){ // try SRM checksum only if full file checksum is requested
+    // try SRM checksum only if full file checksum is requested
+    if(srm_url && start_offset==0 && data_length==0 ) {
         res= gfal_srm_cheksumG_internal(handle, url,
                                    checksum_buffer, buffer_length,
                                    buffer_type, GFAL_URL_MAX_LEN, &tmp_err);
     }
 
-    if(res == 0){
+    // Make sure the returned type matches the requested one
+    if(res == 0) {
         gfal_log(GFAL_VERBOSE_DEBUG, "registered checksum type %s", buffer_type);
         if(strncasecmp(check_type, buffer_type,GFAL_URL_MAX_LEN) != 0){
             // does not match the correct type
@@ -157,7 +160,11 @@ int gfal_srm_checksumG(plugin_handle handle, const char* url, const char* check_
         }
     }
 
-    if(res != 0 && !tmp_err){
+
+
+    // If we got no error, but neither a valid checksum,
+    // fallback into the turl
+    if(res != 0 && !tmp_err && turl_fallback){
         gfal_log(GFAL_VERBOSE_TRACE, "\t\tNo valid SRM checksum, fallback to the TURL checksum");
         char buff_turl[GFAL_URL_MAX_LEN];
         char *res_turl;
@@ -177,5 +184,26 @@ int gfal_srm_checksumG(plugin_handle handle, const char* url, const char* check_
         }
 
     }
+    // If no fallback, then return an empty value
+    else if (!turl_fallback && (tmp_err || res  != 0)) {
+        res = 0;
+        memset(checksum_buffer, '\0', buffer_length);
+    }
+
     G_RETURN_ERR(res, tmp_err, err);
+}
+
+
+// Wrapper for gfal_srm_checksumG_fallback so it matches
+// the expected gfal2 signature
+int gfal_srm_checksumG(plugin_handle handle, const char* url, const char* check_type,
+                       char * checksum_buffer, size_t buffer_length,
+                       off_t start_offset, size_t data_length,
+                       GError ** err)
+{
+    return gfal_srm_checksumG_fallback(handle, url,
+            check_type, checksum_buffer, buffer_length,
+            start_offset, data_length,
+            TRUE,
+            err);
 }
