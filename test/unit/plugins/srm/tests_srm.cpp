@@ -25,8 +25,8 @@
 
 extern "C"{
 
-#include <plugins/srm/gfal_common_srm_url_check.h>
-#include <plugins/srm/gfal_common_srm.h>
+#include <plugins/srm/gfal_srm_url_check.h>
+#include <plugins/srm/gfal_srm.h>
 
 }
 

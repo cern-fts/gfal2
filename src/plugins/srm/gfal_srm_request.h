@@ -17,7 +17,7 @@
  */
 
 #include <glib.h>
-#include "gfal_common_srm.h"
+#include "gfal_srm.h"
 
 /* 
  * Next gen request srm system for gfal 2.0
