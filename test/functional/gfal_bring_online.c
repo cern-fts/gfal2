@@ -80,8 +80,10 @@ int main(int argc, char **argv)
         printf("Bring online failed: %s (%d)\n", error->message, error->code);
     else if (status == 0)
         printf("Bring online queued. Got token %s\n", token);
-    else
+    else if (token[0])
         printf("Bring online succeeded! Got token %s\n", token);
+    else
+        printf("Bring online succeeded! Did not get a token, though\n");
 
     while (status == 0) {
         fputc('.', stdout);

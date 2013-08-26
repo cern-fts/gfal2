@@ -81,9 +81,11 @@ static int gfal_srmv2_bring_online_internal(gfal_srmv2_opt* opts, const char* en
                 status = output.filestatuses[0].status;
                 switch (status) {
                     case 0:
-                    case 22:
-                        if (token)
+                    case 22: // SRM_FILE_PINNED
+                        if (output.token)
                             strncpy(token, output.token, tsize);
+                        else
+                            token[0] = '\0';
                         break;
                     default:
                         g_set_error(&tmp_err, 0,
