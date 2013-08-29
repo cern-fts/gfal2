@@ -14,7 +14,6 @@
  */
 
 #include <transfer/gfal_transfer_types_internal.h>
-#include <transfer/gfal_cpp_wrapper.h>
 #include <cerrno>
 #include <ctime>
 
