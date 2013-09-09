@@ -98,6 +98,12 @@ int gfal_srm_readdir_internal(plugin_handle ch, gfal_srm_opendir_handle oh, GErr
         input.count = oh->slice.count;
         ret = gfal_srm_external_call.srm_ls(context,&input,&output); // execute ls
 
+        /*
+         * Mind that srm_ls will modify the value pointed by input.offset, so even if it has some
+         * value, it will be reset to 0 to be a valid index within the response
+         * Why is it called input then? I don't know.
+         */
+
         if(ret >=0){
             srmv2_mdstatuses = output.statuses;
             if(srmv2_mdstatuses[0].status != 0){
