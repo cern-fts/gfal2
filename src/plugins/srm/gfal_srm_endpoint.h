@@ -31,16 +31,3 @@
 #include <stdlib.h>
 
 int gfal_srm_determine_endpoint(gfal_srmv2_opt* opts, const char* surl, char* buff_endpoint, size_t s_buff, enum gfal_srm_proto* srm_type, GError** err);
-
-
-gboolean gfal_check_fullendpoint_in_surlG(gfal_srmv2_opt* opts, const char* surl, GError** err);
-
-int gfal_get_fullendpointG(const char* surl, char* buff_endpoint, size_t s_buff, GError** err);
-
-int gfal_select_best_protocol_and_endpointG(gfal_srmv2_opt* opts, char** tab_se_type, char** tab_endpoint, char* buff_endpoint, size_t s_buff, enum gfal_srm_proto* srm_type, GError** err);
-
-int gfal_get_endpoint_and_setype_from_bdiiG(gfal_srmv2_opt* opts, const char* surl, char* buff_endpoint, size_t s_buff, enum gfal_srm_proto* srm_type, GError** err);
-
-int  gfal_get_hostname_from_surlG(const char * surl, char* buff_hostname, size_t s_buff, GError** err);
-
-
