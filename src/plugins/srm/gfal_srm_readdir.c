@@ -76,7 +76,7 @@ inline static struct dirent* gfal_srm_readdir_convert_result(plugin_handle ch, c
 	return resu;
 }
 
-int gfal_srm_readdir_internal(plugin_handle ch, gfal_srm_opendir_handle oh, int nb_files, GError** err){
+int gfal_srm_readdir_internal(plugin_handle ch, gfal_srm_opendir_handle oh, GError** err){
 	g_return_val_err_if_fail(ch && oh, -1, err, "[gfal_srmv2_opendir_internal] invaldi args");
 	GError* tmp_err=NULL;
 	int resu =-1;
@@ -87,7 +87,6 @@ int gfal_srm_readdir_internal(plugin_handle ch, gfal_srm_opendir_handle oh, int 
     gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
 	char errbuf[GFAL_ERRMSG_LEN]={0};
 	int ret =-1;
-	int offset = oh->dir_offset;
 	char* tab_surl[] = { (char*) oh->surl, NULL};
 
 	
@@ -95,9 +94,9 @@ int gfal_srm_readdir_internal(plugin_handle ch, gfal_srm_opendir_handle oh, int 
         input.nbfiles = 1;
         input.surls = tab_surl;
         input.numlevels = 1;
-        input.offset = &offset;
-        input.count = nb_files;
-        ret = gfal_srm_external_call.srm_ls(context,&input,&output);					// execute ls
+        input.offset = &oh->slice.offset;
+        input.count = oh->slice.count;
+        ret = gfal_srm_external_call.srm_ls(context,&input,&output); // execute ls
 
         if(ret >=0){
             srmv2_mdstatuses = output.statuses;
@@ -107,7 +106,6 @@ int gfal_srm_readdir_internal(plugin_handle ch, gfal_srm_opendir_handle oh, int 
                 resu = -1;
 
             }else {
-                oh->resu_offset = oh->dir_offset;
                 oh->srm_ls_resu = &srmv2_mdstatuses[0];
                 //cache system
                 resu = 0;
@@ -123,33 +121,35 @@ int gfal_srm_readdir_internal(plugin_handle ch, gfal_srm_opendir_handle oh, int 
     G_RETURN_ERR(resu, tmp_err, err);
 }
 
-struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch, gfal_srm_opendir_handle oh, GError** err){
-	struct dirent* ret = NULL;
-	GError* tmp_err=NULL;
-	int max_resu_per_req= 0;
-	
-	if(oh->srm_ls_resu == NULL){
-		gfal_srm_readdir_internal(ch, oh, max_resu_per_req, &tmp_err);	
-		if(tmp_err && tmp_err->code == EINVAL){// fix in the case of short size SRMLs support, ( dcap )
-			g_clear_error(&tmp_err);
-			gfal_srm_readdir_internal(ch, oh, 1000, &tmp_err);	
-		}	
-	}else if(oh->dir_offset >= (oh->resu_offset+ oh->srm_ls_resu->nbsubpaths) ){
-		return NULL; // limited mode in order to not overload the srm server ( slow )
-		/*
-		gfal_srm_external_call.srm_srmv2_mdfilestatus_delete(oh->srm_ls_resu,1);	
-		gfal_srm_readdir_internal(ch, oh, max_resu_per_req, &tmp_err);*/
-	}
-	if(!tmp_err){
-		if(oh->srm_ls_resu->nbsubpaths == 0) // end of the list !!
-			return NULL;
-		const off_t myoffset = oh->dir_offset - oh->resu_offset;
-		ret = gfal_srm_readdir_convert_result(ch, oh->surl, &oh->srm_ls_resu->subpaths[myoffset], &oh->current_readdir, &tmp_err);
-		oh->dir_offset += 1;
-	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;	
+struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch,
+        gfal_srm_opendir_handle oh, GError** err)
+{
+    struct dirent* ret = NULL;
+    GError* tmp_err = NULL;
+
+    if (oh->srm_ls_resu == NULL ) {
+        gfal_srm_readdir_internal(ch, oh, &tmp_err);
+        if (tmp_err && tmp_err->code == EINVAL) { // fix in the case of short size SRMLs support, ( dcap )
+            g_clear_error(&tmp_err);
+            oh->slice.count = 1000;
+            gfal_srm_readdir_internal(ch, oh, &tmp_err);
+        }
+    }
+    else if (oh->dir_offset >= (oh->slice.offset + oh->srm_ls_resu->nbsubpaths)) {
+        return NULL ; // limited mode in order to not overload the srm server ( slow )
+    }
+    if (!tmp_err) {
+        if (oh->srm_ls_resu->nbsubpaths == 0) // end of the list !!
+            return NULL ;
+        const off_t myoffset = oh->dir_offset - oh->slice.offset;
+        ret = gfal_srm_readdir_convert_result(ch, oh->surl,
+                &oh->srm_ls_resu->subpaths[myoffset], &oh->current_readdir,
+                &tmp_err);
+        oh->dir_offset += 1;
+    }
+    else
+        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+    return ret;
 }
 
 

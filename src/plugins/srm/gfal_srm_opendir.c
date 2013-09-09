@@ -38,33 +38,76 @@
 #include "gfal_srm_internal_layer.h"
 
 
+// Replaces the first occurence of ';' with '/0', so
+// we have a valid surl. Returns a pointer
+// to the beginning of the additional parameters, if any
+static char* _strip_parameters(char* surl)
+{
+    char* first_semicolon = strchr(surl, ';');
+    if (first_semicolon) {
+        *first_semicolon = '\0';
+        return first_semicolon + 1;
+    }
+    else {
+        return NULL;
+    }
+}
 
-
+// Parse any possible additional parameters passed in the URL and set the
+// corresponding values in h
+// parameters should be already in the form of key=value;key=value
+static void _parse_opendir_parameters(char* parameters, gfal_srm_opendir_handle h)
+{
+    char* saveptr = NULL;
+    char* pair = strtok_r(parameters, ";", &saveptr);
+    if (pair) {
+        do {
+            char* key = pair;
+            char* value = strchr(pair, '=');
+            if (value) {
+                *value = '\0';
+                ++value;
+                if (strcasecmp("offset", key) == 0) {
+                    h->slice.offset = atoi(value);
+                }
+                else if (strcasecmp("count", key) == 0) {
+                    h->slice.count = atoi(value);
+                }
+            }
+        } while ((pair = strtok_r(NULL, ";", &saveptr)));
+    }
+}
 
 gfal_file_handle gfal_srm_opendir_internal(gfal_srmv2_opt* opts, char* endpoint,
         const char* surl, GError** err)
 {
     g_return_val_err_if_fail(opts && endpoint && surl, NULL, err,
             "[gfal_srmv2_opendir_internal] invalid args");
+
+    // As extra parameters may be passed separated with ';',
+    // we need to remove those from the surl, and then process them
+    char* real_surl  = g_strdup(surl);
+    char* parameters = _strip_parameters(real_surl);
+
     GError* tmp_err = NULL;
     gfal_file_handle resu = NULL;
     struct stat st;
-    int exist = gfal_statG_srmv2_internal(opts, &st, endpoint, surl, &tmp_err);
+    int exist = gfal_statG_srmv2_internal(opts, &st, endpoint, real_surl, &tmp_err);
 
     if (exist == 0) {
         if (S_ISDIR(st.st_mode)) {
             gfal_srm_opendir_handle h =
                     g_new0(struct _gfal_srm_opendir_handle,1);
-            const size_t s = strnlen(surl, GFAL_URL_MAX_LEN);
-            char* p = (char*) mempcpy(h->surl, surl, MIN(s,GFAL_URL_MAX_LEN));
+            const size_t s = strnlen(real_surl, GFAL_URL_MAX_LEN);
+            char* p = (char*) mempcpy(h->surl, real_surl, MIN(s,GFAL_URL_MAX_LEN));
             // remove trailing '/'
             for (--p; *p == '/'; --p)
                 *p = '\0';
 
             g_strlcpy(h->endpoint, endpoint, GFAL_URL_MAX_LEN);
-            h->dir_offset = 0;
+            _parse_opendir_parameters(parameters, h);
             resu = gfal_file_handle_new2(gfal_srm_getName(), (gpointer) h, NULL,
-                    surl);
+                                         real_surl);
         }
         else {
             g_set_error(&tmp_err, 0, ENOTDIR,
@@ -76,6 +119,7 @@ gfal_file_handle gfal_srm_opendir_internal(gfal_srmv2_opt* opts, char* endpoint,
     if (tmp_err)
         g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
 
+    g_free(real_surl);
     return resu;
 }
 	
