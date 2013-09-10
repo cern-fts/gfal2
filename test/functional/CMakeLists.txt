@@ -147,13 +147,13 @@ IF (FUNCTIONAL_TESTS)
         add_executable(gfal_test_readdir_full        ${src_test_readdir_full} )
         target_link_libraries(gfal_test_readdir_full ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES})
 
-		add_executable(gfal_ls ${src_testdir})
-		target_link_libraries(gfal_ls ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES})
+        add_executable(gfal_ls ${src_testdir})
+        target_link_libraries(gfal_ls ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES})
    
-	    add_executable(gfal_bring_online ${src_bring_online})
-	    target_link_libraries(gfal_bring_online ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES})
-	    
-	    add_executable(gfal_mv ${src_mv})
+        add_executable(gfal_bring_online ${src_bring_online})
+        target_link_libraries(gfal_bring_online ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES})
+        
+        add_executable(gfal_mv ${src_mv})
         target_link_libraries(gfal_mv ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES})
 
         FUNCTION(mkdir_test_all name prefix)
