@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <errno.h>
 #include <glib.h>
@@ -55,7 +56,7 @@ int main(int argc, char **argv)
 	g_assert(gfal_posix_code_error() == 0);	
 	
 	
-	snprintf(buff, 2048, "%s/%ld_testrmdir/", valid_dir,time(NULL));
+	snprintf(buff, 2048, "%s/%ld_testrmdir/", valid_dir, time(NULL));
 	printf ("create and delete directory with slash  %s   ...\n", buff);		
 	if(gfal_mkdir(buff, 0777) != 0) {
 		gfal_posix_check_error();
@@ -68,9 +69,9 @@ int main(int argc, char **argv)
 	}		
 	g_assert(gfal_posix_code_error() == 0);		
 	
-	snprintf(buff, 2048, "%s/%ld_testrmdir_eaccess", valid_dir,time(NULL));	
+	snprintf(buff, 2048, "%s/%ld_testrmdir_eaccess", valid_dir, time(NULL));
 	snprintf(buff2, 2048, "%s/testdirinside", buff);
-	printf ("create eaccess and enotempty dir   %s  %s ...\n", buff,buff2);			
+	printf ("create eaccess and enotempty dir   %s  %s ...\n", buff, buff2);
 	if(gfal_mkdir(buff, 0777) != 0) { 
 		gfal_posix_check_error();
 		g_assert_not_reached();
@@ -100,15 +101,20 @@ int main(int argc, char **argv)
 	}		
 	g_assert(gfal_posix_code_error() == 0);		
 	
-	printf ("try eacess   %s   ...\n", buff2);		
-	if(gfal_rmdir(buff2) == 0) {  // must eaccess
-		gfal_posix_check_error();
-		g_assert_not_reached();
+	// Skip this bit if file:// is used, since the rmdir will succeed
+	if (strncmp("file:", buff2, 5) != 0) {
+        printf ("try eacess %s   ...\n", buff2);
+        if(gfal_rmdir(buff2) == 0) {  // must eaccess
+            gfal_posix_check_error();
+            g_assert_not_reached();
+        }
+        g_assert(gfal_posix_code_error() == EACCES);
+        gfal_posix_clear_error();
+        g_assert(gfal_posix_code_error() == 0);
 	}
-	g_assert(gfal_posix_code_error() == EACCES);
-	gfal_posix_clear_error();
-	g_assert(gfal_posix_code_error() == 0);	
-
+	else {
+	    printf("skipping eacess test for file://\n");
+	}
 	
 		
 	if(gfal_rmdir(valid_file) == 0) {  // must ENOTDIR
