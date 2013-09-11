@@ -32,11 +32,11 @@ int main(int argc, char** argv){
 	 }
 	
 	int ret=-1;
-	// stat initial file
-	struct stat st;
-	if( (ret = gfal_stat(src_uri, &st)) != 0){
-		gfal_posix_check_error();
-		g_assert_not_reached();
+
+	// create source if not there
+	if (generate_file_if_not_exists(handle, src_uri, "file:///etc/hosts", &tmp_err) != 0) {
+	    fprintf(stderr, "Could not generate the source: %s", tmp_err->message);
+	    g_assert_not_reached();
 	}
 
     printf(" create params without replace but with checksum verification\n");

@@ -19,10 +19,17 @@
  * limitations under the License.
  */
 
-#include <glib.h>
+#include <gfal_api.h>
 
-char* generate_random_uri(const char* uri_dir, const char* prefix, char* buff, size_t s_buff);
+char* generate_random_uri(const char* uri_dir, const char* prefix, char* buff,
+        size_t s_buff);
 
 char * generate_random_string_content(size_t size);
+
+/**
+ * If surl does not exist, it creates it putting the content of src.
+ */
+int generate_file_if_not_exists(gfal2_context_t handle, const char* surl,
+        const char* src, GError** error);
 
 #endif /* GFAL_LIB_TEST_H */ 
