@@ -14,7 +14,7 @@ IF(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
 ## Testbed environment
 SET(file_base_path "/tmp/")
-SET(srm_prefix_storm "srm://stormfe1.pi.infn.it:8444/${MY_VO_STORM}/gfal2-tests")
+SET(srm_prefix_storm "srm://grid-storm.hpc.susx.ac.uk:8444/${MY_VO_STORM}/gfal2-tests")
 SET(dcap_prefix "gsidcap://dcache-door-desy09.desy.de:22128/pnfs/desy.de/${MY_VO}/gfal2-tests/")
 SET(srm_prefix_dcache "srm://dcache-se-desy.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/${MY_VO}/gfal2-tests")
 SET(lfc_prefix "lfn:/grid/${MY_VO}")
@@ -27,7 +27,7 @@ ELSEIF(TEST_ENVIRONMENT STREQUAL "TESTBED_TRUNK")
 
 ## Testbed trunk environment
 SET(file_base_path "/tmp/")
-SET(srm_prefix_storm "srm://stormfe1.pi.infn.it:8444/${MY_VO_STORM}/gfal2-tests")
+SET(srm_prefix_storm "srm://grid-storm.hpc.susx.ac.uk:8444/${MY_VO_STORM}/gfal2-tests")
 SET(dcap_prefix "gsidcap://dcache-door-desy09.desy.de:22128/pnfs/desy.de/${MY_VO}/gfal2-tests/")
 SET(srm_prefix_dcache "srm://dcache-se-desy.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/${MY_VO}/gfal2-tests")
 SET(lfc_prefix "lfn:/grid/${MY_VO}")
@@ -39,7 +39,7 @@ ELSE(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
 ## Production environment : default
 SET(file_base_path "/tmp/")
-SET(srm_prefix_storm "srm://stormfe1.pi.infn.it:8444/${MY_VO_STORM}/gfal2-tests")
+SET(srm_prefix_storm "srm://grid-storm.hpc.susx.ac.uk:8444/${MY_VO_STORM}/gfal2-tests")
 SET(dcap_prefix "gsidcap://dcache-door-desy09.desy.de:22128/pnfs/desy.de/${MY_VO}/gfal2-tests/")
 SET(srm_prefix_dcache "srm://dcache-se-desy.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/${MY_VO}/gfal2-tests")
 SET(lfc_prefix "lfn:/grid/${MY_VO}")
