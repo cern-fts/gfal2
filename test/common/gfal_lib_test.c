@@ -15,14 +15,16 @@
  * limitations under the License.
  */
 
+#include <execinfo.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include <pthread.h>
+#include <string.h>
+#include <sys/types.h>
 #include <transfer/gfal_transfer.h>
+#include <unistd.h>
 
 #include "gfal_lib_test.h"
 
@@ -53,4 +55,66 @@ int generate_file_if_not_exists(gfal2_context_t handle, const char* surl,
         return 0;
 
     return gfalt_copy_file(handle, NULL, src, surl, error);
+}
+
+
+/* Everything that links agains this will, automatically,
+ * setup the segfault handler
+ */
+#define MAX_STACK_DEPTH 25
+
+static void getFileAndLine(void* addr, const char* sname,
+        char* buffer, size_t bufsize)
+{
+    char fnameBuffer[512];
+    // Extract file object from the symbol name
+    strncpy(fnameBuffer, sname, sizeof(fnameBuffer));
+    char *p = strchr(fnameBuffer, '(');
+    if (p)
+        *p = '\0';
+
+    // Build the command
+    char command[1024];
+    snprintf(command, sizeof(command), "addr2line -e '%s' 0x%lx", fnameBuffer, (long)addr);
+
+    // Run it
+    buffer[0] = '\0';
+    FILE *proc = popen(command, "r");
+    fread(buffer, 1, bufsize, proc);
+    pclose(proc);
+
+    if (buffer[0] == '?') {
+        buffer[0] = '\n';
+        buffer[1] = '\0';
+    }
+}
+
+static void dump_stack(int sig)
+{
+    if (sig == SIGSEGV || sig == SIGBUS || sig == SIGABRT) {
+        fprintf(stderr, "FATAL ERROR!\n");
+        void *array[MAX_STACK_DEPTH] = { 0 };
+        char fileBuffer[1024];
+        int nFrames = backtrace(array, MAX_STACK_DEPTH);
+        char **symbols = backtrace_symbols(array, nFrames);
+        int i;
+        for (i = 0; symbols && i < nFrames; ++i) {
+            if (symbols[i]) {
+                getFileAndLine(array[i], symbols[i], fileBuffer, sizeof(fileBuffer));
+                fprintf(stderr, "%s\n", symbols[i]);
+                fprintf(stderr, "\t%s", fileBuffer);
+            }
+        }
+        if (symbols) {
+            free(symbols);
+        }
+
+        exit(1);
+    }
+}
+
+__attribute__((constructor))
+void setup_segfault_handler(void)
+{
+    signal(SIGSEGV, dump_stack);
 }

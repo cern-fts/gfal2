@@ -1,7 +1,6 @@
 #
 # compilation lines for examples
 
-
 # list tests
 FILE(GLOB src_gfalchecksum_test "gfal_testchecksum.c")
 FILE(GLOB src_gfalstat "gfal_teststat.c")
@@ -145,7 +144,7 @@ IF (FUNCTIONAL_TESTS)
         target_link_libraries(gfal_test_rmdir_full ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES})        
 
         add_executable(gfal_test_readdir_full        ${src_test_readdir_full} )
-        target_link_libraries(gfal_test_readdir_full ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES})
+        target_link_libraries(gfal_test_readdir_full ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES} test_shared)
 
         add_executable(gfal_ls ${src_testdir})
         target_link_libraries(gfal_ls ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES})
