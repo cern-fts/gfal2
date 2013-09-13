@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <pthread.h>
+#include <signal.h>
 #include <string.h>
 #include <sys/types.h>
 #include <transfer/gfal_transfer.h>
