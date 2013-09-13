@@ -58,23 +58,29 @@ static char* _strip_parameters(char* surl)
 // parameters should be already in the form of key=value;key=value
 static void _parse_opendir_parameters(char* parameters, gfal_srm_opendir_handle h)
 {
-    char* saveptr = NULL;
-    char* pair = strtok_r(parameters, ";", &saveptr);
-    if (pair) {
-        do {
-            char* key = pair;
-            char* value = strchr(pair, '=');
-            if (value) {
-                *value = '\0';
-                ++value;
-                if (strcasecmp("offset", key) == 0) {
-                    h->slice.offset = atoi(value);
+    if (parameters) {
+        char* saveptr = NULL;
+        char* pair = strtok_r(parameters, ";", &saveptr);
+        if (pair) {
+            do {
+                char* key = pair;
+                char* value = strchr(pair, '=');
+                if (value) {
+                    *value = '\0';
+                    ++value;
+                    if (strcasecmp("offset", key) == 0) {
+                        h->slice.offset = atoi(value);
+                    }
+                    else if (strcasecmp("count", key) == 0) {
+                        h->slice.count = atoi(value);
+                    }
                 }
-                else if (strcasecmp("count", key) == 0) {
-                    h->slice.count = atoi(value);
-                }
-            }
-        } while ((pair = strtok_r(NULL, ";", &saveptr)));
+            } while ((pair = strtok_r(NULL, ";", &saveptr)));
+        }
+    }
+    else {
+        h->slice.count = 0;
+        h->slice.offset = 0;
     }
 }
 
@@ -97,12 +103,13 @@ gfal_file_handle gfal_srm_opendir_internal(gfal_srmv2_opt* opts, char* endpoint,
     if (exist == 0) {
         if (S_ISDIR(st.st_mode)) {
             gfal_srm_opendir_handle h =
-                    g_new0(struct _gfal_srm_opendir_handle,1);
-            const size_t s = strnlen(real_surl, GFAL_URL_MAX_LEN);
-            char* p = (char*) mempcpy(h->surl, real_surl, MIN(s,GFAL_URL_MAX_LEN));
+                    g_new0(struct _gfal_srm_opendir_handle, 1);
+
+            char *p = stpncpy(h->surl, real_surl, GFAL_URL_MAX_LEN);
             // remove trailing '/'
-            for (--p; *p == '/'; --p)
+            for (--p; *p == '/'; --p) {
                 *p = '\0';
+            }
 
             g_strlcpy(h->endpoint, endpoint, GFAL_URL_MAX_LEN);
             _parse_opendir_parameters(parameters, h);
