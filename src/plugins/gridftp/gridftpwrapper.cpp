@@ -260,11 +260,22 @@ GridFTP_Request_state::GridFTP_Request_state(GridFTP_session * s, bool own_sessi
 
 GridFTP_Request_state::~GridFTP_Request_state()
 {
-    if(req_status == GRIDFTP_REQUEST_RUNNING)
-        cancel_operation(gfal_gridftp_scope_req_state(), "ReqState Destroyer");
-    Glib::RWLock::WriterLock l(mux_req_state);
-	if(!own_session)
-		sess.release(); // cancel the automatic memory management
+    try {
+        if(req_status == GRIDFTP_REQUEST_RUNNING)
+            cancel_operation(gfal_gridftp_scope_req_state(), "ReqState Destroyer");
+        Glib::RWLock::WriterLock l(mux_req_state);
+        if(!own_session)
+            sess.release(); // cancel the automatic memory management
+    }
+    catch (const std::exception& e) {
+        gfal_log(GFAL_VERBOSE_NORMAL,
+                 "Caught an exception inside ~GridFTP_Request_state()!! %s",
+                 e.what());
+    }
+    catch (...) {
+            gfal_log(GFAL_VERBOSE_NORMAL,
+                     "Caught an unknown exception inside ~GridFTP_Request_state()!!");
+    }
 }
 
 
