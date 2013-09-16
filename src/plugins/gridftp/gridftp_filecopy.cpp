@@ -102,8 +102,9 @@ static std::string returnHostname(const std::string &uri){
 	return  lookup_host(u0.Host.c_str()) + ":" + u0.Port;	
 }
 
-const char * gridftp_checksum_transfer_config= "COPY_CHECKSUM_TYPE";
-const char * gridftp_perf_marker_timeout_config= "PERF_MARKER_TIMEOUT";
+const char * gridftp_checksum_transfer_config   = "COPY_CHECKSUM_TYPE";
+const char * gridftp_perf_marker_timeout_config = "PERF_MARKER_TIMEOUT";
+const char * gridftp_skip_transfer_config       = "SKIP_SOURCE_CHECKSUM";
 
 void gridftp_filecopy_delete_existing(gfal2_context_t context, GridFTP_session * sess, gfalt_params_t params, const char * url){
 	const bool replace = gfalt_get_replace_existing_file(params,NULL);
@@ -341,23 +342,34 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
 
 }
 
-void gridftp_checksum_transfer_verify(const char * src_chk, const char* dst_chk, const char* user_defined_chk){
-    if(*user_defined_chk == '\0'){
-        if(gfal_compare_checksums(src_chk, dst_chk, GFAL_URL_MAX_LEN) != 0){
-            std::ostringstream ss;
-            ss << "SRC and DST checksum are different. Source: " << src_chk << " Destination: " << dst_chk ;
-            throw Gfal::CoreException(gfal_gridftp_scope_filecopy(), ss.str(), EIO);
-        }
-    }else{
-        if(gfal_compare_checksums(src_chk, user_defined_chk, GFAL_URL_MAX_LEN) != 0
-                || gfal_compare_checksums(dst_chk, user_defined_chk, GFAL_URL_MAX_LEN) != 0){
-            std::ostringstream ss;
-            ss << "USER_DEFINE, SRC and DST checksum are different. User defined: "
-               << user_defined_chk << " Source: " << src_chk
+void gridftp_checksum_transfer_verify(const char * src_chk, const char* dst_chk,
+        const char* user_defined_chk)
+{
+    std::ostringstream ss;
+
+    if (*user_defined_chk == '\0') {
+        if (gfal_compare_checksums(src_chk, dst_chk, GFAL_URL_MAX_LEN) != 0) {
+            ss << "SRC and DST checksum are different. Source: " << src_chk
                << " Destination: " << dst_chk;
-            throw Gfal::CoreException(gfal_gridftp_scope_filecopy(), ss.str(),EIO);
+            throw Gfal::CoreException(gfal_gridftp_scope_filecopy(), ss.str(),
+                    EIO);
+        }
+    }
+    else {
+        if (src_chk[0] != '\0' &&
+            gfal_compare_checksums(src_chk, user_defined_chk, GFAL_URL_MAX_LEN) != 0) {
+            ss << "USER_DEFINE and SRC checksums are different. "
+               << user_defined_chk << " != " << src_chk;
+            throw Gfal::CoreException(gfal_gridftp_scope_filecopy(), ss.str(),
+                    EIO);
         }
 
+        if (gfal_compare_checksums(dst_chk, user_defined_chk, GFAL_URL_MAX_LEN) != 0) {
+            ss << "USER_DEFINE and DST checksums are different. "
+               << user_defined_chk << " != " << dst_chk;
+            throw Gfal::CoreException(gfal_gridftp_scope_filecopy(), ss.str(),
+                    EIO);
+        }
     }
 }
 
@@ -382,6 +394,10 @@ void GridftpModule::filecopy(gfalt_params_t params, const char* src, const char*
     char checksum_dst[GFAL_URL_MAX_LEN] = { 0 };
 
     gboolean checksum_check = gfalt_get_checksum_check(params, NULL);
+    gboolean skip_source_checksum = gfal2_get_opt_boolean(_handle_factory->get_handle(),
+                                        GRIDFTP_CONFIG_GROUP,
+                                        gridftp_skip_transfer_config,
+                                        NULL);
 
     if (checksum_check) {
         gfalt_get_user_defined_checksum(params,
@@ -420,7 +436,7 @@ void GridftpModule::filecopy(gfalt_params_t params, const char* src, const char*
     // Source checksum
     {
         try {
-            if (checksum_check) {
+            if (checksum_check && !skip_source_checksum) {
                 plugin_trigger_event(params, gfal_gsiftp_domain(),
                                      GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER,
                                      "%s", checksum_type);
