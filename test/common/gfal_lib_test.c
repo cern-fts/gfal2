@@ -24,6 +24,7 @@
 #include <signal.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/utsname.h>
 #include <transfer/gfal_transfer.h>
 #include <unistd.h>
 
@@ -32,7 +33,10 @@
 char* generate_random_uri(const char* uri_dir, const char* prefix, char* buff,
         size_t s_buff)
 {
-    snprintf(buff, s_buff, "%s/%s_%d%ld%ld", uri_dir, prefix, (int) getpid(),
+    struct utsname info;
+    memset(&info,0, sizeof(struct utsname));
+    uname(&info);
+    snprintf(buff, s_buff, "%s/%s_%s_%d%ld%ld", uri_dir, info.nodename, prefix, (int) getpid(),
             (long) time(NULL ), (long) rand());
     return buff;
 }
