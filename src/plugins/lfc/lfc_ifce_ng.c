@@ -136,7 +136,8 @@ int lfc_configure_environment(struct lfc_ops * ops, const char* host, GError** e
 // Routine for internal lfc hack, need to be call for the thread safety 
 void gfal_lfc_init_thread(struct lfc_ops* ops){
 	if(_local_thread_init==FALSE){
-		ops->_Cthread_addcid (NULL, 0, NULL, 0, (void*)pthread_self(), 0, NULL, 0); 
+		Cth_pid_t th = pthread_self();
+		ops->_Cthread_addcid (NULL, 0, NULL, 0, &th, 0, NULL, 0); 
 		_local_thread_init= TRUE;
 	}
 }
