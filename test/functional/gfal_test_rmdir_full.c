@@ -10,6 +10,8 @@
 #include <glib.h>
 #include <gfal_api.h>
 
+#include <common/gfal_lib_test.h>
+
 int main(int argc, char **argv)
 {
 	char *valid_file,* valid_dir;
@@ -27,10 +29,8 @@ int main(int argc, char **argv)
 	gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_DEBUG | GFAL_VERBOSE_VERBOSE);
 
 	// create a enoent file 
-	g_strlcpy(buff, valid_dir, 2048);
-	g_strlcat(buff, "/", 2048);	
-	g_strlcat(buff, "klfdsklmfdsklmfdsklmfdsklmfds_enoent", 2048);	
-	
+
+    generate_random_uri(valid_dir, "test_rmdir_full_enoent", buff, 2048);
 
 	printf ("check enoent directory  %s ...\n", buff);	
 	if(gfal_rmdir(buff) == 0) { // must not exist
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 	gfal_posix_clear_error();
 	g_assert(gfal_posix_code_error() == 0);	
 	
-	snprintf(buff, 2048, "%s/%ld_testrmdir", valid_dir,time(NULL));	
+    generate_random_uri(valid_dir, "testrmdir_full_exist", buff, 2048);
 	printf ("create and delete directory  %s ...\n", buff);		
 	if(gfal_mkdir(buff, 0777) != 0) {
 		gfal_posix_check_error();
@@ -56,7 +56,8 @@ int main(int argc, char **argv)
 	g_assert(gfal_posix_code_error() == 0);	
 	
 	
-	snprintf(buff, 2048, "%s/%ld_testrmdir/", valid_dir, time(NULL));
+    generate_random_uri(valid_dir, "testrmdir_full_exist2", buff, 2048);
+    g_strlcat(buff, "/",2048);
 	printf ("create and delete directory with slash  %s   ...\n", buff);		
 	if(gfal_mkdir(buff, 0777) != 0) {
 		gfal_posix_check_error();
@@ -68,9 +69,9 @@ int main(int argc, char **argv)
 		g_assert_not_reached();
 	}		
 	g_assert(gfal_posix_code_error() == 0);		
-	
-	snprintf(buff, 2048, "%s/%ld_testrmdir_eaccess", valid_dir, time(NULL));
-	snprintf(buff2, 2048, "%s/testdirinside", buff);
+
+    generate_random_uri(valid_dir, "testrmdir_full_eaccess", buff, 2048);
+    generate_random_uri(buff, "testdirinside", buff2, 2048);
 	printf ("create eaccess and enotempty dir   %s  %s ...\n", buff, buff2);
 	if(gfal_mkdir(buff, 0777) != 0) { 
 		gfal_posix_check_error();
