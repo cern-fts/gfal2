@@ -11,6 +11,8 @@
 #include <string.h>
 #include <gfal_api.h>
 
+#include <common/gfal_lib_test.h>
+
 int main(int argc, char **argv)
 {
 	char *file;
@@ -31,7 +33,7 @@ int main(int argc, char **argv)
 	srand(time(NULL));
 	file = argv[1];
 
-	snprintf(buff, 2048, "%s/fsdsdfkmklfsdmklmkl_enoent", file);
+    generate_random_uri(file, "readdir_full_entry_enoent", buff, 2048);
 	printf(" try to list not existing dir .... %s", buff);
 	DIR* p;
 	if( (p = gfal_opendir(buff)) != NULL){
@@ -42,7 +44,7 @@ int main(int argc, char **argv)
 	gfal_closedir(p); // must pass without problem even if useless
 	gfal_posix_clear_error();
 	
-	snprintf(buff, 2048, "%s/testlistdir_%ld", file, time(NULL));
+    generate_random_uri(file, "testlisdir_", buff, 2048);
 	printf(" create a new dir for content listing .... %s\n", buff);
 	if(gfal_mkdir(buff, 0777) !=0){
 		gfal_posix_check_error();
@@ -51,7 +53,7 @@ int main(int argc, char **argv)
 	printf(" create content of the new dir .... \n");		
 	int i, n = (rand()%20)+2;
 	for(i=0; i < n; ++i){
-		snprintf(buff2, 2048, "%s/elem_%d",buff,i);
+        generate_random_uri(buff, "elem_", buff2, 2048);
 		printf("     create one elem in the new dir %s \n", buff2);		
 		if(gfal_mkdir(buff2, 0777) !=0){
 			gfal_posix_check_error();
