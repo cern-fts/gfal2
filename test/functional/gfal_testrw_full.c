@@ -13,6 +13,8 @@
 #include <time.h>
 #include <glib.h>
 
+#include <common/gfal_lib_test.h>
+
 #define BLKLEN 65536
 
 int main(int argc, char **argv)
@@ -39,7 +41,7 @@ int main(int argc, char **argv)
    for (i = 0; i < size; i++)
 	   obuf[i] = i;
 
-	snprintf(buff_name, 2048, "%s/testrw_full_%ld_%ld", argv[1], (long) time(NULL),(long) rand());
+    generate_random_uri(argv[1], "testrw_full", buff_name, 2048);
 	
 	// try to get a enoent
 	printf ("try to access unexisting file %s\n", buff_name);

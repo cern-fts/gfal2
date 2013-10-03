@@ -119,7 +119,7 @@ IF (FUNCTIONAL_TESTS)
         target_link_libraries(gfal_test_mkdir_unlink ${GFAL2_LINK} test_shared)
 
         add_executable(gfal_rw_full        ${src_gfal_rw_full} )
-        target_link_libraries(gfal_rw_full ${GFAL2_LINK} )        
+        target_link_libraries(gfal_rw_full ${GFAL2_LINK} test_shared)
         
         add_executable(gfal_rw_seq        ${src_gfal_rw_seq} )
         target_link_libraries(gfal_rw_seq ${GFAL2_LINK} test_shared) 
@@ -135,13 +135,13 @@ IF (FUNCTIONAL_TESTS)
         
 
         add_executable(gfal_test_mkdir_full        ${src_gfalmkdir_full} )
-        target_link_libraries(gfal_test_mkdir_full ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES})
+        target_link_libraries(gfal_test_mkdir_full ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES} test_shared)
         
         add_executable(gfal_test_right_change ${src_gfaltestrightchange} ${src_lib_test})
         target_link_libraries(gfal_test_right_change ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES} test_shared)
         
         add_executable(gfal_test_rmdir_full ${src_gfaltestrmdirfull})
-        target_link_libraries(gfal_test_rmdir_full ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES})        
+        target_link_libraries(gfal_test_rmdir_full ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES} test_shared)
 
         add_executable(gfal_test_readdir_full        ${src_test_readdir_full} )
         target_link_libraries(gfal_test_readdir_full ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES} test_shared)

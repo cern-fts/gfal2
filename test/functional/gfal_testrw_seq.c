@@ -12,6 +12,8 @@
 #include <string.h>
 #include <time.h>
 
+#include <common/gfal_lib_test.h>
+
 #define BLKLEN 65536
 
 int main(int argc, char **argv)
@@ -44,7 +46,7 @@ int main(int argc, char **argv)
    for (i = 0; i < size_total; i++)
 	   obuf[i] = i;
 
-	snprintf(buff_name, 2048, "%s/testrw_full_%ld_%ld", argv[1], (long) time(NULL),(long) rand());
+    generate_random_uri(argv[1], "testrw_full_seq", buff_name, 2048);
 
    printf ("creating file name %s\n", buff_name);
    if ((fd = gfal_open (buff_name, O_WRONLY | O_CREAT, 0644)) < 0) {
