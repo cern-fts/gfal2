@@ -49,9 +49,7 @@ int main(int argc, char** argv){
 	 if( (handle = gfal2_context_new(&tmp_err)) == NULL ) {
 		 printf(" bad initialization %d : %s.\n", tmp_err->code,tmp_err->message);
 		 return -1;
-	 }
-	gfal2_set_opt_string(handle, "bdii",
-                                    "LCG_GFAL_INFOSYS", "certtb-bdii-top.cern.ch:2170", &tmp_err);	 
+	 } 
 	 
 	// Params
 	gfalt_params_t params = gfalt_params_handle_new(NULL);
