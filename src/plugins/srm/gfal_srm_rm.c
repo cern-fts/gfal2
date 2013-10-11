@@ -59,9 +59,9 @@ static int gfal_srm_rm_srmv2_internal(gfal_srmv2_opt* opts, const char* full_end
             for(i=0; i < nb_request;++i){
                 if(statuses[i].status!=0){
                     if(statuses[i].explanation != NULL)
-                        g_set_error(&tmp_err, 0, statuses[i].status," error reported from srm_ifce, %s ", statuses[i].explanation );
+                        g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), statuses[i].status," error reported from srm_ifce, %s ", statuses[i].explanation );
                     else
-                        g_set_error(&tmp_err, 0, EINVAL ," error reported from srm_ifce with corrputed memory ! ");
+                        g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL ," error reported from srm_ifce with corrputed memory ! ");
                     ret = -1;
                     break;
                 }
@@ -90,9 +90,9 @@ int gfal_srm_rm_internal(gfal_srmv2_opt* opts, char** surls, GError** err){
 		if (srm_types == PROTO_SRMv2){
 				ret= gfal_srm_rm_srmv2_internal(opts, full_endpoint, surls, &tmp_err);	
 		} else if(srm_types == PROTO_SRM){
-			g_set_error(&tmp_err,0, EPROTONOSUPPORT, "support for SRMv1 is removed in gfal 2.0, failure");
+            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in gfal 2.0, failure");
 		} else{
-			g_set_error(&tmp_err,0,EPROTONOSUPPORT, "Unknow SRM protocol, failure ");
+            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, "Unknow SRM protocol, failure ");
 		}		
 	}
 

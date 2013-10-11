@@ -37,9 +37,6 @@ const gchar* default_config_dir =  GFAL_CONFIG_DIR_DEFAULT
                                     "/"
                                     GFAL_CONFIG_DIR_SUFFIX
                                     "/";
-GQuark gfal_quark_config_loader(){
-    return g_quark_from_static_string("Gfal2::common_config_loader");
-}
 
 gfal_conf_t gfal_handle_to_conf(gfal_handle h){
     return h->conf;
@@ -61,7 +58,7 @@ static gchar* check_configuration_dir(GError ** err){
 
     res = stat(dir_config, &st);
     if( res != 0 || S_ISDIR(st.st_mode) == FALSE){
-        g_set_error(err, gfal_quark_config_loader(),EINVAL, " %s is not a valid directory for "
+        g_set_error(err, gfal2_get_config_quark(),EINVAL, " %s is not a valid directory for "
                         "gfal2 configuration files, please specify %s properly", dir_config, config_env_var);
         g_free(dir_config);
         dir_config = NULL;
@@ -75,7 +72,7 @@ int gfal_load_configuration_to_conf_manager(GConfigManager_t manager, const gcha
     GError * tmp_err1=NULL, *tmp_err2=NULL;
     if(g_key_file_load_from_file (conf_file, path, G_KEY_FILE_NONE, &tmp_err1) == FALSE){
            res = -1;
-           g_set_error(&tmp_err2, gfal_quark_config_loader(), EFAULT, "Error while loading configuration file %s : %s", path, tmp_err1->message);
+           g_set_error(&tmp_err2, gfal2_get_config_quark(), EFAULT, "Error while loading configuration file %s : %s", path, tmp_err1->message);
            g_clear_error(&tmp_err1);
     }else{
         g_config_manager_prepend_keyvalue(manager, conf_file);
@@ -115,7 +112,7 @@ GConfigManager_t gfal_load_static_configuration(GError ** err){
             }
             closedir(d);
         }else{
-            g_set_error(&tmp_err, gfal_quark_config_loader(), ENOENT, "Unable to open configuration directory %s", dir_config);
+            g_set_error(&tmp_err, gfal2_get_config_quark(), ENOENT, "Unable to open configuration directory %s", dir_config);
         }
         g_free(dir_config);
     }
@@ -157,7 +154,7 @@ void gfal_conf_delete(gfal_conf_t conf){
 
 void gfal_config_propagate_error_external(GError ** err, GError ** tmp_err){
     if(tmp_err && *tmp_err){
-        g_set_error(err, gfal_quark_config_loader(), EINVAL, " Configuration Error : %s", (*tmp_err)->message);
+        g_set_error(err, gfal2_get_config_quark(), EINVAL, " Configuration Error : %s", (*tmp_err)->message);
         g_clear_error(tmp_err);
     }
 }

@@ -49,6 +49,10 @@ enum se_type {TYPE_NONE = 0, TYPE_SRM, TYPE_SRMv2, TYPE_SE};
 enum gfal_srm_proto {PROTO_SRM=0, PROTO_SRMv2, PROTO_ERROR_UNKNOW};
 
 
+// SRM plugin GQuark
+GQuark gfal2_get_plugin_srm_quark();
+
+
 /*
  * the state of the last request -> depreciated
  *  needed to get the response

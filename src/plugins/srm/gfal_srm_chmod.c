@@ -95,9 +95,9 @@ int	gfal_srm_chmodG(plugin_handle ch, const char * path , mode_t mode, GError** 
 		if (srm_types == PROTO_SRMv2){
 			ret = gfal_srmv2_chmod_internal(opts, full_endpoint, path, mode, &tmp_err);
 		} else if(srm_types == PROTO_SRM){
-			g_set_error(&tmp_err,0, EPROTONOSUPPORT, "support for SRMv1 is removed in gfal 2.0, failure");
+            g_set_error(&tmp_err,gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in gfal 2.0, failure");
 		} else{
-			g_set_error(&tmp_err,0,EPROTONOSUPPORT, "Unknow SRM protocol, failure ");
+            g_set_error(&tmp_err,gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, "Unknow SRM protocol, failure ");
 		}		
 	}
 

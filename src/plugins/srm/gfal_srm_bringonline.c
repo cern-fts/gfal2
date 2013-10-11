@@ -88,7 +88,7 @@ static int gfal_srmv2_bring_online_internal(gfal_srmv2_opt* opts, const char* en
                             token[0] = '\0';
                         break;
                     default:
-                        g_set_error(&tmp_err, 0,
+                        g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
                                     output.filestatuses[0].status,
                                     " error on the bring online request : %s ",
                                     output.filestatuses[0].explanation);
@@ -140,10 +140,10 @@ int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl,
                                                    &tmp_err);
             break;
         case PROTO_SRM:
-            g_set_error(&tmp_err, 0, EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
+            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
             break;
         default:
-            g_set_error(&tmp_err, 0, EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
+            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
             break;
         }
     }
@@ -191,7 +191,7 @@ static int gfal_srmv2_bring_online_poll_internal(gfal_srmv2_opt* opts, const cha
                 case 22:
                     break;
                 default:
-                    g_set_error(&tmp_err, 0,
+                    g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
                                 output.filestatuses[0].status,
                                 " error on the bring online request : %s ",
                                 output.filestatuses[0].explanation);
@@ -235,10 +235,10 @@ int gfal_srmv2_bring_online_pollG(plugin_handle ch, const char* surl,
                                                           &tmp_err);
               break;
           case PROTO_SRM:
-              g_set_error(&tmp_err, 0, EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
+              g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
               break;
           default:
-              g_set_error(&tmp_err, 0, EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
+              g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
               break;
           }
     }
@@ -287,7 +287,7 @@ static int gfal_srmv2_release_file_internal(gfal_srmv2_opt* opts, const char* en
               }
               else {
                   if (statuses[0].status != 0) {
-                      g_set_error(&tmp_err, 0,
+                      g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
                                   statuses[0].status,
                                   "error on the release request : %s ",
                                   statuses[0].explanation);
@@ -296,7 +296,7 @@ static int gfal_srmv2_release_file_internal(gfal_srmv2_opt* opts, const char* en
               }
           }
           else {
-              g_set_error(&tmp_err, 0, errno,
+              g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), errno,
                           "[%s] %s", __func__, error_buffer);
           }
     }
@@ -333,10 +333,10 @@ int gfal_srmv2_release_fileG(plugin_handle ch, const char* surl,
                                                        &tmp_err);
                 break;
             case PROTO_SRM:
-                g_set_error(&tmp_err, 0, EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
+                g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
                 break;
             default:
-                g_set_error(&tmp_err, 0, EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
+                g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
                 break;
             }
       }

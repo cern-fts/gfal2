@@ -65,7 +65,7 @@ gfal_handle gfal_initG (GError** err)
 	gfal_handle handle = g_new0(struct gfal_handle_,1);// clear allocation of the struct and set defautl options
 	if(handle == NULL){
 		errno= ENOMEM;
-		g_set_error(err,0,ENOMEM, "[gfal_initG] bad allocation, no more memory free");
+        g_set_error(err, gfal2_get_plugins_quark(), ENOMEM, "[gfal_initG] bad allocation, no more memory free");
 		return NULL;
 	}
 	handle->plugin_opt.plugin_number= 0;

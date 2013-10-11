@@ -62,7 +62,7 @@ plugin_handle gfal_get_plugin_handle(gfal_plugin_interface* cata_list){
 
 gboolean gfal_feature_is_supported(void * ptr, GQuark scope, const char* func_name, GError** err){
     if(ptr == NULL){
-       g_set_error(err, scope,EPROTONOSUPPORT, "[%s] Protocol not supported or path/url invalid", func_name);
+       g_set_error(err, gfal2_get_plugins_quark(),EPROTONOSUPPORT, "[%s] Protocol not supported or path/url invalid", func_name);
        return FALSE;
     }
     return TRUE;
@@ -73,7 +73,7 @@ gboolean gfal_plugin_checker_safe(gfal_plugin_interface* cata_list, const char* 
 	if(cata_list->check_plugin_url)
 		return cata_list->check_plugin_url(cata_list->plugin_data, path, call_type, terr);
 	else{
-		g_set_error(terr, 0, EPROTONOSUPPORT, "[%s] unexcepted NULL \
+        g_set_error(terr, gfal2_get_plugins_quark(), EPROTONOSUPPORT, "[%s] unexcepted NULL \
 				pointer for a call to the url checker in the \
 				plugin %s",__func__, cata_list->getName());
 		return FALSE;
@@ -90,7 +90,7 @@ static int gfal_module_init(gfal_handle handle, void* dlhandle, const char* modu
 	int ret =-1;
 	constructor= (gfal_plugin_interface (*)(gfal_handle,GError**)) dlsym(dlhandle, GFAL_PLUGIN_INIT_SYM);
 	if(constructor == NULL){
-		g_set_error(&tmp_err, 0, EINVAL, "No symbol %s found in the plugin %s, failure", GFAL_PLUGIN_INIT_SYM, module_name);
+        g_set_error(&tmp_err, gfal2_get_plugins_quark(), EINVAL, "No symbol %s found in the plugin %s, failure", GFAL_PLUGIN_INIT_SYM, module_name);
 		*n=0;
 	}else{	
 		handle->plugin_opt.plugin_list[*n] = constructor(handle, &tmp_err);
@@ -138,9 +138,9 @@ gfal_plugin_interface* gfal_plugin_map_file_handle(gfal_handle handle, gfal_file
 			if( strncmp(cata_list[i].getName(),fh->module_name, GFAL_MODULE_NAME_SIZE)==0 )
 				return &(cata_list[i]);
 		}
-		g_set_error(&tmp_err, 0, EBADF, "No gfal_module with the handle name : %s", fh->module_name);	
+        g_set_error(&tmp_err, gfal2_get_plugins_quark(), EBADF, "No gfal_module with the handle name : %s", fh->module_name);
 	}else{
-		g_set_error(&tmp_err, 0, EINVAL, "No gfal_module loaded");
+        g_set_error(&tmp_err, gfal2_get_plugins_quark(), EINVAL, "No gfal_module loaded");
 	}
 	if(tmp_err)
 		g_propagate_prefixed_error(err, tmp_err, "[%s]",__func__);
@@ -183,7 +183,7 @@ gfal_plugin_interface* gfal_search_plugin_with_name(gfal_handle handle, const ch
       }
     }
     if(resu ==NULL)
-      g_set_error(&tmp_err, 0, ENOENT, " No plugin loaded with this name %s", name);
+      g_set_error(&tmp_err, gfal2_get_plugins_quark(), ENOENT, " No plugin loaded with this name %s", name);
   }
 
   if(tmp_err)
@@ -197,7 +197,7 @@ static int gfal_module_load(gfal_handle handle, char* module_name, GError** err)
 	GError * tmp_err=NULL;
 	int ret = -1;
 	if (dlhandle==NULL)
-		g_set_error(&tmp_err, 0, EINVAL, "[%s] Unable to open the %s plugin specified in the plugin directory, failure : %s", __func__, module_name, dlerror());
+        g_set_error(&tmp_err, gfal2_get_plugins_quark(), EINVAL, "[%s] Unable to open the %s plugin specified in the plugin directory, failure : %s", __func__, module_name, dlerror());
 	else
 		ret = gfal_module_init(handle, dlhandle, module_name, &tmp_err);	
 	if(tmp_err)
@@ -405,7 +405,7 @@ gfal_plugin_interface* gfal_find_plugin(gfal_handle handle,
         if(tmp_err){
           g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
         }else{
-          g_set_error(err,0,EPROTONOSUPPORT, "[%s] Protocol not supported or path/url invalid", __func__);
+          g_set_error(err,gfal2_get_plugins_quark(),EPROTONOSUPPORT, "[%s] Protocol not supported or path/url invalid", __func__);
         }
         return NULL;
 }
@@ -693,7 +693,7 @@ inline ssize_t gfal_plugin_simulate_preadG(gfal_handle handle, gfal_plugin_inter
 	if(ret == offset){
 		ret = if_cata->readG(if_cata->plugin_data, fh, buff, s_buff, &tmp_err);
 	}else if( !tmp_err){
-		g_set_error(&tmp_err, 0, EOVERFLOW, "Unknown return from plugin_lseek call");
+        g_set_error(&tmp_err, gfal2_get_plugins_quark(), EOVERFLOW, "Unknown return from plugin_lseek call");
 		ret = -1;
 	}
 	gfal_file_handle_unlock(fh);
@@ -730,7 +730,7 @@ inline ssize_t gfal_plugin_simulate_pwriteG(gfal_handle handle, gfal_plugin_inte
 	if(ret == offset){
 		ret = if_cata->writeG(if_cata->plugin_data, fh, buff, s_buff, &tmp_err);
 	}else if( !tmp_err){
-		g_set_error(&tmp_err, 0, EOVERFLOW, "Unknown return from plugin_lseek call");
+        g_set_error(&tmp_err, gfal2_get_plugins_quark(), EOVERFLOW, "Unknown return from plugin_lseek call");
 		ret = -1;
 	}
 	gfal_file_handle_unlock(fh);

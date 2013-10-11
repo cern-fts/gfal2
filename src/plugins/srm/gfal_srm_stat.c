@@ -65,10 +65,10 @@ int gfal_srm_statG(plugin_handle ch, const char* surl, struct stat* buf, GError*
                    gfal_srm_cache_stat_add(ch, surl, buf);
                 }
 			}else if (srm_type == PROTO_SRM){
-				g_set_error(&tmp_err, 0, EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
+                g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
 				ret = -1;
 			}else {
-				g_set_error(&tmp_err, 0, EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
+                g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
 				ret = -1;			
 			}
 			

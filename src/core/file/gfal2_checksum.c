@@ -22,7 +22,7 @@
 
 // fiel descriptor checksum calculation
 GQuark gfal_checksum_file_quark(){
-    return g_quark_from_static_string("gfal2_checksum");
+    return gfal2_get_core_quark();
 }
 
 int gfal2_checksum(gfal2_context_t handle, const char* url, const char* check_type,

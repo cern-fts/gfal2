@@ -107,7 +107,7 @@ int gfal_srm_readdir_internal(plugin_handle ch, gfal_srm_opendir_handle oh, GErr
         if(ret >=0){
             srmv2_mdstatuses = output.statuses;
             if(srmv2_mdstatuses[0].status != 0){
-                g_set_error(err, 0, srmv2_mdstatuses->status, "[%s] Error reported from srm_ifce : %d %s", __func__,
+                g_set_error(err, gfal2_get_plugin_srm_quark(), srmv2_mdstatuses->status, "[%s] Error reported from srm_ifce : %d %s", __func__,
                             srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
                 resu = -1;
 
@@ -167,7 +167,7 @@ struct dirent* gfal_srm_readdirG(plugin_handle ch, gfal_file_handle fh, GError**
 		gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;
 		ret = gfal_srm_readdir_pipeline(ch, oh, &tmp_err);		
 	}else{
-		g_set_error(&tmp_err, 0, EBADF, "bad dir descriptor");
+        g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EBADF, "bad dir descriptor");
 		ret = NULL;
 	}
 

@@ -86,7 +86,7 @@ srm_context_t gfal_srm_ifce_context_setup(gfal_context_t handle, const char* end
         gfal_log(GFAL_VERBOSE_DEBUG, " SRM connexion timeout %d", timeout);
         context->timeout_conn = timeout;
     }else{
-        g_set_error(&tmp_err, 0, EINVAL, "Impossible to create srm context");
+        g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL, "Impossible to create srm context");
     }
 
 

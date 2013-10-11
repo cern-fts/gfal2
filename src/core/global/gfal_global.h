@@ -72,11 +72,30 @@ gfal_context_t gfal_context_new(GError ** err);
 void gfal_context_free(gfal_context_t context);
 
 
+#define GFAL2_QUARK_CORE "GFAL2::CORE"
+#define GFAL2_QUARK_CONFIG "GFAL2::CONFIG"
+#define GFAL2_QUARK_PLUGINS "GFAL2::PLUGINS"
+
 ///
 ///  GQuark for the gfal2 core namespace
 ///  GQuark are used by the GError gfal2 error system in order to determine the scope of one error
-///
+///  GQuark String : "GFAL2::CORE"
 GQuark gfal2_get_core_quark();
+
+
+///
+///  GQuark for the gfal2 config namespace
+///  GQuark are used by the GError gfal2 error system in order to determine the scope of one error
+///  GQuark String : "GFAL2::CONFIG"
+GQuark gfal2_get_config_quark();
+
+///
+/// GQuark for the gfal2 plugin namespace
+/// GQuark String : "GFAL2::PLUGINS"
+/// Any Plugin specific GQuark follows this pattern GFAL2::PLUGINS::NAME
+/// example srm plugin : GFAL2::PLUGINS::SRM
+GQuark gfal2_get_plugins_quark();
+
 
 #ifdef __cplusplus
 }

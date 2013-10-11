@@ -38,12 +38,9 @@
 #include "gfal_srm_checksum.h"
 #include "gfal_srm_mkdir.h"
 
-GQuark srm_quark_3rd_party(){
-    return g_quark_from_static_string("srm_plugin::filecopy");
-}
 
-GQuark srm_domain() {
-  return g_quark_from_static_string("SRM");
+GQuark srm_domain(){
+    return g_quark_from_static_string("SRM");
 }
 
 int srm_plugin_get_3rdparty(plugin_handle handle, gfalt_params_t params, const char * surl,
@@ -113,7 +110,7 @@ int srm_plugin_create_parent_copy(plugin_handle handle, gfalt_params_t params,
 			if(res == 0)
 				gfal_log(GFAL_VERBOSE_TRACE, "parent path %s created with success", path_dir);			
 		}else{
-			g_set_error(&tmp_err, srm_quark_3rd_party(), EINVAL, "Invalid srm url %s",surl);
+            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL, "Invalid srm url %s",surl);
 			res= -1;
 		}
 		g_free(path_dir);
@@ -197,7 +194,7 @@ int srm_plugin_check_checksum(plugin_handle handle, gfal2_context_t context,
            }
            else if (res == 0 && user_defined && gfal_compare_checksums(buff_user_defined, buff_chk, GFAL_URL_MAX_LEN ) != 0)
            {
-               g_set_error(&tmp_err, srm_quark_3rd_party(), EIO,
+               g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EIO,
                            "Checksum of %s and user defined checksum do not match %s %s",
                            src, buff_chk, buff_user_defined);
                res = -1;
@@ -217,7 +214,7 @@ int srm_compare_checksum_transfer(gfalt_params_t params, const char* src, const 
 
     if(gfalt_get_checksum_check(params, err)){
         if( gfal_compare_checksums(src_buff_checksum, dst_buff_checksum, GFAL_URL_MAX_LEN) !=0){
-            g_set_error(err, srm_quark_3rd_party(),EIO, "Checksum of %s and %s does not match %s %s",
+            g_set_error(err, gfal2_get_plugin_srm_quark(),EIO, "Checksum of %s and %s does not match %s %s",
                         src, dst, src_buff_checksum, dst_buff_checksum);
             res = -1;
         }else{

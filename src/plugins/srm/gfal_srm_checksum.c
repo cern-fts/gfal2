@@ -33,11 +33,6 @@
 #include "gfal_srm_getput.h"
 #include "gfal_srm_url_check.h"
 
-GQuark srm_checksum_quark(){
-    return g_quark_from_static_string("gfal_srm_cheksumG");
-}
-
-
 static int gfal_checksumG_srmv2_internal(gfal_srmv2_opt* opts, const char* endpoint, const char* surl, 
 											char* buf_checksum, size_t s_checksum,
 											char* buf_chktype, size_t s_chktype, GError** err){
@@ -69,7 +64,7 @@ static int gfal_checksumG_srmv2_internal(gfal_srmv2_opt* opts, const char* endpo
         if(ret >=0){
             srmv2_mdstatuses = output.statuses;
             if(srmv2_mdstatuses->status != 0){
-                g_set_error(&tmp_err, srm_checksum_quark(), errno, "Error reported from srm_ifce : %d %s",
+                g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), errno, "Error reported from srm_ifce : %d %s",
                                 srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
                 ret = -1;
             }else{
@@ -115,10 +110,10 @@ int gfal_srm_cheksumG_internal(plugin_handle ch, const char* surl,
 		if(srm_type == PROTO_SRMv2){
 			ret = gfal_checksumG_srmv2_internal(opts, full_endpoint, surl, buf_checksum, s_checksum, buf_chktype, s_chktype,  &tmp_err);
 		}else if (srm_type == PROTO_SRM){
-			g_set_error(&tmp_err, 0, EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
+            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
 			ret = -1;
 		}else {
-			g_set_error(&tmp_err, 0, EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
+            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
 			ret = -1;			
 		}
 		

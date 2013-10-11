@@ -59,9 +59,9 @@ int gfal_access_srmv2_internal(gfal_srmv2_opt*  opts, char* endpoint, const char
         for(i=0; i< nb_request; ++i){
             if( resu[i].status ){
                 if( strnlen(resu[i].surl, GFAL_URL_MAX_LEN) >= GFAL_URL_MAX_LEN || strnlen(resu[i].explanation, GFAL_URL_MAX_LEN) >= GFAL_URL_MAX_LEN){
-                    g_set_error(&tmp_err, 0, resu[i].status, " Memory corruption in the libgfal_srm_ifce answer, fatal");
+                    g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), resu[i].status, " Memory corruption in the libgfal_srm_ifce answer, fatal");
                 }else{
-                    g_set_error(&tmp_err, 0, resu[i].status, "Error %d : %s  \
+                    g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), resu[i].status, "Error %d : %s  \
     , file %s: %s", resu[i].status, strerror(resu[i].status), resu[i].surl, resu[i].explanation);
                 }
                 ret= -1;
@@ -105,10 +105,10 @@ int gfal_srm_accessG(plugin_handle ch, const char* surl, int mode, GError** err)
 		if(tmp_err)
 			g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
 	} else if(srm_types == PROTO_SRM){
-			g_set_error(err,0, EPROTONOSUPPORT, "[%s] support for SRMv1 is removed in 2.0, failure", __func__);
+            g_set_error(err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "[%s] support for SRMv1 is removed in 2.0, failure", __func__);
 			ret =  -1;
 	} else{
-		g_set_error(err,0,EPROTONOSUPPORT, "[%s] Unknow version of the protocol SRM , failure ", __func__);
+        g_set_error(err, gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, "[%s] Unknow version of the protocol SRM , failure ", __func__);
 		ret=-1;
 	}
 	return ret;

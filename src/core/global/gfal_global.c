@@ -20,9 +20,17 @@
 #include <common/gfal_common_internal.h>
 
 GQuark gfal2_get_core_quark(){
-    return g_quark_from_string("GFAL2-CORE");
+    return g_quark_from_static_string(GFAL2_QUARK_CORE);
 }
 
+GQuark gfal2_get_config_quark(){
+    return g_quark_from_static_string(GFAL2_QUARK_CONFIG);
+}
+
+
+GQuark gfal2_get_plugins_quark(){
+    return g_quark_from_static_string(GFAL2_QUARK_PLUGINS);
+}
 
 
 gfal2_context_t gfal2_context_new(GError ** err){
