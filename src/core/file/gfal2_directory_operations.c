@@ -108,7 +108,7 @@ inline static struct dirent* gfal_rw_gfalfilehandle_readdirpp(gfal_handle contex
             char buffer[ s_d_name +s_path +2];
             char* p =  mempcpy(buffer, fh->path, s_path);
             *p = '/';
-            p = memcpy(++p, ret->d_name, s_d_name);
+            p = mempcpy(++p, ret->d_name, s_d_name);
             *p = '\0';
 
             if( gfal2_stat(context, buffer, st, &tmp_err) < 0){

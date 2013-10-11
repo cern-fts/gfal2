@@ -128,6 +128,7 @@ int main(int argc, char **argv)
 
     }
     printf(" count : %d", count);
+    g_assert( tmp_err == NULL ); // take care of .. and . if available
     g_assert( count >= n && count < n+3); // take care of .. and . if available
 
     g_assert( gfal_closedir(p) == 0);
