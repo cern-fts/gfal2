@@ -115,7 +115,7 @@ int gfal_mds_get_se_types_and_endpoints (gfal_context_t handle, const char *host
 		size_t s_errbuff = GFAL_ERRMSG_LEN;
 		char errbuff[s_errbuff];
 		memset(errbuff, '\0', sizeof(char)*s_errbuff);
-		g_set_error(err, 0, EPROTONOSUPPORT, "[%s] disable in gfal 2.0, api broken in is interface",__func__);
+        g_set_error(err, gfal2_get_core_quark(), EPROTONOSUPPORT, "[%s] disable in gfal 2.0, api broken in is interface",__func__);
 		return NULL;
  } 
  
@@ -133,7 +133,7 @@ int gfal_mds_isifce_wrapper(const char* base_url, gfal_mds_endpoint* endpoints, 
 
 
   if(sd_get_se_types_and_endpoints(base_url, &types_endpoints, &name_endpoints, errbuff, GFAL_ERRMSG_LEN-1) != 0){
-    g_set_error(&tmp_err, 0, ENXIO, "IS INTERFACE ERROR : %s ", errbuff);
+    g_set_error(&tmp_err, gfal2_get_core_quark(), ENXIO, "IS INTERFACE ERROR : %s ", errbuff);
   }else{
     int i;
     char ** p1 =name_endpoints;

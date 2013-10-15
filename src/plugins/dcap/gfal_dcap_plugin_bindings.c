@@ -69,7 +69,7 @@ static void dcap_report_error(gfal_plugin_dcap_handle h,  const char * func_name
 	g_strlcpy(buff_error, h->ops->strerror(status), 2048);
 	// errno conversion
 	errno = dcap_errno_conversion(buff_error, errno);
-	g_set_error(err, 0, errno, "[%s] Error reported by the external library dcap : %s, number : %d ", func_name, buff_error, status);
+    g_set_error(err, gfal2_get_plugin_dcap_quark(), errno, "[%s] Error reported by the external library dcap : %s, number : %d ", func_name, buff_error, status);
 }
 
 gfal_file_handle gfal_dcap_openG(plugin_handle handle , const char* path, int flag, mode_t mode, GError** err){

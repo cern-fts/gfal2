@@ -51,7 +51,7 @@ DIR* gfal2_opendir(gfal2_context_t handle, const char* name, GError ** err){
     gfal_file_handle ret= NULL;
     GFAL2_BEGIN_SCOPE_CANCEL(handle, NULL, err);
     if(name == NULL || handle ==NULL){
-        g_set_error(&tmp_err, 0, EFAULT, "uri  or/and handle are NULL");
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "uri  or/and handle are NULL");
     }else{
         ret = gfal_plugin_opendirG(handle, name, &tmp_err);
     }
@@ -78,7 +78,7 @@ struct dirent* gfal2_readdir(gfal2_context_t handle, DIR* dir, GError ** err){
     struct dirent* res= NULL;
     GFAL2_BEGIN_SCOPE_CANCEL(handle, NULL, err);
     if(dir == NULL || handle ==NULL){
-       g_set_error(&tmp_err, 0, EFAULT, "file descriptor or/and handle are NULL");
+       g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "file descriptor or/and handle are NULL");
     }else{
        gfal_fdesc_container_handle container= gfal_dir_handle_container_instance(&(handle->fdescs), &tmp_err);
        const int key = GPOINTER_TO_INT(dir);
@@ -125,7 +125,7 @@ struct dirent* gfal2_readdirpp(gfal2_context_t context, DIR* dir, struct stat* s
     struct dirent* res= NULL;
     GFAL2_BEGIN_SCOPE_CANCEL(context, NULL, err);
     if(dir == NULL || context ==NULL){
-       g_set_error(&tmp_err, 0, EFAULT, "file descriptor or/and handle are NULL");
+       g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "file descriptor or/and handle are NULL");
     }else{
        gfal_fdesc_container_handle container= gfal_dir_handle_container_instance(&(context->fdescs), &tmp_err);
        const int key = GPOINTER_TO_INT(dir);
@@ -171,7 +171,7 @@ int gfal2_closedir(gfal2_context_t handle, DIR* d, GError ** err){
     int ret = -1;
 
     if(d == NULL || handle ==NULL){
-        g_set_error(&tmp_err, 0, EFAULT, "file descriptor or/and handle are NULL");
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "file descriptor or/and handle are NULL");
     }else{
         gfal_fdesc_container_handle container= gfal_dir_handle_container_instance(&(handle->fdescs), &tmp_err);
         int key = GPOINTER_TO_INT(d);

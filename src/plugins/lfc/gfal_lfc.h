@@ -49,6 +49,10 @@
 #include <gsimplecache/gcachemain.h>
 
 
+
+// LFC plugin GQuark
+GQuark gfal2_get_plugin_lfc_quark();
+
 // protos
 
 gboolean gfal_checker_guid(const char* guid, GError** err);

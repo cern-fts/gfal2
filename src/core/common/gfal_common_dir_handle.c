@@ -43,7 +43,7 @@ gfal_fdesc_container_handle gfal_dir_handle_container_instance(gfal_descriptors_
 		if(fdescs->dir_container == NULL){
 			dir_handle = fdescs->dir_container = gfal_file_descriptor_handle_create(NULL);
 			if(!dir_handle)
-				g_set_error(err, 0, EIO, "[%s] Error while init directories file descriptor container", __func__);
+                g_set_error(err, gfal2_get_core_quark(), EIO, "[%s] Error while init directories file descriptor container", __func__);
 		}
 		pthread_mutex_unlock(&m_dir_container);
 	}

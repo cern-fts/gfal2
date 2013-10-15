@@ -48,7 +48,7 @@ int gfal_posix_internal_closedir(DIR* d){
 	}
 	
 	if(d == NULL){
-		g_set_error(&tmp_err, 0, EFAULT, "File descriptor is NULL");
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "File descriptor is NULL");
 	}else{
         ret = gfal2_closedir(handle, d, &tmp_err);
 	}	

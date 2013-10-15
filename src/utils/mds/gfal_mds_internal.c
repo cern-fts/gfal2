@@ -59,7 +59,7 @@ LDAP* gfal_mds_ldap_connect(gfal2_context_t context, const char* uri, GError** e
     pthread_mutex_lock(&mux_init_lap); // libldap suffers of a thread-safety bug inside initialize function
 	if ( (rc = gfal_mds_ldap.ldap_initialize(&ld, uri)) != LDAP_SUCCESS ) {
 
-		 g_set_error(&tmp_err, 0, ECOMM, "Error with contacting ldap %s : %s", uri, ldap_err2string(rc)); 
+         g_set_error(&tmp_err, gfal2_get_core_quark(), ECOMM, "Error with contacting ldap %s : %s", uri, ldap_err2string(rc));
 	}else{
 	    struct timeval timeout = {0};
 
@@ -73,7 +73,7 @@ LDAP* gfal_mds_ldap_connect(gfal2_context_t context, const char* uri, GError** e
 		gfal_log(GFAL_VERBOSE_VERBOSE, "  Try to bind with the bdii %s", uri);
 		struct berval cred= { .bv_val = NULL, .bv_len = 0 };
 		if( (rc = gfal_mds_ldap.ldap_sasl_bind_s( ld,  NULL, LDAP_SASL_SIMPLE, &cred, NULL, NULL, NULL)) != LDAP_SUCCESS){
-			 g_set_error(&tmp_err, 0, ECOMM, "Error while bind to bdii with %s : %s", uri, ldap_err2string(rc));
+             g_set_error(&tmp_err, gfal2_get_core_quark(), ECOMM, "Error while bind to bdii with %s : %s", uri, ldap_err2string(rc));
 			 ld=NULL;
 		}
 	}
@@ -92,7 +92,7 @@ int gfal_mds_ldap_search(LDAP* ld, const char* basedn, const char* filter, char*
 	if ( ( rc = gfal_mds_ldap.ldap_search_ext_s( ld, basedn, LDAP_SCOPE_SUBTREE, 
 	 filter, tabattr, 0, NULL, NULL, LDAP_NO_LIMIT, 
 	 LDAP_NO_LIMIT,  res ) ) != LDAP_SUCCESS ) { 
-			 g_set_error(&tmp_err, 0, ECOMM, "Error while request %s to bdii : %s", filter, ldap_err2string(rc));
+             g_set_error(&tmp_err, gfal2_get_core_quark(), ECOMM, "Error while request %s to bdii : %s", filter, ldap_err2string(rc));
 	}else
 		ret = 0;
 	if(tmp_err)
@@ -110,7 +110,7 @@ static int gfal_mds_srm_endpoint_struct_builder(char* srm_name, char* srm_versio
 	int ret = 0;	
 	GError* tmp_err=NULL;		
     if(strncasecmp(srm_name, SRM_PREFIX_NAME, strlen(SRM_PREFIX_NAME)) != 0){
-		g_set_error(&tmp_err, 0, EINVAL, "bad value of srm endpoint returned by bdii : %s, excepted : %s ", srm_name, SRM_PREFIX_NAME);
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EINVAL, "bad value of srm endpoint returned by bdii : %s, excepted : %s ", srm_name, SRM_PREFIX_NAME);
 		ret =-1;
 	}else{
 		if(strncmp(srm_version, "1.", 2) == 0)
@@ -118,13 +118,13 @@ static int gfal_mds_srm_endpoint_struct_builder(char* srm_name, char* srm_versio
 		else if(strncmp(srm_version, "2.", 2) == 0)
 			endpoints->type= SRMv2;
 		else{
-			g_set_error(&tmp_err, 0, EINVAL, "bad value of srm version returned by bdii : %s, excepted 1.x or 2.x ", srm_version);
+            g_set_error(&tmp_err, gfal2_get_core_quark(), EINVAL, "bad value of srm version returned by bdii : %s, excepted 1.x or 2.x ", srm_version);
 			ret = -1;
 		}
 		if(strstr(srm_endpoint, ":/") != NULL)
             g_strlcpy(endpoints->url, srm_endpoint, GFAL_URL_MAX_LEN);
 		else{
-			g_set_error(&tmp_err, 0, EINVAL, "bad value of srm endpoint returned by bdii : %s, excepted a correct endpoint url ( httpg://, https://, ... ) ", srm_endpoint);
+            g_set_error(&tmp_err, gfal2_get_core_quark(), EINVAL, "bad value of srm endpoint returned by bdii : %s, excepted a correct endpoint url ( httpg://, https://, ... ) ", srm_endpoint);
 			ret = -1;
 		}
 			
@@ -163,7 +163,7 @@ static int gfal_mds_convert_entry_to_srm_information(LDAP* ld,LDAPMessage * entr
 				*((char*) mempcpy(srm_name,vals[0]->bv_val, MIN(GFAL_URL_MAX_LEN,vals[0]->bv_len) )) = '\0';
 				ret+=1;
 			}else{
-				g_set_error(&tmp_err, 0, EINVAL, " Bad attribute retrived from bdii ");
+                g_set_error(&tmp_err, gfal2_get_core_quark(), EINVAL, " Bad attribute retrived from bdii ");
 				gfal_mds_ldap.ldap_value_free_len( vals ); 
 				gfal_mds_ldap.ldap_memfree( a ); 
 				ret = -1;
@@ -213,10 +213,10 @@ int gfal_mds_get_srm_types_endpoint(LDAP* ld, LDAPMessage* result, gfal_mds_endp
 	}else if(tmp_ret == -1){
 		int myld_errno=0;
 		ldap_get_option(ld, LDAP_OPT_RESULT_CODE,&myld_errno);
-		g_set_error(&tmp_err, 0, EINVAL, " error returned in ldap results : %s", ldap_err2string(myld_errno));
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EINVAL, " error returned in ldap results : %s", ldap_err2string(myld_errno));
 		ret = -1;		
 	}else {
-		g_set_error(&tmp_err, 0, ENXIO, " no entries for the endpoint returned by the bdii : %d ", tmp_ret);
+        g_set_error(&tmp_err, gfal2_get_core_quark(), ENXIO, " no entries for the endpoint returned by the bdii : %d ", tmp_ret);
 		ret = -1;
 	}
 	if(tmp_err)

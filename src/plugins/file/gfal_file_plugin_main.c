@@ -44,6 +44,12 @@ const char* file_prefix="file:";
 unsigned int s_prefix = 0;
 
 
+// LFC plugin GQuark
+GQuark gfal2_get_plugin_file_quark(){
+    return g_quark_from_static_string(GFAL2_QUARK_PLUGINS "::FILE");
+}
+
+
 static unsigned int file_prefix_len(){
     if(!s_prefix)
         g_atomic_int_set(&s_prefix, strlen(file_prefix));
@@ -97,7 +103,7 @@ static gboolean gfal_file_check_url(plugin_handle handle, const char* url, plugi
 
 
 void gfal_plugin_file_report_error(const char* funcname, GError** err){
-    g_set_error(err,0,errno, "[%s] errno reported by local system call %s", funcname, strerror(errno));
+    g_set_error(err, gfal2_get_plugin_file_quark(),errno, "[%s] errno reported by local system call %s", funcname, strerror(errno));
 }
 
  int gfal_plugin_file_access(plugin_handle plugin_data, const char *path, int amode, GError** err){

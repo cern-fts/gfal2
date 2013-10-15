@@ -45,6 +45,12 @@ static int gfal_dcap_regex_compile(regex_t * rex, GError** err){
 	return ret;
 }
 
+// RFIO plugin GQuark
+GQuark gfal2_get_plugin_dcap_quark(){
+    return g_quark_from_static_string(GFAL2_QUARK_PLUGINS "::DCAP");
+}
+
+
 static gfal_plugin_dcap_handle gfal_dcap_init_handle(gfal_handle handle, GError** err){
 	gfal_plugin_dcap_handle ret = g_new0(struct _gfal_plugin_dcap_handle, 1);
 	ret->ops = gfal_dcap_internal_loader(err);
@@ -99,7 +105,7 @@ void gfal_dcap_destroyG(plugin_handle handle){
 
 gboolean gfal_dcap_internal_check_url(gfal_plugin_dcap_handle dh, const char* surl, GError** err){
 	if(surl == NULL || strnlen(surl, GFAL_URL_MAX_LEN) == GFAL_URL_MAX_LEN){
-		g_set_error(err, 0, EINVAL, "[%s] Invalid surl, surl too long or NULL",__func__);
+        g_set_error(err, gfal2_get_plugin_dcap_quark(), EINVAL, "[%s] Invalid surl, surl too long or NULL",__func__);
 		return FALSE;
 	}	
 	int ret=  regexec(&dh->rex,surl,0,NULL,0);

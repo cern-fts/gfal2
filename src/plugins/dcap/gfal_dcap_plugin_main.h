@@ -33,6 +33,7 @@ typedef struct _gfal_plugin_dcap_handle{
 }* gfal_plugin_dcap_handle;
 
 
+GQuark gfal2_get_plugin_dcap_quark();
 
 // Entry point of the plugin
 gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err);

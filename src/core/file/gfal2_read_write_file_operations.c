@@ -62,7 +62,7 @@ int gfal2_open2(gfal2_context_t handle, const char * uri, int flag, mode_t mode,
     gfal_log(GFAL_VERBOSE_TRACE, "%s ->",__func__);
 
     if(uri == NULL || handle == NULL){
-        g_set_error(&tmp_err, 0, EFAULT, "name is empty");
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "name is empty");
     }else{
         fhandle = gfal_plugin_openG(handle, uri, flag, mode, &tmp_err);
     }
@@ -95,7 +95,7 @@ ssize_t gfal2_read(gfal2_context_t handle, int fd, void* buff, size_t s_buff, GE
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(fd <=0 || handle == NULL){
-       g_set_error(&tmp_err, 0, EBADF, "Incorrect file descriptor or incorrect handle");
+       g_set_error(&tmp_err, gfal2_get_core_quark(), EBADF, "Incorrect file descriptor or incorrect handle");
     }else{
        gfal_fdesc_container_handle container= gfal_file_handle_container_instance(&(handle->fdescs), &tmp_err);
        const int key = fd;
@@ -143,7 +143,7 @@ int gfal2_close(gfal2_context_t handle, int fd, GError ** err){
     int ret = -1;
 
     if(fd <=0 || handle == NULL){
-       g_set_error(&tmp_err, 0, EBADF, "Incorrect file descriptor or incorrect handle");
+       g_set_error(&tmp_err, gfal2_get_core_quark(), EBADF, "Incorrect file descriptor or incorrect handle");
     }else{
         gfal_fdesc_container_handle container= gfal_file_handle_container_instance(&(handle->fdescs), &tmp_err);
         int key = GPOINTER_TO_INT(fd);
@@ -170,7 +170,7 @@ off_t gfal2_lseek (gfal2_context_t handle, int fd, off_t offset, int whence, GEr
     int res= -1;
     GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(fd <=0 || handle == NULL){
-        g_set_error(&tmp_err, 0, EBADF, "Incorrect file descriptor");
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EBADF, "Incorrect file descriptor");
     }else{
         gfal_fdesc_container_handle container= gfal_file_handle_container_instance(&(handle->fdescs), &tmp_err);
         const int key = fd;
@@ -201,7 +201,7 @@ ssize_t gfal2_pread(gfal2_context_t handle, int fd, void * buff, size_t s_buff, 
     ssize_t res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(fd <=0 || handle == NULL){
-       g_set_error(&tmp_err, 0, EBADF, "Incorrect file descriptor or incorrect handle");
+       g_set_error(&tmp_err, gfal2_get_core_quark(), EBADF, "Incorrect file descriptor or incorrect handle");
     }else{
        gfal_fdesc_container_handle container= gfal_file_handle_container_instance(&(handle->fdescs), &tmp_err);
        const int key = fd;
@@ -226,7 +226,7 @@ ssize_t gfal2_write(gfal2_context_t handle, int fd, const void *buff, size_t s_b
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(fd <=0 || handle == NULL){
-       g_set_error(&tmp_err, 0, EBADF, "Incorrect file descriptor or incorrect handle");
+       g_set_error(&tmp_err, gfal2_get_core_quark(), EBADF, "Incorrect file descriptor or incorrect handle");
     }else{
         gfal_fdesc_container_handle container= gfal_file_handle_container_instance(&(handle->fdescs), &tmp_err);
         const int key = fd;
@@ -255,7 +255,7 @@ ssize_t gfal2_pwrite(gfal2_context_t handle, int fd, const void * buff, size_t s
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
     if(fd <=0){
-       g_set_error(&tmp_err, 0, EBADF, "Incorrect file descriptor");
+       g_set_error(&tmp_err, gfal2_get_core_quark(), EBADF, "Incorrect file descriptor");
     }else{
        gfal_fdesc_container_handle container= gfal_file_handle_container_instance(&(handle->fdescs), &tmp_err);
        const int key = fd;

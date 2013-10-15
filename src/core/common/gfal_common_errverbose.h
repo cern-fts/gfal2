@@ -45,7 +45,7 @@ extern const char* no_err;
 /** @def macro for error error report on args
  * 
  */
-#define g_return_val_err_if_fail(exp,val,err,msg) if(!(exp)){ g_set_error(err,0,EINVAL,msg); return val; }
+#define g_return_val_err_if_fail(exp,val,err,msg) if(!(exp)){ g_set_error(err, gfal2_get_core_quark(),EINVAL,msg); return val; }
 
 /**
  * @def macro for one-line return with error management exception-like

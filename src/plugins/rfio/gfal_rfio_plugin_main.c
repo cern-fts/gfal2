@@ -50,6 +50,13 @@ int gfal_rfio_regex_compile(regex_t * rex, GError** err){
 	return ret;	
 }
 
+
+// RFIO plugin GQuark
+GQuark gfal2_get_plugin_rfio_quark(){
+    return g_quark_from_static_string(GFAL2_QUARK_PLUGINS "::RFIO");
+}
+
+
 /*
  * Init function, called before all
  * */
@@ -83,7 +90,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 
 gboolean gfal_rfio_internal_check_url(gfal_plugin_rfio_handle rh, const char* surl, GError** err){
 	if(surl == NULL || strnlen(surl, GFAL_URL_MAX_LEN) == GFAL_URL_MAX_LEN){
-		g_set_error(err, 0, EINVAL, "[%s] Invalid surl, surl too long or NULL",__func__);
+        g_set_error(err, gfal2_get_plugin_rfio_quark(), EINVAL, "[%s] Invalid surl, surl too long or NULL",__func__);
 		return FALSE;
 	}	
 	int ret=  regexec(&rh->rex,surl,0,NULL,0);
