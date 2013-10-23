@@ -278,6 +278,9 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Wed Oct 23 2013 Alejandro Alvarez <aalvarez at cern.ch> - 2.4.5-3
+ - Release 2.4.5 of GFAL 2
+
 * Tue Jul 02 2013 Adrien Devresse <adevress at cern.ch> - 2.3.0-0
  - Release 2.3.0 of GFAL 2.0
 
