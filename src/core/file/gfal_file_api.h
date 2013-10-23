@@ -200,15 +200,36 @@ ssize_t gfal2_listxattr (gfal2_context_t context, const char *path, char *list, 
 int gfal2_setxattr (gfal2_context_t context, const char *path, const char *name,
                const void *value, size_t size, int flags, GError ** err);
 
+
+///  @brief Bring online a file
+///
+///  @param context : gfal2 context
+///  @param path : url of the file
+///  @param pintime : pin time
+///  @param timeout : timeout
+///  @param token : The token will be put in the buffer pointed by this
+///  @param async: Asynchronous request (does not block if != 0)
+///  @param err : GError error report
+///  @return 0 if the request has been queued, > 0 if the file is pinned, < 0 on error
+///
 int gfal2_bring_online(gfal2_context_t context, const char* path,
                        time_t pintime, time_t timeout,
                        char* token, size_t tsize,
                        int async,
                        GError ** err);
 
+///  @brief Check for a bring online request
+///
+///  @param context : gfal2 context
+///  @param path : url of the file
+///  @param token : As set by gfal2_bring_online
+///  @param err : GError error report
+///  @return 0 if the request is queued, > 0 if the file is pinned, < 0 on error
+///
 int gfal2_bring_online_poll(gfal2_context_t context, const char* path,
                             const char* token, GError ** err);
 
+///  @brief Release a file
 int gfal2_release_file(gfal2_context_t context, const char* path,
                        const char* token, GError ** err);
 
