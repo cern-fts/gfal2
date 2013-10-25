@@ -39,7 +39,8 @@ typedef struct _gfal_plugin_rfio_handle{
 
 gboolean gfal_rfio_check_url(plugin_handle, const char* url,  plugin_mode mode, GError** err);
 
-
+// LFC plugin GQuark
+GQuark gfal2_get_plugin_rfio_quark();
 
 gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err);
 
