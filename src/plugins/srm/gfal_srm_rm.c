@@ -34,6 +34,31 @@
 #include <common/gfal_common_plugin.h>
 #include "gfal_srm_endpoint.h"
 
+
+static int gfal_srm_rm_srmv2_isdir(srm_context_t context,
+        const char* full_endpoint, const char* surl)
+{
+    struct srm_ls_input input;
+    struct srm_ls_output output;
+
+    input.nbfiles = 1;
+    input.surls = (char**)(&surl);
+    input.numlevels = 0;
+    input.offset = 0;
+    input.count = 0;
+
+    if (gfal_srm_external_call.srm_ls(context, &input, &output) < 0)
+        return 0;
+
+    int isdir = S_ISDIR(output.statuses->stat.st_mode);
+
+    gfal_srm_external_call.srm_srmv2_mdfilestatus_delete(output.statuses, 1);
+    gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
+
+    return isdir;
+}
+
+
 static int gfal_srm_rm_srmv2_internal(gfal_srmv2_opt* opts,
         const char* full_endpoint, const char* surl, GError** err)
 {
@@ -55,15 +80,25 @@ static int gfal_srm_rm_srmv2_internal(gfal_srmv2_opt* opts,
             ret = 0;
             struct srmv2_filestatus* statuses = output.statuses;
             if (statuses[0].status != 0) {
-                if (statuses[0].explanation != NULL )
+                if (statuses[0].explanation != NULL ) {
+                    // DPM returns an EINVAL when srm_rm is called over a directory
+                    // Check if the file is actually a directory, and override the return
+                    // code with EISDIR in that case
+                    int err_code = statuses[0].status;
+                    if (err_code == EINVAL &&
+                        gfal_srm_rm_srmv2_isdir(context, full_endpoint, surl)) {
+                        err_code = EISDIR;
+                    }
                     g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
-                            statuses[0].status,
-                            " error reported from srm_ifce, %s ",
-                            statuses[0].explanation);
-                else
+                                err_code,
+                                " error reported from srm_ifce, %s ",
+                                statuses[0].explanation);
+                }
+                else {
                     g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
                                 EINVAL,
                                " error reported from srm_ifce with corrputed memory ! ");
+                }
                 ret = -1;
             }
 
