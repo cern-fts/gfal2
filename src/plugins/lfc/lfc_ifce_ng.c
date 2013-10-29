@@ -571,12 +571,10 @@ char*  gfal_lfc_get_strerror(struct lfc_ops* ops){
  * @warning buff must be > uuid size ( 37 bytes )
  * 
  * */
- void gfal_generate_guidG(char* buf, GError** err){
+void gfal_generate_guidG(char* buf, GError** err){
     uuid_t myuid;
     
     uuid_generate_random(myuid);
     uuid_unparse (myuid, buf);
     uuid_clear(myuid);
- }
- 
- 
+}

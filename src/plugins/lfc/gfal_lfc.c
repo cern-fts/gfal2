@@ -42,6 +42,7 @@
 #include <common/gfal_common_internal.h>
 #include <common/gfal_common_filedescriptor.h>
 #include "lfc_ifce_ng.h"
+#include "lfc_register.h"
 
 
 static gboolean init_thread = FALSE;
@@ -71,80 +72,89 @@ GQuark gfal2_get_plugin_lfc_quark(){
  * convert the lfn url for internal usage
  * result must be free
  */
-static inline  char* lfc_urlconverter(const char * lfn_url, const char* prefix){
-	const int pref_len = strlen(prefix);
-	const int strsize = strnlen(lfn_url, GFAL_URL_MAX_LEN-1);
-	const int res_len = strsize-pref_len;
-	char* p, *pdest, *porg;
-    p = pdest = g_malloc(sizeof(char) * (res_len+1));
-	porg = (char*)lfn_url + pref_len;
-	while((pdest - p) <  res_len && (porg - lfn_url) < strsize){ // remove double sep, remove end sep
-        if((*porg == '/' && *(porg+1) == '/') == FALSE &&
-           (*porg == '/' && *(porg+1) == '\0') == FALSE ){
-			   *pdest = *porg;
-			   ++pdest;
-		   }
-		++porg;
-	}
-	*(pdest) = '\0';
-	return p;
+static inline char* lfc_urlconverter(const char * lfn_url, const char* prefix)
+{
+    const int pref_len = strlen(prefix);
+    const int strsize = strnlen(lfn_url, GFAL_URL_MAX_LEN - 1);
+    const int res_len = strsize - pref_len;
+    char* p, *pdest, *porg;
+    p = pdest = g_malloc(sizeof(char) * (res_len + 1));
+    porg = (char*) lfn_url + pref_len;
+    while ((pdest - p) < res_len && (porg - lfn_url) < strsize) { // remove double sep, remove end sep
+        if ((*porg == '/' && *(porg + 1) == '/') == FALSE
+                && (*porg == '/' && *(porg + 1) == '\0') == FALSE) {
+            *pdest = *porg;
+            ++pdest;
+        }
+        ++porg;
+    }
+    *(pdest) = '\0';
+    return p;
 }
 
 /*
  * convert the lfc type url "lfc://" to an url
  * result must be free
  */
-static inline  int lfc_full_urlconverter(const char * lfn_url, char** host, char** path, GError** err){
-    GError* tmp_err=NULL;
+static inline int lfc_full_urlconverter(const char * lfn_url, char** host,
+    char** path, GError** err)
+{
+    GError* tmp_err = NULL;
 
     int res = -1;
     const int pref_len = strlen(GFAL_LFC_PREFIX2);
-    const int strsize = strnlen(lfn_url, GFAL_URL_MAX_LEN-1);
-    const int res_len = strsize-pref_len;
+    const int strsize = strnlen(lfn_url, GFAL_URL_MAX_LEN - 1);
+    const int res_len = strsize - pref_len;
     char *p_org, *p_end, *p;
-    p= (char*)lfn_url + pref_len;
-    p_end = (char*)lfn_url + strsize;
-    if(res_len > 0){
-        while(p < p_end && *p =='/')
+    p = (char*) lfn_url + pref_len;
+    p_end = (char*) lfn_url + strsize;
+    if (res_len > 0) {
+        while (p < p_end && *p == '/')
             ++p;
         p_org = p;
-        while(p < p_end && *p !='/')
+        while (p < p_end && *p != '/')
             ++p;
-        if(p_org < p && p < p_end){
-            if(host)
-                *host = g_strndup(p_org, p-p_org);
-            if(path)
+        if (p_org < p && p < p_end) {
+            if (host)
+                *host = g_strndup(p_org, p - p_org);
+            if (path)
                 *path = g_strndup(p, p_end - p);
-            res =0;
+            res = 0;
         }
 
     }
-    if(res !=0){
-        g_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), EINVAL, "Invalid lfc:// url");
+    if (res != 0) {
+        g_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), EINVAL,
+                "Invalid lfc:// url");
     }
     return res;
 }
 
 /// manage convertion for all lfc url type : lfc://, lfn://, guid:
 /// return 0 if success, or -1 if bad url
-static int url_converter(plugin_handle handle, const char * url, char** host, char** path, GError** err){
-	GError* tmp_err=NULL;
+int url_converter(plugin_handle handle, const char * url, char** host,
+    char** path, GError** err)
+{
+    GError* tmp_err = NULL;
     int res = -1;
-	if(strnlen(url, 5) != 5){ // bad string size, return empty string
-		gfal_log(GFAL_VERBOSE_VERBOSE, "lfc url converter -> bad url size");
+    if (strnlen(url, 5) != 5) { // bad string size, return empty string
+        gfal_log(GFAL_VERBOSE_VERBOSE, "lfc url converter -> bad url size");
         return res;
-	}
-    if(strncmp(url, "lfn", 3) == 0){
-        if(path)
-            *path=  lfc_urlconverter(url, GFAL_LFC_PREFIX);
-        res =0;
-    }else if(strncmp(url, "lfc",3) ==0){
-        res= lfc_full_urlconverter(url, host, path, &tmp_err);
-    }else{
+    }
+    if (strncmp(url, "lfn", 3) == 0) {
+        if (path)
+            *path = lfc_urlconverter(url, GFAL_LFC_PREFIX);
+        res = 0;
+    }
+    else if (strncmp(url, "lfc", 3) == 0) {
+        res = lfc_full_urlconverter(url, host, path, &tmp_err);
+    }
+    else {
         char buff_lfn[GFAL_URL_MAX_LEN];
-        res = gfal_convert_guid_to_lfn_r(handle, url + GFAL_LFC_GUID_PREFIX_LEN, buff_lfn, GFAL_URL_MAX_LEN, &tmp_err);
-        if(path)
-            *path= g_strdup(buff_lfn);
+        res = gfal_convert_guid_to_lfn_r(handle, url + GFAL_LFC_GUID_PREFIX_LEN,
+                buff_lfn, GFAL_URL_MAX_LEN, &tmp_err);
+        if (path)
+            *path = g_strdup(buff_lfn);
     }
     G_RETURN_ERR(res, tmp_err, err);
 }
@@ -840,6 +850,10 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	lfc_plugin.readlinkG = &lfc_readlinkG;
 	lfc_plugin.unlinkG = &lfc_unlinkG;
     lfc_plugin.readdirppG= &lfc_readdirppG;
+
+    // Copy (as register)
+    lfc_plugin.check_plugin_url_transfer = gfal_lfc_register_check;
+    lfc_plugin.copy_file = gfal_lfc_register;
 	
 	
 	if(init_thread== FALSE){ // initiate Cthread system
