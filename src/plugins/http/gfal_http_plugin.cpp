@@ -3,6 +3,8 @@
 #include <davix.hpp>
 #include <cstdio>
 
+using namespace Davix;
+
 const char* http_module_name = "http_plugin";
 GQuark http_plugin_domain = g_quark_from_static_string(http_module_name);
 
@@ -88,64 +90,66 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
 
 
 
-static int davix2errno(Davix::StatusCode::Code code)
+static int davix2errno(StatusCode::Code code)
 {
   int errcode;
 
   switch (code) {
-    case DAVIX_STATUS_OK:
-    case DAVIX_STATUS_PARTIAL_DONE:
+    case StatusCode::OK:
+    case StatusCode::PartialDone:
       errcode = 0;
       break;
-    case DAVIX_STATUS_WEBDAV_PROPERTIES_PARSING_ERROR:
-    case DAVIX_STATUS_URI_PARSING_ERROR:
+    case StatusCode::WebDavPropertiesParsingError:
+    case StatusCode::UriParsingError:
       errcode = EIO;
       break;
 
-    case DAVIX_STATUS_SESSION_CREATION_ERROR:
+    case StatusCode::SessionCreationError:
       errcode = EPERM;
       break;
 
-    case DAVIX_STATUS_NAME_RESOLUTION_FAILURE:
+    case StatusCode::NameResolutionFailure:
       errcode = EHOSTUNREACH;
       break;
 
-    case DAVIX_STATUS_CONNECTION_PROBLEM:
+    case StatusCode::ConnectionProblem:
       errcode = EHOSTDOWN;
       break;
 
-    case DAVIX_STATUS_REDIRECTION_NEEDED:
+    case StatusCode::RedirectionNeeded:
       errcode = ENOSYS;
       break;
 
-    case DAVIX_STATUS_CONNECTION_TIMEOUT:
-    case DAVIX_STATUS_OPERATION_TIMEOUT:
+    case StatusCode::ConnectionTimeout:
+    case StatusCode::OperationTimeout:
       errcode = ETIMEDOUT;
       break;
 
-    case DAVIX_STATUS_OPERATION_NOT_SUPPORTED:
+    case StatusCode::PermissionRefused:
       errcode = EPERM;
       break;
 
-    case DAVIX_STATUS_IS_NOT_A_DIRECTORY:
+    case StatusCode::IsNotADirectory:
       errcode = ENOTDIR;
       break;
 
-    case DAVIX_STATUS_INVALID_FILE_HANDLE:
+    case StatusCode::InvalidFileHandle:
       errcode = EBADF;
       break;
 
-    case DAVIX_STATUS_AUTHENTIFICATION_ERROR:
-    case DAVIX_STATUS_LOGIN_PASSWORD_ERROR:
-    case DAVIX_STATUS_CREDENTIAL_NOT_FOUND:
-    case DAVIX_STATUS_PERMISSION_REFUSED:
+    case StatusCode::AuthentificationError:
+    case StatusCode::LoginPasswordError:
+    case StatusCode::CredentialNotFound:
+    case StatusCode::CredDecryptionError:
       errcode = EACCES;
       break;
 
-    case DAVIX_STATUS_FILE_NOT_FOUND:
+    case StatusCode::FileNotFound:
       errcode = ENOENT;
       break;
 
+    case StatusCode::FileExist:
+      errcode = EEXIST;
     default:
       errcode = EIO;
       break;
@@ -156,7 +160,7 @@ static int davix2errno(Davix::StatusCode::Code code)
 
 
 
-void davix2gliberr(const Davix::DavixError* daverr, GError** err)
+void davix2gliberr(const DavixError* daverr, GError** err)
 {
   g_set_error(err, http_plugin_domain, davix2errno(daverr->getStatus()),
               "%s", daverr->getErrMsg().c_str());
@@ -190,16 +194,16 @@ void gfal_http_get_ucert(std::string& ucert, std::string& ukey)
         ukey  = getenv("X509_USER_KEY");
 }
 
-int gfal_http_authn_cert_X509(void* userdata, const Davix::SessionInfo & info,
-        Davix::X509Credential * cert, Davix::DavixError** err)
+int gfal_http_authn_cert_X509(void* userdata, const SessionInfo & info,
+        X509Credential * cert, DavixError** err)
 {
     std::string ucert, ukey;
     gfal_http_get_ucert(ucert, ukey);
 
     // No luck
     if (ucert.empty() || ukey.empty()) {
-        Davix::DavixError::setupError(err, http_module_name,
-                Davix::StatusCode::AuthentificationError,
+        DavixError::setupError(err, http_module_name,
+                StatusCode::AuthentificationError,
                 "Could not set the user's proxy or certificate");
         return -1;
     }

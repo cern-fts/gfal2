@@ -369,28 +369,8 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
     file_plugin.unlinkG = &gfal_plugin_file_unlink;
     file_plugin.getxattrG = &gfal_plugin_file_getxattr;
     file_plugin.listxattrG = &gfal_plugin_file_listxattr;
+    file_plugin.setxattrG = &gfal_plugin_file_setxattr;
 
- /*    file_plugin. = &gfal_srm_mkdirG;
-    file_plugin.statG= &gfal_srm_statG;
-    file_plugin.lstatG = &gfal_srm_statG; // no management for symlink in srm protocol/srm-ifce, just map to stat
-    file_plugin.rmdirG = &gfal_srm_rmdirG;
-    file_plugin.opendirG = &gfal_srm_opendirG;
-    file_plugin.readdirG = &gfal_srm_readdirG;
-    file_plugin.closedirG = &gfal_srm_closedirG;
-
-    file_plugin.openG = &gfal_srm_openG;
-    file_plugin.closeG = &gfal_srm_closeG;
-    file_plugin.readG= &gfal_srm_readG;
-    file_plugin.preadG = &gfal_srm_preadG;
-    file_plugin.writeG= &gfal_srm_writeG;
-    file_plugin.chmodG= &gfal_srm_chmodG;
-    file_plugin.lseekG= &gfal_srm_lseekG;
-    file_plugin.unlinkG = &gfal_srm_unlinkG;
-    file_plugin.getxattrG = &gfal_srm_getxattrG;
-    file_plugin.listxattrG = &gfal_srm_listxattrG;
-    file_plugin.checksum_calcG = &gfal_srm_checksumG;
-    file_plugin.copy_file = &file_plugin_filecopy;
-    file_plugin.check_plugin_url_transfer =&plugin_url_check2;*/
 	return file_plugin;
 }
 
