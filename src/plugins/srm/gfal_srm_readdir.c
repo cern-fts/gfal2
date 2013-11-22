@@ -70,6 +70,13 @@ inline static struct dirent* gfal_srm_readdir_convert_result(plugin_handle ch, c
 		g_strlcat(buff_surlfull, p, GFAL_URL_MAX_LEN);	
 		gfal_srm_bufferize_request(ch, buff_surlfull, statuses);
 		g_strlcpy(resu->d_name, p+1, GFAL_URL_MAX_LEN);	// without '/'
+
+		if (S_ISDIR(statuses->stat.st_mode))
+		    resu->d_type = DT_DIR;
+		else if (S_ISLNK(statuses->stat.st_mode))
+		    resu->d_type = DT_LNK;
+		else
+		    resu->d_type = DT_REG;
 	}
 	else
 		g_strlcpy(resu->d_name, statuses->surl, GFAL_URL_MAX_LEN);
