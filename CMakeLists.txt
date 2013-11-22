@@ -23,6 +23,8 @@ SET(PLUGIN_GRIDFTP TRUE
         CACHE STRING "enable compilation of the GRIDFTP plugin")
 SET(PLUGIN_HTTP TRUE
         CACHE STRING "enable compilation of the HTTP plugin")
+SET(PLUGIN_MOCK TRUE
+        CACHE STRING "enable compilation of the MOCK plugin")
 
 # build type
 set(CMAKE_BUILD_TYPE "RelWithDebInfo"

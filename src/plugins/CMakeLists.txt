@@ -9,4 +9,5 @@ add_subdirectory (http)
 add_subdirectory (lfc)
 add_subdirectory (rfio)
 add_subdirectory (srm)
+add_subdirectory (mock)
 
