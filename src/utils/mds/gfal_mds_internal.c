@@ -228,22 +228,43 @@ int gfal_mds_get_srm_types_endpoint(LDAP* ld, LDAPMessage* result, gfal_mds_endp
  * 
  * get the current ldap URI
  **/
-int gfal_mds_get_ldapuri(gfal2_context_t context, char* buff, size_t s_buff, GError** err){
-	char *var;
-	GError* tmp_err=NULL;
-	int ret = -1;
-    g_strlcpy(buff, "ldap://", s_buff);
-	if((var  = getenv(bdii_env_var)) != NULL){
-		g_strlcat(buff, var, s_buff);
-		ret = 0;
-    }else{
-        gchar * internal_bdii_host = gfal2_get_opt_string(context, bdii_config_group, bdii_config_var,NULL);
-        gfal_log(GFAL_VERBOSE_TRACE, " use LCG_GFAL_INFOSYS : %s", internal_bdii_host);
-        g_strlcat(buff, internal_bdii_host, s_buff);
-        g_free(internal_bdii_host);
-        ret =0;
+int gfal_mds_get_ldapuri(gfal2_context_t context, char* buff, size_t s_buff, GError** err)
+{
+    char *bdii_var = getenv(bdii_env_var);
+    if (bdii_var == NULL)
+        bdii_var = gfal2_get_opt_string(context, bdii_config_group, bdii_config_var, NULL);
+
+    if (bdii_var == NULL || bdii_var[0] == '\0') {
+        g_set_error(err, gfal2_get_core_quark(), EINVAL,
+                " no valid value for BDII found:"
+                " please, configure the plugin properly, or try setting in the environment LCG_GFAL_INFOSYS");
+        return -1;
     }
-    G_RETURN_ERR(ret, tmp_err, err);
+
+    gfal_log(GFAL_VERBOSE_TRACE, " use LCG_GFAL_INFOSYS : %s", bdii_var);
+
+    // Since strtok will modify, use a copy
+    bdii_var = g_strdup(bdii_var);
+
+    char *save_ptr = NULL;
+    char *token = NULL;
+
+    size_t i = 0;
+    buff[i] = '\0';
+    token = strtok_r(bdii_var, ",", &save_ptr);
+    while (token && i < s_buff) {
+        i += g_strlcpy(buff + i, "ldap://", s_buff - i);
+        i += g_strlcpy(buff + i, token, s_buff - i);
+        i += g_strlcpy(buff + i, ",", s_buff - i);
+        token = strtok_r(NULL, ",", &save_ptr);
+    }
+
+    // Remove trailing ','
+    buff[i - 1] = '\0';
+
+    g_free(bdii_var);
+
+    return 0;
 }
 
 
