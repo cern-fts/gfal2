@@ -41,6 +41,13 @@
 #include <fdesc/gfal_file_handle.h>
 
 const char* mock_prefix="mock:";
+const char* mock_config_group= "MOCK PLUGIN";
+
+
+const char* MAX_TRANSFER_TIME = "MAX_TRANSFER_TIME";
+const char* MIN_TRANSFER_TIME = "MIN_TRANSFER_TIME";
+
+
 unsigned int s_prefix = 0;
 
 
@@ -119,9 +126,11 @@ gboolean gfal_plugin_mock_check_url_transfer(plugin_handle handle, const char* s
 }
 
 int gfal_plugin_mock_filecopy(plugin_handle handle, gfal2_context_t context, gfalt_params_t params, const char* src, const char* dst, GError ** err){
-    // here is the copying done ;-)
-	// generate the number of seconds (between 1 and 100) and sleep
-	int seconds = rand() % 100 + 1;
+    // here we are mocking the copying
+	int max = gfal2_get_opt_integer_with_default(context, mock_config_group, MAX_TRANSFER_TIME, 100);
+	int min = gfal2_get_opt_integer_with_default(context, mock_config_group, MIN_TRANSFER_TIME, 10);
+
+	int seconds = rand() % (max - min) + min;
 	sleep(seconds);
 	return 0;
 }
