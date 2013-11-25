@@ -116,6 +116,15 @@ void gfal_plugin_mock_report_error(const char* funcname, GError** err){
 
 
 int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct stat* buf, GError ** err){
+    // here we are mocking the stat
+
+	// lets randomize the filesize (a number between 100 and 10000)
+	// Unfortunately inhere we don't have the context and we cannot get the parameters from a config file
+	// it is a static var because we want the same result to be returned for the source and destination
+	static int size = 0;
+	if (!size) size = rand() % 9900 + 100;
+	buf->st_size = size;
+
 	// since it's a mock transfer anyway let's say the stat was successful
 	// unless we would like to emulate the file is not there
 	return 0;
