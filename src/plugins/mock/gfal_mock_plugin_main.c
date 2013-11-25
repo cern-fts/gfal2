@@ -18,7 +18,7 @@
 /*
  * file gfal_mock_plugin_main.c
  * brief file plugin
- * author Devresse Adrien
+ * author Michal Simon
  */
  
  
@@ -39,6 +39,8 @@
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_errverbose.h>
 #include <fdesc/gfal_file_handle.h>
+#include <config/gfal_config.h>
+
 
 const char* mock_prefix="mock:";
 const char* mock_config_group= "MOCK PLUGIN";
@@ -50,6 +52,10 @@ const char* MIN_TRANSFER_TIME = "MIN_TRANSFER_TIME";
 
 unsigned int s_prefix = 0;
 
+// LFC plugin GQuark
+GQuark gfal2_get_plugin_mock_quark(){
+    return g_quark_from_static_string(GFAL2_QUARK_PLUGINS "::FILE");
+}
 
 static unsigned int mock_prefix_len(){
     if(!s_prefix)
