@@ -20,9 +20,9 @@
 
 
 /**
- * @file plugins related API 
+ * @file gfal_common_plugin_interface.h
  * @author Devresse Adrien
- * 
+ *  plugin specific related API 
  * */
 
 #include <glib.h>

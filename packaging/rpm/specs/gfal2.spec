@@ -4,7 +4,7 @@
 Name:				gfal2
 Version:			2.5.0
 # https://fedoraproject.org/wiki/Packaging:NamingGuidelines#Release_Tag
-Release:			1%{?dist}
+Release:			2%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -158,15 +158,6 @@ Requires:			%{name}-core%{?_isa} = %{version}-%{release}
 Provide the HTTP and WevDAV support for %{name}.
 this plugin is able to do third-party copy with Webdav
 
-%package plugin-mock
-Summary:			Provides a mock plugin for testing purposes
-Group:				Applications/Internet
-Requires:			%{name}-core%{?_isa} = %{version}-%{release}
-
-%description plugin-mock
-Provides a mock plugin for testing purposes.
-This plugin mocks third-party copy.
-
 %package all
 Summary:			Meta package for GFAL 2.0 install
 Group:				Applications/Internet
@@ -177,7 +168,7 @@ Requires:			%{name}-plugin-dcap%{?_isa} = %{version}-%{release}
 Requires:			%{name}-plugin-srm%{?_isa} = %{version}-%{release} 
 Requires:			%{name}-plugin-rfio%{?_isa} = %{version}-%{release} 
 Requires:			%{name}-plugin-gridftp%{?_isa} = %{version}-%{release} 
-Requires:           %{name}-plugin-http%{?_isa} = %{version}-%{release}
+Requires:                       %{name}-plugin-http%{?_isa} = %{version}-%{release}
 
 
 %description all
@@ -282,22 +273,11 @@ make DESTDIR=%{buildroot} install
 %{_pkgdocdir}/README_PLUGIN_HTTP
 %config(noreplace) %{_sysconfdir}/%{name}.d/http_plugin.conf
 
-%files plugin-mock
-%{_libdir}/%{name}-plugins/libgfal_plugin_mock.so*
-%{_pkgdocdir}/README_PLUGIN_MOCK
-%config(noreplace) %{_sysconfdir}/%{name}.d/mock_plugin.conf
-
 %files all
 %{_pkgdocdir}/README
 
 
 %changelog
-* Thu Nov 07 2013 Alejandro Alvarez <aalvarez at cern.ch> - 2.4.6-1
- - Release 2.4.6 of GFAL 2
-
-* Wed Oct 23 2013 Alejandro Alvarez <aalvarez at cern.ch> - 2.4.5-3
- - Release 2.4.5 of GFAL 2
-
 * Tue Jul 02 2013 Adrien Devresse <adevress at cern.ch> - 2.3.0-0
  - Release 2.3.0 of GFAL 2.0
 

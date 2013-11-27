@@ -33,6 +33,25 @@ extern "C"
  * @author Adrien Devresse
  */
 
+/*!
+    \defgroup config_group Parameter API
+
+
+    Allows to overwrite or/and define any parameter of gfal 2.0.
+    A complete list of parameter is accessible in the gfal 2.0 configuration files directory
+    ( by default : /etc/gfal2.d/  )
+    
+    Example ( enable IPv6 support for the gridFTP plugin ) : 
+		gfal2_set_opt_boolean("GRIDFTP PLUGIN", "IPV6", true, NULL);
+		
+*/
+
+/*!
+    \addtogroup config_group
+	@{
+*/
+
+
 /**
  * @brief get a string parameter in the current GFAL 2.0 configuration
  *  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
@@ -176,6 +195,11 @@ gchar ** gfal2_get_opt_string_list(gfal_handle handle, const gchar *group_name,
 gchar ** gfal2_get_opt_string_list_with_default(gfal_handle handle, const gchar *group_name,
                                           const gchar *key, gsize *length, char** default_value);
 
+
+/**
+	@} 
+    End of the FILE group
+*/
 
 #ifdef __cplusplus
 }
