@@ -22,5 +22,10 @@ if (PLUGIN_LFC)
     install (FILES "README_PLUGIN_LFC"
              DESTINATION ${DOC_INSTALL_DIR})
 
+
+    # install lfc configuration files
+    LIST(APPEND lfc_conf_file "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/lfc_plugin.conf")
+    install(FILES ${lfc_conf_file}
+                        DESTINATION ${SYSCONF_INSTALL_DIR}/gfal2.d/)
 endif (PLUGIN_LFC)
 

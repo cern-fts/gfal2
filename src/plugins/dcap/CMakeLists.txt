@@ -25,5 +25,10 @@ if (PLUGIN_DCAP)
     install(FILES  "README_PLUGIN_DCAP"
             DESTINATION ${DOC_INSTALL_DIR})
 
+    # install dcap configuration files
+    LIST(APPEND dcap_conf_file "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/dcap_plugin.conf")
+    install(FILES ${dcap_conf_file}
+                        DESTINATION ${SYSCONF_INSTALL_DIR}/gfal2.d/)
+
 endif (PLUGIN_DCAP)
 

@@ -22,5 +22,11 @@ if (PLUGIN_SRM)
     install(FILES "README_PLUGIN_SRM"
             DESTINATION ${DOC_INSTALL_DIR})
 
+
+    # install srm configuration files
+    LIST(APPEND srm_conf_file "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/srm_plugin.conf")
+    install(FILES ${srm_conf_file}
+                        DESTINATION ${SYSCONF_INSTALL_DIR}/gfal2.d/)
+
 endif (PLUGIN_SRM)
 
