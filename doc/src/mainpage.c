@@ -2,7 +2,7 @@
 	\mainpage GFAL 2.0  Documentation
     \author lcg-util section, CERN IT-GT-DMS ( lcgutil-support@cern.ch )
 	\author Devresse Adrien ( adrien.devresse@cern.ch )
-	\author Alejandro
+	\author Alejandro Alvarez Ayllon  ( Alejandro.Alvarez.Ayllon@cern.ch )
 
 <h2>GFAL 2.0 Wiki:</h2>
 - <a href="https://svnweb.cern.ch/trac/lcgutil/wiki/gfal2">GFAL2 wiki </a>
