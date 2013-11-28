@@ -89,6 +89,11 @@ IF(NOT ONLY_TESTS)
     install(FILES "LICENSE" "README" "RELEASE-NOTES" "DESCRIPTION"
 			DESTINATION ${DOC_INSTALL_DIR})
 			
+    # install global configuration files
+    LIST(APPEND lst_conf_files "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/gfal2_core.conf" "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/bdii.conf")
+    install(FILES ${lst_conf_files}
+                        DESTINATION ${SYSCONF_INSTALL_DIR}/gfal2.d/)
+
 
     add_subdirectory (doc)
     add_subdirectory (src)
