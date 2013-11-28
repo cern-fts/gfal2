@@ -23,7 +23,7 @@ SET(PLUGIN_GRIDFTP TRUE
         CACHE STRING "enable compilation of the GRIDFTP plugin")
 SET(PLUGIN_HTTP TRUE
         CACHE STRING "enable compilation of the HTTP plugin")
-SET(PLUGIN_MOCK TRUE
+SET(PLUGIN_MOCK FALSE
         CACHE STRING "enable compilation of the MOCK plugin")
 
 # build type
