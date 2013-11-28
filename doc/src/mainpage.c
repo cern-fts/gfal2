@@ -1,6 +1,6 @@
 /**
 	\mainpage GFAL 2.0  Documentation
-    \author lcg-util section, CERN IT-GT-DMS ( lcgutil-support@cern.ch )
+    \author lcg-util section, CERN IT-SDC-ID ( lcgutil-support@cern.ch )
 	\author Devresse Adrien ( adrien.devresse@cern.ch )
 	\author Alejandro Alvarez Ayllon  ( Alejandro.Alvarez.Ayllon@cern.ch )
 
