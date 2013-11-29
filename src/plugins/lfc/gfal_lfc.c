@@ -470,14 +470,16 @@ static struct dirent* lfc_convert_dirent_struct(struct lfc_ops *ops , struct dir
 	g_strlcat(fullurl, "/", GFAL_URL_MAX_LEN);
 	g_strlcat(fullurl, filestat->d_name, GFAL_URL_MAX_LEN);
 	
-
+    memset(st, 0, sizeof(struct stat));
     st->st_mode = (mode_t) filestat->filemode;
     st->st_nlink = (nlink_t) filestat->nlink;
-    st->st_uid = (uid_t)filestat->uid;
-    st->st_gid = (gid_t)filestat->gid;
+    st->st_uid = (uid_t) filestat->uid;
+    st->st_gid = (gid_t) filestat->gid;
     st->st_size = (off_t) filestat->filesize;
-    st->st_blocks = 0;
-    st->st_blksize = 0;
+    st->st_atime = (time_t) filestat->atime;
+    st->st_ctime = (time_t)filestat->ctime;
+    st->st_mtime = (time_t) filestat->mtime;
+
     gsimplecache_add_item_kstr(cache, fullurl, (void*) st);
 	dir->d_off +=1;
 	g_strlcpy(dir->d_name, filestat->d_name, NAME_MAX);
