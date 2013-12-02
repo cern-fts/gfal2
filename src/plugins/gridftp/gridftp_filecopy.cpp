@@ -270,15 +270,9 @@ struct Callback_handler{
     } *args;
 };
 
-void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, globus_off_t total_bytes, float throughput, float avg_throughput){
+void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, globus_off_t total_bytes, float throughput, float avg_throughput)
+{
     Callback_handler::callback_args * args = (Callback_handler::callback_args *) user_args;
-
-    GridFTP_Request_state* req = args->req;
-    Glib::RWLock::ReaderLock l (req->mux_req_state);
-    if(args->timeout_value > 0){
-        gfal_log(GFAL_VERBOSE_TRACE, "Performance marker received, re-arm timer");
-        args->timeout_time = time(NULL) + args->timeout_value;
-    }
 
     gfalt_hook_transfer_plugin_t hook;
     hook.bytes_transfered = total_bytes;
@@ -289,6 +283,20 @@ void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, gl
     gfalt_transfer_status_t state = gfalt_transfer_status_create(&hook);
     args->callback(state, args->src, args->dst, args->user_args);
     gfalt_transfer_status_delete(state);
+
+    // If throughput != 0, reset timer callback
+    if (throughput != 0.0) {
+        GridFTP_Request_state* req = args->req;
+        Glib::RWLock::ReaderLock l (req->mux_req_state);
+        if(args->timeout_value > 0){
+            gfal_log(GFAL_VERBOSE_TRACE, "Performance marker received, re-arm timer");
+            args->timeout_time = time(NULL) + args->timeout_value;
+        }
+    }
+    // Otherwise, do not reset and notify
+    else {
+        gfal_log(GFAL_VERBOSE_NORMAL, "Performance marker received, but throughput is 0. Not resetting timeout!");
+    }
 }
 
 
