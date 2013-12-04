@@ -49,6 +49,17 @@ const char* mock_config_group= "MOCK PLUGIN";
 const char* MAX_TRANSFER_TIME = "MAX_TRANSFER_TIME";
 const char* MIN_TRANSFER_TIME = "MIN_TRANSFER_TIME";
 
+const char* FILE_SIZE = "size";
+const char* FILE_SIZE_PRE = "size_pre";
+const char* FILE_SIZE_POST = "size_post";
+
+typedef enum _stat_order {
+
+	STAT_SOURCE = 0,
+	STAT_DESTINATION_PRE,
+	STAT_DESTINATION_POST
+
+} stat_order;
 
 unsigned int s_prefix = 0;
 
@@ -115,15 +126,54 @@ void gfal_plugin_mock_report_error(const char* funcname, GError** err){
 }
 
 
-int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct stat* buf, GError ** err){
-    // here we are mocking the stat
+int gfal_plugin_mock_get_value(const char* url, const char* key)
+{
+	// look for the place where parameter list starts
+	char* str = strchr(url, '?');
+	// if there is no parameter list ...
+	if (str == NULL) return -1;
+	// find the parameter name
+	str = strstr(str, key);
+	// if the parameter is not on the list
+	if (str == NULL) return -1;
+	// find the assignment
+	str = strchr(str, '=');
+	// if no value was assigned ...
+	if (str == NULL) return -1;
+	// get the value
+	return atoi(str + 1);
+}
 
-	// lets randomize the filesize (a number between 100 and 10000)
-	// Unfortunately inhere we don't have the context and we cannot get the parameters from a config file
-	// it is a static var because we want the same result to be returned for the source and destination
-	static int size = 0;
-	if (!size) size = rand() % 9900 + 100;
-	buf->st_size = size;
+int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct stat* buf, GError ** err){
+
+	// it is assumed that the stat operations will be done in following order:
+	//   - stat source
+	//   - stat destination before transfer
+	//   - stat destination after transfer
+	static int order = 0;
+
+	int size = 0;
+
+	switch (order)
+	{
+
+	case STAT_SOURCE:
+		size = gfal_plugin_mock_get_value(path, FILE_SIZE);
+		break;
+
+	case STAT_DESTINATION_PRE:
+		size = gfal_plugin_mock_get_value(path, FILE_SIZE_PRE);
+		break;
+
+	case STAT_DESTINATION_POST:
+		size = gfal_plugin_mock_get_value(path, FILE_SIZE_POST);
+		break;
+	}
+	
+	if (size >= 0) buf->st_size = size;
+
+	// let's prepare for the next stat operation
+	order++;
 
 	// since it's a mock transfer anyway let's say the stat was successful
 	// unless we would like to emulate the file is not there
@@ -157,32 +207,6 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 
 	gfal_plugin_interface mock_plugin;
     memset(&mock_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin
-
-    // not implemented functions
-    //    mock_plugin.plugin_delete = NULL;
-    //    mock_plugin.accessG = &gfal_plugin_mock_access;
-    //    mock_plugin.mkdirpG = &gfal_plugin_mock_mkdir;
-    //    mock_plugin.lstatG = &gfal_plugin_mock_lstat;
-    //    mock_plugin.renameG = &gfal_plugin_mock_rename;
-    //    mock_plugin.symlinkG = &gfal_plugin_mock_symlink;
-    //    mock_plugin.rmdirG = &gfal_plugin_mock_rmdir;
-    //    mock_plugin.opendirG = &gfal_plugin_mock_opendir;
-    //    mock_plugin.readdirG = &gfal_plugin_mock_readdir;
-    //    mock_plugin.closedirG = &gfal_plugin_mock_closedir;
-    //
-    //
-    //    mock_plugin.openG = &gfal_plugin_mock_open;
-    //    mock_plugin.closeG = &gfal_plugin_mock_close;
-    //    mock_plugin.readG= &gfal_plugin_mock_read;
-    //    mock_plugin.preadG = &gfal_plugin_mock_pread;
-    //    mock_plugin.writeG= &gfal_plugin_mock_write;
-    //    mock_plugin.pwriteG = &gfal_plugin_mock_pwrite;
-    //    mock_plugin.chmodG= &gfal_plugin_mock_chmod;
-    //    mock_plugin.lseekG= &gfal_plugin_mock_lseek;
-    //    mock_plugin.unlinkG = &gfal_plugin_mock_unlink;
-    //    mock_plugin.getxattrG = &gfal_plugin_mock_getxattr;
-    //    mock_plugin.listxattrG = &gfal_plugin_mock_listxattr;
-    //    mock_plugin.setxattrG = &gfal_plugin_mock_setxattr;
 
     mock_plugin.plugin_data = NULL;
     mock_plugin.check_plugin_url = &gfal_mock_check_url;
