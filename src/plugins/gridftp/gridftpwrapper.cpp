@@ -366,7 +366,7 @@ static int scan_errstring(const char *p) {
         ret = ENOENT;
     else if (strstr(p, "ermission denied") || strstr(p, "credential"))
         ret = EACCES;
-    else if (strstr(p, "exists"))
+    else if ( (strstr(p, "exists")) || strstr(p, "error 3006"))
         ret = EEXIST;
     else if (strstr(p, "ot a direct"))
 		ret = ENOTDIR;
