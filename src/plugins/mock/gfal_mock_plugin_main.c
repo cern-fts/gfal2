@@ -55,6 +55,7 @@ const char* FILE_SIZE = "size";
 const char* FILE_SIZE_PRE = "size_pre";
 const char* FILE_SIZE_POST = "size_post";
 const char* CHECKSUM = "checksum";
+const char* TIME = "time";
 
 typedef enum _stat_order {
 
@@ -305,12 +306,30 @@ int gfal_plugin_mock_filecopy(plugin_handle handle, gfal2_context_t context, gfa
 		if (!gfal_plugin_mock_checksum_verify(checksum_src, checksum_dst, checksum_usr, err)) return -1;
 	}
 
-	// than check how long should the transfer take
-	int max = gfal2_get_opt_integer_with_default(context, mock_config_group, MAX_TRANSFER_TIME, 100);
-	int min = gfal2_get_opt_integer_with_default(context, mock_config_group, MIN_TRANSFER_TIME, 10);
+	// transfer duration
+	int seconds = 0;
 
-	int seconds = rand() % (max - min) + min;
+	// check if the duration is specified in destination
+	char time_dst[GFAL_URL_MAX_LEN]  = { 0 };
+	gfal_plugin_mock_get_value(dst, TIME, time_dst);
+
+	if (time_dst[0] != '\0')
+	{
+		// get the value from destination
+		seconds = atoi(time_dst);
+	}
+	else
+	{
+		// get the range from configuration file
+		int max = gfal2_get_opt_integer_with_default(context, mock_config_group, MAX_TRANSFER_TIME, 100);
+		int min = gfal2_get_opt_integer_with_default(context, mock_config_group, MIN_TRANSFER_TIME, 10);
+		// determin the duration
+		seconds = rand() % (max - min) + min;
+	}
+
+	// mock transfer duration
 	sleep(seconds);
+
 	return 0;
 }
 
