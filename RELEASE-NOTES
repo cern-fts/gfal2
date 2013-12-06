@@ -1,5 +1,20 @@
 GFAL 2.0 RELEASE-NOTE:
 
+* Fri Dec 06 2013 Alejandro Alvarez <aalvarez at cern.ch> - 2.4.8-0
+- [LCGUTIL-216] - Checksum comparison must ignore heading '0'
+- [LCGUTIL-220] - gfal2 crashes with SIGSEGV sometimes on bringonline
+- [LCGUTIL-222] - Timeout doesn't seem to be honored
+- [LCGUTIL-236] - Segfault inside GridFTP_Request_state::~GridFTP_Request_state
+- [LCGUTIL-248] - GFAL 2.0 : Recent platform with recent glib2 version triggers "GLib-WARNING" in some case
+- [LCGUTIL-255] - unlink on a dir returns ERR 22 (Invalid arg)
+- [LCGUTIL-278] - seg fault - setxattr() in local files
+- [LCGUTIL-297] - gfal2 perf markers 0 must be treated as no markers and respect timeout
+- [LCGUTIL-160] - gfal2 needs to search the cache first (then BDII) if submitter not providing full srm url
+- [LCGUTIL-217] - SRM plugin should allow empty checksums on source
+- [LCGUTIL-303] - EOS GridFTP implementation does not return 'EEXIST' error properly
+- [LCGUTIL-226] - Partial listing of directory to avoid loading too much the server
+- [LCGUTIL-233] - GridFTP plugin should allow to skip the source checksum
+
 * Tue Jul 02 2013 Adrien Devresse <adevress at cern.ch> - 2.3.0-0
 - [LCGUTIL-99] gfal2_cancel crashes gfal2 if called twice
 - [LCGUTIL-135] GFAL 2.0 : Migrate the http plugin support for PEM from the old manual one to the new Davix one
