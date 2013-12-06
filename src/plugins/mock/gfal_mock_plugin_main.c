@@ -17,7 +17,7 @@
 
 /*
  * file gfal_mock_plugin_main.c
- * brief file plugin
+ * plugin mock
  * author Michal Simon
  */
  
@@ -40,11 +40,13 @@
 #include <common/gfal_common_errverbose.h>
 #include <fdesc/gfal_file_handle.h>
 #include <config/gfal_config.h>
+#include <transfer/gfal_transfer.h>
+#include <checksums/checksums.h>
 
 
-const char* mock_prefix="mock:";
-const char* mock_config_group= "MOCK PLUGIN";
-
+const char* mock_prefix = "mock:";
+const char* mock_config_group = "MOCK PLUGIN";
+const char* mock_skip_transfer_config = "SKIP_SOURCE_CHECKSUM";
 
 const char* MAX_TRANSFER_TIME = "MAX_TRANSFER_TIME";
 const char* MIN_TRANSFER_TIME = "MIN_TRANSFER_TIME";
@@ -52,6 +54,7 @@ const char* MIN_TRANSFER_TIME = "MIN_TRANSFER_TIME";
 const char* FILE_SIZE = "size";
 const char* FILE_SIZE_PRE = "size_pre";
 const char* FILE_SIZE_POST = "size_post";
+const char* CHECKSUM = "checksum";
 
 typedef enum _stat_order {
 
@@ -121,27 +124,67 @@ static gboolean gfal_mock_check_url(plugin_handle handle, const char* url, plugi
 	}
 }
 
-void gfal_plugin_mock_report_error(const char* funcname, GError** err){
-    g_set_error(err, gfal2_get_plugin_mock_quark(),errno, "[%s] errno reported by local system call %s", funcname, strerror(errno));
+void gfal_plugin_mock_report_error(const char* msg, GError** err)
+{
+    g_set_error(err, gfal2_get_plugin_mock_quark(), errno, msg);
 }
 
 
-int gfal_plugin_mock_get_value(const char* url, const char* key)
+void gfal_plugin_mock_get_value(const char* url, const char* key, char* value)
 {
+	// make sure it's an empty C-string
+	value[0] = '\0';
 	// look for the place where parameter list starts
 	char* str = strchr(url, '?');
 	// if there is no parameter list ...
-	if (str == NULL) return -1;
+	if (str == NULL) return;
 	// find the parameter name
 	str = strstr(str, key);
 	// if the parameter is not on the list
-	if (str == NULL) return -1;
+	if (str == NULL) return;
 	// find the assignment
 	str = strchr(str, '=');
 	// if no value was assigned ...
-	if (str == NULL) return -1;
+	if (str == NULL) return;
+
+	str = str + 1;
+	char* end = strchr(str, '&');
+
+	if (end)
+	{
+		// if it is not the last parameter ...
+		int size = end - str;
+		strncpy(value, str, size);
+	}
+	else
+	{
+		// if it is the last parameter just copy the string until it ends
+		strcpy(value, str);
+	}
+}
+
+int gfal_plugin_mock_get_size(const char* buff)
+{
+	// if the string is empty return -1
+	if (buff == 0 || buff[0] == '\0') return -1;
 	// get the value
-	return atoi(str + 1);
+	return atoi(buff);
+}
+
+void gfal_plugin_mock_get_checksum(char* buff, char* checksum)
+{
+	// make sure that checksum is empty
+	checksum[0] = '\0';
+	// if buff is empty there's nothing to do
+	if (buff == 0 || buff[0] == '\0') return;
+
+	// look for the delimiter
+	char* str = strchr(buff, ':');
+	// if it's not a proper checksum return
+	if (!str) return;
+
+	// copy checksum
+	strcpy(checksum, str + 1);
 }
 
 int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct stat* buf, GError ** err){
@@ -153,20 +196,24 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
 	static int order = 0;
 
 	int size = 0;
+	char buff[GFAL_URL_MAX_LEN] = { 0 };
 
 	switch (order)
 	{
 
 	case STAT_SOURCE:
-		size = gfal_plugin_mock_get_value(path, FILE_SIZE);
+		gfal_plugin_mock_get_value(path, FILE_SIZE, buff);
+		size = gfal_plugin_mock_get_size(buff);
 		break;
 
 	case STAT_DESTINATION_PRE:
-		size = gfal_plugin_mock_get_value(path, FILE_SIZE_PRE);
+		gfal_plugin_mock_get_value(path, FILE_SIZE_PRE, buff);
+		size = gfal_plugin_mock_get_size(buff);
 		break;
 
 	case STAT_DESTINATION_POST:
-		size = gfal_plugin_mock_get_value(path, FILE_SIZE_POST);
+		gfal_plugin_mock_get_value(path, FILE_SIZE_POST, buff);
+		size = gfal_plugin_mock_get_size(buff);
 		break;
 	}
 	
@@ -190,8 +237,75 @@ gboolean gfal_plugin_mock_check_url_transfer(plugin_handle handle, const char* s
     return res;
 }
 
-int gfal_plugin_mock_filecopy(plugin_handle handle, gfal2_context_t context, gfalt_params_t params, const char* src, const char* dst, GError ** err){
-    // here we are mocking the copying
+gboolean gfal_plugin_mock_checksum_verify(const char* src_chk, const char* dst_chk, const char* user_defined_chk, GError** err)
+{
+	// if no checksum was defined return
+	if (*user_defined_chk == '\0' && *src_chk == '\0' && *dst_chk == '\0') return TRUE;
+	// if user checksum was not defined compare source and destination
+    if (*user_defined_chk == '\0')
+    {
+    	if (strcmp(src_chk, dst_chk) != 0)
+    	{
+			gfal_plugin_mock_report_error("SRC and DST checksum are different.", err);
+			return FALSE;
+    	}
+    	// source and destination checksums match
+    	return TRUE;
+    }
+    // if user and source were defined ...
+	if (*src_chk != '\0' && strcmp(src_chk, user_defined_chk) != 0)
+	{
+		gfal_plugin_mock_report_error("USER_DEFINE and SRC checksums are different.", err);
+		return FALSE;
+	}
+	// compare user and destination
+	if (strcmp(dst_chk, user_defined_chk) != 0)
+	{
+		gfal_plugin_mock_report_error("USER_DEFINE and DST checksums are different.", err);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+int gfal_plugin_mock_filecopy(plugin_handle handle, gfal2_context_t context, gfalt_params_t params, const char* src, const char* dst, GError** err){
+
+	// do use checksum
+	gboolean checksum_check = gfalt_get_checksum_check(params, NULL);
+	// do we care about source checksum
+	gboolean skip_source_checksum = gfal2_get_opt_boolean(
+			context,
+			mock_config_group,
+			mock_skip_transfer_config,
+			NULL
+		);
+
+	// handle checksumming if necessary
+	if (checksum_check)
+	{
+		char checksum_type[GFAL_URL_MAX_LEN] = { 0 };
+	    char checksum_usr[GFAL_URL_MAX_LEN]  = { 0 };
+	    char checksum_src[GFAL_URL_MAX_LEN]  = { 0 };
+	    char checksum_dst[GFAL_URL_MAX_LEN]  = { 0 };
+
+		// user defined checksum first
+		gfalt_get_user_defined_checksum(
+				params,
+				checksum_type,
+				sizeof(checksum_type),
+				checksum_usr,
+				sizeof(checksum_usr),
+				NULL
+			);
+		// than the source
+		if (!skip_source_checksum) gfal_plugin_mock_get_value(src, CHECKSUM, checksum_src);
+		// and than the destination
+		gfal_plugin_mock_get_value(dst, CHECKSUM, checksum_dst);
+		// and finally verify if they are OK
+		if (!gfal_plugin_mock_checksum_verify(checksum_src, checksum_dst, checksum_usr, err)) return -1;
+	}
+
+	// than check how long should the transfer take
 	int max = gfal2_get_opt_integer_with_default(context, mock_config_group, MAX_TRANSFER_TIME, 100);
 	int min = gfal2_get_opt_integer_with_default(context, mock_config_group, MIN_TRANSFER_TIME, 10);
 
