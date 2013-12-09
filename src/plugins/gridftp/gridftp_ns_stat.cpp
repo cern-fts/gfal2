@@ -174,8 +174,9 @@ int copy_mdtm_to_timet(char * mdtm_str, int * time_out)
     return -1;
 }
 
-static globus_result_t parse_mlst_line(char *line,
-        gfal_globus_stat_t *stat_info)
+globus_result_t parse_mlst_line(char *line,
+        gfal_globus_stat_t *stat_info,
+        char *filename_buf, size_t filename_size)
 {
     globus_result_t result;
     int i;
@@ -206,6 +207,18 @@ static globus_result_t parse_mlst_line(char *line,
     *space = '\0';
     filename = space + 1;
     startfact = startline;
+
+    if (filename_buf) {
+        strncpy(filename_buf, filename, filename_size);
+        size_t name_len = strlen(filename_buf);
+        if (name_len > 0) {
+            char *trailing = filename_buf + name_len - 1;
+            while (isspace(*trailing)) {
+                *trailing = '\0';
+                --trailing;
+            }
+        }
+    }
 
     while (startfact != space) {
         endfact = strchr(startfact, ';');
@@ -335,7 +348,7 @@ void GridftpModule::internal_globus_gass_stat(const char* path,  gfal_globus_sta
              "   <- [Gridftp_stat_module::internal_globus_gass_stat] Got '%s'",
              buffer);
 
-    parse_mlst_line((char*)buffer, gl_stat);
+    parse_mlst_line((char*)buffer, gl_stat, NULL, 0);
     globus_free(buffer);
 
 	gfal_log(GFAL_VERBOSE_TRACE,

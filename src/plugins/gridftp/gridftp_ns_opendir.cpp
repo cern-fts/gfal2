@@ -57,6 +57,30 @@ extern "C" struct dirent* gfal_gridftp_readdirG(plugin_handle handle,
 }
 
 
+extern "C" struct dirent* gfal_gridftp_readdirppG(plugin_handle handle,
+        gfal_file_handle fh, struct stat* st, GError** err)
+{
+    g_return_val_err_if_fail(handle != NULL && fh != NULL, NULL, err,
+            "[gfal_gridftp_readdirG][gridftp] einval params");
+
+    GError * tmp_err = NULL;
+    struct dirent* ret = NULL;
+    gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_readdirG]");
+    CPP_GERROR_TRY
+        GridftpDirReader* reader = static_cast<GridftpDirReader*>(fh->fdesc);
+        // Not open yet, so instantiate the simple reader
+        if (reader == NULL) {
+            GridftpModule* gsiftp = static_cast<GridftpModule*>(handle);
+            reader = new GridftpListReader(gsiftp, fh->path);
+            fh->fdesc = reader;
+        }
+        ret = reader->readdirpp(st);
+    CPP_GERROR_CATCH(&tmp_err);
+    gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_readdirG] <-");
+    G_RETURN_ERR(ret, tmp_err, err);
+}
+
+
 extern "C" int gfal_gridftp_closedirG(plugin_handle handle, gfal_file_handle fh,
         GError** err)
 {

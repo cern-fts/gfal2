@@ -5,6 +5,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
+#include "gridftp_streambuf.h"
 #include "../gridftpmodule.h"
 
 // Directory reader interface
@@ -34,10 +35,15 @@ public:
     struct dirent* readdirpp(struct stat* st);
 };
 
-// Implementation for MLST
-class GridftpMlstReader: public GridftpDirReader {
+// Implementation for MLSD
+class GridftpListReader: public GridftpDirReader {
+protected:
+    GridFTP_stream_state *stream;
+    GridftpStreamBuffer  *stream_buffer;
+
 public:
-    ~GridftpMlstReader();
+    GridftpListReader(GridftpModule* gsiftp, const char* path);
+    ~GridftpListReader();
     struct dirent* readdir();
     struct dirent* readdirpp(struct stat* st);
 };
