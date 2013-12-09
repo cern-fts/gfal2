@@ -42,11 +42,10 @@ static int gridftp_readdir_parser(const std::string& line, struct dirent* entry)
     strncpy(entry->d_name, line.c_str(), sizeof(entry->d_name));
     char *p = (char*)mempcpy(entry->d_name, line.c_str(), sizeof(entry->d_name));
     // clear new line madness
-    *p = '\0';
-    while (isspace(*p)) {
+    do {
         *p = '\0';
         --p;
-    }
+    } while (p >= entry->d_name && isspace(*p));
     return 0;
 }
 

@@ -209,15 +209,11 @@ globus_result_t parse_mlst_line(char *line,
     startfact = startline;
 
     if (filename_buf) {
-        strncpy(filename_buf, filename, filename_size);
-        size_t name_len = strlen(filename_buf);
-        if (name_len > 0) {
-            char *trailing = filename_buf + name_len - 1;
-            while (isspace(*trailing)) {
-                *trailing = '\0';
-                --trailing;
-            }
-        }
+        char* trailing = (char*)mempcpy(filename_buf, filename, filename_size);
+        do {
+            *trailing = '\0';
+            --trailing;
+        } while (trailing >= filename_buf && isspace(*trailing));
     }
 
     while (startfact != space) {
