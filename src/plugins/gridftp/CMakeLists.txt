@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 
 if (PLUGIN_GRIDFTP)
-    file (GLOB src_gridftp "*.c*")
+    file (GLOB_RECURSE src_gridftp "*.c*")
 
     pkg_check_modules(GLOBUS_GASS_COPY_PKG REQUIRED globus-gass-copy)
 

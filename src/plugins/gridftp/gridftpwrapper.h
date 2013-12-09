@@ -211,7 +211,7 @@ struct GridFTP_stream_state : public GridFTP_Request_state{
    // ownership lock
    Glib::Mutex lock;
    
-	GridFTP_stream_state(GridFTP_session * s) : GridFTP_Request_state(s)	{
+	GridFTP_stream_state(GridFTP_session * s) : GridFTP_Request_state(s) {
 		offset =0;
 		eof = false;
         stream_status = GRIDFTP_REQUEST_NOT_LAUNCHED;
