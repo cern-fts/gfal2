@@ -45,6 +45,9 @@ void GridftpModule::stat(const char* path, struct stat * st){
 	st->st_size = (off_t) gl_stat.size;
 	st->st_mtime = (time_t) (gl_stat.mdtm != -1)?(gl_stat.mdtm):0;
 
+	globus_libc_free(gl_stat.unique_id);
+	globus_libc_free(gl_stat.symlink_target);
+
 	gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::stat] ");	
 }
 
