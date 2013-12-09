@@ -45,6 +45,8 @@ struct dirent* GridftpListReader::readdir()
 
 struct dirent* GridftpListReader::readdirpp(struct stat* st)
 {
+    Glib::Mutex::Lock locker(stream->lock);
+
     std::string line;
     std::istream in(stream_buffer);
     if (!std::getline(in, line))

@@ -23,11 +23,7 @@ GridftpSimpleListReader::GridftpSimpleListReader(GridftpModule* gsiftp, const ch
             static_cast<GridFTP_Request_state*>(stream));
     gfal_globus_check_result(GridftpSimpleReaderQuark, res);
 
-    // initiate reading stream
-    ssize_t r_size = gridftp_read_stream(GridftpSimpleReaderQuark,
-                        stream, buffer, sizeof(buffer) - 1);
-    *(buffer + r_size) = '\0';
-    list = std::string(buffer);
+    stream_buffer = new GridftpStreamBuffer(stream, GridftpSimpleReaderQuark);
 
     gfal_log(GFAL_VERBOSE_TRACE, " <- [GridftpSimpleListReader::GridftpSimpleListReader]");
 }
@@ -35,39 +31,39 @@ GridftpSimpleListReader::GridftpSimpleListReader(GridftpModule* gsiftp, const ch
 
 GridftpSimpleListReader::~GridftpSimpleListReader()
 {
+    delete stream_buffer;
     delete stream;
 }
 
 
 // try to extract dir information
-int GridftpSimpleListReader::readdirParser()
+static int gridftp_readdir_parser(const std::string& line, struct dirent* entry)
 {
-    const char * c_list = list.c_str();
-    char* p, *p1;
-    if ((p = strchr((char*) c_list, '\n')) == NULL)
-        return 0; // no new entry, c'est la fin des haricots
-    p1 = (char*) mempcpy(dbuffer.d_name, c_list,
-                         std::min((long) NAME_MAX - 1, (long) (p - c_list)));
-    *p1 = '\0';
-    while (*(--p1) == '\r' || *p1 == '\n') // clear new line madness
-        *p1 = '\0';
-    list = std::string(p + 1);
-    return 1;
+    strncpy(entry->d_name, line.c_str(), sizeof(entry->d_name));
+    char *p = (char*)mempcpy(entry->d_name, line.c_str(), sizeof(entry->d_name));
+    // clear new line madness
+    *p = '\0';
+    while (isspace(*p)) {
+        *p = '\0';
+        --p;
+    }
+    return 0;
 }
 
 
 struct dirent* GridftpSimpleListReader::readdir()
 {
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpSimpleListReader::readdir]");
     Glib::Mutex::Lock locker(stream->lock);
 
-    while (readdirParser() == 0) {
-        ssize_t r_size;
-        if ((r_size = gridftp_read_stream(GridftpSimpleReaderQuark,
-                          stream, buffer, sizeof(buffer - 1))) == 0) // end of stream
-            return NULL;
-        *(buffer + r_size) = '\0';
-        list += std::string(buffer);
+    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpSimpleListReader::readdir]");
+
+    std::string line;
+    std::istream in(stream_buffer);
+    if (!std::getline(in, line))
+        return NULL;
+
+    if (gridftp_readdir_parser(line, &dbuffer) != 0) {
+        throw Glib::Error(GridftpSimpleReaderQuark, EINVAL, Glib::ustring("Error parsing GridFTP line: ").append(line));
     }
 
     gfal_log(GFAL_VERBOSE_VERBOSE, "  list file %s ", dbuffer.d_name);

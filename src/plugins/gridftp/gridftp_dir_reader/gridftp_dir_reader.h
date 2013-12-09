@@ -23,10 +23,7 @@ public:
 class GridftpSimpleListReader: public GridftpDirReader {
 protected:
     GridFTP_stream_state *stream;
-    char buffer[65000];
-    std::string list;
-
-    int readdirParser();
+    GridftpStreamBuffer  *stream_buffer;
 
 public:
     GridftpSimpleListReader(GridftpModule* gsiftp, const char* path);
