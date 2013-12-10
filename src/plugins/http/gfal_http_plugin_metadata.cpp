@@ -109,7 +109,7 @@ gfal_file_handle gfal_http_opendir(plugin_handle plugin_data, const char* url,
   GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
   Davix::DavixError* daverr = NULL;
   
-  DAVIX_DIR* dir = davix->posix.opendir(&davix->params, url, &daverr);
+  DAVIX_DIR* dir = davix->posix.opendirpp(&davix->params, url, &daverr);
   if (dir == NULL) {
     davix2gliberr(daverr, err);
     Davix::DavixError::clearError(&daverr);
@@ -121,14 +121,15 @@ gfal_file_handle gfal_http_opendir(plugin_handle plugin_data, const char* url,
 
 
 struct dirent* gfal_http_readdir(plugin_handle plugin_data,
-                                 gfal_file_handle dir_desc, GError** err)
+        gfal_file_handle dir_desc, GError** err)
 {
   GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
   Davix::DavixError* daverr = NULL;
   
   daverr = NULL;
-  struct dirent* de = davix->posix.readdir((DAVIX_DIR*)gfal_file_handle_get_fdesc(dir_desc),
-                                            &daverr);
+  struct stat _;
+  struct dirent* de = davix->posix.readdirpp((DAVIX_DIR*)gfal_file_handle_get_fdesc(dir_desc),
+                                             &_, &daverr);
   if (de == NULL && daverr != NULL) {
     davix2gliberr(daverr, err);
     Davix::DavixError::clearError(&daverr);
@@ -136,6 +137,22 @@ struct dirent* gfal_http_readdir(plugin_handle plugin_data,
   return de;
 }
 
+
+struct dirent* gfal_http_readdirpp(plugin_handle plugin_data,
+        gfal_file_handle dir_desc, struct stat* st, GError** err)
+{
+    GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
+    Davix::DavixError* daverr = NULL;
+
+    daverr = NULL;
+    struct dirent* de = davix->posix.readdirpp((DAVIX_DIR*)gfal_file_handle_get_fdesc(dir_desc),
+                                               st, &daverr);
+    if (de == NULL && daverr != NULL) {
+      davix2gliberr(daverr, err);
+      Davix::DavixError::clearError(&daverr);
+    }
+    return de;
+}
 
 
 int gfal_http_closedir(plugin_handle plugin_data, gfal_file_handle dir_desc,

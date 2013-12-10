@@ -239,6 +239,7 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal_handle handle,
   http_plugin.rmdirG = &gfal_http_rmdirG;
   http_plugin.opendirG  = &gfal_http_opendir;
   http_plugin.readdirG  = &gfal_http_readdir;
+  http_plugin.readdirppG = &gfal_http_readdirpp;
   http_plugin.closedirG = &gfal_http_closedir;
 
   // Bind IO
