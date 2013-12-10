@@ -115,7 +115,7 @@ gfal_file_handle gfal_http_opendir(plugin_handle plugin_data, const char* url,
     Davix::DavixError::clearError(&daverr);
     return NULL;
   }
-  return gfal_file_handle_new(http_module_name, dir);
+  return gfal_file_handle_new2(http_module_name, dir, NULL, url);
 }
 
 
