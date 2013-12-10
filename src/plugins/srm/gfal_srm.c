@@ -210,6 +210,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	srm_plugin.rmdirG = &gfal_srm_rmdirG;
 	srm_plugin.opendirG = &gfal_srm_opendirG;
 	srm_plugin.readdirG = &gfal_srm_readdirG;
+	srm_plugin.readdirppG = &gfal_srm_readdirppG;
 	srm_plugin.closedirG = &gfal_srm_closedirG;
 	srm_plugin.getName= &gfal_srm_getName;
 	srm_plugin.openG = &gfal_srm_openG;

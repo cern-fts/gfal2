@@ -24,11 +24,12 @@
  * @date 14/06/2011
  * */
 
-#include <glib.h>
-#include <dirent.h>
 #include <common/gfal_common_filedescriptor.h>
-
+#include <dirent.h>
+#include <glib.h>
+#include <sys/stat.h>
 
 
 struct dirent* gfal_srm_readdirG(plugin_handle handle, gfal_file_handle fh, GError** err);
 
+struct dirent* gfal_srm_readdirppG(plugin_handle ch, gfal_file_handle fh, struct stat* st, GError** err);
