@@ -18,6 +18,8 @@
 #include "gridftp_namespace.h"
 #include "gridftp_plugin.h"
 
+static const Glib::Quark OpendirQuark("gfal_gridftp_opendirG");
+
 
 extern "C" gfal_file_handle gfal_gridftp_opendirG(plugin_handle handle,
         const char* path, GError** err)
@@ -26,6 +28,21 @@ extern "C" gfal_file_handle gfal_gridftp_opendirG(plugin_handle handle,
             "[gfal_gridftp_opendirG][gridftp] einval params");
 
     gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_opendirG]");
+
+    // Since we are deferring the opening, at least check it is there and it is a directory,
+    // and we have permissions
+    struct stat st;
+    if (gfal_gridftp_statG(handle, path, &st, err) != 0) {
+        return NULL;
+    }
+    else if (!S_ISDIR(st.st_mode)) {
+        g_set_error(err, OpendirQuark, EISDIR, "[%s] %s is not a directory", __func__, path);\
+        return NULL;
+    }
+    else if ((st.st_mode & ( S_IRUSR | S_IRGRP | S_IROTH)) == 0 ) {
+        g_set_error(err, OpendirQuark, EACCES, "[%s] Can not read %s", __func__, path);\
+        return NULL;
+    }
 
     // Do nothing, and defer until the first readdir or readdirpp
     // is called
