@@ -108,6 +108,8 @@ struct _gfal_srm_external_call{
                              struct srmv2_filestatus **statuses);
 
     int (*srm_mv)(struct srm_context *context, struct srm_mv_input *input);
+
+    int (*srm_abort_request)(struct srm_context *context, char *reqtoken);
 };
 
 extern struct _gfal_srm_external_call gfal_srm_external_call;

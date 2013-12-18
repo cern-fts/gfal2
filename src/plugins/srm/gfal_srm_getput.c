@@ -449,7 +449,7 @@ int srmv2_abort_request_internal(gfal_srmv2_opt* opts , char* endpoint, char* re
     srm_context_t context = gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_URL_MAX_LEN, &tmp_err);
 
     if(context){
-        if((ret = srm_abort_request(context, req_token)) < 0){
+        if((ret = gfal_srm_external_call.srm_abort_request(context, req_token)) < 0){
             g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),errno,"SRMv2 abort request error : %s",errbuf);
         }
     }
