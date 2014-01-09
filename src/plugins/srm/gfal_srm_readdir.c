@@ -188,14 +188,10 @@ struct dirent* gfal_srm_readdirppG(plugin_handle ch,
 {
     g_return_val_err_if_fail( ch && fh, NULL, err, "[gfal_srm_readdirppG] Invalid args");
     GError* tmp_err=NULL;
+
     struct dirent* ret = NULL;
-    if(fh != NULL){
-        gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;
-        ret = gfal_srm_readdir_pipeline(ch, oh, st, &tmp_err);
-    }else{
-        g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EBADF, "bad dir descriptor");
-        ret = NULL;
-    }
+    gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;
+    ret = gfal_srm_readdir_pipeline(ch, oh, st, &tmp_err);
 
     if(tmp_err)
         g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
