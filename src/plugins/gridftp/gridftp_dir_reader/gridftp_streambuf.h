@@ -13,7 +13,7 @@ protected:
     Glib::Quark quark;
 
     ssize_t fetch_more() {
-        ssize_t rsize = gridftp_read_stream(quark, gstream, buffer, sizeof(buffer - 1));
+        ssize_t rsize = gridftp_read_stream(quark, gstream, buffer, sizeof(buffer) - 1);
         this->setg(buffer, buffer, buffer + rsize);
         return rsize;
     }
