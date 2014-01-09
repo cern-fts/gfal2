@@ -28,26 +28,26 @@ const char * surl_prefix = GFAL_PREFIX_SRM;
 
 
 gboolean srm_check_url(const char * surl){
-	gboolean res =FALSE;
-	const size_t prefix_len = strlen(surl_prefix) ;
-	size_t surl_len = strnlen(surl, GFAL_URL_MAX_LEN);
-	if( ( surl_len < GFAL_URL_MAX_LEN )
-			&& (strncmp(surl, surl_prefix, prefix_len) == 0)){
-		res = TRUE;
-	}
-	return res;
+    gboolean res = FALSE;
+    const size_t prefix_len = strlen(surl_prefix);
+    size_t surl_len = strnlen(surl, GFAL_URL_MAX_LEN);
+    if ((surl_len < GFAL_URL_MAX_LEN)
+            && (strncmp(surl, surl_prefix, prefix_len) == 0)) {
+        res = TRUE;
+    }
+    return res;
 }
 
 gboolean srm_check_url_transport_compatible(plugin_handle handle, const char* url){
-        gfal_srmv2_opt* opts = (gfal_srmv2_opt*) handle;
-        char** p_proto = srm_get_3rdparty_turls_sup_protocol(opts->handle);
-        while(*p_proto != NULL){
-            const int proto_len = strlen(*p_proto);
-            if(strncmp(url, *p_proto, proto_len) == 0)
-                return TRUE;
-            ++p_proto;
-        }
-        return FALSE;
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) handle;
+    char** p_proto = srm_get_3rdparty_turls_sup_protocol(opts->handle);
+    while (*p_proto != NULL ) {
+        const int proto_len = strlen(*p_proto);
+        if (strncmp(url, *p_proto, proto_len) == 0)
+            return TRUE;
+        ++p_proto;
+    }
+    return FALSE;
 }
 
 
