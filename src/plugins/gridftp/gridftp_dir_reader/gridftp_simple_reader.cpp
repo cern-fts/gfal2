@@ -39,7 +39,8 @@ GridftpSimpleListReader::~GridftpSimpleListReader()
 // try to extract dir information
 static int gridftp_readdir_parser(const std::string& line, struct dirent* entry)
 {
-    strncpy(entry->d_name, line.c_str(), sizeof(entry->d_name));
+    memset(entry->d_name, 0, sizeof(entry->d_name));
+    strncpy(entry->d_name, line.c_str(), sizeof(entry->d_name) - 1);
     char *p = (char*)mempcpy(entry->d_name, line.c_str(), sizeof(entry->d_name));
     // clear new line madness
     do {

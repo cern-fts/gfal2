@@ -136,7 +136,7 @@ int _get_replica_info(gfal2_context_t context, struct size_and_checksum* info,
         if (gfal2_checksum(context, replica_url, _full_checksum_type(lfc_checksums[i]),
                            0, 0, info->csumvalue, sizeof(info->csumvalue),
                            NULL) == 0) {
-            strncpy(info->csumtype, lfc_checksums[i], sizeof(info->csumtype));
+            memcpy(info->csumtype, lfc_checksums[i], sizeof(info->csumtype));
             gfal_log(GFAL_VERBOSE_DEBUG, "found checksum %s:%s for the replica",
                     info->csumtype, info->csumvalue);
             break;
@@ -239,9 +239,9 @@ int gfal_lfc_register(plugin_handle handle, gfal2_context_t context,
     if (ret_status != 0)
         goto register_end;
 
-    struct lfc_fileid unique_id;
+    struct lfc_fileid unique_id = {{0}, 0};
     unique_id.fileid = statg.fileid;
-    strncpy(unique_id.server, lfc_host, sizeof(unique_id.server));
+    strncpy(unique_id.server, lfc_host, sizeof(unique_id.server) - 1);
 
     ret_status = ops->addreplica(statg.guid,
                                  file_existed?&unique_id:NULL,

@@ -73,7 +73,7 @@ static void getFileAndLine(void* addr, const char* sname,
 {
     char fnameBuffer[512];
     // Extract file object from the symbol name
-    strncpy(fnameBuffer, sname, sizeof(fnameBuffer));
+    strncpy(fnameBuffer, sname, sizeof(fnameBuffer) - 1);
     char *p = strchr(fnameBuffer, '(');
     if (p)
         *p = '\0';

@@ -263,9 +263,9 @@ char* gfal_get_fullendpoint(const char* surl, GError** err){
 	const int len_prefix = strlen(GFAL_PREFIX_SRM);						// get the srm prefix length
 	const int len_endpoint_prefix = strlen(GFAL_ENDPOINT_DEFAULT_PREFIX); // get the endpoint protocol prefix len 
 	g_return_val_err_if_fail(p && len_prefix && (p>(surl+len_prefix)) && len_endpoint_prefix,NULL,err,"[gfal_get_fullendpoint] full surl must contain ?SFN= and a valid prefix, fatal error");	// assertion on params
-	char* resu = calloc(p-surl-len_prefix+len_endpoint_prefix, sizeof(char));	
+    char* resu = calloc(p - surl - len_prefix + len_endpoint_prefix + 1, sizeof(char));
 	strncpy(resu, GFAL_ENDPOINT_DEFAULT_PREFIX, len_endpoint_prefix);	// copy prefix
-	strncpy(resu + len_endpoint_prefix, surl+len_prefix, p- surl-len_prefix);		// copy endpoint
+    strncpy(resu + len_endpoint_prefix, surl + len_prefix, p - surl - len_prefix); // copy endpoint
 	return resu;
 }
 
