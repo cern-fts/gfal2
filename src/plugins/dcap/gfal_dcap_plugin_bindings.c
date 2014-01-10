@@ -221,7 +221,7 @@ gfal_file_handle gfal_dcap_opendirG(plugin_handle handle, const char* path, GErr
 	if(d == NULL){
 		dcap_report_error(h, __func__, err);		
 	}else{
-		ret = gfal_file_handle_ext_new(gfal_dcap_getName(), (gpointer) d, NULL);	
+        ret = gfal_file_handle_new2(gfal_dcap_getName(), (gpointer) d, NULL, path);
 	}
 	return ret;	
 }
