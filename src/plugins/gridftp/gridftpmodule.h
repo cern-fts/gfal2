@@ -87,15 +87,6 @@ class GridftpModule
 		
 		// rmdir query on path
 	    virtual void rmdir(const char* path);	
-	    
-	    // opendir query on path
-	    virtual gfal_file_handle opendir(const char* path);
-	    
-	    // readdir a dir descriptor
-	    virtual struct dirent* readdir(gfal_file_handle dh);
-	    
-	    virtual int closedir(gfal_file_handle fh);
-		
 
         void autoCleanFileCopy(gfalt_params_t params, GError* checked_error, const char* dst);
 
@@ -105,6 +96,10 @@ class GridftpModule
 
 				 
 		void internal_globus_gass_stat(const char* path,  gfal_globus_stat_t * gl_stat);
+
+		GridFTPFactoryInterface* get_session_factory() {
+		    return _handle_factory;
+		}
 
 	private:
 		GridFTPFactoryInterface * _handle_factory;

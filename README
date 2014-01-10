@@ -1,4 +1,32 @@
-How to compile GFAL 2.0 ?
+------------------------- GFAL2 -----------------------------------
+
+# What is GFAL2 ?
+
+GFAL 2.0 offers an a single and simple toolkit for the file operations in grids and cloud environments. 
+The set of supported protocols depends of the %{name} installed plugins.
+
+Supported protocols :
+	HTTP(S) <http://>, WebDav(s) <dav://>, GSIFTP <gsiftp://>, 
+	SRM <srm://>, RFIO <rfio://>, DCAP/GSIDCAP/KDCAP <dcap://>, 
+	Local File <file://>, XROOTD (external plugin) <root://>
+
+# Authors :
+
+GFAL2 is a CERN & EMI ( http://www.eu-emi.eu/ ) project involving :
+Devresse Adrien ( adrien.devresse@cern.ch )
+Alejandro Alvarez Ayllon  ( Alejandro.Alvarez.Ayllon@cern.ch )
+Michal Kamil Simon  ( Michal.Simon@cern.ch )
+Michail Salichos ( Michail.Salichos@cern.ch )
+
+# LICENSE
+	GFAL2 is under Apache License 2.0
+
+# Documentation 
+
+ See https://svnweb.cern.ch/trac/lcgutil/wiki/gfal2 for more details
+
+
+# How to compile GFAL 2.0 ?
 
 
 1.) Install dependencies
@@ -26,3 +54,9 @@ make install
 make test
 
 
+# Contributions 
+
+ Any contribution, patch or external plugins is welcome.
+ 
+# Contact 
+	lcgutil-devel@cern.ch

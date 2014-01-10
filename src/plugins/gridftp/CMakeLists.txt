@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 
 if (PLUGIN_GRIDFTP)
-    file (GLOB src_gridftp "*.c*")
+    file (GLOB_RECURSE src_gridftp "*.c*")
 
     pkg_check_modules(GLOBUS_GASS_COPY_PKG REQUIRED globus-gass-copy)
 
@@ -29,6 +29,11 @@ if (PLUGIN_GRIDFTP)
 	    
     install(FILES		"README_PLUGIN_GRIDFTP"
 	    	DESTINATION ${DOC_INSTALL_DIR})	    
+
+    # install gsiftp configuration files
+    LIST(APPEND gsiftp_conf_file "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/gsiftp_plugin.conf")
+    install(FILES ${gsiftp_conf_file}
+                        DESTINATION ${SYSCONF_INSTALL_DIR}/gfal2.d/)
 
 endif (PLUGIN_GRIDFTP)
 

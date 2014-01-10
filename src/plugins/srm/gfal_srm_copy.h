@@ -29,11 +29,6 @@
  *  @param dst : destination url
  *  @param err : error report system
  */
-
-int plugin_filecopy(plugin_handle handle, gfal2_context_t context,
-                    gfalt_params_t params,
-                    const char* src, const char* dst, GError ** err);
-
 int srm_plugin_filecopy(plugin_handle handle, gfal2_context_t context,
                     gfalt_params_t params,
                     const char* src, const char* dst, GError ** err);

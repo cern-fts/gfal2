@@ -108,6 +108,8 @@ struct _gfal_srm_external_call{
                              struct srmv2_filestatus **statuses);
 
     int (*srm_mv)(struct srm_context *context, struct srm_mv_input *input);
+
+    int (*srm_abort_request)(struct srm_context *context, char *reqtoken);
 };
 
 extern struct _gfal_srm_external_call gfal_srm_external_call;
@@ -125,7 +127,7 @@ int gfal_srm_getTURLS(gfal_srmv2_opt* opts, char** surls, gfal_srm_result** resu
 
 int gfal_srm_putTURLS(gfal_srmv2_opt* opts , char** surls, gfal_srm_result** resu,  GError** err);
 
-int gfal_srm_putdone(gfal_srmv2_opt* opts, char** surls, char* token,  GError** err);
+int gfal_srm_putdone(gfal_srmv2_opt* opts, char** surls, const char* token,  GError** err);
 
 int gfal_srm_unlinkG(plugin_handle ch, const char * path, GError** err);
 

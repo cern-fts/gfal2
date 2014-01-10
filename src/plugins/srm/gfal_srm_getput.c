@@ -246,33 +246,42 @@ int gfal_srm_getTURL_checksum(plugin_handle ch, const char* surl, char* buff_tur
 
 
 //  execute a get for thirdparty transfer turl
-int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl, char* buff_turl, int size_turl, char** reqtoken,  GError** err){
-	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
-	gfal_srm_result* resu=NULL;
-	GError* tmp_err=NULL;
-	char* surls[]= { (char*)surl, NULL };
-	int ret = -1;
-	
-	gfal_srm_params_t params = gfal_srm_params_new(opts, & tmp_err);
-    gfal_srm_params_set_spacetoken(params, gfalt_get_src_spacetoken(p, NULL));
-    gfal_srm_params_set_protocols(params, srm_get_3rdparty_turls_sup_protocol(opts->handle));
-	if(params != NULL){
-	ret= gfal_srm_mTURLS_internal(opts, params, SRM_GET, surls, &resu, &tmp_err);
-		if(ret >=0){
-			if(resu[0].err_code == 0){
-				g_strlcpy(buff_turl, resu[0].turl, size_turl);			
-				if(reqtoken)
-					*reqtoken = resu[0].reqtoken;
-				ret=0;			
-			}else{
-                g_set_error(&tmp_err,gfal2_get_plugin_srm_quark() , resu[0].err_code, " error on the turl request : %s ", resu[0].err_str);
-				ret = -1;
-			}
-			free(resu);
-		}
-		gfal_srm_params_free(params);
-	}	
-	G_RETURN_ERR(ret, tmp_err, err);		
+int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl,
+        char* buff_turl, int size_turl,
+        char* reqtoken, size_t size_reqtoken,
+        GError** err)
+{
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    gfal_srm_result* resu = NULL;
+    GError* tmp_err = NULL;
+    char* surls[] = { (char*) surl, NULL };
+    int ret = -1;
+
+    gfal_srm_params_t params = gfal_srm_params_new(opts, &tmp_err);
+    gfal_srm_params_set_spacetoken(params, gfalt_get_src_spacetoken(p, NULL ));
+    gfal_srm_params_set_protocols(params,
+            srm_get_3rdparty_turls_sup_protocol(opts->handle));
+    if (params != NULL ) {
+        ret = gfal_srm_mTURLS_internal(opts, params, SRM_GET, surls, &resu,
+                &tmp_err);
+        if (ret >= 0) {
+            if (resu[0].err_code == 0) {
+                g_strlcpy(buff_turl, resu[0].turl, size_turl);
+                if (reqtoken)
+                    g_strlcpy(reqtoken, resu[0].reqtoken, size_reqtoken);
+                ret = 0;
+            }
+            else {
+                g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
+                        resu[0].err_code, " error on the turl request : %s ",
+                        resu[0].err_str);
+                ret = -1;
+            }
+            free(resu);
+        }
+        gfal_srm_params_free(params);
+    }
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
@@ -295,34 +304,44 @@ int gfal_srm_getTURLS(gfal_srmv2_opt* opts, char** surls, gfal_srm_result** resu
 
 
 //  execute a put for thirdparty transfer turl
-int gfal_srm_put_rd3_turl(plugin_handle ch,  gfalt_params_t p, const char* surl, size_t surl_file_size, char* buff_turl, int size_turl, char** reqtoken, GError** err){
-	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
-	gfal_srm_result* resu=NULL;
-	GError* tmp_err=NULL;
-	char* surls[]= { (char*)surl, NULL };
-	int ret = -1;
-	
-	gfal_srm_params_t params = gfal_srm_params_new(opts, & tmp_err);
-    gfal_srm_params_set_spacetoken(params, gfalt_get_dst_spacetoken(p, NULL));
-    gfal_srm_params_set_protocols(params, srm_get_3rdparty_turls_sup_protocol(opts->handle));
+int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl,
+        size_t surl_file_size, char* buff_turl, int size_turl,
+        char* reqtoken, size_t size_reqtoken,
+        GError** err)
+{
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    gfal_srm_result* resu = NULL;
+    GError* tmp_err = NULL;
+    char* surls[] = { (char*) surl, NULL };
+    int ret = -1;
+
+    gfal_srm_params_t params = gfal_srm_params_new(opts, &tmp_err);
+    gfal_srm_params_set_spacetoken(params, gfalt_get_dst_spacetoken(p, NULL ));
+    gfal_srm_params_set_protocols(params,
+            srm_get_3rdparty_turls_sup_protocol(opts->handle));
     gfal_srm_params_set_size(params, surl_file_size);
-	if(params != NULL){
-		ret= gfal_srm_mTURLS_internal(opts, params, SRM_PUT, surls, &resu,  &tmp_err);
-		if(ret >=0){
-			if(resu[0].err_code == 0){
-				g_strlcpy(buff_turl, resu[0].turl, size_turl);
-				if(reqtoken)
-					*reqtoken = resu[0].reqtoken;
-				ret=0;			
-			}else{
-                g_set_error(&tmp_err,gfal2_get_plugin_srm_quark(), resu[0].err_code, " error on the turl request : %s ", resu[0].err_str);
-				ret = -1;
-			}
-		
-		}
-		gfal_srm_params_free(params);
-	}
-	
+    if (params != NULL ) {
+        ret = gfal_srm_mTURLS_internal(opts, params, SRM_PUT, surls, &resu,
+                &tmp_err);
+        if (ret >= 0) {
+            if (resu[0].err_code == 0) {
+                g_strlcpy(buff_turl, resu[0].turl, size_turl);
+                if (reqtoken)
+                    g_strlcpy(reqtoken, resu[0].reqtoken, size_reqtoken);
+                ret = 0;
+                free(resu);
+            }
+            else {
+                g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
+                        resu[0].err_code, " error on the turl request : %s ",
+                        resu[0].err_str);
+                ret = -1;
+            }
+
+        }
+        gfal_srm_params_free(params);
+    }
+
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -376,7 +395,7 @@ int gfal_srm_putTURLS(gfal_srmv2_opt* opts , char** surls, gfal_srm_result** res
 
 
 // execute a srm put done on the specified surl and token, return 0 if success else -1 and errno is set
-static int gfal_srm_putdone_srmv2_internal(gfal_srmv2_opt* opts, char* endpoint, char** surls, char* token,  GError** err){
+static int gfal_srm_putdone_srmv2_internal(gfal_srmv2_opt* opts, char* endpoint, char** surls, const char* token,  GError** err){
 	g_return_val_err_if_fail(surls!=NULL,-1,err,"[gfal_srm_putdone_srmv2_internal] invalid args ");
 			
 	GError* tmp_err=NULL;
@@ -390,7 +409,7 @@ static int gfal_srm_putdone_srmv2_internal(gfal_srmv2_opt* opts, char* endpoint,
 		
 	// set the structures datafields	
 	putdone_input.nbfiles = n_surl;
-	putdone_input.reqtoken = token;
+	putdone_input.reqtoken = (char*)token;
 	putdone_input.surls = surls;
 
     srm_context_t context = gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_URL_MAX_LEN, &tmp_err);
@@ -409,7 +428,7 @@ static int gfal_srm_putdone_srmv2_internal(gfal_srmv2_opt* opts, char* endpoint,
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
-int gfal_srm_putdone(gfal_srmv2_opt* opts , char** surls, char* token,  GError** err){
+int gfal_srm_putdone(gfal_srmv2_opt* opts , char** surls, const char* token,  GError** err){
 	GError* tmp_err=NULL;
 	int ret=-1;	
 
@@ -434,13 +453,13 @@ int gfal_srm_putdone(gfal_srmv2_opt* opts , char** surls, char* token,  GError**
 	
 }
 
-int gfal_srm_putdone_simple(plugin_handle * handle , const char* surl, char* token,  GError** err){
+int gfal_srm_putdone_simple(plugin_handle * handle , const char* surl, const char* token,  GError** err){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)handle;
 	char* surls[]= { (char*)surl, NULL };
 	return gfal_srm_putdone(opts, surls, token, err);
 }
 
-int srmv2_abort_request_internal(gfal_srmv2_opt* opts , char* endpoint, char* req_token,  GError** err){
+int srmv2_abort_request_internal(gfal_srmv2_opt* opts , const char* endpoint, const char* req_token,  GError** err){
     GError* tmp_err=NULL;
     int ret=-1;
 
@@ -449,7 +468,7 @@ int srmv2_abort_request_internal(gfal_srmv2_opt* opts , char* endpoint, char* re
     srm_context_t context = gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_URL_MAX_LEN, &tmp_err);
 
     if(context){
-        if((ret = srm_abort_request(context, req_token)) < 0){
+        if((ret = gfal_srm_external_call.srm_abort_request(context, (char*)req_token)) < 0){
             g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),errno,"SRMv2 abort request error : %s",errbuf);
         }
     }
@@ -459,7 +478,7 @@ int srmv2_abort_request_internal(gfal_srmv2_opt* opts , char* endpoint, char* re
 }
 
 int srm_abort_request_plugin (plugin_handle * handle , const char* surl,
-        char *reqtoken, GError** err){
+        const char *reqtoken, GError** err){
     g_return_val_err_if_fail(handle != NULL && reqtoken != NULL, -1, err, "[srm_abort_request_plugin] invalid values for token/handle");
     gfal_srmv2_opt* opts = (gfal_srmv2_opt*)handle;
     GError* tmp_err=NULL;

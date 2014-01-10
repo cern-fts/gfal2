@@ -58,6 +58,8 @@ gfal_file_handle gfal_http_opendir(plugin_handle plugin_data, const char* url, G
 
 struct dirent* gfal_http_readdir(plugin_handle plugin_data, gfal_file_handle dir_desc, GError** err);
 
+struct dirent* gfal_http_readdirpp(plugin_handle plugin_data, gfal_file_handle dir_desc, struct stat* st, GError** err);
+
 int gfal_http_closedir(plugin_handle plugin_data, gfal_file_handle dir_desc, GError** err);
 
 // IO

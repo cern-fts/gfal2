@@ -17,13 +17,13 @@
 # The PROJECT_NAME tag is a single word (or a sequence of words surrounded 
 # by quotes) that should identify the project.
 
-PROJECT_NAME           = "CERN GFAL 2.0"
+PROJECT_NAME           = "GFAL2"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. 
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = 2.0.1
+PROJECT_NUMBER         = @VERSION_STRING@
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 
@@ -461,6 +461,7 @@ WARN_LOGFILE           =
 
 INPUT                  = @CMAKE_SOURCE_DIR@/doc/src
 INPUT                  += @CMAKE_SOURCE_DIR@/src/core/posix/gfal_posix_api.h
+INPUT                  += @CMAKE_SOURCE_DIR@/src/core/file/gfal_file_api.h
 INPUT                  += @CMAKE_SOURCE_DIR@/src/core/gfal_api.h @CMAKE_SOURCE_DIR@/src/core/transfer/gfal_transfer.h
 INPUT                  += @CMAKE_SOURCE_DIR@/src/core/transfer/gfal_transfer_types.h
 INPUT                  += @CMAKE_SOURCE_DIR@/src/core/logger/gfal_logger.h @CMAKE_SOURCE_DIR@/src/core/common/gfal_constants.h
@@ -507,7 +508,7 @@ EXCLUDE_PATTERNS       = *.man */externals/* *gfal_posix_local_file* *srm* */com
 # directories that contain example code fragments that are included (see 
 # the \include command).
 
-EXAMPLE_PATH           = @CMAKE_CURRENT_SOURCE_DIR@/example/
+EXAMPLE_PATH           = @CMAKE_CURRENT_SOURCE_DIR@/examples/
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the 
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 

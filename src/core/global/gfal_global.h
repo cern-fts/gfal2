@@ -46,11 +46,14 @@ typedef gfal2_context_t gfal_context_t;
 
 ///
 ///   @brief create a gfal2 context
-///   gfal2 context are needed for all gfal2 operations
-///   Thread-safe
+///
+///
+///   Each context contain its own set of parameters and configurations ( \ref config_group )
+///
+///   A context can be used in multiple threads at the same time ( Thread-safe ).
 ///
 ///   @param err : GError error report system
-///   @return gfal2 context if success, NULL if error
+///   @return a context if success, NULL if error
 ///
 gfal2_context_t gfal2_context_new(GError ** err);
 

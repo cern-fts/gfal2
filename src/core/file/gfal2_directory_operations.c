@@ -15,6 +15,7 @@
 * limitations under the License.
 */
 
+#include <regex.h>
 #include <string.h>
 #include <file/gfal_file_api.h>
 
@@ -94,24 +95,43 @@ struct dirent* gfal2_readdir(gfal2_context_t handle, DIR* dir, GError ** err){
 
 //
 //
-inline static struct dirent* gfal_rw_gfalfilehandle_readdirpp(gfal_handle context, gfal_file_handle fh, struct stat* st, GError** err){
+static size_t gfal_rw_get_root_length(const char* surl)
+{
+    regex_t rx;
+    regmatch_t matches[1];
+    regcomp(&rx, "(\\w+://[^/]*/)", REG_EXTENDED);
+    regexec(&rx, surl, 1, matches, 0);
+    return matches[0].rm_eo - matches[0].rm_so;
+}
+
+inline static struct dirent* gfal_rw_gfalfilehandle_readdirpp(gfal_handle context, gfal_file_handle fh, struct stat* st, GError** err)
+{
     g_return_val_err_if_fail(context && fh, NULL, err, "[gfal_posix_gfalfilehandle_readdirpp] incorrect args");
     GError *tmp_err=NULL;
     struct dirent* ret = gfal_plugin_readdirppG(context, fh, st, &tmp_err);
-    if( tmp_err  && tmp_err->code == EPROTONOSUPPORT
-         && fh->path != NULL){ // try to simulate readdirpp
+    // try to simulate readdirpp
+    if (tmp_err && tmp_err->code == EPROTONOSUPPORT && fh->path != NULL ) {
         g_clear_error(&tmp_err);
         ret = gfal_rw_gfalfilehandle_readdir(context, fh, &tmp_err);
-        if(!tmp_err && ret != NULL){
-            const size_t s_path= strlen( fh->path);
+        if (!tmp_err && ret != NULL ) {
+            const size_t s_path = strlen(fh->path);
             const size_t s_d_name = strlen(ret->d_name);
-            char buffer[ s_d_name +s_path +2];
-            char* p =  mempcpy(buffer, fh->path, s_path);
-            *p = '/';
-            p = mempcpy(++p, ret->d_name, s_d_name);
-            *p = '\0';
+            char buffer[s_d_name + s_path + 2];
 
-            if( gfal2_stat(context, buffer, st, &tmp_err) < 0){
+            if (ret->d_name[0] != '/') {
+                char* p = mempcpy(buffer, fh->path, s_path);
+                *p = '/';
+                p = mempcpy(++p, ret->d_name, s_d_name);
+                *p = '\0';
+            }
+            else {
+                size_t root_len = gfal_rw_get_root_length(fh->path);
+                if (root_len > 0)
+                    mempcpy(buffer, fh->path, root_len);
+                mempcpy(buffer + root_len, ret->d_name, sizeof(buffer) - root_len);
+            }
+
+            if (gfal2_stat(context, buffer, st, &tmp_err) < 0) {
                 ret = NULL;
             }
         }

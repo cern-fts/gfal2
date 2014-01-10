@@ -23,6 +23,8 @@ SET(PLUGIN_GRIDFTP TRUE
         CACHE STRING "enable compilation of the GRIDFTP plugin")
 SET(PLUGIN_HTTP TRUE
         CACHE STRING "enable compilation of the HTTP plugin")
+SET(PLUGIN_MOCK FALSE
+        CACHE STRING "enable compilation of the MOCK plugin")
 
 # build type
 set(CMAKE_BUILD_TYPE "RelWithDebInfo"
@@ -49,8 +51,8 @@ set(PROJECT_NAME_TRANSFER "gfal_transfer")
 set(OUTPUT_NAME_TRANSFER "gfal_transfer")
 
 set(VERSION_MAJOR  2)
-set(VERSION_MINOR  4)
-set(VERSION_PATCH  9)
+set(VERSION_MINOR  5)
+set(VERSION_PATCH  0)
 set(VERSION_STRING ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 
@@ -87,10 +89,10 @@ IF(NOT ONLY_TESTS)
     install(FILES "LICENSE" "README" "RELEASE-NOTES" "DESCRIPTION"
 			DESTINATION ${DOC_INSTALL_DIR})
 			
-    # install configuration files
-    FILE(GLOB lst_conf_files "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/*.conf")
+    # install global configuration files
+    LIST(APPEND lst_conf_files "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/gfal2_core.conf" "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/bdii.conf")
     install(FILES ${lst_conf_files}
-			DESTINATION ${SYSCONF_INSTALL_DIR}/gfal2.d/)
+                        DESTINATION ${SYSCONF_INSTALL_DIR}/gfal2.d/)
 
 
     add_subdirectory (doc)

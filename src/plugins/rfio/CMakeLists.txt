@@ -22,5 +22,11 @@ if (PLUGIN_RFIO)
     install(FILES "README_PLUGIN_RFIO"
             DESTINATION ${DOC_INSTALL_DIR})
 
+
+    # install rfio configuration files
+    LIST(APPEND rfio_conf_file "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/rfio_plugin.conf")
+    install(FILES ${rfio_conf_file}
+                        DESTINATION ${SYSCONF_INSTALL_DIR}/gfal2.d/)
+
 endif (PLUGIN_RFIO)
 

@@ -59,7 +59,8 @@ struct _gfal_srm_external_call gfal_srm_external_call = {
     .srm_bring_online_async = &srm_bring_online_async,
     .srm_bring_online_status = &srm_status_of_bring_online_async,
     .srm_release_files = &srm_release_files,
-    .srm_mv = &srm_mv
+    .srm_mv = &srm_mv,
+    .srm_abort_request = &srm_abort_request,
 };
 
 

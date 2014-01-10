@@ -66,6 +66,5 @@ char ** lfc_getSURLG(plugin_handle handle, const char * path, GError** err);
 
 void lfc_set_session_timeout(int timeout);
 
-
-
-
+int url_converter(plugin_handle handle, const char * url, char** host,
+        char** path, GError** err);

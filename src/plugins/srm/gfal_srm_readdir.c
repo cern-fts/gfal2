@@ -34,49 +34,63 @@
 #include "gfal_srm_opendir.h" 
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_internal_ls.h"
- 
 
-void gfal_srm_bufferize_request(plugin_handle ch, const char* surl, struct srmv2_mdfilestatus * statuses){
-
-    struct stat st;
-	if(sizeof(struct stat64) == sizeof(struct stat))
-        memcpy(&st, &statuses->stat, sizeof(struct stat));
-	else{
-        const struct stat64* stat_statuses = &statuses->stat;
-        st.st_dev = (dev_t) stat_statuses->st_dev;
-        st.st_ino = (ino_t) stat_statuses->st_ino;
-        st.st_mode = (mode_t) stat_statuses->st_mode;
-        st.st_nlink = (nlink_t) stat_statuses->st_nlink;
-        st.st_uid = (uid_t) stat_statuses->st_uid;
-        st.st_gid = (gid_t) stat_statuses->st_gid;
-        st.st_rdev = (dev_t) stat_statuses->st_rdev;
-        st.st_size = (off_t) stat_statuses->st_size;
-        st.st_blksize = (blkcnt_t) stat_statuses->st_blksize;
-        st.st_blocks = (blkcnt_t) stat_statuses->st_blocks;
-        st.st_atime = (time_t) stat_statuses->st_atime;
-        st.st_mtime = (time_t) stat_statuses->st_mtime;
-        st.st_ctime = (time_t) stat_statuses->st_ctime;
-	}
-    gfal_srm_cache_stat_add(ch, surl, &st);
+static void gfal_srm_stat64_to_stat(const struct stat64* st64, struct stat *st)
+{
+    if (sizeof(struct stat64) == sizeof(struct stat))
+        memcpy(st, st64, sizeof(*st));
+    else {
+        st->st_dev = (dev_t) st64->st_dev;
+        st->st_ino = (ino_t) st64->st_ino;
+        st->st_mode = (mode_t) st64->st_mode;
+        st->st_nlink = (nlink_t) st64->st_nlink;
+        st->st_uid = (uid_t) st64->st_uid;
+        st->st_gid = (gid_t) st64->st_gid;
+        st->st_rdev = (dev_t) st64->st_rdev;
+        st->st_size = (off_t) st64->st_size;
+        st->st_blksize = (blkcnt_t) st64->st_blksize;
+        st->st_blocks = (blkcnt_t) st64->st_blocks;
+        st->st_atime = (time_t) st64->st_atime;
+        st->st_mtime = (time_t) st64->st_mtime;
+        st->st_ctime = (time_t) st64->st_ctime;
+    }
 }
 
-inline static struct dirent* gfal_srm_readdir_convert_result(plugin_handle ch, const char* surl, struct srmv2_mdfilestatus * statuses,  struct dirent* output, GError ** err){
-	struct dirent* resu = NULL;
-	resu = output;
-	char buff_surlfull[GFAL_URL_MAX_LEN];
-	char* p = strrchr(statuses->surl,'/'); // keep only the file name + /
-	if(p!=NULL){
-		g_strlcpy(buff_surlfull, surl, GFAL_URL_MAX_LEN);
-		g_strlcat(buff_surlfull, p, GFAL_URL_MAX_LEN);	
-		gfal_srm_bufferize_request(ch, buff_surlfull, statuses);
-		g_strlcpy(resu->d_name, p+1, GFAL_URL_MAX_LEN);	// without '/'
-	}
-	else
-		g_strlcpy(resu->d_name, statuses->surl, GFAL_URL_MAX_LEN);
-	return resu;
+
+inline static struct dirent* gfal_srm_readdir_convert_result(plugin_handle ch,
+        const char* surl, struct srmv2_mdfilestatus * statuses,
+        struct dirent* output,
+        struct stat* st,
+        GError ** err)
+{
+    struct dirent* resu = NULL;
+    resu = output;
+    char buff_surlfull[GFAL_URL_MAX_LEN];
+    char* p = strrchr(statuses->surl, '/'); // keep only the file name + /
+    if (p != NULL ) {
+        g_strlcpy(buff_surlfull, surl, GFAL_URL_MAX_LEN);
+        g_strlcat(buff_surlfull, p, GFAL_URL_MAX_LEN);
+        g_strlcpy(resu->d_name, p + 1, GFAL_URL_MAX_LEN); // without '/'
+
+        if (S_ISDIR(statuses->stat.st_mode))
+            resu->d_type = DT_DIR;
+        else if (S_ISLNK(statuses->stat.st_mode))
+            resu->d_type = DT_LNK;
+        else
+            resu->d_type = DT_REG;
+
+        gfal_srm_stat64_to_stat(&statuses->stat, st);
+        gfal_srm_cache_stat_add(ch, buff_surlfull, st);
+    }
+    else
+        g_strlcpy(resu->d_name, statuses->surl, GFAL_URL_MAX_LEN);
+    return resu;
 }
 
-int gfal_srm_readdir_internal(plugin_handle ch, gfal_srm_opendir_handle oh, GError** err){
+
+static int gfal_srm_readdir_internal(plugin_handle ch,
+        gfal_srm_opendir_handle oh, GError** err)
+{
 	g_return_val_err_if_fail(ch && oh, -1, err, "[gfal_srmv2_opendir_internal] invaldi args");
 	GError* tmp_err=NULL;
 	int resu =-1;
@@ -127,8 +141,9 @@ int gfal_srm_readdir_internal(plugin_handle ch, gfal_srm_opendir_handle oh, GErr
     G_RETURN_ERR(resu, tmp_err, err);
 }
 
-struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch,
-        gfal_srm_opendir_handle oh, GError** err)
+
+static struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch,
+        gfal_srm_opendir_handle oh, struct stat* st, GError** err)
 {
     struct dirent* ret = NULL;
     GError* tmp_err = NULL;
@@ -150,6 +165,7 @@ struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch,
         const off_t myoffset = oh->dir_offset - oh->slice.offset;
         ret = gfal_srm_readdir_convert_result(ch, oh->surl,
                 &oh->srm_ls_resu->subpaths[myoffset], &oh->current_readdir,
+                st,
                 &tmp_err);
         oh->dir_offset += 1;
     }
@@ -159,19 +175,25 @@ struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch,
 }
 
 
-struct dirent* gfal_srm_readdirG(plugin_handle ch, gfal_file_handle fh, GError** err){
+struct dirent* gfal_srm_readdirG(plugin_handle ch, gfal_file_handle fh, GError** err)
+{
 	g_return_val_err_if_fail( ch && fh, NULL, err, "[gfal_srm_readdirG] Invalid args");
-	GError* tmp_err=NULL;
-	struct dirent* ret = NULL;
-	if(fh != NULL){
-		gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;
-		ret = gfal_srm_readdir_pipeline(ch, oh, &tmp_err);		
-	}else{
-        g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EBADF, "bad dir descriptor");
-		ret = NULL;
-	}
+	struct stat _;
+	return gfal_srm_readdirppG(ch, fh, &_, err);
+}
 
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-	return ret;
+
+struct dirent* gfal_srm_readdirppG(plugin_handle ch,
+        gfal_file_handle fh, struct stat* st, GError** err)
+{
+    g_return_val_err_if_fail( ch && fh, NULL, err, "[gfal_srm_readdirppG] Invalid args");
+    GError* tmp_err=NULL;
+
+    struct dirent* ret = NULL;
+    gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;
+    ret = gfal_srm_readdir_pipeline(ch, oh, st, &tmp_err);
+
+    if(tmp_err)
+        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+    return ret;
 }
