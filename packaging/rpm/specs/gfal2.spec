@@ -2,9 +2,9 @@
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
 Name:				gfal2
-Version:			2.5.0
+Version:			2.5.1
 # https://fedoraproject.org/wiki/Packaging:NamingGuidelines#Release_Tag
-Release:			4%{?dist}
+Release:			1%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
