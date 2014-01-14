@@ -2,9 +2,9 @@
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
 Name:				gfal2
-Version:			2.5.0
+Version:			2.5.1
 # https://fedoraproject.org/wiki/Packaging:NamingGuidelines#Release_Tag
-Release:			4%{?dist}
+Release:			1%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
 License:			ASL 2.0
@@ -278,6 +278,18 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Thu Dec 05 2013 Alejandro Alvarez <aalvarez at cern.ch> - 2.4.8-1
+ - Release 2.4.8 of GFAL2
+
+* Mon Dec 02 2013 Alejandro Alvarez <aalvarez at cern.ch> - 2.4.7-1
+ - Release 2.4.7 of GFAL2
+
+* Thu Nov 07 2013 Alejandro Alvarez <aalvarez at cern.ch> - 2.4.6-1
+ - Release 2.4.6 of GFAL 2
+
+* Wed Oct 23 2013 Alejandro Alvarez <aalvarez at cern.ch> - 2.4.5-3
+ - Release 2.4.5 of GFAL 2
+
 * Tue Jul 02 2013 Adrien Devresse <adevress at cern.ch> - 2.3.0-0
  - Release 2.3.0 of GFAL 2.0
 

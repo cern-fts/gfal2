@@ -330,7 +330,7 @@ static void srm_rollback_put(plugin_handle handle,
                 GError* merged = NULL;
                 g_set_error(&merged, gfal2_get_plugin_srm_quark(), (*err)->code,
                         "Transfer failed with %s\n"
-                        "Also got an error when rolling back: %s",
+                        "Also got an error when canceling the PUT request: %s",
                         (*err)->message, abort_error->message);
                 g_error_free(*err);
                 g_error_free(abort_error);
@@ -356,7 +356,7 @@ static void srm_release_get(plugin_handle handle, const char* surl, const char* 
             GError* merged = NULL;
             g_set_error(&merged, gfal2_get_plugin_srm_quark(), (*err)->code,
                     "Transfer failed with %s\n"
-                    "Also got an error when rolling back: %s",
+                    "Also got an error when releasing the source file: %s",
                     (*err)->message, release_error->message);
             g_error_free(*err);
             g_error_free(release_error);
