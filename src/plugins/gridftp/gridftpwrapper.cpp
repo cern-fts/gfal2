@@ -251,7 +251,9 @@ GridFTPFactory::GridFTPFactory(gfal_handle handle) : _handle(handle)
 
 
 
-GridFTP_Request_state::GridFTP_Request_state(GridFTP_session * s, bool own_session, GridFtp_request_type request_type) : errcode(0), sess(s), end_time(0,0){
+GridFTP_Request_state::GridFTP_Request_state(GridFTP_session * s, bool own_session, GridFtp_request_type request_type):
+        errcode(0), cancel_token(NULL), sess(s), end_time(0,0)
+{
 	req_status=GRIDFTP_REQUEST_NOT_LAUNCHED;
     this->own_session = own_session;
     this->request_type = request_type;

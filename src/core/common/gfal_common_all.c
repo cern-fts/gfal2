@@ -70,10 +70,9 @@ gfal_handle gfal_initG (GError** err)
 	}
 	handle->plugin_opt.plugin_number= 0;
 	
-    if( (handle->conf = gfal_conf_new(&tmp_err)) &&
-            !tmp_err){
-        gfal_plugins_instance(handle, &tmp_err); // load and instanciate all the plugins
-
+    if((handle->conf = gfal_conf_new(&tmp_err)) && !tmp_err){
+        // load and instanciate all the plugins
+        gfal_plugins_instance(handle, &tmp_err);
         // cancel logic init
         handle->cancel = FALSE;
         handle->running_ops = 0;
@@ -83,6 +82,8 @@ gfal_handle gfal_initG (GError** err)
 
 
     if(tmp_err){
+        if (handle && handle->conf)
+            gfal_conf_delete(handle->conf);
         g_free(handle);
         handle = NULL;
     }

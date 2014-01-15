@@ -171,14 +171,11 @@ gint g_config_manager_set_string_list(GConfigManager_t config_manager, const gch
                                      const gchar * const list[],
                                      gsize length,
                                      GError ** error){
-    GError * tmp_err=NULL;
     struct ConfigFuncArgs args = { .group_name = group_name, .key = key, .value = {.mstrlst = (gchar**) list }, .length = &length };
     g_config_manager_find_first_valid( config_manager, &GConfigFunction_set_string_list,
                                         &args, error);
-    if(tmp_err){
-        g_propagate_error(error, tmp_err);
+    if(*error != NULL)
         return -1;
-    }
     return 0;
 }
 

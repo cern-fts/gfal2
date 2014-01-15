@@ -495,25 +495,32 @@ int gfal_plugin_renameG(gfal_handle handle, const char* oldpath, const char* new
 	g_return_val_err_if_fail(oldpath && newpath, -1, err, "[gfal_plugin_renameG] invalid value in args oldpath, handle or newpath");
 	GError* tmp_err=NULL;
     int ret = -1;
-    gfal_plugin_interface* p;
-    if( (p = gfal_find_plugin(handle, oldpath, GFAL_PLUGIN_RENAME, &tmp_err)) != NULL
-         && (p = gfal_find_plugin(handle, newpath, GFAL_PLUGIN_RENAME, &tmp_err)) != NULL){
-        ret = p->renameG(gfal_get_plugin_handle(p), oldpath, newpath, &tmp_err);
+    gfal_plugin_interface *src_p, *dst_p;
+
+    src_p = gfal_find_plugin(handle, oldpath, GFAL_PLUGIN_RENAME, &tmp_err);
+    if (src_p) {
+        dst_p = gfal_find_plugin(handle, newpath, GFAL_PLUGIN_RENAME, &tmp_err);
+        if(src_p == dst_p)
+            ret = dst_p->renameG(gfal_get_plugin_handle(dst_p), oldpath, newpath, &tmp_err);
     }
 	
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
 // Execute a symlink function on the appropriate plugin 
-int gfal_plugin_symlinkG(gfal_handle handle, const char* oldpath, const char* newpath, GError** err){
-	g_return_val_err_if_fail(oldpath && newpath, -1, err, "[gfal_plugin_symlinkG] invalid value in args oldpath, handle or newpath");
-	GError* tmp_err=NULL;
+int gfal_plugin_symlinkG(gfal_handle handle, const char* oldpath,
+        const char* newpath, GError** err)
+{
+    g_return_val_err_if_fail(oldpath && newpath, -1, err, "[gfal_plugin_symlinkG] invalid value in args oldpath, handle or newpath");
+    GError* tmp_err = NULL;
     int ret = -1;
-    gfal_plugin_interface* p;
-	
-    if( (p = gfal_find_plugin(handle, oldpath, GFAL_PLUGIN_SYMLINK, &tmp_err)) != NULL
-         && (p = gfal_find_plugin(handle, newpath, GFAL_PLUGIN_SYMLINK, &tmp_err)) != NULL){
-        ret = p->symlinkG(gfal_get_plugin_handle(p), oldpath, newpath, &tmp_err);
+    gfal_plugin_interface *src_p, *dst_p;
+
+    src_p = gfal_find_plugin(handle, oldpath, GFAL_PLUGIN_SYMLINK, &tmp_err);
+    if (src_p) {
+        dst_p = gfal_find_plugin(handle, newpath, GFAL_PLUGIN_SYMLINK, &tmp_err);
+        if (src_p == dst_p)
+            ret = dst_p->symlinkG(gfal_get_plugin_handle(dst_p), oldpath, newpath, &tmp_err);
     }
 
     G_RETURN_ERR(ret, tmp_err, err);

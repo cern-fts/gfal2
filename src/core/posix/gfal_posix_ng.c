@@ -164,9 +164,8 @@ int gfal_removexattr(const char *path, const char *name){
 
 
 void gfal_posix_print_error(){
-	gfal_handle handle;
 	GError* err=NULL;
-	if((handle = gfal_posix_instance()) == NULL){
+	if(gfal_posix_instance() == NULL){
 		g_printerr("[gfal] Initialisation error gfal_posix_instance() failure\n");
 	}else if ( (err = *gfal_posix_get_last_error()) != NULL){
 		g_printerr("[gfal]%s \n", err->message);

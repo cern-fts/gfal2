@@ -85,8 +85,13 @@ static void getFileAndLine(void* addr, const char* sname,
     // Run it
     buffer[0] = '\0';
     FILE *proc = popen(command, "r");
-    fread(buffer, 1, bufsize, proc);
-    pclose(proc);
+    if (proc) {
+        fread(buffer, 1, bufsize, proc);
+        pclose(proc);
+    }
+    else {
+        strncpy(buffer, "Could not execute addr2line\n", bufsize);
+    }
 
     if (buffer[0] == '?') {
         buffer[0] = '\n';
