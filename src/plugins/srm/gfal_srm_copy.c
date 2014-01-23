@@ -280,7 +280,7 @@ static int srm_validate_destination_checksum(plugin_handle handle, gfal2_context
                         checksum_source, checksum_destination);
                 ret = -1;
             }
-            if (checksum_user[0] != '\0' &&
+            else if (checksum_user[0] != '\0' &&
                 gfal_compare_checksums(checksum_user, checksum_destination, sizeof(checksum_destination)) != 0) {
                 g_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL,
                         "User defined checksum and destination checksums do not match %s != %s",
