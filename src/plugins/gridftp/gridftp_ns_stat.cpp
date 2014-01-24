@@ -209,7 +209,9 @@ globus_result_t parse_mlst_line(char *line,
     startfact = startline;
 
     if (filename_buf) {
-        char* trailing = (char*)mempcpy(filename_buf, filename, filename_size);
+        strncpy(filename_buf, filename, filename_size);
+        filename_buf[filename_size - 1] = '\0';
+        char* trailing = filename_buf + strlen(filename);
         do {
             *trailing = '\0';
             --trailing;
