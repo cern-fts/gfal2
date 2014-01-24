@@ -59,18 +59,16 @@ static void gfal_srm_stat64_to_stat(const struct stat64* st64, struct stat *st)
 
 inline static struct dirent* gfal_srm_readdir_convert_result(plugin_handle ch,
         const char* surl, struct srmv2_mdfilestatus * statuses,
-        struct dirent* output,
-        struct stat* st,
-        GError ** err)
+        struct dirent* output, struct stat* st, GError ** err)
 {
     struct dirent* resu = NULL;
     resu = output;
     char buff_surlfull[GFAL_URL_MAX_LEN];
     char* p = strrchr(statuses->surl, '/'); // keep only the file name + /
-    if (p != NULL ) {
+    if (p != NULL) {
         g_strlcpy(buff_surlfull, surl, GFAL_URL_MAX_LEN);
         g_strlcat(buff_surlfull, p, GFAL_URL_MAX_LEN);
-        g_strlcpy(resu->d_name, p + 1, GFAL_URL_MAX_LEN); // without '/'
+        resu->d_reclen = g_strlcpy(resu->d_name, p + 1, GFAL_URL_MAX_LEN); // without '/'
 
         if (S_ISDIR(statuses->stat.st_mode))
             resu->d_type = DT_DIR;
@@ -92,8 +90,8 @@ static int gfal_srm_readdir_internal(plugin_handle ch,
         gfal_srm_opendir_handle oh, GError** err)
 {
 	g_return_val_err_if_fail(ch && oh, -1, err, "[gfal_srmv2_opendir_internal] invaldi args");
-	GError* tmp_err=NULL;
-	int resu =-1;
+	GError* tmp_err = NULL;
+	int resu = -1;
     srm_context_t context;
 	struct srm_ls_input input;
 	struct srm_ls_output output;
@@ -103,20 +101,24 @@ static int gfal_srm_readdir_internal(plugin_handle ch,
 	int ret =-1;
 	char* tab_surl[] = { (char*) oh->surl, NULL};
 
+	memset(&input, 0, sizeof(input));
+	memset(&output, 0, sizeof(output));
 	
     if(  (context =  gfal_srm_ifce_context_setup(opts->handle, oh->endpoint, errbuf, GFAL_ERRMSG_LEN, &tmp_err)) != NULL){	// init context
         input.nbfiles = 1;
         input.surls = tab_surl;
         input.numlevels = 1;
-        input.offset = &oh->slice.offset;
-        input.count = oh->slice.count;
-        ret = gfal_srm_external_call.srm_ls(context,&input,&output); // execute ls
+        input.count = oh->max_count - oh->count;
+        input.offset = &oh->slice_offset;
+
+        oh->slice_index = 0;
 
         /*
          * Mind that srm_ls will modify the value pointed by input.offset, so even if it has some
-         * value, it will be reset to 0 to be a valid index within the response
+         * value, it will be reset to the offset of the next chunk if any!
          * Why is it called input then? I don't know.
          */
+        ret = gfal_srm_external_call.srm_ls(context, &input, &output);
 
         if(ret >=0){
             srmv2_mdstatuses = output.statuses;
@@ -152,22 +154,21 @@ static struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch,
         gfal_srm_readdir_internal(ch, oh, &tmp_err);
         if (tmp_err && tmp_err->code == EINVAL) { // fix in the case of short size SRMLs support, ( dcap )
             g_clear_error(&tmp_err);
-            oh->slice.count = 1000;
+            oh->max_count = 1000;
             gfal_srm_readdir_internal(ch, oh, &tmp_err);
         }
     }
-    else if (oh->dir_offset >= (oh->slice.offset + oh->srm_ls_resu->nbsubpaths)) {
+    else if (oh->slice_index >= oh->srm_ls_resu->nbsubpaths) {
         return NULL ; // limited mode in order to not overload the srm server ( slow )
     }
     if (!tmp_err) {
-        if (oh->srm_ls_resu->nbsubpaths == 0) // end of the list !!
-            return NULL ;
-        const off_t myoffset = oh->dir_offset - oh->slice.offset;
         ret = gfal_srm_readdir_convert_result(ch, oh->surl,
-                &oh->srm_ls_resu->subpaths[myoffset], &oh->current_readdir,
+                &oh->srm_ls_resu->subpaths[oh->slice_index], &oh->current_readdir,
                 st,
                 &tmp_err);
-        oh->dir_offset += 1;
+
+        oh->count++;
+        oh->slice_index++;
     }
     else
         g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
@@ -187,7 +188,7 @@ struct dirent* gfal_srm_readdirppG(plugin_handle ch,
         gfal_file_handle fh, struct stat* st, GError** err)
 {
     g_return_val_err_if_fail( ch && fh, NULL, err, "[gfal_srm_readdirppG] Invalid args");
-    GError* tmp_err=NULL;
+    GError* tmp_err = NULL;
 
     struct dirent* ret = NULL;
     gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;
