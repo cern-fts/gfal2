@@ -448,7 +448,7 @@ static int gfal_plugin_file_chk_compute(plugin_handle data, const char* url, con
             i_chk->update(c_handle, buffer, ret);
         }
     }while(ret > 0 && remain_bytes > 0);
-    gfal2_close(c_handle, fd, NULL);
+    gfal2_close(handle, fd, NULL);
 
     if( i_chk->getResult(c_handle, checksum_buffer, buffer_length) < 0){
         g_set_error(err, gfal2_get_plugin_file_quark(), ENOBUFS, "buffer for checksum too short");
