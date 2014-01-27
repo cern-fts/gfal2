@@ -370,7 +370,7 @@ struct _gfal_plugin_interface{
       * @param buffer_length : maximum buffer length
       * @param err : GError error support
       * @return dynamically allocated checksum string if success, else NULL and err MUST be set
-      *  error code MUST be ENOSUPPORT in case of :
+      *  error code MUST be ENOSYS in case of :
       *         - checksum calculation with offset is not supported
       *         - the specified checksum algorithm is not supported
       */

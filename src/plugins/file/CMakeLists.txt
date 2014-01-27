@@ -5,7 +5,7 @@ if (PLUGIN_FILE)
     file (GLOB src_file "*.c*")
 
     add_library (plugin_file SHARED ${src_file})
-    target_link_libraries (plugin_file gfal2)
+    target_link_libraries (plugin_file gfal2 z)
 
 
     set_target_properties(plugin_file   PROPERTIES
