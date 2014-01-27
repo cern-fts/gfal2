@@ -40,6 +40,7 @@
 #include <common/gfal_types.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_errverbose.h>
+#include <checksums/checksums.h>
 #include <fdesc/gfal_file_handle.h>
 #include <file/gfal_file_api.h>
 
@@ -48,8 +49,11 @@ unsigned int s_prefix = 0;
 
 
 typedef struct _chksum_interface{
+    // init checksum handle
     void*  (*init)(void);
-    ssize_t (*update)(void* chk_handler, char* buffer, size_t s_size);
+    // compute checksum chunk
+    ssize_t (*update)(void* chk_handler, const char* buffer, size_t s_size);
+    // return checksum result : > 0 -> success, -1 : buffer to short
     int (*getResult)(void* chk_handler, char* buffer, size_t s_b);
 } Chksum_interface;
 
@@ -344,6 +348,7 @@ int gfal_plugin_file_symlink(plugin_handle plugin_data, const char* oldpath, con
 }
 
 
+// checksum wrapper
 
 static void* adler_init(){
     unsigned long* lp =  malloc(sizeof(unsigned long));
@@ -351,16 +356,17 @@ static void* adler_init(){
     return (void*) lp;
 }
 
-static ssize_t adler32_update(void* chk_handler, char* buffer, size_t s){
+static ssize_t adler32_update(void* chk_handler, const char* buffer, size_t s){
     unsigned long* lp = (unsigned long*) chk_handler;
-    *lp = adler32(*lp, buffer, s);
-    return s;
+    *lp = adler32(*lp, (const Bytef *) buffer, (uInt) s);
+    return (ssize_t)  s;
 }
 
 static int adler32_getResult(void* chk_handler, char* resu, size_t s_b){
     unsigned long* lp = (unsigned long*) chk_handler;
     snprintf(resu, s_b, "%lx", *lp);
     free(lp);
+    return 0;
 }
 
 static void* crc32_init(){
@@ -369,17 +375,45 @@ static void* crc32_init(){
     return (void*) lp;
 }
 
-static ssize_t crc32_update(void* chk_handler, char* buffer, size_t s){
+static ssize_t crc32_update(void* chk_handler, const char* buffer, size_t s){
     unsigned long* lp = (unsigned long*) chk_handler;
-    *lp = crc32(*lp, buffer, s);
-    return s;
+    *lp = crc32(*lp, (const Bytef *)  buffer, s);
+    return (ssize_t) s;
 }
 
 static int crc32_getResult(void* chk_handler, char* resu, size_t s_b){
     unsigned long* lp = (unsigned long*) chk_handler;
     snprintf(resu, s_b, "%lx", *lp);
     free(lp);
+    return 0;
 }
+
+
+static void* md5_init(){
+    GFAL_MD5_CTX* ctx  =  (GFAL_MD5_CTX*) malloc(sizeof(GFAL_MD5_CTX));
+    gfal2_md5_init(ctx);
+    return (void*) ctx;
+}
+
+static ssize_t md5_update(void* chk_handler, const char* buffer, size_t s){
+    GFAL_MD5_CTX* ctx  =  (GFAL_MD5_CTX*) chk_handler;
+    gfal2_md5_update(ctx, buffer, (unsigned long)s);
+    return (ssize_t) s;
+}
+
+static int md5_getResult(void* chk_handler, char* resu, size_t s_b){
+    GFAL_MD5_CTX* ctx  =  (GFAL_MD5_CTX*) chk_handler;
+    unsigned char buffer[16];
+    if( s_b < 33) // buffer to short
+        return -1;
+    gfal2_md5_final(buffer, ctx);
+    gfal2_md5_to_hex_string((char*) buffer, resu);
+    free(ctx);
+    return 0;
+}
+
+
+// checksum implem
 
 static int gfal_plugin_file_chk_compute(plugin_handle data, const char* url, const char* check_type,
                                          char * checksum_buffer, size_t buffer_length,
@@ -414,9 +448,14 @@ static int gfal_plugin_file_chk_compute(plugin_handle data, const char* url, con
             i_chk->update(c_handle, buffer, ret);
         }
     }while(ret > 0 && remain_bytes > 0);
-    i_chk->getResult(c_handle, checksum_buffer, buffer_length);
-
     gfal2_close(c_handle, fd, NULL);
+
+    if( i_chk->getResult(c_handle, checksum_buffer, buffer_length) < 0){
+        g_set_error(err, gfal2_get_plugin_file_quark(), ENOBUFS, "buffer for checksum too short");
+        return -1;
+    }
+
+
     if( ret < 0){
         g_propagate_prefixed_error(err, tmp_err, "[gfal_plugin_file_chk_compute] Error during checksum calculation, read ");
         return -1;
@@ -443,6 +482,14 @@ int gfal_plugin_filechecksum_calc(plugin_handle data, const char* url, const cha
         Chksum_interface ie= { .init = &crc32_init,
                                .update = &crc32_update,
                                .getResult = &crc32_getResult};
+        return gfal_plugin_file_chk_compute(data, url, check_type, checksum_buffer,
+                                            buffer_length, start_offset, data_length,
+                                            &ie,
+                                            err);
+    }else if( strcasecmp(check_type, "md5") == 0){
+        Chksum_interface ie= { .init = &md5_init,
+                               .update = &md5_update,
+                               .getResult = &md5_getResult};
         return gfal_plugin_file_chk_compute(data, url, check_type, checksum_buffer,
                                             buffer_length, start_offset, data_length,
                                             &ie,
