@@ -20,6 +20,7 @@ BuildRequires:		glib2-devel
 BuildRequires:		glibmm24-devel
 BuildRequires:		libattr-devel
 BuildRequires:		openldap-devel
+BuildRequires:		zlib-devel
 %if ! 0%{?el5}
 BuildRequires:		pugixml-devel
 %endif
