@@ -20,7 +20,6 @@ BuildRequires:		glib2-devel
 BuildRequires:		glibmm24-devel
 BuildRequires:		libattr-devel
 BuildRequires:		openldap-devel
-BuildRequires:		zlib-devel
 %if ! 0%{?el5}
 BuildRequires:		pugixml-devel
 %endif
@@ -31,6 +30,8 @@ BuildRequires:		e2fsprogs-devel
 %else
 BuildRequires:		libuuid-devel	
 %endif
+#file plugin dependencies
+BuildRequires:		zlib-devel
 #lfc plugin dependencies
 BuildRequires:		lfc-devel
 #rfio plugin dependencies
