@@ -4,44 +4,57 @@ if (UNIX)
     SET(APPLICATION_NAME ${PROJECT_NAME})
   ENDIF (NOT APPLICATION_NAME)
 
-# Suffix for Linux
-	IF (CMAKE_SIZEOF_VOID_P EQUAL 4)
-		SET(LIB_SUFFIX ""
-		CACHE STRING "Suffix of the lib")
-		SET (PKG_ARCH "i386")
-	ELSE (CMAKE_SIZEOF_VOID_P EQUAL 4)
-		SET(LIB_SUFFIX "64"
-		CACHE STRING "Suffix of the lib")
-		SET (PKG_ARCH "x86_64")
-	ENDIF (CMAKE_SIZEOF_VOID_P EQUAL 4)
+# detect lib suffix
+
+
+IF(EXISTS "/usr/lib64")
+	SET(LIB_SUFFIX "64"
+	CACHE STRING "Suffix of the lib")
+	SET (PKG_ARCH "x86_64")
+ELSE(EXISTS "/usr/lib64" )
+SET(LIB_SUFFIX ""
+CACHE STRING "Suffix of the lib")
+SET (PKG_ARCH "i386")
+ENDIF(EXISTS "/usr/lib64" )
+
+
+#  correct cmake netpath issue with cmake 2.8
+  IF("${CMAKE_INSTALL_PREFIX}" STREQUAL "/")
+	SET(INTERNAL_BASE_PREFIX "")
+  ELSE("${CMAKE_INSTALL_PREFIX}" STREQUAL "/")
+ 	SET(INTERNAL_BASE_PREFIX "${CMAKE_INSTALL_PREFIX}")
+  ENDIF("${CMAKE_INSTALL_PREFIX}" STREQUAL "/") 
 
   SET(EXEC_INSTALL_PREFIX
     "${CMAKE_INSTALL_PREFIX}"
     CACHE PATH  "Base directory for executables and libraries"
   )
+  
+
+  
   SET(SHARE_INSTALL_PREFIX
-    "${CMAKE_INSTALL_PREFIX}/share"
+    "${INTERNAL_BASE_PREFIX}/share"
     CACHE PATH "Base directory for files which go to share/"
   )
   SET(DATA_INSTALL_PREFIX
-    "${SHARE_INSTALL_PREFIX}/${APPLICATION_NAME}"
+    "${INTERNAL_BASE_PREFIX}/${APPLICATION_NAME}"
     CACHE PATH "The parent directory where applications can install their data")
 
   # The following are directories where stuff will be installed to
   SET(BIN_INSTALL_DIR
-    "${EXEC_INSTALL_PREFIX}/bin"
+    "${INTERNAL_BASE_PREFIX}/bin"
     CACHE PATH "The ${APPLICATION_NAME} binary install dir (default prefix/bin)"
   )
   SET(SBIN_INSTALL_DIR
-    "${EXEC_INSTALL_PREFIX}/sbin"
+    "${INTERNAL_BASE_PREFIX}/sbin"
     CACHE PATH "The ${APPLICATION_NAME} sbin install dir (default prefix/sbin)"
   )
   SET(LIB_INSTALL_DIR
-    "${EXEC_INSTALL_PREFIX}/lib${LIB_SUFFIX}"
+    "${INTERNAL_BASE_PREFIX}/lib${LIB_SUFFIX}"
     CACHE PATH "The subdirectory relative to the install prefix where libraries will be installed (default is prefix/lib)"
   )
   SET(LIBEXEC_INSTALL_DIR
-    "${EXEC_INSTALL_PREFIX}/libexec"
+    "${INTERNAL_BASE_PREFIX}/libexec"
     CACHE PATH "The subdirectory relative to the install prefix where libraries will be installed (default is prefix/libexec)"
   )
 
@@ -51,11 +64,11 @@ if (UNIX)
   )
 
   SET(PLUGIN_INSTALL_DIR
-    "${LIB_INSTALL_DIR}/${APPLICATION_NAME}-plugins/"
+    "${LIB_INSTALL_DIR}/${APPLICATION_NAME}"
     CACHE PATH "The subdirectory relative to the install prefix where plugins will be installed (default is prefix/lib/${APPLICATION_NAME})"
   )
   SET(INCLUDE_INSTALL_DIR
-    "${CMAKE_INSTALL_PREFIX}/include"
+    "${INTERNAL_BASE_PREFIX}/include"
     CACHE PATH "The subdirectory to the header prefix (default prefix/include)"
   )
 
@@ -97,8 +110,8 @@ if (UNIX)
   )
 
   SET(SYSCONF_INSTALL_DIR
-    "/etc"
-    CACHE PATH "The ${APPLICATION_NAME} sysconfig install dir /etc)"
+    "${EXEC_INSTALL_PREFIX}/etc"
+    CACHE PATH "The ${APPLICATION_NAME} sysconfig install dir (default prefix/etc)"
   )
   SET(MAN_INSTALL_DIR
     "${SHARE_INSTALL_PREFIX}/man"
@@ -112,12 +125,23 @@ endif (UNIX)
 
 if (WIN32)
   # Same same
-  set(BIN_INSTALL_DIR "." CACHE PATH "-")
-  set(SBIN_INSTALL_DIR "." CACHE PATH "-")
-  set(LIB_INSTALL_DIR "lib" CACHE PATH "-")
-  set(INCLUDE_INSTALL_DIR "include" CACHE PATH "-")
-  set(PLUGIN_INSTALL_DIR "plugins" CACHE PATH "-")
-  set(HTML_INSTALL_DIR "doc/HTML" CACHE PATH "-")
+  SET(EXEC_INSTALL_PREFIX
+    "${CMAKE_INSTALL_PREFIX}"
+    CACHE PATH  "Base directory for executables and libraries"
+  )  
+  set(BIN_INSTALL_DIR "${EXEC_INSTALL_PREFIX}/bin" CACHE PATH "-")
+  set(SBIN_INSTALL_DIR "${EXEC_INSTALL_PREFIX}/bin" CACHE PATH "-")
+  set(LIB_INSTALL_DIR "${EXEC_INSTALL_PREFIX}/bin" CACHE PATH "-")
+  set(INCLUDE_INSTALL_DIR "${EXEC_INSTALL_PREFIX}/include" CACHE PATH "-")
+  SET(SYSCONF_INSTALL_DIR
+    "${CMAKE_INSTALL_PREFIX}/etc"
+    CACHE PATH "The ${APPLICATION_NAME} sysconfig install dir (default prefix/etc)"
+  )  
+  SET(PKGCONFIG_FILES_DIR "${EXEC_INSTALL_PREFIX}/lib/pkgconfig/"
+    CACHE PATH "subdirectory relative to the install prefix where pkgconfig files (.pc) will be installed"
+  )  
+  set(PLUGIN_INSTALL_DIR "${EXEC_INSTALL_PREFIX}/bin/plugins" CACHE PATH "-")
+  set(HTML_INSTALL_DIR "${EXEC_INSTALL_PREFIX}/doc/HTML" CACHE PATH "-")
   set(ICON_INSTALL_DIR "." CACHE PATH "-")
   set(SOUND_INSTALL_DIR "." CACHE PATH "-")
   set(LOCALE_INSTALL_DIR "lang" CACHE PATH "-")
