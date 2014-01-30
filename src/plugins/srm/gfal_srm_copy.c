@@ -50,19 +50,15 @@ int srm_plugin_delete_existing_copy(plugin_handle handle, gfalt_params_t params,
     int res = 0;
     const gboolean replace = gfalt_get_replace_existing_file(params, NULL );
     if (replace) {
-        struct stat st_dest_file;
-        res = gfal_srm_statG(handle, surl, &st_dest_file, &tmp_err);
+        gfal_log(GFAL_VERBOSE_TRACE, "\tTrying to delete %s", surl);
+        res = gfal_srm_unlinkG(handle, surl, &tmp_err);
         if (res == 0) {
-            gfal_log(GFAL_VERBOSE_TRACE, "\t%s found, delete in order to replace it", surl);
-            res = gfal_srm_unlinkG(handle, surl, &tmp_err);
-            if (res == 0) {
-                gfal_log(GFAL_VERBOSE_TRACE, "\t%s deleted with sucess", surl);
-            }
+            gfal_log(GFAL_VERBOSE_TRACE, "\t%s deleted with success", surl);
         }
-        if (tmp_err && tmp_err->code == ENOENT) {
-            gfal_log(GFAL_VERBOSE_TRACE, " %s dest does not exist, no over-write needed, begin copy",
-                    surl);
+        else if (tmp_err->code == ENOENT) {
+            gfal_log(GFAL_VERBOSE_TRACE, "\t%s doesn't exist, carry on", surl);
             g_clear_error(&tmp_err);
+            tmp_err = NULL;
             res = 0;
         }
     }

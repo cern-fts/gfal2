@@ -104,8 +104,8 @@ int gfal_statG_srmv2__generic_internal(	gfal_srmv2_opt* opts, struct stat* buf,
 			ret = -1;
 		} else {
 			memcpy(buf, &(srmv2_mdstatuses->stat), sizeof(struct stat));
-			errno =0;
-			ret =0;
+			errno = 0;
+			ret = 0;
 		}
 	}
 	gfal_srm_ls_memory_management(&input, &output);
