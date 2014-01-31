@@ -64,7 +64,7 @@ ENDIF(EXISTS "/usr/lib64" )
   )
 
   SET(PLUGIN_INSTALL_DIR
-    "${LIB_INSTALL_DIR}/${APPLICATION_NAME}"
+    "${LIB_INSTALL_DIR}/${APPLICATION_NAME}-plugins/"
     CACHE PATH "The subdirectory relative to the install prefix where plugins will be installed (default is prefix/lib/${APPLICATION_NAME})"
   )
   SET(INCLUDE_INSTALL_DIR
