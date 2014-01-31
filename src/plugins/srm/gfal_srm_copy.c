@@ -61,6 +61,13 @@ int srm_plugin_delete_existing_copy(plugin_handle handle, gfalt_params_t params,
             tmp_err = NULL;
             res = 0;
         }
+        // Workaround for BeStMan, which returns EINVAL instead of ENOENT
+        else if (tmp_err->code == EINVAL) {
+            gfal_log(GFAL_VERBOSE_TRACE, "\tGot EINVAL removing %s. Assuming ENOENT (for BeStMan storages)", surl);
+            g_clear_error(&tmp_err);
+            tmp_err = NULL;
+            res = 0;
+        }
     }
     G_RETURN_ERR(res, tmp_err, err);
 }
