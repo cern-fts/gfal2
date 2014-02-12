@@ -85,6 +85,11 @@ struct dirent* GridftpListReader::readdirpp(struct stat* st)
     }
     free(unparsed);
 
+    // Workaround for LCGUTIL-295
+    // Some endpoints return the absolute path when listing an empty directory
+    if (dbuffer.d_name[0] == '/')
+        return NULL;
+
     memset(st, 0, sizeof(*st));
     st->st_mode  = (mode_t) ((gl_stat.mode != -1)?gl_stat.mode:0);
     st->st_mode |= (gl_stat.type == GLOBUS_GASS_COPY_GLOB_ENTRY_DIR)?(S_IFDIR):(S_IFREG);
