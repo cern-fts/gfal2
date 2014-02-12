@@ -42,6 +42,28 @@ struct dirent* GridftpListReader::readdir()
     return readdirpp(&_);
 }
 
+static std::string& ltrim(std::string& str)
+{
+    size_t i = 0;
+    while (i < str.length() && isspace(str[i]))
+        ++i;
+    str = str.substr(i);
+    return str;
+}
+
+static std::string& rtrim(std::string& str)
+{
+    size_t i = str.length() - 1;
+    while (i >= 0 && isspace(str[i]))
+        --i;
+    str = str.substr(0, i + 1);
+    return str;
+}
+
+static std::string& trim(std::string& str)
+{
+    return ltrim(rtrim(str));
+}
 
 struct dirent* GridftpListReader::readdirpp(struct stat* st)
 {
@@ -52,12 +74,14 @@ struct dirent* GridftpListReader::readdirpp(struct stat* st)
     if (!std::getline(in, line))
         return NULL;
 
+    if (trim(line).empty())
+        return NULL;
 
     gfal_globus_stat_t gl_stat;
     char* unparsed = strdup(line.c_str());
     if (parse_mlst_line(unparsed, &gl_stat, dbuffer.d_name, sizeof(dbuffer.d_name)) != GLOBUS_SUCCESS) {
         free(unparsed);
-        throw Glib::Error(GridftpListReaderQuark, EINVAL, Glib::ustring("Error parsing GridFTP line: ").append(line));
+        throw Glib::Error(GridftpListReaderQuark, EINVAL, Glib::ustring("Error parsing GridFTP line: '").append(line).append("\'"));
     }
     free(unparsed);
 
