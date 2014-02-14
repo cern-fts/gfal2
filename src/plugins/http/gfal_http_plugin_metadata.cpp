@@ -138,6 +138,7 @@ struct dirent* gfal_http_readdir(plugin_handle plugin_data,
 }
 
 
+
 struct dirent* gfal_http_readdirpp(plugin_handle plugin_data,
         gfal_file_handle dir_desc, struct stat* st, GError** err)
 {

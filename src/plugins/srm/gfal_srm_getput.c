@@ -224,8 +224,8 @@ int gfal_srm_getTURL_checksum(plugin_handle ch, const char* surl, char* buff_tur
     int ret = -1;
 
     gfal_srm_params_t params = gfal_srm_params_new(opts, & tmp_err);
-    gfal_srm_params_set_protocols(params, srm_get_3rdparty_turls_sup_protocol(opts->handle));
     if(params != NULL){
+        gfal_srm_params_set_protocols(params, srm_get_3rdparty_turls_sup_protocol(opts->handle));
         ret= gfal_srm_mTURLS_internal(opts, params, SRM_GET, surls, &resu, &tmp_err);
         if(ret >0){
             if(resu[0].err_code == 0){
@@ -258,10 +258,11 @@ int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl,
     int ret = -1;
 
     gfal_srm_params_t params = gfal_srm_params_new(opts, &tmp_err);
-    gfal_srm_params_set_spacetoken(params, gfalt_get_src_spacetoken(p, NULL ));
-    gfal_srm_params_set_protocols(params,
-            srm_get_3rdparty_turls_sup_protocol(opts->handle));
     if (params != NULL ) {
+        gfal_srm_params_set_spacetoken(params, gfalt_get_src_spacetoken(p, NULL ));
+        gfal_srm_params_set_protocols(params,
+                srm_get_3rdparty_turls_sup_protocol(opts->handle));
+
         ret = gfal_srm_mTURLS_internal(opts, params, SRM_GET, surls, &resu,
                 &tmp_err);
         if (ret >= 0) {
@@ -316,11 +317,12 @@ int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl,
     int ret = -1;
 
     gfal_srm_params_t params = gfal_srm_params_new(opts, &tmp_err);
-    gfal_srm_params_set_spacetoken(params, gfalt_get_dst_spacetoken(p, NULL ));
-    gfal_srm_params_set_protocols(params,
-            srm_get_3rdparty_turls_sup_protocol(opts->handle));
-    gfal_srm_params_set_size(params, surl_file_size);
     if (params != NULL ) {
+        gfal_srm_params_set_spacetoken(params, gfalt_get_dst_spacetoken(p, NULL ));
+        gfal_srm_params_set_protocols(params,
+                srm_get_3rdparty_turls_sup_protocol(opts->handle));
+        gfal_srm_params_set_size(params, surl_file_size);
+
         ret = gfal_srm_mTURLS_internal(opts, params, SRM_PUT, surls, &resu,
                 &tmp_err);
         if (ret >= 0) {

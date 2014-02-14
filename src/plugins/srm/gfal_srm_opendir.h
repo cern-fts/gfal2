@@ -34,12 +34,14 @@ typedef struct _gfal_srm_opendir_handle{
 	char endpoint[GFAL_URL_MAX_LEN];
     struct srmv2_mdfilestatus *srm_ls_resu;
 	struct dirent current_readdir;
-	off_t dir_offset;
 
-	struct {
-	    int offset;
-	    int count;
-	} slice;
+	int slice_offset; // offset of the next slice to be requested
+
+	int count;        // number of entries processed so far
+	int max_count;    // maximum number of entries to be processed
+
+	int slice_index;  // array position inside srm_ls_resu
+
 }* gfal_srm_opendir_handle;
 
 gfal_file_handle gfal_srm_opendirG(plugin_handle handle, const char* path, GError ** err);

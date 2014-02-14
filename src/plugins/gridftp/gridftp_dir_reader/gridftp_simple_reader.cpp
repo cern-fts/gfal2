@@ -66,6 +66,11 @@ struct dirent* GridftpSimpleListReader::readdir()
         throw Glib::Error(GridftpSimpleReaderQuark, EINVAL, Glib::ustring("Error parsing GridFTP line: ").append(line));
     }
 
+    // Workaround for LCGUTIL-295
+    // Some endpoints return the absolute path when listing an empty directory
+    if (dbuffer.d_name[0] == '/')
+        return NULL;
+
     gfal_log(GFAL_VERBOSE_VERBOSE, "  list file %s ", dbuffer.d_name);
     gfal_log(GFAL_VERBOSE_TRACE, "  [GridftpSimpleListReader::readdir] <- ");
     return &dbuffer;

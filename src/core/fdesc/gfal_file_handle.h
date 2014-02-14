@@ -43,11 +43,7 @@ extern "C"
 gfal_file_handle gfal_file_handle_new(const char* module_name, gpointer fdesc);
 /**
 * same than \ref gfal_file_handle_new but allows to store user data in the gfal file descriptor
-*/
-gfal_file_handle gfal_file_handle_ext_new(const char* module_name, gpointer fdesc, gpointer user_data);
-
-/**
-* same than \ref gfal_file_handle_new but allows to store user data in the gfal file descriptor
+* allow the usage of the readdirpp operation in case of directory file handle
 */
 gfal_file_handle gfal_file_handle_new2(const char *module_name, gpointer fdesc, gpointer user_data, const char *file_path);
 
@@ -67,6 +63,13 @@ gpointer gfal_file_handle_get_user_data(gfal_file_handle user_data);
 */
 void gfal_file_handle_delete(gfal_file_handle fh);
 
+
+
+/**
+* @deprecated
+* deprecated, use @ref gfal_file_handle_new2 instead
+*/
+gfal_file_handle gfal_file_handle_ext_new(const char* module_name, gpointer fdesc, gpointer user_data);
 
 #ifdef __cplusplus
 }

@@ -124,16 +124,15 @@ gfal_file_handle gfal_file_handle_new(const char*  module_name, gpointer fdesc){
  * same than gfal_file_handle but with external data storage support
  */
 gfal_file_handle gfal_file_handle_ext_new(const char*  module_name, gpointer fdesc, gpointer ext_data){
-	gfal_file_handle f = gfal_file_handle_new(module_name, fdesc);
-	f->ext_data = ext_data;
-	return f;
+    return gfal_file_handle_new2(module_name, fdesc, ext_data, NULL);
 }
 
 
 gfal_file_handle gfal_file_handle_new2(const char *module_name, gpointer fdesc, gpointer user_data, const char *file_path){
-    gfal_file_handle f = gfal_file_handle_ext_new(module_name, fdesc, user_data);
+    gfal_file_handle f = gfal_file_handle_new(module_name, fdesc);
     if(file_path)
         f->path = g_strdup(file_path);
+    f->ext_data = user_data;
     return f;
 }
  

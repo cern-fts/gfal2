@@ -6,6 +6,7 @@ add_subdirectory (utils)
 
 set(gfal2_utils_src ${gfal2_utils_src} PARENT_SCOPE)
 set(gfal2_utils_c_src ${gfal2_utils_c_src} PARENT_SCOPE)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/utils)
 
 # Core library
 if (MAIN_CORE)

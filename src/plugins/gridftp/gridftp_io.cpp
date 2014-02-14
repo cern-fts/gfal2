@@ -218,7 +218,7 @@ gfal_file_handle GridftpModule::open(const char* url, int flag, mode_t mode)
 	}
 
 	gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::open] ");	
-	return gfal_file_handle_ext_new(gridftp_plugin_name(), (gpointer) desc.release(), NULL);
+    return gfal_file_handle_new2(gridftp_plugin_name(), (gpointer) desc.release(), NULL, url);
 }
 
 ssize_t GridftpModule::read(gfal_file_handle handle, void* buffer, size_t count){

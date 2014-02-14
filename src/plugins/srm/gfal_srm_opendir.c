@@ -69,18 +69,18 @@ static void _parse_opendir_parameters(char* parameters, gfal_srm_opendir_handle 
                     *value = '\0';
                     ++value;
                     if (strcasecmp("offset", key) == 0) {
-                        h->slice.offset = atoi(value);
+                        h->slice_offset = atoi(value);
                     }
                     else if (strcasecmp("count", key) == 0) {
-                        h->slice.count = atoi(value);
+                        h->max_count = atoi(value);
                     }
                 }
             } while ((pair = strtok_r(NULL, ";", &saveptr)));
         }
     }
     else {
-        h->slice.count = 0;
-        h->slice.offset = 0;
+        h->slice_offset = 0;
+        h->max_count = 0;
     }
 }
 

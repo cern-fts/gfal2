@@ -47,6 +47,7 @@
 #include <common/gfal_common_errverbose.h>
 #include <config/gfal_config.h>
 
+#include "gfal_lfc.h"
 #include "lfc_ifce_ng.h"
 
 
@@ -225,7 +226,6 @@ static int gfal_lfc_abortTransaction(struct lfc_ops* ops, GError ** err){
  
 
 int gfal_convert_guid_to_lfn_r(plugin_handle handle, const char* guid, char* buff_lfn, size_t sbuff_lfn, GError ** err){
-	GError* tmp_err=NULL;	
 	int ret;
 	int size = 0;
 	struct lfc_ops* ops = (struct lfc_ops*) handle;	
@@ -244,8 +244,6 @@ int gfal_convert_guid_to_lfn_r(plugin_handle handle, const char* guid, char* buf
 			ret =0;
 		}
 	}
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
 	free(links);
 	return ret;
  }
@@ -301,10 +299,15 @@ struct lfc_ops* gfal_load_lfc(const char* name, GError** err){
 
     // dyn resolution
     void* lib_handle = dlopen("liblfc.so.1", RTLD_LAZY);
-    lfc_sym->set_env = dlsym(lib_handle,"lfc_setenv");
-    if(lib_handle)
+
+    if(lib_handle) {
+        lfc_sym->set_env = dlsym(lib_handle,"lfc_setenv");
         dlclose(lib_handle);
-    errno =0;
+    }
+    else {
+        lfc_sym->set_env = NULL;
+    }
+    errno = 0;
 	G_RETURN_ERR(lfc_sym, tmp_err, err);
 }
 

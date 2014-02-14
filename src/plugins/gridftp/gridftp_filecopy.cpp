@@ -47,7 +47,7 @@ static Glib::Quark gfal_gsiftp_domain(){
 /*IPv6 compatible lookup*/
 std::string lookup_host (const char *host)
 {
-  struct addrinfo hints, *res=NULL;
+  struct addrinfo hints, *addresses = NULL;
   int errcode;
   char addrstr[100]={0};
   void *ptr = NULL;
@@ -61,33 +61,34 @@ std::string lookup_host (const char *host)
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_flags |= AI_CANONNAME;
 
-  errcode = getaddrinfo (host, NULL, &hints, &res);
+  errcode = getaddrinfo (host, NULL, &hints, &addresses);
   if (errcode != 0){
   	return std::string("cant.be.resolved");
   }
 
-  while (res)
+  struct addrinfo *i = addresses;
+  while (i)
     {
-      inet_ntop (res->ai_family, res->ai_addr->sa_data, addrstr, 100);
+      inet_ntop (i->ai_family, i->ai_addr->sa_data, addrstr, 100);
 
-      switch (res->ai_family)
+      switch (i->ai_family)
         {
         case AF_INET:
-          ptr = &((struct sockaddr_in *) res->ai_addr)->sin_addr;
+          ptr = &((struct sockaddr_in *) i->ai_addr)->sin_addr;
           break;
         case AF_INET6:
-          ptr = &((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
+          ptr = &((struct sockaddr_in6 *) i->ai_addr)->sin6_addr;
           break;
         }
       if(ptr){	
-      	inet_ntop (res->ai_family, ptr, addrstr, 100);      
+      	inet_ntop (i->ai_family, ptr, addrstr, 100);
 	}
 
-      res = res->ai_next;
-    }
+      i = i->ai_next;
+  }
     
-  if(res)
-  	freeaddrinfo(res);
+  if(addresses)
+  	freeaddrinfo(addresses);
   
   if(strlen(addrstr) < 7)
   	return std::string("cant.be.resolved");
