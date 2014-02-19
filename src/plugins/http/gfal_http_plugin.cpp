@@ -1,7 +1,8 @@
 #include "gfal_http_plugin.h"
-#include <errno.h>
-#include <davix.hpp>
 #include <cstdio>
+#include <davix.hpp>
+#include <errno.h>
+#include <logger/gfal_logger.h>
 
 using namespace Davix;
 
@@ -209,7 +210,12 @@ int gfal_http_authn_cert_X509(void* userdata, const SessionInfo & info,
     }
 
     // Set certificate
-    return cert->loadFromFilePEM(ukey, ucert, "", err);
+    int load_stat = cert->loadFromFilePEM(ukey, ucert, "", err);
+    if (load_stat != 0) {
+        gfal_log(GFAL_VERBOSE_NORMAL,
+                "Could not load the credentials: %s", (*err)->getErrMsg().c_str());
+    }
+    return load_stat;
 }
 
 
