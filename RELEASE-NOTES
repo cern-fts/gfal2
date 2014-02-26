@@ -1,5 +1,19 @@
 GFAL 2.0 RELEASE-NOTE:
 
+
+* Wed Feb 26 2014 Adrien Devresse <adevress at cern.ch> - 2.5.5-1
+- [LCGUTIL-40] - GFAL 2.0 : implement lfc logic that allows third party copy logic with SRM
+- [LCGUTIL-268] - gfal2 returns no error when proxy is invalid
+- [LCGUTIL-290] - Problems with dates in gfalFS
+- [LCGUTIL-295] - GridFTP plugin returns the full path when listing an empty directory
+- [LCGUTIL-284] - LFC registration (as 3rd party copy) should perform some validations
+- [LCGUTIL-286] - GFAL2 doesn't support multiple BDII
+- [LCGUTIL-287] - If LFC_HOST is not specified, it should be looked in the BDII
+- [LCGUTIL-288] - Implement readdirpp directly in plugins that support it
+- [LCGUTIL-46] - GFAL 2.0 : find a workaround for non posix file information that are not mapped to xattr
+- [LCGUTIL-267] - gfal2 checksum doesn't work for local files
+- [LCGUTIL-285] - Add gsiftp meta-data cache
+
 * Fri Dec 06 2013 Alejandro Alvarez <aalvarez at cern.ch> - 2.4.8-0
 - [LCGUTIL-216] - Checksum comparison must ignore heading '0'
 - [LCGUTIL-220] - gfal2 crashes with SIGSEGV sometimes on bringonline
