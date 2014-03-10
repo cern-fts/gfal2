@@ -224,7 +224,24 @@ static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfDat
     }
 }
 
-
+/// Clean dst, update err if failed during cleanup with something else than ENOENT,
+/// returns always -1 for convenience
+static int gfal_http_3rdcopy_cleanup(plugin_handle plugin_data, const char* dst, GError** err)
+{
+    GError *unlink_err = NULL;
+    if (gfal_http_unlinkG(plugin_data, dst, &unlink_err) != 0) {
+        if (unlink_err->code != ENOENT) {
+            GError* merged;
+            g_set_error(&merged, (*err)->domain, (*err)->code,
+                        "%s. Additionally when trying to remove the destination: %s",
+                        (*err)->message, unlink_err->message);
+            g_error_free(*err);
+            *err = merged;
+        }
+        g_error_free(unlink_err);
+    }
+    return -1;
+}
 
 int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
         gfalt_params_t params, const char* src, const char* dst, GError** err)
@@ -279,7 +296,7 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
     if (davError != NULL) {
         davix2gliberr(davError, err);
         Davix::DavixError::clearError(&davError);
-        return -1;
+        return gfal_http_3rdcopy_cleanup(plugin_data, dst, err);
     }
 
     // Checksum check
@@ -288,7 +305,7 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
                              GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER,
                              "");
         if (gfal_http_3rdcopy_checksum(plugin_data, params, src, dst, err) != 0)
-            return -1;
+            return gfal_http_3rdcopy_cleanup(plugin_data, dst, err);
         plugin_trigger_event(params, http_plugin_domain,
                              GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER,
                              "");
