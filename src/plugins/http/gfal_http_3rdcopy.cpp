@@ -298,12 +298,24 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
 }
 
 
+static bool is_supported_scheme(const char* url)
+{
+    const char *schemes[] = {"http", "https", "dav", "davs", NULL};
+    const char *colon = strchr(url, ':');
+    if (!colon)
+        return false;
+    size_t scheme_len = colon - url;
+    for (size_t i = 0; schemes[i] != NULL; ++i) {
+        if (strncmp(url, schemes[i], scheme_len) == 0)
+            return true;
+    }
+    return false;
+}
 
 int gfal_http_3rdcopy_check(plugin_handle plugin_data, const char* src,
         const char* dst, gfal_url2_check check)
 {
     if (check != GFAL_FILE_COPY)
         return 0;
-
-    return (strncmp(src, "https://", 8) == 0 && strncmp(dst, "https://", 8) == 0);
+    return is_supported_scheme(src) && is_supported_scheme(dst);
 }
