@@ -558,6 +558,16 @@ int gfal_lfc_get_errno(struct lfc_ops* ops){
 	return lfc_error;
 }
 
+void gfal_lfc_reset_errno(struct lfc_ops* ops){
+    int *lfc_error;
+#if defined(_REENTRANT) || defined(_THREAD_SAFE) || (defined(_WIN32) && (defined(_MT) || defined(_DLL)))
+    lfc_error = ops->get_serrno();
+#else
+    lfc_error = ops->get_serrno;
+#endif
+    *lfc_error = 0;
+}
+
 char*  gfal_lfc_get_strerror(struct lfc_ops* ops){
 #if defined(_REENTRANT) || defined(_THREAD_SAFE) || (defined(_WIN32) && (defined(_MT) || defined(_DLL)))
 	return ops->sstrerror (*(ops->get_serrno()));

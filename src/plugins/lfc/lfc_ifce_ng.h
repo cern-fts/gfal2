@@ -108,6 +108,8 @@ int lfc_configure_environment(struct lfc_ops * ops, const char* host, GError** e
 
 int gfal_lfc_get_errno(struct lfc_ops* ops);
 
+void gfal_lfc_reset_errno(struct lfc_ops* ops);
+
 int gfal_lfc_regex_compile(regex_t* rex, GError** err);
 
 char*  gfal_lfc_get_strerror(struct lfc_ops* ops);

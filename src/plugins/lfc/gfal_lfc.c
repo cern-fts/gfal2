@@ -490,17 +490,25 @@ static struct dirent* lfc_convert_dirent_struct(struct lfc_ops *ops , struct dir
 /*
  * Execute a readdirpp func on the lfc
  * */
-static struct dirent* lfc_readdirppG(plugin_handle handle, gfal_file_handle fh, struct stat* st, GError** err){
-    g_return_val_err_if_fail( handle && fh , NULL, err, "[lfc_rmdirG] Invalid value in args handle/path");
-    GError* tmp_err=NULL;
-    int sav_errno =0;
+static struct dirent* lfc_readdirppG(plugin_handle handle, gfal_file_handle fh,
+        struct stat* st, GError** err)
+{
+    g_return_val_err_if_fail(handle && fh, NULL, err, "[lfc_rmdirG] Invalid value in args handle/path");
+    GError* tmp_err = NULL;
+    int sav_errno = 0;
     struct lfc_ops *ops = (struct lfc_ops*) handle;
+
     gfal_lfc_init_thread(ops);
     gfal_auto_maintain_session(ops, &tmp_err);
-    lfc_opendir_handle oh = (lfc_opendir_handle )fh->ext_data;
-    struct dirent* ret=  lfc_convert_dirent_struct(ops, ((struct dirent*) &oh->current_dir), st, (ops->readdirx( (lfc_DIR*)fh->fdesc)), oh->url);
-    if(ret ==NULL && (sav_errno =gfal_lfc_get_errno(ops)) ){
-        g_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, "[%s] Error report from LFC %s", __func__, gfal_lfc_get_strerror(ops) );
+    gfal_lfc_reset_errno(ops);
+
+    lfc_opendir_handle oh = (lfc_opendir_handle) fh->ext_data;
+    struct dirent* ret;
+    ret = lfc_convert_dirent_struct(ops, ((struct dirent*) &oh->current_dir), st, (ops->readdirx((lfc_DIR*) fh->fdesc)), oh->url);
+    if (ret == NULL && (sav_errno = gfal_lfc_get_errno(ops))) {
+        g_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno,
+                "[%s] Error report from LFC %s", __func__,
+                gfal_lfc_get_strerror(ops));
     }
     return ret;
 }
