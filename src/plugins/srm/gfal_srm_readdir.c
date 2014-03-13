@@ -161,6 +161,12 @@ static struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch,
     else if (oh->slice_index >= oh->srm_ls_resu->nbsubpaths) {
         return NULL ; // limited mode in order to not overload the srm server ( slow )
     }
+
+    // Empty directory
+    if (oh->srm_ls_resu->nbsubpaths == 0) {
+        return NULL;
+    }
+
     if (!tmp_err) {
         ret = gfal_srm_readdir_convert_result(ch, oh->surl,
                 &oh->srm_ls_resu->subpaths[oh->slice_index], &oh->current_readdir,
