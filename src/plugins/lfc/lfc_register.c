@@ -1,6 +1,7 @@
 #include <regex.h>
+#include "gfal_lfc.h"
 #include "file/gfal_file_api.h"
-#include "lfc_register.h"
+#include "lfc_ifce_ng.h"
 
 struct size_and_checksum {
     u_signed64 filesize;
@@ -12,7 +13,7 @@ struct size_and_checksum {
 /**
  * Check URLs
  */
-int gfal_lfc_register_check(plugin_handle handle, const char* src_url,
+int gfal_lfc_register_check(plugin_handle handle, gfal_context_t context, const char* src_url,
         const char* dst_url, gfal_url2_check check)
 {
     struct lfc_ops* ops = (struct lfc_ops*) handle;

@@ -53,7 +53,7 @@ int plugin_trigger_event(gfalt_params_t params, GQuark domain,
 /** prototype for the url_check entry point : this entry point is mandatory !!!
  *
  * */
-typedef int(*plugin_url_check2_call)(plugin_handle,  const char* src, const char* dst, gfal_url2_check check);
+typedef int(*plugin_url_check2_call)(plugin_handle, gfal_context_t, const char* src, const char* dst, gfal_url2_check check);
 
 // prototype for the filecopy entry point in the plugins
 typedef int (*plugin_filecopy_call)(plugin_handle, gfal2_context_t, gfalt_params_t, const char* src, const char* dst, GError** );

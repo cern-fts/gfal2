@@ -42,7 +42,6 @@
 #include <common/gfal_common_internal.h>
 #include <common/gfal_common_filedescriptor.h>
 #include "lfc_ifce_ng.h"
-#include "lfc_register.h"
 
 
 static gboolean init_thread = FALSE;

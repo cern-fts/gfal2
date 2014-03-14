@@ -2,6 +2,7 @@
 #include <copy/davixcopy.hpp>
 #include <unistd.h>
 #include <transfer/gfal_transfer_plugins.h>
+#include <config/gfal_config.h>
 #include <checksums/checksums.h>
 #include <cstdio>
 #include <common/gfal_common_errverbose.h>
@@ -317,6 +318,16 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
 }
 
 
+static bool is_http_3rdcopy_disabled(gfal_context_t context)
+{
+    GError *err = NULL;
+    bool disabled = gfal2_get_opt_boolean(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", &err);
+    if (err)
+        g_error_free(err);
+    return disabled;
+}
+
+
 static bool is_supported_scheme(const char* url)
 {
     const char *schemes[] = {"http", "https", "dav", "davs", NULL};
@@ -331,10 +342,10 @@ static bool is_supported_scheme(const char* url)
     return false;
 }
 
-int gfal_http_3rdcopy_check(plugin_handle plugin_data, const char* src,
+int gfal_http_3rdcopy_check(plugin_handle plugin_data, gfal_context_t context, const char* src,
         const char* dst, gfal_url2_check check)
 {
-    if (check != GFAL_FILE_COPY)
+    if (check != GFAL_FILE_COPY || is_http_3rdcopy_disabled(context))
         return 0;
     return is_supported_scheme(src) && is_supported_scheme(dst);
 }

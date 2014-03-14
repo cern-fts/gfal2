@@ -148,7 +148,7 @@ const plugin_filecopy_call FileCopy::find_copy_plugin(const std::string & src, c
             plugin_url_check2_call check_call = p_list->plugin_api->check_plugin_url_transfer;
             if(check_call != NULL){
                 gboolean compatible;
-                if( (compatible = check_call(p_list->plugin_data, src.c_str(), dst.c_str(), GFAL_FILE_COPY) ) == TRUE){
+                if( (compatible = check_call(p_list->plugin_data, context, src.c_str(), dst.c_str(), GFAL_FILE_COPY) ) == TRUE){
                     *plugin_data = p_list->plugin_data;
                     resu = p_list->plugin_api->copy_file;
                     break;

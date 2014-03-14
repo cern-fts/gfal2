@@ -83,6 +83,6 @@ int gfal_http_checksum(plugin_handle data, const char* url, const char* check_ty
 int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params,
                       const char* src, const char* dst, GError** err);
 
-int gfal_http_3rdcopy_check(plugin_handle plugin_data,  const char* src, const char* dst, gfal_url2_check check);
+int gfal_http_3rdcopy_check(plugin_handle plugin_data, gfal_context_t context, const char* src, const char* dst, gfal_url2_check check);
 
 #endif //_GFAL_HTTP_PLUGIN_H

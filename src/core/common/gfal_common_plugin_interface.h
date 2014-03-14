@@ -385,7 +385,7 @@ struct _gfal_plugin_interface{
       *  should return TRUE if the plugin is able to execute third party transfer from src to dst url
       *
       */
-     int(*check_plugin_url_transfer)(plugin_handle plugin_data,  const char* src, const char* dst, gfal_url2_check check);
+     int(*check_plugin_url_transfer)(plugin_handle plugin_data, gfal_context_t, const char* src, const char* dst, gfal_url2_check check);
 
      /**
        *

@@ -30,7 +30,8 @@ gboolean srm_check_url(const char * surl);
  * 
  * */
 
-gboolean plugin_url_check2(plugin_handle handle, const char* src, const char* dst, gfal_url2_check type );
+gboolean plugin_url_check2(plugin_handle handle, gfal_context_t context,
+        const char* src, const char* dst, gfal_url2_check type );
 
 
 #endif /* GFAL_COMMON_SRM_URL_CHECK_H */ 
