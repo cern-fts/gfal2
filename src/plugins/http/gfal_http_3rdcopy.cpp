@@ -5,6 +5,7 @@
 #include <checksums/checksums.h>
 #include <cstdio>
 #include <common/gfal_common_errverbose.h>
+#include <file/gfal_file_api.h>
 #include "gfal_http_plugin.h"
 
 
@@ -95,6 +96,7 @@ char* gfal_http_get_parent(const char* url)
 
 int gfal_http_3rdcopy_make_parent(plugin_handle plugin_data,
                                   gfalt_params_t params,
+                                  gfal_context_t context,
                                   const char* dst,
                                   GError** err)
 {
@@ -123,7 +125,7 @@ int gfal_http_3rdcopy_make_parent(plugin_handle plugin_data,
     }
     // Does not exist
     else {
-        gfal_http_mkdirpG(plugin_data, parent, 0755, TRUE, &nestedError);
+        gfal2_mkdir_rec(context, parent, 0755, &nestedError);
         if (nestedError) {
             g_propagate_prefixed_error(err, nestedError, "[%s]", __func__);
             return -1;
@@ -265,7 +267,7 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
                              "");
 
         if (gfal_http_3rdcopy_overwrite(plugin_data, params, dst, err) != 0 ||
-            gfal_http_3rdcopy_make_parent(plugin_data, params, dst, err) != 0)
+            gfal_http_3rdcopy_make_parent(plugin_data, params, context, dst, err) != 0)
             return -1;
     }
 
