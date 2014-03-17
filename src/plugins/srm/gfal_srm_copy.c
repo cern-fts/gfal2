@@ -304,6 +304,30 @@ static int srm_validate_destination_checksum(plugin_handle handle, gfal2_context
     return ret;
 }
 
+static void srm_force_unlink(plugin_handle handle,
+        gfal2_context_t context,
+        const char* surl,
+        GError** err)
+{
+    GError* unlink_err = NULL;
+    gfal_srm_unlinkG(handle, surl, &unlink_err);
+    if (unlink_err != NULL) {
+        if (unlink_err->code != ENOENT) {
+            GError* merged = NULL;
+            g_set_error(&merged, gfal2_get_plugin_srm_quark(), (*err)->code,
+                    "%s\n"
+                    "Also got an error when removing the destination surl: %s",
+                    (*err)->message, unlink_err->message);
+            g_error_free(*err);
+            *err = merged;
+        }
+        else {
+            gfal_log(GFAL_VERBOSE_DEBUG, "Destination surl did not exist after abort");
+        }
+        g_error_free(unlink_err);
+    }
+    gfal_log(GFAL_VERBOSE_VERBOSE, "Successfully removed destination surl after abort: %s", surl);
+}
 
 static void srm_rollback_put(plugin_handle handle,
         gfal2_context_t context,
@@ -340,6 +364,9 @@ static void srm_rollback_put(plugin_handle handle,
                 *err = merged;
             }
         }
+        // Some endpoints may not remove the file after an abort (i.e. Castor),
+        // so do it ourselves if it is still there (see LCGUTIL-358)
+        srm_force_unlink(handle, context, surl, err);
     }
 }
 
