@@ -31,6 +31,7 @@ GQuark GFAL_EVENT_CHECKSUM_ENTER = g_quark_from_static_string("CHECKSUM:ENTER");
 GQuark GFAL_EVENT_CHECKSUM_EXIT = g_quark_from_static_string("CHECKSUM:EXIT");
 GQuark GFAL_EVENT_CANCEL_ENTER = g_quark_from_static_string("CANCEL:ENTER");
 GQuark GFAL_EVENT_CANCEL_EXIT = g_quark_from_static_string("CANCEL:EXIT");
+GQuark GFAL_EVENT_OVERWRITE_DESTINATION = g_quark_from_static_string("OVERWRITE");
 
 
 int plugin_trigger_event(gfalt_params_t params, GQuark domain,

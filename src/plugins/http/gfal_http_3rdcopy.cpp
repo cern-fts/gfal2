@@ -73,6 +73,8 @@ int gfal_http_3rdcopy_overwrite(plugin_handle plugin_data,
 
         gfal_log(GFAL_VERBOSE_TRACE,
                  "File %s deleted with success (overwrite set)", dst);
+        plugin_trigger_event(params, http_plugin_domain, GFAL_EVENT_DESTINATION,
+                             GFAL_EVENT_OVERWRITE_DESTINATION, "Deleted %s", dst);
     }
     return 0;
 }

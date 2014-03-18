@@ -54,6 +54,9 @@ int srm_plugin_delete_existing_copy(plugin_handle handle, gfalt_params_t params,
         res = gfal_srm_unlinkG(handle, surl, &tmp_err);
         if (res == 0) {
             gfal_log(GFAL_VERBOSE_TRACE, "\t%s deleted with success", surl);
+            plugin_trigger_event(params, srm_domain(), GFAL_EVENT_DESTINATION,
+                                 GFAL_EVENT_OVERWRITE_DESTINATION,
+                                 "Deleted %s", surl);
         }
         else if (tmp_err->code == ENOENT) {
             gfal_log(GFAL_VERBOSE_TRACE, "\t%s doesn't exist, carry on", surl);

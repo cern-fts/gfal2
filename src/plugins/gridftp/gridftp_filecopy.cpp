@@ -117,6 +117,8 @@ void gridftp_filecopy_delete_existing(gfal2_context_t context, GridFTP_session *
             gfal_log(GFAL_VERBOSE_TRACE, " File %s already exist, delete it for override ....",url);
             gridftp_unlink_internal(context, sess, url, false);
             gfal_log(GFAL_VERBOSE_TRACE, " File %s deleted with success, proceed to copy ....",url);
+            plugin_trigger_event(params, gfal_gridftp_scope_filecopy(), GFAL_EVENT_DESTINATION,
+                                 GFAL_EVENT_OVERWRITE_DESTINATION, "Deleted %s", url);
         }else{
             char err_buff[GFAL_ERRMSG_LEN];
             snprintf(err_buff, GFAL_ERRMSG_LEN, " Destination already exist %s, Cancel", url);
