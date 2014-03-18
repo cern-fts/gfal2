@@ -170,6 +170,14 @@ struct GridFTP_session_implem : public GridFTP_session{
             _sess->tcp_buffer_size.fixed.size = tcp_buffer_size;
         }
     }
+
+    void enable_udt() {
+        globus_ftp_client_operationattr_set_net_stack( &(_sess->operation_attr_ftp), "udt");
+    }
+
+    void disable_udt() {
+        globus_ftp_client_operationattr_set_net_stack( &(_sess->operation_attr_ftp), "default");;
+    }
 	
 	virtual globus_ftp_client_handle_t* get_ftp_handle(){
 		globus_result_t res = globus_gass_copy_get_ftp_handle(&(_sess->gass_handle), &(_sess->handle_ftp));

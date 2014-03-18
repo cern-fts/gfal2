@@ -106,6 +106,7 @@ static std::string returnHostname(const std::string &uri){
 const char * gridftp_checksum_transfer_config   = "COPY_CHECKSUM_TYPE";
 const char * gridftp_perf_marker_timeout_config = "PERF_MARKER_TIMEOUT";
 const char * gridftp_skip_transfer_config       = "SKIP_SOURCE_CHECKSUM";
+const char * gridftp_enable_udt                 = "ENABLE_UDT";
 
 void gridftp_filecopy_delete_existing(gfal2_context_t context, GridFTP_session * sess, gfalt_params_t params, const char * url){
 	const bool replace = gfalt_get_replace_existing_file(params,NULL);
@@ -300,9 +301,36 @@ void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, gl
     }
 }
 
+static void gridftp_do_copy(GridFTPFactoryInterface* factory, gfalt_params_t params,
+        const char* src, const char* dst,
+        GridFTP_Request_state& req, time_t timeout)
+{
+    GridFTP_session* sess = req.sess.get();
 
-int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt_params_t params,
-                                        const char* src, const char* dst){
+    std::auto_ptr<Gass_attr_handler>  gass_attr_src(sess->generate_gass_copy_attr());
+    std::auto_ptr<Gass_attr_handler>  gass_attr_dst(sess->generate_gass_copy_attr());
+    Callback_handler callback_handler(factory->get_handle(), params, &req, src, dst);
+
+    req.start();
+    gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);
+    GridFTPOperationCanceler canceler(factory->get_handle(), &req);
+    gfal_globus_result_t res = globus_gass_copy_register_url_to_url(
+        sess->get_gass_handle(),
+        (char*)src,
+        &(gass_attr_src->attr_gass),
+        (char*)dst,
+        &(gass_attr_dst->attr_gass),
+        globus_gass_basic_client_callback,
+        &req
+    );
+
+    gfal_globus_check_result("GridFTPFileCopyModule::filecopy", res);
+    req.wait_callback(gfal_gridftp_scope_filecopy(), timeout);
+}
+
+static int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt_params_t params,
+                                        const char* src, const char* dst)
+{
     using namespace Gfal::Transfer;
     GError * tmp_err=NULL;
 
@@ -312,13 +340,11 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
     const unsigned int nbstream = gfalt_get_nbstreams(params, &tmp_err); Gfal::gerror_to_cpp(&tmp_err);
     const guint64 tcp_buffer_size = gfalt_get_tcp_buffer_size(params, &tmp_err); Gfal::gerror_to_cpp(&tmp_err);
 
-    std::auto_ptr<GridFTP_Request_state> req(  new GridFTP_Request_state(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(src)),
-                                                                         true,
-                                                                         GRIDFTP_REQUEST_GASS)
-                                            );
-    GridFTP_session* sess = req->sess.get();
+    GridFTP_Request_state req(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(src)),
+                              true, GRIDFTP_REQUEST_GASS);
+    GridFTP_session* sess = req.sess.get();
 
-    sess->set_nb_stream( nbstream);
+    sess->set_nb_stream(nbstream);
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] setup gsiftp number of streams to %d", nbstream);
     sess->set_tcp_buffer_size(tcp_buffer_size);
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] setup gsiftp buffer size to %d", tcp_buffer_size);
@@ -328,25 +354,25 @@ int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt
         gridftp_create_parent_copy(factory->get_handle(), params, dst);
     }
 
-    std::auto_ptr<Gass_attr_handler>  gass_attr_src(sess->generate_gass_copy_attr());
-    std::auto_ptr<Gass_attr_handler>  gass_attr_dst(sess->generate_gass_copy_attr());
-    Callback_handler callback_handler(factory->get_handle(), params, req.get(), src, dst);
+    gboolean enable_udt_transfers = gfal2_get_opt_boolean(factory->get_handle(),
+            GRIDFTP_CONFIG_GROUP, gridftp_enable_udt, NULL);
 
-    req->start();
-    gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);
-    GridFTPOperationCanceler canceler(factory->get_handle(), req.get());
-    gfal_globus_result_t res = globus_gass_copy_register_url_to_url(
-        sess->get_gass_handle(),
-        (char*)src,
-        &(gass_attr_src->attr_gass),
-        (char*)dst,
-        &(gass_attr_dst->attr_gass),
-        globus_gass_basic_client_callback,
-        req.get()
-    );
+    if (enable_udt_transfers)
+        sess->enable_udt();
 
-    gfal_globus_check_result("GridFTPFileCopyModule::filecopy", res);
-    req->wait_callback(gfal_gridftp_scope_filecopy(), timeout);
+    try {
+        gridftp_do_copy(factory, params, src, dst, req, timeout);
+    }
+    catch (Gfal::CoreException& e) {
+        // Try again if the failure was related to udt
+        if (e.what().find("udt driver not whitelisted") != Glib::ustring::npos) {
+            gfal_log(GFAL_VERBOSE_VERBOSE, "UDT transfer failed! Disabling and retrying...");
+
+            sess->disable_udt();
+            gridftp_do_copy(factory, params, src, dst, req, timeout);
+        }
+    }
+
     return 0;
 
 }
@@ -425,7 +451,7 @@ void GridftpModule::filecopy(gfalt_params_t params, const char* src, const char*
             Gfal::gerror_to_cpp(&get_default_error);
 
             strncpy(checksum_type, default_checksum_type, sizeof(checksum_type));
-	    checksum_type[GFAL_URL_MAX_LEN-1] = '\0';
+            checksum_type[GFAL_URL_MAX_LEN-1] = '\0';
             g_free(default_checksum_type);
 
             gfal_log(GFAL_VERBOSE_TRACE,

@@ -62,6 +62,10 @@ struct GridFTP_session{
 
     virtual void set_tcp_buffer_size(const guint64 tcp_buffer_size)=0;
 
+    virtual void enable_udt()=0;
+
+    virtual void disable_udt()=0;
+
     virtual void disableReuse(){
         _isDirty = true;
     }
