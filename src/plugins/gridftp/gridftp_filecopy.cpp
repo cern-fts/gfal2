@@ -359,8 +359,10 @@ static int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory
     gboolean enable_udt_transfers = gfal2_get_opt_boolean(factory->get_handle(),
             GRIDFTP_CONFIG_GROUP, gridftp_enable_udt, NULL);
 
-    if (enable_udt_transfers)
+    if (enable_udt_transfers) {
+        gfal_log(GFAL_VERBOSE_VERBOSE, "Trying UDT transfer");
         sess->enable_udt();
+    }
 
     try {
         gridftp_do_copy(factory, params, src, dst, req, timeout);
