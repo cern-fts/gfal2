@@ -361,6 +361,10 @@ static int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory
 
     if (enable_udt_transfers) {
         gfal_log(GFAL_VERBOSE_VERBOSE, "Trying UDT transfer");
+        plugin_trigger_event(params, gfal_gsiftp_domain(),
+                             GFAL_EVENT_NONE,
+                             g_quark_from_static_string("UDT:ENABLE"),
+                             "Trying UDT");
         sess->enable_udt();
     }
 
@@ -371,6 +375,12 @@ static int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory
         // Try again if the failure was related to udt
         if (e.what().find("udt driver not whitelisted") != Glib::ustring::npos) {
             gfal_log(GFAL_VERBOSE_VERBOSE, "UDT transfer failed! Disabling and retrying...");
+
+            plugin_trigger_event(params, gfal_gsiftp_domain(),
+                                 GFAL_EVENT_NONE,
+                                 g_quark_from_static_string("UDT:DISABLE"),
+                                 "UDT failed. Falling back to default mode: %s",
+                                 e.what().c_str());
 
             sess->disable_udt();
             gridftp_do_copy(factory, params, src, dst, req, timeout);
