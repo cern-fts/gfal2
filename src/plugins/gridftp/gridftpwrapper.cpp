@@ -168,6 +168,7 @@ struct GridFTP_session_implem : public GridFTP_session{
         }else{
             _sess->tcp_buffer_size.mode = GLOBUS_FTP_CONTROL_TCPBUFFER_FIXED;
             _sess->tcp_buffer_size.fixed.size = tcp_buffer_size;
+	    apply_default_tcp_buffer_attributes();
         }
     }
 
