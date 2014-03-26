@@ -305,8 +305,28 @@ static void gfal_http_third_party_copy(GfalHttpInternal* davix,
 
 
 struct HttpStreamProvider {
+    const char *source, *destination;
+
     gfal2_context_t context;
     int source_fd;
+    time_t start, last_update;
+    dav_ssize_t read_instant;
+    gfalt_hook_transfer_plugin_t perf;
+
+    gfalt_monitor_func perf_callback;
+    void* perf_callback_data;
+
+    HttpStreamProvider(const char* source, const char* destination,
+            gfal2_context_t context, int source_fd, gfalt_params_t params):
+        source(source), destination(destination),
+        context(context), source_fd(source_fd), start(time(NULL)),
+        last_update(start), read_instant(0)
+    {
+        memset(&perf, 0, sizeof(perf));
+
+        perf_callback = gfalt_get_monitor_callback(params, NULL);
+        perf_callback_data = gfalt_get_user_data(params, NULL);
+    }
 };
 
 
@@ -317,12 +337,37 @@ static dav_ssize_t gfal_http_streamed_provider(void *userdata,
     HttpStreamProvider* data = static_cast<HttpStreamProvider*>(userdata);
     dav_ssize_t ret = 0;
 
+    time_t now = time(NULL);
+
     if (buflen == 0) {
+        data->perf.bytes_transfered = data->read_instant = 0;
+        data->perf.average_baudrate = 0;
+        data->perf.instant_baudrate = 0;
+        data->start = data->last_update = now;
+
         if (gfal2_lseek(data->context, data->source_fd, 0, SEEK_SET, &error) < 0)
             ret = -1;
     }
     else {
         ret = gfal2_read(data->context, data->source_fd, buffer, buflen, &error);
+        if (ret > 0)
+            data->read_instant += ret;
+
+        if (now - data->last_update >= 5) {
+            data->perf.bytes_transfered += data->read_instant;
+            data->perf.transfer_time = now - data->start;
+            data->perf.average_baudrate = data->perf.bytes_transfered / data->perf.transfer_time;
+            data->perf.instant_baudrate = data->read_instant / now - data->last_update;
+
+            data->last_update = now;
+            data->read_instant = 0;
+
+            if (data->perf_callback) {
+                gfalt_transfer_status_t state = gfalt_transfer_status_create(&data->perf);
+                data->perf_callback(state, data->source, data->destination, data->perf_callback_data);
+                gfalt_transfer_status_delete(state);
+            }
+        }
     }
 
     if (error)
@@ -354,17 +399,17 @@ static void gfal_http_streamed_copy(gfal2_context_t context,
     }
 
     Davix::DavixError* dav_error = NULL;
-    Davix::HttpRequest request(davix->context, Davix::Uri(dst), &dav_error);
+    Davix::PutRequest request(davix->context, Davix::Uri(dst), &dav_error);
     if (dav_error != NULL) {
         davix2gliberr(dav_error, err);
         Davix::DavixError::clearError(&dav_error);
         return;
     }
 
-    request.setRequestMethod("PUT");
     request.setParameters(davix->params);
 
-    HttpStreamProvider provider = {context, source_fd};
+    HttpStreamProvider provider(src, dst, context, source_fd, params);
+
     request.setRequestBody(gfal_http_streamed_provider, src_stat.st_size, &provider);
     request.executeRequest(&dav_error);
 
