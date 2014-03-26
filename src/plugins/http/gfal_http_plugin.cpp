@@ -151,6 +151,8 @@ static int davix2errno(StatusCode::Code code)
 
     case StatusCode::FileExist:
       errcode = EEXIST;
+      break;
+
     default:
       errcode = EIO;
       break;

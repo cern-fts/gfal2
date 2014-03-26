@@ -92,10 +92,13 @@ static int gfal_http_copy_overwrite(plugin_handle plugin_data,
             return -1;
         }
 
-        gfal_log(GFAL_VERBOSE_TRACE,
+        gfal_log(GFAL_VERBOSE_DEBUG,
                  "File %s deleted with success (overwrite set)", dst);
         plugin_trigger_event(params, http_plugin_domain, GFAL_EVENT_DESTINATION,
                              GFAL_EVENT_OVERWRITE_DESTINATION, "Deleted %s", dst);
+    }
+    else {
+        gfal_log(GFAL_VERBOSE_DEBUG, "Source does not exist");
     }
     return 0;
 }
@@ -249,18 +252,132 @@ static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfDat
 static int gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GError** err)
 {
     GError *unlink_err = NULL;
-    if (gfal_http_unlinkG(plugin_data, dst, &unlink_err) != 0) {
-        if (unlink_err->code != ENOENT) {
-            GError* merged;
-            g_set_error(&merged, (*err)->domain, (*err)->code,
-                        "%s. Additionally when trying to remove the destination: %s",
-                        (*err)->message, unlink_err->message);
-            g_error_free(*err);
-            *err = merged;
+    if ((*err)->code != EEXIST) {
+        if (gfal_http_unlinkG(plugin_data, dst, &unlink_err) != 0) {
+            if (unlink_err->code != ENOENT) {
+                GError* merged;
+                g_set_error(&merged, (*err)->domain, (*err)->code,
+                            "%s. Additionally when trying to remove the destination: %s",
+                            (*err)->message, unlink_err->message);
+                g_error_free(*err);
+                *err = merged;
+            }
+            g_error_free(unlink_err);
         }
-        g_error_free(unlink_err);
+        else {
+            gfal_log(GFAL_VERBOSE_DEBUG, "Destination file removed");
+        }
+    }
+    else {
+        gfal_log(GFAL_VERBOSE_DEBUG, "The transfer failed because the file exists. Do not clean!");
     }
     return -1;
+}
+
+
+static void gfal_http_third_party_copy(GfalHttpInternal* davix,
+        const char* src, const char* dst,
+        gfalt_params_t params,
+        GError** err)
+{
+    gfal_log(GFAL_VERBOSE_VERBOSE, "Performing a HTTP third party copy");
+
+    PerfCallbackData perfCallbackData(
+            src, dst,
+            gfalt_get_monitor_callback(params, NULL),
+            gfalt_get_user_data(params, NULL)
+    );
+
+    Davix::DavixCopy copy(davix->context, &davix->params);
+
+    copy.setPerformanceCallback(gfal_http_3rdcopy_perfcallback, &perfCallbackData);
+
+    Davix::DavixError* davError = NULL;
+    copy.copy(Davix::Uri(src), Davix::Uri(dst),
+              gfalt_get_nbstreams(params, NULL),
+              &davError);
+
+    if (davError != NULL) {
+        davix2gliberr(davError, err);
+        Davix::DavixError::clearError(&davError);
+    }
+}
+
+
+struct HttpStreamProvider {
+    gfal2_context_t context;
+    int source_fd;
+};
+
+
+static dav_ssize_t gfal_http_streamed_provider(void *userdata,
+        char *buffer, dav_size_t buflen)
+{
+    GError* error = NULL;
+    HttpStreamProvider* data = static_cast<HttpStreamProvider*>(userdata);
+    dav_ssize_t ret = 0;
+
+    if (buflen == 0) {
+        if (gfal2_lseek(data->context, data->source_fd, 0, SEEK_SET, &error) < 0)
+            ret = -1;
+    }
+    else {
+        ret = gfal2_read(data->context, data->source_fd, buffer, buflen, &error);
+    }
+
+    if (error)
+        g_error_free(error);
+
+    return ret;
+}
+
+
+static void gfal_http_streamed_copy(gfal2_context_t context,
+        GfalHttpInternal* davix,
+        const char* src, const char* dst,
+        gfalt_params_t params,
+        GError** err)
+{
+    gfal_log(GFAL_VERBOSE_VERBOSE, "Performing a HTTP streamed copy");
+    GError *nested_err = NULL;
+
+    struct stat src_stat;
+    if (gfal2_stat(context, src, &src_stat, &nested_err) != 0) {
+        g_propagate_prefixed_error(err, nested_err, "[%s]", __func__);
+        return;
+    }
+
+    int source_fd = gfal2_open(context, src, O_RDONLY, &nested_err);
+    if (source_fd < 0) {
+        g_propagate_prefixed_error(err, nested_err, "[%s]", __func__);
+        return;
+    }
+
+    Davix::DavixError* dav_error = NULL;
+    Davix::HttpRequest request(davix->context, Davix::Uri(dst), &dav_error);
+    if (dav_error != NULL) {
+        davix2gliberr(dav_error, err);
+        Davix::DavixError::clearError(&dav_error);
+        return;
+    }
+
+    request.setRequestMethod("PUT");
+    request.setParameters(davix->params);
+
+    HttpStreamProvider provider = {context, source_fd};
+    request.setRequestBody(gfal_http_streamed_provider, src_stat.st_size, &provider);
+    request.executeRequest(&dav_error);
+
+    // dav_error is not set for "expected" http responses (i.e. 409)
+    if (dav_error == NULL && request.getRequestCode() >= 400) {
+        Davix::httpcodeToDavixCode(request.getRequestCode(), "", "", &dav_error);
+    }
+
+    if (dav_error != NULL) {
+        davix2gliberr(dav_error, err);
+        Davix::DavixError::clearError(&dav_error);
+        return;
+    }
 }
 
 
@@ -294,29 +411,23 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_EXIT,
                          "%s => %s", src, dst);
 
-    // Let Davix do the copy
-    Davix::DavixError* davError = NULL;
-    Davix::DavixCopy copy(davix->context, &davix->params);
-
+    // The real, actual, copy
     plugin_trigger_event(params, http_plugin_domain,
                          GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
                          "%s => %s", src, dst);
 
-    PerfCallbackData perfCallbackData(src, dst,
-            gfalt_get_monitor_callback(params, NULL), gfalt_get_user_data(params, NULL));
-
-    copy.setPerformanceCallback(gfal_http_3rdcopy_perfcallback, &perfCallbackData);
-    copy.copy(Davix::Uri(src), Davix::Uri(dst),
-              gfalt_get_nbstreams(params, NULL),
-              &davError);
+    if (!is_supported_scheme(src) || is_http_3rdcopy_disabled(context)) {
+        gfal_http_streamed_copy(context, davix, src, dst, params, err);
+    }
+    else {
+        gfal_http_third_party_copy(davix, src, dst, params, err);
+    }
 
     plugin_trigger_event(params, http_plugin_domain,
                          GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
                          "%s => %s", src, dst);
 
-    if (davError != NULL) {
-        davix2gliberr(davError, err);
-        Davix::DavixError::clearError(&davError);
+    if (*err != NULL) {
         return gfal_http_copy_cleanup(plugin_data, dst, err);
     }
 
