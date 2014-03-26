@@ -142,6 +142,7 @@ static int davix2errno(StatusCode::Code code)
     case StatusCode::LoginPasswordError:
     case StatusCode::CredentialNotFound:
     case StatusCode::CredDecryptionError:
+    case StatusCode::SSLError:
       errcode = EACCES;
       break;
 
