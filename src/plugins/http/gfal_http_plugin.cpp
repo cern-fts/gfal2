@@ -259,8 +259,8 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal_handle handle,
   http_plugin.checksum_calcG = &gfal_http_checksum;
 
   // Bind 3rd party copy
-  http_plugin.check_plugin_url_transfer = gfal_http_3rdcopy_check;
-  http_plugin.copy_file = gfal_http_3rdcopy;
+  http_plugin.check_plugin_url_transfer = gfal_http_copy_check;
+  http_plugin.copy_file = gfal_http_copy;
 
   return http_plugin;
 }
