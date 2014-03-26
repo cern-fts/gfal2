@@ -38,6 +38,10 @@ gboolean srm_check_url(const char * surl){
     return res;
 }
 
+static gboolean srm_has_schema(const char * surl){
+    return strstr(surl, "://") != NULL;
+}
+
 
 gboolean plugin_url_check2(plugin_handle handle, gfal_context_t context,
         const char* src, const char* dst, gfal_url2_check type)
@@ -46,9 +50,11 @@ gboolean plugin_url_check2(plugin_handle handle, gfal_context_t context,
     gboolean res = FALSE;
     gboolean src_srm = srm_check_url(src);
     gboolean dst_srm = srm_check_url(dst);
+    gboolean src_valid_url = src_srm || srm_has_schema(src);
+    gboolean dst_valid_url = dst_srm || srm_has_schema(dst);
 
     if (src != NULL && dst != NULL ) {
-        res = (type == GFAL_FILE_COPY && (src_srm || dst_srm));
+        res = (type == GFAL_FILE_COPY && ((src_srm && dst_valid_url) || (dst_srm && src_valid_url)));
     }
     return res;
 }
