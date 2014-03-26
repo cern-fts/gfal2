@@ -162,7 +162,8 @@ static int gfal_http_copy_make_parent(plugin_handle plugin_data,
 // dst may be NULL. In that case, the user-defined checksum
 // is compared with the source checksum.
 // If dst != NULL, then user-defined is ignored
-static int gfal_http_copy_checksum(plugin_handle plugin_data,
+static int gfal_http_copy_checksum(gfal2_context_t context,
+        plugin_handle plugin_data,
         gfalt_params_t params,
         const char *src, const char *dst,
         GError** err)
@@ -181,9 +182,11 @@ static int gfal_http_copy_checksum(plugin_handle plugin_data,
 
     GError *nestedError = NULL;
     char src_checksum[1024];
-    gfal_http_checksum(plugin_data, src, checksum_type,
-                       src_checksum, sizeof(src_checksum),
-                       0, 0, &nestedError);
+    // src may not be http!
+    gfal2_checksum(context, src, checksum_type,
+                   0, 0, src_checksum, sizeof(src_checksum),
+                   &nestedError);
+
     if (nestedError) {
         g_propagate_prefixed_error(err, nestedError, "[%s]", __func__);
         return -1;
@@ -441,7 +444,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         plugin_trigger_event(params, http_plugin_domain,
                              GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER,
                              "");
-        if (gfal_http_copy_checksum(plugin_data, params, src, NULL, err) != 0)
+        if (gfal_http_copy_checksum(context, plugin_data, params, src, NULL, err) != 0)
             return -1;
         plugin_trigger_event(params, http_plugin_domain,
                              GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT,
@@ -481,7 +484,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         plugin_trigger_event(params, http_plugin_domain,
                              GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER,
                              "");
-        if (gfal_http_copy_checksum(plugin_data, params, src, dst, err) != 0)
+        if (gfal_http_copy_checksum(context, plugin_data, params, src, dst, err) != 0)
             return gfal_http_copy_cleanup(plugin_data, dst, err);
         plugin_trigger_event(params, http_plugin_domain,
                              GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER,
