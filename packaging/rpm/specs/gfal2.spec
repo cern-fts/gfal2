@@ -2,7 +2,7 @@
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
 Name:				gfal2
-Version:			2.5.5
+Version:			2.6.0
 # https://fedoraproject.org/wiki/Packaging:NamingGuidelines#Release_Tag
 Release:			1%{?dist}
 Summary:			Grid file access library 2.0
@@ -30,6 +30,8 @@ BuildRequires:		e2fsprogs-devel
 %else
 BuildRequires:		libuuid-devel	
 %endif
+#file plugin dependencies
+BuildRequires:		zlib-devel
 #lfc plugin dependencies
 BuildRequires:		lfc-devel
 #rfio plugin dependencies

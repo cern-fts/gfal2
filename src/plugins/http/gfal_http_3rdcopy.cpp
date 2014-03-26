@@ -2,9 +2,11 @@
 #include <copy/davixcopy.hpp>
 #include <unistd.h>
 #include <transfer/gfal_transfer_plugins.h>
+#include <config/gfal_config.h>
 #include <checksums/checksums.h>
 #include <cstdio>
 #include <common/gfal_common_errverbose.h>
+#include <file/gfal_file_api.h>
 #include "gfal_http_plugin.h"
 
 
@@ -71,6 +73,8 @@ int gfal_http_3rdcopy_overwrite(plugin_handle plugin_data,
 
         gfal_log(GFAL_VERBOSE_TRACE,
                  "File %s deleted with success (overwrite set)", dst);
+        plugin_trigger_event(params, http_plugin_domain, GFAL_EVENT_DESTINATION,
+                             GFAL_EVENT_OVERWRITE_DESTINATION, "Deleted %s", dst);
     }
     return 0;
 }
@@ -95,6 +99,7 @@ char* gfal_http_get_parent(const char* url)
 
 int gfal_http_3rdcopy_make_parent(plugin_handle plugin_data,
                                   gfalt_params_t params,
+                                  gfal_context_t context,
                                   const char* dst,
                                   GError** err)
 {
@@ -123,7 +128,7 @@ int gfal_http_3rdcopy_make_parent(plugin_handle plugin_data,
     }
     // Does not exist
     else {
-        gfal_http_mkdirpG(plugin_data, parent, 0755, TRUE, &nestedError);
+        gfal2_mkdir_rec(context, parent, 0755, &nestedError);
         if (nestedError) {
             g_propagate_prefixed_error(err, nestedError, "[%s]", __func__);
             return -1;
@@ -224,7 +229,24 @@ static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfDat
     }
 }
 
-
+/// Clean dst, update err if failed during cleanup with something else than ENOENT,
+/// returns always -1 for convenience
+static int gfal_http_3rdcopy_cleanup(plugin_handle plugin_data, const char* dst, GError** err)
+{
+    GError *unlink_err = NULL;
+    if (gfal_http_unlinkG(plugin_data, dst, &unlink_err) != 0) {
+        if (unlink_err->code != ENOENT) {
+            GError* merged;
+            g_set_error(&merged, (*err)->domain, (*err)->code,
+                        "%s. Additionally when trying to remove the destination: %s",
+                        (*err)->message, unlink_err->message);
+            g_error_free(*err);
+            *err = merged;
+        }
+        g_error_free(unlink_err);
+    }
+    return -1;
+}
 
 int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
         gfalt_params_t params, const char* src, const char* dst, GError** err)
@@ -248,7 +270,7 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
                              "");
 
         if (gfal_http_3rdcopy_overwrite(plugin_data, params, dst, err) != 0 ||
-            gfal_http_3rdcopy_make_parent(plugin_data, params, dst, err) != 0)
+            gfal_http_3rdcopy_make_parent(plugin_data, params, context, dst, err) != 0)
             return -1;
     }
 
@@ -279,7 +301,7 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
     if (davError != NULL) {
         davix2gliberr(davError, err);
         Davix::DavixError::clearError(&davError);
-        return -1;
+        return gfal_http_3rdcopy_cleanup(plugin_data, dst, err);
     }
 
     // Checksum check
@@ -288,7 +310,7 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
                              GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER,
                              "");
         if (gfal_http_3rdcopy_checksum(plugin_data, params, src, dst, err) != 0)
-            return -1;
+            return gfal_http_3rdcopy_cleanup(plugin_data, dst, err);
         plugin_trigger_event(params, http_plugin_domain,
                              GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER,
                              "");
@@ -298,12 +320,34 @@ int gfal_http_3rdcopy(plugin_handle plugin_data, gfal2_context_t context,
 }
 
 
+static bool is_http_3rdcopy_disabled(gfal_context_t context)
+{
+    GError *err = NULL;
+    bool disabled = gfal2_get_opt_boolean(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", &err);
+    if (err)
+        g_error_free(err);
+    return disabled;
+}
 
-int gfal_http_3rdcopy_check(plugin_handle plugin_data, const char* src,
+
+static bool is_supported_scheme(const char* url)
+{
+    const char *schemes[] = {"http", "https", "dav", "davs", NULL};
+    const char *colon = strchr(url, ':');
+    if (!colon)
+        return false;
+    size_t scheme_len = colon - url;
+    for (size_t i = 0; schemes[i] != NULL; ++i) {
+        if (strncmp(url, schemes[i], scheme_len) == 0)
+            return true;
+    }
+    return false;
+}
+
+int gfal_http_3rdcopy_check(plugin_handle plugin_data, gfal_context_t context, const char* src,
         const char* dst, gfal_url2_check check)
 {
-    if (check != GFAL_FILE_COPY)
+    if (check != GFAL_FILE_COPY || is_http_3rdcopy_disabled(context))
         return 0;
-
-    return (strncmp(src, "https://", 8) == 0 && strncmp(dst, "https://", 8) == 0);
+    return is_supported_scheme(src) && is_supported_scheme(dst);
 }

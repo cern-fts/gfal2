@@ -35,7 +35,7 @@ static bool is_gridftp_uri(const char* src)
 
 
 
-gboolean gridftp_check_url_transfer(plugin_handle handle, const char* src,
+gboolean gridftp_check_url_transfer(plugin_handle handle, gfal_context_t context, const char* src,
                                     const char* dst, gfal_url2_check type)
 {
     g_return_val_if_fail(handle != NULL,FALSE);

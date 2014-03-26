@@ -76,25 +76,26 @@ TEST(gfalGridFTP,handle_creation){
 }
 
 
-TEST(gfalGridFTP,gridftp_parseURL){
-	// check null handle, must not segfault
-    gridftp_check_url_transfer(NULL, "gsiftp://myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
+TEST(gfalGridFTP,gridftp_parseURL)
+{
+    // check null handle, must not segfault
+    gridftp_check_url_transfer(NULL, NULL, "gsiftp://myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
 
-	gfal_handle a= init_gfal_handle()	;
-	plugin_handle p = init_gridftp_plugin_test(a);
-	// check with URL null, must not segfault and return false
-	bool res = gridftp_check_url_transfer(p, NULL, NULL, GFAL_FILE_COPY);
+    gfal_handle a = init_gfal_handle();
+    plugin_handle p = init_gridftp_plugin_test(a);
+    // check with URL null, must not segfault and return false
+    bool res = gridftp_check_url_transfer(p, a, NULL, NULL, GFAL_FILE_COPY);
     ASSERT_TRUE(res == FALSE);
-	
-	res = gridftp_check_url_transfer(p, "gsiftp://myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
+
+    res = gridftp_check_url_transfer(p, a, "gsiftp://myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
     ASSERT_TRUE(res == TRUE);
-	res = gridftp_check_url_transfer(p, "myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
+    res = gridftp_check_url_transfer(p, a, "myurl.com/mypath/myfile", "gsiftp://myurl.com/mypath/myfile", GFAL_FILE_COPY);
     ASSERT_TRUE(res == FALSE);
-	res = gridftp_check_url_transfer(p,  "gsiftp://myurl.com/mypath/myfile", "myurl.com/mypath/myfile", GFAL_FILE_COPY);
+    res = gridftp_check_url_transfer(p, a, "gsiftp://myurl.com/mypath/myfile", "myurl.com/mypath/myfile", GFAL_FILE_COPY);
     ASSERT_TRUE(res == FALSE);
-	gridftp_plugin_unload(p);
-	
-	gfal_handle_freeG(a);
+    gridftp_plugin_unload(p);
+
+    gfal_handle_freeG(a);
 }
 
 

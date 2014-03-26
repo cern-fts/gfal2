@@ -42,17 +42,17 @@ TEST(gfalPlugin, srmTest){
 	
 	gfal_srmv2_opt opts;
 	gfal_srm_opt_initG(&opts, handle);
-    gboolean res = plugin_url_check2(&opts, NULL, NULL, GFAL_FILE_COPY);
+    gboolean res = plugin_url_check2(&opts, handle, NULL, NULL, GFAL_FILE_COPY);
     ASSERT_TRUE(res == FALSE);
-	res = plugin_url_check2(&opts, "srm://blabla.com/tata", "srm://blabla.com/toto", GFAL_FILE_COPY);
+	res = plugin_url_check2(&opts, handle, "srm://blabla.com/tata", "srm://blabla.com/toto", GFAL_FILE_COPY);
     ASSERT_TRUE(res == TRUE);
-	res = plugin_url_check2(&opts, NULL , "srm://blabla.com/toto", GFAL_FILE_COPY);
+	res = plugin_url_check2(&opts, handle, NULL , "srm://blabla.com/toto", GFAL_FILE_COPY);
     ASSERT_TRUE(res == FALSE);
-	res = plugin_url_check2(&opts, "fsdfds", "srm://blabla.com/toto", GFAL_FILE_COPY);
+	res = plugin_url_check2(&opts, handle, "fsdfds", "srm://blabla.com/toto", GFAL_FILE_COPY);
     ASSERT_TRUE(res == FALSE );
-	res = plugin_url_check2(&opts, "srm://blabla.com/toto", "dsffds", GFAL_FILE_COPY);
+	res = plugin_url_check2(&opts, handle, "srm://blabla.com/toto", "dsffds", GFAL_FILE_COPY);
     ASSERT_TRUE(res == FALSE);
-	res = plugin_url_check2(&opts, "sr", "", GFAL_FILE_COPY);
+	res = plugin_url_check2(&opts, handle, "sr", "", GFAL_FILE_COPY);
     ASSERT_TRUE(res == FALSE);
 	gfal_handle_freeG(handle);
 }

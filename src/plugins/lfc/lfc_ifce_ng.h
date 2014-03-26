@@ -108,6 +108,8 @@ int lfc_configure_environment(struct lfc_ops * ops, const char* host, GError** e
 
 int gfal_lfc_get_errno(struct lfc_ops* ops);
 
+void gfal_lfc_reset_errno(struct lfc_ops* ops);
+
 int gfal_lfc_regex_compile(regex_t* rex, GError** err);
 
 char*  gfal_lfc_get_strerror(struct lfc_ops* ops);
@@ -144,6 +146,6 @@ void gfal_generate_guidG(char* buf, GError** err);
 
 struct lfc_ops* gfal_load_lfc(const char* name, GError** err);
 
-int gfal_lfc_register_check(plugin_handle plugin_data,  const char* src, const char* dst, gfal_url2_check check);
+int gfal_lfc_register_check(plugin_handle plugin_data, gfal_context_t context, const char* src, const char* dst, gfal_url2_check check);
 
 int gfal_lfc_register(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params, const char* src, const char* dst, GError**);

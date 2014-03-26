@@ -35,6 +35,7 @@
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_types.h>
 #include "gfal_rfio_plugin_layer.h"
+#include "gfal_rfio_plugin_main.h"
 
 static char* libdpm_name= "libdpm.so.1";
 static char* libcastor_name= "libshift.so.2.1";
@@ -54,7 +55,10 @@ struct rfio_proto_ops * gfal_rfio_internal_loader_base(GError** err){
 	if( libname != NULL){
 		gfal_log(GFAL_VERBOSE_VERBOSE, " lib rfio defined in LCG_RFIO_TYPE : %s", libname);
 		if( (dlhandle = dlopen(libname, RTLD_LAZY)) == NULL){
-            g_set_error(&tmp_err, gfal2_get_plugin_rfio_quark(), EPROTONOSUPPORT, " library %s for the rfio_plugin cannot be loaded properly, failure : %s ", libname, dlerror());
+            g_set_error(&tmp_err, gfal2_get_plugin_rfio_quark(),
+                    EPROTONOSUPPORT,
+                    " library %s for the rfio_plugin cannot be loaded properly, failure : %s ",
+                    libname, dlerror());
 		}	
 	}else{
         gfal_log(GFAL_VERBOSE_VERBOSE, "lib rfio is not defined in LCG_RFIO_TYPE, try to found it ");
