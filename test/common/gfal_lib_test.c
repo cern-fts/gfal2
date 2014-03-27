@@ -86,8 +86,11 @@ static void getFileAndLine(void* addr, const char* sname,
     buffer[0] = '\0';
     FILE *proc = popen(command, "r");
     if (proc) {
-        fread(buffer, 1, bufsize, proc);
+        size_t nbytes = fread(buffer, 1, bufsize, proc);
         pclose(proc);
+        if (nbytes <= 0) {
+            strncpy(buffer, "Could not read from addr2line\n", bufsize);
+        }
     }
     else {
         strncpy(buffer, "Could not execute addr2line\n", bufsize);
