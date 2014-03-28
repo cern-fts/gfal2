@@ -487,7 +487,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         if (gfal_http_copy_checksum(context, plugin_data, params, src, dst, err) != 0)
             return gfal_http_copy_cleanup(plugin_data, dst, err);
         plugin_trigger_event(params, http_plugin_domain,
-                             GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER,
+                             GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_EXIT,
                              "");
     }
 
