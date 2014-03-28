@@ -385,6 +385,10 @@ static int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory
             sess->disable_udt();
             gridftp_do_copy(factory, params, src, dst, req, timeout);
         }
+        // Else, rethrow
+        else {
+            throw;
+        }
     }
 
     return 0;
