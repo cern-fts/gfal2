@@ -43,10 +43,10 @@ static bool is_supported_scheme(const char* url)
 static bool is_http_3rdcopy_disabled(gfal_context_t context)
 {
     GError *err = NULL;
-    bool disabled = gfal2_get_opt_boolean(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", &err);
+    bool enabled = gfal2_get_opt_boolean(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", &err);
     if (err)
         g_error_free(err);
-    return disabled;
+    return !enabled;
 }
 
 
