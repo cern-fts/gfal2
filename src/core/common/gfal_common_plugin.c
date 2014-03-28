@@ -584,7 +584,6 @@ gfal_file_handle gfal_plugin_openG(gfal_handle handle, const char * path, int fl
 	gfal_file_handle resu =NULL;
 	gfal_log(GFAL_VERBOSE_TRACE, " %s ->",__func__);
 
-
     gfal_plugin_interface* p = gfal_find_plugin(handle, path, GFAL_PLUGIN_OPEN, &tmp_err);
 
     if(p)
@@ -598,6 +597,9 @@ int gfal_plugin_closeG(gfal_handle handle, gfal_file_handle fh, GError** err){
 	g_return_val_err_if_fail(handle && fh, -1,err, "[gfal_plugin_closeG] Invalid args ");	
 	GError* tmp_err=NULL;
 	int ret = -1;
+
+	gfal_log(GFAL_VERBOSE_TRACE, " <- %s", __func__);
+
     gfal_plugin_interface* if_cata = gfal_plugin_map_file_handle(handle, fh, &tmp_err);
 	if(!tmp_err)
 		ret = if_cata->closeG(if_cata->plugin_data, fh, &tmp_err);

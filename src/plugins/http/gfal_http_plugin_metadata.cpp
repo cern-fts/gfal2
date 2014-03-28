@@ -75,6 +75,12 @@ int gfal_http_access(plugin_handle plugin_data, const char* url,
   gid_t real_gid = getgid();
   
   int ngroups = getgroups(0, NULL);
+  if (ngroups < 0) {
+      g_set_error(err, http_plugin_domain, errno,
+                  "[%s] Could not get the groups of the current user", __func__);
+      return -1;
+  }
+
   gid_t additional_gids[ngroups];
   getgroups(ngroups, additional_gids);
   

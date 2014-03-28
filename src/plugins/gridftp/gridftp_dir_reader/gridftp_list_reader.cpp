@@ -53,7 +53,7 @@ static std::string& ltrim(std::string& str)
 
 static std::string& rtrim(std::string& str)
 {
-    size_t i = str.length() - 1;
+    int i = str.length() - 1;
     while (i >= 0 && isspace(str[i]))
         --i;
     str = str.substr(0, i + 1);

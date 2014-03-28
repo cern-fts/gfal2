@@ -58,6 +58,7 @@ static void gfal_mds_cache_insert(gfal_mds_endpoint* endpoints, size_t s_endpoin
 
     if (!endpoint.empty() && typeEnum != UnknownEndpointType) {
         strncpy(endpoints[index].url, endpoint.c_str(), sizeof(endpoints[index].url));
+        endpoints[index].url[sizeof(gfal_mds_endpoint::url) - 1] = '\0';
         endpoints[index].type = typeEnum;
     }
 }
