@@ -5,6 +5,10 @@
  **/
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <glib.h>
 
 // GError
@@ -27,4 +31,8 @@ void     g_prefix_error               (GError       **err,
 // GList
 #if (GLIB_CHECK_VERSION(2,28,0) != TRUE)
 void g_list_free_full(GList *list, GDestroyNotify free_func);
+#endif
+
+#ifdef __cplusplus
+}
 #endif

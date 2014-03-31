@@ -9,7 +9,6 @@ if (MAIN_TRANSFER)
         add_library(gfal2_transfer  SHARED ${src_trans} ${src_libcpp} ${src_exceptions} ${gfal2_utils_src})
         target_link_libraries(gfal2_transfer ${GLIB2_PKG_LIBRARIES} ${GTHREAD2_PKG_LIBRARIES})
         target_link_libraries(gfal2_transfer ${UUID_PKG_LIBRARIES} ${OUTPUT_NAME_MAIN} ${GLIBMM_PKG_LIBRARIES})
-        target_link_libraries(gfal2_transfer )
 
         set_target_properties(gfal2_transfer PROPERTIES
                                      LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/src/core
