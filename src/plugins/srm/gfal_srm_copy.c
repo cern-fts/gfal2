@@ -316,13 +316,9 @@ static void srm_force_unlink(plugin_handle handle,
     gfal_srm_unlinkG(handle, surl, &unlink_err);
     if (unlink_err != NULL) {
         if (unlink_err->code != ENOENT) {
-            GError* merged = NULL;
-            g_set_error(&merged, gfal2_get_plugin_srm_quark(), (*err)->code,
-                    "%s\n"
-                    "Also got an error when removing the destination surl: %s",
-                    (*err)->message, unlink_err->message);
-            g_error_free(*err);
-            *err = merged;
+            gfal_log(GFAL_VERBOSE_VERBOSE,
+                     "Got an error when removing the destination surl: %s",
+                     unlink_err->message);
         }
         else {
             gfal_log(GFAL_VERBOSE_DEBUG, "Destination surl did not exist after abort");
@@ -357,14 +353,10 @@ static void srm_rollback_put(plugin_handle handle,
                 *err = abort_error;
             }
             else {
-                GError* merged = NULL;
-                g_set_error(&merged, gfal2_get_plugin_srm_quark(), (*err)->code,
-                        "Transfer failed with %s\n"
-                        "Also got an error when canceling the PUT request: %s",
-                        (*err)->message, abort_error->message);
-                g_error_free(*err);
+                gfal_log(GFAL_VERBOSE_VERBOSE,
+                        "Got an error when canceling the PUT request: %s",
+                        abort_error->message);
                 g_error_free(abort_error);
-                *err = merged;
             }
         }
         // Some endpoints may not remove the file after an abort (i.e. Castor),
@@ -386,14 +378,10 @@ static void srm_release_get(plugin_handle handle, const char* surl, const char* 
             *err = release_error;
         }
         else {
-            GError* merged = NULL;
-            g_set_error(&merged, gfal2_get_plugin_srm_quark(), (*err)->code,
-                    "Transfer failed with %s\n"
-                    "Also got an error when releasing the source file: %s",
-                    (*err)->message, release_error->message);
-            g_error_free(*err);
+            gfal_log(GFAL_VERBOSE_VERBOSE,
+                    "Got an error when releasing the source file: %s",
+                    release_error->message);
             g_error_free(release_error);
-            *err = merged;
         }
     }
 }
