@@ -43,7 +43,6 @@
 #include <common/gfal_common_plugin.h>
 
 #include <mds/gfal_mds.h>
-#include <common/gfal_common_interface.h>
 #include <common/gfal_common_errverbose.h>
 #include <config/gfal_config.h>
 

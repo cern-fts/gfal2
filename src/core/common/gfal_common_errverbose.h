@@ -39,9 +39,6 @@ extern "C"
 {
 #endif 
 
-
-extern const char* no_err;
-
 /** @def macro for error error report on args
  * 
  */
