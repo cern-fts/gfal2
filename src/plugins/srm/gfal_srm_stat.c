@@ -23,7 +23,7 @@
  * @date 16/05/2011
  * */
 #include <common/gfal_constants.h>
-#include <common/gfal_common_errverbose.h> 
+#include <common/gfal_common_err_helpers.h> 
 
 #include "gfal_srm.h"
 #include "gfal_srm_internal_ls.h"

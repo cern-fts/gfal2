@@ -28,7 +28,7 @@
 #include "gfal_srm_stat.h"
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_endpoint.h"
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 
 int gfal_mkdir_srmv2_internal(gfal_srmv2_opt* opts, char* endpoint, const char* path, mode_t mode, GError** err){
 	struct srm_mkdir_input mkdir_input;

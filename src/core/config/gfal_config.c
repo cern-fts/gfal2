@@ -23,10 +23,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-
 #include <config/gfal_config_internal.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
+#include <logger/gfal_logger.h>
 
 #ifndef GFAL_CONFIG_DIR_DEFAULT
 #error "GFAL_CONFIG_DIR_DEFAULT should be define at compile time"

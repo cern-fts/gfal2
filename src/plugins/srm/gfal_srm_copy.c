@@ -23,7 +23,7 @@
  * */
 #include <checksums/checksums.h>
 #include <common/gfal_types.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <file/gfal_file_api.h>
 #include <transfer/gfal_transfer.h>
 #include <transfer/gfal_transfer_plugins.h>

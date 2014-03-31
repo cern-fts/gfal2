@@ -1,3 +1,4 @@
+#pragma once
 /* 
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
@@ -15,40 +16,23 @@
 * limitations under the License.
 */
 
-
-/*
- * @file gfal_posix_access.c
- * @brief file for the internal access func of the posix interface
+/**
+ * @file gfal_common_err_helpers.h
+ * @brief error management and verbose display
  * @author Devresse Adrien
- * @version 2.0
- * @date 06/05/2011
  * */
 
-#include <stdio.h>
 #include <errno.h>
-#include "gfal_posix_api.h"
 #include <glib.h>
-#include <common/gfal_types.h>
-#include <posix/gfal_posix_internal.h>
 
-#include  <common/gfal_common_plugin.h>
-#include <common/gfal_constants.h>
+/** @def macro for error error report on args
+ *
+ */
+#define g_return_val_err_if_fail(exp, val, err, msg) if(!(exp)){ g_set_error(err, gfal2_get_core_quark(), EINVAL, msg); return val; }
 
-
-int gfal_posix_internal_access (const char *path, int amode){
-	int resu = -1;
-	GError* tmp_err=NULL;
-	gfal_handle handle;
-
-	if((handle = gfal_posix_instance()) == NULL){
-		errno = EIO;
-		return -1;
-	}
-	
-    resu = gfal2_access(handle, path, amode, &tmp_err);
-	if(tmp_err){ // error reported
-		gfal_posix_register_internal_error(handle, "[gfal_access]", tmp_err);
-		errno = tmp_err->code;			
-	}
-	return (resu)?(-1):0;
-}
+/** @def macro for one-line return with error management exception-like
+ */
+#define G_RETURN_ERR(ret, tmp_err, err) \
+if(tmp_err)\
+	g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);\
+return ret

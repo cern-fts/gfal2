@@ -28,7 +28,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 
 #include "gfal_srm_readdir.h"
 #include "gfal_srm_opendir.h" 

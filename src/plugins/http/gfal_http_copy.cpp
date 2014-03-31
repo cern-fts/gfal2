@@ -5,7 +5,7 @@
 #include <config/gfal_config.h>
 #include <checksums/checksums.h>
 #include <cstdio>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <file/gfal_file_api.h>
 #include "gfal_http_plugin.h"
 

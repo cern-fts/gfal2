@@ -26,7 +26,7 @@
 #include "gfal_srm.h"
 #include "gfal_srm_request.h"
 #include <common/gfal_common_internal.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_endpoint.h"

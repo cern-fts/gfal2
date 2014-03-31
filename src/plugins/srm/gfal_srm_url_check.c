@@ -21,7 +21,7 @@
 #include "gfal_srm_url_check.h"
 
 #include <common/gfal_types.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <transfer/gfal_transfer.h>
 
 const char * surl_prefix = GFAL_PREFIX_SRM;

@@ -30,7 +30,7 @@
 #include "gfal_srm_internal_ls.h"
 
 #include <common/gfal_constants.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 
 
 int gfal_srmv2_rmdir_internal(gfal_srmv2_opt* opts, char* endpoint, const char* surl, GError** err){

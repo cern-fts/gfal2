@@ -29,7 +29,6 @@
 #include <common/gfal_types.h>
 #include <common/gfal_common_filedescriptor.h>
 #include "gfal_posix_internal.h"
-#include <common/gfal_common_errverbose.h>
 #include <common/gfal_common_file_handle.h>
 #include <common/gfal_common_plugin.h>
 

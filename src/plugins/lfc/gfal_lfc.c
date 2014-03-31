@@ -41,6 +41,7 @@
 #include "gfal_lfc_open.h"
 #include <common/gfal_common_internal.h>
 #include <common/gfal_common_filedescriptor.h>
+#include <logger/gfal_logger.h>
 #include "lfc_ifce_ng.h"
 
 

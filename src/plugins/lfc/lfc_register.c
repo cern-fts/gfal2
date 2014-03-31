@@ -1,3 +1,4 @@
+#include <logger/gfal_logger.h>
 #include <regex.h>
 #include "gfal_lfc.h"
 #include "file/gfal_file_api.h"

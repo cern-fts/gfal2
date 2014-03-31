@@ -26,7 +26,7 @@
  
 
 #include <common/gfal_common_internal.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
 #include <regex.h>
 #include <time.h> 

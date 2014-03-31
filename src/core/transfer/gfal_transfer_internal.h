@@ -20,7 +20,7 @@
 */
 
 #include <exceptions/gerror_to_cpp.h> 
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_types.h>
 #include <common/gfal_common_plugin.h>
 #include <transfer/gfal_transfer.h>

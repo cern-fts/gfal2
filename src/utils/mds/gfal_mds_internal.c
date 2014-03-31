@@ -25,18 +25,15 @@
  * */
 
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <glib.h>
 #include <string.h>
 #include <pthread.h>
 #include <lber.h>
 #include <ldap.h>
-#include <common/gfal_common_errverbose.h>
 #include "gfal_mds_internal.h"
 #include "gfal_mds_ldap_internal_layer.h"
-
-
-
 
 
 

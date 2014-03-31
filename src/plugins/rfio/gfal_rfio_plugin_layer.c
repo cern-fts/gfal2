@@ -31,9 +31,10 @@
 #include <dlfcn.h>
 #include <stdlib.h>
 #include <common/gfal_common_internal.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_types.h>
+#include <logger/gfal_logger.h>
 #include "gfal_rfio_plugin_layer.h"
 #include "gfal_rfio_plugin_main.h"
 

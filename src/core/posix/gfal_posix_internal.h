@@ -27,8 +27,9 @@
 
 #include <common/gfal_prototypes.h>
 #include <common/gfal_types.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <file/gfal_file_api.h>
+#include <logger/gfal_logger.h>
 
 gfal_handle gfal_posix_instance();
 

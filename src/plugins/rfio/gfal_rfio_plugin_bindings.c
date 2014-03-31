@@ -30,13 +30,15 @@
 #include <time.h> 
 #include <glib.h>
 #include <stdlib.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_filedescriptor.h>
 #include <common/gfal_types.h>
+#include <logger/gfal_logger.h>
 #include "gfal_rfio_plugin_bindings.h"
 #include "gfal_rfio_plugin_main.h"
 #include "gfal_rfio_plugin_layer.h"
+
 
 static void rfio_report_error(gfal_plugin_rfio_handle h,  const char * func_name, GError** err){
 	char buff_error[2048]= {0};

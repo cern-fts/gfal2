@@ -29,7 +29,7 @@
 #include <fcntl.h> 
 #include <stdlib.h>
 #include <common/gfal_common_internal.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_filedescriptor.h>
 #include "gfal_srm_internal_layer.h"

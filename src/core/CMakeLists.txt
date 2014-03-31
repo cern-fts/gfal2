@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 
 # Sources needed for the core library
 file (GLOB src_cancel     "cancel/*.c*")
-file (GLOB src_common     "common/*.c*")
+file (GLOB src_common     "common/*.c" "common/future/*.c")
 file (GLOB src_config     "config/*.c")
 file (GLOB src_exceptions "exceptions/*.c*")
 file (GLOB src_gconfig    "g_config_manager/*.c*")

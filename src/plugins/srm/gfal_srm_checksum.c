@@ -26,7 +26,7 @@
 
  
 #include <common/gfal_constants.h>
-#include <common/gfal_common_errverbose.h> 
+#include <common/gfal_common_err_helpers.h> 
 #include <file/gfal_file_api.h>
  
 #include "gfal_srm_internal_layer.h"
