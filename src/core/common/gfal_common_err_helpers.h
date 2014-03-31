@@ -25,6 +25,10 @@
 #include <errno.h>
 #include <glib.h>
 
+#if (GLIB_CHECK_VERSION(2,16,0) != TRUE)
+#include "future/glib.h"
+#endif
+
 /** @def macro for error error report on args
  *
  */
