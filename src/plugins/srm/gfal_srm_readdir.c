@@ -163,7 +163,7 @@ static struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch,
     }
 
     // Empty directory
-    if (oh->srm_ls_resu->nbsubpaths == 0) {
+    if (oh->srm_ls_resu == NULL || oh->srm_ls_resu->nbsubpaths == 0) {
         return NULL;
     }
 
