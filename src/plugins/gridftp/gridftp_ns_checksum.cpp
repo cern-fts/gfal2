@@ -51,7 +51,8 @@ extern "C" int gfal_gridftp_checksumG(plugin_handle handle, const char* url, con
 
 void GridftpModule::checksum(const char* url, const char* check_type,
                        char * checksum_buffer, size_t buffer_length,
-                       off_t start_offset, size_t data_length){
+                       off_t start_offset, size_t data_length)
+{
     gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::checksum] ");
     gfal_log(GFAL_VERBOSE_DEBUG," Checksum calculation %s for url %s", check_type, url);
     std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(url)),
@@ -65,7 +66,7 @@ void GridftpModule::checksum(const char* url, const char* check_type,
     globus_result_t res = globus_ftp_client_cksm(
                 req->sess->get_ftp_handle(),
                 url,
-                NULL,
+                req->sess->get_op_attr_ftp(),
                 checksum_buffer,
                 start_offset,
                 ((data_length)?(data_length):(-1)),

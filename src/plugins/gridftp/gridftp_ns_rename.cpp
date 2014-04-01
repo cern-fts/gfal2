@@ -36,7 +36,7 @@ void GridftpModule::rename(const char* src, const char* dst)
     globus_result_t res = globus_ftp_client_move(
                 req->sess->get_ftp_handle(),
                 src, dst,
-                NULL,
+                req->sess->get_op_attr_ftp(),
                 globus_basic_client_callback,
                 req.get());
     gfal_globus_check_result(gfal_gridftp_scope_rename, res);
