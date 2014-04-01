@@ -44,8 +44,8 @@ SET(dcap_prefix "gsidcap://dcache-door-desy09.desy.de:22128/pnfs/desy.de/${MY_VO
 SET(srm_prefix_dcache "srm://dcache.du.cesnet.cz/data/du.cesnet.cz/${MY_VO}/gfal2-tests")
 SET(lfc_prefix "lfn:/grid/${MY_VO}")
 SET(lfc_host_name "prod-lfc-shared-central.cern.ch")
-SET(gsiftp_prefix_dpm "gsiftp://lpsc-se-dpm-server.in2p3.fr/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
-SET(srm_prefix_dpm "srm://lpsc-se-dpm-server.in2p3.fr:8446/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
+SET(gsiftp_prefix_dpm "gsiftp://marsedpm.in2p3.fr/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
+SET(srm_prefix_dpm "srm://marsedpm.in2p3.fr:8446/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
 
 ENDIF(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
@@ -214,43 +214,43 @@ IF(PLUGIN_GRIDFTP)
 ENDIF(PLUGIN_GRIDFTP)
 
 IF (MAIN_TRANSFER)
-        copy_file_test_full("GRIDFTP_DPM"  ${gsiftp_valid_dpm_src_file} ${gsiftp_prefix_dpm})   
-        copy_file_test_full("SRM_DPM"  ${srm_valid_dpm_src_file} ${srm_valid_dir_root})
-        copy_file_test_full("SRM_DPM_TO_DCACHE"  ${srm_valid_dpm_src_file} ${srm_valid_dcache_dir_root})
-        copy_file_test_full("SRM_DCACHE_TO_SRM"  ${srm_valid_dcache_src_file} ${srm_valid_dir_root})
-        copy_file_test_full("GSIFTP_DPM_TO_SRM_DCACHE"  ${gsiftp_valid_dpm_src_file} ${srm_valid_dcache_dir_root})
-        copy_file_test_full("SRM_DCACHE"  ${srm_valid_dcache_src_file} ${srm_valid_dcache_dir_root})
-        copy_file_test_full("SRM_TO_GRIDFTP"  ${srm_valid_dpm_src_file} ${gsiftp_prefix_dpm})
-        copy_file_test_full("GRIDFTP_TO_SRM"  ${gsiftp_valid_dpm_src_file} ${srm_valid_dir_root})
+        copy_file_test_full("GRIDFTP_DPM"               ${gsiftp_prefix_dpm} ${gsiftp_prefix_dpm})   
+        copy_file_test_full("SRM_DPM"                   ${srm_valid_dir_root} ${srm_valid_dir_root})
+        copy_file_test_full("SRM_DPM_TO_DCACHE"         ${srm_valid_dir_root} ${srm_valid_dcache_dir_root})
+        copy_file_test_full("SRM_DCACHE_TO_SRM"         ${srm_valid_dcache_dir_root} ${srm_valid_dir_root})
+        copy_file_test_full("GSIFTP_DPM_TO_SRM_DCACHE"  ${gsiftp_prefix_dpm} ${srm_valid_dcache_dir_root})
+        copy_file_test_full("SRM_DCACHE"                ${srm_valid_dcache_dir_root} ${srm_valid_dcache_dir_root})
+        copy_file_test_full("SRM_TO_GRIDFTP"            ${srm_valid_dir_root} ${gsiftp_prefix_dpm})
+        copy_file_test_full("GRIDFTP_TO_SRM"            ${gsiftp_prefix_dpm} ${srm_valid_dir_root})
 
         # global transfer tests for storage compatibility
 
         # storm <-> storm
-        copy_file_test_full("STORM_TO_STORM" ${srm_valid_storm_stat}  ${srm_prefix_storm})
+        copy_file_test_full("STORM_TO_STORM" ${srm_prefix_storm}  ${srm_prefix_storm})
         # storm -> dpm
-        copy_file_test_full("STORM_TO_SRM_DPM" ${srm_valid_storm_stat}  ${srm_valid_dir_root})
+        copy_file_test_full("STORM_TO_SRM_DPM" ${srm_prefix_storm}  ${srm_valid_dir_root})
         # storm -> dcache
-        copy_file_test_full("STORM_TO_SRM_DCACHE" ${srm_valid_storm_stat}  ${srm_valid_dcache_dir_root})
+        copy_file_test_full("STORM_TO_SRM_DCACHE" ${srm_prefix_storm}  ${srm_valid_dcache_dir_root})
 
         # local transfer
         #
 
         # local <-> DPM
-        copy_file_test_simple("FILE_TO_SRM_DPM" ${file_stat_ok} ${srm_valid_dir_root})
-        copy_file_test_simple("SRM_DPM_TO_FILE" ${srm_valid_dpm_src_file}  ${file_prefix})
+        copy_file_test_simple("FILE_TO_SRM_DPM" ${file_prefix} ${srm_valid_dir_root})
+        copy_file_test_simple("SRM_DPM_TO_FILE" ${srm_valid_dir_root}  ${file_prefix})
 
         # local <-> dcache
-        copy_file_test_simple("FILE_TO_SRM_DCACHE" ${file_stat_ok} ${srm_valid_dcache_dir_root})
-        copy_file_test_simple("SRM_DCACHE_TO_FILE" ${srm_valid_dcache_src_file}  ${file_prefix})
-        copy_file_test_simple("FILE_TO_FILE" ${file_stat_ok}  ${file_prefix})
+        copy_file_test_simple("FILE_TO_SRM_DCACHE" ${file_prefix} ${srm_valid_dcache_dir_root})
+        copy_file_test_simple("SRM_DCACHE_TO_FILE" ${srm_valid_dcache_dir_root}  ${file_prefix})
+        copy_file_test_simple("FILE_TO_FILE" ${file_prefix}  ${file_prefix})
 
         # gsiftp dpm <-> local
-        copy_file_test_simple("GSIFTP_TO_FILE" ${gsiftp_valid_dpm_src_file}  ${file_prefix})
-        copy_file_test_simple("FILE_TO_GSIFTP" ${file_stat_ok}  ${gsiftp_prefix_dpm})
+        copy_file_test_simple("GSIFTP_TO_FILE" ${gsiftp_prefix_dpm}  ${file_prefix})
+        copy_file_test_simple("FILE_TO_GSIFTP" ${file_prefix}  ${gsiftp_prefix_dpm})
 
         # local <-> storm
-        copy_file_test_simple("STORM_TO_FILE" ${srm_valid_storm_stat}  ${file_prefix})
-        copy_file_test_simple("FILE_TO_STORM" ${file_stat_ok}  ${srm_prefix_storm})
+        copy_file_test_simple("STORM_TO_FILE" ${srm_prefix_storm}  ${file_prefix})
+        copy_file_test_simple("FILE_TO_STORM" ${file_prefix}  ${srm_prefix_storm})
 
         # generic timeout tests
         # not reliable test, disable auto execution

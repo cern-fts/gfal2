@@ -76,7 +76,8 @@ int main(int argc, char **argv)
 		g_assert(current_stat.st_mode == initial_stat.st_mode);		    
 	}
 
+	g_assert(gfal_rmdir(buff) == 0);
 
 	printf ("All is ok.\n");
-	exit (0);
+	return 0;
 }
