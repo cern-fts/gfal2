@@ -247,6 +247,15 @@ struct dirent* gfal_dcap_readdirG(plugin_handle handle, gfal_file_handle fh, GEr
 	
 }
 
+int gfal_dcap_unlinkG(plugin_handle handle, const char* url, GError** err)
+{
+    gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
+    int ret = h->ops->unlink(url);
+    if(ret != 0){
+        dcap_report_error(h, __func__, err);
+    }
+    return ret;
+}
 
 const char* gfal_dcap_getName(){
     return "dcap_plugin";

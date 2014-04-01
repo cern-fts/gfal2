@@ -64,4 +64,6 @@ int gfal_dcap_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err)
 
 struct dirent* gfal_dcap_readdirG(plugin_handle handle, gfal_file_handle fh, GError** err);
 
+int gfal_dcap_unlinkG(plugin_handle handle, const char* url, GError** err);
+
 const char* gfal_dcap_getName();
