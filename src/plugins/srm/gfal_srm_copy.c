@@ -337,9 +337,9 @@ static void srm_rollback_put(plugin_handle handle,
     gfal_log(GFAL_VERBOSE_VERBOSE, "Rolling back PUT");
 
     GError* abort_error = NULL;
-    // If the transfer finished, or the destination is not an SRM,
+    // If the transfer finished, or the destination is not an SRM
     // remove the destination
-    if (transfer_finished || !srm_check_url(surl)) {
+    if ((*err && (*err)->code != EEXIST) && (transfer_finished || !srm_check_url(surl))) {
         gfal2_unlink(context, surl, &abort_error);
         // It may not be there, so be gentle
         if (abort_error != NULL)
