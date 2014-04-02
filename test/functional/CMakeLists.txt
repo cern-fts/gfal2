@@ -2,7 +2,7 @@
 # compilation lines for examples
 
 # list tests
-FILE(GLOB src_gfalchecksum_test "gfal_testchecksum.c")
+FILE(GLOB src_gfal_testchecksum "gfal_testchecksum.c")
 FILE(GLOB src_gfalstat "gfal_teststat.c")
 FILE(GLOB src_gfalaccess "gfal_testaccess.c")
 FILE(GLOB src_gfal_testchmod "gfal_testchmod.c")
@@ -46,6 +46,9 @@ IF (FUNCTIONAL_TESTS)
         include_directories( "${CMAKE_SOURCE_DIR}/src "  "${CMAKE_SOURCE_DIR}/src/posix/"
                     ${GLIB2_PKG_INCLUDE_DIRS} ${NETTLE_PKG_INCLUDE_DIRS} )
 
+        add_executable(gfal_test_checksum ${src_gfal_testchecksum})
+        target_link_libraries(gfal_test_checksum ${GFAL2_LINK} test_shared)
+
         add_executable(gfal_stat        ${src_gfalstat} )
         target_link_libraries(gfal_stat ${GFAL2_LINK} )
 
@@ -71,12 +74,8 @@ IF (FUNCTIONAL_TESTS)
                 add_test(gfal_test_mkdir_unlink_${name} gfal_test_mkdir_unlink ${dir_path})
         ENDFUNCTION(test_gfal_test_mkdir_unlink name path)        
 
-        FUNCTION(checksum_test_all name valid)
-       #         add_test(gfal_checksum_${name} gfal_checksum_test ${valid})
-        ENDFUNCTION(checksum_test_all name valid)
-
-        FUNCTION(checksum_test_simple name valid_file algo)
-                add_test(gfal_checksum_simple_${name} gfal_checksum_tool ${valid_file} ${algo})
+        FUNCTION(checksum_test_simple name dir_path algo)
+                add_test(gfal_checksum_simple_${name} gfal_test_checksum ${dir_path} ${algo})
         ENDFUNCTION(checksum_test_simple name valid_file algo)
         
         FUNCTION(chmod_test_all name valid right1 right2 right3 right4)

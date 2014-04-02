@@ -102,6 +102,17 @@ static void getFileAndLine(void* addr, const char* sname,
     }
 }
 
+int clean_file(const char* surl)
+{
+    if (gfal_unlink(surl) < 0) {
+        if (gfal_posix_code_error() != ENOENT) {
+            gfal_posix_check_error();
+            g_assert_not_reached();
+        }
+    }
+    return 0;
+}
+
 static void dump_stack(int sig)
 {
     if (sig == SIGSEGV || sig == SIGBUS || sig == SIGABRT) {
