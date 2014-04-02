@@ -93,31 +93,22 @@ FILE(WRITE "${file_base_path}/testread_0011" "hello world agdlkmgfmklmklklmvc;!:
 SET(file_stat_ok "${file_prefix}/testread_0011")
 SET(file_valid_chmod "${file_prefix}/test_change_right")
 
-# Parameters for gfal_test_del_nonex test
-SET(nonexfile "nonexistingfile")
-
-# Parameter for the gfal_test_del test
-SET(testdelfile "testdelfile")
-
-# Parameter for the gfal_test_mkdir_unlink test
-SET(unlinkdirectory "unlinkdirectory")
-
 IF(PLUGIN_FILE)
-    test_gfal_test_del_nonex("FILE" "file://${file_base_path}")
-    test_gfal_test_del("FILE" "file://${file_base_path}")
-    test_gfal_test_mkdir_unlink("FILE" "file://${file_base_path}")
-    stat_test_all("FILE" ${file_stat_ok})
-    chmod_test_all("FILE" file://${file_base_path} 0565 060 360 767)
-    mkdir_test_all("FILE" ${file_prefix})
-    rmdir_test_all("FILE" ${file_prefix} ${file_stat_ok})
-    test_readdir_full("FILE" ${file_prefix})
-    rwt_test_all("FILE" ${file_prefix} 4578)
-    rwt_test_all("FILE" ${file_prefix} 1)
-    rwt_test_all("FILE" ${file_prefix} 100000)
-    rwt_test_seq("FILE" ${file_prefix} 100 4560)
-    checksum_test_simple("FILE_MD5" ${file_stat_ok} MD5)
-    checksum_test_simple("FILE_ADLER32" ${file_stat_ok} ADLER32)
-    checksum_test_simple("FILE_CRC32" ${file_stat_ok} CRC32)
+        test_gfal_test_del_nonex("FILE" "file://${file_base_path}")
+        test_gfal_test_del("FILE" "file://${file_base_path}")
+        test_gfal_test_mkdir_unlink("FILE" "file://${file_base_path}")
+        stat_test_all("FILE" ${file_stat_ok})
+        chmod_test_all("FILE" file://${file_base_path} 0565 060 360 767)
+        mkdir_test_all("FILE" ${file_prefix})
+        rmdir_test_all("FILE" ${file_prefix} ${file_stat_ok})
+        test_readdir_full("FILE" ${file_prefix})
+        rwt_test_all("FILE" ${file_prefix} 4578)
+        rwt_test_all("FILE" ${file_prefix} 1)
+        rwt_test_all("FILE" ${file_prefix} 100000)
+        rwt_test_seq("FILE" ${file_prefix} 100 4560)
+        checksum_test_simple("FILE_MD5" ${file_stat_ok} MD5)
+        checksum_test_simple("FILE_ADLER32" ${file_stat_ok} ADLER32)
+        checksum_test_simple("FILE_CRC32" ${file_stat_ok} CRC32)
 ENDIF(PLUGIN_FILE)
 
 IF(PLUGIN_SRM)
