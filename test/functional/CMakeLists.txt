@@ -84,9 +84,9 @@ IF (FUNCTIONAL_TESTS)
         ENDFUNCTION(chmod_test_all name valid right1 right2 right3 right4)        
         
 
-        FUNCTION(rmdir_test_all name valid_dir valid_file)
+        FUNCTION(rmdir_test_all name valid_dir)
                 add_test(gfal_test_rmdir_full_${name} gfal_test_rmdir_full ${valid_dir})
-        ENDFUNCTION(rmdir_test_all name valid right1 right2 right3 right4)        
+        ENDFUNCTION(rmdir_test_all name valid_dir)
         
         FUNCTION(test_readdir_full name valid)
                 add_test(gfal_test_readdir_full_${name} gfal_test_readdir_full ${valid})
