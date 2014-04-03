@@ -50,27 +50,6 @@ static bool is_http_3rdcopy_disabled(gfal_context_t context)
 }
 
 
-static int gfal_http_exists(plugin_handle plugin_data,
-        const char *dst, GError** err)
-{
-    GError *nestedError = NULL;
-    struct stat st;
-    gfal_http_stat(plugin_data, dst, &st, &nestedError);
-
-    if (nestedError && nestedError->code == ENOENT) {
-        g_error_free(nestedError);
-        return 0;
-    }
-    else if (nestedError) {
-        gfal2_propagate_prefixed_error(err, nestedError, __func__);
-        return -1;
-    }
-    else {
-        return 1;
-    }
-}
-
-
 static int gfal_http_copy_overwrite(plugin_handle plugin_data,
         gfalt_params_t params,  const char *dst, GError** err)
 {
@@ -79,16 +58,16 @@ static int gfal_http_copy_overwrite(plugin_handle plugin_data,
     if (!gfalt_get_replace_existing_file(params,NULL))
         return 0;
 
-    int exists = gfal_http_exists(plugin_data, dst, &nestedError);
+    int exists = gfal_http_access(plugin_data, dst, F_OK, &nestedError);
 
     if (exists < 0) {
-        gfal2_propagate_prefixed_error(err, nestedError, __func__);
+        gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_OVERWRITE);
         return -1;
     }
     else if (exists == 1) {
         gfal_http_unlinkG(plugin_data, dst, &nestedError);
         if (nestedError) {
-            gfal2_propagate_prefixed_error(err, nestedError, __func__);
+            gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_OVERWRITE);
             return -1;
         }
 
@@ -130,15 +109,15 @@ static int gfal_http_copy_make_parent(plugin_handle plugin_data,
 
     char *parent = gfal_http_get_parent(dst);
     if (!parent) {
-        gfal2_set_error(err, http_plugin_domain, EINVAL, __func__,
+        gfalt_set_error(err, http_plugin_domain, EINVAL, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_PARENT,
                        "Could not get the parent directory of %s", dst);
         return -1;
     }
 
-    int exists = gfal_http_exists(plugin_data, parent, &nestedError);
+    int exists = gfal_http_access(plugin_data, parent, F_OK, &nestedError);
     // Error
     if (exists < 0) {
-        gfal2_propagate_prefixed_error(err, nestedError, __func__);
+        gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_PARENT);
         return -1;
     }
     // Does exist
@@ -149,7 +128,7 @@ static int gfal_http_copy_make_parent(plugin_handle plugin_data,
     else {
         gfal2_mkdir_rec(context, parent, 0755, &nestedError);
         if (nestedError) {
-            gfal2_propagate_prefixed_error(err, nestedError, __func__);
+            gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_PARENT);
             return -1;
         }
         gfal_log(GFAL_VERBOSE_TRACE,
@@ -187,13 +166,13 @@ static int gfal_http_copy_checksum(gfal2_context_t context,
                    &nestedError);
 
     if (nestedError) {
-        gfal2_propagate_prefixed_error(err, nestedError, __func__);
+        gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM);
         return -1;
     }
 
     if (!dst) {
         if (checksum_value[0] && gfal_compare_checksums(src_checksum, checksum_value, sizeof(checksum_value)) != 0) {
-            gfal2_set_error(err, http_plugin_domain, EINVAL, __func__,
+            gfalt_set_error(err, http_plugin_domain, EINVAL, __func__, GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM,
                             "Source and user-defined %s do not match (%s != %s)",
                             checksum_type, src_checksum, checksum_value);
             return -1;
@@ -210,12 +189,12 @@ static int gfal_http_copy_checksum(gfal2_context_t context,
                            dst_checksum, sizeof(dst_checksum),
                            0, 0, &nestedError);
         if (nestedError) {
-            gfal2_propagate_prefixed_error(err, nestedError, __func__);
+            gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_CHECKSUM);
             return -1;
         }
 
         if (gfal_compare_checksums(src_checksum, dst_checksum, sizeof(dst_checksum)) != 0) {
-            gfal2_set_error(err, http_plugin_domain, EINVAL, __func__,
+            gfalt_set_error(err, http_plugin_domain, EINVAL, __func__, GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM,
                             "Source and destination %s do not match (%s != %s)",
                             checksum_type, src_checksum, dst_checksum);
             return -1;
@@ -257,12 +236,8 @@ static int gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GE
     if ((*err)->code != EEXIST) {
         if (gfal_http_unlinkG(plugin_data, dst, &unlink_err) != 0) {
             if (unlink_err->code != ENOENT) {
-                GError* merged;
-                gfal2_set_error(&merged, (*err)->domain, (*err)->code, __func__,
-                            "%s. Additionally when trying to remove the destination: %s",
-                            (*err)->message, unlink_err->message);
-                g_error_free(*err);
-                *err = merged;
+                gfal_log(GFAL_VERBOSE_VERBOSE,
+                         "When trying to clean the destination: %s", unlink_err->message);
             }
             g_error_free(unlink_err);
         }
@@ -431,6 +406,7 @@ static void gfal_http_streamed_copy(gfal2_context_t context,
 int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         gfalt_params_t params, const char* src, const char* dst, GError** err)
 {
+    GError* nested_error = NULL;
     GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
 
     plugin_trigger_event(params, http_plugin_domain,
@@ -443,15 +419,19 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         plugin_trigger_event(params, http_plugin_domain,
                              GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER,
                              "");
-        if (gfal_http_copy_checksum(context, plugin_data, params, src, NULL, err) != 0)
+        if (gfal_http_copy_checksum(context, plugin_data, params, src, NULL, &nested_error) != 0) {
+            gfal2_propagate_prefixed_error(err, nested_error, __func__);
             return -1;
+        }
         plugin_trigger_event(params, http_plugin_domain,
                              GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT,
                              "");
 
-        if (gfal_http_copy_overwrite(plugin_data, params, dst, err) != 0 ||
-            gfal_http_copy_make_parent(plugin_data, params, context, dst, err) != 0)
+        if (gfal_http_copy_overwrite(plugin_data, params, dst, &nested_error) != 0 ||
+            gfal_http_copy_make_parent(plugin_data, params, context, dst, &nested_error) != 0) {
+            gfal2_propagate_prefixed_error(err, nested_error, __func__);
             return -1;
+        }
     }
 
     plugin_trigger_event(params, http_plugin_domain,
@@ -464,17 +444,18 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          "%s => %s", src, dst);
 
     if (!is_supported_scheme(src) || is_http_3rdcopy_disabled(context)) {
-        gfal_http_streamed_copy(context, davix, src, dst, params, err);
+        gfal_http_streamed_copy(context, davix, src, dst, params, &nested_error);
     }
     else {
-        gfal_http_third_party_copy(davix, src, dst, params, err);
+        gfal_http_third_party_copy(davix, src, dst, params, &nested_error);
     }
 
     plugin_trigger_event(params, http_plugin_domain,
                          GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
                          "%s => %s", src, dst);
 
-    if (*err != NULL) {
+    if (nested_error != NULL) {
+        gfalt_propagate_prefixed_error(err, nested_error, __func__, GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM);
         return gfal_http_copy_cleanup(plugin_data, dst, err);
     }
 

@@ -35,7 +35,9 @@ namespace Gfal{
 							try{
 
 #define CPP_GERROR_CATCH(my_err_catched)  } \
-							catch(Glib::Error & e){ \
+                            catch (Gfal::TransferException & e) {\
+                                gfalt_set_error(my_err_catched, e.domain(), e.code(), __func__, e.side.c_str(), e.note.c_str(), "%s", e.what().c_str()); \
+                            }catch(Glib::Error & e){ \
 								gfal2_set_error(my_err_catched, e.domain(), e.code(), __func__, "%s", e.what().c_str()); \
 							}catch(std::exception & e){ \
                                 gfal2_set_error(my_err_catched, gfal2_get_core_quark(), EPROTONOSUPPORT, __func__, "%s", e.what()); \
