@@ -77,7 +77,16 @@ g_prefix_error (GError      **err,
 
 #endif
 
-
+#if (GLIB_CHECK_VERSION(2,18,0) != TRUE)
+void
+g_set_error_literal (GError **err,
+                     GQuark domain,
+                     gint code,
+                     const gchar *message)
+{
+    g_set_error(err, domain, code, "%s", message);
+}
+#endif
 
 #if (GLIB_CHECK_VERSION(2,28,0) != TRUE)
 

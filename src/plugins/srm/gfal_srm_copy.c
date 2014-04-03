@@ -474,20 +474,22 @@ static int srm_do_transfer(plugin_handle handle, gfal2_context_t context,
     }
 
     gfalt_copy_file(context, params_turl, turl_source, turl_destination, &tmp_err);
+    if (tmp_err != NULL) // We assume the underlying copy tagged properly
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+
     gfalt_params_handle_delete(params_turl, NULL);
-    if (tmp_err == NULL) {
+    if (*err == NULL) {
         plugin_trigger_event(params, srm_domain(), GFAL_EVENT_DESTINATION,
                 GFAL_EVENT_CLOSE_ENTER, "%s", destination);
 
-        if (srm_check_url(destination))
-            gfal_srm_putdone_simple(handle, destination, token_destination, &tmp_err);
+        if (srm_check_url(destination)) {
+            if (gfal_srm_putdone_simple(handle, destination, token_destination, &tmp_err) < 0)
+                gfalt_propagate_prefixed_error(err, tmp_err, __func__, GFALT_ERROR_DESTINATION, "SRM_PUTDONE");
+        }
 
         plugin_trigger_event(params, srm_domain(), GFAL_EVENT_DESTINATION,
                 GFAL_EVENT_CLOSE_EXIT, "%s", destination);
     }
-
-    if (tmp_err != NULL)
-        gfalt_propagate_prefixed_error(err, tmp_err, __func__, GFALT_ERROR_TRANSFER, "SRM_PUTDONE");
 
     return *err == NULL ? 0 : -1;
 }
