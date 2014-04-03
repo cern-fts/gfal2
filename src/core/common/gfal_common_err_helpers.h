@@ -29,6 +29,43 @@
 #include "future/glib.h"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+/** @def Wraps g_set_error and appends the function name
+ *       only if DEBUG is enabled
+ */
+void gfal2_set_error(GError       **err,
+                     GQuark         domain,
+                     gint           code,
+                     const gchar   *function,
+                     const gchar   *format,
+                     ...) G_GNUC_PRINTF (5, 6);
+
+/** @def Wraps g_propagate_prefixed_error, and appends
+ *       the function name only if DEBUG is enabled
+ *       fmt is always appended
+ */
+void gfal2_propagate_prefixed_error_extended(GError       **dest,
+                                    GError        *src,
+                                    const gchar   *function,
+                                    const gchar   *format,
+                                    ...) G_GNUC_PRINTF (4, 5);
+
+/** @def Wraps g_propagate_prefixed_error, and appends
+ *       the function name only if DEBUG is enabled
+ */
+void gfal2_propagate_prefixed_error(GError       **dest,
+                                    GError        *src,
+                                    const gchar   *function);
+
+
+#ifdef __cplusplus
+}
+#endif
+
 /** @def macro for error error report on args
  *
  */
@@ -38,5 +75,5 @@
  */
 #define G_RETURN_ERR(ret, tmp_err, err) \
 if(tmp_err)\
-	g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);\
+    gfal2_propagate_prefixed_error(err, tmp_err, __func__);\
 return ret

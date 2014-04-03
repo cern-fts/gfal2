@@ -67,7 +67,7 @@ int gfal_http_access(plugin_handle plugin_data, const char* url,
   GError*     tmp_err = NULL;
   
   if (gfal_http_stat(plugin_data, url, &buf, &tmp_err) != 0) {
-    g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+    gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     return -1;
   }
   
@@ -76,8 +76,8 @@ int gfal_http_access(plugin_handle plugin_data, const char* url,
   
   int ngroups = getgroups(0, NULL);
   if (ngroups < 0) {
-      g_set_error(err, http_plugin_domain, errno,
-                  "[%s] Could not get the groups of the current user", __func__);
+      gfal2_set_error(err, http_plugin_domain, errno, __func__,
+                      "Could not get the groups of the current user");
       return -1;
   }
 
@@ -98,8 +98,8 @@ int gfal_http_access(plugin_handle plugin_data, const char* url,
   }
   
   if ((mode & buf.st_mode) != static_cast<mode_t>(mode)) {
-    g_set_error(err, http_plugin_domain, EACCES,
-                "[%s] Does not have enough permissions on '%s'", __func__, url);
+    gfal2_set_error(err, http_plugin_domain, EACCES, __func__,
+                "Does not have enough permissions on '%s'", url);
     return -1;
   }
   else {
@@ -189,9 +189,8 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
     Davix::DavixError* daverr = NULL;
 
     if (start_offset != 0 || data_length != 0) {
-        g_set_error(err, http_plugin_domain, ENOTSUP,
-                    "[%s] HTTP does not support partial checksums",
-                    __func__);
+        gfal2_set_error(err, http_plugin_domain, ENOTSUP, __func__,
+                    "HTTP does not support partial checksums");
         return -1;
     }
 
@@ -215,17 +214,15 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
     delete request;
 
     if (digest.empty()) {
-        g_set_error(err, http_plugin_domain, ENOTSUP,
-                    "[%s] No Digest header found for '%s'",
-                    __func__, url);
+        gfal2_set_error(err, http_plugin_domain, ENOTSUP, __func__,
+                    "No Digest header found for '%s'", url);
         return -1;
     }
 
     size_t valueOffset = digest.find('=');
     if (valueOffset == std::string::npos) {
-        g_set_error(err, http_plugin_domain, ENOTSUP,
-                    "[%s] Malformed Digest header from '%s': %s",
-                    __func__, url, digest.c_str());
+        gfal2_set_error(err, http_plugin_domain, ENOTSUP, __func__,
+                    "Malformed Digest header from '%s': %s", url, digest.c_str());
         return -1;
     }
 
@@ -233,9 +230,8 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
     std::string csumvalue = digest.substr(valueOffset + 1, std::string::npos);
 
     if (strcasecmp(csumtype.c_str(), check_type) != 0) {
-        g_set_error(err, http_plugin_domain, ENOTSUP,
-                    "[%s] Asked for checksum %s, got %s: %s",
-                    __func__, check_type, csumtype.c_str(), url);
+        gfal2_set_error(err, http_plugin_domain, ENOTSUP, __func__,
+                    "Asked for checksum %s, got %s: %s", check_type, csumtype.c_str(), url);
         return -1;
     }
 

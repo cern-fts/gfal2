@@ -89,15 +89,15 @@ static int gfal_srm_rm_srmv2_internal(gfal_srmv2_opt* opts,
                         gfal_srm_rm_srmv2_isdir(context, full_endpoint, surl)) {
                         err_code = EISDIR;
                     }
-                    g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
-                                err_code,
-                                " error reported from srm_ifce, %s ",
+                    gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
+                                err_code, __func__,
+                                "error reported from srm_ifce, %s ",
                                 statuses[0].explanation);
                 }
                 else {
-                    g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
-                                EINVAL,
-                               " error reported from srm_ifce with corrputed memory ! ");
+                    gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
+                                EINVAL, __func__,
+                               "error reported from srm_ifce with corrputed memory ! ");
                 }
                 ret = -1;
             }
@@ -134,17 +134,17 @@ int gfal_srm_rm_internal(gfal_srmv2_opt* opts, const char* surl, GError** err)
                     &tmp_err);
         }
         else if (srm_types == PROTO_SRM) {
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT,
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
                     "support for SRMv1 is removed in gfal 2.0, failure");
         }
         else {
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT,
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
                     "Unknow SRM protocol, failure ");
         }
     }
 
     if (tmp_err)
-        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     return ret;
 }
 
@@ -162,6 +162,6 @@ int gfal_srm_unlinkG(plugin_handle ch, const char * path, GError** err)
     gfal_srm_cache_stat_remove(ch, path);
     int ret = gfal_srm_rm_internal(opts, path, &tmp_err);
     if (tmp_err)
-        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     return ret;
 }

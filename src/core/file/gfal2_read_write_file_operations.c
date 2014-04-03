@@ -117,7 +117,7 @@ static int gfal_rw_file_handle_delete(gfal_fdesc_container_handle container, int
         ret = (gfal_remove_file_desc(container, key, &tmp_err))?0:-1;
     }
     if(tmp_err){
-        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     }else{
         errno = 0;
     }
@@ -131,7 +131,7 @@ static int gfal_rw_file_handle_close(gfal_handle handle, gfal_file_handle fhandl
     ret = gfal_plugin_closeG(handle, fhandle, &tmp_err);
 
     if(tmp_err){
-        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     }
     return ret;
 

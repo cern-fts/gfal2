@@ -124,7 +124,7 @@ static inline int lfc_full_urlconverter(const char * lfn_url, char** host,
 
     }
     if (res != 0) {
-        g_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), EINVAL,
+        gfal2_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), EINVAL, __func__,
                 "Invalid lfc:// url");
     }
     return res;
@@ -191,7 +191,8 @@ int lfc_chmodG(plugin_handle handle, const char* path, mode_t mode, GError** err
             ret = ops->chmod(url_path, mode);
             if(ret < 0){
                 const int myerrno = gfal_lfc_get_errno(ops);
-                g_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), myerrno, "Errno reported from lfc : %s ", gfal_lfc_get_strerror(ops));
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), myerrno, __func__,
+                        "Errno reported from lfc : %s ", gfal_lfc_get_strerror(ops));
             }else{
                 errno =0;
                 gsimplecache_remove_kstr(ops->cache_stat, url_path);
@@ -223,7 +224,8 @@ int lfc_accessG(plugin_handle handle, const char* lfn, int mode, GError** err){
             ret = ops->access(url_path, mode);
             if(ret <0){
                 int sav_errno = gfal_lfc_get_errno(ops);
-                g_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), sav_errno, "lfc access error, file : %s, error : %s", lfn, gfal_lfc_get_strerror(ops) );
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
+                        "lfc access error, file : %s, error : %s", lfn, gfal_lfc_get_strerror(ops) );
             }else
                 errno=0;
         }
@@ -258,7 +260,8 @@ int lfc_renameG(plugin_handle handle, const char* oldpath, const char* newpath, 
             ret  = ops->rename(source_url_path, dest_url_path);
             if(ret <0){
                 int sav_errno = gfal_lfc_get_errno(ops);
-                g_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(),sav_errno, "Error report from LFC : %s",  gfal_lfc_get_strerror(ops) );
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
+                        "Error report from LFC : %s",  gfal_lfc_get_strerror(ops) );
             }else{
                 gsimplecache_remove_kstr(ops->cache_stat, source_url_path);
             }
@@ -295,7 +298,8 @@ int lfc_symlinkG(plugin_handle handle, const char* oldpath, const char* newpath,
             ret  = ops->symlink(url_path, link_url_path);
             if(ret <0){
                 int sav_errno = gfal_lfc_get_errno(ops);
-                g_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(),sav_errno, "Error report from LFC : %s",  gfal_lfc_get_strerror(ops) );
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
+                        "Error report from LFC : %s",  gfal_lfc_get_strerror(ops) );
             }
         }
     }
@@ -359,7 +363,8 @@ static int lfc_lstatG(plugin_handle handle, const char* path, struct stat* st, G
                     ret = ops->lstat(url_path, &statbuf);
                     if(ret != 0){
                         int sav_errno = gfal_lfc_get_errno(ops);
-                        g_set_error(&tmp_err,gfal2_get_plugin_lfc_quark(),sav_errno, "Error report from LFC : %s", gfal_lfc_get_strerror(ops) );
+                        gfal2_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
+                                "Error report from LFC : %s", gfal_lfc_get_strerror(ops));
                     }else{
                         ret= gfal_lfc_convert_lstat(st, &statbuf, err);
                         errno=0;
@@ -416,7 +421,8 @@ static int lfc_lstatG(plugin_handle handle, const char* path, struct stat* st, G
             if( ret < 0){
                 int sav_errno = gfal_lfc_get_errno(ops);
                 sav_errno = (sav_errno==EEXIST)?ENOTEMPTY:sav_errno;		// convert wrong reponse code
-                g_set_error(err,gfal2_get_plugin_lfc_quark(), sav_errno, "Error report from LFC %s", gfal_lfc_get_strerror(ops) );
+                gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
+                        "Error report from LFC %s", gfal_lfc_get_strerror(ops) );
             }
         }
     }
@@ -445,7 +451,8 @@ static gfal_file_handle lfc_opendirG(plugin_handle handle, const char* path, GEr
             d  = (DIR*) ops->opendirg(url_path,NULL);
             if(d==NULL){
                 int sav_errno = gfal_lfc_get_errno(ops);
-                g_set_error(err,gfal2_get_plugin_lfc_quark(), sav_errno, "Error report from LFC %s", gfal_lfc_get_strerror(ops) );
+                gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
+                        "Error report from LFC %s", gfal_lfc_get_strerror(ops) );
             }else{
                 oh = g_new0(struct _lfc_opendir_handle,1);
                 g_strlcpy(oh->url, url_path, GFAL_URL_MAX_LEN );
@@ -506,9 +513,8 @@ static struct dirent* lfc_readdirppG(plugin_handle handle, gfal_file_handle fh,
     struct dirent* ret;
     ret = lfc_convert_dirent_struct(ops, ((struct dirent*) &oh->current_dir), st, (ops->readdirx((lfc_DIR*) fh->fdesc)), oh->url);
     if (ret == NULL && (sav_errno = gfal_lfc_get_errno(ops))) {
-        g_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno,
-                "[%s] Error report from LFC %s", __func__,
-                gfal_lfc_get_strerror(ops));
+        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
+                "Error report from LFC %s", gfal_lfc_get_strerror(ops));
     }
     return ret;
 }
@@ -535,7 +541,8 @@ static int lfc_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err
 	int ret = ops->closedir(fh->fdesc);	
 	if(ret != 0){
 		int sav_errno = gfal_lfc_get_errno(ops);
-        g_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, "[%s] Error report from LFC %s", __func__, gfal_lfc_get_strerror(ops) );
+        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno,
+                "Error report from LFC %s", gfal_lfc_get_strerror(ops) );
 	}else{
 		g_free(fh->ext_data);
 		gfal_file_handle_delete(fh);
@@ -648,7 +655,7 @@ ssize_t lfc_getxattrG(plugin_handle handle, const char* path, const char* name, 
 	}else if(strncmp(name, GFAL_XATTR_COMMENT, LFC_MAX_XATTR_LEN) == 0){
 		res= lfc_getxattr_comment(handle, path, buff, size, &tmp_err);
 	}else{
-        g_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), ENOATTR, "axttr not found");
+        gfal2_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), ENOATTR, __func__, "axttr not found");
 		res = -1;
 	}
     G_RETURN_ERR(res, tmp_err, err);
@@ -715,7 +722,7 @@ int lfc_setxattrG(plugin_handle handle, const char *path, const char *name,
 		res = lfc_setxattr_comment(handle, path, name, value,
 										size, flags, err);
 	}else{
-        g_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), ENOATTR, " unable to set this attribute on this file");
+        gfal2_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), ENOATTR, __func__, "unable to set this attribute on this file");
 	}
     G_RETURN_ERR(res, tmp_err, err);
 }
@@ -753,7 +760,8 @@ static int lfc_unlinkG(plugin_handle handle, const char* path, GError** err){
                 ret = ops->unlink(url_path);
                 if(ret != 0){
                     int sav_errno = gfal_lfc_get_errno(ops);
-                    g_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(),sav_errno, "Error report from LFC : %s", gfal_lfc_get_strerror(ops) );
+                    gfal2_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
+                            "Error report from LFC : %s", gfal_lfc_get_strerror(ops) );
                 }else{
                     gsimplecache_remove_kstr(ops->cache_stat, url_path);	// remove the key associated in the buffer
                     errno=0;
@@ -787,7 +795,8 @@ static ssize_t lfc_readlinkG(plugin_handle handle, const char* path, char* buff,
             ret = ops->readlink(url_path, res_buff, LFC_BUFF_SIZE );
             if(ret == -1){
                 int sav_errno = gfal_lfc_get_errno(ops);
-                g_set_error(err, gfal2_get_plugin_lfc_quark(),sav_errno, "Error report from LFC : %s", gfal_lfc_get_strerror(ops) );
+                gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
+                        "Error report from LFC : %s", gfal_lfc_get_strerror(ops) );
             }else{
                 errno=0;
                 if(buffsiz > 0)
@@ -823,7 +832,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	
 	struct lfc_ops* ops = gfal_load_lfc(GFAL_LFC_LIBRARY_NAME, &tmp_err); // load library
 	if(ops ==NULL){
-		g_propagate_prefixed_error(err, tmp_err,"[%s]", __func__);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 		pthread_mutex_unlock(&m_lfcinit);
 		return lfc_plugin;
 	}

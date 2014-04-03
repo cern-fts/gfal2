@@ -36,11 +36,11 @@ extern "C" gfal_file_handle gfal_gridftp_opendirG(plugin_handle handle,
         return NULL;
     }
     else if (!S_ISDIR(st.st_mode)) {
-        g_set_error(err, OpendirQuark, EISDIR, "[%s] %s is not a directory", __func__, path);\
+        gfal2_set_error(err, OpendirQuark, EISDIR, __func__, "%s is not a directory", path);
         return NULL;
     }
     else if ((st.st_mode & ( S_IRUSR | S_IRGRP | S_IROTH)) == 0 ) {
-        g_set_error(err, OpendirQuark, EACCES, "[%s] Can not read %s", __func__, path);\
+        gfal2_set_error(err, OpendirQuark, EACCES, __func__, "Can not read %s", path);
         return NULL;
     }
 

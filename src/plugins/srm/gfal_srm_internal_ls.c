@@ -99,7 +99,8 @@ int gfal_statG_srmv2__generic_internal(	gfal_srmv2_opt* opts, struct stat* buf,
 	if(ret >=0){
 		srmv2_mdstatuses = output.statuses;
 		if(srmv2_mdstatuses->status != 0){
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), srmv2_mdstatuses->status, "Error reported from srm_ifce : %d %s",
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), srmv2_mdstatuses->status, __func__,
+                            "Error reported from srm_ifce : %d %s",
 							srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
 			ret = -1;
 		} else {
@@ -138,8 +139,8 @@ int gfal_Locality_srmv2_generic_internal(	gfal_srmv2_opt* opts,
 	if(ret >=0){
 		srmv2_mdstatuses = output.statuses;
 		if(srmv2_mdstatuses->status != 0){
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), srmv2_mdstatuses->status, "Error  srm_ifce : %d %s",
-							srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), srmv2_mdstatuses->status, __func__,
+                    "Error  srm_ifce : %d %s", srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
 			ret = -1;
 		} else {
 			*loc = srmv2_mdstatuses->locality;

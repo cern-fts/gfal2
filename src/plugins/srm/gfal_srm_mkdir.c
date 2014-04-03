@@ -78,10 +78,12 @@ int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError*
             }
 	
 		} else if(srm_types == PROTO_SRM){
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+                    "support for SRMv1 is removed in 2.0, failure");
 			ret =  -1;
 		} else{
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure ");
+		    gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+		            "unknow version of the protocol SRM , failure ");
 			ret=-1;
 		}
 
@@ -113,17 +115,19 @@ int gfal_srm_mkdirG(plugin_handle ch, const char* surl, mode_t mode, gboolean pf
                     g_clear_error(&tmp_err);
                     ret= gfal_mkdir_srmv2_internal(opts, full_endpoint, (char*)surl, mode, &tmp_err);	// execute the SRMv2 access test
                 }else{
-                    g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EEXIST, "directory already exist");
+                    gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EEXIST, __func__, "directory already exist");
                     ret = -1;
                 }
 
 
 
             } else if(srm_types == PROTO_SRM){
-                g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+                        "support for SRMv1 is removed in 2.0, failure");
                 ret =  -1;
             } else{
-                g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure ");
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, __func__,
+                        "unknow version of the protocol SRM , failure ");
                 ret=-1;
             }
 

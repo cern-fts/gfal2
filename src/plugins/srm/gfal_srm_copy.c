@@ -103,7 +103,7 @@ int srm_plugin_create_parent_copy(plugin_handle handle, gfalt_params_t params,
                 gfal_log(GFAL_VERBOSE_TRACE, "parent path %s created with success", path_dir);
         }
         else {
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL,
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
                     "Invalid srm url %s", surl);
             res = -1;
         }
@@ -239,14 +239,14 @@ static int srm_validate_source_checksum(plugin_handle handle, gfal2_context_t co
         if (checksum_source[0] != '\0') {
             if (checksum_user[0] != '\0' &&
                 gfal_compare_checksums(checksum_source, checksum_user, checksum_source_size) != 0) {
-                g_set_error(err, gfal2_get_plugin_srm_quark(), EIO,
+                gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EIO, __func__,
                         "User defined checksum and source checksum do not match %s != %s",
                         checksum_source, checksum_user);
                 ret = -1;
             }
         }
         else if (!allow_empty) {
-            g_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL,
+            gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
                     "Empty source checksum");
             ret = -1;
         }
@@ -281,21 +281,21 @@ static int srm_validate_destination_checksum(plugin_handle handle, gfal2_context
         if (checksum_destination[0] != '\0') {
             if (checksum_source[0] != '\0' &&
                 gfal_compare_checksums(checksum_source, checksum_destination, sizeof(checksum_destination)) != 0) {
-                g_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL,
+                gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
                         "Source and destination checksums do not match %s != %s",
                         checksum_source, checksum_destination);
                 ret = -1;
             }
             else if (checksum_user[0] != '\0' &&
                 gfal_compare_checksums(checksum_user, checksum_destination, sizeof(checksum_destination)) != 0) {
-                g_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL,
+                gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
                         "User defined checksum and destination checksums do not match %s != %s",
                         checksum_user, checksum_destination);
                 ret = -1;
             }
         }
         else {
-            g_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL,
+            gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
                     "Empty destination checksum");
             ret = -1;
         }
@@ -543,7 +543,7 @@ copy_finalize:
             token_source, token_destination,
             transfer_finished, &nested_error);
     if (nested_error != NULL)
-        g_propagate_prefixed_error(err, nested_error, "[%s]", __func__);
+        gfal2_propagate_prefixed_error(err, nested_error, __func__);
     else
         *err = NULL;
     return (*err == NULL)? 0 : -1;

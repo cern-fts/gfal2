@@ -110,7 +110,7 @@ int gfal_checker_compile(gfal_srmv2_opt* opts, GError** err){
 int gfal_surl_checker(plugin_handle ch, const char* surl, GError** err){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
 	if(surl == NULL || strnlen(surl, GFAL_URL_MAX_LEN) == GFAL_URL_MAX_LEN){
-        g_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, "[%s] Invalid surl, surl too long or NULL",__func__);
+        gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__, "Invalid surl, surl too long or NULL");
 		return -1;
 	}	
 	return regexec(&opts->rexurl,surl,0,NULL,0);
@@ -123,12 +123,12 @@ int gfal_surl_checker(plugin_handle ch, const char* surl, GError** err){
 gboolean gfal_srm_surl_group_checker(gfal_srmv2_opt* opts,char** surls, GError** err){
 	GError* tmp_err=NULL;
 	if(surls == NULL ){
-        g_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, "[%s] Invalid argument surls ", __func__);
+	    gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__, "Invalid argument surls ");
 		return FALSE;
 	}
 	while(*surls != NULL){
 		if( gfal_surl_checker(opts, *surls, &tmp_err) != 0){
-			g_propagate_prefixed_error(err,tmp_err,"[%s]",__func__);	
+			gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 			return FALSE;
 		}
 		surls++;
@@ -282,7 +282,8 @@ char* gfal_get_fullendpoint(const char* surl, GError** err){
 	 char* p = strchr(surl+srm_prefix_len,'/');
 	 char* prep = strstr(surl, GFAL_PREFIX_SRM);
 	 if(prep != surl){
-         g_set_error(err,gfal2_get_plugin_srm_quark(), EINVAL, "[gfal_get_hostname_from_surl not a valid surl");
+        gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
+                "[gfal_get_hostname_from_surl not a valid surl");
 		 return NULL;
 	 }
 	 return strndup(surl+srm_prefix_len, p-surl-srm_prefix_len);	 
@@ -322,8 +323,8 @@ int gfal_srm_convert_filestatuses_to_GError(struct srmv2_filestatus* statuses, i
 	int ret =0;
 	for(i=0; i< n; ++i){
 		if(statuses[i].status != 0){
-            g_set_error(err, gfal2_get_plugin_srm_quark(), statuses[i].status, "[%s] Error on the surl %s while putdone : %s", __func__,
-				statuses[i].surl, statuses[i].explanation);
+            gfal2_set_error(err, gfal2_get_plugin_srm_quark(), statuses[i].status, __func__,
+                    "Error on the surl %s while putdone : %s", statuses[i].surl, statuses[i].explanation);
 			ret = -1;			
 		}
 	}
@@ -332,12 +333,13 @@ int gfal_srm_convert_filestatuses_to_GError(struct srmv2_filestatus* statuses, i
  
 void gfal_srm_report_error(char* errbuff, GError** err){
 	int errcode = (errno != ECOMM && errno != 0)?errno:ECOMM;
-    g_set_error(err,gfal2_get_plugin_srm_quark(), errcode, "srm-ifce err: %s, err: %s", strerror(errcode), errbuff);
+	gfal2_set_error(err,gfal2_get_plugin_srm_quark(), errcode, __func__,
+	        "srm-ifce err: %s, err: %s", strerror(errcode), errbuff);
 }
 
 gboolean gfal_srm_check_cancel(gfal2_context_t context, GError** err){
     if(gfal2_is_canceled(context)){
-        g_set_error(err, gfal2_get_plugin_srm_quark(), ECANCELED, "SRM operation canceled");
+        gfal2_set_error(err, gfal2_get_plugin_srm_quark(), ECANCELED, __func__, "SRM operation canceled");
         return TRUE;
     }
     return FALSE;

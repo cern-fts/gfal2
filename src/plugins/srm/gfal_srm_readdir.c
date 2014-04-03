@@ -123,8 +123,9 @@ static int gfal_srm_readdir_internal(plugin_handle ch,
         if(ret >=0){
             srmv2_mdstatuses = output.statuses;
             if(srmv2_mdstatuses[0].status != 0){
-                g_set_error(err, gfal2_get_plugin_srm_quark(), srmv2_mdstatuses->status, "[%s] Error reported from srm_ifce : %d %s", __func__,
-                            srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
+                gfal2_set_error(err, gfal2_get_plugin_srm_quark(), srmv2_mdstatuses->status, __func__,
+                        "Error reported from srm_ifce : %d %s",
+                        srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
                 resu = -1;
 
             }else {
@@ -177,7 +178,7 @@ static struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch,
         oh->slice_index++;
     }
     else
-        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     return ret;
 }
 
@@ -201,6 +202,6 @@ struct dirent* gfal_srm_readdirppG(plugin_handle ch,
     ret = gfal_srm_readdir_pipeline(ch, oh, st, &tmp_err);
 
     if(tmp_err)
-        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     return ret;
 }

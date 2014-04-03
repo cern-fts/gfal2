@@ -117,14 +117,13 @@ gfal_file_handle gfal_srm_opendir_internal(gfal_srmv2_opt* opts, char* endpoint,
                                          real_surl);
         }
         else {
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), ENOTDIR,
-                    "srm-plugin: %s is not a directory, impossible to list content",
-                    surl);
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), ENOTDIR, __func__,
+                    "srm-plugin: %s is not a directory, impossible to list content", surl);
         }
     }
 
     if (tmp_err)
-        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
     g_free(real_surl);
     return resu;
@@ -146,17 +145,19 @@ gfal_file_handle gfal_srm_opendirG(plugin_handle ch, const char* surl, GError **
 		if(srm_type == PROTO_SRMv2){
 			resu = gfal_srm_opendir_internal(opts, endpoint, surl, &tmp_err);
 		}else if (srm_type == PROTO_SRM){
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+                    "support for SRMv1 is removed in 2.0, failure");
 			resu = NULL;
 		}else {
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
+		    gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+		            "unknow version of the protocol SRM , failure");
 			resu = NULL;			
 		}
 		
 	}
 	
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return resu;
 }
 

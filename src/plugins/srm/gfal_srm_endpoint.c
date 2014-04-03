@@ -54,7 +54,8 @@ static int gfal_srm_guess_service_endpoint(gfal_srmv2_opt* opts, const char* sur
     while(p < surl + surl_len && *p != '/' && *p != '\0')
         p++;
     if( org_p +1 > p || msize >= s_buff || p - org_p + msize + strlen(GFAL_DEFAULT_SERVICE_ENDPOINT_SUFFIX) > s_buff){
-        g_set_error(&tmp_err,gfal2_get_plugin_srm_quark(), EINVAL, "Impossible to setup default service endpoint from %s : bad URI format", surl);
+        gfal2_set_error(&tmp_err,gfal2_get_plugin_srm_quark(), EINVAL, __func__,
+                "Impossible to setup default service endpoint from %s : bad URI format", surl);
         ret = -1;
     }else{
          strncat(buff_endpoint, org_p, p-org_p);
@@ -92,7 +93,7 @@ static int gfal_get_fullendpointG(const char* surl, char* buff_endpoint, size_t 
 		*((char*)mempcpy(buff_endpoint + len_endpoint_prefix, surl+len_prefix, p- surl-len_prefix))= '\0';		// copy endpoint
 		return 0;
 	}
-    g_set_error(err, gfal2_get_plugin_srm_quark(), ENOBUFS, "[%s] buffer too small", __func__);
+    gfal2_set_error(err, gfal2_get_plugin_srm_quark(), ENOBUFS, __func__, "buffer too small");
 	return -1;
 }
 
@@ -137,7 +138,8 @@ static int gfal_select_best_protocol_and_endpointG(gfal_srmv2_opt* opts, char** 
 		else
 			p_pref++;
 	}
-    g_set_error(err,gfal2_get_plugin_srm_quark(), EINVAL, "[gfal_select_best_protocol_and_endpoint] cannot obtain a valid protocol from the bdii response, fatal error");
+    gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
+            "cannot obtain a valid protocol from the bdii response, fatal error");
 	return -2;
 	
 }
@@ -154,19 +156,19 @@ static int  gfal_get_hostname_from_surlG(const char * surl, char* buff_hostname,
 	 
 	 char* p;
 	 if((p = strchr(surl+srm_prefix_len,'/')) ==NULL){
-        g_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, "[%s] url invalid",__func__);
+        gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__, "url invalid");
 		return -1; 		 
 	 }
 		
 	 if(s_buff > (p-surl-srm_prefix_len)){	
 		*((char*) mempcpy(buff_hostname, surl+srm_prefix_len, p-surl-srm_prefix_len)) = '\0';
 		if(*buff_hostname =='\0'){
-            g_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, "[%s] url invalid",__func__);
+            gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__, "url invalid");
 			return -1;
 		}
 		return 0;
 	}
-    g_set_error(err, gfal2_get_plugin_srm_quark(), ENOBUFS, "[%s] buffer size too small",__func__);
+	gfal2_set_error(err, gfal2_get_plugin_srm_quark(), ENOBUFS, __func__, "buffer size too small");
 	return -1; 
  }
 

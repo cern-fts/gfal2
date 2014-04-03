@@ -58,7 +58,7 @@ gfal_file_handle lfc_openG(plugin_handle ch, const char* path, int flag, mode_t 
 	}
 	g_strfreev(surls);
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return res;
 
 }

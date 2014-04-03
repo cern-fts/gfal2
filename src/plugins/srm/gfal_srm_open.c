@@ -96,7 +96,7 @@ gfal_file_handle gfal_srm_openG(plugin_handle ch, const char* path, int flag, mo
     g_free(reqtoken);
 
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return ret;	
 	
 }
@@ -109,7 +109,7 @@ ssize_t gfal_srm_readG(plugin_handle ch, gfal_file_handle fd, void* buff, size_t
 	GError* tmp_err=NULL;
 	int ret =  gfal_plugin_readG(opts->handle, gfal_srm_file_handle_map(fd), buff, count, &tmp_err);	
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return ret;		
 }
 
@@ -121,7 +121,7 @@ ssize_t gfal_srm_preadG(plugin_handle ch, gfal_file_handle fd, void* buff, size_
 	GError* tmp_err=NULL;
 	int ret =  gfal_plugin_preadG(opts->handle, gfal_srm_file_handle_map(fd), buff, count, offset, &tmp_err);	
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return ret;		
 }
 
@@ -133,7 +133,7 @@ ssize_t gfal_srm_writeG(plugin_handle ch, gfal_file_handle fd, const void* buff,
 	GError* tmp_err=NULL;
 	int ret = gfal_plugin_writeG(opts->handle, gfal_srm_file_handle_map(fd), (void* )buff, count, &tmp_err);	
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return ret;	
 }
 
@@ -145,7 +145,7 @@ off_t gfal_srm_lseekG(plugin_handle ch, gfal_file_handle fd, off_t offset, int w
 	GError* tmp_err=NULL;
 	int ret = gfal_plugin_lseekG(opts->handle, gfal_srm_file_handle_map(fd), offset, whence, &tmp_err);	
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return ret;	
 }
 
@@ -162,7 +162,7 @@ int gfal_srm_closeG(plugin_handle ch, gfal_file_handle fh, GError ** err){
 		gfal_srm_file_handle_delete(fh);
 	}
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 		
 	return ret;	
 }

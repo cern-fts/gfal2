@@ -36,11 +36,11 @@ namespace Gfal{
 
 #define CPP_GERROR_CATCH(my_err_catched)  } \
 							catch(Glib::Error & e){ \
-								g_set_error(my_err_catched, e.domain(), e.code(), "%s", e.what().c_str()); \
+								gfal2_set_error(my_err_catched, e.domain(), e.code(), __func__, "%s", e.what().c_str()); \
 							}catch(std::exception & e){ \
-                                g_set_error(my_err_catched, gfal2_get_core_quark(), EPROTONOSUPPORT, "%s", e.what()); \
+                                gfal2_set_error(my_err_catched, gfal2_get_core_quark(), EPROTONOSUPPORT, __func__, "%s", e.what()); \
 							}catch(...){ \
-                                g_set_error(my_err_catched, gfal2_get_core_quark(), EIO, "Undefined Exception catched: Bug found !! "); \
+							    gfal2_set_error(my_err_catched, gfal2_get_core_quark(), EIO, __func__, "Undefined Exception catched: Bug found !! "); \
 							} \
 							}while(0) 	
 }
