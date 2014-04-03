@@ -39,7 +39,7 @@
 #include <common/gfal_constants.h>
 #include <common/gfal_types.h>
 #include <common/gfal_common_plugin.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <checksums/checksums.h>
 #include <fdesc/gfal_file_handle.h>
 #include <file/gfal_file_api.h>
@@ -117,7 +117,8 @@ static gboolean gfal_file_check_url(plugin_handle handle, const char* url, plugi
 
 
 void gfal_plugin_file_report_error(const char* funcname, GError** err){
-    g_set_error(err, gfal2_get_plugin_file_quark(),errno, "[%s] errno reported by local system call %s", funcname, strerror(errno));
+    gfal2_set_error(err, gfal2_get_plugin_file_quark(), errno,
+            funcname, "errno reported by local system call %s", strerror(errno));
 }
 
  int gfal_plugin_file_access(plugin_handle plugin_data, const char *path, int amode, GError** err){
@@ -427,12 +428,14 @@ static int gfal_plugin_file_chk_compute(plugin_handle data, const char* url, con
     ssize_t ret = 0, remain_bytes= ((data_length>0)?(data_length):(chunk_size));
 
     if( (fd = gfal2_open(handle, url, O_RDONLY,  &tmp_err)) <0 ){
-        g_propagate_prefixed_error(err, tmp_err, "Error during checksum calculation, open ");
+        g_prefix_error(err, "Error during checksum calculation, open ");
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
         return -1;
     }
 
     if( gfal2_lseek(handle, fd, start_offset, SEEK_SET, &tmp_err) < 0){
-        g_propagate_prefixed_error(err, tmp_err, "[Error during checksum calculation, lseek ");
+        g_prefix_error(err, "Error during checksum calculation, lseek ");
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
         return -1;
     }
 
@@ -451,13 +454,15 @@ static int gfal_plugin_file_chk_compute(plugin_handle data, const char* url, con
     gfal2_close(handle, fd, NULL);
 
     if( i_chk->getResult(c_handle, checksum_buffer, buffer_length) < 0){
-        g_set_error(err, gfal2_get_plugin_file_quark(), ENOBUFS, "buffer for checksum too short");
+        gfal2_set_error(err, gfal2_get_plugin_file_quark(), ENOBUFS, __func__, "buffer for checksum too short");
         return -1;
     }
 
 
     if( ret < 0){
-        g_propagate_prefixed_error(err, tmp_err, "[gfal_plugin_file_chk_compute] Error during checksum calculation, read ");
+        gfal2_set_error(err, gfal2_get_plugin_file_quark(), tmp_err->code, __func__,
+                "Error during checksum calculation, read: %s", tmp_err->message);
+        g_error_free(tmp_err);
         return -1;
     }
     return 0;
@@ -495,7 +500,8 @@ int gfal_plugin_filechecksum_calc(plugin_handle data, const char* url, const cha
                                             &ie,
                                             err);
     }
-    g_set_error(err, gfal2_get_plugin_file_quark(), ENOSYS, "[gfal_plugin_filechecksum_calc] Checksum type %s not supported for local files", check_type);
+    gfal2_set_error(err, gfal2_get_plugin_file_quark(), ENOSYS, __func__,
+            "Checksum type %s not supported for local files", check_type);
     return -1;
 }
 

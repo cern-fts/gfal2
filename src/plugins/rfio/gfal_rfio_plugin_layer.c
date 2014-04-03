@@ -31,9 +31,10 @@
 #include <dlfcn.h>
 #include <stdlib.h>
 #include <common/gfal_common_internal.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_types.h>
+#include <logger/gfal_logger.h>
 #include "gfal_rfio_plugin_layer.h"
 #include "gfal_rfio_plugin_main.h"
 
@@ -55,8 +56,8 @@ struct rfio_proto_ops * gfal_rfio_internal_loader_base(GError** err){
 	if( libname != NULL){
 		gfal_log(GFAL_VERBOSE_VERBOSE, " lib rfio defined in LCG_RFIO_TYPE : %s", libname);
 		if( (dlhandle = dlopen(libname, RTLD_LAZY)) == NULL){
-            g_set_error(&tmp_err, gfal2_get_plugin_rfio_quark(),
-                    EPROTONOSUPPORT,
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_rfio_quark(),
+                    EPROTONOSUPPORT, __func__,
                     " library %s for the rfio_plugin cannot be loaded properly, failure : %s ",
                     libname, dlerror());
 		}	
@@ -72,7 +73,8 @@ struct rfio_proto_ops * gfal_rfio_internal_loader_base(GError** err){
 			p++;
 		}
 	    if(!dlhandle){	
-            g_set_error(&tmp_err, gfal2_get_plugin_rfio_quark(), EPROTONOSUPPORT, "Unable to find %s or %s, failure : %s ", libcastor_name, libdpm_name, dlerror());
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_rfio_quark(), EPROTONOSUPPORT, __func__,
+                    "Unable to find %s or %s, failure : %s ", libcastor_name, libdpm_name, dlerror());
 		}
 	}
 	if(dlhandle){
@@ -102,7 +104,7 @@ struct rfio_proto_ops * gfal_rfio_internal_loader_base(GError** err){
 			pops->write = (ssize_t (*) (int, const void *, size_t)) dlsym (dlhandle, "rfio_write");
 	}
 	if(tmp_err)
-			g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+			gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return pops;
 	
 }

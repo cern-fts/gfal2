@@ -30,7 +30,7 @@ void gridftp_unlink_internal(gfal2_context_t context, GridFTP_session* sess, con
 	globus_result_t res = globus_ftp_client_delete(
 				req->sess->get_ftp_handle(),
 				path,
-				NULL,
+				req->sess->get_op_attr_ftp(),
 				globus_basic_client_callback,
 				req.get());
     gfal_globus_check_result(gfal_gridftp_scope_unlink(), res);

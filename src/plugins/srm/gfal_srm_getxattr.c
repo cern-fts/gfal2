@@ -29,7 +29,7 @@
 
 #include "gfal_srm.h"
 #include <common/gfal_constants.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include "gfal_srm_internal_layer.h" 
 #include "gfal_srm_getxattr.h"
 
@@ -67,7 +67,8 @@ ssize_t gfal_srm_getxattrG(plugin_handle handle, const char* path, const char* n
 	}else if(strcmp(name, srm_status_key) ==0 ){
 		ret = gfal_srm_status_getxattrG(handle, path, name, buff, s_buff, &tmp_err);
 	}else{ // need to add pin and spacetoken
-        g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), ENOATTR, "not an existing extended attribute");
+        gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), ENOATTR, __func__,
+                "not an existing extended attribute");
 	}
 	
 	gfal_log(GFAL_VERBOSE_TRACE, " gfal_srm_getxattrG <- ");

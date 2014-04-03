@@ -28,7 +28,6 @@
 #include <time.h> 
 #include <glib.h>
 #include <common/gfal_common_internal.h>
-#include <common/gfal_common_errverbose.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_filedescriptor.h>
 #include <common/gfal_types.h>
@@ -64,5 +63,7 @@ gfal_file_handle gfal_dcap_opendirG(plugin_handle handle, const char* path, GErr
 int gfal_dcap_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err);
 
 struct dirent* gfal_dcap_readdirG(plugin_handle handle, gfal_file_handle fh, GError** err);
+
+int gfal_dcap_unlinkG(plugin_handle handle, const char* url, GError** err);
 
 const char* gfal_dcap_getName();

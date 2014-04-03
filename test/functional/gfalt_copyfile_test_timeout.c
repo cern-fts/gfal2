@@ -51,9 +51,6 @@ int main(int argc, char** argv){
         ret = 0;
     }
 
-
-			
-		
 	gfal2_context_free(handle);
     gfalt_params_handle_delete(params,NULL);
 	return ret;

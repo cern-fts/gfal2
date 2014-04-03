@@ -59,3 +59,26 @@ int plugin_trigger_event(gfalt_params_t params, GQuark domain,
   }
   return 0;
 }
+
+void gfalt_propagate_prefixed_error(GError **dest, GError *src, const gchar *function,
+        const gchar *side, const gchar *note)
+{
+    if (note)
+        gfal2_propagate_prefixed_error_extended(dest, src, function, "%s %s ", side, note);
+    else
+        gfal2_propagate_prefixed_error_extended(dest, src, function, "%s ", side);
+}
+
+void gfalt_set_error(GError **err, GQuark domain, gint code, const gchar *function,
+        const char *side, const gchar *note, const gchar *format, ...)
+{
+    char buffer[1024];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+    if (note)
+        gfal2_set_error(err, domain, code, function, "%s %s %s", side, note, buffer);
+    else
+        gfal2_set_error(err, domain, code, function, "%s %s", side, buffer);
+}

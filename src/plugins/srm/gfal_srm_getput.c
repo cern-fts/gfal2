@@ -26,7 +26,7 @@
 #include "gfal_srm.h"
 #include "gfal_srm_request.h"
 #include <common/gfal_common_internal.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_endpoint.h"
@@ -176,9 +176,11 @@ int gfal_srm_mTURLS_internal(gfal_srmv2_opt* opts, gfal_srm_params_t params, srm
 			else
 				ret= gfal_srm_putTURLS_srmv2_internal(opts, params, full_endpoint, surls, resu,  &tmp_err);
 		} else if(srm_types == PROTO_SRM){
-            g_set_error(&tmp_err,gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in gfal 2.0, failure");
+            gfal2_set_error(&tmp_err,gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+                    "support for SRMv1 is removed in gfal 2.0, failure");
 		} else{
-            g_set_error(&tmp_err,gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, "Unknow SRM protocol, failure ");
+		    gfal2_set_error(&tmp_err,gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, __func__,
+                    "unknow SRM protocol, failure ");
 		}		
 	}
 
@@ -203,7 +205,8 @@ int gfal_srm_getTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl
 					*reqtoken = resu[0].reqtoken;
 				ret=0;			
 			}else{
-                g_set_error(&tmp_err,gfal2_get_plugin_srm_quark() , resu[0].err_code, " error on the turl request : %s ", resu[0].err_str);
+                gfal2_set_error(&tmp_err,gfal2_get_plugin_srm_quark() , resu[0].err_code, __func__,
+                        "error on the turl request : %s ", resu[0].err_str);
 				ret = -1;
                 g_free(resu->reqtoken);
 			}
@@ -232,7 +235,8 @@ int gfal_srm_getTURL_checksum(plugin_handle ch, const char* surl, char* buff_tur
                 g_strlcpy(buff_turl, resu[0].turl, size_turl);
                 ret=0;
             }else{
-                g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), resu[0].err_code, " error on the turl request : %s ", resu[0].err_str);
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), resu[0].err_code, __func__,
+                        "error on the turl request : %s ", resu[0].err_str);
                 ret = -1;
             }
             free(resu);
@@ -273,9 +277,9 @@ int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl,
                 ret = 0;
             }
             else {
-                g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
-                        resu[0].err_code, " error on the turl request : %s ",
-                        resu[0].err_str);
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
+                        resu[0].err_code, __func__,
+                        "error on the turl request : %s ", resu[0].err_str);
                 ret = -1;
             }
             free(resu);
@@ -334,9 +338,9 @@ int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl,
                 free(resu);
             }
             else {
-                g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
-                        resu[0].err_code, " error on the turl request : %s ",
-                        resu[0].err_str);
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
+                        resu[0].err_code, __func__,
+                        "error on the turl request : %s ", resu[0].err_str);
                 ret = -1;
             }
 
@@ -366,7 +370,8 @@ int gfal_srm_putTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl
 					*reqtoken = resu[0].reqtoken;
 				ret=0;			
 			}else{
-                g_set_error(&tmp_err,gfal2_get_plugin_srm_quark() , resu[0].err_code, " error on the turl request : %s ", resu[0].err_str);
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), resu[0].err_code, __func__,
+                        "error on the turl request : %s ", resu[0].err_str);
 				ret = -1;
 			}
             free(resu);
@@ -420,7 +425,8 @@ static int gfal_srm_putdone_srmv2_internal(gfal_srmv2_opt* opts, char* endpoint,
         gfal_log(GFAL_VERBOSE_TRACE, "    [gfal_srm_putdone_srmv2_internal] start srm put done on %s", surls[0]);
         ret = gfal_srm_external_call.srm_put_done(context,&putdone_input, &statuses);
         if(ret < 0){
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),errno,"call to srm_ifce error: %s",errbuf);
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), errno, __func__,
+                    "call to srm_ifce error: %s", errbuf);
         } else{
              ret = gfal_srm_convert_filestatuses_to_GError(statuses, ret, &tmp_err);
              gfal_srm_external_call.srm_srmv2_filestatus_delete(statuses, n_surl);
@@ -444,9 +450,11 @@ int gfal_srm_putdone(gfal_srmv2_opt* opts , char** surls, const char* token,  GE
 		if (srm_types == PROTO_SRMv2){
 			ret = gfal_srm_putdone_srmv2_internal(opts, full_endpoint, surls, token, &tmp_err);
 		} else if(srm_types == PROTO_SRM){
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in gfal 2.0, failure");
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+                    "support for SRMv1 is removed in gfal 2.0, failure");
 		} else{
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, "Unknow SRM protocol, failure ");
+		    gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, __func__,
+                    "unknow SRM protocol, failure ");
 		}		
 	}
 	gfal_log(GFAL_VERBOSE_TRACE, "   [gfal_srm_putdone] <-");
@@ -471,7 +479,8 @@ int srmv2_abort_request_internal(gfal_srmv2_opt* opts , const char* endpoint, co
 
     if(context){
         if((ret = gfal_srm_external_call.srm_abort_request(context, (char*)req_token)) < 0){
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),errno,"SRMv2 abort request error : %s",errbuf);
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), errno, __func__,
+                    "SRMv2 abort request error : %s", errbuf);
         }
     }
     gfal_srm_ifce_context_release(context);
@@ -496,9 +505,11 @@ int srm_abort_request_plugin (plugin_handle * handle , const char* surl,
         if (srm_types == PROTO_SRMv2){
             ret = srmv2_abort_request_internal(opts, full_endpoint, reqtoken, &tmp_err);
         } else if(srm_types == PROTO_SRM){
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in gfal 2.0, failure");
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+                    "support for SRMv1 is removed in gfal 2.0, failure");
         } else{
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, "Unknow SRM protocol, failure ");
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, __func__,
+                    "unknow SRM protocol, failure ");
         }
     }
     gfal_log(GFAL_VERBOSE_TRACE, " [srm_abort_request] <-");

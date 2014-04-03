@@ -26,7 +26,8 @@
 #include <glib.h>
 #include <lber.h>
 #include <ldap.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
+#include <logger/gfal_logger.h>
 #include "gfal_mds.h"
 
 #ifdef __cplusplus

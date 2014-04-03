@@ -18,7 +18,8 @@
 #include <file/gfal_file_api.h>
 #include <common/gfal_common_internal.h>
 #include <common/gfal_common_plugin.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
+#include <logger/gfal_logger.h>
 
 // fiel descriptor checksum calculation
 GQuark gfal_checksum_file_quark(){

@@ -26,7 +26,7 @@
  
 
 #include <common/gfal_common_internal.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
 #include <regex.h>
 #include <time.h> 
@@ -88,9 +88,9 @@ static int gfal_srmv2_bring_online_internal(gfal_srmv2_opt* opts, const char* en
                             token[0] = '\0';
                         break;
                     default:
-                        g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
-                                    output.filestatuses[0].status,
-                                    " error on the bring online request : %s ",
+                        gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
+                                    output.filestatuses[0].status, __func__,
+                                    "error on the bring online request : %s ",
                                     output.filestatuses[0].explanation);
                         break;
                 }
@@ -105,7 +105,7 @@ static int gfal_srmv2_bring_online_internal(gfal_srmv2_opt* opts, const char* en
     gfal_srm_params_free(params);
 
     if (tmp_err != NULL) {
-        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
         return -1;
     }
     else {
@@ -140,16 +140,18 @@ int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl,
                                                    &tmp_err);
             break;
         case PROTO_SRM:
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+                    "support for SRMv1 is removed in 2.0, failure");
             break;
         default:
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+                    "unknow version of the protocol SRM , failure");
             break;
         }
     }
 
     if (tmp_err != NULL) {
-        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
         return -1;
     }
     else {
@@ -191,9 +193,9 @@ static int gfal_srmv2_bring_online_poll_internal(gfal_srmv2_opt* opts, const cha
                 case 22:
                     break;
                 default:
-                    g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
-                                output.filestatuses[0].status,
-                                " error on the bring online request : %s ",
+                    gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
+                                output.filestatuses[0].status, __func__,
+                                "error on the bring online request : %s ",
                                 output.filestatuses[0].explanation);
                     break;
             }
@@ -204,7 +206,7 @@ static int gfal_srmv2_bring_online_poll_internal(gfal_srmv2_opt* opts, const cha
     }
 
     if (tmp_err != NULL) {
-        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
         return -1;
     }
     else {
@@ -235,16 +237,18 @@ int gfal_srmv2_bring_online_pollG(plugin_handle ch, const char* surl,
                                                           &tmp_err);
               break;
           case PROTO_SRM:
-              g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
+              gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+                      "support for SRMv1 is removed in 2.0, failure");
               break;
           default:
-              g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
+              gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+                      "unknow version of the protocol SRM , failure");
               break;
           }
     }
 
     if (tmp_err != NULL) {
-        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
         return -1;
     }
     else {
@@ -287,8 +291,8 @@ static int gfal_srmv2_release_file_internal(gfal_srmv2_opt* opts, const char* en
               }
               else {
                   if (statuses[0].status != 0) {
-                      g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
-                                  statuses[0].status,
+                      gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
+                                  statuses[0].status, __func__,
                                   "error on the release request : %s ",
                                   statuses[0].explanation);
                   }
@@ -296,13 +300,13 @@ static int gfal_srmv2_release_file_internal(gfal_srmv2_opt* opts, const char* en
               }
           }
           else {
-              g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), errno,
-                          "[%s] %s", __func__, error_buffer);
+              gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), errno, __func__,
+                          "%s", error_buffer);
           }
     }
 
     if (tmp_err != NULL) {
-        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
         return -1;
     }
     else {
@@ -333,16 +337,18 @@ int gfal_srmv2_release_fileG(plugin_handle ch, const char* surl,
                                                        &tmp_err);
                 break;
             case PROTO_SRM:
-                g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+                        "support for SRMv1 is removed in 2.0, failure");
                 break;
             default:
-                g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+                        "uknow version of the protocol SRM , failure");
                 break;
             }
       }
 
       if (tmp_err != NULL) {
-          g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+          gfal2_propagate_prefixed_error(err, tmp_err, __func__);
           return -1;
       }
       else {

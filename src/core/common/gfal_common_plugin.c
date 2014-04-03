@@ -30,10 +30,11 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <logger/gfal_logger.h>
 #include "gfal_types.h"
 #include "gfal_common_plugin.h"
 #include "gfal_constants.h"
-#include "gfal_common_errverbose.h"
+#include "gfal_common_err_helpers.h"
 #include "gfal_common_filedescriptor.h"
 
 #ifndef GFAL_PLUGIN_DIR_DEFAULT
@@ -69,15 +70,20 @@ gboolean gfal_feature_is_supported(void * ptr, GQuark scope, const char* func_na
 }
 
 //convenience function for safe calls to the plugin checkers
-gboolean gfal_plugin_checker_safe(gfal_plugin_interface* cata_list, const char* path, plugin_mode call_type, GError** terr ){
-	if(cata_list->check_plugin_url)
-		return cata_list->check_plugin_url(cata_list->plugin_data, path, call_type, terr);
-	else{
-        g_set_error(terr, gfal2_get_plugins_quark(), EPROTONOSUPPORT, "[%s] unexcepted NULL \
+gboolean gfal_plugin_checker_safe(gfal_plugin_interface* cata_list,
+        const char* path, plugin_mode call_type, GError** terr)
+{
+    if (cata_list->check_plugin_url)
+        return cata_list->check_plugin_url(cata_list->plugin_data, path, call_type, terr);
+    else {
+        gfal2_set_error(terr, gfal2_get_plugins_quark(), EPROTONOSUPPORT,
+                __func__,
+                "unexcepted NULL \
 				pointer for a call to the url checker in the \
-				plugin %s",__func__, cata_list->getName());
-		return FALSE;
-	}
+				plugin %s",
+                cata_list->getName());
+        return FALSE;
+    }
 }
 
 //
@@ -143,7 +149,7 @@ gfal_plugin_interface* gfal_plugin_map_file_handle(gfal_handle handle, gfal_file
         g_set_error(&tmp_err, gfal2_get_plugins_quark(), EINVAL, "No gfal_module loaded");
 	}
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]",__func__);
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return cata_list;
 }
 
@@ -161,7 +167,7 @@ char** gfal_plugins_get_list(gfal_handle handle, GError** err){
 		}	
 	}
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+	    gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return resu;
 }
 
@@ -187,7 +193,7 @@ gfal_plugin_interface* gfal_search_plugin_with_name(gfal_handle handle, const ch
   }
 
   if(tmp_err)
-	  g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+      gfal2_propagate_prefixed_error(err, tmp_err, __func__);
   return resu;  
 }
 
@@ -197,11 +203,13 @@ static int gfal_module_load(gfal_handle handle, char* module_name, GError** err)
 	GError * tmp_err=NULL;
 	int ret = -1;
 	if (dlhandle==NULL)
-        g_set_error(&tmp_err, gfal2_get_plugins_quark(), EINVAL, "[%s] Unable to open the %s plugin specified in the plugin directory, failure : %s", __func__, module_name, dlerror());
+        g_set_error(&tmp_err, gfal2_get_plugins_quark(), EINVAL,
+                "Unable to open the %s plugin specified in the plugin directory, failure : %s",
+                module_name, dlerror());
 	else
 		ret = gfal_module_init(handle, dlhandle, module_name, &tmp_err);	
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+	    gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return ret;
 }
 
@@ -270,8 +278,10 @@ char ** gfal_list_directory_plugins(const char * dir, GError ** err){
 		g_dir_close (d);		
 	}
 
-	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[gfal_list_directory_plugins] Error, gfal 2.0 plugins directory : %s -> ",dir);
+	if(tmp_err) {
+	    g_prefix_error(&tmp_err, "Error, gfal 2.0 plugins directory : %s -> ", dir);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+	}
 	return res;
 }
 
@@ -317,7 +327,7 @@ int gfal_modules_resolve(gfal_handle handle, GError** err){
 	}
 
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+	    gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return ret;
 }
 
@@ -367,12 +377,12 @@ int gfal_plugins_instance(gfal_handle handle, GError** err){
 		GError* tmp_err=NULL;
 		gfal_modules_resolve(handle, &tmp_err);
 		if(tmp_err){
-			g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+		    gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 			handle->plugin_opt.plugin_number = -1;
         }else if(handle->plugin_opt.plugin_number > 0){
             gfal_plugins_sort(handle, &tmp_err);
             if(tmp_err){
-                g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+                gfal2_propagate_prefixed_error(err, tmp_err, __func__);
                 return -1;
             }
         }
@@ -384,30 +394,33 @@ int gfal_plugins_instance(gfal_handle handle, GError** err){
 
 
 
-gfal_plugin_interface* gfal_find_plugin(gfal_handle handle,
-                                           const char * url,
-                                           plugin_mode acc_mode, GError** err){
-        GError* tmp_err=NULL;
-        gboolean compatible = FALSE;
-        const int n_plugins = gfal_plugins_instance(handle, &tmp_err);
-        if(n_plugins > 0){
-            GList * plugin_list = g_list_first(handle->plugin_opt.sorted_plugin);
-            while(plugin_list != NULL){
-              gfal_plugin_interface* cata_list = plugin_list->data;
-              compatible =  gfal_plugin_checker_safe(cata_list, url, acc_mode , &tmp_err);
-              if(tmp_err)
-                  break;
-              if(compatible)
-                  return cata_list;
-              plugin_list = g_list_next(plugin_list);
-          }
+gfal_plugin_interface* gfal_find_plugin(gfal_handle handle, const char * url,
+        plugin_mode acc_mode, GError** err)
+{
+    GError* tmp_err = NULL;
+    gboolean compatible = FALSE;
+    const int n_plugins = gfal_plugins_instance(handle, &tmp_err);
+    if (n_plugins > 0) {
+        GList * plugin_list = g_list_first(handle->plugin_opt.sorted_plugin);
+        while (plugin_list != NULL ) {
+            gfal_plugin_interface* cata_list = plugin_list->data;
+            compatible = gfal_plugin_checker_safe(cata_list, url, acc_mode,
+                    &tmp_err);
+            if (tmp_err)
+                break;
+            if (compatible)
+                return cata_list;
+            plugin_list = g_list_next(plugin_list);
         }
-        if(tmp_err){
-          g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
-        }else{
-          g_set_error(err,gfal2_get_plugins_quark(),EPROTONOSUPPORT, "[%s] Protocol not supported or path/url invalid", __func__);
-        }
-        return NULL;
+    }
+    if (tmp_err) {
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+    }
+    else {
+        gfal2_set_error(err, gfal2_get_plugins_quark(), EPROTONOSUPPORT,
+                __func__, "Protocol not supported or path/url invalid");
+    }
+    return NULL ;
 }
 
 

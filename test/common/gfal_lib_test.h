@@ -32,4 +32,14 @@ char * generate_random_string_content(size_t size);
 int generate_file_if_not_exists(gfal2_context_t handle, const char* surl,
         const char* src, GError** error);
 
+/** Same thing, without a handle
+ */
+int generate_file_if_not_exists2(const char* surl);
+
+/**
+ * Clean up file, logging errors if there is
+ * If error != ENOENT, it will be considered fatal and this method will abort!
+ */
+int clean_file(const char* surl);
+
 #endif /* GFAL_LIB_TEST_H */ 

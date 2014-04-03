@@ -27,7 +27,7 @@
 #include "gfal_srm_internal_ls.h"
 #include "gfal_srm_rename.h"
 #include <common/gfal_common_internal.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
 #include <dirent.h>
 
@@ -80,17 +80,17 @@ int gfal_srm_rename_internal(gfal_srmv2_opt* opts, const char* src,
                                                  &tmp_err);
         }
         else if (srm_types == PROTO_SRM) {
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT,
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
                        "support for SRMv1 is removed in gfal 2.0, failure");
         }
         else {
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT,
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
                         "Unknown SRM protocol, failure ");
         }
     }
 
     if (tmp_err)
-        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     return ret;
 }
 
@@ -110,6 +110,6 @@ int gfal_srm_renameG(plugin_handle plugin_data, const char* oldurl,
 
     int ret = gfal_srm_rename_internal(opts, oldurl, urlnew, &tmp_err);
     if(tmp_err)
-        g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     return ret;
 }

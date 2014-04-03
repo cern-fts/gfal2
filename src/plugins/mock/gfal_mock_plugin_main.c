@@ -37,7 +37,7 @@
 #include <common/gfal_constants.h>
 #include <common/gfal_types.h>
 #include <common/gfal_common_plugin.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <fdesc/gfal_file_handle.h>
 #include <config/gfal_config.h>
 #include <transfer/gfal_transfer.h>

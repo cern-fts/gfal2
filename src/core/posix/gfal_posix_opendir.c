@@ -35,8 +35,6 @@
 #include "gfal_posix_internal.h"
 #include <common/gfal_common_filedescriptor.h>
 #include <common/gfal_common_dir_handle.h>
-#include <common/gfal_common_errverbose.h>
-
 
 
 inline DIR* gfal_posix_internal_opendir(const char* name){

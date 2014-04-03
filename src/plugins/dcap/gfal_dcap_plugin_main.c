@@ -29,7 +29,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <common/gfal_common_internal.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_types.h>
 #include "gfal_dcap_plugin_layer.h"
@@ -87,10 +87,11 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	dcap_plugin.closedirG= &gfal_dcap_closedirG;
 	dcap_plugin.opendirG= &gfal_dcap_opendirG;
 	dcap_plugin.readdirG= &gfal_dcap_readdirG;
-	dcap_plugin.accessG = &gfal_dcap_accessG;	
+	dcap_plugin.accessG = &gfal_dcap_accessG;
+	dcap_plugin.unlinkG = &gfal_dcap_unlinkG;
 		
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return dcap_plugin;
 }
 
@@ -105,7 +106,7 @@ void gfal_dcap_destroyG(plugin_handle handle){
 
 gboolean gfal_dcap_internal_check_url(gfal_plugin_dcap_handle dh, const char* surl, GError** err){
 	if(surl == NULL || strnlen(surl, GFAL_URL_MAX_LEN) == GFAL_URL_MAX_LEN){
-        g_set_error(err, gfal2_get_plugin_dcap_quark(), EINVAL, "[%s] Invalid surl, surl too long or NULL",__func__);
+        gfal2_set_error(err, gfal2_get_plugin_dcap_quark(), EINVAL, __func__, "Invalid surl, surl too long or NULL");
 		return FALSE;
 	}	
 	int ret=  regexec(&dh->rex,surl,0,NULL,0);
@@ -129,6 +130,7 @@ gboolean gfal_dcap_check_url(plugin_handle ch, const char* url,  plugin_mode mod
 			case GFAL_PLUGIN_RMDIR:
 			case GFAL_PLUGIN_OPENDIR:
 			case GFAL_PLUGIN_ACCESS:
+			case GFAL_PLUGIN_UNLINK:
 				ret = gfal_dcap_internal_check_url(rh, url, &tmp_err);
 				break;
 			default:
@@ -136,7 +138,7 @@ gboolean gfal_dcap_check_url(plugin_handle ch, const char* url,  plugin_mode mod
 				break;
 	}	
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return ret;
 }
 

@@ -32,7 +32,6 @@
 #include <common/gfal_prototypes.h>
 #include <common/gfal_common_filedescriptor.h>
 #include <common/gfal_common_dir_handle.h>
-#include <common/gfal_common_errverbose.h>
 #include <common/gfal_common_plugin.h>
 
 

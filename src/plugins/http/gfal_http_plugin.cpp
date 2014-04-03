@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <davix.hpp>
 #include <errno.h>
+#include <common/gfal_common_err_helpers.h>
 #include <logger/gfal_logger.h>
 
 using namespace Davix;
@@ -166,7 +167,7 @@ static int davix2errno(StatusCode::Code code)
 
 void davix2gliberr(const DavixError* daverr, GError** err)
 {
-  g_set_error(err, http_plugin_domain, davix2errno(daverr->getStatus()),
+    gfal2_set_error(err, http_plugin_domain, davix2errno(daverr->getStatus()), __func__,
               "%s", daverr->getErrMsg().c_str());
 }
 

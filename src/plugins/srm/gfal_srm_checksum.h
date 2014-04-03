@@ -24,7 +24,7 @@
  * */
 #include "gfal_srm.h"
 #include <common/gfal_constants.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 
 
 

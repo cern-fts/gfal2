@@ -30,20 +30,23 @@
 #include <time.h> 
 #include <glib.h>
 #include <stdlib.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_filedescriptor.h>
 #include <common/gfal_types.h>
+#include <logger/gfal_logger.h>
 #include "gfal_rfio_plugin_bindings.h"
 #include "gfal_rfio_plugin_main.h"
 #include "gfal_rfio_plugin_layer.h"
+
 
 static void rfio_report_error(gfal_plugin_rfio_handle h,  const char * func_name, GError** err){
 	char buff_error[2048]= {0};
 	int status = h->rf->geterror();
 	status = (status > 1000)?ECOMM:status;
 	h->rf->serror_r(buff_error, 2048);
-    g_set_error(err, gfal2_get_plugin_rfio_quark(), status, "[%s] Error reported by the external library rfio : %s", func_name, buff_error);
+    gfal2_set_error(err, gfal2_get_plugin_rfio_quark(), status, func_name,
+            "Error reported by the external library rfio : %s", buff_error);
 }
 
 gfal_file_handle gfal_rfio_openG(plugin_handle handle , const char* path, int flag, mode_t mode, GError** err){

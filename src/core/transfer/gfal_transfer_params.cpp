@@ -15,7 +15,8 @@
 
 #include <transfer/gfal_transfer_types_internal.h>
 #include <cerrno>
-#include <ctime>
+#include <cstdlib>
+#include <cstring>
 
 
 // external C bindings

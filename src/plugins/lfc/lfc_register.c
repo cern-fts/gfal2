@@ -1,3 +1,4 @@
+#include <logger/gfal_logger.h>
 #include <regex.h>
 #include "gfal_lfc.h"
 #include "file/gfal_file_api.h"
@@ -54,16 +55,14 @@ int _lfc_touch(struct lfc_ops* ops, const char* path, const char* guid,
         gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: creating the file");
         ret_status = ops->creatg(path, guid, 0644);
         if (ret_status != 0) {
-            g_set_error(error, gfal2_get_plugins_quark(), errno,
-                        "[%s] Could not create the file: %s",
-                        __func__, gfal_lfc_get_strerror(ops));
+            gfal2_set_error(error, gfal2_get_plugins_quark(), errno, __func__,
+                        "Could not create the file: %s", gfal_lfc_get_strerror(ops));
         }
         else {
             ret_status = ops->setfsizeg(guid, info->filesize, info->csumtype, info->csumvalue);
             if (ret_status != 0) {
-                g_set_error(error, gfal2_get_plugins_quark(), errno,
-                            "[%s] Could not set file size and checksum: %s",
-                            __func__, gfal_lfc_get_strerror(ops));
+                gfal2_set_error(error, gfal2_get_plugins_quark(), errno, __func__,
+                            "Could not set file size and checksum: %s", gfal_lfc_get_strerror(ops));
             }
         }
     }
@@ -93,9 +92,8 @@ int _get_host(const char* url, char** host, GError** error)
         char err_buffer[64];
         regerror(ret, &regex, err_buffer, sizeof(err_buffer));
 
-        g_set_error(error, gfal2_get_plugins_quark(), EINVAL,
-                    "[%s] The destination is not a valid url: %s (%s)",
-                    __func__, url, err_buffer);
+        gfal2_set_error(error, gfal2_get_plugins_quark(), EINVAL, __func__,
+                    "The destination is not a valid url: %s (%s)", url, err_buffer);
         ret = -1;
     }
 
@@ -153,9 +151,8 @@ int _validate_new_replica(gfal2_context_t context, struct lfc_filestatg *statg,
         struct size_and_checksum* replica_info, GError** error)
 {
     if (replica_info->filesize != statg->filesize) {
-        g_set_error(error, gfal2_get_plugin_lfc_quark(),
-                    EINVAL,
-                    "[gfal_lfc_register] Replica file size (%lld) and LFC file size (%lld) do not match",
+        gfal2_set_error(error, gfal2_get_plugin_lfc_quark(), EINVAL, __func__,
+                    "Replica file size (%lld) and LFC file size (%lld) do not match",
                     replica_info->filesize, statg->filesize);
         return -1;
     }
@@ -163,9 +160,8 @@ int _validate_new_replica(gfal2_context_t context, struct lfc_filestatg *statg,
     if (statg->csumvalue[0] != '\0' && replica_info->csumvalue[0] != '\0' &&
         strncmp(replica_info->csumtype, statg->csumtype, sizeof(statg->csumtype)) == 0) {
         if (strncmp(replica_info->csumvalue, statg->csumvalue, sizeof(statg->csumvalue)) != 0) {
-            g_set_error(error, gfal2_get_plugin_lfc_quark(),
-                        EINVAL,
-                        "[gfal_lfc_register] Replica checksum (%s) and LFC checksum (%s) do not match",
+            gfal2_set_error(error, gfal2_get_plugin_lfc_quark(), EINVAL, __func__,
+                        "Replica checksum (%s) and LFC checksum (%s) do not match",
                         replica_info->csumvalue, statg->csumvalue);
             return -1;
         }
@@ -232,9 +228,8 @@ int gfal_lfc_register(plugin_handle handle, gfal2_context_t context,
     // Failure
     else {
         ret_status = -1;
-        g_set_error(error, gfal2_get_plugin_lfc_quark(),
-                    errno, "[%s] Failed to stat the file: %s (%d)",
-                    __func__, gfal_lfc_get_strerror(ops), lfc_errno);
+        gfal2_set_error(error, gfal2_get_plugin_lfc_quark(), errno, __func__,
+                    "Failed to stat the file: %s (%d)", gfal_lfc_get_strerror(ops), lfc_errno);
     }
 
     if (ret_status != 0)
@@ -250,9 +245,8 @@ int gfal_lfc_register(plugin_handle handle, gfal2_context_t context,
                                  '-', 'P',
                                  NULL, NULL);
     if (ret_status != 0) {
-        g_set_error(error, gfal2_get_plugin_lfc_quark(),
-                    errno, "[%s] Could not register the replica : %s ",
-                    __func__, gfal_lfc_get_strerror(ops));
+        gfal2_set_error(error, gfal2_get_plugin_lfc_quark(), errno, __func__,
+                    "Could not register the replica : %s ", gfal_lfc_get_strerror(ops));
     }
     else {
         gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: done");

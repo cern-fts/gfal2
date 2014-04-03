@@ -34,7 +34,7 @@ void GridftpModule::chmod(const char* path, mode_t mode)
 				req->sess->get_ftp_handle(),
 				path,
 				mode,
-				NULL,
+				req->sess->get_op_attr_ftp(),
 				globus_basic_client_callback,
     			req.get());
     gfal_globus_check_result(gfal_gridftp_scope_chmod(), res);

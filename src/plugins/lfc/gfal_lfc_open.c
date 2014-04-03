@@ -29,11 +29,9 @@
 #include <common/gfal_prototypes.h>
 #include <common/gfal_types.h>
 #include <common/gfal_common_plugin.h>
-
-
 #include <common/gfal_common_internal.h>
-#include <common/gfal_common_errverbose.h>
 #include <common/gfal_common_filedescriptor.h>
+#include <logger/gfal_logger.h>
 #include "gfal_lfc.h"
 #include "lfc_ifce_ng.h"
 
@@ -60,7 +58,7 @@ gfal_file_handle lfc_openG(plugin_handle ch, const char* path, int flag, mode_t 
 	}
 	g_strfreev(surls);
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return res;
 
 }

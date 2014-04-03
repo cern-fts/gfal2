@@ -2,7 +2,7 @@
 # compilation lines for examples
 
 # list tests
-FILE(GLOB src_gfalchecksum_test "gfal_testchecksum.c")
+FILE(GLOB src_gfal_testchecksum "gfal_testchecksum.c")
 FILE(GLOB src_gfalstat "gfal_teststat.c")
 FILE(GLOB src_gfalaccess "gfal_testaccess.c")
 FILE(GLOB src_gfal_testchmod "gfal_testchmod.c")
@@ -46,6 +46,9 @@ IF (FUNCTIONAL_TESTS)
         include_directories( "${CMAKE_SOURCE_DIR}/src "  "${CMAKE_SOURCE_DIR}/src/posix/"
                     ${GLIB2_PKG_INCLUDE_DIRS} ${NETTLE_PKG_INCLUDE_DIRS} )
 
+        add_executable(gfal_test_checksum ${src_gfal_testchecksum})
+        target_link_libraries(gfal_test_checksum ${GFAL2_LINK} test_shared)
+
         add_executable(gfal_stat        ${src_gfalstat} )
         target_link_libraries(gfal_stat ${GFAL2_LINK} )
 
@@ -71,12 +74,8 @@ IF (FUNCTIONAL_TESTS)
                 add_test(gfal_test_mkdir_unlink_${name} gfal_test_mkdir_unlink ${dir_path})
         ENDFUNCTION(test_gfal_test_mkdir_unlink name path)        
 
-        FUNCTION(checksum_test_all name valid)
-       #         add_test(gfal_checksum_${name} gfal_checksum_test ${valid})
-        ENDFUNCTION(checksum_test_all name valid)
-
-        FUNCTION(checksum_test_simple name valid_file algo)
-                add_test(gfal_checksum_simple_${name} gfal_checksum_tool ${valid_file} ${algo})
+        FUNCTION(checksum_test_simple name dir_path algo)
+                add_test(gfal_checksum_simple_${name} gfal_test_checksum ${dir_path} ${algo})
         ENDFUNCTION(checksum_test_simple name valid_file algo)
         
         FUNCTION(chmod_test_all name valid right1 right2 right3 right4)
@@ -84,9 +83,9 @@ IF (FUNCTIONAL_TESTS)
         ENDFUNCTION(chmod_test_all name valid right1 right2 right3 right4)        
         
 
-        FUNCTION(rmdir_test_all name valid_dir valid_file)
-                add_test(gfal_test_rmdir_full_${name} gfal_test_rmdir_full ${valid_dir} ${valid_file} )
-        ENDFUNCTION(rmdir_test_all name valid right1 right2 right3 right4)        
+        FUNCTION(rmdir_test_all name valid_dir)
+                add_test(gfal_test_rmdir_full_${name} gfal_test_rmdir_full ${valid_dir})
+        ENDFUNCTION(rmdir_test_all name valid_dir)
         
         FUNCTION(test_readdir_full name valid)
                 add_test(gfal_test_readdir_full_${name} gfal_test_readdir_full ${valid})
@@ -101,7 +100,7 @@ IF (FUNCTIONAL_TESTS)
         ENDFUNCTION(rwt_test_seq name path size size_read)
                 
         add_executable(gfal_read        ${src_gfalread} )
-        target_link_libraries(gfal_read ${GFAL2_LINK} )
+        target_link_libraries(gfal_read ${GFAL2_LINK} test_shared)
         
         add_executable(gfal_write        ${src_gfalwrite} )
         target_link_libraries(gfal_write ${GFAL2_LINK} )        
@@ -201,23 +200,23 @@ IF (FUNCTIONAL_TESTS)
 #                add_test(functional_copyfile gfal2_copyfile.sh)
 #                add_test(functional_copyfile_srm gfal2_copyfile_srm.sh)
                 
-        FUNCTION(copy_file_test_full name src_file dir_src)
-                add_test(copyfile_checksum_${name} copyfile_checksum ${src_file} ${dir_src})
-                add_test(copyfile_checksum_user_${name} copyfile_checksum_user ${src_file} ${dir_src})
-                add_test(copyfile_replace_${name} copyfile_replace ${src_file} ${dir_src})
-                add_test(copyfile_test_${name} gfal_copyfile_test ${src_file} ${dir_src})
-                add_test(copyfile_test_mkdir_${name} gfal_copyfile_mkdir_test ${src_file} ${dir_src})                
-        ENDFUNCTION(copy_file_test_full name dir_src)
+        FUNCTION(copy_file_test_full name src_dir dst_dir)
+                add_test(copyfile_checksum_${name} copyfile_checksum ${src_dir} ${dst_dir})
+                add_test(copyfile_checksum_user_${name} copyfile_checksum_user ${src_dir} ${dst_dir})
+                add_test(copyfile_replace_${name} copyfile_replace ${src_dir} ${dst_dir})
+                add_test(copyfile_test_${name} gfal_copyfile_test ${src_dir} ${dst_dir})
+                add_test(copyfile_test_mkdir_${name} gfal_copyfile_mkdir_test ${src_dir} ${dst_dir})
+        ENDFUNCTION(copy_file_test_full name dst_dir)
 
 
-        FUNCTION(copy_file_test_simple name src_file dir_src)
-                add_test(copyfile_test_${name} gfal_copyfile_test ${src_file} ${dir_src})
-        ENDFUNCTION(copy_file_test_simple name src_file dir_src)
+        FUNCTION(copy_file_test_simple name src_dir dst_dir)
+                add_test(copyfile_test_${name} gfal_copyfile_test ${src_dir} ${dst_dir})
+        ENDFUNCTION(copy_file_test_simple name src_dir dst_dir)
 
 
-        FUNCTION(copy_file_test_timeout name src_file dir_src)
-                add_test(copy_file_test_timeout_${name} gfal_copyfile_test_timeout ${src_file} ${dir_src})
-        ENDFUNCTION(copy_file_test_timeout name src_file dir_src)
+#        FUNCTION(copy_file_test_timeout name src_file dst_dir)
+#                add_test(copy_file_test_timeout_${name} gfal_copyfile_test_timeout ${src_file} ${dst_dir})
+#        ENDFUNCTION(copy_file_test_timeout name src_file dst_dir)
 
         ENDIF (MAIN_TRANSFER)
 

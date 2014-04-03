@@ -31,9 +31,10 @@
 #include <regex.h>
 #include <time.h> 
 #include <string.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_types.h>
+#include <logger/gfal_logger.h>
 #include "gfal_rfio_plugin_layer.h"
 #include "gfal_rfio_plugin_main.h"
 #include "gfal_rfio_plugin_bindings.h"
@@ -83,14 +84,15 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	rfio_plugin.readdirG = &gfal_rfio_readdirG;
 	rfio_plugin.closedirG = &gfal_rfio_closedirG;
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return rfio_plugin;
 }
 
 
 gboolean gfal_rfio_internal_check_url(gfal_plugin_rfio_handle rh, const char* surl, GError** err){
 	if(surl == NULL || strnlen(surl, GFAL_URL_MAX_LEN) == GFAL_URL_MAX_LEN){
-        g_set_error(err, gfal2_get_plugin_rfio_quark(), EINVAL, "[%s] Invalid surl, surl too long or NULL",__func__);
+        gfal2_set_error(err, gfal2_get_plugin_rfio_quark(), EINVAL, __func__,
+                "Invalid surl, surl too long or NULL");
 		return FALSE;
 	}	
 	int ret=  regexec(&rh->rex,surl,0,NULL,0);
@@ -117,7 +119,7 @@ gboolean gfal_rfio_check_url(plugin_handle ch, const char* url,  plugin_mode mod
 				break;
 	}	
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return ret;
 }
 

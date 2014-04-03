@@ -26,7 +26,7 @@
 
  
 #include <common/gfal_constants.h>
-#include <common/gfal_common_errverbose.h> 
+#include <common/gfal_common_err_helpers.h> 
 #include <file/gfal_file_api.h>
  
 #include "gfal_srm_internal_layer.h"
@@ -64,8 +64,8 @@ static int gfal_checksumG_srmv2_internal(gfal_srmv2_opt* opts, const char* endpo
         if(ret >=0){
             srmv2_mdstatuses = output.statuses;
             if(srmv2_mdstatuses->status != 0){
-                g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), srmv2_mdstatuses->status, "Error reported from srm_ifce : %d %s",
-                                srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), srmv2_mdstatuses->status, __func__,
+                        "Error reported from srm_ifce : %d %s", srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
                 ret = -1;
             }else{
                 if(srmv2_mdstatuses->checksum && srmv2_mdstatuses->checksumtype){
@@ -110,16 +110,18 @@ int gfal_srm_cheksumG_internal(plugin_handle ch, const char* surl,
 		if(srm_type == PROTO_SRMv2){
 			ret = gfal_checksumG_srmv2_internal(opts, full_endpoint, surl, buf_checksum, s_checksum, buf_chktype, s_chktype,  &tmp_err);
 		}else if (srm_type == PROTO_SRM){
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
+		    gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+		            "support for SRMv1 is removed in 2.0, failure");
 			ret = -1;
 		}else {
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
+		    gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+		            "unknow version of the protocol SRM , failure");
 			ret = -1;			
 		}
 		
 	}
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return ret;
 }
 

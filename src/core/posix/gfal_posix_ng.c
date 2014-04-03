@@ -22,6 +22,7 @@
  * @date 09/05/2011
  * */
 
+#include <string.h>
 
 #include <common/gfal_constants.h>
 
@@ -207,7 +208,15 @@ int gfal_posix_check_error(){
 }
 
 char* gfal_posix_strerror_r(char* buff_err, size_t s_err){
-	return (char*)gfal_str_GError_r(gfal_posix_get_last_error(), buff_err, s_err);
+    GError** last_error = gfal_posix_get_last_error();
+    if(last_error == NULL || *last_error == NULL){
+         gfal_log(GFAL_VERBOSE_DEBUG, "copy string NULL error");
+         g_strlcpy(buff_err,"[gfal] No Error reported", s_err);
+    }else{
+         g_strlcpy(buff_err,"[gfal]", s_err);
+         g_strlcat(buff_err, (*last_error)->message, s_err);
+    }
+    return buff_err;
  }
  
 ssize_t gfal_pread(int fd, void * buffer, size_t count, off_t offset){

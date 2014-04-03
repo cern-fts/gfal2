@@ -29,7 +29,7 @@
 #include "gfal_types.h"
 #include "gfal_common_filedescriptor.h"
 #include "gfal_common_dir_handle.h"
-
+#include "gfal_common_err_helpers.h"
 
 
 pthread_mutex_t m_dir_container =PTHREAD_MUTEX_INITIALIZER;
@@ -43,7 +43,7 @@ gfal_fdesc_container_handle gfal_dir_handle_container_instance(gfal_descriptors_
 		if(fdescs->dir_container == NULL){
 			dir_handle = fdescs->dir_container = gfal_file_descriptor_handle_create(NULL);
 			if(!dir_handle)
-                g_set_error(err, gfal2_get_core_quark(), EIO, "[%s] Error while init directories file descriptor container", __func__);
+                gfal2_set_error(err, gfal2_get_core_quark(), EIO, __func__, "Error while init directories file descriptor container");
 		}
 		pthread_mutex_unlock(&m_dir_container);
 	}
@@ -56,6 +56,3 @@ void gfal_dir_handle_container_delete(gfal_descriptors_container* fdescs){
 	fdescs->dir_container = NULL;
 	pthread_mutex_unlock(&m_dir_container);
 }
-
-
-

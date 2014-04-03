@@ -35,8 +35,6 @@
 #include <common/gfal_constants.h>
 
 
-
-
 int gfal_posix_internal_access (const char *path, int amode){
 	int resu = -1;
 	GError* tmp_err=NULL;

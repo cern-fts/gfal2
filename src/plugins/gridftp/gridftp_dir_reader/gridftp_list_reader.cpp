@@ -18,7 +18,8 @@ GridftpListReader::GridftpListReader(GridftpModule* gsiftp, const char* path)
     Glib::Mutex::Lock locker(stream->lock);
     stream->start();
     globus_result_t res = globus_ftp_client_machine_list(
-            stream->sess->get_ftp_handle(), path, NULL,
+            stream->sess->get_ftp_handle(), path,
+            stream->sess->get_op_attr_ftp(),
             globus_basic_client_callback,
             static_cast<GridFTP_Request_state*>(stream));
     gfal_globus_check_result(GridftpListReaderQuark, res);

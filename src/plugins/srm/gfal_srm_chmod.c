@@ -29,7 +29,7 @@
  
 #include "gfal_srm.h"
 #include <common/gfal_common_internal.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_chmod.h"
@@ -95,14 +95,16 @@ int	gfal_srm_chmodG(plugin_handle ch, const char * path , mode_t mode, GError** 
 		if (srm_types == PROTO_SRMv2){
 			ret = gfal_srmv2_chmod_internal(opts, full_endpoint, path, mode, &tmp_err);
 		} else if(srm_types == PROTO_SRM){
-            g_set_error(&tmp_err,gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in gfal 2.0, failure");
+		    gfal2_set_error(&tmp_err,gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+		            "support for SRMv1 is removed in gfal 2.0, failure");
 		} else{
-            g_set_error(&tmp_err,gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, "Unknow SRM protocol, failure ");
+		    gfal2_set_error(&tmp_err,gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, __func__,
+		            "unknow SRM protocol, failure ");
 		}		
 	}
 
 	if(tmp_err)
-		g_propagate_prefixed_error(err, tmp_err, "[%s]", __func__);
+		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	else 
 		errno =0;
 	return ret;			

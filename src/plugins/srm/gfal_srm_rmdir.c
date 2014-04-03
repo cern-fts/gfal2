@@ -30,7 +30,7 @@
 #include "gfal_srm_internal_ls.h"
 
 #include <common/gfal_constants.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 
 
 int gfal_srmv2_rmdir_internal(gfal_srmv2_opt* opts, char* endpoint, const char* surl, GError** err){
@@ -49,7 +49,8 @@ int gfal_srmv2_rmdir_internal(gfal_srmv2_opt* opts, char* endpoint, const char* 
         if( gfal_srm_external_call.srm_rmdir(context, &rmdir_input, &rmdir_output) >=0){
             const int sav_errno = rmdir_output.statuses[0].status;
             if( sav_errno ){
-                g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), sav_errno, " Error report from the srm_ifce %s ", strerror(sav_errno));
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), sav_errno, __func__,
+                        "Error report from the srm_ifce %s ", strerror(sav_errno));
                 ret = -1;
             }else{
                 ret =0;
@@ -86,17 +87,20 @@ int gfal_srm_rmdirG(plugin_handle ch, const char* surl, GError** err){
 					ret = gfal_srmv2_rmdir_internal(opts, full_endpoint, surl, &tmp_err);
 				}else{
 					ret = -1;
-                    g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), ENOTDIR, " This file is not a directory, impossible to use rmdir on it");
+                    gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), ENOTDIR, __func__,
+                            "This file is not a directory, impossible to use rmdir on it");
 				}
 
 			
 			}				
 
 		}else if (srm_type == PROTO_SRM){
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "support for SRMv1 is removed in 2.0, failure");
+		    gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+		            "support for SRMv1 is removed in 2.0, failure");
 			ret = -1;
 		}else {
-            g_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, "Unknow version of the protocol SRM , failure");
+		    gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
+		            "unknow version of the protocol SRM , failure");
 			ret = -1;			
 		}
 		

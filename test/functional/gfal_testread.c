@@ -8,6 +8,9 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <gfal_api.h>
+
+#include <common/gfal_lib_test.h>
+
 #define BLKLEN 65536
 
 int main(int argc, char **argv)
@@ -19,6 +22,19 @@ int main(int argc, char **argv)
 	if (argc != 2) {
 		fprintf (stderr, "usage: %s filename\n", argv[0]);
 		exit (1);
+	}
+
+	GError* error = NULL;
+	gfal2_context_t handle = gfal2_context_new(&error);
+	if (!handle)
+	{
+	    fprintf(stderr, "Could not create the handler: %s", error->message);
+        return 1;
+	}
+	if (generate_file_if_not_exists(handle, argv[1], "file:///etc/hosts", &error))
+	{
+	    fprintf(stderr, "Could not generate the source: %s", error->message);
+	    return 1;
 	}
 
 	printf ("opening %s\n", argv[1]);
@@ -43,5 +59,8 @@ int main(int argc, char **argv)
 		exit (1);
 	}
 	printf ("close successful\n");
-	exit (0);
+
+	g_assert(gfal_unlink(argv[1]) == 0);
+
+	return 0;
 }

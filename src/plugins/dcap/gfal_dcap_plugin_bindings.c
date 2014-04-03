@@ -35,7 +35,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <common/gfal_common_internal.h>
-#include <common/gfal_common_errverbose.h>
+#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_filedescriptor.h>
 #include <common/gfal_types.h>
@@ -69,7 +69,8 @@ static void dcap_report_error(gfal_plugin_dcap_handle h,  const char * func_name
 	g_strlcpy(buff_error, h->ops->strerror(status), 2048);
 	// errno conversion
 	errno = dcap_errno_conversion(buff_error, errno);
-    g_set_error(err, gfal2_get_plugin_dcap_quark(), errno, "[%s] Error reported by the external library dcap : %s, number : %d ", func_name, buff_error, status);
+    gfal2_set_error(err, gfal2_get_plugin_dcap_quark(), errno, func_name,
+                    "Error reported by the external library dcap : %s, number : %d", buff_error, status);
 }
 
 gfal_file_handle gfal_dcap_openG(plugin_handle handle , const char* path, int flag, mode_t mode, GError** err){
@@ -247,6 +248,15 @@ struct dirent* gfal_dcap_readdirG(plugin_handle handle, gfal_file_handle fh, GEr
 	
 }
 
+int gfal_dcap_unlinkG(plugin_handle handle, const char* url, GError** err)
+{
+    gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
+    int ret = h->ops->unlink(url);
+    if(ret != 0){
+        dcap_report_error(h, __func__, err);
+    }
+    return ret;
+}
 
 const char* gfal_dcap_getName(){
     return "dcap_plugin";
