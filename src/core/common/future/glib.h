@@ -12,7 +12,7 @@ extern "C" {
 #include <glib.h>
 
 // GError
-#if (GLIB_CHECK_VERSION(2,16,0) != TRUE)            // add a advanced functions of glib for the old versions
+#if (GLIB_CHECK_VERSION(2,16,0) != TRUE)
 
 #define ERROR_OVERWRITTEN_WARNING "GError set over the top of a previous GError or uninitialized memory.\n"
 
@@ -27,6 +27,12 @@ void     g_prefix_error               (GError       **err,
 
 #endif
 
+#if (GLIB_CHECK_VERSION(2,18,0) != TRUE)
+void                g_set_error_literal                 (GError **err,
+                                                         GQuark domain,
+                                                         gint code,
+                                                         const gchar *message);
+#endif
 
 // GList
 #if (GLIB_CHECK_VERSION(2,28,0) != TRUE)
