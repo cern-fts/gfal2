@@ -16,8 +16,8 @@
 int main(int argc, char **argv)
 {
 	char *file;
-	char buff[2048];
-	char buff2[2048];
+	char base_dir[2048];
+	char nested_dir[2048];
     int count=0;
     GError * tmp_err=NULL;
     struct dirent* d;
@@ -33,10 +33,10 @@ int main(int argc, char **argv)
 	srand(time(NULL));
 	file = argv[1];
 
-    generate_random_uri(file, "readdir_full_entry_enoent", buff, 2048);
-	printf(" try to list not existing dir .... %s", buff);
+    generate_random_uri(file, "readdir_full_entry_enoent", base_dir, 2048);
+	printf(" try to list not existing dir .... %s", base_dir);
 	DIR* p;
-	if( (p = gfal_opendir(buff)) != NULL){
+	if( (p = gfal_opendir(base_dir)) != NULL){
 		g_assert_not_reached();	
 	}
 	g_assert( gfal_posix_code_error() == ENOENT);
@@ -44,32 +44,32 @@ int main(int argc, char **argv)
 	gfal_closedir(p); // must pass without problem even if useless
 	gfal_posix_clear_error();
 	
-    generate_random_uri(file, "testlisdir_", buff, 2048);
-	printf(" create a new dir for content listing .... %s\n", buff);
-	if(gfal_mkdir(buff, 0777) !=0){
+    generate_random_uri(file, "testlistdir_", base_dir, 2048);
+	printf(" create a new dir for content listing .... %s\n", base_dir);
+	if(gfal_mkdir(base_dir, 0777) !=0){
 		gfal_posix_check_error();
 		g_assert_not_reached();
 	}
 	printf(" create content of the new dir .... \n");		
 	int i, n = (rand()%20)+2;
-	for(i=0; i < n; ++i){
-        generate_random_uri(buff, "elem_", buff2, 2048);
-		printf("     create one elem in the new dir %s \n", buff2);		
-		if(gfal_mkdir(buff2, 0777) !=0){
+    for (i = 0; i < n; ++i) {
+	    snprintf(nested_dir, sizeof(nested_dir), "%s/nested_elem_%d", base_dir, i);
+		printf("     create one elem in the new dir %s \n", nested_dir);
+		if(gfal_mkdir(nested_dir, 0777) !=0){
 			gfal_posix_check_error();
 			g_assert_not_reached();
 		}
 	}
 	
     //// simple opendir
-	if((p = gfal_opendir(buff) ) == NULL){
+	if((p = gfal_opendir(base_dir) ) == NULL){
 		gfal_posix_check_error();		
 		g_assert_not_reached();	
 	}
 	
 	while( ( d= gfal_readdir(p))){
 		g_assert( gfal_posix_code_error() == 0);
-		g_assert(  (strstr(d->d_name,"elem_") != NULL) ||
+		g_assert(  (strstr(d->d_name, "elem_") != NULL) ||
 				 *d->d_name == '.');
 		printf(" +1 iterate %s", d->d_name);
 		g_assert(strchr(d->d_name, '/') == NULL);
@@ -83,7 +83,7 @@ int main(int argc, char **argv)
 	g_assert( gfal_posix_code_error() == 0);
 
     //// simple opendir
-    if((p = gfal_opendir(buff) ) == NULL){
+    if((p = gfal_opendir(base_dir) ) == NULL){
         gfal_posix_check_error();
         g_assert_not_reached();
     }
@@ -108,13 +108,13 @@ int main(int argc, char **argv)
 
    //// advanced opendir pp
 
-    if((p = gfal_opendir(buff) ) == NULL){
+    if((p = gfal_opendir(base_dir) ) == NULL){
         gfal_posix_check_error();
         g_assert_not_reached();
     }
 
-    count=0;
-    d= NULL;
+    count = 0;
+    d = NULL;
 
     while( ( d= gfal2_readdirpp(gfal_posix_get_context(), p, &st, &tmp_err))){
         g_assert( gfal_posix_code_error() == 0);
@@ -127,18 +127,22 @@ int main(int argc, char **argv)
         count++;
 
     }
-    printf(" count : %d", count);
+    printf(" count : %d\n", count);
     g_assert( tmp_err == NULL ); // take care of .. and . if available
     g_assert( count >= n && count < n+3); // take care of .. and . if available
 
     g_assert( gfal_closedir(p) == 0);
-
-
-
-
 	
 	gfal_closedir(p); // do it again for crash test
-	
+
+
+	for (i = 0; i < n; ++i) {
+	    snprintf(nested_dir, sizeof(nested_dir), "%s/nested_elem_%d", base_dir, i);
+	    printf("     rmdir %s \n", nested_dir);
+	    g_assert(gfal_rmdir(nested_dir) == 0);
+	}
+	printf("     rmdir %s \n", base_dir);
+	g_assert(gfal_rmdir(base_dir) == 0);
 
 	printf ("All is ok.\n");
 	exit (0);

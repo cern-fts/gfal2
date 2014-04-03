@@ -19,51 +19,51 @@ int main(int argc, char **argv)
 		exit (1);
 	}
 
-	
 	rootdir = argv[1];
 	snprintf(url, 2048, "%s/test_dir_%u_%u", rootdir, (unsigned int) g_random_int(), (unsigned int) g_random_int ());
 	
-	printf (" verify that the directory does not exist  .... \n");
-	struct stat st;
-	res = gfal_stat(url, &st);
-	printf(" res %d errno %d errcode %d errstring \n", res , errno, gfal_posix_code_error());
-	gfal_posix_print_error();
-	g_assert( res != 0 && errno == ENOENT && gfal_posix_code_error() == ENOENT);
-	errno = 0;
-	gfal_posix_clear_error();
+	printf(" verify that the directory does not exist  .... \n");
+    struct stat st;
+    res = gfal_stat(url, &st);
+    printf(" res %d errno %d errcode %d errstring \n", res, errno, gfal_posix_code_error());
+    gfal_posix_print_error();
+    g_assert(res != 0 && errno == ENOENT && gfal_posix_code_error() == ENOENT);
+    errno = 0;
+    gfal_posix_clear_error();
 	
 	
 	printf ("Creating directory  %s ...\n", url);
-	if ( (res =gfal_mkdir (url, 0777)) < 0) {
-		gfal_posix_check_error();
-		g_assert_not_reached();
-	}
-	g_assert( res == 0);
-	g_assert( errno == 0);
+    if ((res = gfal_mkdir(url, 0777)) < 0) {
+        gfal_posix_check_error();
+        g_assert_not_reached();
+    }
+    g_assert(res == 0);
+    g_assert(errno == 0);
 	
 	printf (" verify that the directory exists  .... \n");
 	res = gfal_stat(url, &st);
 	printf(" stat result : %d %d %d \n",res, errno, gfal_posix_code_error() );
-	g_assert( res == 0 );
-	g_assert(errno == 0);
-	g_assert(gfal_posix_code_error() ==0);
-	g_assert( st.st_mode & S_IFDIR );
+    g_assert(res == 0);
+    g_assert(errno == 0);
+    g_assert(gfal_posix_code_error() == 0);
+    g_assert(st.st_mode & S_IFDIR);
 	
 	
 	// should return eexist
-	printf (" verify that the directory  one more call exists  too  %s.... \n", url);	
-	res =gfal_mkdir (url, 0777);
-	g_assert( res != 0);
-	printf(" error : %d ", gfal_posix_code_error());
-	gfal_posix_check_error();	
-	g_assert( errno == EEXIST);
-	g_assert(gfal_posix_code_error() == EEXIST);	
+    printf(" verify that the directory  one more call exists  too  %s.... \n", url);
+    res = gfal_mkdir(url, 0777);
+    g_assert(res != 0);
+    printf(" error : %d ", gfal_posix_code_error());
+    gfal_posix_check_error();
+    g_assert(errno == EEXIST);
+    g_assert(gfal_posix_code_error() == EEXIST);
 	
 	errno = 0;
 	gfal_posix_clear_error();
 	
+	g_assert(gfal_rmdir(url) == 0);
 
 	printf ("All is ok.\n");
-	exit (0);
+	return 0;
 }
 
