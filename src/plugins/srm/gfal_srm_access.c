@@ -50,10 +50,11 @@ int gfal_access_srmv2_internal(gfal_srmv2_opt*  opts, char* endpoint, const char
         checkpermission_input.amode = mode;
         checkpermission_input.surls = tab_surl;
 
-        ret = gfal_srm_external_call.srm_check_permission(context,&checkpermission_input, &resu);
+        ret = gfal_srm_external_call.srm_check_permission(context, &checkpermission_input, &resu);
         if(ret != nb_request){
             gfal_srm_report_error(errbuf, &tmp_err);
             gfal_srm_ifce_context_release(context);
+            gfal2_propagate_prefixed_error(err, tmp_err, __func__);
             return -1;
         }
         for(i=0; i< nb_request; ++i){
