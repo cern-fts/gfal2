@@ -57,7 +57,7 @@ int spawn_copy(pthread_t* thread, gfal2_context_t handle,
                gfalt_params_t transfer_params,
                const char* source, const char* destination)
 {
-    copier_params_t *copier_params = malloc(sizeof(*copier_params));
+    copier_params_t *copier_params = (copier_params_t*)malloc(sizeof(*copier_params));
     copier_params->handle          = handle;
     copier_params->transfer_params = transfer_params;
     copier_params->source          = source;

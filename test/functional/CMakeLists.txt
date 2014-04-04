@@ -1,14 +1,21 @@
 #
 # compilation lines for examples
 
+
+#${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES}
+
 SET(COPY_SRC "*.sh")
 SET(COPY_DST "${CMAKE_CURRENT_BINARY_DIR}/")
 
 IF (FUNCTIONAL_TESTS)
+        find_package(GTEST)
 
-
-        include_directories( "${CMAKE_SOURCE_DIR}/src "  "${CMAKE_SOURCE_DIR}/src/posix/"
-                    ${GLIB2_PKG_INCLUDE_DIRS} ${NETTLE_PKG_INCLUDE_DIRS} )
+        include_directories(
+            "${CMAKE_SOURCE_DIR}/src"
+            "${CMAKE_SOURCE_DIR}/src/posix/"
+            ${GLIB2_PKG_INCLUDE_DIRS}
+            ${GTEST_INCLUDE_DIR}
+        )
 
         add_executable(gfal_test_checksum "gfal_test_checksum.c")
         target_link_libraries(gfal_test_checksum ${GFAL2_LINK} test_shared)
@@ -126,7 +133,7 @@ IF (FUNCTIONAL_TESTS)
                 add_executable(gfalt_copy_file "gfalt_copy_file.c")
                 target_link_libraries(gfalt_copy_file ${GFAL2_TRANSFER_LINK} ${GFAL2_LINK})
                 
-                add_executable(gfalt_test_copy_file_cancel "gfalt_test_copy_file_cancel.c")
+                add_executable(gfalt_test_copy_file_cancel "gfalt_test_copy_file_cancel.cpp")
                 target_link_libraries(gfalt_test_copy_file_cancel ${GFAL2_TRANSFER_LINK} ${GFAL2_LINK} ${CMAKE_THREAD_LIBS_INIT} pthread)
 
                 add_executable(gfalt_copy_file_fts "gfalt_copy_file_fts.c")
@@ -138,25 +145,25 @@ IF (FUNCTIONAL_TESTS)
                 add_executable(gfalt_copy_file_perf "gfalt_copy_file_perf.c")
                 target_link_libraries(gfalt_copy_file_perf ${GFAL2_TRANSFER_LINK} ${GFAL2_LINK})
                 
-                add_executable(gfalt_test_copy_file "gfalt_test_copy_file.c")
+                add_executable(gfalt_test_copy_file "gfalt_test_copy_file.cpp")
                 target_link_libraries(gfalt_test_copy_file ${GFAL2_TRANSFER_LINK} ${GFAL2_LINK} test_shared)
 
-                add_executable(gfalt_test_copy_file_thead_safety "gfalt_test_copy_file_thead_safety.c")
+                add_executable(gfalt_test_copy_file_thead_safety "gfalt_test_copy_file_thead_safety.cpp")
                 target_link_libraries(gfalt_test_copy_file_thead_safety ${GFAL2_TRANSFER_LINK} ${GFAL2_LINK} test_shared)
 
-                add_executable(gfalt_test_copy_file_timeout "gfalt_test_copy_file_timeout.c")
+                add_executable(gfalt_test_copy_file_timeout "gfalt_test_copy_file_timeout.cpp")
                 target_link_libraries(gfalt_test_copy_file_timeout ${GFAL2_TRANSFER_LINK} ${GFAL2_LINK} test_shared)
                 
-                add_executable(gfalt_test_copy_file_mkdir "gfalt_test_copy_file_mkdir.c")
+                add_executable(gfalt_test_copy_file_mkdir "gfalt_test_copy_file_mkdir.cpp")
                 target_link_libraries(gfalt_test_copy_file_mkdir ${GFAL2_TRANSFER_LINK} ${GFAL2_LINK} test_shared)
                 
-                add_executable(gfalt_test_copy_file_replace "gfalt_test_copy_file_replace.c")
+                add_executable(gfalt_test_copy_file_replace "gfalt_test_copy_file_replace.cpp")
                 target_link_libraries(gfalt_test_copy_file_replace ${GFAL2_TRANSFER_LINK} ${GFAL2_LINK} test_shared)
 
-                add_executable(gfalt_test_copy_file_checksum "gfalt_test_copy_file_checksum.c")
+                add_executable(gfalt_test_copy_file_checksum "gfalt_test_copy_file_checksum.cpp")
                 target_link_libraries(gfalt_test_copy_file_checksum ${GFAL2_TRANSFER_LINK} ${GFAL2_LINK} test_shared)
 
-                add_executable(gfalt_test_copy_file_checksum_user "gfalt_test_copy_file_checksum_user.c")
+                add_executable(gfalt_test_copy_file_checksum_user "gfalt_test_copy_file_checksum_user.cpp")
                 target_link_libraries(gfalt_test_copy_file_checksum_user ${GFAL2_TRANSFER_LINK} ${GFAL2_LINK} test_shared)
                 
 #                copy_files(${COPY_SRC} ${COPY_DST})
