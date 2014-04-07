@@ -127,11 +127,15 @@ static int srm_plugin_prepare_dest_put(plugin_handle handle,
     GError * tmp_err = NULL;
     int res;
     res = srm_plugin_delete_existing_copy(handle, params, surl, &tmp_err);
-    if (res == 0)
+    if (res == 0) {
         res = srm_plugin_create_parent_copy(handle, params, surl, &tmp_err);
+        if (res < 0)
+            gfalt_propagate_prefixed_error(err, tmp_err, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_PARENT);
+    }
+    else {
+        gfalt_propagate_prefixed_error(err, tmp_err, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_OVERWRITE);
+    }
 
-    if(tmp_err)
-        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     return res;
 }
 
@@ -185,9 +189,13 @@ static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
                     turl, turl_size,
                     token, token_size,
                     &tmp_err);
-            if (res == 0)
+            if (res == 0) {
                 gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl src resolution ended : %s -> %s (%s)",
                         surl, turl, token);
+            }
+            else {
+                gfalt_propagate_prefixed_error(err, tmp_err, __func__, GFALT_ERROR_DESTINATION, "SRM_PUT_TURL");
+            }
         }
     }
     else {
@@ -198,7 +206,7 @@ static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
     }
 
     if(tmp_err != NULL)
-        gfalt_propagate_prefixed_error(err, tmp_err, __func__, GFALT_ERROR_DESTINATION, "SRM_PUT_TURL");
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     return res;
 }
 
