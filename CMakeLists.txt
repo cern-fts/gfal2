@@ -67,6 +67,9 @@ pkg_check_modules(GTHREAD2_PKG REQUIRED gthread-2.0)
 # include directories
 include_directories(${GLIB2_PKG_INCLUDE_DIRS})
 include_directories(${GTHREAD2_PKG_INCLUDE_DIRS})
+include_directories(${CMAKE_SOURCE_DIR}/src/core)
+include_directories(${CMAKE_SOURCE_DIR}/src/utils)
+
 
 # Core and plugins
 IF(NOT ONLY_TESTS)
@@ -80,10 +83,6 @@ IF(NOT ONLY_TESTS)
     add_definitions( -DGFAL_CONFIG_DIR_DEFAULT="${SYSCONF_INSTALL_DIR}" )
     # add file offset 64 for 32 bits
     add_definitions( -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_GNU_SOURCE)
-
-
-    include_directories(${CMAKE_SOURCE_DIR}/src/core)
-    include_directories(${CMAKE_SOURCE_DIR}/src/utils)
 
     #install doc license
     install(FILES "LICENSE" "README" "RELEASE-NOTES" "DESCRIPTION"
