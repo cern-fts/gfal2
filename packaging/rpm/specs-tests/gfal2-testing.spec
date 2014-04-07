@@ -2,7 +2,7 @@
 %define debug_package %{nil}
 
 Name:				gfal2-testing
-Version:			2.6.0
+Version:			2.6.3
 Release:			1.%{checkout_tag}%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
@@ -38,8 +38,9 @@ Requires:		dcap-devel%{?_isa}
 #gridftp plugin dependencies
 Requires:		globus-gass-copy-devel%{?_isa}
 # globus testing tools
-Requires:               globus-proxy-utils
-Requires:		gtest-devel
+Requires:       globus-proxy-utils
+#tests dependencies
+BuildRequires:	gtest-devel
 
 %description
 test suite for gfal 2.0

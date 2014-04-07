@@ -7,6 +7,7 @@
 #include <transfer/gfal_transfer.h>
 #include <unistd.h>
 
+#include <common/future/glib.h>
 
 
 typedef struct copier_params_t {
