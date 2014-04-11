@@ -21,6 +21,10 @@
 
 #include <gfal_api.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 char* generate_random_uri(const char* uri_dir, const char* prefix, char* buff,
         size_t s_buff);
 
@@ -41,5 +45,9 @@ int generate_file_if_not_exists2(const char* surl);
  * If error != ENOENT, it will be considered fatal and this method will abort!
  */
 int clean_file(const char* surl);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GFAL_LIB_TEST_H */ 

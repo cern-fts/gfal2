@@ -1,8 +1,6 @@
 #
 # unit test for transfer system
 
-
-
 IF (UNIT_TESTS )
 
 

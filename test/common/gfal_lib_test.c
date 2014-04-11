@@ -30,6 +30,7 @@
 
 #include "gfal_lib_test.h"
 
+
 char* generate_random_uri(const char* uri_dir, const char* prefix, char* buff,
         size_t s_buff)
 {
@@ -43,7 +44,7 @@ char* generate_random_uri(const char* uri_dir, const char* prefix, char* buff,
 
 char * generate_random_string_content(size_t size)
 {
-    char * res = malloc(size * sizeof(char));
+    char * res = (char*)malloc(size * sizeof(char));
     size_t i = 0;
     while (i < size) {
         res[i] = (char) (((rand() % 2) ? 65 : 97) + (rand() % 26));
@@ -113,6 +114,8 @@ int clean_file(const char* surl)
     return 0;
 }
 
+
+
 static void dump_stack(int sig)
 {
     if (sig == SIGSEGV || sig == SIGBUS || sig == SIGABRT) {
@@ -136,6 +139,7 @@ static void dump_stack(int sig)
         exit(1);
     }
 }
+
 
 __attribute__((constructor))
 void setup_segfault_handler(void)

@@ -2,7 +2,7 @@
 %define debug_package %{nil}
 
 Name:				gfal2-testing
-Version:			2.6.0
+Version:			2.6.3
 Release:			1.%{checkout_tag}%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet
@@ -21,6 +21,8 @@ Requires:		voms-clients%{?_isa}
 Requires:		glibmm24-devel%{?_isa}
 Requires:		libattr-devel%{?_isa}
 Requires:		openldap-devel%{?_isa}
+#tests dependencies
+Requires:		gtest-devel%{?_isa}
 ## libuuid is in a different rpm for el5
 %if 0%{?el5}
 Requires:		e2fsprogs-devel%{?_isa}
@@ -38,8 +40,7 @@ Requires:		dcap-devel%{?_isa}
 #gridftp plugin dependencies
 Requires:		globus-gass-copy-devel%{?_isa}
 # globus testing tools
-Requires:               globus-proxy-utils
-Requires:		gtest-devel
+Requires:       globus-proxy-utils
 
 %description
 test suite for gfal 2.0
