@@ -32,84 +32,45 @@
 #include <dirent.h>
 
 
-int gfal_srm_rename_internal_srmv2(gfal_srmv2_opt* opts, char* endpoint,
-                                   const char* src, const char* dst, GError** err)
+static int gfal_srm_rename_internal_srmv2(srm_context_t context,
+        const char* src, const char* dst, GError** err)
 {
     GError*       tmp_err = NULL;
-    char          errbuf[GFAL_ERRMSG_LEN]={0};
     int           ret = -1;
-    srm_context_t context;
+    struct srm_mv_input input;
 
-    context = gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_ERRMSG_LEN, &tmp_err);
-    if (context != NULL) {
-        struct srm_mv_input input;
+    input.from = (char*)src;
+    input.to   = (char*)dst;
 
-        input.from = (char*)src;
-        input.to   = (char*)dst;
+    ret = gfal_srm_external_call.srm_mv(context, &input);
 
-        ret = gfal_srm_external_call.srm_mv(context, &input);
-
-        if (ret != 0) {
-            gfal_srm_report_error(errbuf, &tmp_err);
-            ret = -1;
-        }
-
-        gfal_srm_ifce_context_release(context);
+    if (ret != 0) {
+        gfal_srm_report_error(context->errbuf, &tmp_err);
+        ret = -1;
     }
+
     G_RETURN_ERR(ret, tmp_err, err);
 }
-
-
-
-int gfal_srm_rename_internal(gfal_srmv2_opt* opts, const char* src,
-                             const char *dst, GError** err)
-{
-    GError* tmp_err = NULL;
-    int ret = -1;
-
-    char full_endpoint[GFAL_URL_MAX_LEN];
-    enum gfal_srm_proto srm_types;
-
-    if ((gfal_srm_determine_endpoint(opts, src, full_endpoint,
-                                     GFAL_URL_MAX_LEN, &srm_types, &tmp_err)) == 0) {
-        gfal_log(GFAL_VERBOSE_NORMAL, "gfal_srm_rm_internal -> endpoint %s",
-                full_endpoint);
-
-        if (srm_types == PROTO_SRMv2) {
-            ret = gfal_srm_rename_internal_srmv2(opts, full_endpoint, src, dst,
-                                                 &tmp_err);
-        }
-        else if (srm_types == PROTO_SRM) {
-            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
-                       "support for SRMv1 is removed in gfal 2.0, failure");
-        }
-        else {
-            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
-                        "Unknown SRM protocol, failure ");
-        }
-    }
-
-    if (tmp_err)
-        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
-    return ret;
-}
-
 
 
 int gfal_srm_renameG(plugin_handle plugin_data, const char* oldurl,
                      const char* urlnew, GError** err)
 {
-    g_return_val_err_if_fail(plugin_data && oldurl && urlnew,
-                             -1, err, "[gfal_srm_renameG] Incorrect args");
+    g_return_val_err_if_fail(plugin_data && oldurl && urlnew, EINVAL, err, "[gfal_srm_renameG] Invalid value handle and/or surl");
+    GError* tmp_err = NULL;
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) plugin_data;
 
-    GError*         tmp_err = NULL;
-    gfal_srmv2_opt* opts    = (gfal_srmv2_opt*)plugin_data;
+    int ret = -1;
 
-    // If we rename, it doesn't make sense to keep cached the entry
-    gfal_srm_cache_stat_remove(plugin_data, oldurl);
+    srm_context_t context = gfal_srm_ifce_easy_context(opts, oldurl, &tmp_err);
+    if (context != NULL) {
+        gfal_srm_cache_stat_remove(plugin_data, oldurl);
+        ret = gfal_srm_rename_internal_srmv2(context, oldurl, urlnew, &tmp_err);
+        gfal_srm_ifce_context_release(context);
+    }
 
-    int ret = gfal_srm_rename_internal(opts, oldurl, urlnew, &tmp_err);
-    if(tmp_err)
+    if (ret != 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+
     return ret;
 }

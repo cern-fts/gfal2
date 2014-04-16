@@ -82,10 +82,9 @@ typedef struct _gfal_srmv2_opt{
 	gfal_handle handle;
     gfal_request_state* last_request_state;
 	GSimpleCache* cache;
+
+	char srm_ifce_error_buffer[GFAL_ERRMSG_LEN];
 } gfal_srmv2_opt;
-
-typedef gfal_srmv2_opt* gfal_srm_plugin_t;
-
 
 
 typedef struct _gfal_srm_result{

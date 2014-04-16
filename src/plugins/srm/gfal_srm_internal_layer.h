@@ -138,3 +138,6 @@ srm_context_t gfal_srm_ifce_context_setup(gfal_context_t handle, const char* end
 
 void gfal_srm_ifce_context_release(srm_context_t context);
 
+srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
+        const char* surl, GError** err);
+

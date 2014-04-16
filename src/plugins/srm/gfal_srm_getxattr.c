@@ -21,10 +21,7 @@
  * @author Devresse Adrien
  * @date 02/08/2011
  * */
- 
- 
 
- 
 #include <string.h>
 
 #include "gfal_srm.h"

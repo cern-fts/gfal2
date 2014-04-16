@@ -35,7 +35,7 @@ int main(int argc, char **argv)
     }
 
 	for(i=2; i < argc; ++i){
-		printf ("Checking initial right of %s  ...\n", file);		
+		printf ("Checking initial right of %s  ...\n", buff);
         if (gfal_stat (buff, &initial_stat) < 0) {
 			gfal_posix_check_error();
 			g_assert_not_reached();
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 			perror ("strtol");
 			exit (1);
 		}
-		printf ("Changing mode of '%s' to %o ...\n", file, mode);
+		printf ("Changing mode of '%s' to %o ...\n", buff, mode);
 		
         if (gfal_chmod (buff, mode) < 0) {
 			gfal_posix_check_error();

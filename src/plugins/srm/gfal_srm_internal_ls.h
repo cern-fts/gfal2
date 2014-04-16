@@ -29,11 +29,11 @@
 
 
 
-int gfal_statG_srmv2__generic_internal(gfal_srmv2_opt* opts, struct stat* buf, 
-						const char* endpoint, const char* surl, GError** err);
+int gfal_statG_srmv2__generic_internal(srm_context_t context, struct stat* buf,
+						const char* surl, GError** err);
 						
-int gfal_locality_srmv2_generic_internal(gfal_srmv2_opt* opts,
-										const char* endpoint, const char* surl, TFileLocality* loc,
+int gfal_locality_srmv2_generic_internal(srm_context_t context,
+										const char* surl, TFileLocality* loc,
                                         GError** err);
 
 

@@ -206,41 +206,63 @@ static int gfal_get_endpoint_and_setype_from_bdiiG(gfal_srmv2_opt* opts, const c
  *  see the diagram in doc/diagrams/surls_get_endpoint_activity_diagram.svg for more informations
  *  @return return 0 with endpoint and types set if success else -1 and set Error
  * */
-int gfal_srm_determine_endpoint(gfal_srmv2_opt* opts, const char* surl, char* buff_endpoint, size_t s_buff, enum gfal_srm_proto* srm_type, GError** err){
-    g_return_val_err_if_fail(opts && buff_endpoint && srm_type && surl && s_buff,-1, err, "[gfal_srm_determine_endpoint] invalid value in params"); // check params
+int gfal_srm_determine_endpoint(gfal_srmv2_opt* opts, const char* surl,
+        char* buff_endpoint, size_t s_buff, enum gfal_srm_proto* srm_type,
+        GError** err)
+{
+    g_return_val_err_if_fail(
+            opts && buff_endpoint && srm_type && surl && s_buff, -1, err,
+            "[gfal_srm_determine_endpoint] invalid value in params"); // check params
 
-    GError* tmp_err=NULL;
+    GError* tmp_err = NULL;
     int ret = -1;
-    gboolean isFullEndpoint = gfal_check_fullendpoint_in_surlG(opts, surl, &tmp_err);       // check if a full endpoint exist
-    if(!tmp_err){
-            if( isFullEndpoint == TRUE  ){ // if full endpoint contained in url, get it and set type to default type
-                if( gfal_get_fullendpointG(surl, buff_endpoint, s_buff, &tmp_err)  == 0){
-                    *srm_type= opts->srm_proto_type;
-                    ret = 0;
-                    gfal_log(GFAL_VERBOSE_DEBUG, "Service endpoint resolution, resolved from FULL SURL %s -> %s",surl, buff_endpoint);
+    gboolean isFullEndpoint = gfal_check_fullendpoint_in_surlG(opts, surl,
+            &tmp_err); // check if a full endpoint exist
+    if (!tmp_err) {
+        if (isFullEndpoint == TRUE) { // if full endpoint contained in url, get it and set type to default type
+            if (gfal_get_fullendpointG(surl, buff_endpoint, s_buff, &tmp_err)
+                    == 0) {
+                *srm_type = opts->srm_proto_type;
+                ret = 0;
+                gfal_log(GFAL_VERBOSE_DEBUG,
+                        "Service endpoint resolution, resolved from FULL SURL %s -> %s",
+                        surl, buff_endpoint);
+            }
+
+        }
+        else {
+            if (gfal_get_nobdiiG(opts->handle) == TRUE
+                    || ((ret = gfal_get_endpoint_and_setype_from_bdiiG(opts,
+                            surl, buff_endpoint, s_buff, srm_type, &tmp_err))
+                            != 0)) {
+                if (tmp_err) {
+                    gfal_log(GFAL_VERBOSE_VERBOSE,
+                            "WARNING : Error while bdii SRM service resolution : %s, fallback on the default service path."
+                                    "This can lead to wrong service path, you should use FULL SURL format or register your endpoint into the BDII",
+                            tmp_err->message);
+                    g_clear_error(&tmp_err);
                 }
-
-            }else{
-                if( gfal_get_nobdiiG(opts->handle) == TRUE
-                        || (( ret= gfal_get_endpoint_and_setype_from_bdiiG(opts, surl, buff_endpoint, s_buff, srm_type, &tmp_err)) != 0)){
-                    if(tmp_err){
-                        gfal_log(GFAL_VERBOSE_VERBOSE, "WARNING : Error while bdii SRM service resolution : %s, fallback on the default service path."
-                                  "This can lead to wrong service path, you should use FULL SURL format or register your endpoint into the BDII", tmp_err->message);
-                        g_clear_error(&tmp_err);
-                    }else{
-                        gfal_log(GFAL_VERBOSE_VERBOSE, "WARNING : BDII usage disabled, fallback on the default service path."
-                                  "This can lead to wrong service path, you should use FULL SURL format or register your endpoint into the BDII");
-
-                    }
-                    ret = gfal_srm_guess_service_endpoint(opts, surl, buff_endpoint, s_buff, srm_type, &tmp_err);
-                    if(ret ==0){
-                        gfal_log(GFAL_VERBOSE_DEBUG, "Service endpoint resolution, set to default path %s -> %s",surl, buff_endpoint);
-                    }
-                }else{
-                    gfal_log(GFAL_VERBOSE_DEBUG, "Service endpoint resolution, resolved from BDII %s -> %s",surl, buff_endpoint);
+                else {
+                    gfal_log(GFAL_VERBOSE_VERBOSE,
+                            "WARNING : BDII usage disabled, fallback on the default service path."
+                                    "This can lead to wrong service path, you should use FULL SURL format or register your endpoint into the BDII");
 
                 }
-          }
+                ret = gfal_srm_guess_service_endpoint(opts, surl, buff_endpoint,
+                        s_buff, srm_type, &tmp_err);
+                if (ret == 0) {
+                    gfal_log(GFAL_VERBOSE_DEBUG,
+                            "Service endpoint resolution, set to default path %s -> %s",
+                            surl, buff_endpoint);
+                }
+            }
+            else {
+                gfal_log(GFAL_VERBOSE_DEBUG,
+                        "Service endpoint resolution, resolved from BDII %s -> %s",
+                        surl, buff_endpoint);
+
+            }
+        }
 
     }
     G_RETURN_ERR(ret, tmp_err, err);

@@ -16,6 +16,7 @@
 * limitations under the License.
 */
 #include <glib.h>
+#include <gfal_srm_ifce_types.h>
 #include "gfal_srm.h"
 
 int gfal_srm_accessG(plugin_handle handle, const char* surl, int mode, GError** err);
@@ -54,4 +55,4 @@ int gfal_srm_rmdirG(plugin_handle handle, const char* surl, GError** err);
 
 int gfal_srm_statG(plugin_handle handle, const char* surl, struct stat* buf, GError** err);
 
-int gfal_statG_srmv2_internal(gfal_srmv2_opt* opts, struct stat* buf, const char* endpoint, const char* surl, GError** err);
+int gfal_statG_srmv2_internal(srm_context_t context, struct stat* buf, const char* surl, GError** err);

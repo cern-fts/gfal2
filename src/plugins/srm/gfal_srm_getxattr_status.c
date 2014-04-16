@@ -21,10 +21,7 @@
  * @author Devresse Adrien
  * @date 02/08/2011
  * */
- 
- 
 
- 
 #include <string.h>
 
 #include "gfal_srm.h"
@@ -61,43 +58,40 @@ void gfal_srm_status_copy(TFileLocality loc, char* buff, size_t s_buff){
 }
 
 
-ssize_t gfal_srm_status_internal(plugin_handle handle, const char* path, void* buff, size_t s_buff, GError** err){
+ssize_t gfal_srm_status_internal(srm_context_t context, const char* path, void* buff, size_t s_buff, GError** err)
+{
 	GError* tmp_err=NULL;
 	ssize_t ret = -1;	
-	gfal_srmv2_opt* ops = (gfal_srmv2_opt*) handle;
 	TFileLocality loc;
-	char full_endpoint[GFAL_URL_MAX_LEN]={0};
-	enum gfal_srm_proto srm_types;
-	
-	if((gfal_srm_determine_endpoint(ops, path, full_endpoint, GFAL_URL_MAX_LEN, &srm_types, &tmp_err)) == 0){		// check & get endpoint										
-		gfal_log(GFAL_VERBOSE_NORMAL, "[gfal_srm_status_internal] endpoint %s", full_endpoint);
 
-		if (srm_types == PROTO_SRMv2){
-			if( (ret = gfal_locality_srmv2_generic_internal(ops, full_endpoint, path, &loc, &tmp_err)) >= 0){
-				gfal_srm_status_copy(loc, (char*) buff, s_buff);
-				ret = MIN( strlen(buff), s_buff);
-			}
-		} else if(srm_types == PROTO_SRM){
-            gfal2_set_error(&tmp_err,gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
-                    "support for SRMv1 is removed in gfal 2.0, failure");
-		} else{
-		    gfal2_set_error(&tmp_err,gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, __func__,
-                    "unknow SRM protocol, failure ");
-		}		
-	}	
+	ret = gfal_locality_srmv2_generic_internal(context, path, &loc, &tmp_err);
+	if (ret >= 0) {
+	    gfal_srm_status_copy(loc, (char*) buff, s_buff);
+	    ret = MIN( strlen(buff), s_buff);
+	}
+
 	G_RETURN_ERR(ret, tmp_err, err);		
 }
 
 /*
  * main implementation of the srm status -> getxattr
  */
-ssize_t gfal_srm_status_getxattrG(plugin_handle handle, const char* path, const char* name , void* buff, size_t s_buff, GError** err){
-	GError* tmp_err=NULL;
-	ssize_t ret = -1;
-	if(s_buff ==0 || buff == NULL)
-		return GFAL_URL_MAX_LEN;
+ssize_t gfal_srm_status_getxattrG(plugin_handle handle, const char* surl, const char* name , void* buff, size_t s_buff, GError** err)
+{
+    g_return_val_err_if_fail(handle && surl, EINVAL, err, "[gfal_srm_status_getxattrG] Invalid value handle and/or surl");
+    GError* tmp_err = NULL;
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) handle;
 
-	ret = gfal_srm_status_internal(handle, path, buff, s_buff, &tmp_err);
+    int ret = -1;
 
-	G_RETURN_ERR(ret, tmp_err, err);	
+    srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    if (context != NULL) {
+        ret = gfal_srm_status_internal(context, surl, buff, s_buff, &tmp_err);
+        gfal_srm_ifce_context_release(context);
+    }
+
+    if (ret != 0)
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+
+    return ret;
 }
