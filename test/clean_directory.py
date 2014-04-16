@@ -67,6 +67,7 @@ class Cleaner(object):
             n_directories += sub_directories
             if not self.only_files:
                 try:
+                    log.info("Rmdir %s" % directory)
                     self.context.rmdir(directory)
                     n_directories += 1
                 except gfal2.GError, e:
