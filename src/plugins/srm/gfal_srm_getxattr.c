@@ -31,7 +31,7 @@
 #include <common/gfal_constants.h>
 #include <common/gfal_common_err_helpers.h>
 #include "gfal_srm_internal_layer.h" 
-#include "gfal_srm_getxattr.h"
+#include "gfal_srm_namespace.h"
 
 static const char* srm_geturl_key = SRM_XATTR_GETURL;
 static const char* srm_status_key = GFAL_XATTR_STATUS;

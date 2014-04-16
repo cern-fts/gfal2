@@ -31,7 +31,7 @@
 #include <common/gfal_constants.h>
 #include <common/gfal_common_err_helpers.h>
 #include "gfal_srm_internal_layer.h" 
-#include "gfal_srm_getxattr.h"
+#include "gfal_srm_namespace.h"
 #include "gfal_srm_endpoint.h"
 #include "gfal_srm_internal_ls.h"
 
@@ -73,7 +73,7 @@ ssize_t gfal_srm_status_internal(plugin_handle handle, const char* path, void* b
 		gfal_log(GFAL_VERBOSE_NORMAL, "[gfal_srm_status_internal] endpoint %s", full_endpoint);
 
 		if (srm_types == PROTO_SRMv2){
-			if( (ret = gfal_Locality_srmv2_generic_internal(ops, full_endpoint, path, &loc, &tmp_err)) >= 0){
+			if( (ret = gfal_locality_srmv2_generic_internal(ops, full_endpoint, path, &loc, &tmp_err)) >= 0){
 				gfal_srm_status_copy(loc, (char*) buff, s_buff);
 				ret = MIN( strlen(buff), s_buff);
 			}

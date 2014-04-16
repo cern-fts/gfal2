@@ -27,7 +27,7 @@
 
 #include "gfal_srm.h"
 #include "gfal_srm_internal_ls.h"
-#include "gfal_srm_access.h"
+#include "gfal_srm_namespace.h"
 #include "gfal_srm_internal_layer.h" 
 #include "gfal_srm_endpoint.h"
 

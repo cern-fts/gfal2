@@ -53,7 +53,7 @@ void gfal_srm_ls_memory_management(struct srm_ls_input* input, struct srm_ls_out
  *  concentrate the srm_ls logical in one point for stat, readdir, status, and access
  * 
  * */
-int gfal_srm_ls_internal(gfal_srmv2_opt* opts, const char* endpoint, 
+static int gfal_srm_ls_internal(gfal_srmv2_opt* opts, const char* endpoint,
 						 struct srm_ls_input* input, struct srm_ls_output* output, 
 						 GError** err){
 	GError* tmp_err=NULL;
@@ -115,7 +115,7 @@ int gfal_statG_srmv2__generic_internal(	gfal_srmv2_opt* opts, struct stat* buf,
 }
 
 
-int gfal_Locality_srmv2_generic_internal(	gfal_srmv2_opt* opts, 
+int gfal_locality_srmv2_generic_internal(	gfal_srmv2_opt* opts,
 										const char* endpoint, const char* surl, TFileLocality* loc,
 										GError** err){
 	g_return_val_err_if_fail( opts && endpoint && surl && loc,

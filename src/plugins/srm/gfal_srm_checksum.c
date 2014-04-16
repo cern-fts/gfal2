@@ -94,7 +94,7 @@ static int gfal_checksumG_srmv2_internal(gfal_srmv2_opt* opts, const char* endpo
  * get checksum from a remote SRM URL
  * 
  * */
-int gfal_srm_cheksumG_internal(plugin_handle ch, const char* surl,
+static int gfal_srm_cheksumG_internal(plugin_handle ch, const char* surl,
 											char* buf_checksum, size_t s_checksum,
 											char* buf_chktype, size_t s_chktype, GError** err){
 	g_return_val_err_if_fail( ch && surl && buf_checksum && buf_chktype, -1, err, "[gfal_srm_cheksumG] Invalid args in handle/surl/bugg");

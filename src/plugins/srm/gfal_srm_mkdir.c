@@ -24,8 +24,7 @@
  * */
 
 #include "gfal_srm.h"
-#include "gfal_srm_mkdir.h"
-#include "gfal_srm_stat.h"
+#include "gfal_srm_namespace.h"
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_endpoint.h"
 #include <common/gfal_common_err_helpers.h>

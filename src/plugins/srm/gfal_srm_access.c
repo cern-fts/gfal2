@@ -24,7 +24,7 @@
  * @date 05/05/2011
  * */
 #include <string.h>
-#include "gfal_srm_access.h"
+#include "gfal_srm_namespace.h"
 #include <common/gfal_constants.h>
 #include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
@@ -32,7 +32,7 @@
 #include "gfal_srm_endpoint.h"
 
 
-int gfal_access_srmv2_internal(gfal_srmv2_opt*  opts, char* endpoint, const char* surl, int mode,  GError** err){
+static int gfal_access_srmv2_internal(gfal_srmv2_opt*  opts, char* endpoint, const char* surl, int mode,  GError** err){
 	GError* tmp_err=NULL;
     srm_context_t context;
 	struct srm_checkpermission_input checkpermission_input;

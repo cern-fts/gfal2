@@ -117,7 +117,7 @@ static int gfal_srm_rm_srmv2_internal(gfal_srmv2_opt* opts,
 }
 
 
-int gfal_srm_rm_internal(gfal_srmv2_opt* opts, const char* surl, GError** err)
+static int gfal_srm_rm_internal(gfal_srmv2_opt* opts, const char* surl, GError** err)
 {
     GError* tmp_err = NULL;
     int ret = -1;

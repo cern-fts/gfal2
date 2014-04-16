@@ -30,7 +30,7 @@
 
 #include <common/gfal_common_err_helpers.h>
 
-#include "gfal_srm_readdir.h"
+#include "gfal_srm_namespace.h"
 #include "gfal_srm_opendir.h" 
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_internal_ls.h"

@@ -129,8 +129,6 @@ int gfal_srm_putTURLS(gfal_srmv2_opt* opts , char** surls, gfal_srm_result** res
 
 int gfal_srm_putdone(gfal_srmv2_opt* opts, char** surls, const char* token,  GError** err);
 
-int gfal_srm_unlinkG(plugin_handle ch, const char * path, GError** err);
-
 void gfal_srm_report_error(char* errbuff, GError** err);
 
 

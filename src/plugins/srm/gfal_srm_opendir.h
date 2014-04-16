@@ -47,3 +47,7 @@ typedef struct _gfal_srm_opendir_handle{
 gfal_file_handle gfal_srm_opendirG(plugin_handle handle, const char* path, GError ** err);
 
 int gfal_srm_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err);
+
+struct dirent* gfal_srm_readdirG(plugin_handle handle, gfal_file_handle fh, GError** err);
+
+struct dirent* gfal_srm_readdirppG(plugin_handle ch, gfal_file_handle fh, struct stat* st, GError** err);

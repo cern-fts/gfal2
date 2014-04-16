@@ -30,11 +30,9 @@
 #include <uri/uri_util.h>
 
 #include "gfal_srm_getput.h"
-#include "gfal_srm_stat.h"
+#include "gfal_srm_namespace.h"
 #include "gfal_srm_url_check.h"
 #include "gfal_srm_internal_layer.h"
-#include "gfal_srm_checksum.h"
-#include "gfal_srm_mkdir.h"
 #include "gfal_srm_bringonline.h"
 
 

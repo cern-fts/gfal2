@@ -29,20 +29,11 @@
 
 
 #include "gfal_srm.h"
-#include "gfal_srm_access.h"
+#include "gfal_srm_namespace.h"
 #include "gfal_srm_bringonline.h"
 #include "gfal_srm_internal_layer.h"
-#include "gfal_srm_access.h"
-#include "gfal_srm_mkdir.h"
-#include "gfal_srm_stat.h"
-#include "gfal_srm_rmdir.h"
 #include "gfal_srm_opendir.h"
 #include "gfal_srm_open.h"
-#include "gfal_srm_readdir.h"
-#include "gfal_srm_rename.h"
-#include "gfal_srm_chmod.h"
-#include "gfal_srm_getxattr.h"
-#include "gfal_srm_checksum.h"
 #include "gfal_srm_copy.h"
 #include "gfal_srm_url_check.h"
 
