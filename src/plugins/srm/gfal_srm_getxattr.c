@@ -29,6 +29,7 @@
 #include <common/gfal_common_err_helpers.h>
 #include "gfal_srm_internal_layer.h" 
 #include "gfal_srm_namespace.h"
+#include "gfal_srm_space.h"
 
 static const char* srm_geturl_key = SRM_XATTR_GETURL;
 static const char* srm_status_key = GFAL_XATTR_STATUS;
@@ -55,21 +56,30 @@ ssize_t gfal_srm_geturl_getxattrG(plugin_handle handle, const char* path, const 
  * implementation of the getxattr for turl resolution, pin management and spacetoken set/get
  * 
  * */
-ssize_t gfal_srm_getxattrG(plugin_handle handle, const char* path, const char* name , void* buff, size_t s_buff, GError** err){
-	GError* tmp_err=NULL;
-	ssize_t ret = -1;
-	gfal_log(GFAL_VERBOSE_TRACE, " gfal_srm_getxattrG ->");
-	if(strcmp(name, srm_geturl_key) == 0){
-		ret = gfal_srm_geturl_getxattrG(handle, path, name, buff, s_buff, &tmp_err);
-	}else if(strcmp(name, srm_status_key) ==0 ){
-		ret = gfal_srm_status_getxattrG(handle, path, name, buff, s_buff, &tmp_err);
-	}else{ // need to add pin and spacetoken
-        gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), ENOATTR, __func__,
-                "not an existing extended attribute");
-	}
-	
-	gfal_log(GFAL_VERBOSE_TRACE, " gfal_srm_getxattrG <- ");
-	G_RETURN_ERR(ret, tmp_err, err);	
+ssize_t gfal_srm_getxattrG(plugin_handle handle, const char* path,
+        const char* name, void* buff, size_t s_buff, GError** err)
+{
+    GError* tmp_err = NULL;
+    ssize_t ret = -1;
+    gfal_log(GFAL_VERBOSE_TRACE, " gfal_srm_getxattrG ->");
+    if (strcmp(name, srm_geturl_key) == 0) {
+        ret = gfal_srm_geturl_getxattrG(handle, path, name, buff, s_buff,
+                &tmp_err);
+    }
+    else if (strcmp(name, srm_status_key) == 0) {
+        ret = gfal_srm_status_getxattrG(handle, path, name, buff, s_buff,
+                &tmp_err);
+    }
+    else if (strncmp(name, "spacetoken", 10) == 0) {
+        return gfal_srm_space_getxattrG(handle, path, name, buff, s_buff, err);
+    }
+    else { // need to add pin and spacetoken
+        gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), ENOATTR,
+                __func__, "not an existing extended attribute");
+    }
+
+    gfal_log(GFAL_VERBOSE_TRACE, " gfal_srm_getxattrG <- ");
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 

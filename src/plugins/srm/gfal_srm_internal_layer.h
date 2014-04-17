@@ -110,6 +110,13 @@ struct _gfal_srm_external_call{
     int (*srm_mv)(struct srm_context *context, struct srm_mv_input *input);
 
     int (*srm_abort_request)(struct srm_context *context, char *reqtoken);
+
+    // Space methods
+    int (*srm_getspacetokens)(struct srm_context *context, struct srm_getspacetokens_input *input,
+            struct srm_getspacetokens_output *output);
+
+    int (*srm_getspacemd)(struct srm_context *context,
+            struct srm_getspacemd_input *input,struct srm_spacemd **spaces);
 };
 
 extern struct _gfal_srm_external_call gfal_srm_external_call;
