@@ -20,8 +20,8 @@ SET(srm_prefix_dcache "srm://dcache.du.cesnet.cz/data/du.cesnet.cz/${MY_VO}/gfal
 SET(lfc_prefix "lfn:/grid/${MY_VO}")
 SET(lfc_host_name "prod-lfc-shared-central.cern.ch")
 SET(gsiftp_prefix_dpm "gsiftp://lxfsra10a01.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
-SET(srm_prefix_dpm "srm://lxfsra10a01.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/gfal2-tests") ## partial endpoint, test auto-resolve
-
+SET(srm_prefix_dpm "srm://lxfsra10a01.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
+SET(davs_prefix_dpm "davs://lxfsra10a01.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 
 ELSEIF(TEST_ENVIRONMENT STREQUAL "TESTBED_TRUNK")
 
@@ -33,7 +33,8 @@ SET(srm_prefix_dcache "srm://vm-dcache-deploy6.desy.de:8443/data/${MY_VO}/gfal2-
 SET(lfc_prefix "lfn:/grid/${MY_VO}")
 SET(lfc_host_name "prod-lfc-shared-central.cern.ch")
 SET(gsiftp_prefix_dpm "gsiftp://lxfsra04a04.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
-SET(srm_prefix_dpm "srm://lxfsra04a04.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/gfal2-tests") ## partial endpoint, test auto-resolve
+SET(srm_prefix_dpm "srm://lxfsra04a04.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
+SET(davs_prefix_dpm "davs://lxfsra04a04.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 
 ELSE(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
@@ -46,6 +47,9 @@ SET(lfc_prefix "lfn:/grid/${MY_VO}")
 SET(lfc_host_name "prod-lfc-shared-central.cern.ch")
 SET(gsiftp_prefix_dpm "gsiftp://hepgrid11.ph.liv.ac.uk/dpm/ph.liv.ac.uk/home/${MY_VO}/gfal2-tests/")
 SET(srm_prefix_dpm "srm://hepgrid11.ph.liv.ac.uk:8446/srm/managerv2?SFN=/dpm/ph.liv.ac.uk/home/${MY_VO}/gfal2-tests/")
+
+# Need to find something better!
+SET(davs_prefix_dpm "davs://lxfsra10a01.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 
 ENDIF(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
@@ -72,6 +76,12 @@ SET(srm_valid_storm_src_file "${srm_prefix_storm}")
 SET(gsiftp_valid_dpm_stat "${gsiftp_prefix_dpm}/testread0011")
 SET(gsiftp_valid_dpm_src_file "${gsiftp_valid_dpm_stat}")
 SET(gsiftp_valid_dir_root "${gsiftp_prefix_dpm}")
+
+## https parameters
+#
+SET(davs_valid_dpm_stat     "${davs_prefix_dpm}/testread0011")
+SET(davs_valid_dpm_src_file "${davs_valid_dpm_stat}")
+SET(davs_valid_dir_root     "${davs_prefix_dpm}")
 
 ## lfc parameters
 SET(lfc_stat_ok "${lfc_prefix}/testread0011")
@@ -200,6 +210,23 @@ IF(PLUGIN_GRIDFTP)
         rwt_test_seq("GRIDFTP" ${gsiftp_valid_dir_root} 100 4560)
         rwt_test_seq("GRIDFTP_unit" ${gsiftp_valid_dir_root} 1 10)              
 ENDIF(PLUGIN_GRIDFTP)
+
+IF(PLUGIN_HTTP)
+        test_gfal_test_del_nonex("DAVS_DPM" ${davs_valid_dir_root})
+        test_gfal_test_del("DAVS_DPM" ${davs_valid_dir_root})
+        test_gfal_test_mkdir_unlink("DAVS_DPM" ${davs_valid_dir_root})
+        stat_test_all("DAVS" ${davs_valid_dir_root})
+        checksum_test_simple("DAVS_ADLER32" ${davs_valid_dir_root} ADLER32)
+        checksum_test_simple("DAVS_MD5"     ${davs_valid_dir_root} MD5)
+        checksum_test_simple("DAVS_CRC32"   ${davs_valid_dir_root} CRC32)
+        mkdir_test_all("DAVS" ${davs_valid_dir_root})
+        # chmod not supported
+        rmdir_test_all("DAVS" ${davs_valid_dir_root})
+        test_readdir_full("DAVS" ${davs_valid_dir_root})
+        rwt_test_all("DAVS" ${davs_valid_dir_root} 4578)
+        rwt_test_all("DAVS_single" ${davs_valid_dir_root} 1)
+        # sequencial writes not supported
+ENDIF(PLUGIN_HTTP)
 
 IF (MAIN_TRANSFER)
         copy_file_test_full("GRIDFTP_DPM"               ${gsiftp_prefix_dpm} ${gsiftp_prefix_dpm})   
