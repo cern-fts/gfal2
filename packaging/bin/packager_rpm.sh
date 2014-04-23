@@ -68,7 +68,7 @@ rpm_build_src_package(){
 	local MACRO_TOPDIR="s  \"_topdir $RPM_BUILD_DIR\""
 	cd $RPM_BUILD_DIR
 	ls $PWD/SOURCES/
-	rpmbuild -bs --nodeps --define "_topdir $RPM_BUILD_DIR" SPECS/$1
+	rpmbuild -bs --nodeps --define "_topdir $RPM_BUILD_DIR" --define='_sourcedir %{_topdir}/SOURCES' --define='_srcrpmdir %{_topdir}/SRPMS' SPECS/$1
 	cd $OLD_DIR
 	echo "End the rpmbuild source call...."	
 }
