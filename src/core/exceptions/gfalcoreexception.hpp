@@ -38,6 +38,28 @@ class CoreException: public Glib::Error
 		/* add your private declarations */
 };
 
+class TransferException: public CoreException {
+public:
+    std::string side;
+    std::string note;
+
+    TransferException(GQuark scope, const std::string & msg, int code,
+            const std::string & side, const std::string & note = std::string()):
+                CoreException(scope, msg, code), side(side), note(note)
+    {
+    }
+
+    TransferException(const Glib::Quark & scope, const std::string & msg, int code,
+            const std::string & side, const std::string & note = std::string()):
+                CoreException(scope, msg, code), side(side), note(note)
+    {
+    }
+
+    virtual ~TransferException() throw()
+    {
+    }
+};
+
 }
 
 #endif /* GFALCOREEXCEPTION_H */ 
