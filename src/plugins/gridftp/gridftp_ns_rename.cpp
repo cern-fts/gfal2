@@ -15,6 +15,7 @@
 
 #include "gridftp_namespace.h"
 #include "gridftpwrapper.h"
+#include <exceptions/cpp_to_gerror.hpp>
 
 static const Glib::Quark gfal_gridftp_scope_rename("GridftpModule::rmdir");
 

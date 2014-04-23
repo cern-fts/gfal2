@@ -14,6 +14,7 @@
  */
 
 #include <common/gfal_common_filedescriptor.h>
+#include <exceptions/cpp_to_gerror.hpp>
 #include "gridftp_dir_reader/gridftp_dir_reader.h"
 #include "gridftp_namespace.h"
 #include "gridftp_plugin.h"

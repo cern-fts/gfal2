@@ -18,6 +18,7 @@
 
 #include "gridftp_namespace.h"
 #include <config/gfal_config.h>
+#include <exceptions/cpp_to_gerror.hpp>
 
 static Glib::Quark gfal_gridftp_scope_checksum(){
     return Glib::Quark("Gridftp_checksum_module::checksum");

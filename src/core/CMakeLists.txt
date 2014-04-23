@@ -71,6 +71,8 @@ install (FILES "file/gfal_file_api.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/file)
 install (FILES "fdesc/gfal_file_handle.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/fdesc)
+install (FILES "exceptions/gfalcoreexception.hpp"
+         DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/exceptions)
 
 # Transfer library
 if (MAIN_TRANSFER)

@@ -21,7 +21,6 @@
 
 
 #include <glibmm.h>
-#include <exceptions/cpp_to_gerror.hpp>
 
 namespace Gfal{
 
