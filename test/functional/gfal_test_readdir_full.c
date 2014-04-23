@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 	file = argv[1];
 
     generate_random_uri(file, "readdir_full_entry_enoent", base_dir, 2048);
-	printf(" try to list not existing dir .... %s", base_dir);
+	printf(" try to list not existing dir .... %s\n", base_dir);
 	DIR* p;
 	if( (p = gfal_opendir(base_dir)) != NULL){
 		g_assert_not_reached();	
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 	
     generate_random_uri(file, "testlistdir_", base_dir, 2048);
 	printf(" create a new dir for content listing .... %s\n", base_dir);
-	if(gfal_mkdir(base_dir, 0777) !=0){
+	if(gfal_mkdir(base_dir, 0777) < 0){
 		gfal_posix_check_error();
 		g_assert_not_reached();
 	}

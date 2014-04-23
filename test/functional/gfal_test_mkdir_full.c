@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 	
 	
 	// should return eexist
-    printf(" verify that the directory  one more call exists  too  %s.... \n", url);
+    printf(" mkdir over an existing directory must fail with EEXIST  %s.... \n", url);
     res = gfal_mkdir(url, 0777);
     g_assert(res != 0);
     printf(" error : %d ", gfal_posix_code_error());
