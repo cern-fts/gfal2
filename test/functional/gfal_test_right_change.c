@@ -42,6 +42,7 @@ int main(int argc, char **argv)
 		}
 	    printf ("initial right  0%o ...\n", initial_stat.st_mode);		
 
+	    errno = 0;
 		mode = (mode_t) strtol (argv[i], NULL, 8);
 		if (errno > 0) {
 			perror ("strtol");
