@@ -22,6 +22,7 @@ SET(lfc_host_name "prod-lfc-shared-central.cern.ch")
 SET(gsiftp_prefix_dpm "gsiftp://lxfsra10a01.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(srm_prefix_dpm "srm://lxfsra10a01.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(davs_prefix_dpm "davs://lxfsra10a01.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
+SET(root_prefix_dpm "root://lxfsra10a01.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 
 ELSEIF(TEST_ENVIRONMENT STREQUAL "TESTBED_TRUNK")
 
@@ -35,6 +36,7 @@ SET(lfc_host_name "prod-lfc-shared-central.cern.ch")
 SET(gsiftp_prefix_dpm "gsiftp://lxfsra04a04.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(srm_prefix_dpm "srm://lxfsra04a04.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(davs_prefix_dpm "davs://lxfsra04a04.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
+SET(root_prefix_dpm "root://lxfsra04a04.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 
 ELSE(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
@@ -50,6 +52,7 @@ SET(srm_prefix_dpm "srm://hepgrid11.ph.liv.ac.uk:8446/srm/managerv2?SFN=/dpm/ph.
 
 # Need to find something better!
 SET(davs_prefix_dpm "davs://lxfsra10a01.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
+SET(root_prefix_dpm "root://lxfsra10a01.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 
 ENDIF(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
@@ -82,6 +85,11 @@ SET(gsiftp_valid_dir_root "${gsiftp_prefix_dpm}")
 SET(davs_valid_dpm_stat     "${davs_prefix_dpm}/testread0011")
 SET(davs_valid_dpm_src_file "${davs_valid_dpm_stat}")
 SET(davs_valid_dir_root     "${davs_prefix_dpm}")
+
+## xrootd parameters
+SET(root_valid_dpm_stat     "${root_prefix_dpm}/testread0011")
+SET(root_valid_dpm_src_file "${root_valid_dpm_stat}")
+SET(root_valid_dir_root     "${root_prefix_dpm}")
 
 ## lfc parameters
 SET(lfc_stat_ok "${lfc_prefix}/testread0011")
@@ -227,6 +235,23 @@ IF(PLUGIN_HTTP)
         rwt_test_all("DAVS_single" ${davs_valid_dir_root} 1)
         # sequencial writes not supported
 ENDIF(PLUGIN_HTTP)
+
+IF(EXISTS "/usr/lib64/gfal2-plugins/libgfal_plugin_xrootd.so" OR
+  EXISTS "/usr/lib/gfal2-plugins/libgfal_plugin_xrootd.so") 
+    test_gfal_test_del_nonex("XROOTD_DPM" ${root_valid_dir_root})
+    test_gfal_test_del("XROOTD_DPM" ${root_valid_dir_root})
+    test_gfal_test_mkdir_unlink("XROOTD_DPM" ${root_valid_dir_root})
+    stat_test_all("XROOTD" ${root_valid_dir_root})
+    # Checksum not supported yet in the XrdCl library
+    #chmod_test_all("XROOTD" ${root_valid_dir_root} 0565 060 0360 0767) # Broken
+    mkdir_test_all("XROOTD" ${root_valid_dir_root})
+    rmdir_test_all("XROOTD" ${root_valid_dir_root})
+    test_readdir_full("XROOTD" ${root_valid_dir_root})
+    rwt_test_all("XROOTD" ${root_valid_dir_root} 4578)
+    rwt_test_all("XROOTD_single" ${root_valid_dir_root} 1)
+    rwt_test_seq("XROOTD" ${root_valid_dir_root} 100 4560)
+    rwt_test_seq("XROOTD_single" ${root_valid_dir_root} 1 10)
+ENDIF()
 
 IF (MAIN_TRANSFER)
         copy_file_test_full("GRIDFTP_DPM"               ${gsiftp_prefix_dpm} ${gsiftp_prefix_dpm})   
