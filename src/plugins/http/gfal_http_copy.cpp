@@ -58,13 +58,9 @@ static int gfal_http_copy_overwrite(plugin_handle plugin_data,
     if (!gfalt_get_replace_existing_file(params,NULL))
         return 0;
 
-    int exists = gfal_http_access(plugin_data, dst, F_OK, &nestedError);
+    int access_stat = gfal_http_access(plugin_data, dst, F_OK, &nestedError);
 
-    if (exists < 0) {
-        gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_OVERWRITE);
-        return -1;
-    }
-    else if (exists == 1) {
+    if (access_stat == 0) {
         gfal_http_unlinkG(plugin_data, dst, &nestedError);
         if (nestedError) {
             gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_OVERWRITE);
@@ -76,9 +72,15 @@ static int gfal_http_copy_overwrite(plugin_handle plugin_data,
         plugin_trigger_event(params, http_plugin_domain, GFAL_EVENT_DESTINATION,
                              GFAL_EVENT_OVERWRITE_DESTINATION, "Deleted %s", dst);
     }
-    else {
+    else if (nestedError->code == ENOENT) {
+        g_error_free(nestedError);
         gfal_log(GFAL_VERBOSE_DEBUG, "Source does not exist");
     }
+    else {
+        gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_OVERWRITE);
+        return -1;
+    }
+
     return 0;
 }
 
