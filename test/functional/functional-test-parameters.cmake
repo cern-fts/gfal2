@@ -262,6 +262,7 @@ IF (MAIN_TRANSFER)
         copy_file_test_full("SRM_DCACHE"                ${srm_valid_dcache_dir_root} ${srm_valid_dcache_dir_root})
         copy_file_test_full("SRM_TO_GRIDFTP"            ${srm_valid_dir_root} ${gsiftp_prefix_dpm})
         copy_file_test_full("GRIDFTP_TO_SRM"            ${gsiftp_prefix_dpm} ${srm_valid_dir_root})
+        copy_file_test_full("DAVS_TO_DAVS"              ${davs_valid_dir_root} ${davs_valid_dir_root})
 
         # global transfer tests for storage compatibility
 
