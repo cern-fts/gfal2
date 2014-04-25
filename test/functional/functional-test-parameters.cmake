@@ -243,7 +243,7 @@ IF(EXISTS "/usr/lib64/gfal2-plugins/libgfal_plugin_xrootd.so" OR
     test_gfal_test_mkdir_unlink("XROOTD_DPM" ${root_valid_dir_root})
     stat_test_all("XROOTD" ${root_valid_dir_root})
     # Checksum not supported yet in the XrdCl library
-    #chmod_test_all("XROOTD" ${root_valid_dir_root} 0565 060 0360 0767) # Broken
+    # Chmod does not work in posix-style, so the test can not be used
     mkdir_test_all("XROOTD" ${root_valid_dir_root})
     rmdir_test_all("XROOTD" ${root_valid_dir_root})
     test_readdir_full("XROOTD" ${root_valid_dir_root})
