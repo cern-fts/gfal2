@@ -237,8 +237,15 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
     request->executeRequest(&daverr);
     if (daverr) {
       davix2gliberr(daverr, err);
+      delete request;
       delete daverr;
       return -1;
+    }
+
+    if (request->getRequestCode() >= 400) {
+        Davix::httpcodeToDavixCode(request->getRequestCode(), "", "", &daverr);
+        delete request;
+        return -1;
     }
 
     std::string digest;
