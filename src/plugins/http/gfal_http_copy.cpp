@@ -40,13 +40,13 @@ static bool is_supported_scheme(const char* url)
 }
 
 
-static bool is_http_3rdcopy_disabled(gfal_context_t context)
+static bool is_http_3rdcopy_enabled(gfal_context_t context)
 {
     GError *err = NULL;
     bool enabled = gfal2_get_opt_boolean(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", &err);
     if (err)
         g_error_free(err);
-    return !enabled;
+    return enabled;
 }
 
 
@@ -445,7 +445,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
                          "%s => %s", src, dst);
 
-    if (!is_supported_scheme(src) || is_http_3rdcopy_disabled(context)) {
+    if (!is_supported_scheme(src) || !is_http_3rdcopy_enabled(context)) {
         gfal_http_streamed_copy(context, davix, src, dst, params, &nested_error);
     }
     else {
@@ -457,7 +457,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          "%s => %s", src, dst);
 
     if (nested_error != NULL) {
-        gfalt_propagate_prefixed_error(err, nested_error, __func__, GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM);
+        gfalt_propagate_prefixed_error(err, nested_error, __func__, GFALT_ERROR_TRANSFER, "");
         return gfal_http_copy_cleanup(plugin_data, dst, err);
     }
 
