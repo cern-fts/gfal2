@@ -228,7 +228,7 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
 	return 0;
 }
 
-gboolean gfal_plugin_mock_check_url_transfer(plugin_handle handle, const char* src, const char* dst, gfal_url2_check type){
+gboolean gfal_plugin_mock_check_url_transfer(plugin_handle handle, gfal_context_t ctx, const char* src, const char* dst, gfal_url2_check type) {
     gboolean res = FALSE;
 
     if( src != NULL && dst != NULL){
@@ -324,7 +324,8 @@ int gfal_plugin_mock_filecopy(plugin_handle handle, gfal2_context_t context, gfa
 		int max = gfal2_get_opt_integer_with_default(context, mock_config_group, MAX_TRANSFER_TIME, 100);
 		int min = gfal2_get_opt_integer_with_default(context, mock_config_group, MIN_TRANSFER_TIME, 10);
 		// determin the duration
-		seconds = rand() % (max - min) + min;
+		if (max == min) seconds = max;
+		else seconds = rand() % (max - min) + min;
 	}
 
 	// mock transfer duration
@@ -346,7 +347,6 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
     mock_plugin.getName= &gfal_mock_plugin_getName;
 
     mock_plugin.statG = &gfal_plugin_mock_stat;
-
 
     mock_plugin.check_plugin_url_transfer = &gfal_plugin_mock_check_url_transfer;
     mock_plugin.copy_file = &gfal_plugin_mock_filecopy;
