@@ -358,7 +358,9 @@ static void srm_force_unlink(plugin_handle handle,
         }
         g_error_free(unlink_err);
     }
-    gfal_log(GFAL_VERBOSE_VERBOSE, "Successfully removed destination surl after abort: %s", surl);
+    else {
+        gfal_log(GFAL_VERBOSE_VERBOSE, "Successfully removed destination surl after abort: %s", surl);
+    }
 }
 
 static void srm_rollback_put(plugin_handle handle,
