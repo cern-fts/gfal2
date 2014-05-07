@@ -71,32 +71,5 @@ struct _gfalt_transfer_status{
     const gfalt_hook_transfer_plugin_t* hook;
 };
 
-namespace Gfal{
-	
-namespace Transfer{
-
-
-class FileCopy {
-public:
-    FileCopy(gfal2_context_t context);
-	virtual ~FileCopy();
-	
-	void start_copy(gfalt_params_t p, const std::string & src, const std::string & dst);
-
-    void start_local_copy(gfalt_params_t p, const std::string & src, const std::string & dst);
-	
-
-protected:
-	const plugin_filecopy_call find_copy_plugin(const std::string & src, const std::string & dst, void** plugin_data);
-    gfal2_context_t context;
-	
-}; 
-
-} // end Transfer
-
-} //end Gfal
-
-
-
 #endif //_GFAL2_TRANSFER_TYPES_INTERNAL_
 

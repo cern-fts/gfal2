@@ -19,17 +19,14 @@
 * limitations under the License.
 */
 
-#include <exceptions/gerror_to_cpp.h> 
-#include <common/gfal_common_err_helpers.h>
-#include <common/gfal_types.h>
-#include <common/gfal_common_plugin.h>
-#include <transfer/gfal_transfer.h>
+#include <string>
 
+#include "gfal_transfer.h"
+#include "gfal_transfer_types.h"
 
 extern "C" void gfalt_params_handle_init(gfalt_params_t  handle, GError ** err);
 
-
+void perform_local_copy(gfal2_context_t context, gfalt_params_t params,
+        const std::string & src, const std::string & dst);
 
 #endif //_GFAL2_TRANSFER_INTERNAL_
-
-

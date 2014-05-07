@@ -36,6 +36,9 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#include <exceptions/gerror_to_cpp.h>
+#include <exceptions/cpp_to_gerror.hpp>
+
 static Glib::Quark gfal_gridftp_scope_filecopy(){
     return Glib::Quark("GridFTP::Filecopy");
 }
@@ -340,7 +343,6 @@ static void gridftp_do_copy(GridFTPFactoryInterface* factory, gfalt_params_t par
 static int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt_params_t params,
                                         const char* src, const char* dst)
 {
-    using namespace Gfal::Transfer;
     GError * tmp_err=NULL;
 
     const time_t timeout = gfalt_get_timeout(params, &tmp_err);

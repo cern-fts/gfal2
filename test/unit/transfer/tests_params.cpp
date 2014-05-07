@@ -26,9 +26,6 @@
 #include <glib.h>
 
 
-using namespace Gfal::Transfer;
-
-
 int get_locked_errcode(){
 	return EBUSY;
 }

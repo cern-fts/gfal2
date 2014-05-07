@@ -18,7 +18,6 @@
 
 #include "test_filecopy.h"
 
-
 #include <cstdlib>
 #include <global/gfal_global.h>
 #include <transfer/gfal_transfer_types_internal.h>
@@ -26,20 +25,6 @@
 #include <common/gfal_common_internal.h>
 
 #include <gtest/gtest.h>
-
-using namespace Gfal::Transfer;
-using namespace Gfal;
-
-void test_filecopy_instance(){
-	setenv("GFAL_PLUGIN_LIST", "libgfal_plugin_gridftp.so", TRUE);
-	gfal_handle handle = gfal_initG(NULL);
-    ASSERT_TRUE(handle != NULL);
-    FileCopy *f = new FileCopy(handle);
-    ASSERT_TRUE(f != NULL);
-	gfal_handle_freeG(handle);
-	delete f;
-	
-}
 
 
 void test_filecopy_instance_c(){
@@ -58,6 +43,3 @@ void test_filecopy_instance_c_problem(){
     ASSERT_TRUE(c == NULL && tmp_err!=NULL);
 	printf("%d %s\n", tmp_err->code, tmp_err->message);	
 }
-
-
-
