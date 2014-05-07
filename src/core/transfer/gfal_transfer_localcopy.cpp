@@ -1,14 +1,14 @@
-#include <glibmm.h>
 #include <gfal_api.h>
+#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin_interface.h>
 #include "gfal_transfer_internal.h"
 
-static Glib::Quark scope_local_copy("FileCopy::local_copy");
+static GQuark local_copy_domain = g_quark_from_static_string("FileCopy::local_copy");
 const size_t DEFAULT_BUFFER_SIZE = 200000;
 
 
-void perform_local_copy(gfal2_context_t context, gfalt_params_t params,
-        const std::string & src, const std::string & dst)
+int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
+        const std::string & src, const std::string & dst, GError** error)
 {
     gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::start_local_copy ");
     GError * tmp_err_src = NULL;
@@ -41,13 +41,13 @@ void perform_local_copy(gfal2_context_t context, gfalt_params_t params,
 
                 // Make sure we don't have to cancel
                 if (gfal2_is_canceled(context)) {
-                    g_set_error(&tmp_err_out, scope_local_copy.id(),
+                    g_set_error(&tmp_err_out, local_copy_domain,
                     ECANCELED, "Transfer canceled");
                     break;
                 }
                 // Timed-out?
                 else if (time(NULL) >= timeout) {
-                    g_set_error(&tmp_err_out, scope_local_copy.id(),
+                    g_set_error(&tmp_err_out, local_copy_domain,
                     ETIMEDOUT, "Transfer canceled because the timeout expired");
                     break;
                 }
@@ -59,19 +59,25 @@ void perform_local_copy(gfal2_context_t context, gfalt_params_t params,
     }
 
     if (tmp_err_src) {
-        g_set_error(&tmp_err_out, scope_local_copy.id(), tmp_err_src->code,
+        gfal2_set_error(&tmp_err_out, local_copy_domain, tmp_err_src->code,
                 "Local transfer error on SRC %s : %s", src.c_str(),
                 tmp_err_src->message);
         g_clear_error(&tmp_err_src);
     }
     else if (tmp_err_dst) {
-        g_set_error(&tmp_err_out, scope_local_copy.id(), tmp_err_dst->code,
+        g_set_error(&tmp_err_out, local_copy_domain, tmp_err_dst->code,
                 "Local transfer error on DST %s : %s", dst.c_str(),
                 tmp_err_dst->message);
         g_clear_error(&tmp_err_dst);
     }
-    if (tmp_err_out)
-        throw Glib::Error(tmp_err_out);
 
     gfal_log(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::start_local_copy ");
+
+    if (tmp_err_out != NULL) {
+        gfal2_propagate_prefixed_error(error, tmp_err_out, __func__);
+        return -1;
+    }
+    else {
+        return 0;
+    }
 }
