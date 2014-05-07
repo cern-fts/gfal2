@@ -14,7 +14,6 @@
  */
 #include <common/gfal_common_internal.h>
 #include <common/gfal_common_plugin.h>
-#include <exceptions/gerror_to_cpp.h>
 #include <transfer/gfal_transfer_internal.h>
 #include <transfer/gfal_transfer_types_internal.h>
 
@@ -23,7 +22,7 @@ static GQuark scope_copy_domain = g_quark_from_static_string("FileCopy::start_co
 
 
 static const plugin_filecopy_call find_copy_plugin(gfal2_context_t context,
-        const std::string & src, const std::string & dst, void** plugin_data,
+        const char* src, const char* dst, void** plugin_data,
         GError** error)
 {
     GError * tmp_err = NULL;
@@ -42,7 +41,7 @@ static const plugin_filecopy_call find_copy_plugin(gfal2_context_t context,
         if (check_call != NULL) {
             gboolean compatible;
             if ((compatible = check_call(p_list->plugin_data, context,
-                    src.c_str(), dst.c_str(), GFAL_FILE_COPY)) == TRUE) {
+                    src, dst, GFAL_FILE_COPY)) == TRUE) {
                 *plugin_data = p_list->plugin_data;
                 resu = p_list->plugin_api->copy_file;
                 break;
@@ -57,7 +56,7 @@ static const plugin_filecopy_call find_copy_plugin(gfal2_context_t context,
 
 
 static int perform_copy(gfal2_context_t context, gfalt_params_t params,
-        const std::string & src, const std::string & dst,
+        const char* src, const char* dst,
         GError** error)
 {
     gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::FileCopy ");
@@ -74,14 +73,12 @@ static int perform_copy(gfal2_context_t context, gfalt_params_t params,
             }
             else {
                 gfal2_set_error(error, scope_copy_domain, EPROTONOSUPPORT, __func__,
-                        "No plugin supports a transfer from %s to %s, and local streaming is disabled",
-                        src.c_str(), dst.c_str());
+                        "No plugin supports a transfer from %s to %s, and local streaming is disabled", src, dst);
                 res = -1;
             }
         }
         else {
-            res = p_copy(plugin_data, context, params, src.c_str(), dst.c_str(),
-                    &tmp_err);
+            res = p_copy(plugin_data, context, params, src, dst, &tmp_err);
         }
     }
 

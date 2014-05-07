@@ -27,6 +27,6 @@
 extern "C" void gfalt_params_handle_init(gfalt_params_t  handle, GError ** err);
 
 int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
-        const std::string & src, const std::string & dst, GError** error);
+        const char* src, const char* dst, GError** error);
 
 #endif //_GFAL2_TRANSFER_INTERNAL_
