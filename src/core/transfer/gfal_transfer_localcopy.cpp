@@ -186,7 +186,8 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
     char checksum_type[1024];
     char user_checksum[1024];
     char source_checksum[1024];
-    gboolean is_checksum_enabled = gfalt_get_checksum_check(params, NULL);
+    gboolean is_strict_mode = gfalt_get_strict_copy_mode(params, NULL);
+    gboolean is_checksum_enabled = !is_strict_mode && gfalt_get_checksum_check(params, NULL);
 
     // Source checksum
     if (is_checksum_enabled) {
@@ -221,10 +222,12 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
     }
 
     // Remove if exists and overwrite is set
-    unlink_if_exists(context, params, dst, &nested_error);
-    if (nested_error != NULL) {
-        gfal2_propagate_prefixed_error(error, nested_error, __func__);
-        return -1;
+    if (!is_strict_mode) {
+        unlink_if_exists(context, params, dst, &nested_error);
+        if (nested_error != NULL) {
+            gfal2_propagate_prefixed_error(error, nested_error, __func__);
+            return -1;
+        }
     }
 
     // Do the transfer
