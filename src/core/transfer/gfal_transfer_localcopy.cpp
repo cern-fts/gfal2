@@ -3,6 +3,7 @@
 #include <gfal_api.h>
 #include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin_interface.h>
+#include <checksums/checksums.h>
 #include "gfal_transfer_plugins.h"
 #include "gfal_transfer_internal.h"
 
@@ -203,7 +204,7 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
             return -1;
         }
 
-        if (user_checksum[0] && strncmp(user_checksum, source_checksum, 1024) != 0) {
+        if (user_checksum[0] && gfal_compare_checksums(user_checksum, source_checksum, 1024) != 0) {
             gfal2_set_error(error, local_copy_domain, EIO, __func__,
                     "Source checksum and user-specified checksum do not match: %s != %s", source_checksum, user_checksum);
             return -1;
@@ -245,7 +246,7 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
             return -1;
         }
 
-        if (strncmp(source_checksum, destination_checksum, 1204) != 0) {
+        if (gfal_compare_checksums(source_checksum, destination_checksum, 1204) != 0) {
             gfal2_set_error(error, local_copy_domain, EIO, __func__,
                     "Source checksum and destination checksum do not match: %s != %s", source_checksum, destination_checksum);
             return -1;
