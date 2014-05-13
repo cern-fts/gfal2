@@ -92,13 +92,16 @@ srm_context_t gfal_srm_ifce_context_setup(gfal_context_t handle,
         gfal_log(GFAL_VERBOSE_DEBUG, " SRM connection timeout %d", timeout);
         context->timeout_conn = timeout;
 
-        const char* ucert = gfal2_get_opt_string(handle, "X509", "CERT", NULL);
-        const char* ukey = gfal2_get_opt_string(handle, "X509", "KEY", NULL);
+        gchar* ucert = gfal2_get_opt_string(handle, "X509", "CERT", NULL);
+        gchar* ukey = gfal2_get_opt_string(handle, "X509", "KEY", NULL);
         if (ucert) {
             gfal_log(GFAL_VERBOSE_DEBUG, " SRM using certificate %s", ucert);
             if (ukey)
                 gfal_log(GFAL_VERBOSE_DEBUG, " SRM using private key %s", ukey);
             srm_set_credentials(context, ucert, ukey);
+
+            g_free(ucert);
+            g_free(ukey);
         }
     }
     else {
