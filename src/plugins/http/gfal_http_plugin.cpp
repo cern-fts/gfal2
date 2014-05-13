@@ -3,6 +3,7 @@
 #include <davix.hpp>
 #include <errno.h>
 #include <common/gfal_common_err_helpers.h>
+#include <config/gfal_config.h>
 #include <logger/gfal_logger.h>
 
 using namespace Davix;
@@ -17,10 +18,8 @@ static const char* gfal_http_get_name(void)
 }
 
 
-GfalHttpInternal::GfalHttpInternal() :
-    context(),
-    posix(&context),
-    params()
+GfalHttpInternal::GfalHttpInternal(gfal_handle handle):
+    context(), posix(&context), params()
 {
     char * env_var = NULL;
     // Configure params
@@ -29,14 +28,13 @@ GfalHttpInternal::GfalHttpInternal() :
 
     params.setTransparentRedirectionSupport(true);
     params.setUserAgent("gfal2::http");
-    params.setClientCertCallbackX509(&gfal_http_authn_cert_X509, NULL);
+    params.setClientCertCallbackX509(&gfal_http_authn_cert_X509, handle);
 }
 
 
 
-GfalHttpPluginData::GfalHttpPluginData() :
-    davix(NULL),
-    _init_mux(g_mutex_new())
+GfalHttpPluginData::GfalHttpPluginData(gfal_handle handle):
+    davix(NULL), _init_mux(g_mutex_new()), handle(handle)
 {}
 
 GfalHttpPluginData::~GfalHttpPluginData()
@@ -50,7 +48,7 @@ GfalHttpInternal* gfal_http_get_plugin_context(gpointer plugin_data){
     if(data->davix == NULL){
         g_mutex_lock(data->_init_mux);
         if(data->davix == NULL){
-            data->davix = new GfalHttpInternal();
+            data->davix = new GfalHttpInternal(data->handle);
         }
         g_mutex_unlock(data->_init_mux);
     }
@@ -173,9 +171,24 @@ void davix2gliberr(const DavixError* daverr, GError** err)
 
 
 /// Authn implementation
-void gfal_http_get_ucert(std::string& ucert, std::string& ukey)
+void gfal_http_get_ucert(std::string& ucert, std::string& ukey, gfal_handle handle)
 {
     char default_proxy[64];
+
+    // Try user defined first
+    gchar *ucert_p = gfal2_get_opt_string(handle, "X509", "CERT", NULL);
+    gchar *ukey_p = gfal2_get_opt_string(handle, "X509", "KEY", NULL);
+    if (ucert_p) {
+        ucert.assign(ucert_p);
+        if (ukey_p)
+            ukey.assign(ukey_p);
+        else
+            ukey.assign(ucert_p);
+        g_free(ucert_p);
+        g_free(ukey_p);
+        return;
+    }
+    g_free(ukey_p);
 
     // Try explicit environment for proxy first
     if (getenv("X509_USER_PROXY")) {
@@ -203,7 +216,9 @@ int gfal_http_authn_cert_X509(void* userdata, const SessionInfo & info,
         X509Credential * cert, DavixError** err)
 {
     std::string ucert, ukey;
-    gfal_http_get_ucert(ucert, ukey);
+    gfal_handle handle = (gfal_handle)userdata;
+
+    gfal_http_get_ucert(ucert, ukey, handle);
 
     // No luck
     if (ucert.empty() || ukey.empty()) {
@@ -212,6 +227,9 @@ int gfal_http_authn_cert_X509(void* userdata, const SessionInfo & info,
                 "Could not set the user's proxy or certificate");
         return -1;
     }
+
+    gfal_log(GFAL_VERBOSE_DEBUG, "Using certificate: %s", ucert.c_str());
+    gfal_log(GFAL_VERBOSE_DEBUG, "Using private key: %s", ukey.c_str());
 
     // Set certificate
     int load_stat = cert->loadFromFilePEM(ukey, ucert, "", err);
@@ -233,13 +251,11 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal_handle handle,
   *err = NULL;
   memset(&http_plugin, 0, sizeof(http_plugin));
 
-
-
   // Bind metadata
   http_plugin.check_plugin_url = &gfal_http_check_url;
   http_plugin.getName          = &gfal_http_get_name;
   http_plugin.priority         = GFAL_PLUGIN_PRIORITY_DATA;
-  http_plugin.plugin_data      = new GfalHttpPluginData();
+  http_plugin.plugin_data      = new GfalHttpPluginData(handle);
   http_plugin.plugin_delete    = &gfal_http_delete;
 
   http_plugin.statG     = &gfal_http_stat;

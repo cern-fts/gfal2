@@ -10,7 +10,7 @@
 
 
 struct GfalHttpInternal {
-    GfalHttpInternal();
+    GfalHttpInternal(gfal_handle handle);
 
     Davix::Context       context;
     Davix::DavPosix      posix;
@@ -19,11 +19,12 @@ struct GfalHttpInternal {
 
 
 struct GfalHttpPluginData{
-    GfalHttpPluginData();
+    GfalHttpPluginData(gfal_handle);
     ~GfalHttpPluginData();
 
     GfalHttpInternal* davix;
     GMutex* _init_mux;
+    gfal_handle handle;
 };
 
 
