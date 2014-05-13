@@ -14,44 +14,20 @@
  */
 
 #include "gridftp_namespace.h"
+#include <exceptions/cpp_to_gerror.hpp>
 
-static Glib::Quark gfal_gridftp_scope_exist(){
-    return Glib::Quark ("GridftpModule::file_exist");
-}
 
-bool gridftp_module_file_exist(gfal2_context_t context, GridFTP_session* sess, const char * url){
-	
-	gfal_log(GFAL_VERBOSE_TRACE,"   -> [gridftp_module_file_exist]");
-	
-
-	std::auto_ptr<GridFTP_Request_state> req(new GridFTP_Request_state(sess, false));
-    GridFTPOperationCanceler canceler(context, req.get());
-
-    globus_byte_t *buffer = NULL;
-    globus_size_t buflen = 0;
-
-    req->start();
-	globus_result_t res = globus_ftp_client_mlst(
-				req->sess->get_ftp_handle(),
-				url,
-                req->sess->get_op_attr_ftp(),
-                &buffer, &buflen,
-				globus_basic_client_callback,
-				req.get());
-    gfal_globus_check_result(gfal_gridftp_scope_exist(), res);
-
-    int error_code = 0;
+bool GridftpModule::exists(const char* path)
+{
     try {
-        req->wait_callback(gfal_gridftp_scope_exist());
-        globus_free(buffer);
+        gfal_globus_stat_t gl_stat;
+        memset(&gl_stat,0, sizeof(gfal_globus_stat_t));
+        internal_globus_gass_stat(path, &gl_stat);
     }
     catch (Gfal::CoreException& e) {
-        error_code = e.code();
-        if (error_code != ENOENT)
+        if (e.code() != ENOENT)
             throw;
+        return false;
     }
-
-    gfal_log(GFAL_VERBOSE_TRACE,"   <- [gridftp_module_file_exist]");
-    return (error_code == 0);
-	
+    return true;
 }

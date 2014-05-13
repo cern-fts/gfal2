@@ -46,8 +46,10 @@ class GridftpModule
 		GridftpModule(GridFTPFactoryInterface *);
 		virtual ~GridftpModule();
 		
+		virtual bool exists(const char* path);
+
 		// Execute an access call, map on stat due to protocol restrictions
-		virtual void access(const char*  path, int mode);
+		virtual void access(const char* path, int mode);
 		
 		 // Execute a chmod query on path
 		virtual void chmod(const char* path, mode_t mode);
@@ -90,7 +92,7 @@ class GridftpModule
 
         void autoCleanFileCopy(gfalt_params_t params, GError* checked_error, const char* dst);
 
-		 // Execute a file transfer operation for gridftp URLs
+		// Execute a file transfer operation for gridftp URLs
 		virtual void filecopy(gfalt_params_t params, const char* src, const char* dst);
 		
 
