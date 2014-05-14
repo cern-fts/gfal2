@@ -65,7 +65,7 @@ static ssize_t gfal_srm_space_list(srm_context_t context,
 
     if (gfal_srm_external_call.srm_getspacetokens(context, &input, &output) < 0) {
         gfal_srm_report_error(context->errbuf, &tmp_err);
-        if (tmp_err->code == EINVAL && strstr(tmp_err->message, "No such space token")) {
+        if (tmp_err->code == EINVAL && !strstr(tmp_err->message, "[EINVAL] Invalid arguments")) {
             // This means there is no space token that belongs to the user, so we can just return empty
             g_error_free(tmp_err);
             tmp_err = NULL;
