@@ -11,6 +11,7 @@ static void json_putc(char* buff, size_t s_buff, char c, size_t* offset)
         buff[(*offset)++] = c;
 }
 
+
 static void json_puts(char* buff, size_t s_buff, const char* str, size_t* offset)
 {
     json_putc(buff, s_buff, '"', offset);
@@ -33,12 +34,25 @@ static void json_puts(char* buff, size_t s_buff, const char* str, size_t* offset
 }
 
 
+static void json_put_null(char* buff, size_t s_buff, size_t* offset)
+{
+    json_putc(buff, s_buff, 'n', offset);
+    json_putc(buff, s_buff, 'u', offset);
+    json_putc(buff, s_buff, 'l', offset);
+    json_putc(buff, s_buff, 'l', offset);
+}
+
+
 static void json_putattrs(char* buff, size_t s_buff, const char* attr, const char* value, size_t* offset)
 {
     json_puts(buff, s_buff, attr, offset);
     json_putc(buff, s_buff, ':', offset);
-    json_puts(buff, s_buff, value, offset);
+    if (value)
+        json_puts(buff, s_buff, value, offset);
+    else
+        json_put_null(buff, s_buff, offset);
 }
+
 
 static void json_putattri(char* buff, size_t s_buff, const char* attr, int64_t value, size_t* offset)
 {
