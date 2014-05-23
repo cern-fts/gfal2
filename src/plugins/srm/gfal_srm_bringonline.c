@@ -39,7 +39,7 @@
 
 
 static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_opt* opts,
-        const char* surl, time_t pintime, time_t timeout,
+        int nbfiles, const char** surl, time_t pintime, time_t timeout,
         char* token, size_t tsize, int async, GError** err)
 {
     struct srm_bringonline_input  input;
@@ -55,8 +55,8 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
         context->timeout_conn = timeout;
         context->timeout_ops  = timeout;
 
-        input.nbfiles        = 1;
-        input.surls          = (char**)&surl;
+        input.nbfiles        = nbfiles;
+        input.surls          = (char**)surl;
         input.desiredpintime = pintime;
         input.protocols      = gfal_srm_params_get_protocols(params);
         input.spacetokendesc = gfal_srm_params_get_spacetoken(params);
@@ -118,7 +118,31 @@ int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl,
 
     srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
     if (context != NULL) {
-        ret = gfal_srmv2_bring_online_internal(context, opts, surl,
+        ret = gfal_srmv2_bring_online_internal(context, opts, 1, &surl,
+                    pintime, timeout, token, tsize, async, &tmp_err);
+        gfal_srm_ifce_context_release(context);
+    }
+
+    if (ret != 0)
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+
+    return ret;
+}
+
+
+int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char** surls,
+        time_t pintime, time_t timeout, char* token, size_t tsize,
+        int async, GError** err)
+{
+    g_return_val_err_if_fail(ch && surls && *surls && token, EINVAL, err, "[gfal_srmv2_bring_onlineG] Invalid value handle and/or surl");
+    GError* tmp_err = NULL;
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+
+    int ret = -1;
+
+    srm_context_t context = gfal_srm_ifce_easy_context(opts, *surls, &tmp_err);
+    if (context != NULL) {
+        ret = gfal_srmv2_bring_online_internal(context, opts, nbfiles, surls,
                     pintime, timeout, token, tsize, async, &tmp_err);
         gfal_srm_ifce_context_release(context);
     }
@@ -132,7 +156,7 @@ int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl,
 
 
 static int gfal_srmv2_bring_online_poll_internal(srm_context_t context,
-        const char* surl, const char* token, GError ** err)
+		int nbfiles, const char** surls, const char* token, GError ** err)
 {
     struct srm_bringonline_input  input;
     struct srm_bringonline_output output;
@@ -142,8 +166,8 @@ static int gfal_srmv2_bring_online_poll_internal(srm_context_t context,
     memset(&input, 0, sizeof(input));
     memset(&output, 0, sizeof(output));
 
-    input.nbfiles = 1;
-    input.surls   = (char**)&surl;
+    input.nbfiles = nbfiles;
+    input.surls   = (char**)surls;
     output.token  = (char*)token;
 
     int ret = gfal_srm_external_call.srm_bring_online_status(context, &input, &output);
@@ -189,7 +213,30 @@ int gfal_srmv2_bring_online_pollG(plugin_handle ch, const char* surl,
 
     srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
     if (context != NULL) {
-        ret = gfal_srmv2_bring_online_poll_internal(context, surl, token, &tmp_err);
+        ret = gfal_srmv2_bring_online_poll_internal(context, 1, &surl, token, &tmp_err);
+        gfal_srm_ifce_context_release(context);
+    }
+
+    if (ret != 0)
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+
+    return ret;
+}
+
+
+
+int gfal_srmv2_bring_online_poll_listG(plugin_handle ch, int nbfiles, const char** surls,
+                                  const char* token, GError** err)
+{
+    g_return_val_err_if_fail(ch && surls && *surls && token, EINVAL, err, "[gfal_srmv2_bring_online_pollG] Invalid value handle and, surl or token");
+    GError* tmp_err = NULL;
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+
+    int ret = -1;
+
+    srm_context_t context = gfal_srm_ifce_easy_context(opts, *surls, &tmp_err);
+    if (context != NULL) {
+        ret = gfal_srmv2_bring_online_poll_internal(context, nbfiles, surls, token, &tmp_err);
         gfal_srm_ifce_context_release(context);
     }
 
@@ -202,7 +249,7 @@ int gfal_srmv2_bring_online_pollG(plugin_handle ch, const char* surl,
 
 
 static int gfal_srmv2_release_file_internal(srm_context_t context, gfal_srmv2_opt* opts,
-        const char* surl, const char* token, GError** err)
+        int nbfiles, const char** surl, const char* token, GError** err)
 {
     struct srm_releasefiles_input input;
     struct srmv2_filestatus      *statuses;
@@ -216,9 +263,9 @@ static int gfal_srmv2_release_file_internal(srm_context_t context, gfal_srmv2_op
               gfal_log(GFAL_VERBOSE_VERBOSE, "Release file without token");
 
           // Perform
-          input.nbfiles  = 1;
+          input.nbfiles  = nbfiles;
           input.reqtoken = NULL;
-          input.surls    = (char**)&surl;
+          input.surls    = (char**)surl;
           if(token)
               input.reqtoken = (char*)token;
 
@@ -260,7 +307,30 @@ int gfal_srmv2_release_fileG(plugin_handle ch, const char* surl,
 
     srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
     if (context != NULL) {
-        ret = gfal_srmv2_release_file_internal(context, opts, surl, token, &tmp_err);
+        ret = gfal_srmv2_release_file_internal(context, opts, 1, &surl, token, &tmp_err);
+        gfal_srm_ifce_context_release(context);
+    }
+
+    if (ret != 0)
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+
+    return ret;
+}
+
+
+
+int gfal_srmv2_release_file_listG(plugin_handle ch, int nbfiles, const char** surls,
+        const char* token, GError** err)
+{
+    g_return_val_err_if_fail(ch && surls && *surls && token, EINVAL, err, "[gfal_srmv2_release_fileG] Invalid value handle, surl or token");
+    GError* tmp_err = NULL;
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+
+    int ret = -1;
+
+    srm_context_t context = gfal_srm_ifce_easy_context(opts, *surls, &tmp_err);
+    if (context != NULL) {
+        ret = gfal_srmv2_release_file_internal(context, opts, nbfiles, surls, token, &tmp_err);
         gfal_srm_ifce_context_release(context);
     }
 

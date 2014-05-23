@@ -7,6 +7,7 @@ link_directories (${CMAKE_BINARY_DIR}/src)
 IF (UNIT_TESTS )
 
 IF (PLUGIN_SRM)
+
 	FILE(GLOB src_test_srm "*.c*")
 
 	link_directories (${PROJECT_BINARY_DIR}/src) 
