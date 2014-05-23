@@ -290,6 +290,7 @@ struct lfc_ops* gfal_load_lfc(const char* name, GError** err){
 	lfc_sym->sstrerror = &sstrerror;
 	lfc_sym->creatg= &lfc_creatg;
 	lfc_sym->delreplica = &lfc_delreplica;
+	lfc_sym->delfilesbyname = &lfc_delfilesbyname;
 	lfc_sym->aborttrans = &lfc_aborttrans;
 	lfc_sym->endtrans = &lfc_endtrans;
 	lfc_sym->getpath = &lfc_getpath;

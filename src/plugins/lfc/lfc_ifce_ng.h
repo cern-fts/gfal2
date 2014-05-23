@@ -25,6 +25,7 @@
  
 #define GFAL_MAX_LFCHOST_LEN 1024
 
+#define NSTYPE_LFC
 #include <lfc/lfc_api.h>
 #include <lfc/serrno.h>
 #include <Cthread_api.h>
@@ -47,8 +48,8 @@
 #define LFC_ENV_VAR_GROUP_PLUGIN "LFC PLUGIN"
 
 typedef struct _lfc_checksum{
-	char type[255];
-	char value[GFAL_URL_MAX_LEN];
+    char type[255];
+    char value[GFAL_URL_MAX_LEN];
 } lfc_checksum;
 
 
@@ -57,48 +58,49 @@ struct lfc_ops {
     char* lfc_conn_retry;
     char* lfc_conn_try_int;
     char* lfc_conn_timeout;
-	regex_t rex; // regular expression compiled 
-	gfal_handle handle;
-	GSimpleCache* cache_stat;
+    regex_t rex; // regular expression compiled 
+    gfal_handle handle;
+    GSimpleCache* cache_stat;
 #if defined(_REENTRANT) || defined(_THREAD_SAFE) || (defined(_WIN32) && (defined(_MT) || defined(_DLL)))
-	int*	(*get_serrno)(void);
+    int*    (*get_serrno)(void);
 #else
-	int	value_serrno;
+    int value_serrno;
 #endif
-	char	*(*sstrerror)(int);
-	int	(*addreplica)(const char *, struct lfc_fileid *, const char *, const char *, const char, const char, const char *, const char *);
-	int	(*creatg)(const char *, const char *, mode_t);
-	int	(*delreplica)(const char *, struct lfc_fileid *, const char *);
-	int	(*aborttrans)();
-	int	(*endtrans)();
-	int	(*getpath)(char *, u_signed64, char *);
-	int (*getlinks)(const char *, const char *, int *, struct lfc_linkinfo **);
-	int (*getreplica)(const char *, const char *, const char *, int *, struct lfc_filereplica **);
-	int (*setcomment) (const char * path, char * comment );
-	int (*getcomment) (const char * path, char * comment);
-	int	(*lstat)(const char *, struct lfc_filestat *);
-	int (*readlink)(const char *, char *, size_t);
-	int	(*mkdirg)(const char *, const char *, mode_t);
-	int	(*seterrbuf)(char *, int);
-	int	(*setfsizeg)(const char *, u_signed64, const char *, char *);
-	int	(*setfsize)(const char *, struct lfc_fileid *, u_signed64);
-	int	(*starttrans)(char *, char *);
-	int	(*statg)(const char *, const char *, struct lfc_filestatg *);
-	int	(*statr)(const char *, struct lfc_filestatg *);
-	int	(*symlink)(const char *, const char *);
-	int	(*unlink)(const char *);
-	int	(*access)(const char *, int);
-	int	(*chmod)(const char *, mode_t);
-	int (*closedir)(lfc_DIR*);
-	int	(*rename)(const char *, const char *);
-	lfc_DIR *(*opendirg)(const char *, const char *);
-	struct dirent* (*readdir)(lfc_DIR *);
-	struct lfc_direnstat* (*readdirx)(lfc_DIR *dirp);
-	int	(*rmdir)(const char *);
-	int (*startsess) (char *, char *); 
-	int (*endsess) ();
-	int (*Cthread_init)();
-	int (*_Cthread_addcid)(char *, int, char *, int, Cth_pid_t *, unsigned, void *(*)(void *), int);
+    char    *(*sstrerror)(int);
+    int (*addreplica)(const char *, struct lfc_fileid *, const char *, const char *, const char, const char, const char *, const char *);
+    int (*creatg)(const char *, const char *, mode_t);
+    int (*delreplica)(const char *, struct lfc_fileid *, const char *);
+    int (*delfilesbyname)(int nbfiles, const char **paths, int force, int *nbstatuses, int **statuses);
+    int (*aborttrans)();
+    int (*endtrans)();
+    int (*getpath)(char *, u_signed64, char *);
+    int (*getlinks)(const char *, const char *, int *, struct lfc_linkinfo **);
+    int (*getreplica)(const char *, const char *, const char *, int *, struct lfc_filereplica **);
+    int (*setcomment) (const char * path, char * comment );
+    int (*getcomment) (const char * path, char * comment);
+    int (*lstat)(const char *, struct lfc_filestat *);
+    int (*readlink)(const char *, char *, size_t);
+    int (*mkdirg)(const char *, const char *, mode_t);
+    int (*seterrbuf)(char *, int);
+    int (*setfsizeg)(const char *, u_signed64, const char *, char *);
+    int (*setfsize)(const char *, struct lfc_fileid *, u_signed64);
+    int (*starttrans)(char *, char *);
+    int (*statg)(const char *, const char *, struct lfc_filestatg *);
+    int (*statr)(const char *, struct lfc_filestatg *);
+    int (*symlink)(const char *, const char *);
+    int (*unlink)(const char *);
+    int (*access)(const char *, int);
+    int (*chmod)(const char *, mode_t);
+    int (*closedir)(lfc_DIR*);
+    int (*rename)(const char *, const char *);
+    lfc_DIR *(*opendirg)(const char *, const char *);
+    struct dirent* (*readdir)(lfc_DIR *);
+    struct lfc_direnstat* (*readdirx)(lfc_DIR *dirp);
+    int (*rmdir)(const char *);
+    int (*startsess) (char *, char *); 
+    int (*endsess) ();
+    int (*Cthread_init)();
+    int (*_Cthread_addcid)(char *, int, char *, int, Cth_pid_t *, unsigned, void *(*)(void *), int);
     int (*set_env)(const char*, const char*, int);
 };
 
