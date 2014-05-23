@@ -193,6 +193,7 @@ static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
             }
             else {
                 gfalt_propagate_prefixed_error(err, tmp_err, __func__, GFALT_ERROR_DESTINATION, "SRM_PUT_TURL");
+                return res;
             }
         }
     }
