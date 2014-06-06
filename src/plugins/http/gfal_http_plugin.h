@@ -38,9 +38,8 @@ extern GQuark http_plugin_domain;
 // Initializes a GError from a DavixError
 void davix2gliberr(const Davix::DavixError* daverr, GError** err);
 
-// X509 callback
-void gfal_http_get_ucert(std::string& ucert, std::string& ukey);
-int gfal_http_authn_cert_X509(void* userdata, const Davix::SessionInfo & info, Davix::X509Credential * cert, Davix::DavixError** err);
+// Cred setup
+void gfal_http_get_ucert(Davix::RequestParams & params, gfal_handle handle);
 
 // METADATA OPERATIONS
 void gfal_http_delete(plugin_handle plugin_data);

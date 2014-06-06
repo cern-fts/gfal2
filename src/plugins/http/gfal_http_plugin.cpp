@@ -21,21 +21,19 @@ static const char* gfal_http_get_name(void)
 GfalHttpInternal::GfalHttpInternal(gfal_handle handle):
     context(), posix(&context), params()
 {
-    char * env_var = NULL;
-    // Configure params
-    params.addCertificateAuthorityPath( // TODO : thix should be configurable with gfal_get_opt system
-                (env_var = (char*) g_getenv("X509_CERT_DIR"))?env_var:"/etc/grid-security/certificates/");
-
     params.setTransparentRedirectionSupport(true);
     params.setUserAgent("gfal2::http");
-    params.setClientCertCallbackX509(&gfal_http_authn_cert_X509, handle);
+    gfal_http_get_ucert(params, handle);
+    // enable grid mode
+    context.loadModule("grid");
 }
 
 
 
 GfalHttpPluginData::GfalHttpPluginData(gfal_handle handle):
     davix(NULL), _init_mux(g_mutex_new()), handle(handle)
-{}
+{
+}
 
 GfalHttpPluginData::~GfalHttpPluginData()
 {
@@ -171,75 +169,29 @@ void davix2gliberr(const DavixError* daverr, GError** err)
 
 
 /// Authn implementation
-void gfal_http_get_ucert(std::string& ucert, std::string& ukey, gfal_handle handle)
+void gfal_http_get_ucert(RequestParams & params, gfal_handle handle)
 {
-    char default_proxy[64];
+    std::string ukey, ucert;
+    DavixError* tmp_err=NULL;
 
     // Try user defined first
     gchar *ucert_p = gfal2_get_opt_string(handle, "X509", "CERT", NULL);
     gchar *ukey_p = gfal2_get_opt_string(handle, "X509", "KEY", NULL);
     if (ucert_p) {
         ucert.assign(ucert_p);
-        if (ukey_p)
-            ukey.assign(ukey_p);
-        else
-            ukey.assign(ucert_p);
-        g_free(ucert_p);
-        g_free(ukey_p);
-        return;
+        ukey= (ukey_p != NULL)?(std::string(ukey_p)):(ucert);
+
+        X509Credential cred;
+        if(cred.loadFromFilePEM(ukey,ucert,"", &tmp_err) <0){
+            gfal_log(GFAL_VERBOSE_NORMAL,
+                    "Could not load the user credentials: %s", tmp_err->getErrMsg().c_str());
+        }else{
+            params.setClientCertX509(cred);
+        }
     }
+    g_free(ucert_p);
     g_free(ukey_p);
-
-    // Try explicit environment for proxy first
-    if (getenv("X509_USER_PROXY")) {
-        ucert = ukey = getenv("X509_USER_PROXY");
-        return;
-    }
-
-    // Try with default location
-    snprintf(default_proxy, sizeof(default_proxy), "/tmp/x509up_u%d",
-            geteuid());
-
-    if (access(default_proxy, R_OK) == 0) {
-        ucert = ukey = default_proxy;
-        return;
-    }
-
-    // Last, try with X509_* environment
-    if (getenv("X509_USER_CERT"))
-        ucert = getenv("X509_USER_CERT");
-    if (getenv("X509_USER_KEY"))
-        ukey  = getenv("X509_USER_KEY");
 }
-
-int gfal_http_authn_cert_X509(void* userdata, const SessionInfo & info,
-        X509Credential * cert, DavixError** err)
-{
-    std::string ucert, ukey;
-    gfal_handle handle = (gfal_handle)userdata;
-
-    gfal_http_get_ucert(ucert, ukey, handle);
-
-    // No luck
-    if (ucert.empty() || ukey.empty()) {
-        DavixError::setupError(err, http_module_name,
-                StatusCode::AuthentificationError,
-                "Could not set the user's proxy or certificate");
-        return -1;
-    }
-
-    gfal_log(GFAL_VERBOSE_DEBUG, "Using certificate: %s", ucert.c_str());
-    gfal_log(GFAL_VERBOSE_DEBUG, "Using private key: %s", ukey.c_str());
-
-    // Set certificate
-    int load_stat = cert->loadFromFilePEM(ukey, ucert, "", err);
-    if (load_stat != 0) {
-        gfal_log(GFAL_VERBOSE_NORMAL,
-                "Could not load the credentials: %s", (*err)->getErrMsg().c_str());
-    }
-    return load_stat;
-}
-
 
 
 /// Init function
