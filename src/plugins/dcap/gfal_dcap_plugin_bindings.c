@@ -64,11 +64,11 @@ static void dcap_report_error(gfal_plugin_dcap_handle h, const char * func_name,
         GError** err)
 {
     char buff_error[2048];
-    const int status = *(h->ops->geterror());
+    int status = *(h->ops->geterror());
     g_strlcpy(buff_error, h->ops->strerror(status), 2048);
     // errno conversion
-    errno = dcap_errno_conversion(buff_error, errno);
-    gfal2_set_error(err, gfal2_get_plugin_dcap_quark(), errno, func_name,
+    status = dcap_errno_conversion(buff_error, status);
+    gfal2_set_error(err, gfal2_get_plugin_dcap_quark(), status, func_name,
             "Error reported by the external library dcap : %s, number : %d", buff_error, status);
 }
 
