@@ -149,9 +149,7 @@ int gfal_srm_cache_stat_add(plugin_handle ch, const char* surl, struct stat * va
     char buff_key[GFAL_URL_MAX_LEN];
     gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
     gfal_srm_construct_key(surl, GFAL_SRM_LSTAT_PREFIX, buff_key, GFAL_URL_MAX_LEN);
-    struct stat* st = g_new(struct stat, 1);
-    memcpy(st, value, sizeof(struct stat));
-    gsimplecache_add_item_kstr(opts->cache, buff_key, st);
+    gsimplecache_add_item_kstr(opts->cache, buff_key, value);
     return 0;
 }
 
