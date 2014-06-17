@@ -118,14 +118,14 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
     gfal_log(GFAL_VERBOSE_TRACE, " open src file : %s ", src);
     gfal_file_handle f_src = gfal_plugin_openG(context, src, O_RDONLY, 0, &nested_error);
     if (nested_error) {
-        gfal2_propagate_prefixed_error_extended(error, nested_error, __func__, "Could not open source");
+        gfal2_propagate_prefixed_error_extended(error, nested_error, __func__, "Could not open source: ");
         return -1;
     }
 
     gfal_file_handle f_dst = gfal_plugin_openG(context, dst, O_WRONLY | O_CREAT, 0755, &nested_error);
     if (nested_error) {
         gfal_plugin_closeG(context, f_src, NULL);
-        gfal2_propagate_prefixed_error_extended(error, nested_error, __func__, "Could not open destination");
+        gfal2_propagate_prefixed_error_extended(error, nested_error, __func__, "Could not open destination: ");
         return -1;
     }
 
