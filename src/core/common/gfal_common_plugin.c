@@ -198,8 +198,9 @@ gfal_plugin_interface* gfal_search_plugin_with_name(gfal_handle handle, const ch
 }
 
 //  load the gfal_plugins in the listed library
-static int gfal_module_load(gfal_handle handle, char* module_name, GError** err){
-	void* dlhandle = dlopen(module_name, RTLD_LAZY);
+static int gfal_module_load(gfal_handle handle, char* module_name, GError** err)
+{
+	void* dlhandle = dlopen(module_name, RTLD_NOW);
 	GError * tmp_err=NULL;
 	int ret = -1;
 	if (dlhandle==NULL)
