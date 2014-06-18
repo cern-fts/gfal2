@@ -70,12 +70,23 @@ struct GridFTP_session_implem : public GridFTP_session{
     {   }
 
     virtual ~GridFTP_session_implem(){
-        if(_sess != NULL){
-            clean();
-            if(_isDirty)
-                this->purge();
-            else
-                factory->gfal_globus_ftp_release_handle_internal(this);
+        try {
+            if(_sess != NULL){
+                clean();
+                if(_isDirty)
+                    this->purge();
+                else
+                    factory->gfal_globus_ftp_release_handle_internal(this);
+            }
+        }
+        catch (const std::exception& e) {
+            gfal_log(GFAL_VERBOSE_NORMAL,
+                     "Caught an exception inside ~GridFTP_session_implem()!! %s",
+                     e.what());
+        }
+        catch (...) {
+            gfal_log(GFAL_VERBOSE_NORMAL,
+                     "Caught an unknown exception inside ~GridFTP_session_implem()!!");
         }
     }
 	
@@ -306,20 +317,19 @@ GridFTP_Request_state::GridFTP_Request_state(GridFTP_session * s, bool own_sessi
 GridFTP_Request_state::~GridFTP_Request_state()
 {
     try {
-        if(req_status == GRIDFTP_REQUEST_RUNNING)
-            cancel_operation(gfal_gridftp_scope_req_state(), "ReqState Destroyer");
+        if (req_status == GRIDFTP_REQUEST_RUNNING)
+            cancel_operation(gfal_gridftp_scope_req_state(),
+                    "ReqState Destroyer");
         Glib::RWLock::WriterLock l(mux_req_state);
-        if(!own_session)
+        if (!own_session)
             sess.release(); // cancel the automatic memory management
-    }
-    catch (const std::exception& e) {
+    } catch (const std::exception& e) {
         gfal_log(GFAL_VERBOSE_NORMAL,
-                 "Caught an exception inside ~GridFTP_Request_state()!! %s",
-                 e.what());
-    }
-    catch (...) {
-            gfal_log(GFAL_VERBOSE_NORMAL,
-                     "Caught an unknown exception inside ~GridFTP_Request_state()!!");
+                "Caught an exception inside ~GridFTP_Request_state()!! %s",
+                e.what());
+    } catch (...) {
+        gfal_log(GFAL_VERBOSE_NORMAL,
+                "Caught an unknown exception inside ~GridFTP_Request_state()!!");
     }
 }
 
@@ -389,8 +399,19 @@ GridFTP_session* GridFTPFactory::get_recycled_handle(const std::string & hostnam
 
 GridFTPFactory::~GridFTPFactory()
 {
-    Glib::Mutex::Lock l(mux_cache);
-	clear_cache();
+    try {
+        Glib::Mutex::Lock l(mux_cache);
+        clear_cache();
+    }
+    catch (const std::exception & e) {
+        gfal_log(GFAL_VERBOSE_NORMAL,
+                 "Caught an exception inside ~GridFTPFactory()!! %s",
+                 e.what());
+    }
+    catch (...) {
+        gfal_log(GFAL_VERBOSE_NORMAL,
+                 "Caught an unknown exception inside ~GridFTPFactory()!!");
+    }
 }
 
 gfal_handle GridFTPFactory::get_handle(){
@@ -685,12 +706,23 @@ void GridFTP_stream_state::wait_callback_stream(const Glib::Quark & scope){
 
 
 GridFTP_stream_state::~GridFTP_stream_state(){
-    if(req_status == GRIDFTP_REQUEST_RUNNING){
-        cancel_operation(gfal_gridftp_scope_req_state(), "ReqStream Destroyer");
-        poll_callback(gfal_gridftp_scope_req_state());
-	}
-    while(this->stream_status == GRIDFTP_REQUEST_RUNNING )
-        usleep(1);
+    try {
+        if(req_status == GRIDFTP_REQUEST_RUNNING){
+            cancel_operation(gfal_gridftp_scope_req_state(), "ReqStream Destroyer");
+            poll_callback(gfal_gridftp_scope_req_state());
+        }
+        while(this->stream_status == GRIDFTP_REQUEST_RUNNING )
+            usleep(1);
+    }
+    catch (const std::exception & e) {
+        gfal_log(GFAL_VERBOSE_NORMAL,
+                 "Caught an exception inside ~GridFTP_stream_state()!! %s",
+                 e.what());
+    }
+    catch (...) {
+        gfal_log(GFAL_VERBOSE_NORMAL,
+                 "Caught an unknown exception inside ~GridFTP_stream_state()!!");
+    }
 }
 
 
