@@ -35,19 +35,20 @@ int main(int argc, char **argv)
     }
 
 	for(i=2; i < argc; ++i){
-		printf ("Checking initial right of %s  ...\n", file);		
+		printf ("Checking initial right of %s  ...\n", buff);
         if (gfal_stat (buff, &initial_stat) < 0) {
 			gfal_posix_check_error();
 			g_assert_not_reached();
 		}
 	    printf ("initial right  0%o ...\n", initial_stat.st_mode);		
 
+	    errno = 0;
 		mode = (mode_t) strtol (argv[i], NULL, 8);
 		if (errno > 0) {
 			perror ("strtol");
 			exit (1);
 		}
-		printf ("Changing mode of '%s' to %o ...\n", file, mode);
+		printf ("Changing mode of '%s' to %o ...\n", buff, mode);
 		
         if (gfal_chmod (buff, mode) < 0) {
 			gfal_posix_check_error();

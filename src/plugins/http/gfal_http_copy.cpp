@@ -40,13 +40,33 @@ static bool is_supported_scheme(const char* url)
 }
 
 
-static bool is_http_3rdcopy_disabled(gfal_context_t context)
+static bool is_http_3rdcopy_enabled(gfal_context_t context)
 {
     GError *err = NULL;
     bool enabled = gfal2_get_opt_boolean(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", &err);
     if (err)
         g_error_free(err);
-    return !enabled;
+    return enabled;
+}
+
+
+static int gfal_http_exists(plugin_handle plugin_data,
+        const char* url, GError** err)
+{
+    GError *nestedError = NULL;
+    int access_stat = gfal_http_access(plugin_data, url, F_OK, &nestedError);
+
+    if (access_stat == 0) {
+        return 1;
+    }
+    else if (nestedError->code == ENOENT) {
+        g_error_free(nestedError);
+        return 0;
+    }
+    else {
+        gfalt_propagate_prefixed_error(err, nestedError, __func__, "", "");
+        return -1;
+    }
 }
 
 
@@ -55,16 +75,15 @@ static int gfal_http_copy_overwrite(plugin_handle plugin_data,
 {
     GError *nestedError = NULL;
 
-    if (!gfalt_get_replace_existing_file(params,NULL))
-        return 0;
+    int exists = gfal_http_exists(plugin_data, dst, &nestedError);
 
-    int exists = gfal_http_access(plugin_data, dst, F_OK, &nestedError);
+    if (exists > 0) {
+        if (!gfalt_get_replace_existing_file(params,NULL)) {
+            gfalt_set_error(err, http_plugin_domain, EEXIST, __func__,
+                    GFALT_ERROR_DESTINATION, GFALT_ERROR_EXISTS, "The destination file exists and overwrite is not enabled");
+            return -1;
+        }
 
-    if (exists < 0) {
-        gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_OVERWRITE);
-        return -1;
-    }
-    else if (exists == 1) {
         gfal_http_unlinkG(plugin_data, dst, &nestedError);
         if (nestedError) {
             gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_OVERWRITE);
@@ -76,9 +95,14 @@ static int gfal_http_copy_overwrite(plugin_handle plugin_data,
         plugin_trigger_event(params, http_plugin_domain, GFAL_EVENT_DESTINATION,
                              GFAL_EVENT_OVERWRITE_DESTINATION, "Deleted %s", dst);
     }
-    else {
+    else if (exists == 0) {
         gfal_log(GFAL_VERBOSE_DEBUG, "Source does not exist");
     }
+    else if (exists < 0) {
+        gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_OVERWRITE);
+        return -1;
+    }
+
     return 0;
 }
 
@@ -114,7 +138,7 @@ static int gfal_http_copy_make_parent(plugin_handle plugin_data,
         return -1;
     }
 
-    int exists = gfal_http_access(plugin_data, parent, F_OK, &nestedError);
+    int exists = gfal_http_exists(plugin_data, parent, &nestedError);
     // Error
     if (exists < 0) {
         gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_PARENT);
@@ -172,7 +196,7 @@ static int gfal_http_copy_checksum(gfal2_context_t context,
 
     if (!dst) {
         if (checksum_value[0] && gfal_compare_checksums(src_checksum, checksum_value, sizeof(checksum_value)) != 0) {
-            gfalt_set_error(err, http_plugin_domain, EINVAL, __func__, GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM,
+            gfalt_set_error(err, http_plugin_domain, EIO, __func__, GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM,
                             "Source and user-defined %s do not match (%s != %s)",
                             checksum_type, src_checksum, checksum_value);
             return -1;
@@ -194,7 +218,7 @@ static int gfal_http_copy_checksum(gfal2_context_t context,
         }
 
         if (gfal_compare_checksums(src_checksum, dst_checksum, sizeof(dst_checksum)) != 0) {
-            gfalt_set_error(err, http_plugin_domain, EINVAL, __func__, GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM,
+            gfalt_set_error(err, http_plugin_domain, EIO, __func__, GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM,
                             "Source and destination %s do not match (%s != %s)",
                             checksum_type, src_checksum, dst_checksum);
             return -1;
@@ -443,7 +467,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
                          "%s => %s", src, dst);
 
-    if (!is_supported_scheme(src) || is_http_3rdcopy_disabled(context)) {
+    if (!is_supported_scheme(src) || !is_http_3rdcopy_enabled(context)) {
         gfal_http_streamed_copy(context, davix, src, dst, params, &nested_error);
     }
     else {
@@ -455,7 +479,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          "%s => %s", src, dst);
 
     if (nested_error != NULL) {
-        gfalt_propagate_prefixed_error(err, nested_error, __func__, GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM);
+        gfalt_propagate_prefixed_error(err, nested_error, __func__, GFALT_ERROR_TRANSFER, "");
         return gfal_http_copy_cleanup(plugin_data, dst, err);
     }
 

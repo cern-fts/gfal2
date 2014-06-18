@@ -335,6 +335,48 @@ int gfal2_release_file(gfal2_context_t context, const char* path,
                        const char* token, GError ** err);
 
 
+//TODO
+
+///  @brief Bring online a file
+///
+///  @param context : gfal2 handle, see \ref gfal2_context_new
+///  @param nbfiles : number of files
+///  @param paths : urls of files
+///  @param pintime : pin time
+///  @param timeout : timeout
+///  @param token : The token will be put in the buffer pointed by this
+///  @param async: Asynchronous request (does not block if != 0)
+///  @param err : GError error report
+///  @return 0 if the request has been queued, > 0 if the file is pinned, < 0 on error
+///
+int gfal2_bring_online_list(gfal2_context_t context, int nbfiles, const char** paths,
+                       time_t pintime, time_t timeout,
+                       char* token, size_t tsize,
+                       int async,
+                       GError ** err);
+
+///  @brief Check for a bring online request
+///
+///  @param context : gfal2 handle, see \ref gfal2_context_new
+///  @param nbfiles : number of files
+///  @param paths : urls of files
+///  @param token : As set by gfal2_bring_online
+///  @param err : GError error report
+///  @return 0 if the request is queued, > 0 if the file is pinned, < 0 on error
+///
+int gfal2_bring_online_poll_list(gfal2_context_t context, int nbfiles, const char** paths,
+                            const char* token, GError ** err);
+
+///  @brief Release a file
+int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char** paths,
+                       const char* token, GError ** err);
+
+
+
+
+
+
+
 /////////////////////////////////////////////////////
 ///////////// R/W operations
 /////////////////////////////////////////////////////

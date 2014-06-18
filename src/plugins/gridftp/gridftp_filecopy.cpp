@@ -36,6 +36,9 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#include <exceptions/gerror_to_cpp.h>
+#include <exceptions/cpp_to_gerror.hpp>
+
 static Glib::Quark gfal_gridftp_scope_filecopy(){
     return Glib::Quark("GridFTP::Filecopy");
 }
@@ -108,20 +111,21 @@ const char * gridftp_perf_marker_timeout_config = "PERF_MARKER_TIMEOUT";
 const char * gridftp_skip_transfer_config       = "SKIP_SOURCE_CHECKSUM";
 const char * gridftp_enable_udt                 = "ENABLE_UDT";
 
-void gridftp_filecopy_delete_existing(gfal2_context_t context,
-        GridFTP_session * sess, gfalt_params_t params, const char * url)
+// return 1 if deleted something
+int gridftp_filecopy_delete_existing(GridftpModule* module,
+        gfalt_params_t params, const char * url)
 {
     const bool replace = gfalt_get_replace_existing_file(params, NULL);
-    bool exist = gridftp_module_file_exist(context, sess, url);
+    bool exist = module->exists(url);
     if (exist) {
-
         if (replace) {
             gfal_log(GFAL_VERBOSE_TRACE, " File %s already exist, delete it for override ....", url);
-            gridftp_unlink_internal(context, sess, url, false);
+            module->unlink(url);
             gfal_log(GFAL_VERBOSE_TRACE, " File %s deleted with success, proceed to copy ....", url);
             plugin_trigger_event(params, gfal_gsiftp_domain(),
                     GFAL_EVENT_DESTINATION, GFAL_EVENT_OVERWRITE_DESTINATION,
                     "Deleted %s", url);
+            return 1;
         }
         else {
             char err_buff[GFAL_ERRMSG_LEN];
@@ -130,20 +134,21 @@ void gridftp_filecopy_delete_existing(gfal2_context_t context,
                     EEXIST, GFALT_ERROR_DESTINATION, GFALT_ERROR_EXISTS);
         }
     }
-	
+	return 0;
 }
 
 // create the parent directory
-void gridftp_create_parent_copy(gfal2_context_t handle, gfalt_params_t params,
-                                    const char * gridftp_url){
+void gridftp_create_parent_copy(GridftpModule* module, gfalt_params_t params,
+        const char * gridftp_url)
+{
     const gboolean create_parent = gfalt_get_create_parent_dir(params, NULL);
     if(create_parent){
         gfal_log(GFAL_VERBOSE_TRACE, " -> [gridftp_create_parent_copy]");
-        GError * tmp_err=NULL;
         char current_uri[GFAL_URL_MAX_LEN];
         g_strlcpy(current_uri, gridftp_url, GFAL_URL_MAX_LEN);
         const size_t s_uri = strlen(current_uri);
         char* p_uri = current_uri + s_uri -1;
+
         while( p_uri > current_uri && *p_uri == '/' ){ // remove trailing '/'
             *p_uri = '\0';
              p_uri--;
@@ -155,24 +160,22 @@ void gridftp_create_parent_copy(gfal2_context_t handle, gfalt_params_t params,
             struct stat st;
             *p_uri = '\0';
 
-            gfal2_stat(handle, current_uri, &st, &tmp_err);
-
-            if (tmp_err && tmp_err->code != ENOENT)
-                Gfal::gerror_to_cpp(&tmp_err);
-            else if (tmp_err)
-                g_error_free(tmp_err);
-            else if (!S_ISDIR(st.st_mode))
-                throw Gfal::TransferException(gfal_gridftp_scope_filecopy(),
-                                          "The parent of the destination file exists, but it is not a directory",
-                                          ENOTDIR, GFALT_ERROR_DESTINATION);
-            else
+            try {
+                module->stat(current_uri, &st);
+                if (!S_ISDIR(st.st_mode))
+                    throw Gfal::TransferException(gfal_gridftp_scope_filecopy(),
+                            "The parent of the destination file exists, but it is not a directory",
+                            ENOTDIR, GFALT_ERROR_DESTINATION);
                 return;
+            }
+            catch (Gfal::CoreException& e) {
+                if (e.code() != ENOENT)
+                    throw;
+            }
 
-            tmp_err = NULL;
-            gfal_log(GFAL_VERBOSE_TRACE, "try to create directory %s", current_uri);
-            (void) gfal2_mkdir_rec(handle, current_uri, 0755, &tmp_err);
+            GError* tmp_err = NULL;
+            (void) gfal2_mkdir_rec(module->get_session_factory()->get_handle(), current_uri, 0755, &tmp_err);
             Gfal::gerror_to_cpp(&tmp_err);
-
         }else{
             throw Gfal::TransferException(gfal_gridftp_scope_filecopy(),
                     "Impossible to create directory " + std::string(current_uri) + " : invalid path",
@@ -337,10 +340,9 @@ static void gridftp_do_copy(GridFTPFactoryInterface* factory, gfalt_params_t par
     req.wait_callback(gfal_gridftp_scope_filecopy(), timeout);
 }
 
-static int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory, gfalt_params_t params,
-                                        const char* src, const char* dst)
+static int gridftp_filecopy_copy_file_internal(GridftpModule* module,
+        GridFTPFactoryInterface * factory, gfalt_params_t params, const char* src, const char* dst)
 {
-    using namespace Gfal::Transfer;
     GError * tmp_err=NULL;
 
     const time_t timeout = gfalt_get_timeout(params, &tmp_err);
@@ -348,6 +350,12 @@ static int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory
 
     const unsigned int nbstream = gfalt_get_nbstreams(params, &tmp_err); Gfal::gerror_to_cpp(&tmp_err);
     const guint64 tcp_buffer_size = gfalt_get_tcp_buffer_size(params, &tmp_err); Gfal::gerror_to_cpp(&tmp_err);
+
+    if( gfalt_get_strict_copy_mode(params, NULL) == false) {
+        // If 1, the destination was deleted. So the parent directory is there!
+        if (gridftp_filecopy_delete_existing(module, params, dst) == 0)
+            gridftp_create_parent_copy(module, params, dst);
+    }
 
     GridFTP_Request_state req(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(src)),
                               true, GRIDFTP_REQUEST_GASS);
@@ -357,11 +365,6 @@ static int gridftp_filecopy_copy_file_internal(GridFTPFactoryInterface * factory
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] setup gsiftp number of streams to %d", nbstream);
     sess->set_tcp_buffer_size(tcp_buffer_size);
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] setup gsiftp buffer size to %d", tcp_buffer_size);
-
-    if( gfalt_get_strict_copy_mode(params, NULL) == false){
-        gridftp_filecopy_delete_existing(factory->get_handle(), sess, params, dst);
-        gridftp_create_parent_copy(factory->get_handle(), params, dst);
-    }
 
     gboolean enable_udt_transfers = gfal2_get_opt_boolean(factory->get_handle(),
             GRIDFTP_CONFIG_GROUP, gridftp_enable_udt, NULL);
@@ -528,7 +531,7 @@ void GridftpModule::filecopy(gfalt_params_t params, const char* src, const char*
                              returnHostname(src).c_str(), src,
                              returnHostname(dst).c_str(), dst);
         try {
-            gridftp_filecopy_copy_file_internal(_handle_factory, params,
+            gridftp_filecopy_copy_file_internal(this, _handle_factory, params,
                                                 src, dst);
         }
         catch (Gfal::TransferException & e) {

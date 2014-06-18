@@ -142,6 +142,7 @@ static void test_enotdir(const char* test_root)
     // Create a file
     int fd = gfal_creat(valid_file, 0775);
     g_assert(fd >= 0);
+    gfal_write(fd, "1234", 4);
     g_assert(gfal_close(fd) == 0);
 
     if(gfal_rmdir(valid_file) == 0) {  // must ENOTDIR
@@ -155,6 +156,14 @@ static void test_enotdir(const char* test_root)
     g_assert(gfal_posix_code_error() == 0);
 
     gfal_unlink(valid_file);
+}
+
+static int is_dav(const char* surl)
+{
+    return strncmp(surl, "dav:", 4) == 0 ||
+           strncmp(surl, "davs:", 5) == 0 ||
+           strncmp(surl, "http:", 5) == 0 ||
+           strncmp(surl, "https:", 6) == 0;
 }
 
 int main(int argc, char **argv)
@@ -173,7 +182,12 @@ int main(int argc, char **argv)
 	test_enoent(test_root);
 	test_eexist(test_root);
 	test_eexist2(test_root);
-	test_nested(test_root);
+
+	// dav does not support chmod AND it will remove directories recursively,
+	// so skip this test
+	if (!is_dav(test_root))
+	    test_nested(test_root);
+
 	test_enotdir(test_root);
 	
     printf ("All is ok.\n");

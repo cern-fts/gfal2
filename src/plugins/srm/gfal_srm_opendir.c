@@ -33,7 +33,7 @@
 #include "gfal_srm_opendir.h"
 #include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_filedescriptor.h>
-#include "gfal_srm_stat.h"
+#include "gfal_srm_namespace.h"
 #include "gfal_srm_endpoint.h"
 #include "gfal_srm_internal_layer.h"
 
@@ -84,10 +84,10 @@ static void _parse_opendir_parameters(char* parameters, gfal_srm_opendir_handle 
     }
 }
 
-gfal_file_handle gfal_srm_opendir_internal(gfal_srmv2_opt* opts, char* endpoint,
+static gfal_file_handle gfal_srm_opendir_internal(srm_context_t context,
         const char* surl, GError** err)
 {
-    g_return_val_err_if_fail(opts && endpoint && surl, NULL, err,
+    g_return_val_err_if_fail(context && surl, NULL, err,
             "[gfal_srmv2_opendir_internal] invalid args");
 
     // As extra parameters may be passed separated with ';',
@@ -98,7 +98,7 @@ gfal_file_handle gfal_srm_opendir_internal(gfal_srmv2_opt* opts, char* endpoint,
     GError* tmp_err = NULL;
     gfal_file_handle resu = NULL;
     struct stat st;
-    int exist = gfal_statG_srmv2_internal(opts, &st, endpoint, real_surl, &tmp_err);
+    int exist = gfal_statG_srmv2_internal(context, &st, real_surl, &tmp_err);
 
     if (exist == 0) {
         if (S_ISDIR(st.st_mode)) {
@@ -111,7 +111,7 @@ gfal_file_handle gfal_srm_opendir_internal(gfal_srmv2_opt* opts, char* endpoint,
                 *p = '\0';
             }
 
-            g_strlcpy(h->endpoint, endpoint, GFAL_URL_MAX_LEN);
+            h->context = context;
             _parse_opendir_parameters(parameters, h);
             resu = gfal_file_handle_new2(gfal_srm_getName(), (gpointer) h, NULL,
                                          real_surl);
@@ -131,41 +131,30 @@ gfal_file_handle gfal_srm_opendir_internal(gfal_srmv2_opt* opts, char* endpoint,
 	
 
 
-gfal_file_handle gfal_srm_opendirG(plugin_handle ch, const char* surl, GError ** err){
+gfal_file_handle gfal_srm_opendirG(plugin_handle ch, const char* surl, GError ** err)
+{
 	g_return_val_err_if_fail(ch && surl, NULL, err, "[gfal_srm_opendirG] Invalid args");
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
 	gfal_file_handle resu = NULL;
-	char endpoint[GFAL_URL_MAX_LEN];
 	GError* tmp_err=NULL;
-	int ret = -1;
-	enum gfal_srm_proto srm_type;
 	
-	ret = gfal_srm_determine_endpoint(opts, surl, endpoint, GFAL_URL_MAX_LEN, &srm_type,  &tmp_err);
-	if( ret >=0 ){
-		if(srm_type == PROTO_SRMv2){
-			resu = gfal_srm_opendir_internal(opts, endpoint, surl, &tmp_err);
-		}else if (srm_type == PROTO_SRM){
-            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
-                    "support for SRMv1 is removed in 2.0, failure");
-			resu = NULL;
-		}else {
-		    gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
-		            "unknow version of the protocol SRM , failure");
-			resu = NULL;			
-		}
-		
+	srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+	if (context) {
+	    resu = gfal_srm_opendir_internal(context, surl, &tmp_err);
 	}
-	
-	if(tmp_err)
-		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
-	return resu;
+
+    if(tmp_err)
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+    return resu;
 }
 
 
-int gfal_srm_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err){
+int gfal_srm_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err)
+{
 	g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_srm_opendirG] Invalid args");
 	gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;	
 	//gfal_srm_external_call.srm_srmv2_mdfilestatus_delete(oh->srm_ls_resu, 1); --> disable because of error in memory management in srm-ifce
+	gfal_srm_ifce_context_release(oh->context);
 	g_free(oh);
     gfal_file_handle_delete(fh);
 	return 0;

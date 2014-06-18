@@ -27,62 +27,54 @@
 
 #include "gfal_srm.h"
 #include "gfal_srm_internal_ls.h"
-#include "gfal_srm_access.h"
+#include "gfal_srm_namespace.h"
 #include "gfal_srm_internal_layer.h" 
 #include "gfal_srm_endpoint.h"
 
 
 
-int gfal_statG_srmv2_internal(gfal_srmv2_opt* opts, struct stat* buf, const char* endpoint, const char* surl, GError** err){
-	return gfal_statG_srmv2__generic_internal(opts, buf, endpoint, surl, err);
+int gfal_statG_srmv2_internal(srm_context_t context, struct stat* buf, const char* surl, GError** err){
+	return gfal_statG_srmv2__generic_internal(context, buf, surl, err);
 }
 
 /*
  * stat call, for the srm interface stat and lstat are the same call !! the default behavior is similar to stat by default and ignore links
  * 
  * */
-int gfal_srm_statG(plugin_handle ch, const char* surl, struct stat* buf, GError** err){
-	g_return_val_err_if_fail( ch && surl && buf, -1, err, "[gfal_srm_statG] Invalid args in handle/surl/bugg");
+int gfal_srm_statG(plugin_handle ch, const char* surl, struct stat* buf, GError** err)
+{
+	g_return_val_err_if_fail( ch && surl && buf, -1, err, "[gfal_srm_statG] Invalid args in handle/surl/buf");
 	GError* tmp_err = NULL;
 	int ret =-1;
-	char full_endpoint[GFAL_URL_MAX_LEN];
 	char key_buff[GFAL_URL_MAX_LEN];
-	enum gfal_srm_proto srm_type;
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+
+	// Try cache first
 	gfal_srm_construct_key(surl, GFAL_SRM_LSTAT_PREFIX, key_buff, GFAL_URL_MAX_LEN);
-	
 	if (gsimplecache_take_one_kstr(opts->cache, key_buff, buf) == 0) {
         gfal_log(GFAL_VERBOSE_DEBUG,
                 " srm_statG -> value taken from the cache");
         ret = 0;
     }
+	// Ask server otherwise
     else {
-        ret = gfal_srm_determine_endpoint(opts, surl, full_endpoint,
-                GFAL_URL_MAX_LEN, &srm_type, &tmp_err);
-        if (ret >= 0) {
-            if (srm_type == PROTO_SRMv2) {
-                gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_statG] try to stat file %s", surl);
-                ret = gfal_statG_srmv2_internal(opts, buf, full_endpoint, surl,
-                        &tmp_err);
-                if (ret == 0) {
-                    gfal_log(GFAL_VERBOSE_TRACE, "   [gfal_srm_statG] store %s stat info in cache", surl);
-                    gfal_srm_cache_stat_add(ch, surl, buf);
-                }
+        srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+        if (context != NULL) {
+            gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_statG] try to stat file %s", surl);
+            ret = gfal_statG_srmv2_internal(context, buf, surl, &tmp_err);
+            if (ret == 0) {
+                gfal_log(GFAL_VERBOSE_TRACE, "   [gfal_srm_statG] store %s stat info in cache", surl);
+                gfal_srm_cache_stat_add(ch, surl, buf);
             }
-            else if (srm_type == PROTO_SRM) {
-                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
-                        "support for SRMv1 is removed in 2.0, failure");
-                ret = -1;
-            }
-            else {
-                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
-                        "unknow version of the protocol SRM , failure");
-                ret = -1;
-            }
-
+            gfal_srm_ifce_context_release(context);
+        }
+        else {
+            ret = -1;
         }
     }
-	if(tmp_err)
-		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
-	return ret;
+
+    if(tmp_err)
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+
+    return ret;
 }

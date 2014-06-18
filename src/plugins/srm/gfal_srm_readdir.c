@@ -30,7 +30,7 @@
 
 #include <common/gfal_common_err_helpers.h>
 
-#include "gfal_srm_readdir.h"
+#include "gfal_srm_namespace.h"
 #include "gfal_srm_opendir.h" 
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_internal_ls.h"
@@ -96,50 +96,47 @@ static int gfal_srm_readdir_internal(plugin_handle ch,
 	struct srm_ls_input input;
 	struct srm_ls_output output;
 	struct srmv2_mdfilestatus *srmv2_mdstatuses=NULL;
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
-	char errbuf[GFAL_ERRMSG_LEN]={0};
 	int ret =-1;
 	char* tab_surl[] = { (char*) oh->surl, NULL};
 
 	memset(&input, 0, sizeof(input));
 	memset(&output, 0, sizeof(output));
 	
-    if(  (context =  gfal_srm_ifce_context_setup(opts->handle, oh->endpoint, errbuf, GFAL_ERRMSG_LEN, &tmp_err)) != NULL){	// init context
-        input.nbfiles = 1;
-        input.surls = tab_surl;
-        input.numlevels = 1;
-        input.count = oh->max_count - oh->count;
-        input.offset = &oh->slice_offset;
+	context = oh->context;
 
-        oh->slice_index = 0;
+    input.nbfiles = 1;
+    input.surls = tab_surl;
+    input.numlevels = 1;
+    input.count = oh->max_count - oh->count;
+    input.offset = &oh->slice_offset;
 
-        /*
-         * Mind that srm_ls will modify the value pointed by input.offset, so even if it has some
-         * value, it will be reset to the offset of the next chunk if any!
-         * Why is it called input then? I don't know.
-         */
-        ret = gfal_srm_external_call.srm_ls(context, &input, &output);
+    oh->slice_index = 0;
 
-        if(ret >=0){
-            srmv2_mdstatuses = output.statuses;
-            if(srmv2_mdstatuses[0].status != 0){
-                gfal2_set_error(err, gfal2_get_plugin_srm_quark(), srmv2_mdstatuses->status, __func__,
-                        "Error reported from srm_ifce : %d %s",
-                        srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
-                resu = -1;
+    /*
+     * Mind that srm_ls will modify the value pointed by input.offset, so even if it has some
+     * value, it will be reset to the offset of the next chunk if any!
+     * Why is it called input then? I don't know.
+     */
+    ret = gfal_srm_external_call.srm_ls(context, &input, &output);
 
-            }else {
-                oh->srm_ls_resu = &srmv2_mdstatuses[0];
-                //cache system
-                resu = 0;
-            }
-        }else{
-            gfal_srm_report_error(errbuf, &tmp_err);
-            resu=-1;
+    if(ret >=0){
+        srmv2_mdstatuses = output.statuses;
+        if(srmv2_mdstatuses[0].status != 0){
+            gfal2_set_error(err, gfal2_get_plugin_srm_quark(), srmv2_mdstatuses->status, __func__,
+                    "Error reported from srm_ifce : %d %s",
+                    srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
+            resu = -1;
+
+        }else {
+            oh->srm_ls_resu = &srmv2_mdstatuses[0];
+            //cache system
+            resu = 0;
         }
-        gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
-        gfal_srm_ifce_context_release(context);
+    }else{
+        gfal_srm_report_error(context->errbuf, &tmp_err);
+        resu=-1;
     }
+    gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
 		
     G_RETURN_ERR(resu, tmp_err, err);
 }

@@ -4,8 +4,8 @@ cmake_minimum_required (VERSION 2.6)
 if (PLUGIN_HTTP)
     include     (CheckLibraryExists)
 
-    pkg_check_modules(DAVIX_PKG REQUIRED "davix>=0.0.20")
-    pkg_check_modules(DAVIX_COPY_PKG REQUIRED "davix_copy>=0.0.20")
+    pkg_check_modules(DAVIX_PKG REQUIRED "davix>=0.3.0")
+    pkg_check_modules(DAVIX_COPY_PKG REQUIRED "davix_copy>=0.3.0")
 
 
 

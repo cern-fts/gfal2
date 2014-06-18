@@ -37,6 +37,22 @@ int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, g
 int gfal_http_unlinkG(plugin_handle plugin_data, const char* url, GError** err){
     GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
+
+    // Note: in WebDAV DELETE works for directories and files, so check ourselves
+    // we are not unlinking a folder
+    struct stat st;
+    if (davix->posix.stat(&davix->params, url, &st, &daverr) != 0) {
+      davix2gliberr(daverr, err);
+      Davix::DavixError::clearError(&daverr);
+      return -1;
+    }
+
+    if (S_ISDIR(st.st_mode)) {
+        gfal2_set_error(err, http_plugin_domain, EISDIR, __func__,
+                  "Can not unlink a directory");
+        return -1;
+    }
+
     if (davix->posix.unlink(&davix->params, url, &daverr) != 0) {
       davix2gliberr(daverr, err);
       Davix::DavixError::clearError(&daverr);
@@ -50,6 +66,22 @@ int gfal_http_unlinkG(plugin_handle plugin_data, const char* url, GError** err){
 int gfal_http_rmdirG(plugin_handle plugin_data, const char* url, GError** err){
     GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
+
+    // Note: in WebDAV DELETE is recursive for directories, so check first if there is anything
+    // inside and fail in that case
+    struct stat st;
+    if (davix->posix.stat(&davix->params, url, &st, &daverr) != 0) {
+      davix2gliberr(daverr, err);
+      Davix::DavixError::clearError(&daverr);
+      return -1;
+    }
+
+    if (!S_ISDIR(st.st_mode)) {
+        gfal2_set_error(err, http_plugin_domain, ENOTDIR, __func__,
+                  "Can not rmdir a file");
+        return -1;
+    }
+
     if (davix->posix.rmdir(&davix->params, url, &daverr) != 0) {
       davix2gliberr(daverr, err);
       Davix::DavixError::clearError(&daverr);
@@ -187,6 +219,7 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
 {
     GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
+    std::string buffer_chk, algo_chk(check_type);
 
     if (start_offset != 0 || data_length != 0) {
         gfal2_set_error(err, http_plugin_domain, ENOTSUP, __func__,
@@ -194,48 +227,12 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
         return -1;
     }
 
-    Davix::HttpRequest*  request = davix->context.createRequest(url, &daverr);
-    Davix::RequestParams requestParams(davix->params);
-
-    request->setRequestMethod("HEAD");
-    request->addHeaderField("Want-Digest", check_type);
-    requestParams.setTransparentRedirectionSupport(true);
-    request->setParameters(requestParams);
-
-    request->executeRequest(&daverr);
-    if (daverr) {
-      davix2gliberr(daverr, err);
-      delete daverr;
-      return -1;
+    Davix::File f(davix->context, Davix::Uri(url));
+    if( f.checksum(&davix->params, buffer_chk, check_type, &daverr) <0 ){
+        davix2gliberr(daverr, err);
+        Davix::DavixError::clearError(&daverr);
     }
 
-    std::string digest;
-    request->getAnswerHeader("Digest", digest);
-    delete request;
-
-    if (digest.empty()) {
-        gfal2_set_error(err, http_plugin_domain, ENOTSUP, __func__,
-                    "No Digest header found for '%s'", url);
-        return -1;
-    }
-
-    size_t valueOffset = digest.find('=');
-    if (valueOffset == std::string::npos) {
-        gfal2_set_error(err, http_plugin_domain, ENOTSUP, __func__,
-                    "Malformed Digest header from '%s': %s", url, digest.c_str());
-        return -1;
-    }
-
-    std::string csumtype  = digest.substr(0, valueOffset);
-    std::string csumvalue = digest.substr(valueOffset + 1, std::string::npos);
-
-    if (strcasecmp(csumtype.c_str(), check_type) != 0) {
-        gfal2_set_error(err, http_plugin_domain, ENOTSUP, __func__,
-                    "Asked for checksum %s, got %s: %s", check_type, csumtype.c_str(), url);
-        return -1;
-    }
-
-    strncpy(checksum_buffer, csumvalue.c_str(), buffer_length);
-
+    g_strlcpy(checksum_buffer, buffer_chk.c_str(), buffer_length);
     return 0;
 }

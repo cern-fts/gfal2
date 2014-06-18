@@ -32,7 +32,7 @@
 #include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
 #include "gfal_srm_internal_layer.h"
-#include "gfal_srm_chmod.h"
+#include "gfal_srm_namespace.h"
 #include "gfal_srm_endpoint.h"
 #include "gfal_srm_internal_ls.h"
 
@@ -41,14 +41,16 @@
  *  convert a mode_t to a TPermissionMode, right dec and mask are used to get the good oct (mode & mask) >> right_dec
  *  WARNING : hard conversion mode, subject to problem if the TPermissionMode declaration begin to change !
  */
-static TPermissionMode gfal_srmv2_mode_t_to_TPermissionMode(mode_t mode, mode_t mask,  mode_t right_dec){
+static TPermissionMode gfal_srmv2_mode_t_to_TPermissionMode(mode_t mode, mode_t mask,  mode_t right_dec)
+{
 	return ( (mode & mask) >> right_dec);
 }
 
 /*
  * Do a translation of a chmod right to a srm right 
  * */
-static void gfal_srmv2_configure_set_permission(gfal_srmv2_opt* opts, const char* surl,  mode_t mode, struct srm_setpermission_input* perms_input){
+static void gfal_srmv2_configure_set_permission(const char* surl,  mode_t mode, struct srm_setpermission_input* perms_input)
+{
 	memset(perms_input, 0, sizeof(struct srm_setpermission_input));
 	perms_input->surl = (char*)surl;
 	perms_input->permission_type =SRM_PERMISSION_CHANGE;
@@ -56,56 +58,46 @@ static void gfal_srmv2_configure_set_permission(gfal_srmv2_opt* opts, const char
 	perms_input->other_permission= gfal_srmv2_mode_t_to_TPermissionMode(mode, 007, 0);
 }
 
-static int gfal_srmv2_chmod_internal(gfal_srmv2_opt* opts, char* endpoint, const char* path, mode_t mode, GError** err){
-	g_return_val_err_if_fail(opts && endpoint && path,-1,err,"[gfal_srmv2_chmod_internal] invalid args ");
+
+static int gfal_srmv2_chmod_internal(srm_context_t context, const char* path, mode_t mode, GError** err)
+{
+	g_return_val_err_if_fail(context && path,-1,err,"[gfal_srmv2_chmod_internal] invalid args ");
 			
 	GError* tmp_err=NULL;
-    srm_context_t context;
 	int ret=0;
 	struct srm_setpermission_input perms_input;
-	const int err_size = 2048;
-	
-	char errbuf[err_size] ; *errbuf='\0';
 		
 	// set the structures datafields	
-	gfal_srmv2_configure_set_permission(opts, path, mode, &perms_input);
+	gfal_srmv2_configure_set_permission(path, mode, &perms_input);
 
-    if(  (context =  gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_ERRMSG_LEN, &tmp_err)) != NULL){
-        if( (ret = gfal_srm_external_call.srm_setpermission(context , &perms_input)) < 0){
-            gfal_srm_report_error(errbuf, &tmp_err);
-        } else{
-             ret = 0;
-        }
-        gfal_srm_ifce_context_release(context);
+    if( (ret = gfal_srm_external_call.srm_setpermission(context , &perms_input)) < 0) {
+        gfal_srm_report_error(context->errbuf, &tmp_err);
     }
+    else {
+        ret = 0;
+    }
+
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
-int	gfal_srm_chmodG(plugin_handle ch, const char * path , mode_t mode, GError** err){
-	gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
-	GError* tmp_err=NULL;
-	int ret=-1;	
-	char full_endpoint[GFAL_URL_MAX_LEN];
-	enum gfal_srm_proto srm_types;
 
-    gfal_srm_cache_stat_remove(ch, path);
-	if((gfal_srm_determine_endpoint(opts, path, full_endpoint, GFAL_URL_MAX_LEN, &srm_types, &tmp_err)) == 0){		// check & get endpoint										
-		gfal_log(GFAL_VERBOSE_NORMAL, "[gfal_srm_chmodG] endpoint %s", full_endpoint);
+int	gfal_srm_chmodG(plugin_handle ch, const char * path , mode_t mode, GError** err)
+{
+    g_return_val_err_if_fail(ch && path, EINVAL, err, "[gfal_srm_chmodG] Invalid value handle and/or surl");
+    GError* tmp_err = NULL;
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
 
-		if (srm_types == PROTO_SRMv2){
-			ret = gfal_srmv2_chmod_internal(opts, full_endpoint, path, mode, &tmp_err);
-		} else if(srm_types == PROTO_SRM){
-		    gfal2_set_error(&tmp_err,gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
-		            "support for SRMv1 is removed in gfal 2.0, failure");
-		} else{
-		    gfal2_set_error(&tmp_err,gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, __func__,
-		            "unknow SRM protocol, failure ");
-		}		
-	}
+    int ret = -1;
 
-	if(tmp_err)
-		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
-	else 
-		errno =0;
-	return ret;			
+    srm_context_t context = gfal_srm_ifce_easy_context(opts, path, &tmp_err);
+    if (context != NULL) {
+        gfal_srm_cache_stat_remove(ch, path);
+        ret = gfal_srmv2_chmod_internal(context, path, mode, &tmp_err);
+        gfal_srm_ifce_context_release(context);
+    }
+
+    if (ret != 0)
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+
+    return ret;
 }

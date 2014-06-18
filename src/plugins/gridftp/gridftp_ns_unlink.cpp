@@ -15,6 +15,7 @@
 
 #include "gridftpmodule.h"
 #include "gridftp_namespace.h"
+#include <exceptions/cpp_to_gerror.hpp>
 
 static Glib::Quark gfal_gridftp_scope_unlink(){
     return Glib::Quark("GridftpModule::unlink");

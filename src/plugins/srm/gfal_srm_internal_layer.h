@@ -110,6 +110,13 @@ struct _gfal_srm_external_call{
     int (*srm_mv)(struct srm_context *context, struct srm_mv_input *input);
 
     int (*srm_abort_request)(struct srm_context *context, char *reqtoken);
+
+    // Space methods
+    int (*srm_getspacetokens)(struct srm_context *context, struct srm_getspacetokens_input *input,
+            struct srm_getspacetokens_output *output);
+
+    int (*srm_getspacemd)(struct srm_context *context,
+            struct srm_getspacemd_input *input,struct srm_spacemd **spaces);
 };
 
 extern struct _gfal_srm_external_call gfal_srm_external_call;
@@ -129,8 +136,6 @@ int gfal_srm_putTURLS(gfal_srmv2_opt* opts , char** surls, gfal_srm_result** res
 
 int gfal_srm_putdone(gfal_srmv2_opt* opts, char** surls, const char* token,  GError** err);
 
-int gfal_srm_unlinkG(plugin_handle ch, const char * path, GError** err);
-
 void gfal_srm_report_error(char* errbuff, GError** err);
 
 
@@ -139,4 +144,7 @@ srm_context_t gfal_srm_ifce_context_setup(gfal_context_t handle, const char* end
                                                 char* errbuff, size_t s_errbuff, GError** err);
 
 void gfal_srm_ifce_context_release(srm_context_t context);
+
+srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
+        const char* surl, GError** err);
 

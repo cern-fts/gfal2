@@ -24,7 +24,7 @@
  * Come with srm-ifce 2.0
  * */
 
-gfal_srm_params_t gfal_srm_params_new(gfal_srm_plugin_t handle, GError ** err );
+gfal_srm_params_t gfal_srm_params_new(gfal_srmv2_opt* handle, GError ** err );
 
 void gfal_srm_params_free(gfal_srm_params_t params);
 

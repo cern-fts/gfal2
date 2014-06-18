@@ -22,6 +22,11 @@ void gfal2_set_error(GError **err, GQuark domain, gint code,
 void gfal2_propagate_prefixed_error_extended(GError **dest, GError *src,
         const gchar *function, const gchar *format, ...)
 {
+    if (dest == NULL) {
+        g_error_free(src);
+        return;
+    }
+
     if (gfal_get_verbose() & GFAL_VERBOSE_DEBUG) {
         if (src->message[0] == '[')
             g_propagate_prefixed_error(dest, src, "[%s]", function);

@@ -17,7 +17,7 @@
 
 #include "gfal_srm_request.h"
 
-gfal_srm_params_t gfal_srm_params_new(gfal_srm_plugin_t handle, GError ** err ){
+gfal_srm_params_t gfal_srm_params_new(gfal_srmv2_opt* handle, GError ** err ){
 	gfal_srm_params_t res = g_new0(struct _gfal_srm_params,1);
     res->protocols = srm_get_turls_sup_protocol(handle->handle);
 	res->desiredpintime= handle->opt_srmv2_desiredpintime;

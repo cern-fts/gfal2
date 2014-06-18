@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 #include <memory>
+#include <fstream>
+#include <sstream>
 #include <uri/uri_util.h>
 #include <config/gfal_config.h>
 #include <cancel/gfal_cancel.h>
@@ -68,12 +70,23 @@ struct GridFTP_session_implem : public GridFTP_session{
     {   }
 
     virtual ~GridFTP_session_implem(){
-        if(_sess != NULL){
-            clean();
-            if(_isDirty)
-                this->purge();
-            else
-                factory->gfal_globus_ftp_release_handle_internal(this);
+        try {
+            if(_sess != NULL){
+                clean();
+                if(_isDirty)
+                    this->purge();
+                else
+                    factory->gfal_globus_ftp_release_handle_internal(this);
+            }
+        }
+        catch (const std::exception& e) {
+            gfal_log(GFAL_VERBOSE_NORMAL,
+                     "Caught an exception inside ~GridFTP_session_implem()!! %s",
+                     e.what());
+        }
+        catch (...) {
+            gfal_log(GFAL_VERBOSE_NORMAL,
+                     "Caught an unknown exception inside ~GridFTP_session_implem()!!");
         }
     }
 	
@@ -179,6 +192,38 @@ struct GridFTP_session_implem : public GridFTP_session{
     void disable_udt() {
         globus_ftp_client_operationattr_set_net_stack( &(_sess->operation_attr_ftp), "default");
     }
+
+    void set_credentials(const char* ucert, const char* ukey) {
+        std::stringstream buffer;
+        std::ifstream cert_stream(ucert);
+        if (cert_stream.bad())
+            throw Glib::Error(gfal_gridftp_scope_req_state(), errno, "Could not open the user certificate");
+        buffer << cert_stream.rdbuf();
+        if (ukey) {
+            std::ifstream key_stream(ukey);
+            if (key_stream.bad())
+                throw Glib::Error(gfal_gridftp_scope_req_state(), errno, "Could not open the user private key");
+            buffer << key_stream.rdbuf();
+        }
+
+        gss_buffer_desc_struct buffer_desc;
+        buffer_desc.value = g_strdup(buffer.str().c_str());
+        buffer_desc.length = buffer.str().size();
+
+        OM_uint32 minor_status, major_status;
+        gss_cred_id_t cred_id;
+        major_status = gss_import_cred(&minor_status, &cred_id,
+                                       GSS_C_NO_OID, 0, // 0 = Pass credentials; 1 = Pass path as X509_USER_PROXY=...
+                                       &buffer_desc, 0, NULL);
+        g_free(buffer_desc.value);
+
+        if (major_status != GSS_S_COMPLETE) {
+            std::stringstream err_buffer;
+            err_buffer << "Could not load the user credentials (" << major_status << ":" << minor_status << ")";
+            throw Glib::Error(gfal_gridftp_scope_req_state(), EINVAL, err_buffer.str());
+        }
+        globus_ftp_client_operationattr_set_authorization(&(_sess->operation_attr_ftp), cred_id, NULL, NULL, NULL, NULL);
+    }
 	
 	virtual globus_ftp_client_handle_t* get_ftp_handle(){
 		globus_result_t res = globus_gass_copy_get_ftp_handle(&(_sess->gass_handle), &(_sess->handle_ftp));
@@ -272,20 +317,19 @@ GridFTP_Request_state::GridFTP_Request_state(GridFTP_session * s, bool own_sessi
 GridFTP_Request_state::~GridFTP_Request_state()
 {
     try {
-        if(req_status == GRIDFTP_REQUEST_RUNNING)
-            cancel_operation(gfal_gridftp_scope_req_state(), "ReqState Destroyer");
+        if (req_status == GRIDFTP_REQUEST_RUNNING)
+            cancel_operation(gfal_gridftp_scope_req_state(),
+                    "ReqState Destroyer");
         Glib::RWLock::WriterLock l(mux_req_state);
-        if(!own_session)
+        if (!own_session)
             sess.release(); // cancel the automatic memory management
-    }
-    catch (const std::exception& e) {
+    } catch (const std::exception& e) {
         gfal_log(GFAL_VERBOSE_NORMAL,
-                 "Caught an exception inside ~GridFTP_Request_state()!! %s",
-                 e.what());
-    }
-    catch (...) {
-            gfal_log(GFAL_VERBOSE_NORMAL,
-                     "Caught an unknown exception inside ~GridFTP_Request_state()!!");
+                "Caught an exception inside ~GridFTP_Request_state()!! %s",
+                e.what());
+    } catch (...) {
+        gfal_log(GFAL_VERBOSE_NORMAL,
+                "Caught an unknown exception inside ~GridFTP_Request_state()!!");
     }
 }
 
@@ -355,8 +399,19 @@ GridFTP_session* GridFTPFactory::get_recycled_handle(const std::string & hostnam
 
 GridFTPFactory::~GridFTPFactory()
 {
-    Glib::Mutex::Lock l(mux_cache);
-	clear_cache();
+    try {
+        Glib::Mutex::Lock l(mux_cache);
+        clear_cache();
+    }
+    catch (const std::exception & e) {
+        gfal_log(GFAL_VERBOSE_NORMAL,
+                 "Caught an exception inside ~GridFTPFactory()!! %s",
+                 e.what());
+    }
+    catch (...) {
+        gfal_log(GFAL_VERBOSE_NORMAL,
+                 "Caught an unknown exception inside ~GridFTPFactory()!!");
+    }
 }
 
 gfal_handle GridFTPFactory::get_handle(){
@@ -450,6 +505,18 @@ GridFTP_session* GridFTPFactory::get_new_handle(const std::string & hostname){
     sess->set_dcau(dcau_param);
     sess->set_ipv6(ipv6);
     sess->set_delayed_pass(delay_passv);
+
+    gchar* ucert = gfal2_get_opt_string(_handle, "X509", "CERT", NULL);
+    gchar* ukey = gfal2_get_opt_string(_handle, "X509", "KEY", NULL);
+    if (ucert) {
+        gfal_log(GFAL_VERBOSE_TRACE," GSIFTP using certificate %s", ucert);
+        if (ukey)
+            gfal_log(GFAL_VERBOSE_TRACE," GSIFTP using private key %s", ukey);
+        sess->set_credentials(ucert, ukey);
+        g_free(ucert);
+        g_free(ukey);
+    }
+
 	return sess.release();
 }
 
@@ -639,12 +706,23 @@ void GridFTP_stream_state::wait_callback_stream(const Glib::Quark & scope){
 
 
 GridFTP_stream_state::~GridFTP_stream_state(){
-    if(req_status == GRIDFTP_REQUEST_RUNNING){
-        cancel_operation(gfal_gridftp_scope_req_state(), "ReqStream Destroyer");
-        poll_callback(gfal_gridftp_scope_req_state());
-	}
-    while(this->stream_status == GRIDFTP_REQUEST_RUNNING )
-        usleep(1);
+    try {
+        if(req_status == GRIDFTP_REQUEST_RUNNING){
+            cancel_operation(gfal_gridftp_scope_req_state(), "ReqStream Destroyer");
+            poll_callback(gfal_gridftp_scope_req_state());
+        }
+        while(this->stream_status == GRIDFTP_REQUEST_RUNNING )
+            usleep(1);
+    }
+    catch (const std::exception & e) {
+        gfal_log(GFAL_VERBOSE_NORMAL,
+                 "Caught an exception inside ~GridFTP_stream_state()!! %s",
+                 e.what());
+    }
+    catch (...) {
+        gfal_log(GFAL_VERBOSE_NORMAL,
+                 "Caught an unknown exception inside ~GridFTP_stream_state()!!");
+    }
 }
 
 

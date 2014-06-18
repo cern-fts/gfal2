@@ -747,26 +747,41 @@ char* lfc_resolve_guid(plugin_handle handle, const char* guid, GError** err){
     G_RETURN_ERR(res, tmp_err, err);
 }
 
-static int lfc_unlinkG(plugin_handle handle, const char* path, GError** err){
-	g_return_val_err_if_fail(path, -1, err, "[lfc_unlink] Invalid value in args handle/path/stat");	
-	GError* tmp_err=NULL;
-	struct lfc_ops* ops = (struct lfc_ops*) handle;	
-    char *url_path=NULL, *url_host=NULL;
-	int ret = -1;
+static int lfc_unlinkG(plugin_handle handle, const char* path, GError** err)
+{
+    g_return_val_err_if_fail(path, -1, err,
+            "[lfc_unlink] Invalid value in args handle/path/stat");
+    GError* tmp_err = NULL;
+    struct lfc_ops* ops = (struct lfc_ops*) handle;
+    char *url_path = NULL, *url_host = NULL;
+    int ret = -1;
 
-    if( ( ret = url_converter(handle, path, &url_host, &url_path, &tmp_err)) ==0){
-        ret= lfc_configure_environment(ops, url_host, &tmp_err);
-        if(!tmp_err){
-                ret = ops->unlink(url_path);
-                if(ret != 0){
-                    int sav_errno = gfal_lfc_get_errno(ops);
-                    gfal2_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
-                            "Error report from LFC : %s", gfal_lfc_get_strerror(ops) );
-                }else{
-                    gsimplecache_remove_kstr(ops->cache_stat, url_path);	// remove the key associated in the buffer
-                    errno=0;
+    if ((ret = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
+        ret = lfc_configure_environment(ops, url_host, &tmp_err);
+        if (!tmp_err) {
+            int nreplies = 0;
+            int *replies = NULL;
+            ret = ops->delfilesbyname(1, (const char**)(&url_path), 1, &nreplies, &replies);
+            if (ret != 0 || (nreplies && replies[0] != 0)) {
+                int sav_errno = gfal_lfc_get_errno(ops);
+                if (sav_errno != 0) {
+                    gfal2_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(),
+                            sav_errno, __func__, "Error report from LFC : %s",
+                            gfal_lfc_get_strerror(ops));
+                }
+                else {
+                    gfal2_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(),
+                            replies[0], __func__, "Error report from LFC : %s",
+                            ops->sstrerror(replies[0]));
+                    ret = -1;
                 }
             }
+            else {
+                gsimplecache_remove_kstr(ops->cache_stat, url_path); // remove the key associated in the buffer
+                errno = 0;
+            }
+            free(replies);
+        }
 
     }
     g_free(url_path);

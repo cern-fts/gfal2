@@ -16,6 +16,7 @@
 */
 
 #include <config/gfal_config.h>
+#include <exceptions/cpp_to_gerror.hpp>
 #include <globus_ftp_client.h>
 #include "gridftp_namespace.h"
 #include "gridftpwrapper.h"
@@ -52,7 +53,7 @@ void GridftpModule::stat(const char* path, struct stat * st){
 }
 
 void GridftpModule::access(const char*  path, int mode){
-	if(path== NULL)
+    if (path == NULL)
         throw Gfal::CoreException(gfal_gridftp_scope_stat(), "Invalid arguments path or stat ", EINVAL);
 		
 	gfal_log(GFAL_VERBOSE_TRACE," -> [Gridftp_stat_module::access] ");
@@ -383,6 +384,5 @@ extern "C" int gfal_gridftp_accessG(plugin_handle handle, const char* name, int 
 	CPP_GERROR_CATCH(&tmp_err);
 	gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_accessG]<-");
 	G_RETURN_ERR(ret, tmp_err, err);	
-	
 }
 

@@ -24,8 +24,6 @@
  * @date 21/12/2011
  * */
 
-
-
 #include <common/gfal_constants.h>
 #include <common/gfal_common_err_helpers.h> 
 
@@ -53,31 +51,25 @@ void gfal_srm_ls_memory_management(struct srm_ls_input* input, struct srm_ls_out
  *  concentrate the srm_ls logical in one point for stat, readdir, status, and access
  * 
  * */
-int gfal_srm_ls_internal(gfal_srmv2_opt* opts, const char* endpoint, 
+static int gfal_srm_ls_internal(srm_context_t context,
 						 struct srm_ls_input* input, struct srm_ls_output* output, 
 						 GError** err){
 	GError* tmp_err=NULL;
-    srm_context_t context;
-	
-	char errbuf[GFAL_ERRMSG_LEN]={0};	
 	int ret = -1;							
 
-    if( (context =  gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_ERRMSG_LEN, &tmp_err)) != NULL){
-        if( (ret = gfal_srm_external_call.srm_ls(context, input, output) ) < 0){
-            gfal_srm_report_error(errbuf, &tmp_err);
-            ret = -1;
-        }
-        gfal_srm_ifce_context_release(context);
+    if( (ret = gfal_srm_external_call.srm_ls(context, input, output) ) < 0){
+        gfal_srm_report_error(context->errbuf, &tmp_err);
+        ret = -1;
     }
 
 	G_RETURN_ERR(ret, tmp_err, err);										
 }
 
 
-int gfal_statG_srmv2__generic_internal(	gfal_srmv2_opt* opts, struct stat* buf, 
-										const char* endpoint, const char* surl, 
-										GError** err){
-	g_return_val_err_if_fail( opts && endpoint && surl 
+int gfal_statG_srmv2__generic_internal(srm_context_t context, struct stat* buf,
+        const char* surl,  GError** err)
+{
+	g_return_val_err_if_fail(context && surl
 								 && buf && (sizeof(struct stat) == sizeof(struct stat64)),
                                 -1, err, "[gfal_statG_srmv2_generic_internal] Invalid args handle/endpoint or invalid stat struct size");
 	GError* tmp_err=NULL;
@@ -94,7 +86,7 @@ int gfal_statG_srmv2__generic_internal(	gfal_srmv2_opt* opts, struct stat* buf,
 	input.offset = 0;
 	input.count = 0;
 	
-	ret = gfal_srm_ls_internal(opts, endpoint, &input, &output, &tmp_err);
+	ret = gfal_srm_ls_internal(context, &input, &output, &tmp_err);
 
 	if(ret >=0){
 		srmv2_mdstatuses = output.statuses;
@@ -115,10 +107,10 @@ int gfal_statG_srmv2__generic_internal(	gfal_srmv2_opt* opts, struct stat* buf,
 }
 
 
-int gfal_Locality_srmv2_generic_internal(	gfal_srmv2_opt* opts, 
-										const char* endpoint, const char* surl, TFileLocality* loc,
+int gfal_locality_srmv2_generic_internal(srm_context_t context,
+										const char* surl, TFileLocality* loc,
 										GError** err){
-	g_return_val_err_if_fail( opts && endpoint && surl && loc,
+	g_return_val_err_if_fail(context && surl && loc,
 								-1, err, "[gfal_statG_srmv2_generic_internal] Invalid args handle/endpoint or invalid stat struct size");
 	GError* tmp_err=NULL;
 	struct srm_ls_input input;
@@ -134,7 +126,7 @@ int gfal_Locality_srmv2_generic_internal(	gfal_srmv2_opt* opts,
 	input.offset = 0;
 	input.count = 0;
 	
-	ret = gfal_srm_ls_internal(opts, endpoint, &input, &output, &tmp_err);
+	ret = gfal_srm_ls_internal(context, &input, &output, &tmp_err);
 
 	if(ret >=0){
 		srmv2_mdstatuses = output.statuses;
@@ -157,9 +149,7 @@ int gfal_srm_cache_stat_add(plugin_handle ch, const char* surl, struct stat * va
     char buff_key[GFAL_URL_MAX_LEN];
     gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
     gfal_srm_construct_key(surl, GFAL_SRM_LSTAT_PREFIX, buff_key, GFAL_URL_MAX_LEN);
-    struct stat* st = g_new(struct stat, 1);
-    memcpy(st, value, sizeof(struct stat));
-    gsimplecache_add_item_kstr(opts->cache, buff_key, st);
+    gsimplecache_add_item_kstr(opts->cache, buff_key, value);
     return 0;
 }
 

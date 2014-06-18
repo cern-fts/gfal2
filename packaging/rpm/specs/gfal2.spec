@@ -2,7 +2,7 @@
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
 Name:				gfal2
-Version:			2.6.3
+Version:			2.6.4
 # https://fedoraproject.org/wiki/Packaging:NamingGuidelines#Release_Tag
 Release:			1%{?dist}
 Summary:			Grid file access library 2.0
@@ -43,7 +43,7 @@ BuildRequires:		dcap-devel
 #gridftp plugin dependencies
 BuildRequires:		globus-gass-copy-devel
 #http plugin dependencies
-BuildRequires:		davix-devel >= 0.2.5
+BuildRequires:		davix-devel >= 0.3.0
 #tests dependencies
 BuildRequires:		gtest-devel
 

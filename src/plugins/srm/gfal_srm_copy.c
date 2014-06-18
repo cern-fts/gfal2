@@ -30,11 +30,9 @@
 #include <uri/uri_util.h>
 
 #include "gfal_srm_getput.h"
-#include "gfal_srm_stat.h"
+#include "gfal_srm_namespace.h"
 #include "gfal_srm_url_check.h"
 #include "gfal_srm_internal_layer.h"
-#include "gfal_srm_checksum.h"
-#include "gfal_srm_mkdir.h"
 #include "gfal_srm_bringonline.h"
 
 
@@ -195,6 +193,7 @@ static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
             }
             else {
                 gfalt_propagate_prefixed_error(err, tmp_err, __func__, GFALT_ERROR_DESTINATION, "SRM_PUT_TURL");
+                return res;
             }
         }
     }
@@ -360,7 +359,9 @@ static void srm_force_unlink(plugin_handle handle,
         }
         g_error_free(unlink_err);
     }
-    gfal_log(GFAL_VERBOSE_VERBOSE, "Successfully removed destination surl after abort: %s", surl);
+    else {
+        gfal_log(GFAL_VERBOSE_VERBOSE, "Successfully removed destination surl after abort: %s", surl);
+    }
 }
 
 static void srm_rollback_put(plugin_handle handle,

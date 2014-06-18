@@ -15,9 +15,6 @@
 * limitations under the License.
 */
 
- 
- 
-
 #include <regex.h>
 #include <time.h> 
 #include <stdio.h>
@@ -30,10 +27,6 @@
 #include <common/gfal_common_plugin.h>
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_endpoint.h"
-
-
-
-
 
 
 static int gfal_srm_convert_filestatuses_to_srm_result(struct srmv2_pinfilestatus* statuses, char* reqtoken, int n, gfal_srm_result** resu, GError** err){
@@ -51,9 +44,11 @@ static int gfal_srm_convert_filestatuses_to_srm_result(struct srmv2_pinfilestatu
 	return 0;
 }
 
-int gfal_srmv2_get_global(gfal_srm_plugin_t handle, gfal_srm_params_t params, struct srm_context* context,
-						struct srm_preparetoget_input* input, gfal_srm_result** resu,  GError** err){
-	g_return_val_err_if_fail(handle != NULL && input != NULL && resu != NULL,-1,err,"[gfal_srmv2_get_global] tab null ");
+
+int gfal_srmv2_get_global(gfal_srmv2_opt* opts, gfal_srm_params_t params, srm_context_t context,
+						struct srm_preparetoget_input* input, gfal_srm_result** resu,  GError** err)
+{
+	g_return_val_err_if_fail(opts != NULL && input != NULL && resu != NULL,-1,err,"[gfal_srmv2_get_global] tab null ");
 
 	GError* tmp_err=NULL;
 	int ret=0;
@@ -78,9 +73,10 @@ int gfal_srmv2_get_global(gfal_srm_plugin_t handle, gfal_srm_params_t params, st
 }
 
 
-int gfal_srmv2_put_global(gfal_srm_plugin_t handle, gfal_srm_params_t params, struct srm_context* context,
-						struct srm_preparetoput_input* input, gfal_srm_result** resu,  GError** err){
-	g_return_val_err_if_fail(handle != NULL && input != NULL && resu != NULL,-1,err,"[gfal_srmv2_put_global] tab null ");
+int gfal_srmv2_put_global(gfal_srmv2_opt* opts, gfal_srm_params_t params, srm_context_t context,
+						struct srm_preparetoput_input* input, gfal_srm_result** resu,  GError** err)
+{
+	g_return_val_err_if_fail(opts != NULL && input != NULL && resu != NULL,-1,err, "[gfal_srmv2_put_global] tab null ");
 
 	GError* tmp_err=NULL;
 	int ret=0;
@@ -89,11 +85,12 @@ int gfal_srmv2_put_global(gfal_srm_plugin_t handle, gfal_srm_params_t params, st
     memset(&preparetoput_output, 0, sizeof(preparetoput_output));
 	
 	ret = gfal_srm_external_call.srm_prepare_to_put(context, input, &preparetoput_output);
-	if(ret < 0){
-		gfal_srm_report_error(context->errbuf, &tmp_err);
-	} else{
-		gfal_srm_convert_filestatuses_to_srm_result(preparetoput_output.filestatuses, preparetoput_output.token, ret, resu, &tmp_err);
-	}
+    if (ret < 0) {
+        gfal_srm_report_error(context->errbuf, &tmp_err);
+    }
+    else {
+        gfal_srm_convert_filestatuses_to_srm_result(preparetoput_output.filestatuses, preparetoput_output.token, ret, resu, &tmp_err);
+    }
     
     if (preparetoput_output.filestatuses != NULL)
         gfal_srm_external_call.srm_srmv2_pinfilestatus_delete(preparetoput_output.filestatuses, ret);
@@ -104,17 +101,18 @@ int gfal_srmv2_put_global(gfal_srm_plugin_t handle, gfal_srm_params_t params, st
 	G_RETURN_ERR(ret, tmp_err, err);		
 }
 
+
 //  @brief execute a srmv2 request sync "GET" on the srm_ifce
-int gfal_srm_getTURLS_srmv2_internal(gfal_srmv2_opt* opts,  gfal_srm_params_t params, char* endpoint, char** surls, gfal_srm_result** resu,  GError** err){
-	g_return_val_err_if_fail(surls!=NULL,-1,err,"[gfal_srmv2_getasync] tab null ");
+int gfal_srm_getTURLS_srmv2_internal(srm_context_t context, gfal_srmv2_opt* opts,
+        gfal_srm_params_t params, char** surls, gfal_srm_result** resu,  GError** err)
+{
+    g_return_val_err_if_fail(surls!=NULL, -1, err, "[gfal_srmv2_getasync] tab null");
 			
 	GError* tmp_err=NULL;
     int ret=-1;
 	struct srm_preparetoget_input preparetoget_input;
-	const int err_size = 2048;
 	
-	char errbuf[err_size]; errbuf[0]='\0';
-	size_t n_surl = g_strv_length (surls);									// n of surls
+	size_t n_surl = g_strv_length (surls);
 		
 	// set the structures datafields	
 	preparetoget_input.desiredpintime = opts->opt_srmv2_desiredpintime;		
@@ -122,24 +120,22 @@ int gfal_srm_getTURLS_srmv2_internal(gfal_srmv2_opt* opts,  gfal_srm_params_t pa
 	preparetoget_input.protocols = gfal_srm_params_get_protocols(params);
     preparetoget_input.spacetokendesc = gfal_srm_params_get_spacetoken(params);
 	preparetoget_input.surls = surls;	
-    srm_context_t context = gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, err_size, &tmp_err);
-    if(context)
-        ret = gfal_srmv2_get_global(opts, params, context, &preparetoget_input, resu, &tmp_err);
-    gfal_srm_ifce_context_release(context);
+    ret = gfal_srmv2_get_global(opts, params, context, &preparetoget_input, resu, &tmp_err);
 	G_RETURN_ERR(ret, tmp_err, err);
 }
 
+
 // execute a srmv2 request sync "PUT" on the srm_ifce
-int gfal_srm_putTURLS_srmv2_internal(gfal_srmv2_opt* opts , gfal_srm_params_t params, char* endpoint, char** surls, gfal_srm_result** resu,  GError** err){
+int gfal_srm_putTURLS_srmv2_internal(srm_context_t context, gfal_srmv2_opt* opts, gfal_srm_params_t params,
+        char** surls, gfal_srm_result** resu, GError** err)
+{
 	g_return_val_err_if_fail(surls!=NULL,-1,err,"[gfal_srm_putTURLS_srmv2_internal] GList passed null");
 			
-	GError* tmp_err=NULL;
+	GError* tmp_err = NULL;
     int ret=-1,i=0;
 	struct srm_preparetoput_input preparetoput_input;
-	const int err_size = 2048;
 	
-	char errbuf[err_size]; errbuf[0]='\0';
-	size_t n_surl = g_strv_length (surls);									// n of surls
+	size_t n_surl = g_strv_length (surls);
 	SRM_LONG64 filesize_tab[n_surl];
 	for(i=0; i < n_surl;++i)
         filesize_tab[i] = params->file_size;
@@ -152,39 +148,33 @@ int gfal_srm_putTURLS_srmv2_internal(gfal_srmv2_opt* opts , gfal_srm_params_t pa
 	preparetoput_input.surls = surls;	
 	preparetoput_input.filesizes = filesize_tab;
 	
-    srm_context_t context = gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, err_size, &tmp_err);
-    if(context)
-        ret = gfal_srmv2_put_global(opts, params, context, &preparetoput_input, resu, &tmp_err);
-    gfal_srm_ifce_context_release(context);
+    ret = gfal_srmv2_put_global(opts, params, context, &preparetoput_input, resu, &tmp_err);
+
 	G_RETURN_ERR(ret, tmp_err, err);	
 }
 
 
 // Internal function of gfal_srm_getTurls without argument check for internal usage
-int gfal_srm_mTURLS_internal(gfal_srmv2_opt* opts, gfal_srm_params_t params, srm_req_type req_type, char** surls, gfal_srm_result** resu,   GError** err){
-	GError* tmp_err=NULL;
-	int ret=-1;	
+static int gfal_srm_mTURLS_internal(gfal_srmv2_opt* opts, gfal_srm_params_t params,
+        srm_req_type req_type, char** surls, gfal_srm_result** resu,
+        GError** err)
+{
+    GError* tmp_err = NULL;
+    int ret = -1;
 
-	char full_endpoint[GFAL_URL_MAX_LEN];
-	enum gfal_srm_proto srm_types;
+    srm_context_t context = gfal_srm_ifce_easy_context(opts, surls[0], &tmp_err);
+    if (context != NULL) {
+        if (req_type == SRM_GET)
+            ret = gfal_srm_getTURLS_srmv2_internal(context, opts, params, surls, resu, &tmp_err);
+        else
+            ret = gfal_srm_putTURLS_srmv2_internal(context, opts, params, surls, resu, &tmp_err);
+        gfal_srm_ifce_context_release(context);
+    }
 
-	if((gfal_srm_determine_endpoint(opts, *surls, full_endpoint, GFAL_URL_MAX_LEN, &srm_types, &tmp_err)) == 0){		// check & get endpoint										
+    if (ret < 0)
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
-		if (srm_types == PROTO_SRMv2){
-			if(req_type == SRM_GET)
-				ret= gfal_srm_getTURLS_srmv2_internal(opts, params, full_endpoint, surls, resu,  &tmp_err);
-			else
-				ret= gfal_srm_putTURLS_srmv2_internal(opts, params, full_endpoint, surls, resu,  &tmp_err);
-		} else if(srm_types == PROTO_SRM){
-            gfal2_set_error(&tmp_err,gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
-                    "support for SRMv1 is removed in gfal 2.0, failure");
-		} else{
-		    gfal2_set_error(&tmp_err,gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, __func__,
-                    "unknow SRM protocol, failure ");
-		}		
-	}
-
-    G_RETURN_ERR(ret, tmp_err, err);
+    return ret;
 }
 
 //  simple wrapper to getTURLs for the gfal_module layer
@@ -402,66 +392,55 @@ int gfal_srm_putTURLS(gfal_srmv2_opt* opts , char** surls, gfal_srm_result** res
 
 
 // execute a srm put done on the specified surl and token, return 0 if success else -1 and errno is set
-static int gfal_srm_putdone_srmv2_internal(gfal_srmv2_opt* opts, char* endpoint, char** surls, const char* token,  GError** err){
-	g_return_val_err_if_fail(surls!=NULL,-1,err,"[gfal_srm_putdone_srmv2_internal] invalid args ");
+static int gfal_srm_putdone_srmv2_internal(srm_context_t context, char** surls, const char* token,  GError** err)
+{
+    g_return_val_err_if_fail(surls!=NULL, -1, err, "[gfal_srm_putdone_srmv2_internal] invalid args ");
 			
 	GError* tmp_err=NULL;
 	int ret=0;
 	struct srm_putdone_input putdone_input;
 	struct srmv2_filestatus *statuses;
-	const int err_size = 2048;
-	
-	char errbuf[err_size] ; memset(errbuf,0,err_size*sizeof(char));
-	size_t n_surl = g_strv_length (surls);									// n of surls
+
+	size_t n_surl = g_strv_length (surls);
 		
 	// set the structures datafields	
 	putdone_input.nbfiles = n_surl;
 	putdone_input.reqtoken = (char*)token;
 	putdone_input.surls = surls;
 
-    srm_context_t context = gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_URL_MAX_LEN, &tmp_err);
-
-    if(context){
-        gfal_log(GFAL_VERBOSE_TRACE, "    [gfal_srm_putdone_srmv2_internal] start srm put done on %s", surls[0]);
-        ret = gfal_srm_external_call.srm_put_done(context,&putdone_input, &statuses);
-        if(ret < 0){
-            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), errno, __func__,
-                    "call to srm_ifce error: %s", errbuf);
-        } else{
-             ret = gfal_srm_convert_filestatuses_to_GError(statuses, ret, &tmp_err);
-             gfal_srm_external_call.srm_srmv2_filestatus_delete(statuses, n_surl);
-        }
+    gfal_log(GFAL_VERBOSE_TRACE, "    [gfal_srm_putdone_srmv2_internal] start srm put done on %s", surls[0]);
+    ret = gfal_srm_external_call.srm_put_done(context,&putdone_input, &statuses);
+    if(ret < 0){
+        gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), errno, __func__,
+                "call to srm_ifce error: %s", context->errbuf);
+    } else{
+         ret = gfal_srm_convert_filestatuses_to_GError(statuses, ret, &tmp_err);
+         gfal_srm_external_call.srm_srmv2_filestatus_delete(statuses, n_surl);
     }
-    gfal_srm_ifce_context_release(context);
+
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
-int gfal_srm_putdone(gfal_srmv2_opt* opts , char** surls, const char* token,  GError** err){
-	GError* tmp_err=NULL;
-	int ret=-1;	
 
-    char full_endpoint[GFAL_URL_MAX_LEN];
-	enum gfal_srm_proto srm_types;
-	gfal_log(GFAL_VERBOSE_TRACE, "   -> [gfal_srm_putdone] ");
-	
-	if((gfal_srm_determine_endpoint(opts, *surls, full_endpoint, GFAL_URL_MAX_LEN, &srm_types, &tmp_err)) == 0){		// check & get endpoint										
-		gfal_log(GFAL_VERBOSE_NORMAL, "[gfal_srm_putdone] endpoint %s", full_endpoint);
+int gfal_srm_putdone(gfal_srmv2_opt* opts , char** surls, const char* token,  GError** err)
+{
+    GError* tmp_err = NULL;
+    int ret = -1;
 
-		if (srm_types == PROTO_SRMv2){
-			ret = gfal_srm_putdone_srmv2_internal(opts, full_endpoint, surls, token, &tmp_err);
-		} else if(srm_types == PROTO_SRM){
-            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
-                    "support for SRMv1 is removed in gfal 2.0, failure");
-		} else{
-		    gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, __func__,
-                    "unknow SRM protocol, failure ");
-		}		
-	}
-	gfal_log(GFAL_VERBOSE_TRACE, "   [gfal_srm_putdone] <-");
+    gfal_log(GFAL_VERBOSE_TRACE, "   -> [gfal_srm_putdone] ");
 
-    G_RETURN_ERR(ret, tmp_err, err);
-	
+    srm_context_t context = gfal_srm_ifce_easy_context(opts, surls[0], &tmp_err);
+    if (context != NULL) {
+        ret = gfal_srm_putdone_srmv2_internal(context, surls, token, &tmp_err);
+        gfal_srm_ifce_context_release(context);
+    }
+
+    if (ret < 0)
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+
+    return ret;
 }
+
 
 int gfal_srm_putdone_simple(plugin_handle * handle , const char* surl, const char* token,  GError** err){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)handle;
@@ -469,53 +448,44 @@ int gfal_srm_putdone_simple(plugin_handle * handle , const char* surl, const cha
 	return gfal_srm_putdone(opts, surls, token, err);
 }
 
-int srmv2_abort_request_internal(gfal_srmv2_opt* opts , const char* endpoint, const char* req_token,  GError** err){
-    GError* tmp_err=NULL;
-    int ret=-1;
 
-    char errbuf[GFAL_URL_MAX_LEN] = {0};
+static int srmv2_abort_request_internal(srm_context_t context, const char* surl,
+        const char* req_token,  GError** err)
+{
+    GError* tmp_err = NULL;
 
-    srm_context_t context = gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_URL_MAX_LEN, &tmp_err);
-
-    if(context){
-        if((ret = gfal_srm_external_call.srm_abort_request(context, (char*)req_token)) < 0){
-            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), errno, __func__,
-                    "SRMv2 abort request error : %s", errbuf);
-        }
+    int ret = gfal_srm_external_call.srm_abort_request(context, (char*)req_token);
+    if(ret < 0) {
+        gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), errno, __func__,
+                "SRMv2 abort request error : %s", context->errbuf);
     }
-    gfal_srm_ifce_context_release(context);
 
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
-int srm_abort_request_plugin (plugin_handle * handle , const char* surl,
-        const char *reqtoken, GError** err){
-    g_return_val_err_if_fail(handle != NULL && reqtoken != NULL, -1, err, "[srm_abort_request_plugin] invalid values for token/handle");
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*)handle;
-    GError* tmp_err=NULL;
-    int ret=-1;
 
-    char full_endpoint[GFAL_URL_MAX_LEN];
-    enum gfal_srm_proto srm_types;
+int srm_abort_request_plugin(plugin_handle * handle , const char* surl,
+        const char *reqtoken, GError** err)
+{
+    g_return_val_err_if_fail(handle != NULL && reqtoken != NULL, -1, err, "[srm_abort_request_plugin] invalid values for token/handle");
+    GError* tmp_err = NULL;
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) handle;
+    int ret = -1;
+
     gfal_log(GFAL_VERBOSE_TRACE, "   -> [srm_abort_request] ");
 
-    if((gfal_srm_determine_endpoint(opts, surl, full_endpoint, GFAL_URL_MAX_LEN, &srm_types, &tmp_err)) == 0){		// check & get endpoint
-        gfal_log(GFAL_VERBOSE_NORMAL, "[srm_abort_request] endpoint %s", full_endpoint);
-
-        if (srm_types == PROTO_SRMv2){
-            ret = srmv2_abort_request_internal(opts, full_endpoint, reqtoken, &tmp_err);
-        } else if(srm_types == PROTO_SRM){
-            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
-                    "support for SRMv1 is removed in gfal 2.0, failure");
-        } else{
-            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),EPROTONOSUPPORT, __func__,
-                    "unknow SRM protocol, failure ");
-        }
+    srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    if (context != NULL) {
+        ret = srmv2_abort_request_internal(context, surl, reqtoken, &tmp_err);
+        gfal_srm_ifce_context_release(context);
     }
+
     gfal_log(GFAL_VERBOSE_TRACE, " [srm_abort_request] <-");
 
-    G_RETURN_ERR(ret, tmp_err, err);
+    if (ret < 0)
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
+    return ret;
 }
 
 

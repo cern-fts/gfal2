@@ -346,3 +346,53 @@ int gfal2_release_file(gfal2_context_t handle, const char* uri,
   GFAL2_END_SCOPE_CANCEL(handle);
   G_RETURN_ERR(res, tmp_err, err);
 }
+
+int gfal2_bring_online_list(gfal2_context_t handle, int nbfiles, const char** uris,
+                       time_t pintime, time_t timeout,
+                       char* token, size_t tsize,
+                       int async,
+                       GError ** err){
+    GError* tmp_err=NULL;
+    int res= -1;
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
+    if(uris == NULL || *uris == NULL || handle == NULL){
+       g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "uri or/and name or/and handle are an incorrect arguments");
+    }else{
+       res = gfal_plugin_bring_online_listG(handle, nbfiles, uris,
+                                       pintime, timeout,
+                                       token, tsize,
+                                       async,
+                                       &tmp_err);
+    }
+    GFAL2_END_SCOPE_CANCEL(handle);
+    G_RETURN_ERR(res, tmp_err, err);
+}
+
+int gfal2_bring_online_poll_list(gfal2_context_t handle, int nbfiles, const char** uris,
+                            const char* token, GError ** err) {
+    GError* tmp_err=NULL;
+    int res= -1;
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
+    if(uris == NULL || *uris == NULL || handle == NULL){
+       g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "uri or/and name or/and handle are an incorrect arguments");
+    }else{
+       res = gfal_plugin_bring_online_poll_listG(handle, nbfiles, uris,
+                                           token, &tmp_err);
+    }
+    GFAL2_END_SCOPE_CANCEL(handle);
+    G_RETURN_ERR(res, tmp_err, err);
+}
+
+int gfal2_release_file_list(gfal2_context_t handle, int nbfiles, const char** uris,
+                       const char* token, GError ** err) {
+  GError* tmp_err=NULL;
+  int res= -1;
+  GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
+  if(uris == NULL || *uris == NULL || handle == NULL){
+     g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "uri or/and name or/and handle are an incorrect arguments");
+  }else{
+     res = gfal_plugin_release_file_listG(handle, nbfiles, uris, token, &tmp_err);
+  }
+  GFAL2_END_SCOPE_CANCEL(handle);
+  G_RETURN_ERR(res, tmp_err, err);
+}

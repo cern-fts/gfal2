@@ -22,8 +22,6 @@
  * @version 2.0
  * @date 29/09/2011
  * */
-
-
  
 #include <common/gfal_constants.h>
 #include <common/gfal_common_err_helpers.h> 
@@ -33,60 +31,52 @@
 #include "gfal_srm_getput.h"
 #include "gfal_srm_url_check.h"
 
-static int gfal_checksumG_srmv2_internal(gfal_srmv2_opt* opts, const char* endpoint, const char* surl, 
-											char* buf_checksum, size_t s_checksum,
-											char* buf_chktype, size_t s_chktype, GError** err){
-												
-	g_return_val_err_if_fail( opts && endpoint && surl 
-								 && buf_checksum && buf_chktype,
-                                -1, err, "[gfal_checksumG_srmv2_internal] Invalid input parameters : endpoint, surl, checksum, checksum_type");
+static int gfal_checksumG_srmv2_internal(srm_context_t context, const char* surl,
+        char* buf_checksum, size_t s_checksum, char* buf_chktype, size_t s_chktype, GError** err)
+{
+	g_return_val_err_if_fail(context && surl && buf_checksum && buf_chktype,
+                             -1, err, "[gfal_checksumG_srmv2_internal] Invalid input parameters : endpoint, surl, checksum, checksum_type");
 	GError* tmp_err=NULL;
-    srm_context_t context;
 	struct srm_ls_input input;
 	struct srm_ls_output output;
 	struct srmv2_mdfilestatus *srmv2_mdstatuses=NULL;
 	const int nb_request=1;
-	char errbuf[GFAL_ERRMSG_LEN]={0};
 	int ret=-1;
 	char* tab_surl[] = { (char*)surl, NULL};
 	
+    input.nbfiles = nb_request;
+    input.surls = tab_surl;
+    input.numlevels = 0;
+    input.offset = 0;
+    input.count = 0;
 
-    if(  (context =  gfal_srm_ifce_context_setup(opts->handle, endpoint, errbuf, GFAL_ERRMSG_LEN, &tmp_err)) != NULL){
-	
-        input.nbfiles = nb_request;
-        input.surls = tab_surl;
-        input.numlevels = 0;
-        input.offset = 0;
-        input.count = 0;
+    ret = gfal_srm_external_call.srm_ls(context,&input,&output);					// execute ls
 
-        ret = gfal_srm_external_call.srm_ls(context,&input,&output);					// execute ls
-
-        if(ret >=0){
-            srmv2_mdstatuses = output.statuses;
-            if(srmv2_mdstatuses->status != 0){
-                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), srmv2_mdstatuses->status, __func__,
-                        "Error reported from srm_ifce : %d %s", srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
-                ret = -1;
-            }else{
-                if(srmv2_mdstatuses->checksum && srmv2_mdstatuses->checksumtype){
-                    g_strlcpy(buf_checksum, srmv2_mdstatuses->checksum, s_checksum);
-                    g_strlcpy(buf_chktype, srmv2_mdstatuses->checksumtype, s_chktype);
-                }else{
-                    if(s_checksum > 0)
-                        buf_checksum='\0';
-                    if(s_chktype > 0)
-                        buf_chktype ='\0';
-                }
-                ret = 0;
-            }
+    if(ret >=0){
+        srmv2_mdstatuses = output.statuses;
+        if(srmv2_mdstatuses->status != 0){
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), srmv2_mdstatuses->status, __func__,
+                    "Error reported from srm_ifce : %d %s", srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
+            ret = -1;
         }else{
-            gfal_srm_report_error(errbuf, &tmp_err);
-            ret=-1;
+            if(srmv2_mdstatuses->checksum && srmv2_mdstatuses->checksumtype){
+                g_strlcpy(buf_checksum, srmv2_mdstatuses->checksum, s_checksum);
+                g_strlcpy(buf_chktype, srmv2_mdstatuses->checksumtype, s_chktype);
+            }else{
+                if(s_checksum > 0)
+                    buf_checksum='\0';
+                if(s_chktype > 0)
+                    buf_chktype ='\0';
+            }
+            ret = 0;
         }
-        gfal_srm_external_call.srm_srmv2_mdfilestatus_delete(srmv2_mdstatuses, 1);
-        gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
-        gfal_srm_ifce_context_release(context);
+    }else{
+        gfal_srm_report_error(context->errbuf, &tmp_err);
+        ret=-1;
     }
+    gfal_srm_external_call.srm_srmv2_mdfilestatus_delete(srmv2_mdstatuses, 1);
+    gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
+
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -94,35 +84,26 @@ static int gfal_checksumG_srmv2_internal(gfal_srmv2_opt* opts, const char* endpo
  * get checksum from a remote SRM URL
  * 
  * */
-int gfal_srm_cheksumG_internal(plugin_handle ch, const char* surl,
+static int gfal_srm_cheksumG_internal(plugin_handle ch, const char* surl,
 											char* buf_checksum, size_t s_checksum,
-											char* buf_chktype, size_t s_chktype, GError** err){
-	g_return_val_err_if_fail( ch && surl && buf_checksum && buf_chktype, -1, err, "[gfal_srm_cheksumG] Invalid args in handle/surl/bugg");
-	GError* tmp_err = NULL;
-	int ret =-1;
-	char full_endpoint[GFAL_URL_MAX_LEN];
-	enum gfal_srm_proto srm_type;
-	gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
-	
+											char* buf_chktype, size_t s_chktype, GError** err)
+{
+    g_return_val_err_if_fail(ch && surl, EINVAL, err, "[gfal_srm_cheksumG_internal] Invalid value handle, surl or buffers");
+    GError* tmp_err = NULL;
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
 
-	ret =gfal_srm_determine_endpoint(opts, surl, full_endpoint, GFAL_URL_MAX_LEN, &srm_type,   &tmp_err);
-	if( ret >=0 ){
-		if(srm_type == PROTO_SRMv2){
-			ret = gfal_checksumG_srmv2_internal(opts, full_endpoint, surl, buf_checksum, s_checksum, buf_chktype, s_chktype,  &tmp_err);
-		}else if (srm_type == PROTO_SRM){
-		    gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
-		            "support for SRMv1 is removed in 2.0, failure");
-			ret = -1;
-		}else {
-		    gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT, __func__,
-		            "unknow version of the protocol SRM , failure");
-			ret = -1;			
-		}
-		
-	}
-	if(tmp_err)
-		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
-	return ret;
+    int ret = -1;
+
+    srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    if (context != NULL) {
+        ret = gfal_checksumG_srmv2_internal(context, surl, buf_checksum, s_checksum, buf_chktype, s_chktype, &tmp_err);
+        gfal_srm_ifce_context_release(context);
+    }
+
+    if (ret != 0)
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+
+    return ret;
 }
 
 
@@ -142,7 +123,7 @@ int gfal_srm_checksumG_fallback(plugin_handle handle, const char* url, const cha
 
     // try SRM checksum only if full file checksum is requested
     if(srm_url && start_offset==0 && data_length==0 ) {
-        res= gfal_srm_cheksumG_internal(handle, url,
+        res = gfal_srm_cheksumG_internal(handle, url,
                                    checksum_buffer, buffer_length,
                                    buffer_type, GFAL_URL_MAX_LEN, &tmp_err);
     }

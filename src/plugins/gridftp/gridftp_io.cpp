@@ -18,6 +18,7 @@
 
 #include <fdesc/gfal_file_handle.h>
 #include <common/gfal_common_filedescriptor.h>
+#include <exceptions/cpp_to_gerror.hpp>
 #include "gridftp_io.h"
 #include "gridftp_namespace.h"
 #include "gridftp_plugin.h"
@@ -186,10 +187,10 @@ gfal_file_handle GridftpModule::open(const char* url, int flag, mode_t mode)
 	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::open] ");	
 	globus_result_t res;
 	if(is_read_only(desc->open_flags) // check ENOENT condition for R_ONLY 
-        && gridftp_module_file_exist(_handle_factory->get_handle(),     desc->stream->sess.get(), url) == false){
-				char err_buff[2048];
-				snprintf(err_buff, 2048, " gridftp open error : %s on url %s", strerror(ENOENT), url);
-                throw Gfal::CoreException(gfal_gridftp_scope_open(), err_buff, ENOENT);
+        && this->exists(url) == false) {
+        char err_buff[2048];
+        snprintf(err_buff, 2048, " gridftp open error : %s on url %s", strerror(ENOENT), url);
+        throw Gfal::CoreException(gfal_gridftp_scope_open(), err_buff, ENOENT);
 	}
 	
 	if( is_read_only(desc->open_flags) ){	// portability hack for O_RDONLY mask // bet on a full read

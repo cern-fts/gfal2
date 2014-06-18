@@ -156,6 +156,9 @@ int _validate_new_replica(gfal2_context_t context, struct lfc_filestatg *statg,
                     replica_info->filesize, statg->filesize);
         return -1;
     }
+    else {
+        gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: file size match");
+    }
 
     if (statg->csumvalue[0] != '\0' && replica_info->csumvalue[0] != '\0' &&
         strncmp(replica_info->csumtype, statg->csumtype, sizeof(statg->csumtype)) == 0) {
@@ -165,6 +168,12 @@ int _validate_new_replica(gfal2_context_t context, struct lfc_filestatg *statg,
                         replica_info->csumvalue, statg->csumvalue);
             return -1;
         }
+        else {
+            gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: checksum match");
+        }
+    }
+    else {
+        gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: no checksum available to do the validation");
     }
 
     return 0;
@@ -245,8 +254,16 @@ int gfal_lfc_register(plugin_handle handle, gfal2_context_t context,
                                  '-', 'P',
                                  NULL, NULL);
     if (ret_status != 0) {
-        gfal2_set_error(error, gfal2_get_plugin_lfc_quark(), errno, __func__,
-                    "Could not register the replica : %s ", gfal_lfc_get_strerror(ops));
+        int err_code = gfal_lfc_get_errno(ops);
+
+        if (err_code != EEXIST) {
+            gfal2_set_error(error, gfal2_get_plugin_lfc_quark(), err_code, __func__,
+                        "Could not register the replica : %s ", gfal_lfc_get_strerror(ops));
+        }
+        else {
+            gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: the replica is already registered, that is ok");
+            ret_status = 0;
+        }
     }
     else {
         gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: done");

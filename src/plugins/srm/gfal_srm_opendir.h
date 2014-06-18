@@ -23,6 +23,7 @@
  * @version 2.0
  * @date 09/06/2011
  * */
+#include <gfal_srm_ifce_types.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <dirent.h>
@@ -31,7 +32,7 @@
 
 typedef struct _gfal_srm_opendir_handle{
 	char surl[GFAL_URL_MAX_LEN];
-	char endpoint[GFAL_URL_MAX_LEN];
+	srm_context_t context;
     struct srmv2_mdfilestatus *srm_ls_resu;
 	struct dirent current_readdir;
 
@@ -47,3 +48,7 @@ typedef struct _gfal_srm_opendir_handle{
 gfal_file_handle gfal_srm_opendirG(plugin_handle handle, const char* path, GError ** err);
 
 int gfal_srm_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err);
+
+struct dirent* gfal_srm_readdirG(plugin_handle handle, gfal_file_handle fh, GError** err);
+
+struct dirent* gfal_srm_readdirppG(plugin_handle ch, gfal_file_handle fh, struct stat* st, GError** err);

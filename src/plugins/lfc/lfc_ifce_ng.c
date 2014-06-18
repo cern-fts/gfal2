@@ -64,16 +64,20 @@ int gfal_lfc_regex_compile(regex_t* rex, GError** err){
 	return ret;
 }
 
-static void lfc_plugin_set_lfc_env(struct lfc_ops* ops,const char* var_name, const char* var_value ){
-    if(ops->set_env){ // if new lfc library with set_env call, set at runtime
-        ops->set_env(var_name, var_value,TRUE);
-    }else{ // else set it as env var !! NOT THREAD SAFE
-        g_setenv(var_name, var_value,TRUE);
+static void lfc_plugin_set_lfc_env(struct lfc_ops* ops, const char* var_name,
+        const char* var_value)
+{
+    if (ops->set_env) { // if new lfc library with set_env call, set at runtime
+        ops->set_env(var_name, var_value, TRUE);
+    }
+    else { // else set it as env var !! NOT THREAD SAFE
+        g_setenv(var_name, var_value, TRUE);
     }
 }
 
 
-int lfc_configure_environment(struct lfc_ops * ops, const char* host, GError** err){
+int lfc_configure_environment(struct lfc_ops * ops, const char* host, GError** err)
+{
     GError * tmp_err=NULL;
     const char * tab_envar[] = { ops->lfc_endpoint_predefined, ops->lfc_conn_timeout,
                            ops->lfc_conn_retry, ops->lfc_conn_try_int};
@@ -130,6 +134,23 @@ int lfc_configure_environment(struct lfc_ops * ops, const char* host, GError** e
         if(tmp_err)
             break;
     }
+
+    // Set credentials
+    gchar* ucert = gfal2_get_opt_string(ops->handle, "X509", "CERT", NULL);
+    gchar* ukey = gfal2_get_opt_string(ops->handle, "X509", "KEY", NULL);
+    if (ucert && ukey) {
+        gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : using certificate %s", ucert);
+        gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : using private key %s", ukey);
+        lfc_plugin_set_lfc_env(ops, "X509_USER_CERT", ucert);
+        lfc_plugin_set_lfc_env(ops, "X509_USER_KEY", ukey);
+    }
+    else if (ucert) {
+        gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : using proxy %s", ucert);
+        lfc_plugin_set_lfc_env(ops, "X509_USER_PROXY", ucert);
+    }
+    g_free(ucert);
+    g_free(ukey);
+
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -269,6 +290,7 @@ struct lfc_ops* gfal_load_lfc(const char* name, GError** err){
 	lfc_sym->sstrerror = &sstrerror;
 	lfc_sym->creatg= &lfc_creatg;
 	lfc_sym->delreplica = &lfc_delreplica;
+	lfc_sym->delfilesbyname = &lfc_delfilesbyname;
 	lfc_sym->aborttrans = &lfc_aborttrans;
 	lfc_sym->endtrans = &lfc_endtrans;
 	lfc_sym->getpath = &lfc_getpath;
@@ -305,7 +327,7 @@ struct lfc_ops* gfal_load_lfc(const char* name, GError** err){
     void* lib_handle = dlopen("liblfc.so.1", RTLD_LAZY);
 
     if(lib_handle) {
-        lfc_sym->set_env = dlsym(lib_handle,"lfc_setenv");
+        lfc_sym->set_env = dlsym(lib_handle, "lfc_setenv");
         dlclose(lib_handle);
     }
     else {
