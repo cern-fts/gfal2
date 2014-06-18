@@ -46,16 +46,6 @@ extern "C"
 #endif
 
 
-/**
- * @enum list the type of the check associated with the url
- *  check_plugin_url send this mode to the plugin to know is this type of operation on it
- * */
-
-
-
-
-
-
 struct _gfal_descriptors_container{
 	gfal_fdesc_container_handle dir_container;
 	gfal_fdesc_container_handle file_container;
@@ -88,9 +78,6 @@ struct gfal_handle_ {		// define the protocol version of SRM choosen by default
     GMutex* mux_cancel;
     GHookList cancel_hooks;
 };
-
-
-
 
 
 #ifdef __cplusplus
