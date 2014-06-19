@@ -374,7 +374,7 @@ int gfal2_release_file(gfal2_context_t context, const char* url, const char* tok
 
 
 int gfal2_bring_online_list(gfal2_context_t context, int nbfiles,
-        const char** urls, time_t pintime, time_t timeout, char* token,
+        const char* const* urls, time_t pintime, time_t timeout, char* token,
         size_t tsize, int async, GError ** err)
 {
     GError* tmp_err = NULL;
@@ -391,7 +391,7 @@ int gfal2_bring_online_list(gfal2_context_t context, int nbfiles,
 }
 
 
-int gfal2_bring_online_poll_list(gfal2_context_t context, int nbfiles, const char** urls, const char* token, GError ** err)
+int gfal2_bring_online_poll_list(gfal2_context_t context, int nbfiles, const char* const* urls, const char* token, GError ** err)
 {
     GError* tmp_err = NULL;
     int res = -1;
@@ -407,7 +407,7 @@ int gfal2_bring_online_poll_list(gfal2_context_t context, int nbfiles, const cha
 }
 
 
-int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char** urls, const char* token, GError ** err)
+int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char* const* urls, const char* token, GError ** err)
 {
     GError* tmp_err = NULL;
     int res = -1;
@@ -423,20 +423,20 @@ int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char** u
 }
 
 
-int gfal2_unlink_list(gfal2_context_t handle, int nbfiles, const char** uris, GError ** errors)
+int gfal2_unlink_list(gfal2_context_t context, int nbfiles, const char* const* urls, GError ** errors)
 {
     GError* tmp_err = NULL;
     int res = 0;
 
-    if(uris == NULL || *uris == NULL || handle == NULL) {
-       g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "uri or/and name or/and handle are an incorrect arguments");
+    if(urls == NULL || *urls == NULL || context == NULL) {
+       g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "urls or/and name or/and context are an incorrect arguments");
        res = -1;
     }
     else {
-        res = gfal2_start_scope_cancel(handle, &tmp_err);
+        res = gfal2_start_scope_cancel(context, &tmp_err);
         if (res == 0) {
-            res = gfal_plugin_unlink_listG(handle, nbfiles, uris, errors);
-            gfal2_end_scope_cancel(handle);
+            res = gfal_plugin_unlink_listG(context, nbfiles, urls, errors);
+            gfal2_end_scope_cancel(context);
         }
     }
 

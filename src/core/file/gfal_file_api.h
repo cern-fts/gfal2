@@ -346,7 +346,7 @@ int gfal2_release_file(gfal2_context_t context, const char* url,
 ///  @param err : GError error report
 ///  @return 0 if the request has been queued, > 0 if the file is pinned, < 0 on error
 ///
-int gfal2_bring_online_list(gfal2_context_t context, int nbfiles, const char** urls,
+int gfal2_bring_online_list(gfal2_context_t context, int nbfiles, const char* const* urls,
                        time_t pintime, time_t timeout,
                        char* token, size_t tsize,
                        int async,
@@ -361,11 +361,11 @@ int gfal2_bring_online_list(gfal2_context_t context, int nbfiles, const char** u
 ///  @param err : GError error report
 ///  @return 0 if the request is queued, > 0 if the file is pinned, < 0 on error
 ///
-int gfal2_bring_online_poll_list(gfal2_context_t context, int nbfiles, const char** urls,
+int gfal2_bring_online_poll_list(gfal2_context_t context, int nbfiles, const char* const* urls,
                             const char* token, GError ** err);
 
 ///  @brief Release a file
-int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char** urls,
+int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char* const* urls,
                        const char* token, GError ** err);
 
 ///  @brief Perform a bulk deletion
@@ -381,7 +381,7 @@ int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char** u
 ///  @note The plugin tried will be the one that matches the first url
 ///  @note If bulk deletion is not supported, gfal2_unlink will be called nbfiles times
 ///
-int gfal2_unlink_list(gfal2_context_t context, int nbfiles, const char** uris, GError ** errors);
+int gfal2_unlink_list(gfal2_context_t context, int nbfiles, const char* const* uris, GError ** errors);
 
 
 
