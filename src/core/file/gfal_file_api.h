@@ -334,9 +334,6 @@ int gfal2_bring_online_poll(gfal2_context_t context, const char* url,
 int gfal2_release_file(gfal2_context_t context, const char* url,
                        const char* token, GError ** err);
 
-
-//TODO
-
 ///  @brief Bring online a file
 ///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
@@ -371,9 +368,20 @@ int gfal2_bring_online_poll_list(gfal2_context_t context, int nbfiles, const cha
 int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char** urls,
                        const char* token, GError ** err);
 
-
-
-
+///  @brief Perform a bulk deletion
+///
+///  Does not work for Collections or directories.
+///
+///  @param context : gfal2 handle, see \ref gfal2_context_new
+///  @param nbfiles : number of files
+///  @param paths   : paths of the files to delete
+///  @param errors  : Pre-allocated array with nbfiles pointers to errors.
+///                   It is the user's responsability to allocate and free.
+///  @return 0 if success, -1 if error. set err properly in case of error
+///  @note The plugin tried will be the one that matches the first url
+///  @note If bulk deletion is not supported, gfal2_unlink will be called nbfiles times
+///
+int gfal2_unlink_list(gfal2_context_t context, int nbfiles, const char** uris, GError ** errors);
 
 
 

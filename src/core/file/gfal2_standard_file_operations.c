@@ -421,3 +421,31 @@ int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char** u
     GFAL2_END_SCOPE_CANCEL(context);
     G_RETURN_ERR(res, tmp_err, err);
 }
+
+
+int gfal2_unlink_list(gfal2_context_t handle, int nbfiles, const char** uris, GError ** errors)
+{
+    GError* tmp_err = NULL;
+    int res = 0;
+
+    if(uris == NULL || *uris == NULL || handle == NULL) {
+       g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "uri or/and name or/and handle are an incorrect arguments");
+       res = -1;
+    }
+    else {
+        res = gfal2_start_scope_cancel(handle, &tmp_err);
+        if (res == 0) {
+            res = gfal_plugin_unlink_listG(handle, nbfiles, uris, errors);
+            gfal2_end_scope_cancel(handle);
+        }
+    }
+
+    if (tmp_err) {
+        int i;
+        for (i = 0; i < nbfiles; ++i) {
+            errors[i] = g_error_copy(tmp_err);
+        }
+        g_error_free(tmp_err);
+    }
+    return res;
+}

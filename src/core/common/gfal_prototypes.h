@@ -57,7 +57,7 @@ typedef enum _plugin_mode{
     GFAL_PLUGIN_UNLINK,
     GFAL_PLUGIN_CHECKSUM,
     GFAL_PLUGIN_MKDIR_REC,
-    GFAL_PLUGIN_BRING_ONLINE
+    GFAL_PLUGIN_BRING_ONLINE,
 	
 } plugin_mode;
 

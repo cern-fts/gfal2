@@ -498,9 +498,14 @@ struct _gfal_plugin_interface{
                          const char* token,
                          GError** err);
 
+     /**
+      * OPTIONAL: Bulk deletion
+      */
+     int (*unlink_listG)(plugin_handle plugin_data, int nbfiles, const char** uris, GError ** errors);
+
 	 // reserved for future usage
 	 //! @cond
-     void* future[18];
+     void* future[17];
 	 //! @endcond
 };
 
@@ -576,6 +581,8 @@ int gfal_plugin_bring_online_poll_listG(gfal2_context_t handle, int nbfiles, con
 
 int gfal_plugin_release_file_listG(gfal2_context_t handle, int nbfiles, const char** uris,
                               const char* token, GError ** err);
+
+int gfal_plugin_unlink_listG(gfal2_context_t handle, int nbfiles, const char** uris, GError ** errors);
 
 //! @endcond
 

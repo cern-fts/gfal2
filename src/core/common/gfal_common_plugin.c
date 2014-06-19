@@ -870,6 +870,7 @@ int gfal_plugin_unlinkG(gfal_handle handle, const char* path, GError** err)
 
 }
 
+
 int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri, time_t pintime,
         time_t timeout, char* token, size_t tsize, int async, GError ** err)
 {
@@ -883,6 +884,7 @@ int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri, time_t pi
     G_RETURN_ERR(resu, tmp_err, err);
 }
 
+
 int gfal_plugin_bring_online_pollG(gfal2_context_t handle, const char* uri, const char* token,
         GError ** err)
 {
@@ -895,6 +897,7 @@ int gfal_plugin_bring_online_pollG(gfal2_context_t handle, const char* uri, cons
     G_RETURN_ERR(resu, tmp_err, err);
 }
 
+
 int gfal_plugin_release_fileG(gfal2_context_t handle, const char* uri, const char* token,
         GError ** err)
 {
@@ -906,6 +909,7 @@ int gfal_plugin_release_fileG(gfal2_context_t handle, const char* uri, const cha
         resu = p->release_file(gfal_get_plugin_handle(p), uri, token, &tmp_err);
     G_RETURN_ERR(resu, tmp_err, err);
 }
+
 
 int gfal_plugin_bring_online_listG(gfal2_context_t handle, int nbfiles, const char** uris,
         time_t pintime, time_t timeout, char* token, size_t tsize, int async, GError ** err)
@@ -921,6 +925,7 @@ int gfal_plugin_bring_online_listG(gfal2_context_t handle, int nbfiles, const ch
     G_RETURN_ERR(resu, tmp_err, err);
 }
 
+
 int gfal_plugin_bring_online_poll_listG(gfal2_context_t handle, int nbfiles, const char** uris,
         const char* token, GError ** err)
 {
@@ -933,6 +938,7 @@ int gfal_plugin_bring_online_poll_listG(gfal2_context_t handle, int nbfiles, con
     G_RETURN_ERR(resu, tmp_err, err);
 }
 
+
 int gfal_plugin_release_file_listG(gfal2_context_t handle, int nbfiles, const char** uris,
         const char* token, GError ** err)
 {
@@ -943,4 +949,35 @@ int gfal_plugin_release_file_listG(gfal2_context_t handle, int nbfiles, const ch
     if (p)
         resu = p->release_file_list(gfal_get_plugin_handle(p), nbfiles, uris, token, &tmp_err);
     G_RETURN_ERR(resu, tmp_err, err);
+}
+
+
+int gfal_plugin_unlink_listG(gfal2_context_t handle, int nbfiles, const char** uris, GError ** errors)
+{
+    GError* tmp_err = NULL;
+    int res = -1;
+    gfal_plugin_interface* p = gfal_find_plugin(handle, *uris, GFAL_PLUGIN_UNLINK, &tmp_err);
+
+    if (p) {
+        plugin_handle handle = gfal_get_plugin_handle(p);
+        if (p->unlink_listG) {
+            res = p->unlink_listG(handle, nbfiles, uris, errors);
+        }
+        // Fallback
+        else {
+            int i;
+            for (i = 0; i < nbfiles; ++i) {
+                p->unlinkG(handle, uris[i], &(errors[i]));
+            }
+        }
+    }
+    else {
+        int i;
+        for (i = 0; i < nbfiles; ++i) {
+            errors[i] = g_error_copy(tmp_err);
+        }
+        g_error_free(tmp_err);
+    }
+
+    return res;
 }
