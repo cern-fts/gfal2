@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright @ Members of the EMI Collaboration, 2010.
  * See www.eu-emi.eu for details on the copyright holders.
  *
@@ -27,7 +27,7 @@
 #include <dirent.h>
 
 #include <regex.h>
-#include <time.h> 
+#include <time.h>
 #include <glib.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -46,6 +46,9 @@ static int dcap_errno_conversion(const char * msg, int old_err)
     int ret;
     ret = old_err;
     switch (old_err) {
+        case 0:
+            ret = EIO;
+            break;
         case EIO:
             if (strstr(msg, "o such"))
                 ret = ENOENT;
@@ -60,15 +63,14 @@ static int dcap_errno_conversion(const char * msg, int old_err)
     return ret;
 }
 
-static void dcap_report_error(gfal_plugin_dcap_handle h, const char * func_name,
-        GError** err)
+static void dcap_report_error(gfal_plugin_dcap_handle h, const char * func_name, GError** err)
 {
     char buff_error[2048];
-    int status = *(h->ops->geterror());
+    const int status = *(h->ops->geterror());
     g_strlcpy(buff_error, h->ops->strerror(status), 2048);
     // errno conversion
-    status = dcap_errno_conversion(buff_error, status);
-    gfal2_set_error(err, gfal2_get_plugin_dcap_quark(), status, func_name,
+    errno = dcap_errno_conversion(buff_error, errno);
+    gfal2_set_error(err, gfal2_get_plugin_dcap_quark(), errno, func_name,
             "Error reported by the external library dcap : %s, number : %d", buff_error, status);
 }
 
@@ -88,7 +90,7 @@ gfal_file_handle gfal_dcap_openG(plugin_handle handle, const char* path,
 
 /*
  * map to the libdcap read call
- * 
+ *
  */
 ssize_t gfal_dcap_readG(plugin_handle handle, gfal_file_handle fd, void* buff,
         size_t s_buff, GError** err)
