@@ -25,7 +25,7 @@ public:
 
     CopyTestChecksum() {
         GError *error = NULL;
-        handle =  gfal2_context_new(&error);
+        handle = gfal2_context_new(&error);
         Gfal::gerror_to_cpp(&error);
         params = gfalt_params_handle_new(NULL);
     }
