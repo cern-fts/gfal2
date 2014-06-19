@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright @ Members of the EMI Collaboration, 2010.
  * See www.eu-emi.eu for details on the copyright holders.
  *
@@ -24,10 +24,10 @@
  * */
 
 #include <regex.h>
-#include <time.h> 
+#include <time.h>
 
 #include "gfal_srm.h"
-#include "gfal_srm_internal_layer.h" 
+#include "gfal_srm_internal_layer.h"
 #include "gfal_srm_internal_ls.h"
 #include <common/gfal_common_internal.h>
 #include <common/gfal_common_err_helpers.h>
@@ -58,43 +58,39 @@ static int gfal_srm_rm_srmv2_isdir(srm_context_t context, const char* surl)
 }
 
 
-static int gfal_srm_rm_srmv2_internal(srm_context_t context,
-        const char* surl, GError** err)
+static int gfal_srm_rm_srmv2_internal(srm_context_t context, int nbfiles, const char* const * surls,
+        GError** errors)
 {
-    GError* tmp_err = NULL;
     struct srm_rm_input input;
     struct srm_rm_output output;
-    int ret = -1;
+    int ret = -1, i;
 
-    input.nbfiles = 1;
-    input.surls = (char**)(&surl);
+    input.nbfiles = nbfiles;
+    input.surls = (char**)(surls);
 
     ret = gfal_srm_external_call.srm_rm(context, &input, &output);
 
-    if (ret == 1) {
+    if (ret == nbfiles) {
         ret = 0;
         struct srmv2_filestatus* statuses = output.statuses;
-        if (statuses[0].status != 0) {
-            if (statuses[0].explanation != NULL ) {
+
+        for (i = 0; i < nbfiles; ++i) {
+            int err_code = statuses[i].status;
+            if (err_code != 0) {
+                ret -= 1;
                 // DPM returns an EINVAL when srm_rm is called over a directory
                 // Check if the file is actually a directory, and override the return
                 // code with EISDIR in that case
-                int err_code = statuses[0].status;
-                if (err_code == EINVAL &&
-                    gfal_srm_rm_srmv2_isdir(context, surl)) {
+                if (err_code == EINVAL && gfal_srm_rm_srmv2_isdir(context, surls[i]))
                     err_code = EISDIR;
-                }
-                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
-                            err_code, __func__,
-                            "error reported from srm_ifce, %s ",
-                            statuses[0].explanation);
+
+                if (statuses[i].explanation)
+                    gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(), err_code, __func__,
+                            "error reported from srm_ifce, %s", statuses[i].explanation);
+                else
+                    gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(), err_code, __func__,
+                            "error reported from srm_ifce, without explanation!");
             }
-            else {
-                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
-                            EINVAL, __func__,
-                           "error reported from srm_ifce with corrputed memory ! ");
-            }
-            ret = -1;
         }
 
         gfal_srm_external_call.srm_srm2__TReturnStatus_delete(
@@ -103,32 +99,58 @@ static int gfal_srm_rm_srmv2_internal(srm_context_t context,
                 ret);
     }
     else {
-        gfal_srm_report_error(context->errbuf, &tmp_err);
+        gfal_srm_report_error(context->errbuf, &errors[0]);
+        for (i = 1; i < nbfiles; ++i)
+            errors[i] = g_error_copy(errors[0]);
         ret = -1;
     }
 
-    G_RETURN_ERR(ret, tmp_err, err);
+    return ret;
 }
 
 
 /**
- * 
+ *
  * bindings of the unlink plugin call
  */
+int gfal_srm_unlink_listG(plugin_handle ch, int nbfiles, const char* const* paths, GError** err)
+{
+    GError *tmp_err = NULL;
+    int ret = -1, i;
+
+    if (!err)
+        return -1;
+
+    if (!ch || nbfiles < 0 || paths == NULL || *paths == NULL) {
+        gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL, __func__, "incorrect args");
+    }
+    else {
+        gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+        srm_context_t context = gfal_srm_ifce_easy_context(opts, paths[0], &tmp_err);
+        if (context) {
+            for(i = 0; i < nbfiles; ++i)
+                gfal_srm_cache_stat_remove(ch, paths[i]);
+
+            ret = gfal_srm_rm_srmv2_internal(context, nbfiles, paths, err);
+            gfal_srm_ifce_context_release(context);
+        }
+    }
+
+    if (tmp_err) {
+        for (i = 1; i < nbfiles; ++i)
+            err[i] = g_error_copy(err[0]);
+    }
+    return ret;
+}
+
+
 int gfal_srm_unlinkG(plugin_handle ch, const char * path, GError** err)
 {
-    g_return_val_err_if_fail( ch && path, -1, err, "[gfal_srm_unlinkG] incorrects args");
-    GError* tmp_err = NULL;
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    int ret;
+    GError *tmp_err = NULL;
+    const char* paths[1] = {path};
 
-    int ret = -1;
-
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, path, &tmp_err);
-    if (context != NULL) {
-        gfal_srm_cache_stat_remove(ch, path);
-        ret = gfal_srm_rm_srmv2_internal(context, path, &tmp_err);
-        gfal_srm_ifce_context_release(context);
-    }
+    ret = gfal_srm_unlink_listG(ch, 1, paths, &tmp_err);
 
     if (ret != 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);

@@ -182,7 +182,6 @@ void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal_handle handle){
 }
 
 
-
 /*
  * Init function, called before all
  * */
@@ -224,13 +223,9 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
     srm_plugin.bring_online_poll_list = &gfal_srmv2_bring_online_poll_listG;
     srm_plugin.release_file_list = &gfal_srmv2_release_file_listG;
     srm_plugin.renameG = &gfal_srm_renameG;
+    srm_plugin.unlink_listG = &gfal_srm_unlink_listG;
 	return srm_plugin;
 }
-
-
-
-
-
 
 
 /*
