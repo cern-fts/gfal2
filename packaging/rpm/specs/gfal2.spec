@@ -37,7 +37,7 @@ BuildRequires:		lfc-devel
 #rfio plugin dependencies
 BuildRequires:		dpm-devel
 #srm plugin dependencies
-BuildRequires:		srm-ifce-devel
+BuildRequires:		srm-ifce-devel >= 1.20.0
 #dcap plugin dependencies
 BuildRequires:		dcap-devel
 #gridftp plugin dependencies
@@ -49,6 +49,7 @@ BuildRequires:		gtest-devel
 
 Requires:			%{name}-core%{?_isa} = %{version}-%{release}
 Requires:			%{name}-transfer%{?_isa} = %{version}-%{release}
+BuildRequires:      srm-ifce >= 1.20.0
 
 %description
 GFAL 2.0 offers an a single and simple POSIX-like API 
