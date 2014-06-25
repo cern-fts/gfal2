@@ -100,6 +100,7 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
         return -1;
     }
     else {
+        // Return 1 if already pinned
         return status == 0;
     }
 }
@@ -123,7 +124,7 @@ int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl,
         gfal_srm_ifce_context_release(context);
     }
 
-    if (ret != 0)
+    if (ret < 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
     return ret;
@@ -147,7 +148,7 @@ int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char* con
         gfal_srm_ifce_context_release(context);
     }
 
-    if (ret != 0)
+    if (ret < 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
     return ret;
@@ -196,6 +197,7 @@ static int gfal_srmv2_bring_online_poll_internal(srm_context_t context,
         return -1;
     }
     else {
+        // Return will be 1 if the file is already online
         return status == 0;
     }
 }
@@ -217,7 +219,7 @@ int gfal_srmv2_bring_online_pollG(plugin_handle ch, const char* surl,
         gfal_srm_ifce_context_release(context);
     }
 
-    if (ret != 0)
+    if (ret < 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
     return ret;
@@ -240,7 +242,7 @@ int gfal_srmv2_bring_online_poll_listG(plugin_handle ch, int nbfiles, const char
         gfal_srm_ifce_context_release(context);
     }
 
-    if (ret != 0)
+    if (ret < 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
     return ret;
@@ -311,7 +313,7 @@ int gfal_srmv2_release_fileG(plugin_handle ch, const char* surl,
         gfal_srm_ifce_context_release(context);
     }
 
-    if (ret != 0)
+    if (ret < 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
     return ret;
@@ -334,7 +336,7 @@ int gfal_srmv2_release_file_listG(plugin_handle ch, int nbfiles, const char* con
         gfal_srm_ifce_context_release(context);
     }
 
-    if (ret != 0)
+    if (ret < 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
     return ret;
