@@ -1,17 +1,17 @@
 /*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -20,11 +20,11 @@
  * brief the header file with the main srm funcs of the common API
  * author Devresse Adrien
  */
- 
+
 
 
 #include <regex.h>
-#include <time.h> 
+#include <time.h>
 
 
 
@@ -44,7 +44,7 @@
 #include <file/gfal_file_api.h>
 
 /*
- * 
+ *
  * list of the turls supported protocols
  */
 static char* srm_turls_sup_protocols_default[] = { "rfio", "gsidcap", "dcap", "kdcap", "gsiftp",  NULL };
@@ -79,7 +79,7 @@ char** srm_get_3rdparty_turls_sup_protocol(gfal2_context_t context){
 
 
 /*
- * 
+ *
  * srm plugin id
  */
 const char* gfal_srm_getName(){
@@ -103,13 +103,13 @@ int gfal_surl_checker(plugin_handle ch, const char* surl, GError** err){
 	if(surl == NULL || strnlen(surl, GFAL_URL_MAX_LEN) == GFAL_URL_MAX_LEN){
         gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__, "Invalid surl, surl too long or NULL");
 		return -1;
-	}	
+	}
 	return regexec(&opts->rexurl,surl,0,NULL,0);
 }
 
 /*
- * 
- * convenience func for a group of surls 
+ *
+ * convenience func for a group of surls
  * */
 gboolean gfal_srm_surl_group_checker(gfal_srmv2_opt* opts,char** surls, GError** err){
 	GError* tmp_err=NULL;
@@ -130,7 +130,7 @@ gboolean gfal_srm_surl_group_checker(gfal_srmv2_opt* opts,char** surls, GError**
 
 /*
  * url checker for the srm module, surl part
- * 
+ *
  * */
 static gboolean gfal_srm_check_url(plugin_handle handle, const char* url, plugin_mode mode, GError** err){
 	switch(mode){
@@ -151,7 +151,7 @@ static gboolean gfal_srm_check_url(plugin_handle handle, const char* url, plugin
         case GFAL_PLUGIN_RENAME:
 			return (gfal_surl_checker(handle, url,  err)==0);
 		default:
-			return FALSE;		
+			return FALSE;
 	}
 }
 /*
@@ -175,9 +175,8 @@ static void srm_internal_copy_stat(gpointer origin, gpointer copy){
 void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal_handle handle){
 	memset(opts, 0, sizeof(gfal_srmv2_opt));
 	gfal_checker_compile(opts, NULL);
-    opts->opt_srmv2_desiredpintime = 0;
 	opts->srm_proto_type = PROTO_SRMv2;
-	opts->handle = handle;	
+	opts->handle = handle;
     opts->cache = gsimplecache_new(5000, &srm_internal_copy_stat, sizeof(struct stat));
 }
 
@@ -187,10 +186,10 @@ void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal_handle handle){
  * */
 gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	gfal_plugin_interface srm_plugin;
-	memset(&srm_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin	
-	gfal_srmv2_opt* opts = g_new(struct _gfal_srmv2_opt,1);	// define the srmv2 option struct and clear it	
+	memset(&srm_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin
+	gfal_srmv2_opt* opts = g_new(struct _gfal_srmv2_opt,1);	// define the srmv2 option struct and clear it
 	gfal_srm_opt_initG(opts, handle);
-	srm_plugin.plugin_data = (void*) opts;	
+	srm_plugin.plugin_data = (void*) opts;
 	srm_plugin.check_plugin_url = &gfal_srm_check_url;
 	srm_plugin.plugin_delete = &gfal_srm_destroyG;
 	srm_plugin.accessG = &gfal_srm_accessG;
@@ -250,7 +249,7 @@ inline char* gfal_srm_construct_key(const char* url, const char* prefix, char* b
 char* gfal_get_fullendpoint(const char* surl, GError** err){
 	char* p = strstr(surl,"?SFN=");
 	const int len_prefix = strlen(GFAL_PREFIX_SRM);						// get the srm prefix length
-	const int len_endpoint_prefix = strlen(GFAL_ENDPOINT_DEFAULT_PREFIX); // get the endpoint protocol prefix len 
+	const int len_endpoint_prefix = strlen(GFAL_ENDPOINT_DEFAULT_PREFIX); // get the endpoint protocol prefix len
 	g_return_val_err_if_fail(p && len_prefix && (p>(surl+len_prefix)) && len_endpoint_prefix,NULL,err,"[gfal_get_fullendpoint] full surl must contain ?SFN= and a valid prefix, fatal error");	// assertion on params
 	size_t resu_len = p - surl - len_prefix + len_endpoint_prefix;
     char* resu = calloc(resu_len + 1, sizeof(char));
@@ -275,9 +274,9 @@ char* gfal_get_fullendpoint(const char* surl, GError** err){
                 "[gfal_get_hostname_from_surl not a valid surl");
 		 return NULL;
 	 }
-	 return strndup(surl+srm_prefix_len, p-surl-srm_prefix_len);	 
+	 return strndup(surl+srm_prefix_len, p-surl-srm_prefix_len);
  }
- 
+
  /*
   * map a bdii se protocol type to a gfal protocol type
   */
@@ -305,21 +304,21 @@ void gfal_set_default_storageG(gfal_srmv2_opt* opts, enum gfal_srm_proto proto){
 
 
 
- 
+
 int gfal_srm_convert_filestatuses_to_GError(struct srmv2_filestatus* statuses, int n, GError** err){
-	g_return_val_err_if_fail(statuses && n, -1, err, "[gfal_srm_convert_filestatuses_to_GError] args invalids");	
+	g_return_val_err_if_fail(statuses && n, -1, err, "[gfal_srm_convert_filestatuses_to_GError] args invalids");
 	int i;
 	int ret =0;
 	for(i=0; i< n; ++i){
 		if(statuses[i].status != 0){
             gfal2_set_error(err, gfal2_get_plugin_srm_quark(), statuses[i].status, __func__,
                     "Error on the surl %s while putdone : %s", statuses[i].surl, statuses[i].explanation);
-			ret = -1;			
+			ret = -1;
 		}
 	}
 	return ret;
 }
- 
+
 void gfal_srm_report_error(char* errbuff, GError** err){
 	int errcode = (errno != ECOMM && errno != 0)?errno:ECOMM;
 	gfal2_set_error(err,gfal2_get_plugin_srm_quark(), errcode, __func__,
