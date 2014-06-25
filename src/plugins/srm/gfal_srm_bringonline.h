@@ -42,14 +42,14 @@ int gfal_srmv2_release_fileG(plugin_handle ch, const char* surl,
                              const char* token, GError** err);
 
 
-int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char** surls,
+int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char* const* surls,
         						  time_t pintime, time_t timeout,
         						  char* token, size_t tsize,
         						  int async,
         						  GError** err);
 
-int gfal_srmv2_bring_online_poll_listG(plugin_handle ch, int nbfiles, const char** surls,
+int gfal_srmv2_bring_online_poll_listG(plugin_handle ch, int nbfiles, const char* const* surls,
                                   	   const char* token, GError** err);
 
-int gfal_srmv2_release_file_listG(plugin_handle ch, int nbfiles, const char** surls,
+int gfal_srmv2_release_file_listG(plugin_handle ch, int nbfiles, const char* const* surls,
         						  const char* token, GError** err);

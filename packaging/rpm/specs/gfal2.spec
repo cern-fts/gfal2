@@ -1,54 +1,55 @@
 # unversionned doc dir F20 change https://fedoraproject.org/wiki/Changes/UnversionedDocdirs
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
-Name:				gfal2
-Version:			2.6.4
+Name:               gfal2
+Version:            2.6.5
 # https://fedoraproject.org/wiki/Packaging:NamingGuidelines#Release_Tag
-Release:			1%{?dist}
-Summary:			Grid file access library 2.0
-Group:				Applications/Internet
-License:			ASL 2.0
-URL:				https://svnweb.cern.ch/trac/lcgutil/wiki/gfal2
+Release:            1%{?dist}
+Summary:            Grid file access library 2.0
+Group:              Applications/Internet
+License:            ASL 2.0
+URL:                https://svnweb.cern.ch/trac/lcgutil/wiki/gfal2
 # svn export http://svn.cern.ch/guest/lcgutil/gfal2/trunk gfal2
-Source0:			http://grid-deployment.web.cern.ch/grid-deployment/dms/lcgutil/tar/%{name}/%{name}-%{version}.tar.gz
-BuildRoot:			%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
+Source0:            http://grid-deployment.web.cern.ch/grid-deployment/dms/lcgutil/tar/%{name}/%{name}-%{version}.tar.gz
+BuildRoot:          %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 #main lib dependencies
-BuildRequires:		cmake
-BuildRequires:		doxygen
-BuildRequires:		glib2-devel
-BuildRequires:		glibmm24-devel
-BuildRequires:		libattr-devel
-BuildRequires:		openldap-devel
+BuildRequires:      cmake
+BuildRequires:      doxygen
+BuildRequires:      glib2-devel
+BuildRequires:      glibmm24-devel
+BuildRequires:      libattr-devel
+BuildRequires:      openldap-devel
 %if ! 0%{?el5}
-BuildRequires:		pugixml-devel
+BuildRequires:      pugixml-devel
 %endif
 
 ## libuuid is in a different rpm for el5
 %if 0%{?el5}
-BuildRequires:		e2fsprogs-devel
+BuildRequires:      e2fsprogs-devel
 %else
-BuildRequires:		libuuid-devel	
+BuildRequires:      libuuid-devel
 %endif
 #file plugin dependencies
-BuildRequires:		zlib-devel
+BuildRequires:      zlib-devel
 #lfc plugin dependencies
-BuildRequires:		lfc-devel
+BuildRequires:      lfc-devel
 #rfio plugin dependencies
-BuildRequires:		dpm-devel
+BuildRequires:      dpm-devel
 #srm plugin dependencies
-BuildRequires:		srm-ifce-devel
+BuildRequires:      srm-ifce-devel >= 1.20.0
 #dcap plugin dependencies
-BuildRequires:		dcap-devel
+BuildRequires:      dcap-devel
 #gridftp plugin dependencies
-BuildRequires:		globus-gass-copy-devel
+BuildRequires:      globus-gass-copy-devel
 #http plugin dependencies
-BuildRequires:		davix-devel >= 0.3.0
+BuildRequires:      davix-devel >= 0.3.0
 #tests dependencies
-BuildRequires:		gtest-devel
+BuildRequires:      gtest-devel
 
-Requires:			%{name}-core%{?_isa} = %{version}-%{release}
-Requires:			%{name}-transfer%{?_isa} = %{version}-%{release}
+Requires:           %{name}-core%{?_isa} = %{version}-%{release}
+Requires:           %{name}-transfer%{?_isa} = %{version}-%{release}
+BuildRequires:      srm-ifce >= 1.20.0
 
 %description
 GFAL 2.0 offers an a single and simple POSIX-like API 
@@ -57,39 +58,39 @@ The set of supported protocols depends
 of the %{name} installed plugins.
 
 %package core
-Summary:			Core of the Grid File access Library 2.0
-Group:				Applications/Internet
+Summary:            Core of the Grid File access Library 2.0
+Group:              Applications/Internet
 
 %description core
 The main library of %{name}. 
 the %{name} protocol support relies on a plugin system.
 
 %package transfer
-Summary:			File Transfer logic of %{name}
-Group:				Applications/Internet
-Requires:			%{name}-core%{?_isa} = %{version}-%{release}
+Summary:            File Transfer logic of %{name}
+Group:              Applications/Internet
+Requires:           %{name}-core%{?_isa} = %{version}-%{release}
 
 %description transfer
 %{name}-transfer is the high level API for file transfer operations
 in %{name}. It supports third-party copy.
 
 %package devel
-Summary:			Development files of %{name}
-Group:				Applications/Internet
-Requires:			%{name}-core%{?_isa} = %{version}-%{release}
-Requires:			%{name}-transfer%{?_isa} = %{version}-%{release} 
-Requires:			glib2-devel%{?_isa}
-Requires:			libattr-devel%{?_isa} 
-Requires:			pkgconfig
+Summary:            Development files of %{name}
+Group:              Applications/Internet
+Requires:           %{name}-core%{?_isa} = %{version}-%{release}
+Requires:           %{name}-transfer%{?_isa} = %{version}-%{release} 
+Requires:           glib2-devel%{?_isa}
+Requires:           libattr-devel%{?_isa} 
+Requires:           pkgconfig
 
 %description devel
 development files for %{name}
 
 %package doc
-Summary:			Documentation for %{name}
-Group:				Documentation
+Summary:            Documentation for %{name}
+Group:              Documentation
 %if 0%{?fedora} > 10 || 0%{?rhel}>5
-BuildArch:                      noarch
+BuildArch:          noarch
 %endif
 
 
@@ -97,9 +98,9 @@ BuildArch:                      noarch
 documentation, Doxygen and examples of %{name} .
 
 %package plugin-lfc
-Summary:			Provide the lfc support for %{name}
-Group:				Applications/Internet
-Requires:			%{name}-core%{?_isa} = %{version}-%{release} 
+Summary:            Provide the lfc support for %{name}
+Group:              Applications/Internet
+Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
 
 
 %description plugin-lfc
@@ -108,10 +109,10 @@ The LFC plugin allows read-only POSIX operations
 for the LFC catalog.
 
 %package plugin-rfio
-Summary:			Provide the rfio support for %{name}
-Group:				Applications/Internet
-Requires:			%{name}-core%{?_isa} = %{version}-%{release} 
-Requires:			dpm-libs%{?_isa}
+Summary:            Provide the rfio support for %{name}
+Group:              Applications/Internet
+Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
+Requires:           dpm-libs%{?_isa}
 
 %description plugin-rfio
 Provide the rfio support (RFIO://) for %{name}. 
@@ -120,10 +121,10 @@ the rfio URLs, the rfio protocol is used on the DPM
 and on the Castor storage systems.
 
 %package plugin-dcap
-Summary:			Provide the support access for %{name}
-Group:				Applications/Internet
-Requires:			%{name}-core%{?_isa} = %{version}-%{release} 
-Requires:			dcap-tunnel-gsi%{?_isa}
+Summary:            Provide the support access for %{name}
+Group:              Applications/Internet
+Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
+Requires:           dcap-tunnel-gsi%{?_isa}
 
 %description plugin-dcap
 Provide the dcap support (GSIDCAP://, DCAP://) for %{name}. 
@@ -131,9 +132,9 @@ The dcap plugin provides the POSIX operations for the dcap \
 URLs, the dcap protocol is used on the DCACHE storage system
 
 %package plugin-srm
-Summary:			Provide the srm access for %{name}
-Group:				Applications/Internet
-Requires:			%{name}-core%{?_isa} = %{version}-%{release} 
+Summary:            Provide the srm access for %{name}
+Group:              Applications/Internet
+Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
 
 
 %description plugin-srm
@@ -142,9 +143,9 @@ The srm plugin provides the POSIX operations and
 the third party transfer support on the SRM URLs.
 
 %package plugin-gridftp
-Summary:			Provide the gridftp support for %{name}
-Group:				Applications/Internet
-Requires:			%{name}-core%{?_isa} = %{version}-%{release} 
+Summary:            Provide the gridftp support for %{name}
+Group:              Applications/Internet
+Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
 
 %description plugin-gridftp
 Provide the gridftp support (GSIFTP://) for %{name}. 
@@ -152,25 +153,26 @@ The gridftp plugin provides the POSIX operations and
 the third party transfer support on the GSIFTP URLs.
 
 %package plugin-http
-Summary:			Provide the HTTP/DAV support for %{name}
-Group:				Applications/Internet
-Requires:			%{name}-core%{?_isa} = %{version}-%{release}
+Summary:            Provide the HTTP/DAV support for %{name}
+Group:              Applications/Internet
+Requires:           %{name}-core%{?_isa} = %{version}-%{release}
+Requires:           davix-libs >= 0.3.2
 
 %description plugin-http
 Provide the HTTP and WevDAV support for %{name}.
 this plugin is able to do third-party copy with Webdav
 
 %package all
-Summary:			Meta package for GFAL 2.0 install
-Group:				Applications/Internet
-Requires:			%{name}-core%{?_isa} = %{version}-%{release} 
-Requires:			%{name}-transfer%{?_isa} = %{version}-%{release} 
-Requires:			%{name}-plugin-lfc%{?_isa} = %{version}-%{release} 
-Requires:			%{name}-plugin-dcap%{?_isa} = %{version}-%{release} 
-Requires:			%{name}-plugin-srm%{?_isa} = %{version}-%{release} 
-Requires:			%{name}-plugin-rfio%{?_isa} = %{version}-%{release} 
-Requires:			%{name}-plugin-gridftp%{?_isa} = %{version}-%{release} 
-Requires:                       %{name}-plugin-http%{?_isa} = %{version}-%{release}
+Summary:            Meta package for GFAL 2.0 install
+Group:              Applications/Internet
+Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
+Requires:           %{name}-transfer%{?_isa} = %{version}-%{release} 
+Requires:           %{name}-plugin-lfc%{?_isa} = %{version}-%{release} 
+Requires:           %{name}-plugin-dcap%{?_isa} = %{version}-%{release} 
+Requires:           %{name}-plugin-srm%{?_isa} = %{version}-%{release} 
+Requires:           %{name}-plugin-rfio%{?_isa} = %{version}-%{release} 
+Requires:           %{name}-plugin-gridftp%{?_isa} = %{version}-%{release} 
+Requires:           %{name}-plugin-http%{?_isa} = %{version}-%{release}
 
 
 %description all

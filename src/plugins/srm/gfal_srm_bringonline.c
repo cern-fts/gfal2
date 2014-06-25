@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2013.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -22,14 +22,14 @@
  * @version 2.0
  * @date 19/12/2011
  * */
- 
- 
+
+
 
 #include <common/gfal_common_internal.h>
 #include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin.h>
 #include <regex.h>
-#include <time.h> 
+#include <time.h>
 
 #include "gfal_srm.h"
 #include "gfal_srm_endpoint.h"
@@ -39,7 +39,7 @@
 
 
 static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_opt* opts,
-        int nbfiles, const char** surl, time_t pintime, time_t timeout,
+        int nbfiles, const char* const* surl, time_t pintime, time_t timeout,
         char* token, size_t tsize, int async, GError** err)
 {
     struct srm_bringonline_input  input;
@@ -100,6 +100,7 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
         return -1;
     }
     else {
+        // Return 1 if already pinned
         return status == 0;
     }
 }
@@ -123,14 +124,14 @@ int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl,
         gfal_srm_ifce_context_release(context);
     }
 
-    if (ret != 0)
+    if (ret < 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
     return ret;
 }
 
 
-int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char** surls,
+int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char* const* surls,
         time_t pintime, time_t timeout, char* token, size_t tsize,
         int async, GError** err)
 {
@@ -147,7 +148,7 @@ int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char** su
         gfal_srm_ifce_context_release(context);
     }
 
-    if (ret != 0)
+    if (ret < 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
     return ret;
@@ -156,7 +157,7 @@ int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char** su
 
 
 static int gfal_srmv2_bring_online_poll_internal(srm_context_t context,
-		int nbfiles, const char** surls, const char* token, GError ** err)
+		int nbfiles, const char* const* surls, const char* token, GError ** err)
 {
     struct srm_bringonline_input  input;
     struct srm_bringonline_output output;
@@ -196,6 +197,7 @@ static int gfal_srmv2_bring_online_poll_internal(srm_context_t context,
         return -1;
     }
     else {
+        // Return will be 1 if the file is already online
         return status == 0;
     }
 }
@@ -217,7 +219,7 @@ int gfal_srmv2_bring_online_pollG(plugin_handle ch, const char* surl,
         gfal_srm_ifce_context_release(context);
     }
 
-    if (ret != 0)
+    if (ret < 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
     return ret;
@@ -225,7 +227,7 @@ int gfal_srmv2_bring_online_pollG(plugin_handle ch, const char* surl,
 
 
 
-int gfal_srmv2_bring_online_poll_listG(plugin_handle ch, int nbfiles, const char** surls,
+int gfal_srmv2_bring_online_poll_listG(plugin_handle ch, int nbfiles, const char* const* surls,
                                   const char* token, GError** err)
 {
     g_return_val_err_if_fail(ch && surls && *surls && token, EINVAL, err, "[gfal_srmv2_bring_online_pollG] Invalid value handle and, surl or token");
@@ -240,7 +242,7 @@ int gfal_srmv2_bring_online_poll_listG(plugin_handle ch, int nbfiles, const char
         gfal_srm_ifce_context_release(context);
     }
 
-    if (ret != 0)
+    if (ret < 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
     return ret;
@@ -249,7 +251,7 @@ int gfal_srmv2_bring_online_poll_listG(plugin_handle ch, int nbfiles, const char
 
 
 static int gfal_srmv2_release_file_internal(srm_context_t context, gfal_srmv2_opt* opts,
-        int nbfiles, const char** surl, const char* token, GError** err)
+        int nbfiles, const char* const* surl, const char* token, GError** err)
 {
     struct srm_releasefiles_input input;
     struct srmv2_filestatus      *statuses;
@@ -311,7 +313,7 @@ int gfal_srmv2_release_fileG(plugin_handle ch, const char* surl,
         gfal_srm_ifce_context_release(context);
     }
 
-    if (ret != 0)
+    if (ret < 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
     return ret;
@@ -319,7 +321,7 @@ int gfal_srmv2_release_fileG(plugin_handle ch, const char* surl,
 
 
 
-int gfal_srmv2_release_file_listG(plugin_handle ch, int nbfiles, const char** surls,
+int gfal_srmv2_release_file_listG(plugin_handle ch, int nbfiles, const char* const* surls,
         const char* token, GError** err)
 {
     g_return_val_err_if_fail(ch && surls && *surls && token, EINVAL, err, "[gfal_srmv2_release_fileG] Invalid value handle, surl or token");
@@ -334,7 +336,7 @@ int gfal_srmv2_release_file_listG(plugin_handle ch, int nbfiles, const char** su
         gfal_srm_ifce_context_release(context);
     }
 
-    if (ret != 0)
+    if (ret < 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
     return ret;

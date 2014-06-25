@@ -223,12 +223,12 @@ int gfal2_closedir(gfal2_context_t context, DIR* d, GError ** err);
 ///  GFAL2 always return an error and set err to the code EPROTONOSUPPORT
 /// 
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
-///  @param oldpath : origin file
-///  @param newpath : symbolic link path
+///  @param oldurl : origin file
+///  @param newurl : symbolic link path
 ///  @param err : GError error report
 ///  @return 0 if success, negative value if error, set err properly in case of error 
 ///
-int gfal2_symlink(gfal2_context_t context, const char* oldpath, const char * newpath, GError ** err);
+int gfal2_symlink(gfal2_context_t context, const char* odlurl, const char* newurl, GError ** err);
 
 ///  @brief read a symbolic link value, provide the linked file path
 ///  
@@ -237,57 +237,57 @@ int gfal2_symlink(gfal2_context_t context, const char* oldpath, const char * new
 ///  gfal2_readlink follows the POSIX behavior and does not add a null byte at the end of the buffer if the link is truncated.
 /// 
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
-///  @param path : path of the symbolic link to read
+///  @param url : path of the symbolic link to read
 ///  @param buff : buffer for symbolic link value
 ///  @param buffsiz : maximum number of bytes to write
 ///  @param err : GError error report
 ///  @return size of the link value in bytes if success, negative value if error. set err properly in case of error 
 ///
-ssize_t gfal2_readlink(gfal2_context_t context, const char* path, char* buff, size_t buffsiz, GError ** err);
+ssize_t gfal2_readlink(gfal2_context_t context, const char* url, char* buff, size_t buffsiz, GError ** err);
 
 ///  @brief Delete a file entry
 ///  
 ///  Does not work for Collections or directory.
 /// 
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
-///  @param path : path of the file to delete
+///  @param url : path of the file to delete
 ///  @param err : GError error report
 ///  @return 0 if success, -1 if error. set err properly in case of error
 ///
-int gfal2_unlink(gfal2_context_t context, const char* path, GError ** err);
+int gfal2_unlink(gfal2_context_t context, const char* url, GError ** err);
 
 ///  @brief list extended attributes of a resource.
 ///  
 ///  Extended attributes keys are concatenated in the buffer and separated by a null character
 /// 
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
-///  @param path : path of the resource
+///  @param url : path of the resource
 ///  @param list : buffer for the extended attribute keys
 ///  @param size : maximum size of the buffer to write
 ///  @param err : GError error report
 ///  @return the size of the concatenated xattr keys in bytes if success, -1 if error. set err properly in case of errors.
 ///
-ssize_t gfal2_listxattr (gfal2_context_t context, const char *path, char *list, size_t size, GError ** err);
+ssize_t gfal2_listxattr (gfal2_context_t context, const char *url, char *list, size_t size, GError ** err);
 
 ///  @brief get an extended attribute value of a resource.
 ///  
 /// 
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
-///  @param path : path of the resource
+///  @param url : path of the resource
 ///  @param name : key of the extended attribute
 ///  @param value : buffer for the extended attribute value
 ///  @param size : maximum size of the buffer to write
 ///  @param err : GError error report
 ///  @return the size of the xattr value in bytes if success, -1 if error. set err properly in case of errors.
 ///
-ssize_t gfal2_getxattr (gfal2_context_t context, const char *path, const char *name,
+ssize_t gfal2_getxattr (gfal2_context_t context, const char *url, const char *name,
                         void *value, size_t size, GError ** err);
 
 ///  @brief set an extended attribute value of a resource.
 ///  
 /// 
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
-///  @param path : path of the resource
+///  @param url : path of the resource
 ///  @param name : key of the extended attribute to define/set
 ///  @param value : new value of the xattr
 ///  @param size : size of the data
@@ -298,14 +298,14 @@ ssize_t gfal2_getxattr (gfal2_context_t context, const char *path, const char *n
 ///  @param err : GError error report
 ///  @return 0 if success, -1 if error. set err properly in case of errors.
 ///
-int gfal2_setxattr (gfal2_context_t context, const char *path, const char *name,
+int gfal2_setxattr (gfal2_context_t context, const char *url, const char *name,
                const void *value, size_t size, int flags, GError ** err);
 
 
 ///  @brief Bring online a file
 ///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
-///  @param path : url of the file
+///  @param url : url of the file
 ///  @param pintime : pin time
 ///  @param timeout : timeout
 ///  @param token : The token will be put in the buffer pointed by this
@@ -313,7 +313,7 @@ int gfal2_setxattr (gfal2_context_t context, const char *path, const char *name,
 ///  @param err : GError error report
 ///  @return 0 if the request has been queued, > 0 if the file is pinned, < 0 on error
 ///
-int gfal2_bring_online(gfal2_context_t context, const char* path,
+int gfal2_bring_online(gfal2_context_t context, const char* url,
                        time_t pintime, time_t timeout,
                        char* token, size_t tsize,
                        int async,
@@ -322,26 +322,23 @@ int gfal2_bring_online(gfal2_context_t context, const char* path,
 ///  @brief Check for a bring online request
 ///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
-///  @param path : url of the file
+///  @param url : url of the file
 ///  @param token : As set by gfal2_bring_online
 ///  @param err : GError error report
 ///  @return 0 if the request is queued, > 0 if the file is pinned, < 0 on error
 ///
-int gfal2_bring_online_poll(gfal2_context_t context, const char* path,
+int gfal2_bring_online_poll(gfal2_context_t context, const char* url,
                             const char* token, GError ** err);
 
 ///  @brief Release a file
-int gfal2_release_file(gfal2_context_t context, const char* path,
+int gfal2_release_file(gfal2_context_t context, const char* url,
                        const char* token, GError ** err);
-
-
-//TODO
 
 ///  @brief Bring online a file
 ///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
 ///  @param nbfiles : number of files
-///  @param paths : urls of files
+///  @param urls : urls of files
 ///  @param pintime : pin time
 ///  @param timeout : timeout
 ///  @param token : The token will be put in the buffer pointed by this
@@ -349,7 +346,7 @@ int gfal2_release_file(gfal2_context_t context, const char* path,
 ///  @param err : GError error report
 ///  @return 0 if the request has been queued, > 0 if the file is pinned, < 0 on error
 ///
-int gfal2_bring_online_list(gfal2_context_t context, int nbfiles, const char** paths,
+int gfal2_bring_online_list(gfal2_context_t context, int nbfiles, const char* const* urls,
                        time_t pintime, time_t timeout,
                        char* token, size_t tsize,
                        int async,
@@ -359,21 +356,32 @@ int gfal2_bring_online_list(gfal2_context_t context, int nbfiles, const char** p
 ///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
 ///  @param nbfiles : number of files
-///  @param paths : urls of files
+///  @param urls : urls of files
 ///  @param token : As set by gfal2_bring_online
 ///  @param err : GError error report
 ///  @return 0 if the request is queued, > 0 if the file is pinned, < 0 on error
 ///
-int gfal2_bring_online_poll_list(gfal2_context_t context, int nbfiles, const char** paths,
+int gfal2_bring_online_poll_list(gfal2_context_t context, int nbfiles, const char* const* urls,
                             const char* token, GError ** err);
 
 ///  @brief Release a file
-int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char** paths,
+int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char* const* urls,
                        const char* token, GError ** err);
 
-
-
-
+///  @brief Perform a bulk deletion
+///
+///  Does not work for Collections or directories.
+///
+///  @param context : gfal2 handle, see \ref gfal2_context_new
+///  @param nbfiles : number of files
+///  @param paths   : paths of the files to delete
+///  @param errors  : Pre-allocated array with nbfiles pointers to errors.
+///                   It is the user's responsability to allocate and free.
+///  @return 0 if success, -1 if error. set err properly in case of error
+///  @note The plugin tried will be the one that matches the first url
+///  @note If bulk deletion is not supported, gfal2_unlink will be called nbfiles times
+///
+int gfal2_unlink_list(gfal2_context_t context, int nbfiles, const char* const* uris, GError ** errors);
 
 
 
@@ -425,12 +433,12 @@ int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char** p
  * @return This routine return a valid file descriptor if the operation is a success
  *  or -1 if error occured. In case of Error, err is set properly 
  */
-int gfal2_open(gfal2_context_t context, const char * path, int flag, GError ** err);
+int gfal2_open(gfal2_context_t context, const char * url, int flag, GError ** err);
 
 ///
-/// Same than \ref gfal2_open but allow to specifie the default right of the file
+/// Same than \ref gfal2_open but allow to specify the default right of the file
 /// 
-int gfal2_open2(gfal2_context_t context, const char * path, int flag, mode_t mode, GError ** err);
+int gfal2_open2(gfal2_context_t context, const char * url, int flag, mode_t mode, GError ** err);
 
 
 ///

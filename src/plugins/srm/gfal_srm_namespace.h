@@ -51,6 +51,8 @@ int gfal_srm_renameG(plugin_handle plugin_data, const char * oldurl, const char 
 
 int gfal_srm_unlinkG(plugin_handle ch, const char * path, GError** err);
 
+int gfal_srm_unlink_listG(plugin_handle ch, int nbfiles, const char* const* paths, GError** err);
+
 int gfal_srm_rmdirG(plugin_handle handle, const char* surl, GError** err);
 
 int gfal_srm_statG(plugin_handle handle, const char* surl, struct stat* buf, GError** err);

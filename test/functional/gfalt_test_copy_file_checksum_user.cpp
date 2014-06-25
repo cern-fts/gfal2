@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
 
-    if (argc < 2) {
+    if (argc < 3) {
         printf("Missing source and destination base urls\n");
         printf("\t%s [options] srm://host/base/path/ srm://destination/base/path/\n", argv[0]);
         return 1;

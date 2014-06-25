@@ -82,7 +82,7 @@ IF (FUNCTIONAL_TESTS)
         add_executable(gfal_test_del_nonex        "gfal_test_del_nonex.c")
         target_link_libraries(gfal_test_del_nonex ${GFAL2_LINK} test_shared)
 
-        add_executable(gfal_test_del        "gfal_test_del.c") 
+        add_executable(gfal_test_del        "gfal_test_del.cpp") 
         target_link_libraries(gfal_test_del ${GFAL2_LINK} test_shared)
         
         add_executable(gfal_test_mkdir_unlink        "gfal_test_mkdir_unlink.c")

@@ -470,7 +470,7 @@ struct _gfal_plugin_interface{
       * @param err:  GError error support
       * @return      -1 on error (and err is set). 0 on success. 1 if the file has been staged.
       */
-     int (*bring_online_list)(plugin_handle plugin_data, int nbfiles, const char** urls,
+     int (*bring_online_list)(plugin_handle plugin_data, int nbfiles, const char* const* urls,
                          time_t pintime, time_t timeout,
                          char* token, size_t tsize,
                          int async,
@@ -483,7 +483,7 @@ struct _gfal_plugin_interface{
       * @param token The token as returned by bring_online_async
       * @return      -1 on error (and err is set). 0 on success. 1 if the file has been staged.
       */
-     int (*bring_online_poll_list)(plugin_handle plugin_data, int nbfiles, const char** urls,
+     int (*bring_online_poll_list)(plugin_handle plugin_data, int nbfiles, const char* const* urls,
                               const char* token, GError** err);
 
      /**
@@ -494,13 +494,18 @@ struct _gfal_plugin_interface{
       * @param token: The request token. If NULL,
       * @param err:   GError error support
       */
-     int (*release_file_list)(plugin_handle plugin_data, int nbfiles, const char** urls,
+     int (*release_file_list)(plugin_handle plugin_data, int nbfiles, const char* const* urls,
                          const char* token,
                          GError** err);
 
+     /**
+      * OPTIONAL: Bulk deletion
+      */
+     int (*unlink_listG)(plugin_handle plugin_data, int nbfiles, const char* const* uris, GError ** errors);
+
 	 // reserved for future usage
 	 //! @cond
-     void* future[18];
+     void* future[17];
 	 //! @endcond
 };
 
@@ -565,17 +570,19 @@ int gfal_plugin_bring_online_pollG(gfal2_context_t handle, const char* uri,
 int gfal_plugin_release_fileG(gfal2_context_t handle, const char* uri,
                               const char* token, GError ** err);
 
-int gfal_plugin_bring_online_listG(gfal2_context_t handle, int nbfiles, const char** uris,
+int gfal_plugin_bring_online_listG(gfal2_context_t handle, int nbfiles, const char* const* uris,
                               time_t pintime, time_t timeout,
                               char* token, size_t tsize,
                               int async,
                               GError ** err);
 
-int gfal_plugin_bring_online_poll_listG(gfal2_context_t handle, int nbfiles, const char** uris,
+int gfal_plugin_bring_online_poll_listG(gfal2_context_t handle, int nbfiles, const char* const* uris,
                                    const char* token, GError ** err);
 
-int gfal_plugin_release_file_listG(gfal2_context_t handle, int nbfiles, const char** uris,
+int gfal_plugin_release_file_listG(gfal2_context_t handle, int nbfiles, const char* const* uris,
                               const char* token, GError ** err);
+
+int gfal_plugin_unlink_listG(gfal2_context_t handle, int nbfiles, const char* const* uris, GError ** errors);
 
 //! @endcond
 
