@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -30,16 +30,17 @@ const char * srm_conn_timeout_key= "CONN_TIMEOUT";
 const char * srm_config_turl_protocols= "TURL_PROTOCOLS";
 const char * srm_config_3rd_party_turl_protocols= "TURL_3RD_PARTY_PROTOCOLS";
 const char * srm_config_keep_alive = "KEEP_ALIVE";
+const char * srm_spacetokendesc = "SPACETOKENDESC";
 
 #include "gfal_srm_internal_layer.h"
-// hotfix for the old srm lib 
+// hotfix for the old srm lib
 void disable_srm_srmv2_pinfilestatus_delete(struct srmv2_pinfilestatus*  srmv2_pinstatuses, int n){}
 void disable_srm_srmv2_mdfilestatus_delete(struct srmv2_mdfilestatus* mdfilestatus, int n){}
 void disable_srm_srmv2_filestatus_delete(struct srmv2_filestatus*  srmv2_statuses, int n){}
 void disable_srm_srm2__TReturnStatus_delete(struct srm2__TReturnStatus* status){}
 
 
-struct _gfal_srm_external_call gfal_srm_external_call = { 
+struct _gfal_srm_external_call gfal_srm_external_call = {
     .srm_ls = &srm_ls,
     .srm_rmdir = &srm_rmdir,
     .srm_mkdir = &srm_mkdir,

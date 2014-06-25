@@ -1,18 +1,18 @@
 #pragma once
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -24,8 +24,8 @@
  * @date 09/06/2011
  * */
 
-#include <gfal_srm_ifce.h> 
-#include <gfal_srm_ifce_types.h> 
+#include <gfal_srm_ifce.h>
+#include <gfal_srm_ifce_types.h>
 #include <glib.h>
 
 #include <common/gfal_types.h>
@@ -40,8 +40,9 @@ extern const char * srm_config_group;
 extern const char * srm_config_transfer_checksum;
 extern const char * srm_config_turl_protocols;
 extern const char * srm_config_3rd_party_turl_protocols;
+extern const char * srm_spacetokendesc;
 
-// request type for surl <-> turl translation 
+// request type for surl <-> turl translation
 typedef enum _srm_req_type{
 	SRM_GET,
 	SRM_PUT
@@ -53,42 +54,42 @@ typedef enum _srm_req_type{
  *
  */
 struct _gfal_srm_external_call{
-	
+
 	int (*srm_ls)(struct srm_context *context,
 		struct srm_ls_input *input,struct srm_ls_output *output);
 
 	int (*srm_rm)(struct srm_context *context,
 			struct srm_rm_input *input,struct srm_rm_output *output);
-		
+
 	int (*srm_rmdir)(struct srm_context *context,
 		struct srm_rmdir_input *input,struct srm_rmdir_output *output);
-		
+
 	int (*srm_mkdir)(struct srm_context *context,
 		struct srm_mkdir_input *input);
-		
+
 	int (*srm_getpermission) (struct srm_context *context,
 		struct srm_getpermission_input *input,struct srm_getpermission_output *output);
 
 	int (*srm_check_permission)(struct srm_context *context,
-		struct srm_checkpermission_input *input,struct srmv2_filestatus **statuses);	
+		struct srm_checkpermission_input *input,struct srmv2_filestatus **statuses);
 
 	int (*srm_prepare_to_get)(struct srm_context *context,
 		struct srm_preparetoget_input *input,struct srm_preparetoget_output *output);
-		
+
 	void (*srm_srmv2_pinfilestatus_delete)(struct srmv2_pinfilestatus*  srmv2_pinstatuses, int n);
-	
+
 	void (*srm_srmv2_mdfilestatus_delete)(struct srmv2_mdfilestatus* mdfilestatus, int n);
-	
+
 	void (*srm_srmv2_filestatus_delete)(struct srmv2_filestatus*  srmv2_statuses, int n);
-	
+
 	void (*srm_srm2__TReturnStatus_delete)(struct srm2__TReturnStatus* status);
-	
+
 	int (*srm_prepare_to_put)(struct srm_context *context,
 		struct srm_preparetoput_input *input,struct srm_preparetoput_output *output);
 
 	int (*srm_put_done)(struct srm_context *context,
 			struct srm_putdone_input *input, struct srmv2_filestatus **statuses);
-			
+
 	int (*srm_setpermission) (struct srm_context *context,
 			struct srm_setpermission_input *input);
 

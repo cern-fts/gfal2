@@ -61,6 +61,9 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
         input.protocols      = gfal_srm_params_get_protocols(params);
         input.spacetokendesc = gfal_srm_params_get_spacetoken(params);
 
+        if (input.spacetokendesc)
+            gfal_log(GFAL_VERBOSE_DEBUG, "Bringonline with spacetoken %s", input.spacetokendesc);
+
         int ret = 0;
 
         if (async)
