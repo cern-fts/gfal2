@@ -104,7 +104,7 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
     }
     else {
         // Return 1 if already pinned
-        return status == 0;
+        return status == 0 || status == 22;
     }
 }
 
@@ -201,7 +201,7 @@ static int gfal_srmv2_bring_online_poll_internal(srm_context_t context,
     }
     else {
         // Return will be 1 if the file is already online
-        return status == 0;
+        return status == 0 || status == 22;
     }
 }
 
