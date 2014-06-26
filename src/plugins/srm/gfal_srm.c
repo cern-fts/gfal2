@@ -36,6 +36,7 @@
 #include "gfal_srm_open.h"
 #include "gfal_srm_copy.h"
 #include "gfal_srm_url_check.h"
+#include "gfal_srm_internal_ls.h"
 
 #include <cancel/gfal_cancel.h>
 #include <common/gfal_common_err_helpers.h>
@@ -166,7 +167,7 @@ void gfal_srm_destroyG(plugin_handle ch){
 }
 
 static void srm_internal_copy_stat(gpointer origin, gpointer copy){
-	memcpy(copy, origin, sizeof(struct stat));
+	memcpy(copy, origin, sizeof(struct extended_stat));
 }
 
 /*
@@ -177,7 +178,7 @@ void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal_handle handle){
 	gfal_checker_compile(opts, NULL);
 	opts->srm_proto_type = PROTO_SRMv2;
 	opts->handle = handle;
-    opts->cache = gsimplecache_new(5000, &srm_internal_copy_stat, sizeof(struct stat));
+    opts->cache = gsimplecache_new(5000, &srm_internal_copy_stat, sizeof(struct extended_stat));
 }
 
 

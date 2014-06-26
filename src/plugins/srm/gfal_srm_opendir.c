@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -98,7 +98,7 @@ static gfal_file_handle gfal_srm_opendir_internal(srm_context_t context,
     GError* tmp_err = NULL;
     gfal_file_handle resu = NULL;
     struct stat st;
-    int exist = gfal_statG_srmv2_internal(context, &st, real_surl, &tmp_err);
+    int exist = gfal_statG_srmv2_internal(context, &st, NULL, real_surl, &tmp_err);
 
     if (exist == 0) {
         if (S_ISDIR(st.st_mode)) {
@@ -128,7 +128,7 @@ static gfal_file_handle gfal_srm_opendir_internal(srm_context_t context,
     g_free(real_surl);
     return resu;
 }
-	
+
 
 
 gfal_file_handle gfal_srm_opendirG(plugin_handle ch, const char* surl, GError ** err)
@@ -137,7 +137,7 @@ gfal_file_handle gfal_srm_opendirG(plugin_handle ch, const char* surl, GError **
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
 	gfal_file_handle resu = NULL;
 	GError* tmp_err=NULL;
-	
+
 	srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
 	if (context) {
 	    resu = gfal_srm_opendir_internal(context, surl, &tmp_err);
@@ -152,7 +152,7 @@ gfal_file_handle gfal_srm_opendirG(plugin_handle ch, const char* surl, GError **
 int gfal_srm_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err)
 {
 	g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_srm_opendirG] Invalid args");
-	gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;	
+	gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;
 	//gfal_srm_external_call.srm_srmv2_mdfilestatus_delete(oh->srm_ls_resu, 1); --> disable because of error in memory management in srm-ifce
 	gfal_srm_ifce_context_release(oh->context);
 	g_free(oh);
