@@ -503,9 +503,19 @@ struct _gfal_plugin_interface{
       */
      int (*unlink_listG)(plugin_handle plugin_data, int nbfiles, const char* const* uris, GError ** errors);
 
+     /**
+      * OPTIONAL: allows clients to abort selective file requests from the asynchronous requests of any type
+      * @param plugin_data : internal plugin context
+      * @param nbfiles : number of files in the list
+      * @param url :  The urls of the files
+      * @param token: The request token
+      * @param err:   GError error support
+      */
+     int(*abort_files)(plugin_handle handle, int nbfiles, const char* const* uris, const char* token, GError ** err);
+
 	 // reserved for future usage
 	 //! @cond
-     void* future[17];
+     void* future[16];
 	 //! @endcond
 };
 
@@ -583,6 +593,8 @@ int gfal_plugin_release_file_listG(gfal2_context_t handle, int nbfiles, const ch
                               const char* token, GError ** err);
 
 int gfal_plugin_unlink_listG(gfal2_context_t handle, int nbfiles, const char* const* uris, GError ** errors);
+
+int gfal_plugin_abort_filesG(gfal2_context_t handle, int nbfiles, const char* const* uris, const char* token, GError ** err);
 
 //! @endcond
 

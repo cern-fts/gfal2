@@ -63,7 +63,8 @@ struct _gfal_srm_external_call gfal_srm_external_call = {
     .srm_mv = &srm_mv,
     .srm_abort_request = &srm_abort_request,
     .srm_getspacetokens = &srm_getspacetokens,
-    .srm_getspacemd =  &srm_getspacemd
+    .srm_getspacemd =  &srm_getspacemd,
+    .srm_abort_files = &srm_abort_files
 };
 
 

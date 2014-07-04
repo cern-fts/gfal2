@@ -982,3 +982,14 @@ int gfal_plugin_unlink_listG(gfal2_context_t handle, int nbfiles, const char* co
 
     return res;
 }
+
+int gfal_plugin_abort_filesG(gfal2_context_t handle, int nbfiles, const char* const* uris, const char* token, GError ** err)
+{
+    GError* tmp_err = NULL;
+    int resu = -1;
+    gfal_plugin_interface* p = gfal_find_plugin(handle, *uris, GFAL_PLUGIN_BRING_ONLINE, &tmp_err);
+
+    if (p)
+        resu = p->abort_files(gfal_get_plugin_handle(p), nbfiles, uris, token, &tmp_err);
+    G_RETURN_ERR(resu, tmp_err, err);
+}

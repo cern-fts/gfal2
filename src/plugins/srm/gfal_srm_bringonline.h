@@ -53,3 +53,5 @@ int gfal_srmv2_bring_online_poll_listG(plugin_handle ch, int nbfiles, const char
 
 int gfal_srmv2_release_file_listG(plugin_handle ch, int nbfiles, const char* const* surls,
         						  const char* token, GError** err);
+
+int gfal_srm2_abort_filesG(plugin_handle ch, int nbfiles, const char* const* surls, const char* token, GError ** err);

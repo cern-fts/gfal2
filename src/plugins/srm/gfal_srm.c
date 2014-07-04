@@ -222,6 +222,7 @@ gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
     srm_plugin.bring_online_list = &gfal_srmv2_bring_online_listG;
     srm_plugin.bring_online_poll_list = &gfal_srmv2_bring_online_poll_listG;
     srm_plugin.release_file_list = &gfal_srmv2_release_file_listG;
+    srm_plugin.abort_files = &gfal_srm2_abort_filesG;
     srm_plugin.renameG = &gfal_srm_renameG;
     srm_plugin.unlink_listG = &gfal_srm_unlink_listG;
 	return srm_plugin;

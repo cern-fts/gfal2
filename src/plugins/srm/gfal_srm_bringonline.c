@@ -344,3 +344,69 @@ int gfal_srmv2_release_file_listG(plugin_handle ch, int nbfiles, const char* con
 
     return ret;
 }
+
+static int gfal_srmv2_abort_files_internal(srm_context_t context, gfal_srmv2_opt* opts,
+        int nbfiles, const char* const* surl, const char* token, GError** err)
+{
+    struct srm_abort_files_input input;
+    struct srmv2_filestatus      *statuses;
+    GError                       *tmp_err = NULL;
+    gfal_srm_params_t             params = gfal_srm_params_new(opts, &tmp_err);
+
+    if (params != NULL) {
+          if (token)
+              gfal_log(GFAL_VERBOSE_VERBOSE, "Abort file with token %s", token);
+          else
+              gfal_log(GFAL_VERBOSE_VERBOSE, "Abort file without token");
+
+          // Perform
+          input.nbfiles  = nbfiles;
+          input.reqtoken = NULL;
+          input.surls    = (char**)surl;
+          if(token)
+          input.reqtoken = (char*)token;
+
+          int ret = gfal_srm_external_call.srm_abort_files(context, &input, &statuses);
+
+          if (ret < 0) {
+              gfal_srm_report_error(context->errbuf, &tmp_err);
+          }
+          else {
+              if (statuses[0].status != 0) {
+                  gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
+                              statuses[0].status, __func__,
+                              "error on the release request : %s ",
+                              statuses[0].explanation);
+              }
+              gfal_srm_external_call.srm_srmv2_filestatus_delete(statuses, 1);
+          }
+    }
+
+    if (tmp_err != NULL) {
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+        return -1;
+    }
+    else {
+        return 0;
+    }
+}
+
+int gfal_srm2_abort_filesG(plugin_handle ch, int nbfiles, const char* const* surls, const char* token, GError ** err)
+{
+    g_return_val_err_if_fail(ch && surls && *surls && token, EINVAL, err, "[gfal_srmv2_release_fileG] Invalid value handle, surl or token");
+    GError* tmp_err = NULL;
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+
+    int ret = -1;
+
+    srm_context_t context = gfal_srm_ifce_easy_context(opts, *surls, &tmp_err);
+    if (context != NULL) {
+        ret = gfal_srmv2_abort_files_internal(context, opts, nbfiles, surls, token, &tmp_err);
+        gfal_srm_ifce_context_release(context);
+    }
+
+    if (ret < 0)
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+
+    return ret;
+}

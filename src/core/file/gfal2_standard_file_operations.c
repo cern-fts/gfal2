@@ -449,3 +449,18 @@ int gfal2_unlink_list(gfal2_context_t context, int nbfiles, const char* const* u
     }
     return res;
 }
+
+int gfal2_abort_files(gfal2_context_t context, int nbfiles, const char* const* urls, const char* token, GError ** err)
+{
+    GError* tmp_err = NULL;
+    int res = -1;
+    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
+    if (urls == NULL || *urls == NULL || context == NULL) {
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context or/and urls are incorrect arguments");
+    }
+    else {
+        res = gfal_plugin_abort_filesG(context, nbfiles, urls, token, err);
+    }
+    GFAL2_END_SCOPE_CANCEL(context);
+    G_RETURN_ERR(res, tmp_err, err);
+}

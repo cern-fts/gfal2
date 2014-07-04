@@ -118,6 +118,10 @@ struct _gfal_srm_external_call{
 
     int (*srm_getspacemd)(struct srm_context *context,
             struct srm_getspacemd_input *input,struct srm_spacemd **spaces);
+
+    int (*srm_abort_files)(struct srm_context *context,
+    					   struct srm_abort_files_input *input,
+    					   struct srmv2_filestatus **statuses);
 };
 
 extern struct _gfal_srm_external_call gfal_srm_external_call;
