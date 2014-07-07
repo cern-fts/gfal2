@@ -184,7 +184,7 @@ rm -rf %{buildroot};
 make clean
 
 %prep
-%setup -qc
+%setup -q
 
 %build
 %cmake \
