@@ -302,7 +302,7 @@ void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, gl
     // If throughput != 0, or the file has been already sent, reset timer callback
     // [LCGUTIL-440] Some endpoints calculate the checksum before closing, so we will
     //               get throughput = 0 for a while, and the transfer should not fail
-    if (throughput != 0.0 || args->source_size >= total_bytes) {
+    if (throughput != 0.0 || total_bytes >= args->source_size) {
         GridFTP_Request_state* req = args->req;
         Glib::RWLock::ReaderLock l (req->mux_req_state);
         if(args->timeout_value > 0){
