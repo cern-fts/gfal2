@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -61,7 +61,7 @@ int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError*
         gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_mkdir_recG] try to create directory %s", surl);
         struct stat st;
 
-        ret = gfal_statG_srmv2_internal(context, &st, surl, &tmp_err);
+        ret = gfal_statG_srmv2_internal(context, &st, NULL, surl, &tmp_err);
         if (ret == 0) {
             if (!S_ISDIR(st.st_mode)) {
                 gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), ENOTDIR, __func__, "it is a file");
@@ -101,7 +101,7 @@ int gfal_srm_mkdirG(plugin_handle ch, const char* surl, mode_t mode, gboolean pf
             gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_mkdirG] try to create directory %s", surl);
             struct stat st;
 
-            ret = gfal_statG_srmv2_internal(context, &st, surl, &tmp_err);
+            ret = gfal_statG_srmv2_internal(context, &st, NULL, surl, &tmp_err);
             if (ret == 0) {
                 gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EEXIST, __func__, "directory already exist");
                 ret = -1;

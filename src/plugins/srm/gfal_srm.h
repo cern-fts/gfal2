@@ -1,18 +1,18 @@
 #pragma once
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -67,20 +67,15 @@ typedef struct _gfal_request_state{
     int							number;				// number of files in request
  } gfal_request_state;
 
-
- 
 /*
  * @struct structure for the srmv2 option management
  *  set to 0 by default
  */
 typedef struct _gfal_srmv2_opt{
 	enum gfal_srm_proto srm_proto_type;		// default protocol version
-	int opt_srmv2_desiredpintime;			//	optional desired default endpoint
-	char * opt_srmv2_spacetokendesc;		// optional spacetokens desc for srmv2	 
 	regex_t rexurl;
 	regex_t rex_full;
 	gfal_handle handle;
-    gfal_request_state* last_request_state;
 	GSimpleCache* cache;
 
 	char srm_ifce_error_buffer[GFAL_ERRMSG_LEN];
@@ -97,8 +92,8 @@ typedef struct _gfal_srm_result{
 typedef struct _gfal_srm_params{
 	char** protocols;				// optional protocols list for manual set
 	enum gfal_srm_proto proto_version;		// default protocol version
-	char * spacetokendesc;		// optional spacetokens desc for srmv2	 
-	int desiredpintime;			//	optional desired default endpoint
+	char * spacetokendesc;		// optional spacetokens desc for srmv2
+	//int desiredpintime;			//	optional desired default endpoint
     size_t file_size;
 }* gfal_srm_params_t;
 

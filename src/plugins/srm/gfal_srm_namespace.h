@@ -57,4 +57,4 @@ int gfal_srm_rmdirG(plugin_handle handle, const char* surl, GError** err);
 
 int gfal_srm_statG(plugin_handle handle, const char* surl, struct stat* buf, GError** err);
 
-int gfal_statG_srmv2_internal(srm_context_t context, struct stat* buf, const char* surl, GError** err);
+int gfal_statG_srmv2_internal(srm_context_t context, struct stat* buf, TFileLocality* loc, const char* surl, GError** err);

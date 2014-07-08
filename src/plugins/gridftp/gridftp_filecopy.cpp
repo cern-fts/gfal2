@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -54,9 +54,9 @@ std::string lookup_host (const char *host)
   int errcode;
   char addrstr[100]={0};
   void *ptr = NULL;
-  
+
   if(!host){
-  	return std::string("cant.be.resolved");  
+  	return std::string("cant.be.resolved");
   }
 
   memset (&hints, 0, sizeof (hints));
@@ -83,16 +83,16 @@ std::string lookup_host (const char *host)
           ptr = &((struct sockaddr_in6 *) i->ai_addr)->sin6_addr;
           break;
         }
-      if(ptr){	
+      if(ptr){
       	inet_ntop (i->ai_family, ptr, addrstr, 100);
 	}
 
       i = i->ai_next;
   }
-    
+
   if(addresses)
   	freeaddrinfo(addresses);
-  
+
   if(strlen(addrstr) < 7)
   	return std::string("cant.be.resolved");
   else
@@ -103,7 +103,7 @@ std::string lookup_host (const char *host)
 
 static std::string returnHostname(const std::string &uri){
 	Uri u0 = Uri::Parse(uri);
-	return  lookup_host(u0.Host.c_str()) + ":" + u0.Port;	
+	return  lookup_host(u0.Host.c_str()) + ":" + u0.Port;
 }
 
 const char * gridftp_checksum_transfer_config   = "COPY_CHECKSUM_TYPE";
@@ -195,7 +195,8 @@ struct Callback_handler{
 
     Callback_handler(gfal2_context_t context,
                      gfalt_params_t params, GridFTP_Request_state* req,
-                     const char* src, const char* dst) :
+                     const char* src, const char* dst,
+                     size_t src_size) :
         args(NULL){
         GError * tmp_err=NULL;
         gfalt_monitor_func callback = gfalt_get_monitor_callback(params, &tmp_err);
@@ -204,10 +205,8 @@ struct Callback_handler{
         Gfal::gerror_to_cpp(&tmp_err);
 
         if(callback){
-            args = new callback_args(context, callback, user_args, src, dst, req, &tmp_err);
+            args = new callback_args(context, callback, user_args, src, dst, req, src_size);
         }
-
-
     }
 
     static void* func_timer(void* v){
@@ -227,7 +226,7 @@ struct Callback_handler{
         std::stringstream msg;
         msg << "Transfer canceled because the gsiftp performance marker timeout of "
             << args->timeout_value
-            << " seconds has been exceeded.";
+            << " seconds has been exceeded, or all performance markers during that period indicated zero bytes transferred";
         args->req->cancel_operation_async(gfal_gridftp_scope_filecopy(),
                                           msg.str());
 
@@ -241,8 +240,7 @@ struct Callback_handler{
     }
     struct callback_args{
         callback_args(gfal2_context_t context, const gfalt_monitor_func mcallback, gpointer muser_args,
-                      const char* msrc, const char* mdst, GridFTP_Request_state* mreq,
-                      GError** err) :
+                      const char* msrc, const char* mdst, GridFTP_Request_state* mreq, size_t src_size) :
             callback(mcallback),
             user_args(muser_args),
             req(mreq),
@@ -260,6 +258,8 @@ struct Callback_handler{
             if(timeout_value > 0){
                 pthread_create(&timer_pthread, NULL, Callback_handler::func_timer, this);
             }
+
+            source_size = src_size;
         }
 
         virtual ~callback_args(){
@@ -281,6 +281,7 @@ struct Callback_handler{
         int timeout_value;
         time_t timeout_time;
         pthread_t timer_pthread;
+        globus_off_t source_size;
     } *args;
 };
 
@@ -298,8 +299,10 @@ void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, gl
     args->callback(state, args->src, args->dst, args->user_args);
     gfalt_transfer_status_delete(state);
 
-    // If throughput != 0, reset timer callback
-    if (throughput != 0.0) {
+    // If throughput != 0, or the file has been already sent, reset timer callback
+    // [LCGUTIL-440] Some endpoints calculate the checksum before closing, so we will
+    //               get throughput = 0 for a while, and the transfer should not fail
+    if (throughput != 0.0 || (args->source_size > 0 && args->source_size <= total_bytes )) {
         GridFTP_Request_state* req = args->req;
         Glib::RWLock::ReaderLock l (req->mux_req_state);
         if(args->timeout_value > 0){
@@ -313,15 +316,25 @@ void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, gl
     }
 }
 
-static void gridftp_do_copy(GridFTPFactoryInterface* factory, gfalt_params_t params,
+static void gridftp_do_copy(GridftpModule* module, GridFTPFactoryInterface* factory,
+        gfalt_params_t params,
         const char* src, const char* dst,
         GridFTP_Request_state& req, time_t timeout)
 {
+    struct stat src_stat;
+
+    try {
+        module->stat(src, &src_stat);
+    }
+    catch (...) {
+        src_stat.st_size = 0;
+    }
+
     GridFTP_session* sess = req.sess.get();
 
     std::auto_ptr<Gass_attr_handler>  gass_attr_src(sess->generate_gass_copy_attr());
     std::auto_ptr<Gass_attr_handler>  gass_attr_dst(sess->generate_gass_copy_attr());
-    Callback_handler callback_handler(factory->get_handle(), params, &req, src, dst);
+    Callback_handler callback_handler(factory->get_handle(), params, &req, src, dst, src_stat.st_size);
 
     req.start();
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);
@@ -379,7 +392,7 @@ static int gridftp_filecopy_copy_file_internal(GridftpModule* module,
     }
 
     try {
-        gridftp_do_copy(factory, params, src, dst, req, timeout);
+        gridftp_do_copy(module, factory, params, src, dst, req, timeout);
     }
     catch (Gfal::CoreException& e) {
         // Try again if the failure was related to udt
@@ -393,7 +406,7 @@ static int gridftp_filecopy_copy_file_internal(GridftpModule* module,
                                  e.what().c_str());
 
             sess->disable_udt();
-            gridftp_do_copy(factory, params, src, dst, req, timeout);
+            gridftp_do_copy(module, factory, params, src, dst, req, timeout);
         }
         // Else, rethrow
         else {

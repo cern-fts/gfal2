@@ -383,7 +383,8 @@ int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char* co
 ///
 int gfal2_unlink_list(gfal2_context_t context, int nbfiles, const char* const* uris, GError ** errors);
 
-
+/// @brief abort a list of files
+int gfal2_abort_files(gfal2_context_t context, int nbfiles, const char* const* urls, const char* token, GError ** errors);
 
 /////////////////////////////////////////////////////
 ///////////// R/W operations

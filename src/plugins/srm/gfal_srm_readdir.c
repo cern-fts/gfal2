@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -31,7 +31,7 @@
 #include <common/gfal_common_err_helpers.h>
 
 #include "gfal_srm_namespace.h"
-#include "gfal_srm_opendir.h" 
+#include "gfal_srm_opendir.h"
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_internal_ls.h"
 
@@ -78,7 +78,7 @@ inline static struct dirent* gfal_srm_readdir_convert_result(plugin_handle ch,
             resu->d_type = DT_REG;
 
         gfal_srm_stat64_to_stat(&statuses->stat, st);
-        gfal_srm_cache_stat_add(ch, buff_surlfull, st);
+        gfal_srm_cache_stat_add(ch, buff_surlfull, st, &statuses->locality);
     }
     else
         g_strlcpy(resu->d_name, statuses->surl, GFAL_URL_MAX_LEN);
@@ -101,7 +101,7 @@ static int gfal_srm_readdir_internal(plugin_handle ch,
 
 	memset(&input, 0, sizeof(input));
 	memset(&output, 0, sizeof(output));
-	
+
 	context = oh->context;
 
     input.nbfiles = 1;
@@ -137,7 +137,7 @@ static int gfal_srm_readdir_internal(plugin_handle ch,
         resu=-1;
     }
     gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
-		
+
     G_RETURN_ERR(resu, tmp_err, err);
 }
 
