@@ -174,10 +174,14 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
 
     if (opts->srm_context) {
         strncpy(opts->endpoint, full_endpoint, sizeof(opts->endpoint));
-        if (ucert)
-            strncpy(opts->x509_ucert, ucert, sizeof(opts->x509_ucert));
-        if (ukey)
+        if (ucert) {
+            strncpy(opts->x509_ucert, ucert, GFAL_URL_MAX_LEN);
+            opts->x509_ucert[GFAL_URL_MAX_LEN -1 ] = '\0';
+        }
+        if (ukey) {
             strncpy(opts->x509_ukey, ukey, sizeof(opts->x509_ukey));
+            opts->x509_ukey[GFAL_URL_MAX_LEN -1 ] = '\0';
+        }
     }
 
     return opts->srm_context;
