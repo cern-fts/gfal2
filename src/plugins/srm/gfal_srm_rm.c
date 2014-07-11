@@ -132,7 +132,6 @@ int gfal_srm_unlink_listG(plugin_handle ch, int nbfiles, const char* const* path
                 gfal_srm_cache_stat_remove(ch, paths[i]);
 
             ret = gfal_srm_rm_srmv2_internal(context, nbfiles, paths, err);
-            gfal_srm_ifce_context_release(context);
         }
     }
 

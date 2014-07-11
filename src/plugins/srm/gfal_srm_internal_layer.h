@@ -143,13 +143,5 @@ int gfal_srm_putdone(gfal_srmv2_opt* opts, char** surls, const char* token,  GEr
 
 void gfal_srm_report_error(char* errbuff, GError** err);
 
-
-
-srm_context_t gfal_srm_ifce_context_setup(gfal_context_t handle, const char* endpoint,
-                                                char* errbuff, size_t s_errbuff, GError** err);
-
-void gfal_srm_ifce_context_release(srm_context_t context);
-
 srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
         const char* surl, GError** err);
-

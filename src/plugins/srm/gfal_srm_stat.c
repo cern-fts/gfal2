@@ -69,7 +69,6 @@ int gfal_srm_statG(plugin_handle ch, const char* surl, struct stat* buf, GError*
                 gfal_log(GFAL_VERBOSE_TRACE, "   [gfal_srm_statG] store %s stat info in cache", surl);
                 gfal_srm_cache_stat_add(ch, surl, buf, &loc);
             }
-            gfal_srm_ifce_context_release(context);
         }
         else {
             ret = -1;

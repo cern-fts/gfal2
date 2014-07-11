@@ -168,7 +168,6 @@ static int gfal_srm_mTURLS_internal(gfal_srmv2_opt* opts, gfal_srm_params_t para
             ret = gfal_srm_getTURLS_srmv2_internal(context, opts, params, surls, resu, &tmp_err);
         else
             ret = gfal_srm_putTURLS_srmv2_internal(context, opts, params, surls, resu, &tmp_err);
-        gfal_srm_ifce_context_release(context);
     }
 
     if (ret < 0)
@@ -432,7 +431,6 @@ int gfal_srm_putdone(gfal_srmv2_opt* opts , char** surls, const char* token,  GE
     srm_context_t context = gfal_srm_ifce_easy_context(opts, surls[0], &tmp_err);
     if (context != NULL) {
         ret = gfal_srm_putdone_srmv2_internal(context, surls, token, &tmp_err);
-        gfal_srm_ifce_context_release(context);
     }
 
     if (ret < 0)
@@ -477,7 +475,6 @@ int srm_abort_request_plugin(plugin_handle * handle , const char* surl,
     srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
     if (context != NULL) {
         ret = srmv2_abort_request_internal(context, surl, reqtoken, &tmp_err);
-        gfal_srm_ifce_context_release(context);
     }
 
     gfal_log(GFAL_VERBOSE_TRACE, " [srm_abort_request] <-");

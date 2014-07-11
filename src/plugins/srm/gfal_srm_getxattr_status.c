@@ -97,7 +97,6 @@ ssize_t gfal_srm_status_getxattrG(plugin_handle handle, const char* surl, const 
     srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
     if (context != NULL) {
         ret = gfal_srm_status_internal(opts, context, surl, buff, s_buff, &tmp_err);
-        gfal_srm_ifce_context_release(context);
     }
 
     if (ret < 0)

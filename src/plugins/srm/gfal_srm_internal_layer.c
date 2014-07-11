@@ -68,8 +68,9 @@ struct _gfal_srm_external_call gfal_srm_external_call = {
 };
 
 
-srm_context_t gfal_srm_ifce_context_setup(gfal_context_t handle,
-        const char* endpoint, char* errbuff, size_t s_errbuff, GError** err)
+static srm_context_t gfal_srm_ifce_context_setup(gfal_context_t handle,
+        const char* endpoint, const char* ucert, const char* ukey,
+        char* errbuff, size_t s_errbuff, GError** err)
 {
     gint timeout;
     srm_context_t context = NULL;
@@ -79,8 +80,7 @@ srm_context_t gfal_srm_ifce_context_setup(gfal_context_t handle,
             srm_config_group, srm_config_keep_alive, FALSE);
     gfal_log(GFAL_VERBOSE_DEBUG, " SRM connection keep-alive %d", keep_alive);
 
-    context = srm_context_new2(endpoint, errbuff, s_errbuff, gfal_get_verbose(),
-            keep_alive);
+    context = srm_context_new2(endpoint, errbuff, s_errbuff, gfal_get_verbose(), keep_alive);
 
     if (context != NULL ) {
         timeout = gfal2_get_opt_integer_with_default(handle, srm_config_group,
@@ -94,16 +94,11 @@ srm_context_t gfal_srm_ifce_context_setup(gfal_context_t handle,
         gfal_log(GFAL_VERBOSE_DEBUG, " SRM connection timeout %d", timeout);
         context->timeout_conn = timeout;
 
-        gchar* ucert = gfal2_get_opt_string(handle, "X509", "CERT", NULL);
-        gchar* ukey = gfal2_get_opt_string(handle, "X509", "KEY", NULL);
         if (ucert) {
             gfal_log(GFAL_VERBOSE_DEBUG, " SRM using certificate %s", ucert);
             if (ukey)
                 gfal_log(GFAL_VERBOSE_DEBUG, " SRM using private key %s", ukey);
             srm_set_credentials(context, ucert, ukey);
-
-            g_free(ucert);
-            g_free(ukey);
         }
     }
     else {
@@ -115,8 +110,15 @@ srm_context_t gfal_srm_ifce_context_setup(gfal_context_t handle,
 }
 
 
-void gfal_srm_ifce_context_release(srm_context_t context){
-   srm_context_free(context);
+static int is_same_context(gfal_srmv2_opt* opts, const char* endpoint, const char* ucert, const char* ukey)
+{
+    if (strcmp(opts->endpoint, endpoint) != 0)
+        return 0;
+    if ((ucert && strcmp(opts->x509_ucert, ucert) != 0) || (!ucert && opts->x509_ucert[0]))
+        return 0;
+    if ((ukey && strcmp(opts->x509_ukey, ukey) != 0) || (!ukey && opts->x509_ukey[0]))
+        return 0;
+    return 1;
 }
 
 
@@ -132,12 +134,31 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
         return NULL;
     }
 
-    srm_context_t context = NULL;
+    gchar* ucert = gfal2_get_opt_string(opts->handle, "X509", "CERT", NULL);
+    gchar* ukey = gfal2_get_opt_string(opts->handle, "X509", "KEY", NULL);
+
+    // Try with existing one
+    if (opts->srm_context) {
+        if (is_same_context(opts, full_endpoint, ucert, ukey)) {
+            gfal_log(GFAL_VERBOSE_VERBOSE, "SRM context recycled for %s", full_endpoint);
+            return opts->srm_context;
+        }
+        else {
+            gfal_log(GFAL_VERBOSE_VERBOSE, "SRM context invalidated for %s", full_endpoint);
+            srm_context_free(opts->srm_context);
+            opts->srm_context = NULL;
+        }
+    }
+    else {
+        gfal_log(GFAL_VERBOSE_VERBOSE, "SRM context not available");
+    }
 
     switch (srm_types) {
         case PROTO_SRMv2:
-            context = gfal_srm_ifce_context_setup(opts->handle, full_endpoint,
-                            opts->srm_ifce_error_buffer, sizeof(opts->srm_ifce_error_buffer), &nested_error);
+            opts->srm_context = gfal_srm_ifce_context_setup(opts->handle, full_endpoint,
+                            ucert, ukey,
+                            opts->srm_ifce_error_buffer, sizeof(opts->srm_ifce_error_buffer),
+                            &nested_error);
             if (nested_error)
                 gfal2_propagate_prefixed_error(err, nested_error, __func__);
             break;
@@ -151,6 +172,14 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
             break;
     }
 
-    return context;
+    if (opts->srm_context) {
+        strncpy(opts->endpoint, full_endpoint, sizeof(opts->endpoint));
+        if (ucert)
+            strncpy(opts->x509_ucert, ucert, sizeof(opts->x509_ucert));
+        if (ukey)
+            strncpy(opts->x509_ukey, ukey, sizeof(opts->x509_ukey));
+    }
+
+    return opts->srm_context;
 }
 
