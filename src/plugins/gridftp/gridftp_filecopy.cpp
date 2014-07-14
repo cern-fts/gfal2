@@ -321,6 +321,8 @@ static void gridftp_do_copy(GridftpModule* module, GridFTPFactoryInterface* fact
         const char* src, const char* dst,
         GridFTP_Request_state& req, time_t timeout)
 {
+    /*
+    This will not work with Castor
     struct stat src_stat;
 
     try {
@@ -329,12 +331,13 @@ static void gridftp_do_copy(GridftpModule* module, GridFTPFactoryInterface* fact
     catch (...) {
         src_stat.st_size = 0;
     }
+    */
 
     GridFTP_session* sess = req.sess.get();
 
     std::auto_ptr<Gass_attr_handler>  gass_attr_src(sess->generate_gass_copy_attr());
     std::auto_ptr<Gass_attr_handler>  gass_attr_dst(sess->generate_gass_copy_attr());
-    Callback_handler callback_handler(factory->get_handle(), params, &req, src, dst, src_stat.st_size);
+    Callback_handler callback_handler(factory->get_handle(), params, &req, src, dst, 0);
 
     req.start();
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);
