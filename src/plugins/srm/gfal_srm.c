@@ -44,6 +44,19 @@
 
 #include <file/gfal_file_api.h>
 
+#include <gssapi.h>
+#include <globus_gss_assist.h>
+
+/*
+ * Set up globus (see LCGUTIL-429)
+ */
+__attribute__((constructor))
+static void globus_setup(void)
+{
+    globus_module_activate(GLOBUS_GSI_GSS_ASSIST_MODULE);
+    globus_module_activate(GLOBUS_GSI_GSSAPI_MODULE);
+}
+
 /*
  *
  * list of the turls supported protocols

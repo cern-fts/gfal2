@@ -3,10 +3,13 @@ cmake_minimum_required (VERSION 2.6)
 
 if (PLUGIN_SRM)
     file (GLOB src_srm "*.c*")
+
     pkg_check_modules(SRM_IFCE_PKG REQUIRED srm-ifce>=1.15.0)
-    add_definitions( ${SRM_IFCE_PKG_CFLAGS} )
+    pkg_check_modules(GLOBUS_GSSAPI_PKG REQUIRED globus-gssapi-gsi)
+
+    add_definitions(${SRM_IFCE_PKG_CFLAGS} ${GLOBUS_GSSAPI_PKG_CFLAGS})
     add_definitions(${gfal2_mds_def})
-    include_directories( ${SRM_IFCE_PKG_INCLUDE_DIR})
+    include_directories(${SRM_IFCE_PKG_INCLUDE_DIR} ${GLOBUS_GSSAPI_PKG_INCLUDE_DIR})
 
     add_library(plugin_srm SHARED ${src_srm} ${gfal2_mds_src} )
     target_link_libraries(plugin_srm gfal2 gfal2_transfer ${mds_cache_link}
@@ -29,4 +32,3 @@ if (PLUGIN_SRM)
                         DESTINATION ${SYSCONF_INSTALL_DIR}/gfal2.d/)
 
 endif (PLUGIN_SRM)
-
