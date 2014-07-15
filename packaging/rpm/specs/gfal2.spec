@@ -282,6 +282,9 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Tue Jul 15 2014 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.6.7-1
+- Release 2.6.7 of GFAL2
+
 * Thu Dec 05 2013 Alejandro Alvarez <aalvarez at cern.ch> - 2.4.8-1
  - Release 2.4.8 of GFAL2
 
