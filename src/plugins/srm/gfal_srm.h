@@ -31,8 +31,6 @@
 #include <common/gfal_constants.h>
 #include <gsimplecache/gcachemain.h>
 
-
-
 #define GFAL_PREFIX_SRM "srm://"
 #define GFAL_PREFIX_SRM_LEN 6
 #define GFAL_ENDPOINT_DEFAULT_PREFIX "httpg://"
@@ -68,9 +66,9 @@ typedef struct _gfal_request_state{
  } gfal_request_state;
 
 /*
- * @struct structure for the srmv2 option management
- *  set to 0 by default
+ * @struct structure for the srmv2
  */
+typedef struct srm_context* srm_context_t;
 typedef struct _gfal_srmv2_opt{
 	enum gfal_srm_proto srm_proto_type;		// default protocol version
 	regex_t rexurl;
@@ -79,6 +77,11 @@ typedef struct _gfal_srmv2_opt{
 	GSimpleCache* cache;
 
 	char srm_ifce_error_buffer[GFAL_ERRMSG_LEN];
+
+	srm_context_t srm_context;
+	// Used to know if the srm context must be cleaned
+	char x509_ucert[GFAL_URL_MAX_LEN], x509_ukey[GFAL_URL_MAX_LEN];
+	char endpoint[GFAL_URL_MAX_LEN];
 } gfal_srmv2_opt;
 
 

@@ -1,17 +1,17 @@
 /*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -85,7 +85,7 @@ static int gfal_access_srmv2_internal(srm_context_t context, const char* surl, i
  * @param mode access mode to check
  * @param err : GError error reprot system
  * @warning : not safe, surl must be verified
- */ 
+ */
 int gfal_srm_accessG(plugin_handle ch, const char* surl, int mode, GError** err)
 {
     g_return_val_err_if_fail(ch && surl, EINVAL, err, "[gfal_srm_accessG] Invalid value handle and/or surl");
@@ -97,7 +97,6 @@ int gfal_srm_accessG(plugin_handle ch, const char* surl, int mode, GError** err)
     srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
     if (context != NULL) {
         ret = gfal_access_srmv2_internal(context, surl, mode, &tmp_err);
-        gfal_srm_ifce_context_release(context);
     }
 
     if (ret != 0)

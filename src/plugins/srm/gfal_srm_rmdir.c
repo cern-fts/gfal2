@@ -87,7 +87,6 @@ int gfal_srm_rmdirG(plugin_handle ch, const char* surl, GError** err)
                         "This file is not a directory, impossible to use rmdir on it");
             }
         }
-        gfal_srm_ifce_context_release(context);
     }
 
     if (ret != 0)

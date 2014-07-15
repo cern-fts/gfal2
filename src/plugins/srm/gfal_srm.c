@@ -44,6 +44,19 @@
 
 #include <file/gfal_file_api.h>
 
+#include <gssapi.h>
+#include <globus_gss_assist.h>
+
+/*
+ * Set up globus (see LCGUTIL-429)
+ */
+__attribute__((constructor))
+static void globus_setup(void)
+{
+    globus_module_activate(GLOBUS_GSI_GSS_ASSIST_MODULE);
+    globus_module_activate(GLOBUS_GSI_GSSAPI_MODULE);
+}
+
 /*
  *
  * list of the turls supported protocols
@@ -162,6 +175,7 @@ void gfal_srm_destroyG(plugin_handle ch){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
 	regfree(&opts->rexurl);
 	regfree(&opts->rex_full);
+	srm_context_free(opts->srm_context);
 	gsimplecache_delete(opts->cache);
 	free(opts);
 }
@@ -188,7 +202,7 @@ void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal_handle handle){
 gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
 	gfal_plugin_interface srm_plugin;
 	memset(&srm_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin
-	gfal_srmv2_opt* opts = g_new(struct _gfal_srmv2_opt,1);	// define the srmv2 option struct and clear it
+	gfal_srmv2_opt* opts = g_new0(struct _gfal_srmv2_opt,1);	// define the srmv2 option struct and clear it
 	gfal_srm_opt_initG(opts, handle);
 	srm_plugin.plugin_data = (void*) opts;
 	srm_plugin.check_plugin_url = &gfal_srm_check_url;

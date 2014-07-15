@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -22,11 +22,11 @@
  * @version 2.0
  * @date 29/09/2011
  * */
- 
+
 #include <common/gfal_constants.h>
-#include <common/gfal_common_err_helpers.h> 
+#include <common/gfal_common_err_helpers.h>
 #include <file/gfal_file_api.h>
- 
+
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_getput.h"
 #include "gfal_srm_url_check.h"
@@ -43,7 +43,7 @@ static int gfal_checksumG_srmv2_internal(srm_context_t context, const char* surl
 	const int nb_request=1;
 	int ret=-1;
 	char* tab_surl[] = { (char*)surl, NULL};
-	
+
     input.nbfiles = nb_request;
     input.surls = tab_surl;
     input.numlevels = 0;
@@ -82,7 +82,7 @@ static int gfal_checksumG_srmv2_internal(srm_context_t context, const char* surl
 
 /*
  * get checksum from a remote SRM URL
- * 
+ *
  * */
 static int gfal_srm_cheksumG_internal(plugin_handle ch, const char* surl,
 											char* buf_checksum, size_t s_checksum,
@@ -97,7 +97,6 @@ static int gfal_srm_cheksumG_internal(plugin_handle ch, const char* surl,
     srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
     if (context != NULL) {
         ret = gfal_checksumG_srmv2_internal(context, surl, buf_checksum, s_checksum, buf_chktype, s_chktype, &tmp_err);
-        gfal_srm_ifce_context_release(context);
     }
 
     if (ret != 0)
