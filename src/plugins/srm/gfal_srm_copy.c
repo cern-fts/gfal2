@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -75,7 +75,7 @@ int srm_plugin_delete_existing_copy(plugin_handle handle, gfalt_params_t params,
     return res;
 }
 
-// create the parent directory 
+// create the parent directory
 // return 0 if nothing or not requested
 // return 1 if creation has been done
 // return < 0 in case of error
@@ -518,6 +518,56 @@ static int srm_cleanup_copy(plugin_handle handle, gfal2_context_t context,
 }
 
 
+static int is_castor_endpoint(plugin_handle handle, const char* surl)
+{
+    gfal_srmv2_opt* opts = (gfal_srmv2_opt*)handle;
+
+    GError *tmp_err = NULL;
+    srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    if (tmp_err)
+        g_error_free(tmp_err);
+    if (!context) {
+        gfal_log(GFAL_VERBOSE_NORMAL, "Could not get a context for %s", surl);
+        return -1;
+    }
+
+    struct srm_xping_output output;
+    if (gfal_srm_external_call.srm_xping(context, &output) < 0) {
+        gfal_log(GFAL_VERBOSE_NORMAL, "Failed to ping %s", surl);
+        return -1;
+    }
+
+    int i, is_castor = 0;
+    for (i = 0; i < output.n_extra && !is_castor; ++i) {
+        if (strcmp(output.extra[i].key, "backend_type") == 0) {
+            gfal_log(GFAL_VERBOSE_VERBOSE, "Endpoint of type %s: %s", output.extra[i].value, surl);
+            is_castor = (strcasecmp(output.extra[i].value, "CASTOR") == 0);
+        }
+    }
+    srm_xping_output_free(output);
+
+    return is_castor;
+}
+
+
+static void castor_gridftp_session_hack(plugin_handle handle, gfal2_context_t context,
+        const char* src, const char* dst)
+{
+    int src_is_castor = is_castor_endpoint(handle, src);
+    int dst_is_castor = is_castor_endpoint(handle, dst);
+
+    if (src_is_castor || dst_is_castor) {
+        gfal_log(GFAL_VERBOSE_VERBOSE,
+                "Found a Castor endpoint, or could not determine version! Disabling GridFTP session reuse");
+        gfal2_set_opt_boolean(context, "GRIDFTP PLUGIN", "SESSION_REUSE", 0, NULL);
+    }
+    else {
+        gfal_log(GFAL_VERBOSE_VERBOSE,
+                "No Castor endpoint. Honor configuration for SESSION_REUSE");
+    }
+}
+
+
 int srm_plugin_filecopy(plugin_handle handle, gfal2_context_t context,
         gfalt_params_t params, const char* source, const char* dest, GError ** err)
 {
@@ -532,6 +582,11 @@ int srm_plugin_filecopy(plugin_handle handle, gfal2_context_t context,
     gboolean is_checksum_enabled;
     gboolean allow_empty_source_checksum;
     gboolean transfer_finished = FALSE;
+
+    // Check if any of the endpoints is castor
+    // In that case, disable GridFTP session reuse (see LCGUTIL-448)
+    // Reason is: Castor does not allow doing multiple operations within the same connection
+    castor_gridftp_session_hack(handle, context, source, dest);
 
     plugin_trigger_event(params, srm_domain(), GFAL_EVENT_NONE,
             GFAL_EVENT_PREPARE_ENTER, "");
