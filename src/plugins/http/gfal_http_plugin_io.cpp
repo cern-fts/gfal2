@@ -6,9 +6,12 @@
 
 gfal_file_handle gfal_http_fopen(plugin_handle plugin_data, const char* url, int flag, mode_t mode, GError** err)
 {
+  char stripped_url[GFAL_URL_MAX_LEN];
+  strip_3rd_from_url(url, stripped_url, sizeof(stripped_url));
+
   GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
   Davix::DavixError* daverr = NULL;
-  DAVIX_FD* fd = davix->posix.open(&davix->params, url, flag, &daverr);
+  DAVIX_FD* fd = davix->posix.open(&davix->params, stripped_url, flag, &daverr);
   if (fd == NULL) {
     davix2gliberr(daverr, err);
     Davix::DavixError::clearError(&daverr);

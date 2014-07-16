@@ -80,7 +80,9 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
         case GFAL_PLUGIN_CHECKSUM:
             return (strncmp("http:", url, 5) == 0 || strncmp("https:", url, 6) == 0 ||
                  strncmp("dav:", url, 4) == 0 || strncmp("davs:", url, 5) == 0 ||
-                 strncmp("s3:", url, 4) == 0 || strncmp("s3s:", url, 5) == 0);
+                 strncmp("s3:", url, 4) == 0 || strncmp("s3s:", url, 5) == 0 ||
+                 strncmp("http+3rd:", url, 9) == 0 || strncmp("https+3rd:", url, 10) == 0 ||
+                 strncmp("dav+3rd:", url, 8) == 0 || strncmp("davs+3rd:", url, 9) == 0);
       default:
         return false;
     }

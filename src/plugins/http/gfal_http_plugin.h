@@ -41,6 +41,9 @@ void davix2gliberr(const Davix::DavixError* daverr, GError** err);
 // Cred setup
 void gfal_http_get_ucert(Davix::RequestParams & params, gfal_handle handle);
 
+// Removes +3rd from the url, if there
+void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);
+
 // METADATA OPERATIONS
 void gfal_http_delete(plugin_handle plugin_data);
 
