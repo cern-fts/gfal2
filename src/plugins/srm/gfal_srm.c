@@ -187,7 +187,7 @@ static void srm_internal_copy_stat(gpointer origin, gpointer copy){
 /*
  * Init an opts struct with the default parameters
  * */
-void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal_handle handle){
+void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal2_context_t handle){
 	memset(opts, 0, sizeof(gfal_srmv2_opt));
 	gfal_checker_compile(opts, NULL);
 	opts->srm_proto_type = PROTO_SRMv2;
@@ -199,7 +199,7 @@ void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal_handle handle){
 /*
  * Init function, called before all
  * */
-gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
+gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err){
 	gfal_plugin_interface srm_plugin;
 	memset(&srm_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin
 	gfal_srmv2_opt* opts = g_new0(struct _gfal_srmv2_opt,1);	// define the srmv2 option struct and clear it

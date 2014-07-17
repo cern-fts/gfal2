@@ -40,7 +40,7 @@
  * open function for the srm  plugin
  */
 gfal_file_handle lfc_openG(plugin_handle ch, const char* path, int flag, mode_t mode, GError** err){
-	gfal_handle handle = ((struct lfc_ops*)ch)->handle;
+	gfal2_context_t handle = ((struct lfc_ops*)ch)->handle;
 	GError* tmp_err=NULL;
 	gfal_file_handle res=NULL;
 	gfal_log(GFAL_VERBOSE_TRACE, "  %s ->",__func__);

@@ -293,7 +293,7 @@ struct GridFTP_session_implem : public GridFTP_session{
 };
 
 
-GridFTPFactory::GridFTPFactory(gfal_handle handle) : _handle(handle)
+GridFTPFactory::GridFTPFactory(gfal2_context_t handle) : _handle(handle)
 {
     GError * tmp_err=NULL;
     session_reuse = gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP, gridftp_session_reuse_config, &tmp_err);
@@ -414,7 +414,7 @@ GridFTPFactory::~GridFTPFactory()
     }
 }
 
-gfal_handle GridFTPFactory::get_handle(){
+gfal2_context_t GridFTPFactory::get_handle(){
 	return _handle;
 }
 

@@ -69,7 +69,7 @@ struct _gfal_srm_external_call gfal_srm_external_call = {
 };
 
 
-static srm_context_t gfal_srm_ifce_context_setup(gfal_context_t handle,
+static srm_context_t gfal_srm_ifce_context_setup(gfal2_context_t handle,
         const char* endpoint, const char* ucert, const char* ukey,
         char* errbuff, size_t s_errbuff, GError** err)
 {

@@ -55,7 +55,7 @@ static bool is_3rd_scheme(const char* url)
 }
 
 
-static bool is_http_3rdcopy_enabled(gfal_context_t context)
+static bool is_http_3rdcopy_enabled(gfal2_context_t context)
 {
     GError *err = NULL;
     bool enabled = gfal2_get_opt_boolean(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", &err);
@@ -138,7 +138,7 @@ static char* gfal_http_get_parent(const char* url)
 
 
 static int gfal_http_copy_make_parent(plugin_handle plugin_data,
-        gfalt_params_t params, gfal_context_t context,
+        gfalt_params_t params, gfal2_context_t context,
         const char* dst, GError** err)
 {
     GError *nestedError = NULL;
@@ -552,7 +552,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
 }
 
 
-int gfal_http_copy_check(plugin_handle plugin_data, gfal_context_t context, const char* src,
+int gfal_http_copy_check(plugin_handle plugin_data, gfal2_context_t context, const char* src,
         const char* dst, gfal_url2_check check)
 {
     if (check != GFAL_FILE_COPY)

@@ -228,7 +228,7 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
 	return 0;
 }
 
-gboolean gfal_plugin_mock_check_url_transfer(plugin_handle handle, gfal_context_t ctx, const char* src, const char* dst, gfal_url2_check type) {
+gboolean gfal_plugin_mock_check_url_transfer(plugin_handle handle, gfal2_context_t ctx, const char* src, const char* dst, gfal_url2_check type) {
     gboolean res = FALSE;
 
     if( src != NULL && dst != NULL){
@@ -337,7 +337,7 @@ int gfal_plugin_mock_filecopy(plugin_handle handle, gfal2_context_t context, gfa
 /*
  * Init function, called before all
  * */
-gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
+gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err){
 
 	gfal_plugin_interface mock_plugin;
     memset(&mock_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin

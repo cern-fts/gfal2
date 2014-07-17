@@ -59,7 +59,7 @@ struct lfc_ops {
     char* lfc_conn_try_int;
     char* lfc_conn_timeout;
     regex_t rex; // regular expression compiled 
-    gfal_handle handle;
+    gfal2_context_t handle;
     GSimpleCache* cache_stat;
 #if defined(_REENTRANT) || defined(_THREAD_SAFE) || (defined(_WIN32) && (defined(_MT) || defined(_DLL)))
     int*    (*get_serrno)(void);
@@ -148,6 +148,6 @@ void gfal_generate_guidG(char* buf, GError** err);
 
 struct lfc_ops* gfal_load_lfc(const char* name, GError** err);
 
-int gfal_lfc_register_check(plugin_handle plugin_data, gfal_context_t context, const char* src, const char* dst, gfal_url2_check check);
+int gfal_lfc_register_check(plugin_handle plugin_data, gfal2_context_t context, const char* src, const char* dst, gfal_url2_check check);
 
 int gfal_lfc_register(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params, const char* src, const char* dst, GError**);

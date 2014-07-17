@@ -57,7 +57,7 @@ GQuark gfal2_get_plugin_lfc_quark();
 
 gboolean gfal_checker_guid(const char* guid, GError** err);
 
-gfal_plugin_interface lfc_initG(gfal_handle, GError**);
+gfal_plugin_interface lfc_initG(gfal2_context_t, GError**);
 
 
 gboolean gfal_lfc_check_lfn_url(plugin_handle handle, const char* lfn_url, plugin_mode mode, GError** err);

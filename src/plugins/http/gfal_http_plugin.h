@@ -10,7 +10,7 @@
 
 
 struct GfalHttpInternal {
-    GfalHttpInternal(gfal_handle handle);
+    GfalHttpInternal(gfal2_context_t handle);
 
     Davix::Context       context;
     Davix::DavPosix      posix;
@@ -19,12 +19,12 @@ struct GfalHttpInternal {
 
 
 struct GfalHttpPluginData{
-    GfalHttpPluginData(gfal_handle);
+    GfalHttpPluginData(gfal2_context_t);
     ~GfalHttpPluginData();
 
     GfalHttpInternal* davix;
     GMutex* _init_mux;
-    gfal_handle handle;
+    gfal2_context_t handle;
 };
 
 
@@ -39,7 +39,7 @@ extern GQuark http_plugin_domain;
 void davix2gliberr(const Davix::DavixError* daverr, GError** err);
 
 // Cred setup
-void gfal_http_get_ucert(Davix::RequestParams & params, gfal_handle handle);
+void gfal_http_get_ucert(Davix::RequestParams & params, gfal2_context_t handle);
 
 // Removes +3rd from the url, if there
 void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);
@@ -86,7 +86,7 @@ int gfal_http_checksum(plugin_handle data, const char* url, const char* check_ty
 int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params,
         const char* src, const char* dst, GError** err);
 
-int gfal_http_copy_check(plugin_handle plugin_data, gfal_context_t context,
+int gfal_http_copy_check(plugin_handle plugin_data, gfal2_context_t context,
         const char* src, const char* dst, gfal_url2_check check);
 
 #endif //_GFAL_HTTP_PLUGIN_H

@@ -82,7 +82,7 @@ class GridFTPFactoryInterface
         GridFTPFactoryInterface(){}
         virtual ~GridFTPFactoryInterface(){}
 
-		virtual gfal_handle get_handle()=0;	
+		virtual gfal2_context_t get_handle()=0;	
 		
 		
 		virtual  GridFTP_session* gfal_globus_ftp_take_handle(const std::string & hostname)=0;

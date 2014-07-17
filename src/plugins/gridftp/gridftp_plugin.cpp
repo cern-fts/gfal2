@@ -36,7 +36,7 @@ static bool is_gridftp_uri(const char* src)
 
 
 
-gboolean gridftp_check_url_transfer(plugin_handle handle, gfal_context_t context, const char* src,
+gboolean gridftp_check_url_transfer(plugin_handle handle, gfal2_context_t context, const char* src,
                                     const char* dst, gfal_url2_check type)
 {
     g_return_val_if_fail(handle != NULL,FALSE);
@@ -81,7 +81,7 @@ int gridftp_check_url(plugin_handle handle, const char* src, plugin_mode check,
 
 
 
-plugin_handle gridftp_plugin_load(gfal_handle handle, GError ** err)
+plugin_handle gridftp_plugin_load(gfal2_context_t handle, GError ** err)
 {
 	GError * tmp_err=NULL;
 	plugin_handle h = NULL;
@@ -122,7 +122,7 @@ const char *gridftp_plugin_name()
  * lfc_initG do : liblfc shared library load, sym resolve, endpoint check, and plugin function map.
  * 
  * */
-gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
+gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err){
 	GError* tmp_err=NULL;
 	
 	gfal_plugin_interface ret;

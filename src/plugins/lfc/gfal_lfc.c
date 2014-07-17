@@ -839,7 +839,7 @@ static void internal_stat_copy(gpointer original, gpointer copy){
  * lfc_initG do : liblfc shared library load, sym resolve, endpoint check, and plugin function map.
  * 
  * */
-gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
+gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err){
 	pthread_mutex_lock(&m_lfcinit);
 	gfal_plugin_interface lfc_plugin;
 	GError* tmp_err=NULL;

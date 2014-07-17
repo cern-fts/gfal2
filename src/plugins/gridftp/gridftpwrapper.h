@@ -283,7 +283,7 @@ private:
 class GridFTPFactory : public GridFTPFactoryInterface
 {
 	public:
-		GridFTPFactory(gfal_handle handle );
+		GridFTPFactory(gfal2_context_t handle );
 		virtual ~GridFTPFactory();
 
 		/**
@@ -300,8 +300,8 @@ class GridFTPFactory : public GridFTPFactoryInterface
 		
 
 	private:
-		gfal_handle _handle;
-		virtual gfal_handle get_handle();
+		gfal2_context_t _handle;
+		virtual gfal2_context_t get_handle();
         // session re-use management
 		bool session_reuse;
 		unsigned int size_cache;

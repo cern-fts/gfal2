@@ -18,7 +18,7 @@ static const char* gfal_http_get_name(void)
 }
 
 
-GfalHttpInternal::GfalHttpInternal(gfal_handle handle):
+GfalHttpInternal::GfalHttpInternal(gfal2_context_t handle):
     context(), posix(&context), params()
 {
     params.setTransparentRedirectionSupport(true);
@@ -30,7 +30,7 @@ GfalHttpInternal::GfalHttpInternal(gfal_handle handle):
 
 
 
-GfalHttpPluginData::GfalHttpPluginData(gfal_handle handle):
+GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
     davix(NULL), _init_mux(g_mutex_new()), handle(handle)
 {
 }
@@ -171,7 +171,7 @@ void davix2gliberr(const DavixError* daverr, GError** err)
 
 
 /// Authn implementation
-void gfal_http_get_ucert(RequestParams & params, gfal_handle handle)
+void gfal_http_get_ucert(RequestParams & params, gfal2_context_t handle)
 {
     std::string ukey, ucert;
     DavixError* tmp_err=NULL;
@@ -197,7 +197,7 @@ void gfal_http_get_ucert(RequestParams & params, gfal_handle handle)
 
 
 /// Init function
-extern "C" gfal_plugin_interface gfal_plugin_init(gfal_handle handle,
+extern "C" gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle,
                                                   GError** err)
 {
   gfal_plugin_interface http_plugin;
