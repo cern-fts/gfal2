@@ -93,14 +93,14 @@ gboolean gfal_plugin_checker_safe(gfal_plugin_interface* cata_list,
 //
 // Resolve entry point in a plugin and add it to the current plugin list
 //
-static int gfal_module_init(gfal_handle handle, void* dlhandle,
+static int gfal_module_init(gfal2_context_t handle, void* dlhandle,
         const char* module_name, GError** err)
 {
     GError* tmp_err = NULL;
-    static gfal_plugin_interface (*constructor)(gfal_handle, GError**);
+    static gfal_plugin_interface (*constructor)(gfal2_context_t, GError**);
     int* n = &handle->plugin_opt.plugin_number;
     int res = -1;
-    constructor = (gfal_plugin_interface (*)(gfal_handle, GError**)) dlsym(dlhandle, GFAL_PLUGIN_INIT_SYM);
+    constructor = (gfal_plugin_interface (*)(gfal2_context_t, GError**)) dlsym(dlhandle, GFAL_PLUGIN_INIT_SYM);
     if (constructor == NULL) {
         g_set_error(&tmp_err, gfal2_get_plugins_quark(), EINVAL,
                 "No symbol %s found in the plugin %s, failure",
@@ -124,7 +124,7 @@ static int gfal_module_init(gfal_handle handle, void* dlhandle,
 }
 
 // unload each loaded plugin
-int gfal_plugins_delete(gfal_handle handle, GError** err)
+int gfal_plugins_delete(gfal2_context_t handle, GError** err)
 {
     g_return_val_err_if_fail(handle, -1, err, "[gfal_plugins_delete] Invalid value of handle");
     const int plugin_number = handle->plugin_opt.plugin_number;
@@ -143,7 +143,7 @@ int gfal_plugins_delete(gfal_handle handle, GError** err)
 
 
 // return the proper plugin linked to this file handle
-gfal_plugin_interface* gfal_plugin_map_file_handle(gfal_handle handle, gfal_file_handle fh, GError** err)
+gfal_plugin_interface* gfal_plugin_map_file_handle(gfal2_context_t handle, gfal_file_handle fh, GError** err)
 {
     GError* tmp_err = NULL;
     int i;
@@ -166,7 +166,7 @@ gfal_plugin_interface* gfal_plugin_map_file_handle(gfal_handle handle, gfal_file
 }
 
 // external function to get the list of the plugins loaded
-char** gfal_plugins_get_list(gfal_handle handle, GError** err)
+char** gfal_plugins_get_list(gfal2_context_t handle, GError** err)
 {
     GError* tmp_err = NULL;
     char** resu = NULL;
@@ -185,7 +185,7 @@ char** gfal_plugins_get_list(gfal_handle handle, GError** err)
 }
 
 // external function to return a gfal_plugin_interface from a given plugin name
-gfal_plugin_interface* gfal_search_plugin_with_name(gfal_handle handle,
+gfal_plugin_interface* gfal_search_plugin_with_name(gfal2_context_t handle,
         const char* name, GError** err)
 {
     g_return_val_err_if_fail(name && handle, NULL, err, "must be non NULL value");
@@ -213,7 +213,7 @@ gfal_plugin_interface* gfal_search_plugin_with_name(gfal_handle handle,
 }
 
 //  load the gfal_plugins in the listed library
-static int gfal_module_load(gfal_handle handle, char* module_name, GError** err)
+static int gfal_module_load(gfal2_context_t handle, char* module_name, GError** err)
 {
     void* dlhandle = dlopen(module_name, RTLD_NOW);
     GError * tmp_err = NULL;
@@ -230,7 +230,7 @@ static int gfal_module_load(gfal_handle handle, char* module_name, GError** err)
 }
 
 
-plugin_pointer_handle gfal_plugins_list_handler(gfal_handle handle, GError** err)
+plugin_pointer_handle gfal_plugins_list_handler(gfal2_context_t handle, GError** err)
 {
     GError* tmp_err = NULL;
     plugin_pointer_handle resu = NULL;
@@ -332,7 +332,7 @@ char ** gfal_localize_plugins(GError** err)
 }
 
 
-int gfal_modules_resolve(gfal_handle handle, GError** err)
+int gfal_modules_resolve(gfal2_context_t handle, GError** err)
 {
     GError* tmp_err = NULL;
     int res = -1;
@@ -373,7 +373,7 @@ gint gfal_plugin_compare(gconstpointer a, gconstpointer b)
 //
 // Sort plugins by priority
 //
-int gfal_plugins_sort(gfal_handle handle, GError ** err)
+int gfal_plugins_sort(gfal2_context_t handle, GError ** err)
 {
     int i;
     for (i = 0; i < handle->plugin_opt.plugin_number; ++i) {
@@ -404,7 +404,7 @@ int gfal_plugins_sort(gfal_handle handle, GError ** err)
 // Instance all plugins for use if it's not the case
 // return the number of plugin available
 //
-int gfal_plugins_instance(gfal_handle handle, GError** err)
+int gfal_plugins_instance(gfal2_context_t handle, GError** err)
 {
     g_return_val_err_if_fail(handle, -1, err,
             "[gfal_plugins_instance]  invalid value of handle");
@@ -429,7 +429,7 @@ int gfal_plugins_instance(gfal_handle handle, GError** err)
 }
 
 
-gfal_plugin_interface* gfal_find_plugin(gfal_handle handle, const char * url,
+gfal_plugin_interface* gfal_find_plugin(gfal2_context_t handle, const char * url,
         plugin_mode acc_mode, GError** err)
 {
     GError* tmp_err = NULL;
@@ -464,7 +464,7 @@ gfal_plugin_interface* gfal_find_plugin(gfal_handle handle, const char * url,
 //  return the result of the first valid plugin for a given URL
 //  result of the access method or -1 if error and set GError with the correct value
 //  error : EPROTONOSUPPORT means that the URL is not matched by a plugin
-int gfal_plugins_accessG(gfal_handle handle, const char* path, int mode,
+int gfal_plugins_accessG(gfal2_context_t handle, const char* path, int mode,
         GError** err)
 {
     g_return_val_err_if_fail(handle && path, EINVAL, err, "[gfal_plugins_accessG] Invalid arguments");
@@ -480,7 +480,7 @@ int gfal_plugins_accessG(gfal_handle handle, const char* path, int mode,
 }
 
 //  Execute a stat function on the appropriate plugin
-int gfal_plugin_statG(gfal_handle handle, const char* path, struct stat* st, GError** err)
+int gfal_plugin_statG(gfal2_context_t handle, const char* path, struct stat* st, GError** err)
 {
     g_return_val_err_if_fail(handle && path, EINVAL, err, "[gfal_plugin_statG] Invalid arguments");
     int res = -1;
@@ -497,7 +497,7 @@ int gfal_plugin_statG(gfal_handle handle, const char* path, struct stat* st, GEr
 
 
 //  Execute a stat function on the appropriate plugin
-int gfal_plugin_lstatG(gfal_handle handle, const char* path, struct stat* st, GError** err)
+int gfal_plugin_lstatG(gfal2_context_t handle, const char* path, struct stat* st, GError** err)
 {
     g_return_val_err_if_fail(handle && path, EINVAL, err, "[gfal_plugin_statG] Invalid arguments");
     int res = -1;
@@ -514,7 +514,7 @@ int gfal_plugin_lstatG(gfal_handle handle, const char* path, struct stat* st, GE
 
 
 //  Execute a readlink function on the appropriate plugin
-ssize_t gfal_plugin_readlinkG(gfal_handle handle, const char* path, char* buff, size_t buffsiz, GError** err)
+ssize_t gfal_plugin_readlinkG(gfal2_context_t handle, const char* path, char* buff, size_t buffsiz, GError** err)
 {
     g_return_val_err_if_fail(handle && path, EINVAL, err,
             "[gfal_plugin_readlinkG] Invalid arguments");
@@ -534,7 +534,7 @@ ssize_t gfal_plugin_readlinkG(gfal_handle handle, const char* path, char* buff, 
 
 
 //  Execute a chmod function on the appropriate plugin
-int gfal_plugin_chmodG(gfal_handle handle, const char* path, mode_t mode, GError** err)
+int gfal_plugin_chmodG(gfal2_context_t handle, const char* path, mode_t mode, GError** err)
 {
     g_return_val_err_if_fail(handle && path, -1, err, "[gfal_plugin_chmodG] Invalid arguments");
     GError* tmp_err = NULL;
@@ -550,7 +550,7 @@ int gfal_plugin_chmodG(gfal_handle handle, const char* path, mode_t mode, GError
 
 
 // Execute a rename function on the appropriate plugin
-int gfal_plugin_renameG(gfal_handle handle, const char* oldpath, const char* newpath, GError** err)
+int gfal_plugin_renameG(gfal2_context_t handle, const char* oldpath, const char* newpath, GError** err)
 {
     g_return_val_err_if_fail(oldpath && newpath, -1, err, "[gfal_plugin_renameG] invalid value in args oldpath, handle or newpath");
     GError* tmp_err = NULL;
@@ -568,7 +568,7 @@ int gfal_plugin_renameG(gfal_handle handle, const char* oldpath, const char* new
 }
 
 // Execute a symlink function on the appropriate plugin
-int gfal_plugin_symlinkG(gfal_handle handle, const char* oldpath, const char* newpath, GError** err)
+int gfal_plugin_symlinkG(gfal2_context_t handle, const char* oldpath, const char* newpath, GError** err)
 {
     g_return_val_err_if_fail(oldpath && newpath, -1, err, "[gfal_plugin_symlinkG] invalid value in args oldpath, handle or newpath");
     GError* tmp_err = NULL;
@@ -586,7 +586,7 @@ int gfal_plugin_symlinkG(gfal_handle handle, const char* oldpath, const char* ne
 }
 
 // Execute a mkdir function on the appropriate plugin
-int gfal_plugin_mkdirp(gfal_handle handle, const char* path, mode_t mode, gboolean pflag, GError** err)
+int gfal_plugin_mkdirp(gfal2_context_t handle, const char* path, mode_t mode, gboolean pflag, GError** err)
 {
     g_return_val_err_if_fail(handle && path, -1, err, "[gfal_plugin_mkdirp] Invalid argumetns in path or/and handle");
     GError* tmp_err = NULL;
@@ -601,7 +601,7 @@ int gfal_plugin_mkdirp(gfal_handle handle, const char* path, mode_t mode, gboole
 }
 
 // Execute a rmdir function on the appropriate plugin
-int gfal_plugin_rmdirG(gfal_handle handle, const char* path, GError** err)
+int gfal_plugin_rmdirG(gfal2_context_t handle, const char* path, GError** err)
 {
     g_return_val_err_if_fail(handle && path, -1, err, "[gfal_plugin_rmdirp] Invalid arguments in path or/and handle");
     GError* tmp_err = NULL;
@@ -615,7 +615,7 @@ int gfal_plugin_rmdirG(gfal_handle handle, const char* path, GError** err)
 }
 
 // Execute a opendir function on the appropriate plugin
-gfal_file_handle gfal_plugin_opendirG(gfal_handle handle, const char* name, GError** err)
+gfal_file_handle gfal_plugin_opendirG(gfal2_context_t handle, const char* name, GError** err)
 {
     g_return_val_err_if_fail(handle && name, NULL, err, "[gfal_plugin_opendir] invalid value");
     GError* tmp_err = NULL;
@@ -630,7 +630,7 @@ gfal_file_handle gfal_plugin_opendirG(gfal_handle handle, const char* name, GErr
 }
 
 // Execute a closedir function on the appropriate plugin
-int gfal_plugin_closedirG(gfal_handle handle, gfal_file_handle fh, GError** err)
+int gfal_plugin_closedirG(gfal2_context_t handle, gfal_file_handle fh, GError** err)
 {
     g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_plugin_closedirG] Invalid args ");
     GError* tmp_err = NULL;
@@ -642,7 +642,7 @@ int gfal_plugin_closedirG(gfal_handle handle, gfal_file_handle fh, GError** err)
 }
 
 // Execute a open function on the appropriate plugin
-gfal_file_handle gfal_plugin_openG(gfal_handle handle, const char * path, int flag, mode_t mode, GError ** err)
+gfal_file_handle gfal_plugin_openG(gfal2_context_t handle, const char * path, int flag, mode_t mode, GError ** err)
 {
     GError* tmp_err = NULL;
     gfal_file_handle resu = NULL;
@@ -657,7 +657,7 @@ gfal_file_handle gfal_plugin_openG(gfal_handle handle, const char * path, int fl
 }
 
 // Execute a close function on the appropriate plugin
-int gfal_plugin_closeG(gfal_handle handle, gfal_file_handle fh, GError** err)
+int gfal_plugin_closeG(gfal2_context_t handle, gfal_file_handle fh, GError** err)
 {
     g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_plugin_closeG] Invalid args ");
     GError* tmp_err = NULL;
@@ -673,7 +673,7 @@ int gfal_plugin_closeG(gfal_handle handle, gfal_file_handle fh, GError** err)
 }
 
 // Execute a readdir function on the appropriate plugin
-struct dirent* gfal_plugin_readdirG(gfal_handle handle, gfal_file_handle fh, GError** err)
+struct dirent* gfal_plugin_readdirG(gfal2_context_t handle, gfal_file_handle fh, GError** err)
 {
     g_return_val_err_if_fail(handle && fh, NULL, err, "[gfal_plugin_readdirG] Invalid args ");
     GError* tmp_err = NULL;
@@ -687,7 +687,7 @@ struct dirent* gfal_plugin_readdirG(gfal_handle handle, gfal_file_handle fh, GEr
 
 
 // Execute a readdir function on the appropriate plugin
-struct dirent* gfal_plugin_readdirppG(gfal_handle handle, gfal_file_handle fh, struct stat* st, GError** err)
+struct dirent* gfal_plugin_readdirppG(gfal2_context_t handle, gfal_file_handle fh, struct stat* st, GError** err)
 {
     g_return_val_err_if_fail(handle && fh, NULL, err, "[gfal_plugin_readdirppG] Invalid args ");
     GError* tmp_err = NULL;
@@ -703,7 +703,7 @@ struct dirent* gfal_plugin_readdirppG(gfal_handle handle, gfal_file_handle fh, s
 }
 
 // Execute a getxattr function on the appropriate plugin
-ssize_t gfal_plugin_getxattrG(gfal_handle handle, const char* path, const char*name, void* buff, size_t s_buff, GError** err)
+ssize_t gfal_plugin_getxattrG(gfal2_context_t handle, const char* path, const char*name, void* buff, size_t s_buff, GError** err)
 {
     GError* tmp_err = NULL;
     ssize_t resu = -1;
@@ -732,7 +732,7 @@ ssize_t gfal_plugin_getxattrG(gfal_handle handle, const char* path, const char*n
 }
 
 // Execute a listxattr function on the appropriate plugin
-ssize_t gfal_plugin_listxattrG(gfal_handle handle, const char* path, char* list, size_t s_list, GError** err)
+ssize_t gfal_plugin_listxattrG(gfal2_context_t handle, const char* path, char* list, size_t s_list, GError** err)
 {
     GError* tmp_err = NULL;
     ssize_t resu = -1;
@@ -746,7 +746,7 @@ ssize_t gfal_plugin_listxattrG(gfal_handle handle, const char* path, char* list,
 }
 
 // Execute a setxattr function on the appropriate plugin
-int gfal_plugin_setxattrG(gfal_handle handle, const char* path, const char* name, const void* value, size_t size, int flags, GError** err)
+int gfal_plugin_setxattrG(gfal2_context_t handle, const char* path, const char* name, const void* value, size_t size, int flags, GError** err)
 {
     GError* tmp_err = NULL;
     int resu = -1;
@@ -759,7 +759,7 @@ int gfal_plugin_setxattrG(gfal_handle handle, const char* path, const char* name
 }
 
 // Execute a read function on the appropriate plugin
-int gfal_plugin_readG(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, GError** err)
+int gfal_plugin_readG(gfal2_context_t handle, gfal_file_handle fh, void* buff, size_t s_buff, GError** err)
 {
     g_return_val_err_if_fail(handle && fh && buff && s_buff > 0, -1, err, "[gfal_plugin_readG] Invalid args ");
     GError* tmp_err = NULL;
@@ -772,7 +772,7 @@ int gfal_plugin_readG(gfal_handle handle, gfal_file_handle fh, void* buff, size_
 
 // Simulate a pread operation in case of non-parallels read support
 // this is slower than a normal pread/pwrite operation
-inline ssize_t gfal_plugin_simulate_preadG(gfal_handle handle, gfal_plugin_interface* if_cata, gfal_file_handle fh, void* buff, size_t s_buff,
+inline ssize_t gfal_plugin_simulate_preadG(gfal2_context_t handle, gfal_plugin_interface* if_cata, gfal_file_handle fh, void* buff, size_t s_buff,
         off_t offset, GError** err)
 {
     GError* tmp_err = NULL;
@@ -793,7 +793,7 @@ inline ssize_t gfal_plugin_simulate_preadG(gfal_handle handle, gfal_plugin_inter
 }
 
 // Execute a pread function on the appropriate plugin
-ssize_t gfal_plugin_preadG(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, off_t offset, GError** err)
+ssize_t gfal_plugin_preadG(gfal2_context_t handle, gfal_file_handle fh, void* buff, size_t s_buff, off_t offset, GError** err)
 {
     g_return_val_err_if_fail(handle && fh && buff, -1, err, "[gfal_plugin_preadG] Invalid args ");
     GError* tmp_err = NULL;
@@ -811,7 +811,7 @@ ssize_t gfal_plugin_preadG(gfal_handle handle, gfal_file_handle fh, void* buff, 
 
 // Simulate a pread operation in case of non-parallels write support
 // this is slower than a normal pread/pwrite operation
-inline ssize_t gfal_plugin_simulate_pwriteG(gfal_handle handle, gfal_plugin_interface* if_cata, gfal_file_handle fh, void* buff, size_t s_buff,
+inline ssize_t gfal_plugin_simulate_pwriteG(gfal2_context_t handle, gfal_plugin_interface* if_cata, gfal_file_handle fh, void* buff, size_t s_buff,
         off_t offset, GError** err)
 {
     GError* tmp_err = NULL;
@@ -832,7 +832,7 @@ inline ssize_t gfal_plugin_simulate_pwriteG(gfal_handle handle, gfal_plugin_inte
 }
 
 // Execute a pwrite function on the appropriate plugin
-ssize_t gfal_plugin_pwriteG(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, off_t offset, GError** err)
+ssize_t gfal_plugin_pwriteG(gfal2_context_t handle, gfal_file_handle fh, void* buff, size_t s_buff, off_t offset, GError** err)
 {
     g_return_val_err_if_fail(handle && fh && buff, -1, err, "[gfal_plugin_pwriteG] Invalid args ");
     GError* tmp_err = NULL;
@@ -849,7 +849,7 @@ ssize_t gfal_plugin_pwriteG(gfal_handle handle, gfal_file_handle fh, void* buff,
 }
 
 // Execute a lseek function on the appropriate plugin
-int gfal_plugin_lseekG(gfal_handle handle, gfal_file_handle fh, off_t offset, int whence, GError** err)
+int gfal_plugin_lseekG(gfal2_context_t handle, gfal_file_handle fh, off_t offset, int whence, GError** err)
 {
     g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_plugin_lseekG] Invalid args ");
     GError* tmp_err = NULL;
@@ -862,7 +862,7 @@ int gfal_plugin_lseekG(gfal_handle handle, gfal_file_handle fh, off_t offset, in
 }
 
 // Execute a write function on the appropriate plugin
-int gfal_plugin_writeG(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, GError** err)
+int gfal_plugin_writeG(gfal2_context_t handle, gfal_file_handle fh, void* buff, size_t s_buff, GError** err)
 {
     g_return_val_err_if_fail(handle && fh && buff && s_buff > 0, -1, err, "[gfal_plugin_writeG] Invalid args ");
     GError* tmp_err = NULL;
@@ -874,7 +874,7 @@ int gfal_plugin_writeG(gfal_handle handle, gfal_file_handle fh, void* buff, size
 }
 
 // Execute a unlink function on the appropriate plugin
-int gfal_plugin_unlinkG(gfal_handle handle, const char* path, GError** err)
+int gfal_plugin_unlinkG(gfal2_context_t handle, const char* path, GError** err)
 {
     GError* tmp_err = NULL;
     int resu = -1;

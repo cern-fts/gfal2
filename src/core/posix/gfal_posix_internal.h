@@ -1,22 +1,22 @@
 #pragma once
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
- 
- 
+
+
  /**
  * @file gfal_posix_local_file.c
  * @brief header file for the internal func of the posix interface
@@ -31,10 +31,10 @@
 #include <file/gfal_file_api.h>
 #include <logger/gfal_logger.h>
 
-gfal_handle gfal_posix_instance();
+gfal2_context_t gfal_posix_instance();
 
 GError** gfal_posix_get_last_error();
- 
+
 int gfal_posix_internal_access (const char *path, int amode);
 
 int gfal_posix_internal_chmod(const char* path, mode_t mode);
@@ -82,9 +82,9 @@ struct dirent* gfal_posix_internal_readdir(DIR* dir);
 
 int gfal_posix_internal_symlink(const char * oldpath, const char *newpath);
 
-void gfal_posix_register_internal_error(gfal_handle handle, const char* prefix, GError * tmp_err);
- 
- 
+void gfal_posix_register_internal_error(gfal2_context_t handle, const char* prefix, GError * tmp_err);
+
+
 int gfal_get_parameter_boolean_internal(const char* namespace, const char* key);
 
 int gfal_set_parameter_boolean_internal(const char* namespace, const char* key, int value);

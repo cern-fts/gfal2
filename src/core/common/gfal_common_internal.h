@@ -44,10 +44,10 @@ extern "C"
     gfal2_end_scope_cancel(context)
 
 /// init function
-gfal_handle gfal_initG(GError** err);
+gfal2_context_t gfal_initG(GError** err);
 
 /// free gfal handle
-void gfal_handle_freeG(gfal_handle handle);
+void gfal_handle_freeG(gfal2_context_t handle);
 
 GQuark gfal_cancel_quark();
 

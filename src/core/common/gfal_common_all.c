@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -59,17 +59,17 @@ void core_init(){
  /*
  * initiate a gfal's context with default parameters for use
  */
-gfal_handle gfal_initG (GError** err)
+gfal2_context_t gfal_initG (GError** err)
 {
 	GError* tmp_err=NULL;
-	gfal_handle handle = g_new0(struct gfal_handle_,1);// clear allocation of the struct and set defautl options
+	gfal2_context_t handle = g_new0(struct gfal_handle_,1);// clear allocation of the struct and set defautl options
 	if(handle == NULL){
 		errno= ENOMEM;
         g_set_error(err, gfal2_get_plugins_quark(), ENOMEM, "[gfal_initG] bad allocation, no more memory free");
 		return NULL;
 	}
 	handle->plugin_opt.plugin_number= 0;
-	
+
     if((handle->conf = gfal_conf_new(&tmp_err)) && !tmp_err){
         // load and instanciate all the plugins
         gfal_plugins_instance(handle, &tmp_err);
@@ -91,7 +91,7 @@ gfal_handle gfal_initG (GError** err)
 }
 
 //free a gfal's handle, safe if null
-void gfal_handle_freeG (gfal_handle handle){
+void gfal_handle_freeG (gfal2_context_t handle){
 	if(handle == NULL)
 		return;
 	gfal_plugins_delete(handle, NULL);
@@ -110,8 +110,8 @@ char *gfal_version(){
     return (char*) gfalversion;
 }
 
- 
 
- 
+
+
 
 
