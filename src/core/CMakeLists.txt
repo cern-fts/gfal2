@@ -61,6 +61,7 @@ install (FILES "common/gfal_constants.h"
                "common/gfal_common_plugin.h"
                "common/gfal_types.h"
                "common/gfal_deprecated.h"
+               "common/gfal_common_err_helpers.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/common)
 install (FILES "global/gfal_global.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/global)
