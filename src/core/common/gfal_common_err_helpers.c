@@ -3,6 +3,10 @@
 #include <logger/gfal_logger.h>
 #include "gfal_common_err_helpers.h"
 
+#if (GLIB_CHECK_VERSION(2,16,0) != TRUE)
+#include "future/glib.h"
+#endif
+
 
 void gfal2_set_error(GError **err, GQuark domain, gint code,
         const gchar *function, const gchar *format, ...)
