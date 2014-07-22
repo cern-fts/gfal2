@@ -197,6 +197,12 @@ gchar ** gfal2_get_opt_string_list_with_default(gfal2_context_t handle, const gc
 
 
 /**
+ * @brief load configuration parameters from the file specified by path
+ */
+gint gfal2_load_opts_from_file(gfal2_context_t handle, const char* path, GError** error);
+
+
+/**
 	@}
     End of the FILE group
 */

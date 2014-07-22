@@ -300,3 +300,13 @@ gchar ** gfal2_get_opt_string_list_with_default(gfal2_context_t handle, const gc
     }
     return res;
 }
+
+
+gint gfal2_load_opts_from_file(gfal2_context_t handle, const char* path, GError** error)
+{
+    gfal_conf_t c = gfal_handle_to_conf(handle);
+    GError* tmp_err = NULL;
+    int res = gfal_load_configuration_to_conf_manager(c->running_manager, path, &tmp_err);
+    gfal_config_propagate_error_external(error, &tmp_err);
+    return res;
+}
