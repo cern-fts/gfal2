@@ -8,7 +8,7 @@
 #include "gfal_transfer_internal.h"
 
 static GQuark local_copy_domain = g_quark_from_static_string("FileCopy::local_copy");
-const size_t DEFAULT_BUFFER_SIZE = 200000;
+const size_t DEFAULT_BUFFER_SIZE = 4000000;
 
 static char* get_parent(const char* url)
 {
