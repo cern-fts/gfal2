@@ -39,6 +39,8 @@
 #include <exceptions/gerror_to_cpp.h>
 #include <exceptions/cpp_to_gerror.hpp>
 
+extern const char* gridftp_ipv6_config;
+
 static Glib::Quark gfal_gridftp_scope_filecopy(){
     return Glib::Quark("GridFTP::Filecopy");
 }
@@ -48,62 +50,65 @@ static Glib::Quark gfal_gsiftp_domain(){
 }
 
 /*IPv6 compatible lookup*/
-std::string lookup_host (const char *host)
+std::string lookup_host (const char *host, gboolean use_ipv6)
 {
-  struct addrinfo hints, *addresses = NULL;
-  int errcode;
-  char addrstr[100]={0};
-  void *ptr = NULL;
+    struct addrinfo hints, *addresses = NULL;
+    int errcode;
+    char addrstr[100] = { 0 };
+    char ip4str[16] = { 0 };
+    char ip6str[46] = { 0 };
+    void *ptr = NULL;
 
-  if(!host){
-  	return std::string("cant.be.resolved");
-  }
+    if (!host) {
+        return std::string("cant.be.resolved");
+    }
 
-  memset (&hints, 0, sizeof (hints));
-  hints.ai_family = PF_UNSPEC;
-  hints.ai_socktype = SOCK_STREAM;
-  hints.ai_flags |= AI_CANONNAME;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = PF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags |= AI_CANONNAME;
 
-  errcode = getaddrinfo (host, NULL, &hints, &addresses);
-  if (errcode != 0){
-  	return std::string("cant.be.resolved");
-  }
+    errcode = getaddrinfo(host, NULL, &hints, &addresses);
+    if (errcode != 0) {
+        return std::string("cant.be.resolved");
+    }
 
-  struct addrinfo *i = addresses;
-  while (i)
-    {
-      inet_ntop (i->ai_family, i->ai_addr->sa_data, addrstr, 100);
+    struct addrinfo *i = addresses;
+    while (i) {
+        inet_ntop(i->ai_family, i->ai_addr->sa_data, addrstr, 100);
 
-      switch (i->ai_family)
-        {
-        case AF_INET:
-          ptr = &((struct sockaddr_in *) i->ai_addr)->sin_addr;
-          break;
-        case AF_INET6:
-          ptr = &((struct sockaddr_in6 *) i->ai_addr)->sin6_addr;
-          break;
+        switch (i->ai_family) {
+            case AF_INET:
+                ptr = &((struct sockaddr_in *) i->ai_addr)->sin_addr;
+                if (ptr)
+                    inet_ntop(i->ai_family, ptr, ip4str, 100);
+                break;
+            case AF_INET6:
+                ptr = &((struct sockaddr_in6 *) i->ai_addr)->sin6_addr;
+                if (ptr)
+                    inet_ntop(i->ai_family, ptr, ip6str, 100);
+                break;
         }
-      if(ptr){
-      	inet_ntop (i->ai_family, ptr, addrstr, 100);
-	}
+        i = i->ai_next;
+    }
 
-      i = i->ai_next;
-  }
+    if (addresses)
+        freeaddrinfo(addresses);
 
-  if(addresses)
-  	freeaddrinfo(addresses);
-
-  if(strlen(addrstr) < 7)
-  	return std::string("cant.be.resolved");
-  else
-  	return std::string(addrstr);
+    if (use_ipv6 && ip6str[0])
+        return std::string(ip6str);
+    else if (ip4str[0])
+        return std::string(ip4str);
+    else
+        return std::string("cant.be.resolved");
 }
 
 
 
-static std::string returnHostname(const std::string &uri){
+static std::string returnHostname(const std::string &uri, gboolean use_ipv6)
+{
 	Uri u0 = Uri::Parse(uri);
-	return  lookup_host(u0.Host.c_str()) + ":" + u0.Port;
+	return  lookup_host(u0.Host.c_str(), use_ipv6) + ":" + u0.Port;
 }
 
 const char * gridftp_checksum_transfer_config   = "COPY_CHECKSUM_TYPE";
@@ -474,9 +479,13 @@ void GridftpModule::filecopy(gfalt_params_t params, const char* src, const char*
 
     gboolean checksum_check = gfalt_get_checksum_check(params, NULL);
     gboolean skip_source_checksum = gfal2_get_opt_boolean(_handle_factory->get_handle(),
-                                        GRIDFTP_CONFIG_GROUP,
-                                        gridftp_skip_transfer_config,
-                                        NULL);
+                    GRIDFTP_CONFIG_GROUP,
+                    gridftp_skip_transfer_config,
+                    NULL);
+    gboolean use_ipv6 = gfal2_get_opt_boolean(_handle_factory->get_handle(),
+                    GRIDFTP_CONFIG_GROUP,
+                    gridftp_ipv6_config,
+                    NULL);
 
     if (checksum_check) {
         gfalt_get_user_defined_checksum(params,
@@ -544,8 +553,8 @@ void GridftpModule::filecopy(gfalt_params_t params, const char* src, const char*
         plugin_trigger_event(params, gfal_gsiftp_domain(), GFAL_EVENT_NONE,
                              GFAL_EVENT_TRANSFER_ENTER,
                              "(%s) %s => (%s) %s",
-                             returnHostname(src).c_str(), src,
-                             returnHostname(dst).c_str(), dst);
+                             returnHostname(src, use_ipv6).c_str(), src,
+                             returnHostname(dst, use_ipv6).c_str(), dst);
         try {
             gridftp_filecopy_copy_file_internal(this, _handle_factory, params,
                                                 src, dst);
@@ -569,8 +578,8 @@ void GridftpModule::filecopy(gfalt_params_t params, const char* src, const char*
         plugin_trigger_event(params, gfal_gsiftp_domain(), GFAL_EVENT_NONE,
                              GFAL_EVENT_TRANSFER_EXIT,
                              "(%s) %s => (%s) %s",
-                             returnHostname(src).c_str(), src,
-                             returnHostname(dst).c_str(), dst);
+                             returnHostname(src, use_ipv6).c_str(), src,
+                             returnHostname(dst, use_ipv6).c_str(), dst);
     }
 
     // Validate destination checksum
