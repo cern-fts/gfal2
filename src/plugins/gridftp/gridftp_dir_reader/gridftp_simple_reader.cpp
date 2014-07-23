@@ -42,7 +42,7 @@ static int gridftp_readdir_parser(const std::string& line, struct dirent* entry)
 {
     memset(entry->d_name, 0, sizeof(entry->d_name));
     strncpy(entry->d_name, line.c_str(), sizeof(entry->d_name) - 1);
-    char *p = (char*)mempcpy(entry->d_name, line.c_str(), sizeof(entry->d_name));
+    char *p = stpncpy(entry->d_name, line.c_str(), sizeof(entry->d_name));
     // clear new line madness
     do {
         *p = '\0';
@@ -69,7 +69,7 @@ struct dirent* GridftpSimpleListReader::readdir()
 
     // Workaround for LCGUTIL-295
     // Some endpoints return the absolute path when listing an empty directory
-    if (dbuffer.d_name[0] == '/')
+    if (dbuffer.d_name[0] == '/' || dbuffer.d_name[0] == '\0')
         return NULL;
 
     gfal_log(GFAL_VERBOSE_VERBOSE, "  list file %s ", dbuffer.d_name);
