@@ -18,14 +18,8 @@ static const char* gfal_http_get_name(void)
 }
 
 
-GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
-    context(), posix(&context), params()
+static void gfal_http_refresh_params(gfal2_context_t handle, Davix::RequestParams& params)
 {
-    params.setTransparentRedirectionSupport(true);
-    params.setUserAgent("gfal2::http");
-    gfal_http_get_ucert(params, handle);
-    // enable grid mode
-    context.loadModule("grid");
     // disable SSL verification
     gboolean insecure_mode = gfal2_get_opt_boolean(handle, "HTTP PLUGIN", "INSECURE", NULL);
     if (insecure_mode) {
@@ -34,9 +28,25 @@ GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
 }
 
 
-GfalHttpPluginData* gfal_http_get_plugin_context(gpointer plugin_data)
+GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
+    context(), posix(&context), params(), handle(handle)
 {
-    return static_cast<GfalHttpPluginData*>(plugin_data);
+    params.setTransparentRedirectionSupport(true);
+    params.setUserAgent("gfal2::http");
+    gfal_http_get_ucert(params, handle);
+    // enable grid mode
+    context.loadModule("grid");
+
+    gfal_http_refresh_params(handle, params);
+}
+
+
+GfalHttpPluginData* gfal_http_get_plugin_context(gpointer ptr)
+{
+    GfalHttpPluginData* plugin_data = static_cast<GfalHttpPluginData*>(ptr);
+    // Some parameters may change at run time!
+    gfal_http_refresh_params(plugin_data->handle, plugin_data->params);
+    return plugin_data;
 }
 
 
