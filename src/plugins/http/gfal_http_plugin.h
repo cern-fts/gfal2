@@ -11,7 +11,6 @@
 
 struct GfalHttpPluginData {
     GfalHttpPluginData(gfal2_context_t);
-    ~GfalHttpPluginData();
 
     Davix::Context       context;
     Davix::DavPosix      posix;
