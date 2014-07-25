@@ -291,7 +291,7 @@ static int gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GE
 }
 
 
-static void gfal_http_third_party_copy(GfalHttpInternal* davix,
+static void gfal_http_third_party_copy(GfalHttpPluginData* davix,
         const char* src, const char* dst,
         gfalt_params_t params,
         GError** err)
@@ -394,7 +394,7 @@ static dav_ssize_t gfal_http_streamed_provider(void *userdata,
 
 
 static void gfal_http_streamed_copy(gfal2_context_t context,
-        GfalHttpInternal* davix,
+        GfalHttpPluginData* davix,
         const char* src, const char* dst,
         gfalt_params_t params,
         GError** err)
@@ -463,7 +463,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         gfalt_params_t params, const char* src_full, const char* dst_full, GError** err)
 {
     GError* nested_error = NULL;
-    GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
 
     plugin_trigger_event(params, http_plugin_domain,
                          GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_ENTER,

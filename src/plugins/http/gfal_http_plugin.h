@@ -9,8 +9,9 @@
 #include <davix.hpp>
 
 
-struct GfalHttpInternal {
-    GfalHttpInternal(gfal2_context_t handle);
+struct GfalHttpPluginData {
+    GfalHttpPluginData(gfal2_context_t);
+    ~GfalHttpPluginData();
 
     Davix::Context       context;
     Davix::DavPosix      posix;
@@ -18,17 +19,7 @@ struct GfalHttpInternal {
 };
 
 
-struct GfalHttpPluginData{
-    GfalHttpPluginData(gfal2_context_t);
-    ~GfalHttpPluginData();
-
-    GfalHttpInternal* davix;
-    GMutex* _init_mux;
-    gfal2_context_t handle;
-};
-
-
-GfalHttpInternal* gfal_http_get_plugin_context(gpointer plugin_data);
+GfalHttpPluginData* gfal_http_get_plugin_context(gpointer plugin_data);
 
 void gfal_http_context_delete(gpointer plugin_data);
 

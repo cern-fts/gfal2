@@ -12,7 +12,7 @@ int gfal_http_stat(plugin_handle plugin_data, const char* url,
     char stripped_url[GFAL_URL_MAX_LEN];
     strip_3rd_from_url(url, stripped_url, sizeof(stripped_url));
 
-    GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
     if (davix->posix.stat(&davix->params, stripped_url, buf, &daverr) != 0) {
         davix2gliberr(daverr, err);
@@ -29,7 +29,7 @@ int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, g
     char stripped_url[GFAL_URL_MAX_LEN];
     strip_3rd_from_url(url, stripped_url, sizeof(stripped_url));
 
-    GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
     if (davix->posix.mkdir(&davix->params, stripped_url, mode, &daverr) != 0) {
         davix2gliberr(daverr, err);
@@ -46,7 +46,7 @@ int gfal_http_unlinkG(plugin_handle plugin_data, const char* url, GError** err)
     char stripped_url[GFAL_URL_MAX_LEN];
     strip_3rd_from_url(url, stripped_url, sizeof(stripped_url));
 
-    GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
 
     // Note: in WebDAV DELETE works for directories and files, so check ourselves
@@ -79,7 +79,7 @@ int gfal_http_rmdirG(plugin_handle plugin_data, const char* url, GError** err)
     char stripped_url[GFAL_URL_MAX_LEN];
     strip_3rd_from_url(url, stripped_url, sizeof(stripped_url));
 
-    GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
 
     // Note: in WebDAV DELETE is recursive for directories, so check first if there is anything
@@ -107,51 +107,50 @@ int gfal_http_rmdirG(plugin_handle plugin_data, const char* url, GError** err)
 
 
 
-int gfal_http_access(plugin_handle plugin_data, const char* url,
-                     int mode, GError** err)
+int gfal_http_access(plugin_handle plugin_data, const char* url, int mode, GError** err)
 {
-  struct stat buf;
-  GError*     tmp_err = NULL;
+    struct stat buf;
+    GError* tmp_err = NULL;
 
-  if (gfal_http_stat(plugin_data, url, &buf, &tmp_err) != 0) {
-    gfal2_propagate_prefixed_error(err, tmp_err, __func__);
-    return -1;
-  }
-
-  uid_t real_uid = getuid();
-  gid_t real_gid = getgid();
-
-  int ngroups = getgroups(0, NULL);
-  if (ngroups < 0) {
-      gfal2_set_error(err, http_plugin_domain, errno, __func__,
-                      "Could not get the groups of the current user");
-      return -1;
-  }
-
-  gid_t additional_gids[ngroups];
-  getgroups(ngroups, additional_gids);
-
-  if (real_uid == buf.st_uid)
-    mode <<=  6;
-  else if (real_gid == buf.st_gid)
-    mode <<= 3;
-  else {
-    for (int i = 0; i < ngroups; ++i) {
-      if (additional_gids[i] == buf.st_gid) {
-        mode <<= 3;
-        break;
-      }
+    if (gfal_http_stat(plugin_data, url, &buf, &tmp_err) != 0) {
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+        return -1;
     }
-  }
 
-  if ((mode & buf.st_mode) != static_cast<mode_t>(mode)) {
-    gfal2_set_error(err, http_plugin_domain, EACCES, __func__,
+    uid_t real_uid = getuid();
+    gid_t real_gid = getgid();
+
+    int ngroups = getgroups(0, NULL);
+    if (ngroups < 0) {
+        gfal2_set_error(err, http_plugin_domain, errno, __func__,
+                "Could not get the groups of the current user");
+        return -1;
+    }
+
+    gid_t additional_gids[ngroups];
+    getgroups(ngroups, additional_gids);
+
+    if (real_uid == buf.st_uid)
+        mode <<= 6;
+    else if (real_gid == buf.st_gid)
+        mode <<= 3;
+    else {
+        for (int i = 0; i < ngroups; ++i) {
+            if (additional_gids[i] == buf.st_gid) {
+                mode <<= 3;
+                break;
+            }
+        }
+    }
+
+    if ((mode & buf.st_mode) != static_cast<mode_t>(mode)) {
+        gfal2_set_error(err, http_plugin_domain, EACCES, __func__,
                 "Does not have enough permissions on '%s'", url);
-    return -1;
-  }
-  else {
-    return 0;
-  }
+        return -1;
+    }
+    else {
+        return 0;
+    }
 }
 
 
@@ -162,7 +161,7 @@ gfal_file_handle gfal_http_opendir(plugin_handle plugin_data, const char* url,
     char stripped_url[GFAL_URL_MAX_LEN];
     strip_3rd_from_url(url, stripped_url, sizeof(stripped_url));
 
-    GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
 
     DAVIX_DIR* dir = davix->posix.opendirpp(&davix->params, stripped_url, &daverr);
@@ -179,7 +178,7 @@ gfal_file_handle gfal_http_opendir(plugin_handle plugin_data, const char* url,
 struct dirent* gfal_http_readdir(plugin_handle plugin_data,
         gfal_file_handle dir_desc, GError** err)
 {
-    GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
 
     daverr = NULL;
@@ -198,7 +197,7 @@ struct dirent* gfal_http_readdir(plugin_handle plugin_data,
 struct dirent* gfal_http_readdirpp(plugin_handle plugin_data,
         gfal_file_handle dir_desc, struct stat* st, GError** err)
 {
-    GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
 
     daverr = NULL;
@@ -212,20 +211,19 @@ struct dirent* gfal_http_readdirpp(plugin_handle plugin_data,
 }
 
 
-int gfal_http_closedir(plugin_handle plugin_data, gfal_file_handle dir_desc,
-                          GError** err)
+int gfal_http_closedir(plugin_handle plugin_data, gfal_file_handle dir_desc, GError** err)
 {
-  GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
-  Davix::DavixError* daverr = NULL;
-  int ret = 0;
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
+    Davix::DavixError* daverr = NULL;
+    int ret = 0;
 
-  if (davix->posix.closedir((DAVIX_DIR*)gfal_file_handle_get_fdesc(dir_desc), &daverr) != 0) {
-    davix2gliberr(daverr, err);
-    Davix::DavixError::clearError(&daverr);
-    ret = -1;
-  }
-  gfal_file_handle_delete(dir_desc);
-  return ret;
+    if (davix->posix.closedir((DAVIX_DIR*) gfal_file_handle_get_fdesc(dir_desc), &daverr) != 0) {
+        davix2gliberr(daverr, err);
+        Davix::DavixError::clearError(&daverr);
+        ret = -1;
+    }
+    gfal_file_handle_delete(dir_desc);
+    return ret;
 }
 
 
@@ -238,7 +236,7 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
     char stripped_url[GFAL_URL_MAX_LEN];
     strip_3rd_from_url(url, stripped_url, sizeof(stripped_url));
 
-    GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
     std::string buffer_chk, algo_chk(check_type);
 

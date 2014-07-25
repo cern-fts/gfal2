@@ -14,11 +14,11 @@ GQuark http_plugin_domain = g_quark_from_static_string(http_module_name);
 
 static const char* gfal_http_get_name(void)
 {
-  return http_module_name;
+    return http_module_name;
 }
 
 
-GfalHttpInternal::GfalHttpInternal(gfal2_context_t handle):
+GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
     context(), posix(&context), params()
 {
     params.setTransparentRedirectionSupport(true);
@@ -34,41 +34,22 @@ GfalHttpInternal::GfalHttpInternal(gfal2_context_t handle):
 }
 
 
-
-GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
-    davix(NULL), _init_mux(g_mutex_new()), handle(handle)
+GfalHttpPluginData* gfal_http_get_plugin_context(gpointer plugin_data)
 {
+    return static_cast<GfalHttpPluginData*>(plugin_data);
 }
 
-GfalHttpPluginData::~GfalHttpPluginData()
-{
-    delete davix;
-    g_mutex_free(_init_mux);
-}
-
-GfalHttpInternal* gfal_http_get_plugin_context(gpointer plugin_data){
-    GfalHttpPluginData* data = static_cast<GfalHttpPluginData*>(plugin_data);
-    if(data->davix == NULL){
-        g_mutex_lock(data->_init_mux);
-        if(data->davix == NULL){
-            data->davix = new GfalHttpInternal(data->handle);
-        }
-        g_mutex_unlock(data->_init_mux);
-    }
-    return data->davix;
-
-}
 
 void gfal_http_context_delete(gpointer plugin_data){
     GfalHttpPluginData* data = static_cast<GfalHttpPluginData*>(plugin_data);
     delete data;
 }
 
+
 void gfal_http_delete(plugin_handle plugin_data)
 {
     gfal_http_context_delete(plugin_data);
 }
-
 
 
 static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
@@ -97,75 +78,74 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
 
 static int davix2errno(StatusCode::Code code)
 {
-  int errcode;
+    int errcode;
 
-  switch (code) {
-    case StatusCode::OK:
-    case StatusCode::PartialDone:
-      errcode = 0;
-      break;
-    case StatusCode::WebDavPropertiesParsingError:
-    case StatusCode::UriParsingError:
-      errcode = EIO;
-      break;
+    switch (code) {
+        case StatusCode::OK:
+        case StatusCode::PartialDone:
+            errcode = 0;
+            break;
+        case StatusCode::WebDavPropertiesParsingError:
+        case StatusCode::UriParsingError:
+            errcode = EIO;
+            break;
 
-    case StatusCode::SessionCreationError:
-      errcode = EPERM;
-      break;
+        case StatusCode::SessionCreationError:
+            errcode = EPERM;
+            break;
 
-    case StatusCode::NameResolutionFailure:
-      errcode = EHOSTUNREACH;
-      break;
+        case StatusCode::NameResolutionFailure:
+            errcode = EHOSTUNREACH;
+            break;
 
-    case StatusCode::ConnectionProblem:
-      errcode = EHOSTDOWN;
-      break;
+        case StatusCode::ConnectionProblem:
+            errcode = EHOSTDOWN;
+            break;
 
-    case StatusCode::RedirectionNeeded:
-      errcode = ENOSYS;
-      break;
+        case StatusCode::RedirectionNeeded:
+            errcode = ENOSYS;
+            break;
 
-    case StatusCode::ConnectionTimeout:
-    case StatusCode::OperationTimeout:
-      errcode = ETIMEDOUT;
-      break;
+        case StatusCode::ConnectionTimeout:
+        case StatusCode::OperationTimeout:
+            errcode = ETIMEDOUT;
+            break;
 
-    case StatusCode::PermissionRefused:
-      errcode = EPERM;
-      break;
+        case StatusCode::PermissionRefused:
+            errcode = EPERM;
+            break;
 
-    case StatusCode::IsNotADirectory:
-      errcode = ENOTDIR;
-      break;
+        case StatusCode::IsNotADirectory:
+            errcode = ENOTDIR;
+            break;
 
-    case StatusCode::InvalidFileHandle:
-      errcode = EBADF;
-      break;
+        case StatusCode::InvalidFileHandle:
+            errcode = EBADF;
+            break;
 
-    case StatusCode::AuthentificationError:
-    case StatusCode::LoginPasswordError:
-    case StatusCode::CredentialNotFound:
-    case StatusCode::CredDecryptionError:
-    case StatusCode::SSLError:
-      errcode = EACCES;
-      break;
+        case StatusCode::AuthentificationError:
+        case StatusCode::LoginPasswordError:
+        case StatusCode::CredentialNotFound:
+        case StatusCode::CredDecryptionError:
+        case StatusCode::SSLError:
+            errcode = EACCES;
+            break;
 
-    case StatusCode::FileNotFound:
-      errcode = ENOENT;
-      break;
+        case StatusCode::FileNotFound:
+            errcode = ENOENT;
+            break;
 
-    case StatusCode::FileExist:
-      errcode = EEXIST;
-      break;
+        case StatusCode::FileExist:
+            errcode = EEXIST;
+            break;
 
-    default:
-      errcode = EIO;
-      break;
-  }
+        default:
+            errcode = EIO;
+            break;
+    }
 
-  return errcode;
+    return errcode;
 }
-
 
 
 void davix2gliberr(const DavixError* daverr, GError** err)
@@ -202,44 +182,44 @@ void gfal_http_get_ucert(RequestParams & params, gfal2_context_t handle)
 
 
 /// Init function
-extern "C" gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle,
-                                                  GError** err)
+extern "C" gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)
 {
-  gfal_plugin_interface http_plugin;
+    gfal_plugin_interface http_plugin;
 
-  *err = NULL;
-  memset(&http_plugin, 0, sizeof(http_plugin));
+    *err = NULL;
+    memset(&http_plugin, 0, sizeof(http_plugin));
 
-  // Bind metadata
-  http_plugin.check_plugin_url = &gfal_http_check_url;
-  http_plugin.getName          = &gfal_http_get_name;
-  http_plugin.priority         = GFAL_PLUGIN_PRIORITY_DATA;
-  http_plugin.plugin_data      = new GfalHttpPluginData(handle);
-  http_plugin.plugin_delete    = &gfal_http_delete;
+    // Bind metadata
+    http_plugin.check_plugin_url = &gfal_http_check_url;
+    http_plugin.getName = &gfal_http_get_name;
+    http_plugin.priority = GFAL_PLUGIN_PRIORITY_DATA
+    ;
+    http_plugin.plugin_data = new GfalHttpPluginData(handle);
+    http_plugin.plugin_delete = &gfal_http_delete;
 
-  http_plugin.statG     = &gfal_http_stat;
-  http_plugin.accessG   = &gfal_http_access;
-  http_plugin.mkdirpG  = &gfal_http_mkdirpG;
-  http_plugin.unlinkG = &gfal_http_unlinkG;
-  http_plugin.rmdirG = &gfal_http_rmdirG;
-  http_plugin.opendirG  = &gfal_http_opendir;
-  http_plugin.readdirG  = &gfal_http_readdir;
-  http_plugin.readdirppG =  &gfal_http_readdirpp;
-  http_plugin.closedirG = &gfal_http_closedir;
+    http_plugin.statG = &gfal_http_stat;
+    http_plugin.accessG = &gfal_http_access;
+    http_plugin.mkdirpG = &gfal_http_mkdirpG;
+    http_plugin.unlinkG = &gfal_http_unlinkG;
+    http_plugin.rmdirG = &gfal_http_rmdirG;
+    http_plugin.opendirG = &gfal_http_opendir;
+    http_plugin.readdirG = &gfal_http_readdir;
+    http_plugin.readdirppG = &gfal_http_readdirpp;
+    http_plugin.closedirG = &gfal_http_closedir;
 
-  // Bind IO
-  http_plugin.openG  = &gfal_http_fopen;
-  http_plugin.readG  = &gfal_http_fread;
-  http_plugin.writeG = &gfal_http_fwrite;
-  http_plugin.lseekG = &gfal_http_fseek;
-  http_plugin.closeG = &gfal_http_fclose;
+    // Bind IO
+    http_plugin.openG = &gfal_http_fopen;
+    http_plugin.readG = &gfal_http_fread;
+    http_plugin.writeG = &gfal_http_fwrite;
+    http_plugin.lseekG = &gfal_http_fseek;
+    http_plugin.closeG = &gfal_http_fclose;
 
-  // Checksum
-  http_plugin.checksum_calcG = &gfal_http_checksum;
+    // Checksum
+    http_plugin.checksum_calcG = &gfal_http_checksum;
 
-  // Bind 3rd party copy
-  http_plugin.check_plugin_url_transfer = gfal_http_copy_check;
-  http_plugin.copy_file = gfal_http_copy;
+    // Bind 3rd party copy
+    http_plugin.check_plugin_url_transfer = gfal_http_copy_check;
+    http_plugin.copy_file = gfal_http_copy;
 
-  return http_plugin;
+    return http_plugin;
 }
