@@ -26,6 +26,11 @@ GfalHttpInternal::GfalHttpInternal(gfal2_context_t handle):
     gfal_http_get_ucert(params, handle);
     // enable grid mode
     context.loadModule("grid");
+    // disable SSL verification
+    gboolean insecure_mode = gfal2_get_opt_boolean(handle, "HTTP PLUGIN", "INSECURE", NULL);
+    if (insecure_mode) {
+        params.setSSLCAcheck(false);
+    }
 }
 
 
