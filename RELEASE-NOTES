@@ -1,6 +1,6 @@
-GFAL 2 RELEASE-NOTES:
+GFAL 2.0 RELEASE-NOTE:
 
-* Tue Jul 15 2014 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.6.7-1
+* Mon Jul 28 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.6.8
 - [LCGUTIL-169] - GFAL 2.0 : Enable tests for xrootd and http supports
 - [LCGUTIL-345] - GFAL 2.0: add support for dCache test bed for functional tests
 - [LCGUTIL-45] - GFAL 2.0 : non third party transfer should respect all transfers options
@@ -42,7 +42,7 @@ GFAL 2 RELEASE-NOTES:
 - [LCGUTIL-403] - gfal2 segfault when reading dir via srm
 - [LCGUTIL-406] - symbol lookup error: /usr/lib64/gfal2-plugins//libgfal_plugin_xrootd.so: undefined symbol: _ZN14XrdPosixXrootd8setDebugEi
 - [LCGUTIL-417] - gfal-copy return success when there is some error in the plugin
-
+- [LCGUTIL-460] - Issue with gfalFS and gridftp endpoints
 
 * Wed Feb 26 2014 Adrien Devresse <adevress at cern.ch> - 2.5.5-1
 - [LCGUTIL-40] - GFAL 2.0 : implement lfc logic that allows third party copy logic with SRM
