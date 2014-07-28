@@ -1,5 +1,48 @@
 GFAL 2.0 RELEASE-NOTE:
 
+* Mon Jul 28 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.6.8
+- [LCGUTIL-169] - GFAL 2.0 : Enable tests for xrootd and http supports
+- [LCGUTIL-345] - GFAL 2.0: add support for dCache test bed for functional tests
+- [LCGUTIL-45] - GFAL 2.0 : non third party transfer should respect all transfers options
+- [LCGUTIL-166] - GFAL 2 : Update gfal 2.0 functional tests 
+- [LCGUTIL-348] - gfal-copy produces misleading error
+- [LCGUTIL-355] - HTTP plugin does not do 3rd party copy when dav/davs is used as scheme
+- [LCGUTIL-359] - GFAL 2.0 : GFAL2 copy does not manage properly spacetoken in file <-> SRM transfer
+- [LCGUTIL-361] - Some transfers finish with GridFTP transferring 0 bytes, and keep going
+- [LCGUTIL-363] - Some tests do not clean after themselves
+- [LCGUTIL-365] - SRM Checksum fallback fails for IPv6
+- [LCGUTIL-393] - Spacetoken operations do not handle null values
+- [LCGUTIL-420] - Unhandled exception causes abort
+- [LCGUTIL-422] - Memory leak in gfal_srm_cache_stat_add
+- [LCGUTIL-428] - Bringonline does not support destination space token
+- [LCGUTIL-429] - thread-safety issue with SSL
+- [LCGUTIL-432] - gfal_srmv2_bring_online returns > 0 if the file is already pinned
+- [LCGUTIL-433] - gfal2-srm: If the file is pinned (22), gfal_srmv2_bring_online_internal must return 1 too
+- [LCGUTIL-358] - When rolling back a SRM PUT, it may be necessary to explicitly remove the file
+- [LCGUTIL-362] - Clarify error messages coming from gfal2 on copies
+- [LCGUTIL-385] - GridFTP listing improvement (RELNOTE: session reuse enabled by default!)
+- [LCGUTIL-386] - Improvements to GridFTP 3rd party copy to achieve session reuse
+- [LCGUTIL-395] - Do not fail on replica registration if the same replica is already there
+- [LCGUTIL-412] - Delegate the grid authentication of GFAL 2.0 http plugin to davix
+- [LCGUTIL-435] - SRM: Cache file locality
+- [LCGUTIL-55] - GFAL 2.0 : set a clean API to set/get at runtime the different possible credential
+- [LCGUTIL-306] - lcg-stmd equivalent
+- [LCGUTIL-352] - support GridFTP UDT in gfal2
+- [LCGUTIL-356] - Add an option to disable http 3rd party copies
+- [LCGUTIL-360] - Copy to http(s) does not work if the file is bigger than the buffer
+- [LCGUTIL-423] - Bulk bring online
+- [LCGUTIL-424] - Bulk deletions
+- [LCGUTIL-425] - srm-ifce KeepAlive is not honored
+- [LCGUTIL-439] - Missing abort function for gfal2
+- [LCGUTIL-440] - stop perf markers callback when transferred_bytes == filesize
+- [LCGUTIL-326] - GFAL 2.0: Map Davix Checksum support to GFAL 2.0
+- [LCGUTIL-347] - gfla2 lfc plugin: set serrno to 0 before readdir calls
+- [LCGUTIL-353] - HTTP plugin does not clean up destination on failure
+- [LCGUTIL-354] - GFAL2.0 : srm segfault problem related to GFAL 2.0
+- [LCGUTIL-403] - gfal2 segfault when reading dir via srm
+- [LCGUTIL-406] - symbol lookup error: /usr/lib64/gfal2-plugins//libgfal_plugin_xrootd.so: undefined symbol: _ZN14XrdPosixXrootd8setDebugEi
+- [LCGUTIL-417] - gfal-copy return success when there is some error in the plugin
+- [LCGUTIL-460] - Issue with gfalFS and gridftp endpoints
 
 * Wed Feb 26 2014 Adrien Devresse <adevress at cern.ch> - 2.5.5-1
 - [LCGUTIL-40] - GFAL 2.0 : implement lfc logic that allows third party copy logic with SRM
