@@ -225,7 +225,7 @@ static int gfal_lfc_startTransaction(struct lfc_ops* ops, GError ** err){
 static int gfal_lfc_endTransaction(struct lfc_ops* ops, GError ** err){ 
 	if (ops->endtrans() < 0){
 		int sav_errno = gfal_lfc_get_errno(ops);
-        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno,
+        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
                 "Error while start transaction with lfc, Error : %s ", gfal_lfc_get_strerror(ops));
 		return -1;
 	}
@@ -238,7 +238,7 @@ static int gfal_lfc_endTransaction(struct lfc_ops* ops, GError ** err){
 static int gfal_lfc_abortTransaction(struct lfc_ops* ops, GError ** err){ 
 	if (ops->aborttrans() < 0){
 		int sav_errno = gfal_lfc_get_errno(ops);
-        gfal2_set_error(err,gfal2_get_plugin_lfc_quark(),sav_errno,
+        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
                 "Error while abort transaction with lfc,  Error : %s ", gfal_lfc_get_strerror(ops));
 		return -1;
 	}
@@ -383,7 +383,7 @@ static int gfal_lfc_mkdir(struct lfc_ops* ops, const char* path, mode_t mode, GE
 	
 	if(ops->mkdirg (path, struid, mode)){ 
 		int sav_errno = gfal_lfc_get_errno(ops);
-        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno,
+        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
                 "Error while mkdir call in the lfc %s", strerror(sav_errno));
 		return -1;
 	}				
@@ -458,7 +458,7 @@ char ** gfal_lfc_getSURL(struct lfc_ops* ops, const char* path, GError** err){
 	
 	if (ops->getreplica (path, NULL, NULL, &size, &list) < 0) {
 		int myerrno = gfal_lfc_get_errno(ops);
-        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), myerrno,
+        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), myerrno, __func__,
                 "error reported from lfc : %s", gfal_lfc_get_strerror(ops));
 		return NULL;
 	}
@@ -516,7 +516,7 @@ int gfal_lfc_setComment(struct lfc_ops * ops, const char* lfn, const char* buff,
 		*((char*)mempcpy(internal_buff, buff, MIN(s_buff, GFAL_URL_MAX_LEN-1))) = '\0';
 		if( (res = ops->setcomment(lfn, internal_buff)) !=0 ){
 			const int sav_errno = gfal_lfc_get_errno(ops);
-            gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno,
+            gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
                     "Error report from LFC : %s", gfal_lfc_get_strerror(ops) );
 		}
 	}else{

@@ -541,8 +541,8 @@ static int lfc_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err
 	int ret = ops->closedir(fh->fdesc);	
 	if(ret != 0){
 		int sav_errno = gfal_lfc_get_errno(ops);
-        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno,
-                "Error report from LFC %s", gfal_lfc_get_strerror(ops) );
+        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
+                "Error report from LFC %s", gfal_lfc_get_strerror(ops));
 	}else{
 		g_free(fh->ext_data);
 		gfal_file_handle_delete(fh);
