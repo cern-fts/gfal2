@@ -42,6 +42,7 @@
 #include <common/gfal_common_internal.h>
 #include <common/gfal_common_filedescriptor.h>
 #include <logger/gfal_logger.h>
+#include <transfer/gfal_transfer.h>
 #include "lfc_ifce_ng.h"
 
 
@@ -665,25 +666,30 @@ ssize_t lfc_getxattrG(plugin_handle handle, const char* path, const char* name, 
  * lfc getxattr implem 
  * */
 ssize_t lfc_listxattrG(plugin_handle handle, const char* path, char* list, size_t size, GError** err){
-	ssize_t res = 0;
-	char** p= file_xattr;
-	char* plist= list;
-	GError* tmp_err=NULL;
-	
-	struct stat st;
-	if( lfc_lstatG(handle, path, &st, &tmp_err) < 0){
-		res = -1;
-	}else{
-		if( S_ISDIR(st.st_mode) == FALSE){
-			while(*p != NULL){
-				const int size_str = strlen(*p)+1;
-				if( size > res && size - res >= size_str)
-					plist = mempcpy(plist, *p, size_str* sizeof(char) );
-				res += size_str;
-				p++;
-			}
-		}
-	}
+    ssize_t res = 0;
+    char** p = file_xattr;
+    char* plist = list;
+    GError* tmp_err = NULL;
+
+    struct stat st;
+    if (lfc_lstatG(handle, path, &st, &tmp_err) < 0) {
+        res = -1;
+    }
+    else {
+        if (!S_ISDIR(st.st_mode)) {
+            while (*p != NULL) {
+                const int size_str = strlen(*p) + 1;
+                if (size > res && size - res >= size_str)
+                    plist = mempcpy(plist, *p, size_str * sizeof(char));
+                res += size_str;
+                p++;
+            }
+        }
+        else {
+            mempcpy(list, GFAL_XATTR_COMMENT, size);
+            res = 1;
+        }
+    }
     G_RETURN_ERR(res, tmp_err, err);
 }
 
@@ -708,22 +714,59 @@ int lfc_setxattr_comment(plugin_handle handle, const char* path, const char* nam
 	return res;							
 }
 
+/*
+ * setxattr for replicas
+ */
+int lfc_setxattr_replica(plugin_handle handle, const char* path, const char* name,
+                            const void* value, size_t size, int flags, GError** err){
+    const char* sfn = (const char*)value;
+    if (size == 0) {
+        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), EINVAL, __func__,
+                "Missing value");
+        return -1;
+    }
+
+    struct lfc_ops* ops = (struct lfc_ops*)handle;
+
+    if (sfn[0] == '+') {
+        int ret = -1;
+        gfalt_params_t params = gfalt_params_handle_new(err);
+        if (!*err) {
+            ret = gfal_lfc_register(handle, ops->handle, params, sfn + 1, path, err);
+            gfalt_params_handle_delete(params, err);
+            if (*err) ret = -1;
+        }
+        return ret;
+    }
+    else if (sfn[0] == '-') {
+        return gfal_lfc_unregister(handle, path, sfn + 1, err);
+    }
+    else {
+        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), EINVAL, __func__,
+                "user.replica only accepts additions (+) or deletions (-)");
+        return -1;
+    }
+}
 
 /*
  * lfc setxattr implem
  * */
 int lfc_setxattrG(plugin_handle handle, const char *path, const char *name,
                        const void *value, size_t size, int flags, GError** err){
-	g_return_val_err_if_fail(path && name, -1, err, "invalid name/path");
-	int res = -1;
-	GError* tmp_err=NULL;
+    g_return_val_err_if_fail(path && name, -1, err, "invalid name/path");
+    int res = -1;
+    GError* tmp_err = NULL;
 
-	if(strcmp(name, GFAL_XATTR_COMMENT)==0){
-		res = lfc_setxattr_comment(handle, path, name, value,
-										size, flags, err);
-	}else{
-        gfal2_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), ENOATTR, __func__, "unable to set this attribute on this file");
-	}
+    if (strcmp(name, GFAL_XATTR_COMMENT) == 0) {
+        res = lfc_setxattr_comment(handle, path, name, value, size, flags, err);
+    }
+    else if (strcmp(name, GFAL_XATTR_REPLICA) == 0) {
+        res = lfc_setxattr_replica(handle, path, name, value, size, flags, err);
+    }
+    else {
+        gfal2_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), ENOATTR, __func__,
+                "unable to set this attribute on this file");
+    }
     G_RETURN_ERR(res, tmp_err, err);
 }
 

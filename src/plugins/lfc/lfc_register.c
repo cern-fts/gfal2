@@ -28,7 +28,7 @@ int gfal_lfc_register_check(plugin_handle handle, gfal2_context_t context, const
 /**
  * Create path in the LFC, including the creation of the directories
  */
-int _lfc_touch(struct lfc_ops* ops, const char* path, const char* guid,
+static int _lfc_touch(struct lfc_ops* ops, const char* path, const char* guid,
         struct size_and_checksum* info, GError** error)
 {
     char *last_slash = NULL;
@@ -73,14 +73,14 @@ int _lfc_touch(struct lfc_ops* ops, const char* path, const char* guid,
 /**
  * Set host to point to the host part of the url
  */
-int _get_host(const char* url, char** host, GError** error)
+static int _get_host(const char* url, char** host, GError** error)
 {
     regex_t    regex;
     size_t     ngroups = 4;
     regmatch_t matches[ngroups];
     int        ret = 0;
 
-    regcomp(&regex, "(.+://([a-zA-Z0-9\\.-]+))(:\\d+)?/.+", REG_EXTENDED);
+    regcomp(&regex, "(.+://([a-zA-Z0-9\\.-]+))(:[0-9]+)?/.+", REG_EXTENDED);
 
     ret = regexec(&regex, url, ngroups, matches, 0);
     if (ret == 0) {
@@ -93,7 +93,7 @@ int _get_host(const char* url, char** host, GError** error)
         regerror(ret, &regex, err_buffer, sizeof(err_buffer));
 
         gfal2_set_error(error, gfal2_get_plugins_quark(), EINVAL, __func__,
-                    "The destination is not a valid url: %s (%s)", url, err_buffer);
+                    "The source is not a valid url: %s (%s)", url, err_buffer);
         ret = -1;
     }
 
@@ -105,7 +105,7 @@ int _get_host(const char* url, char** host, GError** error)
 /**
  * Full checksum type from an LFC-like checksum type
  */
-const char* _full_checksum_type(const char* short_name)
+static const char* _full_checksum_type(const char* short_name)
 {
     if (strcmp("AD", short_name) == 0)
         return "ADLER32";
@@ -193,13 +193,14 @@ int gfal_lfc_register(plugin_handle handle, gfal2_context_t context,
     int   ret_status = 0;
     int   lfc_errno = 0;
     gboolean file_existed = FALSE;
+    GError *tmp_err = NULL;
 
     // Get URL components
-    ret_status = url_converter(handle, dst_url, &lfc_host, &lfc_path, error);
+    ret_status = url_converter(handle, dst_url, &lfc_host, &lfc_path, &tmp_err);
     if (ret_status != 0)
         goto register_end;
 
-    ret_status = _get_host(src_url, &src_host, error);
+    ret_status = _get_host(src_url, &src_host, &tmp_err);
     if (ret_status != 0)
         goto register_end;
 
@@ -207,12 +208,12 @@ int gfal_lfc_register(plugin_handle handle, gfal2_context_t context,
 
     // Information about the replica
     struct size_and_checksum replica_info;
-    ret_status = _get_replica_info(context, &replica_info, src_url, error);
+    ret_status = _get_replica_info(context, &replica_info, src_url, &tmp_err);
     if (ret_status != 0)
         goto register_end;
 
     // Set up LFC environment
-    ret_status = lfc_configure_environment(ops, lfc_host, error);
+    ret_status = lfc_configure_environment(ops, lfc_host, &tmp_err);
     if (ret_status != 0)
         goto register_end;
 
@@ -227,12 +228,12 @@ int gfal_lfc_register(plugin_handle handle, gfal2_context_t context,
     if (ret_status == 0) {
         gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: lfc exists, validate");
         file_existed = TRUE;
-        ret_status = _validate_new_replica(context, &statg, &replica_info, error);
+        ret_status = _validate_new_replica(context, &statg, &replica_info, &tmp_err);
     }
     // File do not exist, try to create
     else if (lfc_errno == ENOENT) {
         gfal_generate_guidG(statg.guid, NULL);
-        ret_status = _lfc_touch(ops, lfc_path, statg.guid, &replica_info, error);
+        ret_status = _lfc_touch(ops, lfc_path, statg.guid, &replica_info, &tmp_err);
     }
     // Failure
     else {
@@ -270,8 +271,60 @@ int gfal_lfc_register(plugin_handle handle, gfal2_context_t context,
     }
 
 register_end:
+    if (tmp_err)
+        gfal2_propagate_prefixed_error(error, tmp_err, __func__);
     g_free(lfc_host);
     g_free(lfc_path);
     g_free(src_host);
+    return ret_status;
+}
+
+/**
+ * Unregister a replica
+ */
+int gfal_lfc_unregister(plugin_handle handle, const char* url, const char* sfn, GError** error)
+{
+    struct lfc_ops* ops = (struct lfc_ops*) handle;
+    int ret_status, lfc_errno;
+    char *lfc_host = NULL;
+    char *lfc_path = NULL;
+    GError *tmp_err = NULL;
+
+    ret_status = url_converter(handle, url, &lfc_host, &lfc_path, &tmp_err);
+    if (ret_status < 0)
+        goto unregister_end;
+
+    ret_status = lfc_configure_environment(ops, lfc_host, &tmp_err);
+    if (ret_status != 0)
+        goto unregister_end;
+
+    struct lfc_filestatg statg;
+    ret_status = ops->statg(lfc_path, NULL, &statg);
+
+    if (ret_status != 0) {
+        lfc_errno = gfal_lfc_get_errno(ops);
+        gfal2_set_error(error, gfal2_get_plugin_lfc_quark(), lfc_errno, __func__,
+                "Could not stat the file: %s (%d)", gfal_lfc_get_strerror(ops), lfc_errno);
+        goto unregister_end;
+    }
+
+    gfal_log(GFAL_VERBOSE_VERBOSE, "lfc unregister: the replica is to be unregistered (file id %d)", statg.fileid);
+
+    struct lfc_fileid file_id = {{0}, 0};
+    file_id.fileid = statg.fileid;
+    ret_status = ops->delreplica(NULL, &file_id, sfn);
+    if (ret_status < 0) {
+        lfc_errno = gfal_lfc_get_errno(ops);
+        gfal2_set_error(error, gfal2_get_plugin_lfc_quark(), lfc_errno, __func__,
+                "Could not register the replica : %s (%d) ", gfal_lfc_get_strerror(ops), lfc_errno);
+    }
+
+    gfal_log(GFAL_VERBOSE_VERBOSE, "lfc unregister: replica %s unregistered", sfn);
+
+unregister_end:
+    g_free(lfc_host);
+    g_free(lfc_path);
+    if (tmp_err)
+        gfal2_propagate_prefixed_error(error, tmp_err, __func__);
     return ret_status;
 }

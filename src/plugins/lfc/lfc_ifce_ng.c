@@ -555,22 +555,23 @@ int gfal_lfc_statg(struct lfc_ops* ops, const char* lfn, struct lfc_filestatg* s
 }
 
 ssize_t g_strv_catbuff(char** strv, char* buff, size_t size){
-	if(strv == NULL)
-		return -1;
-	const size_t sbuff = g_strv_length(strv);
-	ssize_t resu=0;
-	size_t i;
-	char* p = buff;
-	for(i=0; i < sbuff; ++i){
-		const size_t s_str= strnlen(strv[i], GFAL_URL_MAX_LEN);
-		resu += s_str+1;
-		if(buff && size){
-			*(p = (char*) mempcpy(p,strv[i], MIN(size, s_str) ))= '\0';
-			++p;
-		}
-		size = (size >= s_str+1)?(size-s_str-1):0;
-	}
-	return resu;
+    if (strv == NULL)
+        return -1;
+    memset(buff, 0, size);
+    const size_t sbuff = g_strv_length(strv);
+    ssize_t resu = 0;
+    size_t i;
+    char* p = buff;
+    for (i = 0; i < sbuff; ++i) {
+        const size_t s_str = strnlen(strv[i], GFAL_URL_MAX_LEN);
+        resu += s_str + 1;
+        if (buff && size) {
+            *(p = (char*) mempcpy(p, strv[i], MIN(size, s_str))) = '\n';
+            ++p;
+        }
+        size = (size >= s_str + 1) ? (size - s_str - 1) : 0;
+    }
+    return resu;
 }
 
 
