@@ -571,6 +571,7 @@ ssize_t g_strv_catbuff(char** strv, char* buff, size_t size){
         }
         size = (size >= s_str + 1) ? (size - s_str - 1) : 0;
     }
+    buff[resu-1] = '\0';
     return resu;
 }
 
