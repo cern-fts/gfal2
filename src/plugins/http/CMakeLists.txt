@@ -8,8 +8,6 @@ if (PLUGIN_HTTP)
     pkg_check_modules(DAVIX_COPY_PKG REQUIRED "davix_copy>=0.3.0")
 
 
-
-
     # Includes
     include_directories (${CMAKE_CURRENT_BINARY_DIR})
     include_directories(${DAVIX_PKG_INCLUDE_DIRS})
@@ -18,6 +16,10 @@ if (PLUGIN_HTTP)
     # link
     link_directories( ${DAVIX_PKG_LIBRARY_DIRS})
     link_directories( ${DAVIX_COPY_PKG_LIBRARY_DIRS})
+
+    # definitions
+    add_definitions (${DAVIX_PKG_CFLAGS})
+    add_definitions (${DAVIX_COPY_PKG_CFLAGS})
 
     # Build plugin
     file (GLOB src_http "gfal_http_*.cpp")
