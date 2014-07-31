@@ -290,6 +290,30 @@ static int gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GE
     return -1;
 }
 
+// Only http or https
+// See LCGUTIL-473
+static std::string get_canonical_uri(const std::string& original)
+{
+    std::string scheme;
+    char last_scheme;
+
+    size_t plus_pos = original.find('+');
+    size_t colon_pos = original.find(':');
+
+    if (plus_pos < colon_pos)
+        last_scheme = original[plus_pos - 1];
+    else
+        last_scheme = original[colon_pos - 1];
+
+    if (last_scheme == 's')
+        scheme = "https";
+    else
+        scheme = "http";
+
+    std::string canonical = (scheme + original.substr(colon_pos));
+    return canonical;
+}
+
 
 static void gfal_http_third_party_copy(GfalHttpPluginData* davix,
         const char* src, const char* dst,
@@ -308,8 +332,11 @@ static void gfal_http_third_party_copy(GfalHttpPluginData* davix,
 
     copy.setPerformanceCallback(gfal_http_3rdcopy_perfcallback, &perfCallbackData);
 
+    std::string canonical_dst = get_canonical_uri(dst);
+    gfal_log(GFAL_VERBOSE_VERBOSE, "Normalize destination to %s", canonical_dst.c_str());
+
     Davix::DavixError* davError = NULL;
-    copy.copy(Davix::Uri(src), Davix::Uri(dst),
+    copy.copy(Davix::Uri(src), Davix::Uri(canonical_dst),
               gfalt_get_nbstreams(params, NULL),
               &davError);
 
