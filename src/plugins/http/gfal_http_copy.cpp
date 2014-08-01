@@ -111,7 +111,7 @@ static int gfal_http_copy_overwrite(plugin_handle plugin_data,
                              GFAL_EVENT_OVERWRITE_DESTINATION, "Deleted %s", dst);
     }
     else if (exists == 0) {
-        gfal_log(GFAL_VERBOSE_DEBUG, "Source does not exist");
+        gfal_log(GFAL_VERBOSE_DEBUG, "Destination does not exist");
     }
     else if (exists < 0) {
         gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_OVERWRITE);
