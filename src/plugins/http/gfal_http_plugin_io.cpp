@@ -86,7 +86,7 @@ off_t gfal_http_fseek(plugin_handle plugin_data, gfal_file_handle fd, off_t offs
     Davix::DavixError* daverr = NULL;
     DAVIX_FD* dfd = (DAVIX_FD*) gfal_file_handle_get_fdesc(fd);
 
-    off_t newOffset = davix->posix.lseek(dfd, offset, whence, &daverr);
+    off_t newOffset = static_cast<off_t>(davix->posix.lseek64(dfd, static_cast<dav_off_t>(offset), whence, &daverr));
     if (newOffset < 0) {
         davix2gliberr(daverr, err);
         Davix::DavixError::clearError(&daverr);

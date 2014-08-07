@@ -9,16 +9,22 @@
 int gfal_http_stat(plugin_handle plugin_data, const char* url,
                    struct stat* buf, GError** err)
 {
+    Davix::StatInfo info;
     char stripped_url[GFAL_URL_MAX_LEN];
     strip_3rd_from_url(url, stripped_url, sizeof(stripped_url));
+    if(buf==NULL){
+        gfal2_set_error(err, http_plugin_domain, EINVAL, __func__, "Invalid stat argument");
+        return -1;
+    }
 
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
-    if (davix->posix.stat(&davix->params, stripped_url, buf, &daverr) != 0) {
+    if (davix->posix.stat64(&davix->params, stripped_url, &info, &daverr) != 0) {
         davix2gliberr(daverr, err);
         Davix::DavixError::clearError(&daverr);
         return -1;
     }
+    info.toPosixStat(*buf);
     return 0;
 }
 
