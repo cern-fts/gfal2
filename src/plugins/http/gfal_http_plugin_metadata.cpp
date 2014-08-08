@@ -39,6 +39,9 @@ int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, g
     Davix::DavixError* daverr = NULL;
     if (davix->posix.mkdir(&davix->params, stripped_url, mode, &daverr) != 0) {
         davix2gliberr(daverr, err);
+        // Beware! Davix maps 405 to PermissionRefused, even though it is FileExist for MKCOL
+        if (daverr->getStatus() == Davix::StatusCode::PermissionRefused)
+            (*err)->code = EEXIST;
         Davix::DavixError::clearError(&daverr);
         return -1;
     }
