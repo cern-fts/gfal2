@@ -52,7 +52,7 @@ SET(srm_prefix_dpm "srm://hepgrid11.ph.liv.ac.uk:8446/srm/managerv2?SFN=/dpm/ph.
 
 # Need to find something better!
 SET(davs_prefix_dpm "davs+3rd://lxfsra04a04.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
-SET(root_prefix_dpm "root://lxfsra04a04.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
+SET(root_prefix_dpm "root://hepgrid11.ph.liv.ac.uk/dpm/ph.liv.ac.uk/home/${MY_VO}/gfal2-tests")
 
 ENDIF(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
