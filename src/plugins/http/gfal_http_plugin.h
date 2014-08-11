@@ -29,6 +29,9 @@ extern GQuark http_plugin_domain;
 // Initializes a GError from a DavixError
 void davix2gliberr(const Davix::DavixError* daverr, GError** err);
 
+// Initializes a GError from an HTTP code
+void http2gliberr(GError** err, int http, const char* func, const char* msg);
+
 // Cred setup
 void gfal_http_get_ucert(Davix::RequestParams & params, gfal2_context_t handle);
 

@@ -165,6 +165,41 @@ void davix2gliberr(const DavixError* daverr, GError** err)
 }
 
 
+static int http2errno(int http)
+{
+    if (http < 400)
+        return 0;
+    switch (http) {
+        case 400: case 406:
+            return EINVAL;
+        case 401: case 402: case 403:
+            return EACCES;
+        case 404: case 410:
+            return ENOENT;
+        case 405:
+            return EPERM;
+        case 409:
+            return EEXIST;
+        case 501:
+            return ENOSYS;
+        default:
+            if (http >= 400 && http < 500)
+                return EINVAL;
+            else
+                return ECOMM;
+    }
+}
+
+
+void http2gliberr(GError** err, int http, const char* func, const char* msg)
+{
+    int errn = http2errno(http);
+    char buffer[512] = {0};
+    strerror_r(errn, buffer, sizeof(buffer));
+    gfal2_set_error(err, http_plugin_domain, errn, func, "%s: %s (HTTP %d)", msg, buffer, http);
+}
+
+
 /// Authn implementation
 void gfal_http_get_ucert(RequestParams & params, gfal2_context_t handle)
 {

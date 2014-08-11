@@ -456,11 +456,23 @@ static void gfal_http_streamed_copy(gfal2_context_t context,
     request.setRequestBody(gfal_http_streamed_provider, src_stat.st_size, &provider);
     request.executeRequest(&dav_error);
 
+    gfal2_close(context, source_fd, &nested_err);
+    // Throw away this error
+    if (nested_err)
+        g_error_free(nested_err);
+
     if (dav_error != NULL) {
         davix2gliberr(dav_error, err);
         Davix::DavixError::clearError(&dav_error);
         return;
     }
+
+    // Double check the HTTP code
+    if (request.getRequestCode() >= 400) {
+        http2gliberr(err, request.getRequestCode(), __func__, "Failed to PUT the file");
+    }
+
+    gfal_log(GFAL_VERBOSE_VERBOSE, "HTTP code %d", request.getRequestCode());
 }
 
 
