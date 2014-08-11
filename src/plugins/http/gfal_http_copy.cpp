@@ -414,11 +414,6 @@ static void gfal_http_streamed_copy(gfal2_context_t context,
     request.setRequestBody(gfal_http_streamed_provider, src_stat.st_size, &provider);
     request.executeRequest(&dav_error);
 
-    // dav_error is not set for "expected" http responses (i.e. 409)
-    if (dav_error == NULL && request.getRequestCode() >= 400) {
-        Davix::httpcodeToDavixCode(request.getRequestCode(), "", "", &dav_error);
-    }
-
     if (dav_error != NULL) {
         davix2gliberr(dav_error, err);
         Davix::DavixError::clearError(&dav_error);
