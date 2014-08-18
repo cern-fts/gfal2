@@ -44,13 +44,6 @@ int gfal_hostname_from_uri(const char * uri, char* buff_hostname, size_t s_buff,
  */
 int gfal_parse_uri(const char* uri, gfal_uri* parsed, GError** err);
 
-/*
-  take the first valid error in the arg list and set it in err_out, all the over ones are cleared properly
-  last argument must be NULL
-  return true if a valid error has been found, else false
-*/
-gboolean gfal_error_keep_first_err(GError** err_out, ...);
-
 
 #ifdef __cplusplus
 }
