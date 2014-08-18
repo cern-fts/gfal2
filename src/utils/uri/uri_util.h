@@ -21,9 +21,28 @@
 #ifdef __cplusplus
 extern "C"
 {
-#endif 
+#endif
 
+#define SCHEME_MAX 16
+
+typedef struct gfal_uri {
+   char     scheme[SCHEME_MAX];
+   char     domain[HOST_NAME_MAX];
+   unsigned port;
+   char     path [PATH_MAX];
+   char     query[PATH_MAX];
+} gfal_uri;
+
+
+/*
+ * Return only the hostname bit from the uri
+ */
 int gfal_hostname_from_uri(const char * uri, char* buff_hostname, size_t s_buff, GError ** err);
+
+/*
+ * Parse an URI
+ */
+int gfal_parse_uri(const char* uri, gfal_uri* parsed, GError** err);
 
 /*
   take the first valid error in the arg list and set it in err_out, all the over ones are cleared properly

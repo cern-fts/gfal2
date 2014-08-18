@@ -107,8 +107,14 @@ std::string lookup_host (const char *host, gboolean use_ipv6)
 
 static std::string returnHostname(const std::string &uri, gboolean use_ipv6)
 {
-	Uri u0 = Uri::Parse(uri);
-	return  lookup_host(u0.Host.c_str(), use_ipv6) + ":" + u0.Port;
+    GError* error = NULL;
+    gfal_uri parsed;
+    gfal_parse_uri(uri.c_str(), &parsed, &error);
+    if(error)
+        throw Glib::Error(error);
+    std::ostringstream str;
+    str << lookup_host(parsed.domain, use_ipv6) << ":" << parsed.port;
+	return str.str();
 }
 
 const char * gridftp_checksum_transfer_config   = "COPY_CHECKSUM_TYPE";
