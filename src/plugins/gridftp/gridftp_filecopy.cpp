@@ -347,7 +347,7 @@ static void gridftp_do_copy(GridftpModule* module, GridFTPFactoryInterface* fact
     req.start();
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s", src, dst);
     GridFTPOperationCanceler canceler(factory->get_handle(), &req);
-    gfal_globus_result_t res = globus_gass_copy_register_url_to_url(
+    globus_result_t res = globus_gass_copy_register_url_to_url(
         sess->get_gass_handle(),
         (char*)src,
         &(gass_attr_src->attr_gass),

@@ -348,7 +348,7 @@ ssize_t gridftp_write_stream(const Glib::Quark & scope, GridFTP_stream_state* st
 int gfal_globus_error_convert(globus_object_t * error, char ** str_error);
 
 // throw Glib::Error if error associated with this result
-void gfal_globus_check_result(const Glib::Quark & scope, gfal_globus_result_t res);
+void gfal_globus_check_result(const Glib::Quark & scope, globus_result_t res);
 
 // throw Glib::Error if error is present
 void gfal_globus_check_error(const Glib::Quark & scope,  globus_object_t *	error);

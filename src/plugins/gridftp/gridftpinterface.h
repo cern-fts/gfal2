@@ -29,11 +29,6 @@
 #include <common/gfal_types.h>
 
 
-typedef globus_gass_copy_handle_t gfal_globus_copy_handle_t;
-typedef globus_gass_copy_attr_t gfal_globus_copy_attr_t;
-typedef globus_result_t gfal_globus_result_t;
-
-
 struct Gass_attr_handler{
     virtual ~Gass_attr_handler(){};
     globus_gass_copy_attr_t attr_gass;
