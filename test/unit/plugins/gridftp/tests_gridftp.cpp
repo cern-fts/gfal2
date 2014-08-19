@@ -64,7 +64,7 @@ TEST(gfalGridFTP,handle_creation)
     ASSERT_TRUE(tmp_err== NULL && h);
 
     GridFTPFactory* f = new GridFTPFactory(h);
-    GridftpModule* copy = new GridftpModule(f);
+    GridFTPModule* copy = new GridFTPModule(f);
     ASSERT_TRUE(copy != NULL);
     // create and delete properly
     GridFTPSession* sess = f->gfal_globus_ftp_take_handle("gsiftp://fsdfdsfsd/fsdfds");

@@ -26,7 +26,7 @@ protected:
     GridftpStreamBuffer  *stream_buffer;
 
 public:
-    GridftpSimpleListReader(GridftpModule* gsiftp, const char* path);
+    GridftpSimpleListReader(GridFTPModule* gsiftp, const char* path);
     ~GridftpSimpleListReader();
     struct dirent* readdir();
     struct dirent* readdirpp(struct stat* st);
@@ -39,7 +39,7 @@ protected:
     GridftpStreamBuffer  *stream_buffer;
 
 public:
-    GridftpListReader(GridftpModule* gsiftp, const char* path);
+    GridftpListReader(GridFTPModule* gsiftp, const char* path);
     ~GridftpListReader();
     struct dirent* readdir();
     struct dirent* readdirpp(struct stat* st);

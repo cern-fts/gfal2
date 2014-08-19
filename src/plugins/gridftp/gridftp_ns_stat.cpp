@@ -26,16 +26,18 @@ static Glib::Quark gfal_gridftp_scope_stat()
     return Glib::Quark("Gridftp_stat_module::stat");
 }
 
+
 static Glib::Quark gfal_gridftp_scope_access()
 {
     return Glib::Quark("Gridftp_stat_module::access");
 }
 
 
-void GridftpModule::stat(const char* path, struct stat * st)
+void GridFTPModule::stat(const char* path, struct stat * st)
 {
     if (path == NULL || st == NULL)
-        throw Glib::Error(gfal_gridftp_scope_stat(), EINVAL, "Invalid arguments path or stat ");
+        throw Glib::Error(gfal_gridftp_scope_stat(), EINVAL,
+                "Invalid arguments path or stat ");
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpModule::stat] ");
     globus_gass_copy_glob_stat_t gl_stat;
     memset(&gl_stat, 0, sizeof(globus_gass_copy_glob_stat_t));
@@ -44,7 +46,9 @@ void GridftpModule::stat(const char* path, struct stat * st)
     memset(st, 0, sizeof(struct stat));
     st->st_mode = (mode_t) ((gl_stat.mode != -1) ? gl_stat.mode : 0);
 //	st->st_mode |= (gl_stat.symlink_target != NULL)?(S_IFLNK):0;
-    st->st_mode |= (gl_stat.type == GLOBUS_GASS_COPY_GLOB_ENTRY_DIR) ? (S_IFDIR) : (S_IFREG);
+    st->st_mode |=
+            (gl_stat.type == GLOBUS_GASS_COPY_GLOB_ENTRY_DIR) ?
+                    (S_IFDIR) : (S_IFREG);
     st->st_size = (off_t) gl_stat.size;
     st->st_mtime = (time_t) (gl_stat.mdtm != -1) ? (gl_stat.mdtm) : 0;
 
@@ -55,10 +59,11 @@ void GridftpModule::stat(const char* path, struct stat * st)
 }
 
 
-void GridftpModule::access(const char* path, int mode)
+void GridFTPModule::access(const char* path, int mode)
 {
     if (path == NULL)
-        throw Gfal::CoreException(gfal_gridftp_scope_stat(), "Invalid arguments path or stat ",
+        throw Gfal::CoreException(gfal_gridftp_scope_stat(),
+                "Invalid arguments path or stat ",
                 EINVAL);
 
     gfal_log(GFAL_VERBOSE_TRACE, " -> [Gridftp_stat_module::access] ");
@@ -74,14 +79,20 @@ void GridftpModule::access(const char* path, int mode)
     }
 
     const mode_t file_mode = (mode_t) gl_stat.mode;
-    if (((file_mode & ( S_IRUSR | S_IRGRP | S_IROTH)) == FALSE) && (mode & R_OK))
-        throw Gfal::CoreException(gfal_gridftp_scope_access(), "No read access ", EACCES);
+    if (((file_mode & ( S_IRUSR | S_IRGRP | S_IROTH)) == FALSE)
+            && (mode & R_OK))
+        throw Gfal::CoreException(gfal_gridftp_scope_access(),
+                "No read access ", EACCES);
 
-    if (((file_mode & ( S_IWUSR | S_IWGRP | S_IWOTH)) == FALSE) && (mode & W_OK))
-        throw Gfal::CoreException(gfal_gridftp_scope_access(), "No write access ", EACCES);
+    if (((file_mode & ( S_IWUSR | S_IWGRP | S_IWOTH)) == FALSE)
+            && (mode & W_OK))
+        throw Gfal::CoreException(gfal_gridftp_scope_access(),
+                "No write access ", EACCES);
 
-    if (((file_mode & ( S_IXUSR | S_IXGRP | S_IXOTH)) == FALSE) && (mode & X_OK))
-        throw Gfal::CoreException(gfal_gridftp_scope_access(), "No execute access ", EACCES);
+    if (((file_mode & ( S_IXUSR | S_IXGRP | S_IXOTH)) == FALSE)
+            && (mode & X_OK))
+        throw Gfal::CoreException(gfal_gridftp_scope_access(),
+                "No execute access ", EACCES);
 
     gfal_log(GFAL_VERBOSE_TRACE, " <- [Gridftp_stat_module::access] ");
 }
@@ -329,13 +340,15 @@ globus_result_t parse_mlst_line(char *line,
 }
 
 
-void GridftpModule::internal_globus_gass_stat(const char* path,
+void GridFTPModule::internal_globus_gass_stat(const char* path,
         globus_gass_copy_glob_stat_t * gl_stat)
 {
 
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [Gridftp_stat_module::globus_gass_stat] ");
+    gfal_log(GFAL_VERBOSE_TRACE,
+            " -> [Gridftp_stat_module::globus_gass_stat] ");
     GridFTPSession sess(
-            _handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)));
+            _handle_factory->gfal_globus_ftp_take_handle(
+                    gridftp_hostname_from_url(path)));
 
     Gass_attr_handler gass_attr_src(sess.get_op_attr_ftp());
 
@@ -344,32 +357,35 @@ void GridftpModule::internal_globus_gass_stat(const char* path,
     GridFTPRequestState req(&sess, false);
 
     globus_result_t res = globus_ftp_client_mlst(sess.get_ftp_handle(), path,
-            sess.get_op_attr_ftp(), &buffer, &buflen, globus_basic_client_callback, &req);
+            sess.get_op_attr_ftp(), &buffer, &buflen,
+            globus_basic_client_callback, &req);
 
     gfal_globus_check_result(gfal_gridftp_scope_stat(), res);
     req.wait_callback(gfal_gridftp_scope_stat());
 
-    gfal_log(GFAL_VERBOSE_TRACE, "   <- [Gridftp_stat_module::internal_globus_gass_stat] Got '%s'",
+    gfal_log(GFAL_VERBOSE_TRACE,
+            "   <- [Gridftp_stat_module::internal_globus_gass_stat] Got '%s'",
             buffer);
 
     parse_mlst_line((char*) buffer, gl_stat, NULL, 0);
     globus_free(buffer);
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [Gridftp_stat_module::internal_globus_gass_stat] ");
+    gfal_log(GFAL_VERBOSE_TRACE,
+            " <- [Gridftp_stat_module::internal_globus_gass_stat] ");
 }
 
 
-extern "C" int gfal_gridftp_statG(plugin_handle handle, const char* name, struct stat* buff,
-        GError ** err)
+extern "C" int gfal_gridftp_statG(plugin_handle handle, const char* name,
+        struct stat* buff, GError ** err)
 {
-    g_return_val_err_if_fail(handle != NULL && name != NULL && buff != NULL, -1, err,
-            "[gfal_gridftp_statG][gridftp] einval params");
+    g_return_val_err_if_fail(handle != NULL && name != NULL && buff != NULL, -1,
+            err, "[gfal_gridftp_statG][gridftp] einval params");
 
     GError * tmp_err = NULL;
     int ret = -1;
     gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_statG]");
     CPP_GERROR_TRY
-                (static_cast<GridftpModule*>(handle))->stat(name, buff);
+                (static_cast<GridFTPModule*>(handle))->stat(name, buff);
                 ret = 0;
             CPP_GERROR_CATCH(&tmp_err);
     gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_statG]<-");
@@ -377,7 +393,8 @@ extern "C" int gfal_gridftp_statG(plugin_handle handle, const char* name, struct
 }
 
 
-extern "C" int gfal_gridftp_accessG(plugin_handle handle, const char* name, int mode, GError** err)
+extern "C" int gfal_gridftp_accessG(plugin_handle handle, const char* name,
+        int mode, GError** err)
 {
     g_return_val_err_if_fail(handle != NULL && name != NULL, -1, err,
             "[gfal_gridftp_statG][gridftp] einval params");
@@ -386,10 +403,9 @@ extern "C" int gfal_gridftp_accessG(plugin_handle handle, const char* name, int 
     int ret = -1;
     gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_accessG]");
     CPP_GERROR_TRY
-                (static_cast<GridftpModule*>(handle))->access(name, mode);
+                (static_cast<GridFTPModule*>(handle))->access(name, mode);
                 ret = 0;
             CPP_GERROR_CATCH(&tmp_err);
     gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_accessG]<-");
     G_RETURN_ERR(ret, tmp_err, err);
 }
-

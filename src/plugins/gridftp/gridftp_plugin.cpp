@@ -28,7 +28,6 @@
 extern "C"{
 
 
-
 static bool is_gridftp_uri(const char* src)
 {
     static const char gridftp_prefix[] = "gsiftp://";
@@ -89,7 +88,7 @@ plugin_handle gridftp_plugin_load(gfal2_context_t handle, GError ** err)
 	CPP_GERROR_TRY
 		gfal_log(GFAL_VERBOSE_TRACE, " -> [gridftp_plugin] try to load ..");	
 		 h = static_cast<plugin_handle>(
-					new GridftpModule( new GridFTPFactory(handle) )
+					new GridFTPModule( new GridFTPFactory(handle) )
 			);
 		gfal_log(GFAL_VERBOSE_TRACE, " -> [gridftp_plugin] loaded ..");	
 	CPP_GERROR_CATCH(&tmp_err);
@@ -102,7 +101,7 @@ void gridftp_plugin_unload(plugin_handle handle)
 {
 	if(handle){
 		try{
-			delete (static_cast<GridftpModule*>(handle));
+			delete (static_cast<GridFTPModule*>(handle));
 		}catch(...){
 			gfal_log(GFAL_VERBOSE_NORMAL, " bug found plugin gridFTP throws error while loading");
 		}

@@ -34,10 +34,11 @@ static Glib::Mutex mux_globus_init;
 
 // initialization
 __attribute__((constructor))
-void core_init(){
+void core_init()
+{
 #if  (!GLIB_CHECK_VERSION (2, 32, 0))
     if (!g_thread_supported())
-      g_thread_init(NULL);
+    g_thread_init(NULL);
 #endif
     Glib::init();
 }
@@ -45,41 +46,56 @@ void core_init(){
 
 
 // gfunction prototype : gonce 
-static void* init_globus(gpointer data){
+static void* init_globus(gpointer data)
+{
     Glib::Mutex::Lock l(mux_globus_init);
     globus_result_t result = GLOBUS_SUCCESS;
-     if( (  result = globus_module_activate(GLOBUS_GASS_COPY_MODULE) ) != GLOBUS_SUCCESS)
-        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(), "Error globus init, globus gass", result);
-	 if( ( result = globus_module_activate(GLOBUS_FTP_CLIENT_MODULE)) != GLOBUS_SUCCESS)
-        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(), "Error globus init, globus ftp", result);
-     if( ( result = globus_module_activate(GLOBUS_FTP_CLIENT_DEBUG_PLUGIN_MODULE)) != GLOBUS_SUCCESS)
-        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(), "Error globus init, globus ftp debug", result);
-	return NULL;
+    if ((result = globus_module_activate(GLOBUS_GASS_COPY_MODULE))
+            != GLOBUS_SUCCESS)
+        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(),
+                "Error globus init, globus gass", result);
+    if ((result = globus_module_activate(GLOBUS_FTP_CLIENT_MODULE))
+            != GLOBUS_SUCCESS)
+        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(),
+                "Error globus init, globus ftp", result);
+    if ((result = globus_module_activate(GLOBUS_FTP_CLIENT_DEBUG_PLUGIN_MODULE))
+            != GLOBUS_SUCCESS)
+        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(),
+                "Error globus init, globus ftp debug", result);
+    return NULL;
 }
 
-static void* deinit_globus(gpointer data){
+
+static void* deinit_globus(gpointer data)
+{
     Glib::Mutex::Lock l(mux_globus_init);
-    globus_result_t result = GLOBUS_SUCCESS;  
-     if( (  result = globus_module_deactivate(GLOBUS_GASS_COPY_MODULE) ) != GLOBUS_SUCCESS)
-        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(), "Error globus deinit, globus gass", result);
-     if( ( result = globus_module_deactivate(GLOBUS_FTP_CLIENT_MODULE)) != GLOBUS_SUCCESS)
-        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(), "Error globus deinit, globus ftp", result);
-     if( ( result = globus_module_deactivate(GLOBUS_FTP_CLIENT_DEBUG_PLUGIN_MODULE)) != GLOBUS_SUCCESS)
-        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(), "Error globus deinit, globus ftp debug", result);
-	return NULL;
+    globus_result_t result = GLOBUS_SUCCESS;
+    if ((result = globus_module_deactivate(GLOBUS_GASS_COPY_MODULE))
+            != GLOBUS_SUCCESS)
+        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(),
+                "Error globus deinit, globus gass", result);
+    if ((result = globus_module_deactivate(GLOBUS_FTP_CLIENT_MODULE))
+            != GLOBUS_SUCCESS)
+        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(),
+                "Error globus deinit, globus ftp", result);
+    if ((result = globus_module_deactivate(
+            GLOBUS_FTP_CLIENT_DEBUG_PLUGIN_MODULE)) != GLOBUS_SUCCESS)
+        throw Gfal::CoreException(gfal_gridftp_scope_globus_init(),
+                "Error globus deinit, globus ftp debug", result);
+    return NULL;
 }
 
-GridftpModule::GridftpModule(GridFTPFactory* factory) 
+
+GridFTPModule::GridFTPModule(GridFTPFactory* factory)
 {
-	init_globus(NULL);
-	_handle_factory = factory;
+    init_globus(NULL);
+    _handle_factory = factory;
 }
 
-
-GridftpModule::~GridftpModule()
+GridFTPModule::~GridFTPModule()
 {
-	delete _handle_factory;
-	deinit_globus(NULL);	
+    delete _handle_factory;
+    deinit_globus(NULL);
 }
 
 

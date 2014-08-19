@@ -26,8 +26,9 @@ plugin_handle gridftp_plugin_load(gfal2_context_t handle, GError ** err);
 
 void gridftp_plugin_unload(plugin_handle handle);
 
-gboolean gridftp_check_url_transfer(plugin_handle handle, gfal2_context_t context,
-        const char* src, const char* dst, gfal_url2_check type);
+gboolean gridftp_check_url_transfer(plugin_handle handle,
+        gfal2_context_t context, const char* src, const char* dst,
+        gfal_url2_check type);
 
 #ifdef __cplusplus
 }

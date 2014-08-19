@@ -18,16 +18,20 @@
 
 #include "gridftpmodule.h"
 
+extern "C" gfal_file_handle gfal_gridftp_openG(plugin_handle ch,
+        const char* url, int flag, mode_t mode, GError** err);
 
-extern "C" gfal_file_handle gfal_gridftp_openG(plugin_handle ch, const char* url, int flag, mode_t mode, GError** err);
+extern "C" ssize_t gfal_gridftp_readG(plugin_handle ch, gfal_file_handle fd,
+        void* buff, size_t s_buff, GError** err);
 
-extern "C" ssize_t gfal_gridftp_readG(plugin_handle ch , gfal_file_handle fd, void* buff, size_t s_buff, GError** err);
+extern "C" ssize_t gfal_gridftp_writeG(plugin_handle ch, gfal_file_handle fd,
+        const void* buff, size_t s_buff, GError** err);
 
-extern "C" ssize_t gfal_gridftp_writeG(plugin_handle ch , gfal_file_handle fd, const void* buff, size_t s_buff, GError** err);
+extern "C" off_t gfal_gridftp_lseekG(plugin_handle ch, gfal_file_handle fd,
+        off_t offset, int whence, GError** err);
 
-extern "C" off_t gfal_gridftp_lseekG(plugin_handle ch , gfal_file_handle fd, off_t offset, int whence, GError** err);
-
-extern "C" int gfal_gridftp_closeG(plugin_handle ch, gfal_file_handle fd, GError** err);
+extern "C" int gfal_gridftp_closeG(plugin_handle ch, gfal_file_handle fd,
+        GError** err);
 
 
 #endif /* GRIDFTP_RW_MODULE_H */ 

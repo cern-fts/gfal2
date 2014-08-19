@@ -7,7 +7,7 @@ extern globus_result_t parse_mlst_line(char *line, globus_gass_copy_glob_stat_t 
         char *filename_buf, size_t filename_size);
 
 
-GridftpListReader::GridftpListReader(GridftpModule* gsiftp, const char* path)
+GridftpListReader::GridftpListReader(GridFTPModule* gsiftp, const char* path)
 {
     GridFTPFactory* factory = gsiftp->get_session_factory();
     GridFTPSession* session = factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path));
@@ -43,6 +43,7 @@ struct dirent* GridftpListReader::readdir()
     return readdirpp(&_);
 }
 
+
 static std::string& ltrim(std::string& str)
 {
     size_t i = 0;
@@ -51,6 +52,7 @@ static std::string& ltrim(std::string& str)
     str = str.substr(i);
     return str;
 }
+
 
 static std::string& rtrim(std::string& str)
 {
@@ -65,6 +67,7 @@ static std::string& trim(std::string& str)
 {
     return ltrim(rtrim(str));
 }
+
 
 struct dirent* GridftpListReader::readdirpp(struct stat* st)
 {

@@ -54,8 +54,8 @@ gfal_file_handle gfal_gridftp_opendirG(plugin_handle handle, const char* path,
 struct dirent* gfal_gridftp_readdirG(plugin_handle handle, gfal_file_handle fh,
         GError** err);
 
-struct dirent* gfal_gridftp_readdirppG(plugin_handle handle, gfal_file_handle fh,
-        struct stat*, GError** err);
+struct dirent* gfal_gridftp_readdirppG(plugin_handle handle,
+        gfal_file_handle fh, struct stat*, GError** err);
 
 int gfal_gridftp_closedirG(plugin_handle handle, gfal_file_handle fh,
         GError** err);

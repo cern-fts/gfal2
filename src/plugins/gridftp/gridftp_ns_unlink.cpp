@@ -21,51 +21,51 @@ static Glib::Quark gfal_gridftp_scope_unlink(){
     return Glib::Quark("GridftpModule::unlink");
 }
 
-void gridftp_unlink_internal(gfal2_context_t context, GridFTPSession* sess, const char * path, bool own_session){
+void gridftp_unlink_internal(gfal2_context_t context, GridFTPSession* sess,
+        const char * path, bool own_session)
+{
 
-	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::unlink] ");	
-	GridFTPRequestState req(sess, own_session); // get connexion session
+    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpModule::unlink] ");
+    GridFTPRequestState req(sess, own_session); // get connexion session
     GridFTPOperationCanceler canceler(context, &req);
 
     req.start();
-	globus_result_t res = globus_ftp_client_delete(
-				req.sess->get_ftp_handle(),
-				path,
-				req.sess->get_op_attr_ftp(),
-				globus_basic_client_callback,
-				&req);
+    globus_result_t res = globus_ftp_client_delete(req.sess->get_ftp_handle(),
+            path, req.sess->get_op_attr_ftp(), globus_basic_client_callback,
+            &req);
     gfal_globus_check_result(gfal_gridftp_scope_unlink(), res);
-	// wait for answer
+    // wait for answer
     req.wait_callback(gfal_gridftp_scope_unlink());
-	gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::unlink] ");		
+    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridftpModule::unlink] ");
 }
 
 
-void GridftpModule::unlink(const char* path)
+void GridFTPModule::unlink(const char* path)
 {
-	if(path== NULL )
-        throw Glib::Error(gfal_gridftp_scope_unlink(), EINVAL, "Invalid arguments path");
-	
-    gridftp_unlink_internal(_handle_factory->get_handle(), this->_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)),
-							path,
-							true);
-	
+    if (path == NULL)
+        throw Glib::Error(gfal_gridftp_scope_unlink(), EINVAL,
+                "Invalid arguments path");
+
+    gridftp_unlink_internal(_handle_factory->get_handle(),
+            this->_handle_factory->gfal_globus_ftp_take_handle(
+                    gridftp_hostname_from_url(path)), path, true);
+
 }
 
 
-extern "C" int gfal_gridftp_unlinkG(plugin_handle handle, const char* url , GError** err){
-	g_return_val_err_if_fail( handle != NULL && url != NULL
-			, -1, err, "[gfal_gridftp_unlinkG][gridftp] einval params");
+extern "C" int gfal_gridftp_unlinkG(plugin_handle handle, const char* url,
+        GError** err)
+{
+    g_return_val_err_if_fail(handle != NULL && url != NULL, -1, err,
+            "[gfal_gridftp_unlinkG][gridftp] einval params");
 
-	GError * tmp_err=NULL;
-	int ret = -1;
-	gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_unlinkG]");
-	CPP_GERROR_TRY
-		(static_cast<GridftpModule*>(handle))->unlink(url);
-		ret = 0;
-	CPP_GERROR_CATCH(&tmp_err);
-	gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_unlinkG] <-");
-	G_RETURN_ERR(ret, tmp_err, err);	
+    GError * tmp_err = NULL;
+    int ret = -1;
+    gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_unlinkG]");
+    CPP_GERROR_TRY
+                (static_cast<GridFTPModule*>(handle))->unlink(url);
+                ret = 0;
+            CPP_GERROR_CATCH(&tmp_err);
+    gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_unlinkG] <-");
+    G_RETURN_ERR(ret, tmp_err, err);
 }
-
-
