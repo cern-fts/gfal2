@@ -197,7 +197,7 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
                                         user_checksum, sizeof(user_checksum),
                                         NULL);
         if (checksum_type[0] == '\0')
-            strncpy(checksum_type, "ADLER32", sizeof(checksum_type));
+            g_strlcpy(checksum_type, "ADLER32", sizeof(checksum_type));
 
         gfal2_checksum(context, src, checksum_type, 0, 0, source_checksum, sizeof(source_checksum), &nested_error);
         if (nested_error != NULL) {

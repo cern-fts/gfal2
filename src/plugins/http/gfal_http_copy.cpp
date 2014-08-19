@@ -195,7 +195,7 @@ static int gfal_http_copy_checksum(gfal2_context_t context,
                                     checksum_value, sizeof(checksum_value),
                                     NULL);
     if (!checksum_type[0])
-        strcpy(checksum_type, "MD5");
+        g_strlcpy(checksum_type, "MD5", sizeof(checksum_type));
 
     GError *nestedError = NULL;
     char src_checksum[1024];
@@ -481,14 +481,14 @@ void strip_3rd_from_url(const char* url_full, char* url, size_t url_size)
     const char* colon = strchr(url_full, ':');
     const char* plus = strchr(url_full, '+');
     if (!plus || !colon || plus > colon) {
-        strncpy(url, url_full, url_size - 1);
-        url[url_size - 1] = '\0';
+        g_strlcpy(url, url_full, url_size);
     }
     else {
-        strncpy(url, url_full, plus - url_full);
-        url[plus - url_full] = '\0';
-        strncat(url, colon, url_size - 1);
-        url[url_size - 1] = '\0';
+        size_t len = plus - url_full + 1;
+        if (len >= url_size)
+            len = url_size;
+        g_strlcpy(url, url_full, len);
+        g_strlcat(url, colon, url_size);
     }
 }
 

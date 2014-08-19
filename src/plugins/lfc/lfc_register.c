@@ -40,7 +40,7 @@ static int _lfc_touch(struct lfc_ops* ops, const char* path, const char* guid,
     if (last_slash != NULL) {
         size_t dir_len = last_slash - path;
         char *dir = g_malloc0(dir_len);
-        strncpy(dir, path, dir_len);
+        g_strlcpy(dir, path, dir_len);
 
         gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: checking parent directory %s", dir);
 
@@ -86,7 +86,7 @@ static int _get_host(const char* url, char** host, GError** error)
     if (ret == 0) {
         size_t host_len = matches[2].rm_eo - matches[2].rm_so;
         *host = g_malloc0(host_len + 1);
-        strncpy(*host, url + matches[2].rm_so, host_len);
+        g_strlcpy(*host, url + matches[2].rm_so, host_len);
     }
     else {
         char err_buffer[64];
@@ -247,7 +247,7 @@ int gfal_lfc_register(plugin_handle handle, gfal2_context_t context,
 
     struct lfc_fileid unique_id = {{0}, 0};
     unique_id.fileid = statg.fileid;
-    strncpy(unique_id.server, lfc_host, sizeof(unique_id.server) - 1);
+    g_strlcpy(unique_id.server, lfc_host, sizeof(unique_id.server));
 
     ret_status = ops->addreplica(statg.guid,
                                  file_existed?&unique_id:NULL,

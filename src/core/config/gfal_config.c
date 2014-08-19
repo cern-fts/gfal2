@@ -99,7 +99,7 @@ GConfigManager_t gfal_load_static_configuration(GError ** err){
         if(d != NULL){
             while( (dirinfo = readdir(d)) != NULL){
                 if( is_config_dir(dirinfo->d_name)){
-                    char buff[strlen(dir_config)+strlen(dirinfo->d_name) +2];
+                    char buff[strlen(dir_config) + strlen(dirinfo->d_name) + 2];
                     strcpy(buff, dir_config);
                     strcat(buff,"/");
                     strcat(buff, dirinfo->d_name);

@@ -548,9 +548,8 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
                     &get_default_error);
             Gfal::gerror_to_cpp(&get_default_error);
 
-            strncpy(checksum_type, default_checksum_type,
+            g_strlcpy(checksum_type, default_checksum_type,
                     sizeof(checksum_type));
-            checksum_type[GFAL_URL_MAX_LEN - 1] = '\0';
             g_free(default_checksum_type);
 
             gfal_log(GFAL_VERBOSE_TRACE,

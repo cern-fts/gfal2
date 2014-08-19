@@ -227,7 +227,7 @@ static int srm_get_checksum_config(gfal2_context_t context, gfalt_params_t param
        const char* configured;
        configured = gfal2_get_opt_string(context, srm_config_group, srm_config_transfer_checksum, err);
        if (configured != NULL)
-           strncpy(algorithm, configured, algorithm_size);
+           g_strlcpy(algorithm, configured, algorithm_size);
     }
 
     if (*err == NULL) {
