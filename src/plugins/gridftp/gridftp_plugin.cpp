@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -86,13 +86,13 @@ plugin_handle gridftp_plugin_load(gfal2_context_t handle, GError ** err)
 	GError * tmp_err=NULL;
 	plugin_handle h = NULL;
 	CPP_GERROR_TRY
-		gfal_log(GFAL_VERBOSE_TRACE, " -> [gridftp_plugin] try to load ..");	
+		gfal_log(GFAL_VERBOSE_TRACE, " -> [gridftp_plugin] try to load ..");
 		 h = static_cast<plugin_handle>(
 					new GridFTPModule( new GridFTPFactory(handle) )
 			);
-		gfal_log(GFAL_VERBOSE_TRACE, " -> [gridftp_plugin] loaded ..");	
+		gfal_log(GFAL_VERBOSE_TRACE, " -> [gridftp_plugin] loaded ..");
 	CPP_GERROR_CATCH(&tmp_err);
-	
+
 	G_RETURN_ERR(h, tmp_err, err);
 }
 
@@ -119,48 +119,41 @@ const char *gridftp_plugin_name()
 /**
  * Map function for the gridftp interface
  * this function provide the generic PLUGIN interface for the gridftp plugin.
- * lfc_initG do : liblfc shared library load, sym resolve, endpoint check, and plugin function map.
- * 
- * */
-gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err){
-	GError* tmp_err=NULL;
-	
-	gfal_plugin_interface ret;
-	memset(&ret, 0, sizeof(gfal_plugin_interface));
-	plugin_handle r = gridftp_plugin_load(handle, &tmp_err);
+ **/
+gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)
+{
+    GError* tmp_err = NULL;
 
-	ret.plugin_data = r;
-	ret.check_plugin_url = &gridftp_check_url;
-	ret.plugin_delete = &gridftp_plugin_unload;
-	ret.getName = &gridftp_plugin_name;
-	ret.accessG = &gfal_gridftp_accessG;
-	ret.statG = & gfal_gridftp_statG;
-	ret.lstatG = &gfal_gridftp_statG;
-	ret.unlinkG = &gfal_gridftp_unlinkG;
-	ret.mkdirpG = &gfal_gridftp_mkdirG;
-	ret.chmodG = &gfal_gridftp_chmodG;
-	ret.rmdirG = &gfal_gridftp_rmdirG;
-	ret.opendirG = &gfal_gridftp_opendirG;
-	ret.readdirG = &gfal_gridftp_readdirG;
-	ret.readdirppG = &gfal_gridftp_readdirppG;
-	ret.closedirG = &gfal_gridftp_closedirG;
-	ret.openG = &gfal_gridftp_openG;
-	ret.closeG = &gfal_gridftp_closeG;
-	ret.readG = &gfal_gridftp_readG;
-	ret.writeG = &gfal_gridftp_writeG;
-	ret.lseekG = &gfal_gridftp_lseekG;
+    gfal_plugin_interface ret;
+    memset(&ret, 0, sizeof(gfal_plugin_interface));
+    plugin_handle r = gridftp_plugin_load(handle, &tmp_err);
+
+    ret.plugin_data = r;
+    ret.check_plugin_url = &gridftp_check_url;
+    ret.plugin_delete = &gridftp_plugin_unload;
+    ret.getName = &gridftp_plugin_name;
+    ret.accessG = &gfal_gridftp_accessG;
+    ret.statG = & gfal_gridftp_statG;
+    ret.lstatG = &gfal_gridftp_statG;
+    ret.unlinkG = &gfal_gridftp_unlinkG;
+    ret.mkdirpG = &gfal_gridftp_mkdirG;
+    ret.chmodG = &gfal_gridftp_chmodG;
+    ret.rmdirG = &gfal_gridftp_rmdirG;
+    ret.opendirG = &gfal_gridftp_opendirG;
+    ret.readdirG = &gfal_gridftp_readdirG;
+    ret.readdirppG = &gfal_gridftp_readdirppG;
+    ret.closedirG = &gfal_gridftp_closedirG;
+    ret.openG = &gfal_gridftp_openG;
+    ret.closeG = &gfal_gridftp_closeG;
+    ret.readG = &gfal_gridftp_readG;
+    ret.writeG = &gfal_gridftp_writeG;
+    ret.lseekG = &gfal_gridftp_lseekG;
     ret.checksum_calcG = &gfal_gridftp_checksumG;
     ret.copy_file = &gridftp_plugin_filecopy;
     ret.check_plugin_url_transfer = &gridftp_check_url_transfer;
     ret.renameG = &gfal_gridftp_renameG;
-	
-	G_RETURN_ERR(ret, tmp_err, err);
+
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
-/*  --> desactivated temporary -> responsible of segfault with globus 5.2 thread problem
-__attribute__((destructor)) 
-static void gridftp_destructor(){ // try to unload globus
-	globus_module_deactivate_all();
-}*/
-
-}
+};

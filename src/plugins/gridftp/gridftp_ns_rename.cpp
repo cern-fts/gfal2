@@ -17,7 +17,7 @@
 #include "gridftpwrapper.h"
 #include <exceptions/cpp_to_gerror.hpp>
 
-static const Glib::Quark GFAL_GRIDFTP_SCOPE_RENAME("GridftpModule::rmdir");
+static const Glib::Quark GFAL_GRIDFTP_SCOPE_RENAME("GridFTPModule::rmdir");
 
 
 void GridFTPModule::rename(const char* src, const char* dst)
@@ -26,11 +26,11 @@ void GridFTPModule::rename(const char* src, const char* dst)
         throw Glib::Error(GFAL_GRIDFTP_SCOPE_RENAME, EINVAL,
                 "Invalid source and/or destination");
 
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpModule::rename] ");
+    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::rename] ");
 
     GridFTPRequestState req(
             _handle_factory->gfal_globus_ftp_take_handle(
-                    gridftp_hostname_from_url(src))); // get connexion session
+                    gridftp_hostname_from_url(src))); // get connection session
 
     req.start();
     globus_result_t res = globus_ftp_client_move(req.sess->get_ftp_handle(),
@@ -40,7 +40,7 @@ void GridFTPModule::rename(const char* src, const char* dst)
     // wait for answer
     req.wait_callback(GFAL_GRIDFTP_SCOPE_RENAME);
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridftpModule::rename] ");
+    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridFTPModule::rename] ");
 
 }
 
@@ -49,7 +49,7 @@ int gfal_gridftp_renameG(plugin_handle handle, const char * oldurl,
         const char * newurl, GError** err)
 {
     g_return_val_err_if_fail(handle != NULL && oldurl != NULL && newurl != NULL,
-            -1, err, "[gfal_gridftp_rename][gridftp] einval params");
+            -1, err, "[gfal_gridftp_rename][gridftp] Invalid parameters");
 
     GError * tmp_err = NULL;
     int ret = -1;

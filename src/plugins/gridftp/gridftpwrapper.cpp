@@ -37,7 +37,7 @@ struct RwStatus
 };
 
 
-static Glib::Quark GFAL_GRIDFTP_SCOPE_REQ_STATE("GridftpModule::RequestState");
+static Glib::Quark GFAL_GRIDFTP_SCOPE_REQ_STATE("GridFTPModule::RequestState");
 
 
 Gass_attr_handler::Gass_attr_handler(globus_ftp_client_operationattr_t* ftp_operation_attr)
@@ -175,7 +175,7 @@ void GridFTPSession::apply_default_tcp_buffer_attributes()
 
 void GridFTPSession::set_gridftpv2(bool v2)
 {
-    globus_ftp_client_handleattr_set_gridftp2(&(_sess->attr_handle), v2); // define gridftp 2
+    globus_ftp_client_handleattr_set_gridftp2(&(_sess->attr_handle), v2); // define GridFTP 2
 }
 
 
@@ -449,7 +449,7 @@ GridFTPSession* GridFTPFactory::get_recycled_handle(
     Glib::Mutex::Lock l(mux_cache);
     GridFTPSession* res = NULL;
     std::multimap<std::string, GridFTPSession*>::iterator it = sess_cache.find(
-            hostname); // try to find a session explicitely associated with this handle
+            hostname); // try to find a session explicitly associated with this handle
     if (it == sess_cache.end()) { // if no session found, take a generic one
         gfal_log(GFAL_VERBOSE_TRACE,
                 "no session associated with this hostname, try find generic one .... ");
@@ -538,7 +538,7 @@ void gfal_globus_check_result(const Glib::Quark & scope, globus_result_t res)
         globus_object_t * error = globus_error_get(res); // get error from result code
         if (error == NULL)
             throw Gfal::CoreException(scope,
-                    "Unknow error  unable to map result code to globus error",
+                    "Unknown error  unable to map result code to globus error",
                     ENOENT);
 
         gfal_globus_check_error(scope, error);
@@ -597,9 +597,9 @@ GridFTPSession* GridFTPFactory::get_new_handle(const std::string & hostname)
     gchar* ucert = gfal2_get_opt_string(_handle, "X509", "CERT", NULL);
     gchar* ukey = gfal2_get_opt_string(_handle, "X509", "KEY", NULL);
     if (ucert) {
-        gfal_log(GFAL_VERBOSE_TRACE, " GSIFTP using certificate %s", ucert);
+        gfal_log(GFAL_VERBOSE_TRACE, "GSIFTP using certificate %s", ucert);
         if (ukey)
-            gfal_log(GFAL_VERBOSE_TRACE, " GSIFTP using private key %s", ukey);
+            gfal_log(GFAL_VERBOSE_TRACE, "GSIFTP using private key %s", ukey);
         sess->set_credentials(ucert, ukey);
         g_free(ucert);
         g_free(ukey);
@@ -621,7 +621,7 @@ void gfal_globus_store_error(GridFTPRequestState * state,
         g_free(glob_str);
     }
     else {
-        state->set_error("Uknow Globus Error, bad error report");
+        state->set_error("Unknown Globus Error, bad error report");
         state->set_error_code(EFAULT);
     }
 }
@@ -775,7 +775,7 @@ int GridFTPRequestState::cancel_operation_async(const Glib::Quark &scope,
     Glib::RWLock::ReaderLock l(this->mux_req_state);
     Glib::Mutex::Lock l_call(this->mux_callback_lock);
     this->canceling = TRUE;
-    if (this->get_req_status() == GRIDFTP_REQUEST_FINISHED) // already finished before cancelling -> return
+    if (this->get_req_status() == GRIDFTP_REQUEST_FINISHED) // already finished before canceling -> return
         return 0;
 
     if (this->request_type == GRIDFTP_REQUEST_GASS) {
@@ -791,14 +791,14 @@ int GridFTPRequestState::cancel_operation_async(const Glib::Quark &scope,
         gfal_globus_check_result(scope, res);
     }
     catch (Gfal::CoreException & e) {
-        gfal_log(GFAL_VERBOSE_TRACE, "gridftp error trigerred while cancel: %s",
+        gfal_log(GFAL_VERBOSE_TRACE, "gridftp error triggered while cancel: %s",
                 e.message_only());
         this->sess->disable_reuse();
         ret = -1;
     }
     catch (...) {
         gfal_log(GFAL_VERBOSE_TRACE,
-                "gridftp error trigerred while cancel: Unknown");
+                "gridftp error triggered while cancel: Unknown");
         this->sess->disable_reuse();
         ret = -1;
     }

@@ -23,13 +23,13 @@
 #include "gridftp_namespace.h"
 #include "gridftp_plugin.h"
 
-static Glib::Quark GFAL_GRIDFTP_SCOPE_OPEN("GridftpModule::open");
-static Glib::Quark GFAL_GRIDFTP_SCOPE_READ("GridftpModule::read");
-static Glib::Quark GFAL_GRIDFTP_SCOPE_INTERNAL_PREAD("GridftpModule::internal_pread");
-static Glib::Quark GFAL_GRIDFTP_SCOPE_WRITE("GridftpModule::write");
-static Glib::Quark GFAL_GRIDFTP_SCOPE_INTERNAL_PWRITE("GridftpModule::internal_pwrite");
-static Glib::Quark GFAL_GRIDFTP_SCOPE_LSEEK("GridftpModule::lseek");
-static Glib::Quark GFAL_GRIDFTP_SCOPE_CLOSE("GridftpModule::close");
+static Glib::Quark GFAL_GRIDFTP_SCOPE_OPEN("GridFTPModule::open");
+static Glib::Quark GFAL_GRIDFTP_SCOPE_READ("GridFTPModule::read");
+static Glib::Quark GFAL_GRIDFTP_SCOPE_INTERNAL_PREAD("GridFTPModule::internal_pread");
+static Glib::Quark GFAL_GRIDFTP_SCOPE_WRITE("GridFTPModule::write");
+static Glib::Quark GFAL_GRIDFTP_SCOPE_INTERNAL_PWRITE("GridFTPModule::internal_pwrite");
+static Glib::Quark GFAL_GRIDFTP_SCOPE_LSEEK("GridFTPModule::lseek");
+static Glib::Quark GFAL_GRIDFTP_SCOPE_CLOSE("GridFTPModule::close");
 
 
 const size_t readdir_len = 65000;
@@ -93,12 +93,12 @@ inline int gridftp_rw_commit_put(const Glib::Quark & scope,
     char buffer[2];
     if (is_write_only(desc->open_flags)) {
         gfal_log(GFAL_VERBOSE_TRACE,
-                " commit change for the current stream PUT ... ");
+                "Commit change for the current stream PUT ... ");
         GridFTPRequestState* state = desc->stream;
         state->start();
         gridftp_write_stream(GFAL_GRIDFTP_SCOPE_WRITE, desc->stream, buffer, 0, true);
         state->wait_callback(GFAL_GRIDFTP_SCOPE_WRITE);
-        gfal_log(GFAL_VERBOSE_TRACE, " commited with success ... ");
+        gfal_log(GFAL_VERBOSE_TRACE, "Committed with success ... ");
     }
     return 0;
 }
@@ -113,10 +113,10 @@ inline int gridftp_rw_valid_get(const Glib::Quark & scope,
         }
         else {
             gfal_log(GFAL_VERBOSE_TRACE,
-                    "not a full read -> kill the connexion ");
+                    "Not a full read -> kill the connection ");
             try {
                 desc->stream->cancel_operation(scope,
-                        "Not a full read, connexion killed");
+                        "Not a full read, connection killed");
             }
             catch (Glib::Error & e) {
                 // silent !!
@@ -129,8 +129,9 @@ inline int gridftp_rw_valid_get(const Glib::Quark & scope,
 // internal pread, do a read query with offset on a different descriptor, do not change the position of the current one.
 ssize_t gridftp_rw_internal_pread(GridFTPFactory * factory,
         GridFTPFileDesc* desc, void* buffer, size_t s_buff, off_t offset)
-{ // throw Gfal::CoreException
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpModule::internal_pread]");
+{
+    // throw Gfal::CoreException
+    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::internal_pread]");
     GridFTPStreamState stream(
             factory->gfal_globus_ftp_take_handle(
                     gridftp_hostname_from_url(desc->url.c_str())));
@@ -147,7 +148,7 @@ ssize_t gridftp_rw_internal_pread(GridFTPFactory * factory,
             &stream, buffer, s_buff); // read a block
 
     stream.wait_callback(GFAL_GRIDFTP_SCOPE_INTERNAL_PREAD);
-    gfal_log(GFAL_VERBOSE_TRACE, "[GridftpModule::internal_pread] <-");
+    gfal_log(GFAL_VERBOSE_TRACE, "[GridFTPModule::internal_pread] <-");
     return r_size;
 
 }
@@ -156,7 +157,7 @@ ssize_t gridftp_rw_internal_pread(GridFTPFactory * factory,
 ssize_t gridftp_rw_internal_pwrite(GridFTPFactory * factory,
         GridFTPFileDesc* desc, const void* buffer, size_t s_buff, off_t offset)
 { // throw Gfal::CoreException
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpModule::internal_pwrite]");
+    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::internal_pwrite]");
     GridFTPStreamState stream(
             factory->gfal_globus_ftp_take_handle(
                     gridftp_hostname_from_url(desc->url.c_str())));
@@ -173,7 +174,7 @@ ssize_t gridftp_rw_internal_pwrite(GridFTPFactory * factory,
             &stream, buffer, s_buff, false); // write block
 
     stream.wait_callback(GFAL_GRIDFTP_SCOPE_INTERNAL_PWRITE);
-    gfal_log(GFAL_VERBOSE_TRACE, "[GridftpModule::internal_pwrite] <-");
+    gfal_log(GFAL_VERBOSE_TRACE, "[GridFTPModule::internal_pwrite] <-");
     return r_size;
 
 }
@@ -188,7 +189,7 @@ gfal_file_handle GridFTPModule::open(const char* url, int flag, mode_t mode)
                             _handle_factory->gfal_globus_ftp_take_handle(
                                     gridftp_hostname_from_url(url))), url,
                     flag));
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpModule::open] ");
+    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::open] ");
     globus_result_t res;
     if (is_read_only(desc->open_flags) // check ENOENT condition for R_ONLY
     && this->exists(url) == false) {
@@ -224,7 +225,7 @@ gfal_file_handle GridFTPModule::open(const char* url, int flag, mode_t mode)
         desc->reset();
     }
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridftpModule::open] ");
+    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridFTPModule::open] ");
     return gfal_file_handle_new2(gridftp_plugin_name(),
             (gpointer) desc.release(), NULL, url);
 }
@@ -335,7 +336,7 @@ extern "C" gfal_file_handle gfal_gridftp_openG(plugin_handle handle,
         const char* url, int flag, mode_t mode, GError** err)
 {
     g_return_val_err_if_fail(handle != NULL && url != NULL, NULL, err,
-            "[gfal_gridftp_openG][gridftp] einval params");
+            "[gfal_gridftp_openG][gridftp] Invalid parameters");
 
     GError * tmp_err = NULL;
     gfal_file_handle ret = NULL;
@@ -353,7 +354,7 @@ extern "C" ssize_t gfal_gridftp_readG(plugin_handle ch, gfal_file_handle fd,
         void* buff, size_t s_buff, GError** err)
 {
     g_return_val_err_if_fail(ch != NULL && fd != NULL, -1, err,
-            "[gfal_gridftp_readG][gridftp] einval params");
+            "[gfal_gridftp_readG][gridftp] Invalid parameters");
 
     GError * tmp_err = NULL;
     int ret = -1;
@@ -371,7 +372,7 @@ extern "C" ssize_t gfal_gridftp_writeG(plugin_handle ch, gfal_file_handle fd,
         const void* buff, size_t s_buff, GError** err)
 {
     g_return_val_err_if_fail(ch != NULL && fd != NULL, -1, err,
-            "[gfal_gridftp_writeG][gridftp] einval params");
+            "[gfal_gridftp_writeG][gridftp] Invalid parameters");
 
     GError * tmp_err = NULL;
     int ret = -1;
@@ -389,7 +390,7 @@ extern "C" int gfal_gridftp_closeG(plugin_handle ch, gfal_file_handle fd,
         GError** err)
 {
     g_return_val_err_if_fail(ch != NULL && fd != NULL, -1, err,
-            "[gfal_gridftp_closeG][gridftp] einval params");
+            "[gfal_gridftp_closeG][gridftp] Invalid parameters");
 
     GError * tmp_err = NULL;
     int ret = -1;
@@ -407,7 +408,7 @@ extern "C" off_t gfal_gridftp_lseekG(plugin_handle ch, gfal_file_handle fd,
         off_t offset, int whence, GError** err)
 {
     g_return_val_err_if_fail(ch != NULL && fd != NULL, -1, err,
-            "[gfal_gridftp_lseekG][gridftp] einval params");
+            "[gfal_gridftp_lseekG][gridftp] Invalid parameters");
 
     GError * tmp_err = NULL;
     off_t ret = -1;

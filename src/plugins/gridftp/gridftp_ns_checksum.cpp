@@ -22,7 +22,7 @@
 #include <common/gfal_common_err_helpers.h>
 
 
-static Glib::Quark GFAL_GRIDFTP_SCOPE_CHECKSUM("Gridftp_checksum_module::checksum");
+static Glib::Quark GFAL_GRIDFTP_SCOPE_CHECKSUM("GridFTPModule::checksum");
 
 
 const char * gridftp_checksum_calc_timeout= "CHECKSUM_CALC_TIMEOUT";
@@ -33,7 +33,7 @@ extern "C" int gfal_gridftp_checksumG(plugin_handle handle, const char* url,
         off_t start_offset, size_t data_length, GError ** err)
 {
     g_return_val_err_if_fail(handle != NULL && url != NULL, -1, err,
-            "[gfal_gridftp_checksumG][gridftp] einval params");
+            "[gfal_gridftp_checksumG][gridftp] Invalid parameeters");
 
     GError * tmp_err = NULL;
     int ret = -1;
@@ -53,7 +53,7 @@ void GridFTPModule::checksum(const char* url, const char* check_type,
         char * checksum_buffer, size_t buffer_length, off_t start_offset,
         size_t data_length)
 {
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpModule::checksum] ");
+    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::checksum] ");
     gfal_log(GFAL_VERBOSE_DEBUG, " Checksum calculation %s for url %s",
             check_type, url);
     GridFTPRequestState req(
@@ -62,7 +62,7 @@ void GridFTPModule::checksum(const char* url, const char* check_type,
 
     if (buffer_length < 16)
         throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_CHECKSUM,
-                "buffer length for checksum calculation is not enought",
+                "buffer length for checksum calculation is not enough",
                 ENOBUFS);
 
     req.start();
@@ -77,5 +77,5 @@ void GridFTPModule::checksum(const char* url, const char* check_type,
             _handle_factory->get_handle(),
             GRIDFTP_CONFIG_GROUP, gridftp_checksum_calc_timeout, 1800);
     req.wait_callback(GFAL_GRIDFTP_SCOPE_CHECKSUM, timeout);
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridftpModule::checksum] ");
+    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridFTPModule::checksum] ");
 }

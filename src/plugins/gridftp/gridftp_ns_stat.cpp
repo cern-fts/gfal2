@@ -31,7 +31,7 @@ void GridFTPModule::stat(const char* path, struct stat * st)
     if (path == NULL || st == NULL)
         throw Glib::Error(GFAL_GRIDFTP_SCOPE_STAT, EINVAL,
                 "Invalid arguments path or stat ");
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpModule::stat] ");
+    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::stat] ");
     globus_gass_copy_glob_stat_t gl_stat;
     memset(&gl_stat, 0, sizeof(globus_gass_copy_glob_stat_t));
     internal_globus_gass_stat(path, &gl_stat);
@@ -48,7 +48,7 @@ void GridFTPModule::stat(const char* path, struct stat * st)
     globus_libc_free(gl_stat.unique_id);
     globus_libc_free(gl_stat.symlink_target);
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridftpModule::stat] ");
+    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridFTPModule::stat] ");
 }
 
 
@@ -66,7 +66,7 @@ void GridFTPModule::access(const char* path, int mode)
 
     if (gl_stat.mode == -1) { // mode not managed by server
         gfal_log(GFAL_VERBOSE_VERBOSE,
-                "access request is not managed by this server %s , return access authorized by default",
+                "Access request is not managed by this server %s , return access authorized by default",
                 path);
         return;
     }
@@ -372,7 +372,7 @@ extern "C" int gfal_gridftp_statG(plugin_handle handle, const char* name,
         struct stat* buff, GError ** err)
 {
     g_return_val_err_if_fail(handle != NULL && name != NULL && buff != NULL, -1,
-            err, "[gfal_gridftp_statG][gridftp] einval params");
+            err, "[gfal_gridftp_statG][gridftp] Invalid parameters");
 
     GError * tmp_err = NULL;
     int ret = -1;
@@ -390,7 +390,7 @@ extern "C" int gfal_gridftp_accessG(plugin_handle handle, const char* name,
         int mode, GError** err)
 {
     g_return_val_err_if_fail(handle != NULL && name != NULL, -1, err,
-            "[gfal_gridftp_statG][gridftp] einval params");
+            "[gfal_gridftp_statG][gridftp] Invalid parameters");
 
     GError * tmp_err = NULL;
     int ret = -1;

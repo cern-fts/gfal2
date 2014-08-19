@@ -41,7 +41,7 @@
 
 extern const char* gridftp_ipv6_config;
 
-static Glib::Quark GFAL_GRIDFTP_SCOPE_FILECOPY("GridFTP::FileCopy");
+static Glib::Quark GFAL_GRIDFTP_SCOPE_FILECOPY("GridFTPFileCopyModule::FileCopy");
 
 static Glib::Quark GFAL_GRIDFTP_DOMAIN_GSIFTP("GSIFTP");
 
@@ -246,12 +246,10 @@ struct CallbackHandler{
         }
 
         std::stringstream msg;
-        msg
-                << "Transfer canceled because the gsiftp performance marker timeout of "
-                << args->timeout_value
-                << " seconds has been exceeded, or all performance markers during that period indicated zero bytes transferred";
-        args->req->cancel_operation_async(GFAL_GRIDFTP_SCOPE_FILECOPY,
-                msg.str());
+        msg << "Transfer canceled because the gsiftp performance marker timeout of "
+            << args->timeout_value
+            << " seconds has been exceeded, or all performance markers during that period indicated zero bytes transferred";
+        args->req->cancel_operation_async(GFAL_GRIDFTP_SCOPE_FILECOPY, msg.str());
 
         return NULL;
     }
@@ -666,7 +664,7 @@ extern "C" int gridftp_plugin_filecopy(plugin_handle handle, gfal2_context_t con
         gfalt_params_t params, const char* src, const char* dst, GError ** err)
 {
     g_return_val_err_if_fail(handle != NULL && src != NULL && dst != NULL, -1,
-            err, "[plugin_filecopy][gridftp] einval params");
+            err, "[plugin_filecopy][gridftp] Invalid parameters");
 
     GError * tmp_err = NULL;
     int ret = -1;

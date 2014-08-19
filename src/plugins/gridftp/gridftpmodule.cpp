@@ -26,7 +26,7 @@
 
 //GOnce my_once = G_ONCE_INIT;
 
-static Glib::Quark GFAL_GRIDFTP_SCOPE_GLOBUS_INIT("GridftpModule::init_globus");
+static Glib::Quark GFAL_GRIDFTP_SCOPE_GLOBUS_INIT("GridFTPModule::init_globus");
 
 static Glib::Mutex mux_globus_init;
 

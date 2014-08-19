@@ -17,15 +17,15 @@
 #include "gridftp_namespace.h"
 #include <exceptions/cpp_to_gerror.hpp>
 
-static Glib::Quark GFAL_GRIDFTP_SCOPE_UNLINK("GridftpModule::unlink");
+static Glib::Quark GFAL_GRIDFTP_SCOPE_UNLINK("GridFTPModule::unlink");
 
 
 void gridftp_unlink_internal(gfal2_context_t context, GridFTPSession* sess,
         const char * path, bool own_session)
 {
 
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpModule::unlink] ");
-    GridFTPRequestState req(sess, own_session); // get connexion session
+    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::unlink] ");
+    GridFTPRequestState req(sess, own_session); // get connection session
     GridFTPOperationCanceler canceler(context, &req);
 
     req.start();
@@ -35,7 +35,7 @@ void gridftp_unlink_internal(gfal2_context_t context, GridFTPSession* sess,
     gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_UNLINK, res);
     // wait for answer
     req.wait_callback(GFAL_GRIDFTP_SCOPE_UNLINK);
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridftpModule::unlink] ");
+    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridFTPModule::unlink] ");
 }
 
 
@@ -56,7 +56,7 @@ extern "C" int gfal_gridftp_unlinkG(plugin_handle handle, const char* url,
         GError** err)
 {
     g_return_val_err_if_fail(handle != NULL && url != NULL, -1, err,
-            "[gfal_gridftp_unlinkG][gridftp] einval params");
+            "[gfal_gridftp_unlinkG][gridftp] Invalid parameters");
 
     GError * tmp_err = NULL;
     int ret = -1;

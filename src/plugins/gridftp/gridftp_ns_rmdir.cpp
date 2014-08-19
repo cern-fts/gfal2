@@ -18,7 +18,7 @@
 #include <exceptions/cpp_to_gerror.hpp>
 
 
-static Glib::Quark GFAL_GRIDFTP_SCOPE_RMDIR("GridftpModule::rmdir");
+static Glib::Quark GFAL_GRIDFTP_SCOPE_RMDIR("GridFTPModule::rmdir");
 
 
 void GridFTPModule::rmdir(const char* path)
@@ -26,12 +26,12 @@ void GridFTPModule::rmdir(const char* path)
     if (path == NULL)
         throw Glib::Error(GFAL_GRIDFTP_SCOPE_RMDIR, EINVAL,
                 "Invalid arguments path");
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpModule::rmdir] ");
+    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::rmdir] ");
 
     try {
         GridFTPRequestState req(
                 _handle_factory->gfal_globus_ftp_take_handle(
-                        gridftp_hostname_from_url(path))); // get connexion session
+                        gridftp_hostname_from_url(path))); // get connection session
 
         req.start();
         globus_result_t res = globus_ftp_client_rmdir(
@@ -47,7 +47,7 @@ void GridFTPModule::rmdir(const char* path)
         throw e;
     }
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridftpModule::rmdir] ");
+    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridFTPModule::rmdir] ");
 
 }
 
@@ -56,7 +56,7 @@ extern "C" int gfal_gridftp_rmdirG(plugin_handle handle, const char* url,
         GError** err)
 {
     g_return_val_err_if_fail(handle != NULL && url != NULL, -1, err,
-            "[gfal_gridftp_rmdir][gridftp] einval params");
+            "[gfal_gridftp_rmdir][gridftp] Invalid parameters");
 
     GError * tmp_err = NULL;
     int ret = -1;

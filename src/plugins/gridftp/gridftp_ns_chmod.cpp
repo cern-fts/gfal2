@@ -18,7 +18,7 @@
 #include <exceptions/cpp_to_gerror.hpp>
 
 
-static Glib::Quark GFAL_GRIDFTP_SCOPE_CHMOD("GridftpModule::chmod");
+static Glib::Quark GFAL_GRIDFTP_SCOPE_CHMOD("GridFTPModule::chmod");
 
 
 void GridFTPModule::chmod(const char* path, mode_t mode)
@@ -26,11 +26,11 @@ void GridFTPModule::chmod(const char* path, mode_t mode)
     if (path == NULL)
         throw Glib::Error(GFAL_GRIDFTP_SCOPE_CHMOD, EINVAL,
                 "Invalid arguments path or mode ");
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpModule::chmod] ");
+    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::chmod] ");
 
     GridFTPRequestState req(
             _handle_factory->gfal_globus_ftp_take_handle(
-                    gridftp_hostname_from_url(path))); // get connexion session
+                    gridftp_hostname_from_url(path))); // get connection session
 
     req.start();
     globus_result_t res = globus_ftp_client_chmod(req.sess->get_ftp_handle(),
@@ -40,7 +40,7 @@ void GridFTPModule::chmod(const char* path, mode_t mode)
     // wait for answer
     req.wait_callback(GFAL_GRIDFTP_SCOPE_CHMOD);
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridftpModule::chmod] ");
+    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridFTPModule::chmod] ");
 
 }
 
@@ -49,7 +49,7 @@ extern "C" int gfal_gridftp_chmodG(plugin_handle handle, const char* path,
         mode_t mode, GError** err)
 {
     g_return_val_err_if_fail(handle != NULL && path != NULL, -1, err,
-            "[gfal_gridftp_chmodG][gridftp] einval params");
+            "[gfal_gridftp_chmodG][gridftp] Invalid parameters");
 
     GError * tmp_err = NULL;
     int ret = -1;
