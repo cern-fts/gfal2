@@ -3,9 +3,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,10 +36,8 @@ struct RwStatus
     bool ops_state;
 };
 
-static Glib::Quark gfal_gridftp_scope_req_state()
-{
-    return Glib::Quark("GridftpModule::RequestState");
-}
+
+static Glib::Quark GFAL_GRIDFTP_SCOPE_REQ_STATE("GridftpModule::RequestState");
 
 
 Gass_attr_handler::Gass_attr_handler(globus_ftp_client_operationattr_t* ftp_operation_attr)
@@ -250,7 +248,7 @@ void GridFTPSession::set_credentials(const char* ucert, const char* ukey)
     std::stringstream buffer;
     std::ifstream cert_stream(ucert);
     if (cert_stream.bad()) {
-        throw Glib::Error(gfal_gridftp_scope_req_state(), errno,
+        throw Glib::Error(GFAL_GRIDFTP_SCOPE_REQ_STATE, errno,
                 "Could not open the user certificate");
     }
 
@@ -258,7 +256,7 @@ void GridFTPSession::set_credentials(const char* ucert, const char* ukey)
     if (ukey) {
         std::ifstream key_stream(ukey);
         if (key_stream.bad())
-            throw Glib::Error(gfal_gridftp_scope_req_state(), errno,
+            throw Glib::Error(GFAL_GRIDFTP_SCOPE_REQ_STATE, errno,
                     "Could not open the user private key");
         buffer << key_stream.rdbuf();
     }
@@ -278,7 +276,7 @@ void GridFTPSession::set_credentials(const char* ucert, const char* ukey)
         std::stringstream err_buffer;
         err_buffer << "Could not load the user credentials (" << major_status
                 << ":" << minor_status << ")";
-        throw Glib::Error(gfal_gridftp_scope_req_state(), EINVAL,
+        throw Glib::Error(GFAL_GRIDFTP_SCOPE_REQ_STATE, EINVAL,
                 err_buffer.str());
     }
     globus_ftp_client_operationattr_set_authorization(
@@ -371,7 +369,7 @@ GridFTPRequestState::~GridFTPRequestState()
 {
     try {
         if (req_status == GRIDFTP_REQUEST_RUNNING)
-            cancel_operation(gfal_gridftp_scope_req_state(),
+            cancel_operation(GFAL_GRIDFTP_SCOPE_REQ_STATE,
                     "ReqState Destroyer");
         Glib::RWLock::WriterLock l(mux_req_state);
         if (!own_session)
@@ -840,9 +838,9 @@ GridFTPStreamState::~GridFTPStreamState()
 {
     try {
         if (req_status == GRIDFTP_REQUEST_RUNNING) {
-            cancel_operation(gfal_gridftp_scope_req_state(),
+            cancel_operation(GFAL_GRIDFTP_SCOPE_REQ_STATE,
                     "ReqStream Destroyer");
-            poll_callback(gfal_gridftp_scope_req_state());
+            poll_callback(GFAL_GRIDFTP_SCOPE_REQ_STATE);
         }
         while (this->stream_status == GRIDFTP_REQUEST_RUNNING)
             usleep(1);

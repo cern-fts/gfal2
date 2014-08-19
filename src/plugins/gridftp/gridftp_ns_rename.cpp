@@ -17,13 +17,13 @@
 #include "gridftpwrapper.h"
 #include <exceptions/cpp_to_gerror.hpp>
 
-static const Glib::Quark gfal_gridftp_scope_rename("GridftpModule::rmdir");
+static const Glib::Quark GFAL_GRIDFTP_SCOPE_RENAME("GridftpModule::rmdir");
 
 
 void GridFTPModule::rename(const char* src, const char* dst)
 {
     if (src == NULL || dst == NULL)
-        throw Glib::Error(gfal_gridftp_scope_rename, EINVAL,
+        throw Glib::Error(GFAL_GRIDFTP_SCOPE_RENAME, EINVAL,
                 "Invalid source and/or destination");
 
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpModule::rename] ");
@@ -36,9 +36,9 @@ void GridFTPModule::rename(const char* src, const char* dst)
     globus_result_t res = globus_ftp_client_move(req.sess->get_ftp_handle(),
             src, dst, req.sess->get_op_attr_ftp(), globus_basic_client_callback,
             &req);
-    gfal_globus_check_result(gfal_gridftp_scope_rename, res);
+    gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_RENAME, res);
     // wait for answer
-    req.wait_callback(gfal_gridftp_scope_rename);
+    req.wait_callback(GFAL_GRIDFTP_SCOPE_RENAME);
 
     gfal_log(GFAL_VERBOSE_TRACE, " <- [GridftpModule::rename] ");
 

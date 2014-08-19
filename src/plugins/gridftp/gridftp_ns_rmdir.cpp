@@ -3,9 +3,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,16 +18,13 @@
 #include <exceptions/cpp_to_gerror.hpp>
 
 
-static Glib::Quark gfal_gridftp_scope_rmdir()
-{
-    return Glib::Quark("GridftpModule::rmdir");
-}
+static Glib::Quark GFAL_GRIDFTP_SCOPE_RMDIR("GridftpModule::rmdir");
 
 
 void GridFTPModule::rmdir(const char* path)
 {
     if (path == NULL)
-        throw Glib::Error(gfal_gridftp_scope_rmdir(), EINVAL,
+        throw Glib::Error(GFAL_GRIDFTP_SCOPE_RMDIR, EINVAL,
                 "Invalid arguments path");
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpModule::rmdir] ");
 
@@ -40,9 +37,9 @@ void GridFTPModule::rmdir(const char* path)
         globus_result_t res = globus_ftp_client_rmdir(
                 req.sess->get_ftp_handle(), path, req.sess->get_op_attr_ftp(),
                 globus_basic_client_callback, &req);
-        gfal_globus_check_result(gfal_gridftp_scope_rmdir(), res);
+        gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_RMDIR, res);
         // wait for answer
-        req.wait_callback(gfal_gridftp_scope_rmdir());
+        req.wait_callback(GFAL_GRIDFTP_SCOPE_RMDIR);
     }
     catch (Glib::Error & e) {
         if (e.code() == EEXIST) // false ENOTEMPTY errno, do conversion

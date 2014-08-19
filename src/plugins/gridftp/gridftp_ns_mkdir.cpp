@@ -3,9 +3,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,14 +18,13 @@
 #include <exceptions/cpp_to_gerror.hpp>
 
 
-static Glib::Quark gfal_gridftp_scope_mkdir(){
-    return Glib::Quark("GridftpModule::mkdir");
-}
+static Glib::Quark GFAL_GRIDFTP_SCOPE_MKDIR("GridftpModule::mkdir");
+
 
 void GridFTPModule::mkdir(const char* path, mode_t mode)
 {
     if (path == NULL)
-        throw Glib::Error(gfal_gridftp_scope_mkdir(), EINVAL,
+        throw Glib::Error(GFAL_GRIDFTP_SCOPE_MKDIR, EINVAL,
                 "Invalid arguments path or mode ");
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpModule::mkdir] ");
 
@@ -39,7 +38,7 @@ void GridFTPModule::mkdir(const char* path, mode_t mode)
             &req);
     gfal_globus_check_result("GridftpModule::mkdir", res);
     // wait for answer
-    req.wait_callback(gfal_gridftp_scope_mkdir());
+    req.wait_callback(GFAL_GRIDFTP_SCOPE_MKDIR);
 
     gfal_log(GFAL_VERBOSE_TRACE, " <- [GridftpModule::mkdir] ");
 

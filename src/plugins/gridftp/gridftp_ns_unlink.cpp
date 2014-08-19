@@ -3,9 +3,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,9 +17,8 @@
 #include "gridftp_namespace.h"
 #include <exceptions/cpp_to_gerror.hpp>
 
-static Glib::Quark gfal_gridftp_scope_unlink(){
-    return Glib::Quark("GridftpModule::unlink");
-}
+static Glib::Quark GFAL_GRIDFTP_SCOPE_UNLINK("GridftpModule::unlink");
+
 
 void gridftp_unlink_internal(gfal2_context_t context, GridFTPSession* sess,
         const char * path, bool own_session)
@@ -33,9 +32,9 @@ void gridftp_unlink_internal(gfal2_context_t context, GridFTPSession* sess,
     globus_result_t res = globus_ftp_client_delete(req.sess->get_ftp_handle(),
             path, req.sess->get_op_attr_ftp(), globus_basic_client_callback,
             &req);
-    gfal_globus_check_result(gfal_gridftp_scope_unlink(), res);
+    gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_UNLINK, res);
     // wait for answer
-    req.wait_callback(gfal_gridftp_scope_unlink());
+    req.wait_callback(GFAL_GRIDFTP_SCOPE_UNLINK);
     gfal_log(GFAL_VERBOSE_TRACE, " <- [GridftpModule::unlink] ");
 }
 
@@ -43,7 +42,7 @@ void gridftp_unlink_internal(gfal2_context_t context, GridFTPSession* sess,
 void GridFTPModule::unlink(const char* path)
 {
     if (path == NULL)
-        throw Glib::Error(gfal_gridftp_scope_unlink(), EINVAL,
+        throw Glib::Error(GFAL_GRIDFTP_SCOPE_UNLINK, EINVAL,
                 "Invalid arguments path");
 
     gridftp_unlink_internal(_handle_factory->get_handle(),

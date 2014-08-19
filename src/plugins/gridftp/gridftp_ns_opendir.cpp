@@ -19,7 +19,7 @@
 #include "gridftp_namespace.h"
 #include "gridftp_plugin.h"
 
-static const Glib::Quark OpendirQuark("gfal_gridftp_opendirG");
+static const Glib::Quark GFAL_GRIDFTP_SCOPE_OPENDIR("gfal_gridftp_opendirG");
 
 
 extern "C" gfal_file_handle gfal_gridftp_opendirG(plugin_handle handle,
@@ -37,12 +37,12 @@ extern "C" gfal_file_handle gfal_gridftp_opendirG(plugin_handle handle,
         return NULL;
     }
     else if (!S_ISDIR(st.st_mode)) {
-        gfal2_set_error(err, OpendirQuark, EISDIR, __func__,
+        gfal2_set_error(err, GFAL_GRIDFTP_SCOPE_OPENDIR, EISDIR, __func__,
                 "%s is not a directory", path);
         return NULL;
     }
     else if ((st.st_mode & ( S_IRUSR | S_IRGRP | S_IROTH)) == 0) {
-        gfal2_set_error(err, OpendirQuark, EACCES, __func__, "Can not read %s",
+        gfal2_set_error(err, GFAL_GRIDFTP_SCOPE_OPENDIR, EACCES, __func__, "Can not read %s",
                 path);
         return NULL;
     }

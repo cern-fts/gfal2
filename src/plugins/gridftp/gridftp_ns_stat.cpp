@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -21,22 +21,15 @@
 #include "gridftp_namespace.h"
 #include "gridftpwrapper.h"
 
-static Glib::Quark gfal_gridftp_scope_stat()
-{
-    return Glib::Quark("Gridftp_stat_module::stat");
-}
 
-
-static Glib::Quark gfal_gridftp_scope_access()
-{
-    return Glib::Quark("Gridftp_stat_module::access");
-}
+static Glib::Quark GFAL_GRIDFTP_SCOPE_STAT("Gridftp_stat_module::stat");
+static Glib::Quark GFAL_GRIDFTP_SCOPE_ACCESS("Gridftp_stat_module::access");
 
 
 void GridFTPModule::stat(const char* path, struct stat * st)
 {
     if (path == NULL || st == NULL)
-        throw Glib::Error(gfal_gridftp_scope_stat(), EINVAL,
+        throw Glib::Error(GFAL_GRIDFTP_SCOPE_STAT, EINVAL,
                 "Invalid arguments path or stat ");
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpModule::stat] ");
     globus_gass_copy_glob_stat_t gl_stat;
@@ -62,7 +55,7 @@ void GridFTPModule::stat(const char* path, struct stat * st)
 void GridFTPModule::access(const char* path, int mode)
 {
     if (path == NULL)
-        throw Gfal::CoreException(gfal_gridftp_scope_stat(),
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_STAT,
                 "Invalid arguments path or stat ",
                 EINVAL);
 
@@ -81,17 +74,17 @@ void GridFTPModule::access(const char* path, int mode)
     const mode_t file_mode = (mode_t) gl_stat.mode;
     if (((file_mode & ( S_IRUSR | S_IRGRP | S_IROTH)) == FALSE)
             && (mode & R_OK))
-        throw Gfal::CoreException(gfal_gridftp_scope_access(),
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_ACCESS,
                 "No read access ", EACCES);
 
     if (((file_mode & ( S_IWUSR | S_IWGRP | S_IWOTH)) == FALSE)
             && (mode & W_OK))
-        throw Gfal::CoreException(gfal_gridftp_scope_access(),
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_ACCESS,
                 "No write access ", EACCES);
 
     if (((file_mode & ( S_IXUSR | S_IXGRP | S_IXOTH)) == FALSE)
             && (mode & X_OK))
-        throw Gfal::CoreException(gfal_gridftp_scope_access(),
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_ACCESS,
                 "No execute access ", EACCES);
 
     gfal_log(GFAL_VERBOSE_TRACE, " <- [Gridftp_stat_module::access] ");
@@ -360,8 +353,8 @@ void GridFTPModule::internal_globus_gass_stat(const char* path,
             sess.get_op_attr_ftp(), &buffer, &buflen,
             globus_basic_client_callback, &req);
 
-    gfal_globus_check_result(gfal_gridftp_scope_stat(), res);
-    req.wait_callback(gfal_gridftp_scope_stat());
+    gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_STAT, res);
+    req.wait_callback(GFAL_GRIDFTP_SCOPE_STAT);
 
     gfal_log(GFAL_VERBOSE_TRACE,
             "   <- [Gridftp_stat_module::internal_globus_gass_stat] Got '%s'",
