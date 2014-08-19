@@ -18,7 +18,10 @@
 #include <uri/uri_util.h>
 #include <config/gfal_config.h>
 #include <cancel/gfal_cancel.h>
+#include <exceptions/gfalcoreexception.hpp>
 #include "gridftpwrapper.h"
+
+#include <globus_ftp_client_debug_plugin.h>
 
 const char* gridftp_version_config = "GRIDFTP_V2";
 const char* gridftp_session_reuse_config= "SESSION_REUSE";
@@ -37,260 +40,235 @@ static Glib::Quark gfal_gridftp_scope_req_state(){
 }
 
 
-struct Gass_attr_handler_implem : public Gass_attr_handler{
-    Gass_attr_handler_implem(globus_ftp_client_operationattr_t* ftp_operation_attr){
-        // initialize gass copy attr
-        globus_result_t res = globus_gass_copy_attr_init(&(attr_gass));
-        gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);
-        globus_ftp_client_operationattr_copy(&(operation_attr_ftp_for_gass), ftp_operation_attr);
-         res = globus_gass_copy_attr_set_ftp (&(attr_gass), &operation_attr_ftp_for_gass);
-        gfal_globus_check_result("GridFTPFactory::globus_gass_copy_handleattr_set_ftp_attr", res);
+Gass_attr_handler::Gass_attr_handler(globus_ftp_client_operationattr_t* ftp_operation_attr)
+{
+    // initialize gass copy attr
+    globus_result_t res = globus_gass_copy_attr_init(&(attr_gass));
+    gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);
+    globus_ftp_client_operationattr_copy(&(operation_attr_ftp_for_gass), ftp_operation_attr);
+     res = globus_gass_copy_attr_set_ftp (&(attr_gass), &operation_attr_ftp_for_gass);
+    gfal_globus_check_result("GridFTPFactory::globus_gass_copy_handleattr_set_ftp_attr", res);
 
-    }
+}
 
-    virtual ~Gass_attr_handler_implem(){
-        // initialize gass copy attr
-        globus_ftp_client_operationattr_destroy(&(operation_attr_ftp_for_gass));
-    }
+Gass_attr_handler::~Gass_attr_handler()
+{
+    // initialize gass copy attr
+    globus_ftp_client_operationattr_destroy(&(operation_attr_ftp_for_gass));
+}
 
-};
 
-struct GridFTP_session_implem : public GridFTP_session{
+GridFTP_session::GridFTP_session(GridFTPFactory* f, const std::string & thostname) :
+        _isDirty(false), factory(f), hostname(thostname)
+{
+    init();
+}
 
-    GridFTP_session_implem(GridFTPFactory* f, const std::string & thostname) :
-        factory(f),
-        hostname(thostname){
-        init();
-    }
+GridFTP_session::GridFTP_session(GridFTP_session *src) :
+        _isDirty(false), factory(src->factory), hostname(src->hostname), _sess(src->_sess)
+{
+}
 
-    GridFTP_session_implem( GridFTP_session_implem *src) :
-    factory(src->factory),
-    hostname(src->hostname),
-      _sess(src->_sess)
-    {   }
-
-    virtual ~GridFTP_session_implem(){
-        try {
-            if(_sess != NULL){
-                clean();
-                if(_isDirty)
-                    this->purge();
-                else
-                    factory->gfal_globus_ftp_release_handle_internal(this);
-            }
-        }
-        catch (const std::exception& e) {
-            gfal_log(GFAL_VERBOSE_NORMAL,
-                     "Caught an exception inside ~GridFTP_session_implem()!! %s",
-                     e.what());
-        }
-        catch (...) {
-            gfal_log(GFAL_VERBOSE_NORMAL,
-                     "Caught an unknown exception inside ~GridFTP_session_implem()!!");
+GridFTP_session::~GridFTP_session(){
+    try {
+        if(_sess != NULL){
+            clean();
+            if(_isDirty)
+                this->purge();
+            else
+                factory->gfal_globus_ftp_release_handle_internal(this);
         }
     }
-	
-	void init(){
-		_sess = new Session_handler();
-		globus_result_t res;
+    catch (const std::exception& e) {
+        gfal_log(GFAL_VERBOSE_NORMAL,
+                 "Caught an exception inside ~GridFTP_session()!! %s",
+                 e.what());
+    }
+    catch (...) {
+        gfal_log(GFAL_VERBOSE_NORMAL,
+                 "Caught an unknown exception inside ~GridFTP_session()!!");
+    }
+}
 
-        // init debug plugin
-        res= globus_ftp_client_debug_plugin_init(&(_sess->debug_ftp_plugin), stderr, "gridftp debug :");
-        gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_ops_attr", res);
+void GridFTP_session::init(){
+    _sess = new Session_handler();
+    globus_result_t res;
 
-		// init operation attr
-		res= globus_ftp_client_operationattr_init(&(_sess->operation_attr_ftp)); 	
-		gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_ops_attr", res);	
-			
-		
-		// initialize ftp attributes
-		res = globus_ftp_client_handleattr_init(&(_sess->attr_handle));
-		gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle_attr", res);	
-		configure_gridftp_handle_attr();
-		
-		// create gass handle attribute
-		res =	globus_gass_copy_handleattr_init(&(_sess->gass_handle_attr));
-		gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);		
-			
-		// associate ftp attributes to gass attributes
-		res = globus_gass_copy_handleattr_set_ftp_attr (&(_sess->gass_handle_attr), &(_sess->attr_handle));
-		gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);			
-		
-		// initialize gass handle 
-		res = globus_gass_copy_handle_init (&(_sess->gass_handle), &(_sess->gass_handle_attr));
-		gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);			
-		
+    // init debug plugin
+    res= globus_ftp_client_debug_plugin_init(&(_sess->debug_ftp_plugin), stderr, "gridftp debug :");
+    gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_ops_attr", res);
+
+    // init operation attr
+    res= globus_ftp_client_operationattr_init(&(_sess->operation_attr_ftp));
+    gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_ops_attr", res);
+
+
+    // initialize ftp attributes
+    res = globus_ftp_client_handleattr_init(&(_sess->attr_handle));
+    gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle_attr", res);
+    configure_gridftp_handle_attr();
+
+    // create gass handle attribute
+    res =	globus_gass_copy_handleattr_init(&(_sess->gass_handle_attr));
+    gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);
+
+    // associate ftp attributes to gass attributes
+    res = globus_gass_copy_handleattr_set_ftp_attr (&(_sess->gass_handle_attr), &(_sess->attr_handle));
+    gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);
+
+    // initialize gass handle
+    res = globus_gass_copy_handle_init (&(_sess->gass_handle), &(_sess->gass_handle_attr));
+    gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);
+
+    configure_default_stream_attributes();
+    apply_default_stream_attribute();
+}
+
+void GridFTP_session::configure_gridftp_handle_attr(){
+    globus_ftp_client_handleattr_set_cache_all(&(_sess->attr_handle), GLOBUS_TRUE);	// enable session re-use
+    if(gfal_get_verbose() & GFAL_VERBOSE_TRACE_PLUGIN){
+        globus_ftp_client_handleattr_add_plugin(&(_sess->attr_handle), &(_sess->debug_ftp_plugin));
+    }
+}
+
+void GridFTP_session::configure_default_stream_attributes(){
+     _sess->parall.fixed.size = 1;
+     _sess->parall.mode = GLOBUS_FTP_CONTROL_PARALLELISM_NONE;
+     _sess->mode = GLOBUS_FTP_CONTROL_MODE_NONE;
+}
+
+void GridFTP_session::apply_default_stream_attribute(){
+    globus_ftp_client_operationattr_set_mode(&(_sess->operation_attr_ftp), _sess->mode);
+    globus_ftp_client_operationattr_set_parallelism(&(_sess->operation_attr_ftp),&(_sess->parall));
+}
+
+void GridFTP_session::apply_default_tcp_buffer_attributes(){
+    globus_ftp_client_operationattr_set_tcp_buffer(&(_sess->operation_attr_ftp), &(_sess->tcp_buffer_size));
+}
+
+void GridFTP_session::set_gridftpv2(bool v2){
+    globus_ftp_client_handleattr_set_gridftp2(&(_sess->attr_handle), v2); // define gridftp 2
+}
+
+void GridFTP_session::set_ipv6(bool enable){
+    globus_ftp_client_operationattr_set_allow_ipv6(&(_sess->operation_attr_ftp), (globus_bool_t) enable);
+}
+
+void GridFTP_session::set_delayed_pass(bool enable){
+    globus_ftp_client_operationattr_set_delayed_pasv(&(_sess->operation_attr_ftp),  (globus_bool_t) (enable)?GLOBUS_TRUE:GLOBUS_FALSE);
+}
+
+void GridFTP_session::set_dcau(const globus_ftp_control_dcau_t & _dcau ){
+    _sess->dcau.mode = _dcau.mode;
+    globus_ftp_client_operationattr_set_dcau(&(_sess->operation_attr_ftp), &(_sess->dcau));
+}
+
+void GridFTP_session::set_nb_stream(const unsigned int nbstream){
+    if(nbstream == 0){
         configure_default_stream_attributes();
-        apply_default_stream_attribute();
-	}
-	
-	void configure_gridftp_handle_attr(){
-		globus_ftp_client_handleattr_set_cache_all(&(_sess->attr_handle), GLOBUS_TRUE);	// enable session re-use
-        if(gfal_get_verbose() & GFAL_VERBOSE_TRACE_PLUGIN){
-            globus_ftp_client_handleattr_add_plugin(&(_sess->attr_handle), &(_sess->debug_ftp_plugin));
-        }
-	}
+    }else{
+        _sess->parall.fixed.size = nbstream;
+        _sess->parall.mode = GLOBUS_FTP_CONTROL_PARALLELISM_FIXED;
+        _sess->mode = GLOBUS_FTP_CONTROL_MODE_EXTENDED_BLOCK;
+    }
+    apply_default_stream_attribute();
+}
 
-    void configure_default_stream_attributes(){
-         _sess->parall.fixed.size = 1;
-         _sess->parall.mode = GLOBUS_FTP_CONTROL_PARALLELISM_NONE;
-         _sess->mode = GLOBUS_FTP_CONTROL_MODE_NONE;
+
+void GridFTP_session::set_tcp_buffer_size(const guint64 tcp_buffer_size){
+    if(tcp_buffer_size == 0){
+        _sess->tcp_buffer_size.mode = GLOBUS_FTP_CONTROL_TCPBUFFER_DEFAULT;
+    }else{
+        _sess->tcp_buffer_size.mode = GLOBUS_FTP_CONTROL_TCPBUFFER_FIXED;
+        _sess->tcp_buffer_size.fixed.size = tcp_buffer_size;
+    }
+    apply_default_tcp_buffer_attributes();
+}
+
+void GridFTP_session::enable_udt() {
+    globus_ftp_client_operationattr_set_net_stack( &(_sess->operation_attr_ftp), "udt");
+}
+
+void GridFTP_session::disable_udt() {
+    globus_ftp_client_operationattr_set_net_stack( &(_sess->operation_attr_ftp), "default");
+}
+
+void GridFTP_session::set_credentials(const char* ucert, const char* ukey) {
+    std::stringstream buffer;
+    std::ifstream cert_stream(ucert);
+    if (cert_stream.bad())
+        throw Glib::Error(gfal_gridftp_scope_req_state(), errno, "Could not open the user certificate");
+    buffer << cert_stream.rdbuf();
+    if (ukey) {
+        std::ifstream key_stream(ukey);
+        if (key_stream.bad())
+            throw Glib::Error(gfal_gridftp_scope_req_state(), errno, "Could not open the user private key");
+        buffer << key_stream.rdbuf();
     }
 
-    void apply_default_stream_attribute(){
-        globus_ftp_client_operationattr_set_mode(&(_sess->operation_attr_ftp), _sess->mode);
-        globus_ftp_client_operationattr_set_parallelism(&(_sess->operation_attr_ftp),&(_sess->parall));
+    gss_buffer_desc_struct buffer_desc;
+    buffer_desc.value = g_strdup(buffer.str().c_str());
+    buffer_desc.length = buffer.str().size();
+
+    OM_uint32 minor_status, major_status;
+    gss_cred_id_t cred_id;
+    major_status = gss_import_cred(&minor_status, &cred_id,
+                                   GSS_C_NO_OID, 0, // 0 = Pass credentials; 1 = Pass path as X509_USER_PROXY=...
+                                   &buffer_desc, 0, NULL);
+    g_free(buffer_desc.value);
+
+    if (major_status != GSS_S_COMPLETE) {
+        std::stringstream err_buffer;
+        err_buffer << "Could not load the user credentials (" << major_status << ":" << minor_status << ")";
+        throw Glib::Error(gfal_gridftp_scope_req_state(), EINVAL, err_buffer.str());
     }
+    globus_ftp_client_operationattr_set_authorization(&(_sess->operation_attr_ftp), cred_id, NULL, NULL, NULL, NULL);
+}
 
-    void apply_default_tcp_buffer_attributes(){
-        globus_ftp_client_operationattr_set_tcp_buffer(&(_sess->operation_attr_ftp), &(_sess->tcp_buffer_size));
-    }
-	
-	void set_gridftpv2(bool v2){
-		globus_ftp_client_handleattr_set_gridftp2(&(_sess->attr_handle), v2); // define gridftp 2	
-	}
+globus_ftp_client_handle_t* GridFTP_session::get_ftp_handle(){
+    globus_result_t res = globus_gass_copy_get_ftp_handle(&(_sess->gass_handle), &(_sess->handle_ftp));
+    gfal_globus_check_result("GridFTPFactory::GridFTP_session", res);
+    return &(_sess->handle_ftp);
+}
 
-    void set_ipv6(bool enable){
-        globus_ftp_client_operationattr_set_allow_ipv6(&(_sess->operation_attr_ftp), (globus_bool_t) enable);
-    }
+globus_gass_copy_handle_t* GridFTP_session::get_gass_handle(){
+    return &(_sess->gass_handle);
+}
 
-    void set_delayed_pass(bool enable){
-        globus_ftp_client_operationattr_set_delayed_pasv(&(_sess->operation_attr_ftp),  (globus_bool_t) (enable)?GLOBUS_TRUE:GLOBUS_FALSE);
-    }
+globus_ftp_client_operationattr_t* GridFTP_session::get_op_attr_ftp(){
+    return &(_sess->operation_attr_ftp);
+}
 
-    void set_dcau(const globus_ftp_control_dcau_t & _dcau ){
-        _sess->dcau.mode = _dcau.mode;
-        globus_ftp_client_operationattr_set_dcau(&(_sess->operation_attr_ftp), &(_sess->dcau));
-    }
+globus_gass_copy_handleattr_t* GridFTP_session::get_gass_handle_attr(){
+    return &(_sess->gass_handle_attr);
+}
 
-    void set_nb_stream(const unsigned int nbstream){
-        if(nbstream == 0){
-            configure_default_stream_attributes();
-        }else{
-            _sess->parall.fixed.size = nbstream;
-            _sess->parall.mode = GLOBUS_FTP_CONTROL_PARALLELISM_FIXED;
-            _sess->mode = GLOBUS_FTP_CONTROL_MODE_EXTENDED_BLOCK;
-        }
-        apply_default_stream_attribute();
-    }
-	
+Gass_attr_handler* GridFTP_session::generate_gass_copy_attr(){
+    Gass_attr_handler* res = new Gass_attr_handler(&(_sess->operation_attr_ftp));
+    return res;
+}
 
-    virtual void set_tcp_buffer_size(const guint64 tcp_buffer_size){
-        if(tcp_buffer_size == 0){
-            _sess->tcp_buffer_size.mode = GLOBUS_FTP_CONTROL_TCPBUFFER_DEFAULT;
-        }else{
-            _sess->tcp_buffer_size.mode = GLOBUS_FTP_CONTROL_TCPBUFFER_FIXED;
-            _sess->tcp_buffer_size.fixed.size = tcp_buffer_size;
-        }
-        apply_default_tcp_buffer_attributes();
-    }
+void GridFTP_session::clean(){
+    // clean performance markers
+    globus_result_t res = globus_gass_copy_register_performance_cb(&(_sess->gass_handle),
+            NULL,NULL);
+    gfal_globus_check_result("GridFTPFactory::GridFTP_session", res);
+    configure_default_stream_attributes();
+}
 
-    void enable_udt() {
-        globus_ftp_client_operationattr_set_net_stack( &(_sess->operation_attr_ftp), "udt");
-    }
+void GridFTP_session::purge(){
+    globus_ftp_client_debug_plugin_destroy(&(_sess->debug_ftp_plugin)); // destruct the debug plugin
+    globus_gass_copy_handle_destroy(&(_sess->gass_handle));
+    globus_ftp_client_operationattr_destroy (&(_sess->operation_attr_ftp));
+    globus_gass_copy_handleattr_destroy(&(_sess->gass_handle_attr));
+    globus_ftp_client_handleattr_destroy(&(_sess->attr_handle));
+    delete _sess;
+    _sess = NULL;
+}
 
-    void disable_udt() {
-        globus_ftp_client_operationattr_set_net_stack( &(_sess->operation_attr_ftp), "default");
-    }
-
-    void set_credentials(const char* ucert, const char* ukey) {
-        std::stringstream buffer;
-        std::ifstream cert_stream(ucert);
-        if (cert_stream.bad())
-            throw Glib::Error(gfal_gridftp_scope_req_state(), errno, "Could not open the user certificate");
-        buffer << cert_stream.rdbuf();
-        if (ukey) {
-            std::ifstream key_stream(ukey);
-            if (key_stream.bad())
-                throw Glib::Error(gfal_gridftp_scope_req_state(), errno, "Could not open the user private key");
-            buffer << key_stream.rdbuf();
-        }
-
-        gss_buffer_desc_struct buffer_desc;
-        buffer_desc.value = g_strdup(buffer.str().c_str());
-        buffer_desc.length = buffer.str().size();
-
-        OM_uint32 minor_status, major_status;
-        gss_cred_id_t cred_id;
-        major_status = gss_import_cred(&minor_status, &cred_id,
-                                       GSS_C_NO_OID, 0, // 0 = Pass credentials; 1 = Pass path as X509_USER_PROXY=...
-                                       &buffer_desc, 0, NULL);
-        g_free(buffer_desc.value);
-
-        if (major_status != GSS_S_COMPLETE) {
-            std::stringstream err_buffer;
-            err_buffer << "Could not load the user credentials (" << major_status << ":" << minor_status << ")";
-            throw Glib::Error(gfal_gridftp_scope_req_state(), EINVAL, err_buffer.str());
-        }
-        globus_ftp_client_operationattr_set_authorization(&(_sess->operation_attr_ftp), cred_id, NULL, NULL, NULL, NULL);
-    }
-	
-	virtual globus_ftp_client_handle_t* get_ftp_handle(){
-		globus_result_t res = globus_gass_copy_get_ftp_handle(&(_sess->gass_handle), &(_sess->handle_ftp));
-		gfal_globus_check_result("GridFTPFactory::GridFTP_session_implem", res);			
-		return &(_sess->handle_ftp);
-	}
-
-	virtual globus_gass_copy_handle_t* get_gass_handle(){
-		return &(_sess->gass_handle);
-	}	
-	
-	virtual globus_ftp_client_operationattr_t* get_op_attr_ftp(){
-		return &(_sess->operation_attr_ftp);
-	}	
-	
-	virtual globus_gass_copy_handleattr_t* get_gass_handle_attr(){
-		return &(_sess->gass_handle_attr);
-	}
-
-    virtual Gass_attr_handler* generate_gass_copy_attr(){
-        Gass_attr_handler_implem* res = new Gass_attr_handler_implem(&(_sess->operation_attr_ftp));
-        return res;
-    }
-
-    virtual void clean(){
-        // clean performance markers
-        globus_result_t res = globus_gass_copy_register_performance_cb(&(_sess->gass_handle),
-                NULL,NULL);
-        gfal_globus_check_result("GridFTPFactory::GridFTP_session_implem", res);
-        configure_default_stream_attributes();
-    }
-	
-	virtual void purge(){
-        globus_ftp_client_debug_plugin_destroy(&(_sess->debug_ftp_plugin)); // destruct the debug plugin
-		globus_gass_copy_handle_destroy(&(_sess->gass_handle));
-		globus_ftp_client_operationattr_destroy (&(_sess->operation_attr_ftp));
-		globus_gass_copy_handleattr_destroy(&(_sess->gass_handle_attr));	
-        globus_ftp_client_handleattr_destroy(&(_sess->attr_handle));
-		delete _sess;
-		_sess = NULL;		
-	}	
-	
-	// handle ftp
-	
-	struct Session_handler{
-		globus_ftp_client_handle_t handle_ftp;
-        globus_ftp_client_plugin_t debug_ftp_plugin;
-		globus_ftp_client_handleattr_t attr_handle;
-		globus_ftp_client_operationattr_t operation_attr_ftp;     
-		globus_gass_copy_handle_t gass_handle;
-		globus_gass_copy_handleattr_t gass_handle_attr;
-        globus_ftp_control_dcau_t dcau;
-
-        // options
-        globus_ftp_control_parallelism_t parall;
-        globus_ftp_control_mode_t  	mode;
-        globus_ftp_control_tcpbuffer_t tcp_buffer_size;
-	};
-	
-
-	// internal fields	
-    GridFTPFactory* factory;
-	std::string hostname;		
-
-    // sess
-    Session_handler* _sess;
-};
+void GridFTP_session::disableReuse() {
+    _isDirty = true;
+}
 
 
 GridFTPFactory::GridFTPFactory(gfal2_context_t handle) : _handle(handle)
@@ -356,7 +334,7 @@ void GridFTPFactory::clear_cache(){
 		gfal_log(GFAL_VERBOSE_TRACE, "gridftp session cache garbage collection ...");	
 		std::multimap<std::string, GridFTP_session*>::iterator it;
 		for(it = sess_cache.begin(); it != sess_cache.end(); ++it){
-			GridFTP_session_implem *sess = static_cast<GridFTP_session_implem *>((*it).second);
+			GridFTP_session *sess = static_cast<GridFTP_session *>((*it).second);
 			sess->purge();
 			delete sess;
 		}
@@ -367,14 +345,14 @@ void GridFTPFactory::recycle_session(GridFTP_session* sess){
 	
 	Glib::Mutex::Lock l(mux_cache);
 	
-	GridFTP_session_implem * my_sess = static_cast<GridFTP_session_implem *>(sess);
+	GridFTP_session * my_sess = static_cast<GridFTP_session *>(sess);
 	const char* c_hostname = my_sess->hostname.c_str();
 	
 	if(sess_cache.size() > size_cache)
 		clear_cache();	
 
 	gfal_log(GFAL_VERBOSE_TRACE, "insert gridftp session for %s in cache ...", c_hostname);				
-	sess_cache.insert(std::pair<std::string,GridFTP_session*>(c_hostname, new GridFTP_session_implem(my_sess )));
+	sess_cache.insert(std::pair<std::string,GridFTP_session*>(c_hostname, new GridFTP_session(my_sess )));
 }
 
 
@@ -499,7 +477,7 @@ GridFTP_session* GridFTPFactory::get_new_handle(const std::string & hostname){
     if(tmp_err)
         throw Glib::Error(tmp_err);
 
-	std::auto_ptr<GridFTP_session_implem> sess(new GridFTP_session_implem(this, hostname));		
+	std::auto_ptr<GridFTP_session> sess(new GridFTP_session(this, hostname));
 
 	sess->set_gridftpv2(gridftp_v2);
     sess->set_dcau(dcau_param);
@@ -546,7 +524,7 @@ void GridFTPFactory::gfal_globus_ftp_release_handle_internal(GridFTP_session* se
 	if(session_reuse)
 		recycle_session(sess);
 	else{
-		GridFTP_session_implem * s = static_cast<GridFTP_session_implem *>(sess);
+		GridFTP_session * s = static_cast<GridFTP_session *>(sess);
 		s->purge();
 	}
 }
@@ -830,8 +808,3 @@ std::string gridftp_hostname_from_url(const char * url){
 		throw Glib::Error(tmp_err);
 	return std::string(buffer);
 }
-
-
-
-
-

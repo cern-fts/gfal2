@@ -35,8 +35,8 @@ void GridftpModule::stat(const char* path, struct stat * st){
 	if(path== NULL || st == NULL)
         throw Glib::Error(gfal_gridftp_scope_stat(), EINVAL, "Invalid arguments path or stat ");
 	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::stat] ");
-	gfal_globus_stat_t gl_stat;
-	memset(&gl_stat,0, sizeof(gfal_globus_stat_t));
+	globus_gass_copy_glob_stat_t gl_stat;
+	memset(&gl_stat,0, sizeof(globus_gass_copy_glob_stat_t));
 	internal_globus_gass_stat(path, &gl_stat);
 	
 	memset(st,0, sizeof(struct stat));
@@ -57,8 +57,8 @@ void GridftpModule::access(const char*  path, int mode){
         throw Gfal::CoreException(gfal_gridftp_scope_stat(), "Invalid arguments path or stat ", EINVAL);
 		
 	gfal_log(GFAL_VERBOSE_TRACE," -> [Gridftp_stat_module::access] ");
-	gfal_globus_stat_t gl_stat;
-	memset(&gl_stat,0, sizeof(gfal_globus_stat_t));
+	globus_gass_copy_glob_stat_t gl_stat;
+	memset(&gl_stat,0, sizeof(globus_gass_copy_glob_stat_t));
 	internal_globus_gass_stat(path, &gl_stat);
 	
 	if(gl_stat.mode == -1){ // mode not managed by server
@@ -175,8 +175,9 @@ int copy_mdtm_to_timet(char * mdtm_str, int * time_out)
     return -1;
 }
 
+
 globus_result_t parse_mlst_line(char *line,
-        gfal_globus_stat_t *stat_info,
+        globus_gass_copy_glob_stat_t *stat_info,
         char *filename_buf, size_t filename_size)
 {
     globus_result_t result;
@@ -323,7 +324,7 @@ globus_result_t parse_mlst_line(char *line,
     return result;
 }
 
-void GridftpModule::internal_globus_gass_stat(const char* path,  gfal_globus_stat_t * gl_stat){
+void GridftpModule::internal_globus_gass_stat(const char* path,  globus_gass_copy_glob_stat_t * gl_stat){
 
 	gfal_log(GFAL_VERBOSE_TRACE," -> [Gridftp_stat_module::globus_gass_stat] ");	
     std::auto_ptr<GridFTP_session> sess(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)));

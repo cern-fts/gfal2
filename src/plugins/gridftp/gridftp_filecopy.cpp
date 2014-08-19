@@ -327,7 +327,7 @@ void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, gl
     }
 }
 
-static void gridftp_do_copy(GridftpModule* module, GridFTPFactoryInterface* factory,
+static void gridftp_do_copy(GridftpModule* module, GridFTPFactory* factory,
         gfalt_params_t params,
         const char* src, const char* dst,
         GridFTP_Request_state& req, time_t timeout)
@@ -368,7 +368,7 @@ static void gridftp_do_copy(GridftpModule* module, GridFTPFactoryInterface* fact
 }
 
 static int gridftp_filecopy_copy_file_internal(GridftpModule* module,
-        GridFTPFactoryInterface * factory, gfalt_params_t params, const char* src, const char* dst)
+        GridFTPFactory * factory, gfalt_params_t params, const char* src, const char* dst)
 {
     GError * tmp_err=NULL;
 

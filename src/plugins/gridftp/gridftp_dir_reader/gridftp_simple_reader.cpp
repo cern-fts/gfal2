@@ -8,7 +8,7 @@ static const Glib::Quark GridftpSimpleReaderQuark("GridftpSimpleListReader::read
 GridftpSimpleListReader::GridftpSimpleListReader(GridftpModule* gsiftp, const char* path):
     stream(NULL)
 {
-    GridFTPFactoryInterface* factory = gsiftp->get_session_factory();
+    GridFTPFactory* factory = gsiftp->get_session_factory();
     GridFTP_session* session = factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path));
 
     stream = new GridFTP_stream_state(session);

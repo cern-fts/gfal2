@@ -3,13 +3,13 @@
 static const Glib::Quark GridftpListReaderQuark("GridftpSimpleListReader::readdir");
 
 // From gridftp_ns_stat.cpp
-extern globus_result_t parse_mlst_line(char *line, gfal_globus_stat_t *stat_info,
+extern globus_result_t parse_mlst_line(char *line, globus_gass_copy_glob_stat_t *stat_info,
         char *filename_buf, size_t filename_size);
 
 
 GridftpListReader::GridftpListReader(GridftpModule* gsiftp, const char* path)
 {
-    GridFTPFactoryInterface* factory = gsiftp->get_session_factory();
+    GridFTPFactory* factory = gsiftp->get_session_factory();
     GridFTP_session* session = factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path));
 
     stream = new GridFTP_stream_state(session);
@@ -78,7 +78,7 @@ struct dirent* GridftpListReader::readdirpp(struct stat* st)
     if (trim(line).empty())
         return NULL;
 
-    gfal_globus_stat_t gl_stat;
+    globus_gass_copy_glob_stat_t gl_stat;
     char* unparsed = strdup(line.c_str());
     if (parse_mlst_line(unparsed, &gl_stat, dbuffer.d_name, sizeof(dbuffer.d_name)) != GLOBUS_SUCCESS) {
         free(unparsed);

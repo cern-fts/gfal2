@@ -17,6 +17,11 @@
 
 #include <glib.h>
 #include "gridftpmodule.h"
+#include "gridftpwrapper.h"
+
+#include <globus_gass_copy.h>
+#include <globus_ftp_client.h>
+#include <globus_ftp_client_debug_plugin.h>
 
 
 //GOnce my_once = G_ONCE_INIT;
@@ -64,7 +69,7 @@ static void* deinit_globus(gpointer data){
 	return NULL;
 }
 
-GridftpModule::GridftpModule(GridFTPFactoryInterface* factory) 
+GridftpModule::GridftpModule(GridFTPFactory* factory) 
 {
 	init_globus(NULL);
 	_handle_factory = factory;

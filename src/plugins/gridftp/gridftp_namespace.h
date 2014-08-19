@@ -17,7 +17,9 @@
  * limitations under the License.
  */
 
+#include "gridftpwrapper.h"
 #include "gridftpmodule.h"
+
 
 #ifdef __cplusplus
 extern "C"

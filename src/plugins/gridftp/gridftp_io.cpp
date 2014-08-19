@@ -121,7 +121,7 @@ inline int gridftp_rw_valid_get(const Glib::Quark & scope, GridFTP_File_desc* de
 }
 
 // internal pread, do a read query with offset on a different descriptor, do not change the position of the current one.
-ssize_t gridftp_rw_internal_pread(GridFTPFactoryInterface * factory, GridFTP_File_desc* desc, void* buffer, size_t s_buff,
+ssize_t gridftp_rw_internal_pread(GridFTPFactory * factory, GridFTP_File_desc* desc, void* buffer, size_t s_buff,
 									off_t offset){ // throw Gfal::CoreException								
 	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::internal_pread]");										
 	std::auto_ptr<GridFTP_stream_state> stream(new GridFTP_stream_state(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(desc->url.c_str()))));
@@ -147,7 +147,7 @@ ssize_t gridftp_rw_internal_pread(GridFTPFactoryInterface * factory, GridFTP_Fil
 }
 
 // internal pwrite, do a write query with offset on a different descriptor, do not change the position of the current one.
-ssize_t gridftp_rw_internal_pwrite(GridFTPFactoryInterface * factory, GridFTP_File_desc* desc, const void* buffer, size_t s_buff,
+ssize_t gridftp_rw_internal_pwrite(GridFTPFactory * factory, GridFTP_File_desc* desc, const void* buffer, size_t s_buff,
 									off_t offset){ // throw Gfal::CoreException								
 	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::internal_pwrite]");										
 	std::auto_ptr<GridFTP_stream_state> stream(new GridFTP_stream_state(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(desc->url.c_str()))));

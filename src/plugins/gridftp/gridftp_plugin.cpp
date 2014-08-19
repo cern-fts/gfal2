@@ -19,6 +19,7 @@
 
 #include "gridftpmodule.h"
 #include "gridftp_namespace.h"
+#include "gridftp_filecopy.h"
 #include "gridftp_io.h"
 #include "gridftp_plugin.h"
 #include <exceptions/cpp_to_gerror.hpp>

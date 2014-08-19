@@ -29,21 +29,15 @@
 #include <transfer/gfal_transfer_plugins.h>
 #include <transfer/gfal_transfer.h>
 
-
-#include "gridftpinterface.h"
-#include "gridftpwrapper.h"
-
-#include "gridftp_filecopy.h"
-#include "gridftp_namespace.h"
-
-typedef globus_gass_copy_glob_stat_t gfal_globus_stat_t;
+#include <globus_gass_copy.h>
 
 
+class GridFTPFactory;
 
 class GridftpModule 
 {
 	public:
-		GridftpModule(GridFTPFactoryInterface *);
+		GridftpModule(GridFTPFactory *);
 		virtual ~GridftpModule();
 		
 		virtual bool exists(const char* path);
@@ -96,15 +90,14 @@ class GridftpModule
 		virtual void filecopy(gfalt_params_t params, const char* src, const char* dst);
 		
 
-				 
-		void internal_globus_gass_stat(const char* path,  gfal_globus_stat_t * gl_stat);
+		void internal_globus_gass_stat(const char* path,  globus_gass_copy_glob_stat_t * gl_stat);
 
-		GridFTPFactoryInterface* get_session_factory() {
+		GridFTPFactory* get_session_factory() {
 		    return _handle_factory;
 		}
 
 	private:
-		GridFTPFactoryInterface * _handle_factory;
+		GridFTPFactory * _handle_factory;
 
 };
 

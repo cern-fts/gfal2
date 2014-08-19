@@ -15,13 +15,18 @@
  * limitations under the License.
  */
 
-#include <ctime>
+#include <gfal_api.h>
 #include <time_utils.h>
-#include <glib.h>
-#include <cancel/gfal_cancel.h>
-#include "gridftpmodule.h"
-#include "gridftpinterface.h"
+
+#include <ctime>
 #include <algorithm>
+#include <memory>
+
+#include <glib.h>
+#include <glibmm.h>
+
+#include <globus_ftp_client.h>
+#include <globus_gass_copy.h>
 
 
 #define GRIDFTP_CONFIG_GROUP "GRIDFTP PLUGIN"
@@ -36,6 +41,9 @@ enum GridFtp_request_type{
     GRIDFTP_REQUEST_GASS,
     GRIDFTP_REQUEST_FTP
 };
+
+class GridFTPFactory;
+class GridFTP_session;
 
 
 struct GridFTP_Request_state{
@@ -211,9 +219,83 @@ private:
 
 };
 
-				
 
-class GridFTPFactory : public GridFTPFactoryInterface
+struct Gass_attr_handler {
+    Gass_attr_handler(globus_ftp_client_operationattr_t* ftp_operation_attr);
+    ~Gass_attr_handler();
+    globus_gass_copy_attr_t attr_gass;
+    globus_ftp_client_operationattr_t operation_attr_ftp_for_gass;
+};
+
+
+class GridFTP_session {
+public:
+    GridFTP_session(GridFTPFactory* f, const std::string & thostname);
+
+    GridFTP_session(GridFTP_session *src);
+    ~GridFTP_session();
+
+    globus_ftp_client_handle_t* get_ftp_handle();
+    globus_gass_copy_handle_t* get_gass_handle();
+    globus_ftp_client_operationattr_t* get_op_attr_ftp();
+    globus_gass_copy_handleattr_t* get_gass_handle_attr();
+    Gass_attr_handler* generate_gass_copy_attr();
+
+    void set_nb_stream(const unsigned int nbstream);
+    void set_tcp_buffer_size(const guint64 tcp_buffer_size);
+    void enable_udt();
+    void disable_udt();
+
+    void disableReuse();
+
+private:
+    void init();
+
+    void configure_gridftp_handle_attr();
+    void configure_default_stream_attributes();
+    void apply_default_stream_attribute();
+    void apply_default_tcp_buffer_attributes();
+    void set_gridftpv2(bool v2);
+    void set_ipv6(bool enable);
+    void set_delayed_pass(bool enable);
+    void set_dcau(const globus_ftp_control_dcau_t & _dcau );
+
+    void set_credentials(const char* ucert, const char* ukey);
+
+    void clean();
+    void purge();
+
+    bool _isDirty;
+    // handle ftp
+
+    struct Session_handler{
+        globus_ftp_client_handle_t handle_ftp;
+        globus_ftp_client_plugin_t debug_ftp_plugin;
+        globus_ftp_client_handleattr_t attr_handle;
+        globus_ftp_client_operationattr_t operation_attr_ftp;
+        globus_gass_copy_handle_t gass_handle;
+        globus_gass_copy_handleattr_t gass_handle_attr;
+        globus_ftp_control_dcau_t dcau;
+
+        // options
+        globus_ftp_control_parallelism_t parall;
+        globus_ftp_control_mode_t   mode;
+        globus_ftp_control_tcpbuffer_t tcp_buffer_size;
+    };
+
+
+    // internal fields
+    GridFTPFactory* factory;
+    std::string hostname;
+
+    // sess
+    Session_handler* _sess;
+
+    friend class GridFTPFactory;
+};
+
+
+class GridFTPFactory
 {
 	public:
 		GridFTPFactory(gfal2_context_t handle );
@@ -230,11 +312,10 @@ class GridFTPFactory : public GridFTPFactoryInterface
 		 * */		
 		virtual void gfal_globus_ftp_release_handle(GridFTP_session* h) ;
 		
-		
+		virtual gfal2_context_t get_handle();
 
 	private:
 		gfal2_context_t _handle;
-		virtual gfal2_context_t get_handle();
         // session re-use management
 		bool session_reuse;
 		unsigned int size_cache;
@@ -254,7 +335,7 @@ class GridFTPFactory : public GridFTPFactoryInterface
 	
 	
 		
-	friend struct GridFTP_session_implem;
+	friend class GridFTP_session;
 };
 
 void globus_basic_client_callback (void * user_arg, 
