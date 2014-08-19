@@ -28,8 +28,8 @@ void GridftpModule::rename(const char* src, const char* dst)
 
     gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::rename] ");
 
-    std::auto_ptr<GridFTP_Request_state> req(
-            new GridFTP_Request_state(
+    std::auto_ptr<GridFTPRequestState> req(
+            new GridFTPRequestState(
                     _handle_factory->gfal_globus_ftp_take_handle(
                             gridftp_hostname_from_url(src)))); // get connexion session
 

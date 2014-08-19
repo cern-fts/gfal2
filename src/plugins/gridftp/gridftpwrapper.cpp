@@ -58,18 +58,18 @@ Gass_attr_handler::~Gass_attr_handler()
 }
 
 
-GridFTP_session::GridFTP_session(GridFTPFactory* f, const std::string & thostname) :
+GridFTPSession::GridFTPSession(GridFTPFactory* f, const std::string & thostname) :
         _isDirty(false), factory(f), hostname(thostname)
 {
     init();
 }
 
-GridFTP_session::GridFTP_session(GridFTP_session *src) :
+GridFTPSession::GridFTPSession(GridFTPSession *src) :
         _isDirty(false), factory(src->factory), hostname(src->hostname), _sess(src->_sess)
 {
 }
 
-GridFTP_session::~GridFTP_session(){
+GridFTPSession::~GridFTPSession(){
     try {
         if(_sess != NULL){
             clean();
@@ -90,7 +90,7 @@ GridFTP_session::~GridFTP_session(){
     }
 }
 
-void GridFTP_session::init(){
+void GridFTPSession::init(){
     _sess = new Session_handler();
     globus_result_t res;
 
@@ -124,58 +124,58 @@ void GridFTP_session::init(){
     apply_default_stream_attribute();
 }
 
-void GridFTP_session::configure_gridftp_handle_attr(){
+void GridFTPSession::configure_gridftp_handle_attr(){
     globus_ftp_client_handleattr_set_cache_all(&(_sess->attr_handle), GLOBUS_TRUE);	// enable session re-use
     if(gfal_get_verbose() & GFAL_VERBOSE_TRACE_PLUGIN){
         globus_ftp_client_handleattr_add_plugin(&(_sess->attr_handle), &(_sess->debug_ftp_plugin));
     }
 }
 
-void GridFTP_session::configure_default_stream_attributes(){
-     _sess->parall.fixed.size = 1;
-     _sess->parall.mode = GLOBUS_FTP_CONTROL_PARALLELISM_NONE;
+void GridFTPSession::configure_default_stream_attributes(){
+     _sess->parallelism.fixed.size = 1;
+     _sess->parallelism.mode = GLOBUS_FTP_CONTROL_PARALLELISM_NONE;
      _sess->mode = GLOBUS_FTP_CONTROL_MODE_NONE;
 }
 
-void GridFTP_session::apply_default_stream_attribute(){
+void GridFTPSession::apply_default_stream_attribute(){
     globus_ftp_client_operationattr_set_mode(&(_sess->operation_attr_ftp), _sess->mode);
-    globus_ftp_client_operationattr_set_parallelism(&(_sess->operation_attr_ftp),&(_sess->parall));
+    globus_ftp_client_operationattr_set_parallelism(&(_sess->operation_attr_ftp),&(_sess->parallelism));
 }
 
-void GridFTP_session::apply_default_tcp_buffer_attributes(){
+void GridFTPSession::apply_default_tcp_buffer_attributes(){
     globus_ftp_client_operationattr_set_tcp_buffer(&(_sess->operation_attr_ftp), &(_sess->tcp_buffer_size));
 }
 
-void GridFTP_session::set_gridftpv2(bool v2){
+void GridFTPSession::set_gridftpv2(bool v2){
     globus_ftp_client_handleattr_set_gridftp2(&(_sess->attr_handle), v2); // define gridftp 2
 }
 
-void GridFTP_session::set_ipv6(bool enable){
+void GridFTPSession::set_ipv6(bool enable){
     globus_ftp_client_operationattr_set_allow_ipv6(&(_sess->operation_attr_ftp), (globus_bool_t) enable);
 }
 
-void GridFTP_session::set_delayed_pass(bool enable){
+void GridFTPSession::set_delayed_pass(bool enable){
     globus_ftp_client_operationattr_set_delayed_pasv(&(_sess->operation_attr_ftp),  (globus_bool_t) (enable)?GLOBUS_TRUE:GLOBUS_FALSE);
 }
 
-void GridFTP_session::set_dcau(const globus_ftp_control_dcau_t & _dcau ){
+void GridFTPSession::set_dcau(const globus_ftp_control_dcau_t & _dcau ){
     _sess->dcau.mode = _dcau.mode;
     globus_ftp_client_operationattr_set_dcau(&(_sess->operation_attr_ftp), &(_sess->dcau));
 }
 
-void GridFTP_session::set_nb_stream(const unsigned int nbstream){
+void GridFTPSession::set_nb_stream(const unsigned int nbstream){
     if(nbstream == 0){
         configure_default_stream_attributes();
     }else{
-        _sess->parall.fixed.size = nbstream;
-        _sess->parall.mode = GLOBUS_FTP_CONTROL_PARALLELISM_FIXED;
+        _sess->parallelism.fixed.size = nbstream;
+        _sess->parallelism.mode = GLOBUS_FTP_CONTROL_PARALLELISM_FIXED;
         _sess->mode = GLOBUS_FTP_CONTROL_MODE_EXTENDED_BLOCK;
     }
     apply_default_stream_attribute();
 }
 
 
-void GridFTP_session::set_tcp_buffer_size(const guint64 tcp_buffer_size){
+void GridFTPSession::set_tcp_buffer_size(const guint64 tcp_buffer_size){
     if(tcp_buffer_size == 0){
         _sess->tcp_buffer_size.mode = GLOBUS_FTP_CONTROL_TCPBUFFER_DEFAULT;
     }else{
@@ -185,15 +185,15 @@ void GridFTP_session::set_tcp_buffer_size(const guint64 tcp_buffer_size){
     apply_default_tcp_buffer_attributes();
 }
 
-void GridFTP_session::enable_udt() {
+void GridFTPSession::enable_udt() {
     globus_ftp_client_operationattr_set_net_stack( &(_sess->operation_attr_ftp), "udt");
 }
 
-void GridFTP_session::disable_udt() {
+void GridFTPSession::disable_udt() {
     globus_ftp_client_operationattr_set_net_stack( &(_sess->operation_attr_ftp), "default");
 }
 
-void GridFTP_session::set_credentials(const char* ucert, const char* ukey) {
+void GridFTPSession::set_credentials(const char* ucert, const char* ukey) {
     std::stringstream buffer;
     std::ifstream cert_stream(ucert);
     if (cert_stream.bad())
@@ -225,30 +225,30 @@ void GridFTP_session::set_credentials(const char* ucert, const char* ukey) {
     globus_ftp_client_operationattr_set_authorization(&(_sess->operation_attr_ftp), cred_id, NULL, NULL, NULL, NULL);
 }
 
-globus_ftp_client_handle_t* GridFTP_session::get_ftp_handle(){
+globus_ftp_client_handle_t* GridFTPSession::get_ftp_handle(){
     globus_result_t res = globus_gass_copy_get_ftp_handle(&(_sess->gass_handle), &(_sess->handle_ftp));
     gfal_globus_check_result("GridFTPFactory::GridFTP_session", res);
     return &(_sess->handle_ftp);
 }
 
-globus_gass_copy_handle_t* GridFTP_session::get_gass_handle(){
+globus_gass_copy_handle_t* GridFTPSession::get_gass_handle(){
     return &(_sess->gass_handle);
 }
 
-globus_ftp_client_operationattr_t* GridFTP_session::get_op_attr_ftp(){
+globus_ftp_client_operationattr_t* GridFTPSession::get_op_attr_ftp(){
     return &(_sess->operation_attr_ftp);
 }
 
-globus_gass_copy_handleattr_t* GridFTP_session::get_gass_handle_attr(){
+globus_gass_copy_handleattr_t* GridFTPSession::get_gass_handle_attr(){
     return &(_sess->gass_handle_attr);
 }
 
-Gass_attr_handler* GridFTP_session::generate_gass_copy_attr(){
+Gass_attr_handler* GridFTPSession::generate_gass_copy_attr(){
     Gass_attr_handler* res = new Gass_attr_handler(&(_sess->operation_attr_ftp));
     return res;
 }
 
-void GridFTP_session::clean(){
+void GridFTPSession::clean(){
     // clean performance markers
     globus_result_t res = globus_gass_copy_register_performance_cb(&(_sess->gass_handle),
             NULL,NULL);
@@ -256,7 +256,7 @@ void GridFTP_session::clean(){
     configure_default_stream_attributes();
 }
 
-void GridFTP_session::purge(){
+void GridFTPSession::purge(){
     globus_ftp_client_debug_plugin_destroy(&(_sess->debug_ftp_plugin)); // destruct the debug plugin
     globus_gass_copy_handle_destroy(&(_sess->gass_handle));
     globus_ftp_client_operationattr_destroy (&(_sess->operation_attr_ftp));
@@ -266,7 +266,7 @@ void GridFTP_session::purge(){
     _sess = NULL;
 }
 
-void GridFTP_session::disableReuse() {
+void GridFTPSession::disable_reuse() {
     _isDirty = true;
 }
 
@@ -283,7 +283,7 @@ GridFTPFactory::GridFTPFactory(gfal2_context_t handle) : _handle(handle)
 
 
 
-GridFTP_Request_state::GridFTP_Request_state(GridFTP_session * s, bool own_session, GridFtp_request_type request_type):
+GridFTPRequestState::GridFTPRequestState(GridFTPSession * s, bool own_session, GridFTPRequestType request_type):
         errcode(0), cancel_token(NULL), sess(s), end_time(0,0)
 {
 	req_status=GRIDFTP_REQUEST_NOT_LAUNCHED;
@@ -292,7 +292,7 @@ GridFTP_Request_state::GridFTP_Request_state(GridFTP_session * s, bool own_sessi
     canceling = false;
 }
 
-GridFTP_Request_state::~GridFTP_Request_state()
+GridFTPRequestState::~GridFTPRequestState()
 {
     try {
         if (req_status == GRIDFTP_REQUEST_RUNNING)
@@ -313,11 +313,11 @@ GridFTP_Request_state::~GridFTP_Request_state()
 
 
 static void gfal_gridftp_cancel_slot(gfal2_context_t context, void* userdata){
-    GridFTP_Request_state* r = (GridFTP_Request_state*) userdata;
+    GridFTPRequestState* r = (GridFTPRequestState*) userdata;
     r->cancel_operation_async(g_quark_to_string(gfal_cancel_quark()), "Operation canceled from gfal2_cancel");
 }
 
-GridFTPOperationCanceler::GridFTPOperationCanceler(gfal2_context_t context, GridFTP_Request_state *state) :
+GridFTPOperationCanceler::GridFTPOperationCanceler(gfal2_context_t context, GridFTPRequestState *state) :
     _state(state),
     _cancel_token(gfal2_register_cancel_callback(context, &gfal_gridftp_cancel_slot, state)),
     _context(context)
@@ -332,35 +332,35 @@ GridFTPOperationCanceler::~GridFTPOperationCanceler()
 
 void GridFTPFactory::clear_cache(){
 		gfal_log(GFAL_VERBOSE_TRACE, "gridftp session cache garbage collection ...");	
-		std::multimap<std::string, GridFTP_session*>::iterator it;
+		std::multimap<std::string, GridFTPSession*>::iterator it;
 		for(it = sess_cache.begin(); it != sess_cache.end(); ++it){
-			GridFTP_session *sess = static_cast<GridFTP_session *>((*it).second);
+			GridFTPSession *sess = static_cast<GridFTPSession *>((*it).second);
 			sess->purge();
 			delete sess;
 		}
 		sess_cache.clear();
 }
 
-void GridFTPFactory::recycle_session(GridFTP_session* sess){
+void GridFTPFactory::recycle_session(GridFTPSession* sess){
 	
 	Glib::Mutex::Lock l(mux_cache);
 	
-	GridFTP_session * my_sess = static_cast<GridFTP_session *>(sess);
+	GridFTPSession * my_sess = static_cast<GridFTPSession *>(sess);
 	const char* c_hostname = my_sess->hostname.c_str();
 	
 	if(sess_cache.size() > size_cache)
 		clear_cache();	
 
 	gfal_log(GFAL_VERBOSE_TRACE, "insert gridftp session for %s in cache ...", c_hostname);				
-	sess_cache.insert(std::pair<std::string,GridFTP_session*>(c_hostname, new GridFTP_session(my_sess )));
+	sess_cache.insert(std::pair<std::string,GridFTPSession*>(c_hostname, new GridFTPSession(my_sess )));
 }
 
 
 // recycle a gridftp session object from cache if exist, return NULL else
-GridFTP_session* GridFTPFactory::get_recycled_handle(const std::string & hostname){
+GridFTPSession* GridFTPFactory::get_recycled_handle(const std::string & hostname){
 	Glib::Mutex::Lock l(mux_cache);	
-    GridFTP_session* res= NULL;
-    std::multimap<std::string, GridFTP_session*>::iterator it=sess_cache.find(hostname); // try to find a session explicitely associated with this handle
+    GridFTPSession* res= NULL;
+    std::multimap<std::string, GridFTPSession*>::iterator it=sess_cache.find(hostname); // try to find a session explicitely associated with this handle
     if(it == sess_cache.end()){ // if no session found, take a generic one
         gfal_log(GFAL_VERBOSE_TRACE, "no session associated with this hostname, try find generic one .... ");
         it = sess_cache.begin();
@@ -463,7 +463,7 @@ void gfal_globus_check_error(const Glib::Quark & scope,  globus_object_t *	error
 }
 
 
-GridFTP_session* GridFTPFactory::get_new_handle(const std::string & hostname){
+GridFTPSession* GridFTPFactory::get_new_handle(const std::string & hostname){
     GError * tmp_err=NULL;
     globus_ftp_control_dcau_t dcau_param;
     bool gridftp_v2 = gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP, gridftp_version_config, &tmp_err);
@@ -477,7 +477,7 @@ GridFTP_session* GridFTPFactory::get_new_handle(const std::string & hostname){
     if(tmp_err)
         throw Glib::Error(tmp_err);
 
-	std::auto_ptr<GridFTP_session> sess(new GridFTP_session(this, hostname));
+	std::auto_ptr<GridFTPSession> sess(new GridFTPSession(this, hostname));
 
 	sess->set_gridftpv2(gridftp_v2);
     sess->set_dcau(dcau_param);
@@ -499,7 +499,7 @@ GridFTP_session* GridFTPFactory::get_new_handle(const std::string & hostname){
 }
 
 // store the related globus error to the current handle
-void gfal_globus_store_error(GridFTP_Request_state * state, globus_object_t *error){
+void gfal_globus_store_error(GridFTPRequestState * state, globus_object_t *error){
 		char * glob_str=NULL;	
 		state->set_error_code(gfal_globus_error_convert(error, &glob_str));
 		if(glob_str){
@@ -512,30 +512,30 @@ void gfal_globus_store_error(GridFTP_Request_state * state, globus_object_t *err
 		}
 }
 
-GridFTP_session* GridFTPFactory::gfal_globus_ftp_take_handle(const std::string & hostname){
-	GridFTP_session * res = NULL;
+GridFTPSession* GridFTPFactory::gfal_globus_ftp_take_handle(const std::string & hostname){
+	GridFTPSession * res = NULL;
 	if( (res = get_recycled_handle(hostname)) == NULL)
 		res = get_new_handle(hostname);
 	return res;
 }
 
-void GridFTPFactory::gfal_globus_ftp_release_handle_internal(GridFTP_session* sess){
+void GridFTPFactory::gfal_globus_ftp_release_handle_internal(GridFTPSession* sess){
     session_reuse = gfal2_get_opt_boolean_with_default(_handle, GRIDFTP_CONFIG_GROUP, gridftp_session_reuse_config, FALSE);
 	if(session_reuse)
 		recycle_session(sess);
 	else{
-		GridFTP_session * s = static_cast<GridFTP_session *>(sess);
+		GridFTPSession * s = static_cast<GridFTPSession *>(sess);
 		s->purge();
 	}
 }
 
 
-void GridFTPFactory::gfal_globus_ftp_release_handle(GridFTP_session* h){
+void GridFTPFactory::gfal_globus_ftp_release_handle(GridFTPSession* h){
 	delete h;
 }
 
 static void gfal_globus_prototype_callback(void* user_args, globus_object_t *error){
-    GridFTP_Request_state* state = (GridFTP_Request_state*) user_args;
+    GridFTPRequestState* state = (GridFTPRequestState*) user_args;
     Glib::RWLock::ReaderLock l (state->mux_req_state);
     Glib::Mutex::Lock l_call(state->mux_callback_lock);
 
@@ -571,7 +571,7 @@ void globus_gass_basic_client_callback(
 }
 
 
-void GridFTP_Request_state::poll_callback(const Glib::Quark &scope){
+void GridFTPRequestState::poll_callback(const Glib::Quark &scope){
     gfal_log(GFAL_VERBOSE_TRACE," -> go internal polling for request ");
     bool timeout= false;
     Glib::RWLock::ReaderLock l(mux_req_state);
@@ -599,13 +599,13 @@ void GridFTP_Request_state::poll_callback(const Glib::Quark &scope){
     gfal_log(GFAL_VERBOSE_TRACE," <- out of gass polling for request ");
 }
 
-void GridFTP_Request_state::err_report(const Glib::Quark &scope){
+void GridFTPRequestState::err_report(const Glib::Quark &scope){
     if(this->get_error_code() != 0)
         throw Gfal::CoreException(scope,  this->get_error(), this->get_error_code());
 }
 
 
-void GridFTP_Request_state::wait_callback(const Glib::Quark &scope, time_t timeout){
+void GridFTPRequestState::wait_callback(const Glib::Quark &scope, time_t timeout){
     struct timespec st_timeout;
 
     st_timeout.tv_nsec = 0;
@@ -620,13 +620,13 @@ void GridFTP_Request_state::wait_callback(const Glib::Quark &scope, time_t timeo
     err_report(scope);
 }
 
-void GridFTP_Request_state::cancel_operation(const Glib::Quark &scope, const std::string &msg){
+void GridFTPRequestState::cancel_operation(const Glib::Quark &scope, const std::string &msg){
     if( cancel_operation_async(scope, msg) == 0)
         this->poll_callback(scope);
 
 }
 
-int GridFTP_Request_state::cancel_operation_async(const Glib::Quark &scope, const std::string & msg){
+int GridFTPRequestState::cancel_operation_async(const Glib::Quark &scope, const std::string & msg){
     globus_result_t res;
     int ret = 0;
     Glib::RWLock::ReaderLock l(this->mux_req_state);
@@ -648,11 +648,11 @@ int GridFTP_Request_state::cancel_operation_async(const Glib::Quark &scope, cons
         gfal_globus_check_result(scope, res);
     }catch(Gfal::CoreException & e){
         gfal_log(GFAL_VERBOSE_TRACE,"gridftp error trigerred while cancel: %s", e.message_only());
-        this->sess->disableReuse();
+        this->sess->disable_reuse();
         ret = -1;
     }catch(...){
         gfal_log(GFAL_VERBOSE_TRACE,"gridftp error trigerred while cancel: Unknown");
-        this->sess->disableReuse();           
+        this->sess->disable_reuse();           
         ret = -1;     
     }
 
@@ -661,7 +661,7 @@ int GridFTP_Request_state::cancel_operation_async(const Glib::Quark &scope, cons
     return ret;
 }
 
-void GridFTP_stream_state::poll_callback_stream(const Glib::Quark & scope){
+void GridFTPStreamState::poll_callback_stream(const Glib::Quark & scope){
     gfal_log(GFAL_VERBOSE_TRACE," -> go polling for request ");
     {
 
@@ -677,13 +677,13 @@ void GridFTP_stream_state::poll_callback_stream(const Glib::Quark & scope){
     gfal_log(GFAL_VERBOSE_TRACE," <- out of polling for request ");
 }
 
-void GridFTP_stream_state::wait_callback_stream(const Glib::Quark & scope){
+void GridFTPStreamState::wait_callback_stream(const Glib::Quark & scope){
     poll_callback_stream(scope);
     err_report(scope);
 }
 
 
-GridFTP_stream_state::~GridFTP_stream_state(){
+GridFTPStreamState::~GridFTPStreamState(){
     try {
         if(req_status == GRIDFTP_REQUEST_RUNNING){
             cancel_operation(gfal_gridftp_scope_req_state(), "ReqStream Destroyer");
@@ -704,11 +704,11 @@ GridFTP_stream_state::~GridFTP_stream_state(){
 }
 
 
-void gridftp_wait_for_read(const Glib::Quark & scope, GridFTP_stream_state* state, off_t end_read){
+void gridftp_wait_for_read(const Glib::Quark & scope, GridFTPStreamState* state, off_t end_read){
     state->wait_callback_stream(scope);
 }
 
-void gridftp_wait_for_write(const Glib::Quark & scope, GridFTP_stream_state* state, off_t end_write){
+void gridftp_wait_for_write(const Glib::Quark & scope, GridFTPStreamState* state, off_t end_write){
     state->wait_callback_stream(scope);
 }
 
@@ -716,7 +716,7 @@ void gridftp_wait_for_write(const Glib::Quark & scope, GridFTP_stream_state* sta
 
 void gfal_stream_callback_prototype(void *user_arg, globus_ftp_client_handle_t *handle, globus_object_t *error, globus_byte_t *buffer,
                                     globus_size_t length, globus_off_t offset, globus_bool_t eof, const char* err_msg_offset){
-    GridFTP_stream_state* state = static_cast<GridFTP_stream_state*>(user_arg);
+    GridFTPStreamState* state = static_cast<GridFTPStreamState*>(user_arg);
     Glib::Mutex::Lock l(state->mux_stream_callback);
 
     if(error != GLOBUS_SUCCESS){	// check error status
@@ -753,7 +753,7 @@ static void gfal_griftp_stream_write_callback(void *user_arg, globus_ftp_client_
 }
 
 ssize_t gridftp_read_stream(const Glib::Quark & scope,
-							GridFTP_stream_state* stream,
+							GridFTPStreamState* stream,
 							void* buffer, size_t s_read
 							){
 	gfal_log(GFAL_VERBOSE_TRACE,"  -> [gridftp_read_stream]");	
@@ -776,7 +776,7 @@ ssize_t gridftp_read_stream(const Glib::Quark & scope,
 
 
 ssize_t gridftp_write_stream(const Glib::Quark & scope,
-							GridFTP_stream_state* stream,
+							GridFTPStreamState* stream,
 							const void* buffer, size_t s_write,
 							bool eof
 							){

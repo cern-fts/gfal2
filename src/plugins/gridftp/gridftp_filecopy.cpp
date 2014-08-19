@@ -205,7 +205,7 @@ void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, gl
 struct Callback_handler{
 
     Callback_handler(gfal2_context_t context,
-                     gfalt_params_t params, GridFTP_Request_state* req,
+                     gfalt_params_t params, GridFTPRequestState* req,
                      const char* src, const char* dst,
                      size_t src_size) :
         args(NULL){
@@ -251,7 +251,7 @@ struct Callback_handler{
     }
     struct callback_args{
         callback_args(gfal2_context_t context, const gfalt_monitor_func mcallback, gpointer muser_args,
-                      const char* msrc, const char* mdst, GridFTP_Request_state* mreq, size_t src_size) :
+                      const char* msrc, const char* mdst, GridFTPRequestState* mreq, size_t src_size) :
             callback(mcallback),
             user_args(muser_args),
             req(mreq),
@@ -285,7 +285,7 @@ struct Callback_handler{
 
         gfalt_monitor_func callback;
         gpointer user_args;
-        GridFTP_Request_state* req;
+        GridFTPRequestState* req;
         const char* src;
         const char* dst;
         time_t start_time;
@@ -314,7 +314,7 @@ void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, gl
     // [LCGUTIL-440] Some endpoints calculate the checksum before closing, so we will
     //               get throughput = 0 for a while, and the transfer should not fail
     if (throughput != 0.0 || (args->source_size > 0 && args->source_size <= total_bytes )) {
-        GridFTP_Request_state* req = args->req;
+        GridFTPRequestState* req = args->req;
         Glib::RWLock::ReaderLock l (req->mux_req_state);
         if(args->timeout_value > 0){
             gfal_log(GFAL_VERBOSE_TRACE, "Performance marker received, re-arm timer");
@@ -330,7 +330,7 @@ void gsiftp_rd3p_callback(void* user_args, globus_gass_copy_handle_t* handle, gl
 static void gridftp_do_copy(GridftpModule* module, GridFTPFactory* factory,
         gfalt_params_t params,
         const char* src, const char* dst,
-        GridFTP_Request_state& req, time_t timeout)
+        GridFTPRequestState& req, time_t timeout)
 {
     /*
     This will not work with Castor
@@ -344,7 +344,7 @@ static void gridftp_do_copy(GridftpModule* module, GridFTPFactory* factory,
     }
     */
 
-    GridFTP_session* sess = req.sess.get();
+    GridFTPSession* sess = req.sess.get();
 
     std::auto_ptr<Gass_attr_handler>  gass_attr_src(sess->generate_gass_copy_attr());
     std::auto_ptr<Gass_attr_handler>  gass_attr_dst(sess->generate_gass_copy_attr());
@@ -384,9 +384,9 @@ static int gridftp_filecopy_copy_file_internal(GridftpModule* module,
             gridftp_create_parent_copy(module, params, dst);
     }
 
-    GridFTP_Request_state req(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(src)),
+    GridFTPRequestState req(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(src)),
                               true, GRIDFTP_REQUEST_GASS);
-    GridFTP_session* sess = req.sess.get();
+    GridFTPSession* sess = req.sess.get();
 
     sess->set_nb_stream(nbstream);
     gfal_log(GFAL_VERBOSE_TRACE, "   [GridFTPFileCopyModule::filecopy] setup gsiftp number of streams to %d", nbstream);

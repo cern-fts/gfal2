@@ -7,7 +7,7 @@
 
 class GridftpStreamBuffer: public std::streambuf {
 protected:
-    GridFTP_stream_state* gstream;
+    GridFTPStreamState* gstream;
     char buffer[4096];
 
     Glib::Quark quark;
@@ -19,7 +19,7 @@ protected:
     }
 
 public:
-    GridftpStreamBuffer(GridFTP_stream_state* gsiftp_stream, const Glib::Quark& quark):
+    GridftpStreamBuffer(GridFTPStreamState* gsiftp_stream, const Glib::Quark& quark):
         gstream(gsiftp_stream), quark(quark) {
         fetch_more();
     }

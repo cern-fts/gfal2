@@ -54,13 +54,13 @@ static Glib::Quark gfal_gridftp_scope_close(){
 const size_t readdir_len = 65000;
 
 struct GridFTP_File_desc{
-	std::auto_ptr<GridFTP_stream_state> stream;
+	std::auto_ptr<GridFTPStreamState> stream;
 	int open_flags;
 	off_t current_offset;
 	std::string url;
 	Glib::Mutex lock;
 		
-	GridFTP_File_desc(GridFTP_stream_state * s, const std::string & _url, int flags) : stream(s){		
+	GridFTP_File_desc(GridFTPStreamState * s, const std::string & _url, int flags) : stream(s){		
 		gfal_log(GFAL_VERBOSE_TRACE, "create descriptor for %s", _url.c_str());		
 		this->open_flags = flags;
 		current_offset = 0;
@@ -94,7 +94,7 @@ inline int gridftp_rw_commit_put(const Glib::Quark & scope, GridFTP_File_desc* d
 	char buffer[2];
 	if(is_write_only(desc->open_flags)){
         gfal_log(GFAL_VERBOSE_TRACE," commit change for the current stream PUT ... ");
-        GridFTP_Request_state* state = desc->stream.get();
+        GridFTPRequestState* state = desc->stream.get();
         state->start();
         gridftp_write_stream(gfal_gridftp_scope_write(), (desc->stream.get()),
 				buffer, 0, true);
@@ -107,7 +107,7 @@ inline int gridftp_rw_commit_put(const Glib::Quark & scope, GridFTP_File_desc* d
 inline int gridftp_rw_valid_get(const Glib::Quark & scope, GridFTP_File_desc* desc){
 	if(is_read_only(desc->open_flags)){
 		if(desc->is_eof()){
-            static_cast<GridFTP_Request_state*>(desc->stream.get())->wait_callback(scope);
+            static_cast<GridFTPRequestState*>(desc->stream.get())->wait_callback(scope);
 		}else{
                 gfal_log(GFAL_VERBOSE_TRACE,"not a full read -> kill the connexion ");
 				try{
@@ -124,7 +124,7 @@ inline int gridftp_rw_valid_get(const Glib::Quark & scope, GridFTP_File_desc* de
 ssize_t gridftp_rw_internal_pread(GridFTPFactory * factory, GridFTP_File_desc* desc, void* buffer, size_t s_buff,
 									off_t offset){ // throw Gfal::CoreException								
 	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::internal_pread]");										
-	std::auto_ptr<GridFTP_stream_state> stream(new GridFTP_stream_state(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(desc->url.c_str()))));
+	std::auto_ptr<GridFTPStreamState> stream(new GridFTPStreamState(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(desc->url.c_str()))));
 	
 	globus_result_t res = globus_ftp_client_partial_get( // start req
 				stream->sess->get_ftp_handle(),
@@ -134,13 +134,13 @@ ssize_t gridftp_rw_internal_pread(GridFTPFactory * factory, GridFTP_File_desc* d
 				offset,
 				offset + s_buff,
 				globus_basic_client_callback,
-    			static_cast<GridFTP_Request_state*>(stream.get()));
+    			static_cast<GridFTPRequestState*>(stream.get()));
     gfal_globus_check_result(gfal_gridftp_scope_internal_pread(), res);
 	
     ssize_t r_size= gridftp_read_stream(gfal_gridftp_scope_internal_pread(), stream.get(),
 				buffer, s_buff); // read a block
 
-    static_cast<GridFTP_Request_state*>(stream.get())->wait_callback(gfal_gridftp_scope_internal_pread());
+    static_cast<GridFTPRequestState*>(stream.get())->wait_callback(gfal_gridftp_scope_internal_pread());
 	gfal_log(GFAL_VERBOSE_TRACE,"[GridftpModule::internal_pread] <-");	
 	return r_size;
 					
@@ -150,7 +150,7 @@ ssize_t gridftp_rw_internal_pread(GridFTPFactory * factory, GridFTP_File_desc* d
 ssize_t gridftp_rw_internal_pwrite(GridFTPFactory * factory, GridFTP_File_desc* desc, const void* buffer, size_t s_buff,
 									off_t offset){ // throw Gfal::CoreException								
 	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::internal_pwrite]");										
-	std::auto_ptr<GridFTP_stream_state> stream(new GridFTP_stream_state(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(desc->url.c_str()))));
+	std::auto_ptr<GridFTPStreamState> stream(new GridFTPStreamState(factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(desc->url.c_str()))));
 	
 	globus_result_t res = globus_ftp_client_partial_put( // start req
 				stream->sess->get_ftp_handle(),
@@ -160,13 +160,13 @@ ssize_t gridftp_rw_internal_pwrite(GridFTPFactory * factory, GridFTP_File_desc* 
 				offset,
 				offset + s_buff,
 				globus_basic_client_callback,
-    			static_cast<GridFTP_Request_state*>(stream.get()));
+    			static_cast<GridFTPRequestState*>(stream.get()));
     gfal_globus_check_result(gfal_gridftp_scope_internal_pwrite(), res);
 	
     ssize_t r_size= gridftp_write_stream(gfal_gridftp_scope_internal_pwrite(), stream.get(),
 				buffer, s_buff, false); // write block
 
-    static_cast<GridFTP_Request_state*>(stream.get())->wait_callback(gfal_gridftp_scope_internal_pwrite());
+    static_cast<GridFTPRequestState*>(stream.get())->wait_callback(gfal_gridftp_scope_internal_pwrite());
 	gfal_log(GFAL_VERBOSE_TRACE,"[GridftpModule::internal_pwrite] <-");	
 	return r_size;
 					
@@ -180,7 +180,7 @@ gfal_file_handle GridftpModule::open(const char* url, int flag, mode_t mode)
 {
 	
 	std::auto_ptr<GridFTP_File_desc> desc(new GridFTP_File_desc(
-							new GridFTP_stream_state(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(url))),
+							new GridFTPStreamState(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(url))),
 							url,
 							flag)
 						);
@@ -201,7 +201,7 @@ gfal_file_handle GridftpModule::open(const char* url, int flag, mode_t mode)
                     desc->stream->sess->get_op_attr_ftp(),
 					NULL,
 					globus_basic_client_callback,
-					static_cast<GridFTP_Request_state*>(desc->stream.get()));
+					static_cast<GridFTPRequestState*>(desc->stream.get()));
         gfal_globus_check_result(gfal_gridftp_scope_open(), res);
 	}else if( is_write_only(desc->open_flags) ){
 		 gfal_log(GFAL_VERBOSE_TRACE," -> initialize FTP PUT global operations ... ");		
@@ -211,7 +211,7 @@ gfal_file_handle GridftpModule::open(const char* url, int flag, mode_t mode)
                     desc->stream->sess->get_op_attr_ftp(),
 					NULL,
 					globus_basic_client_callback,
-					static_cast<GridFTP_Request_state*>(desc->stream.get()));	
+					static_cast<GridFTPRequestState*>(desc->stream.get()));	
         gfal_globus_check_result(gfal_gridftp_scope_open(), res);
 	}else{
 		 gfal_log(GFAL_VERBOSE_TRACE," -> no operation initialization, switch to partial read/write mode...");

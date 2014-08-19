@@ -21,10 +21,10 @@ static Glib::Quark gfal_gridftp_scope_unlink(){
     return Glib::Quark("GridftpModule::unlink");
 }
 
-void gridftp_unlink_internal(gfal2_context_t context, GridFTP_session* sess, const char * path, bool own_session){
+void gridftp_unlink_internal(gfal2_context_t context, GridFTPSession* sess, const char * path, bool own_session){
 
 	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::unlink] ");	
-	std::auto_ptr<GridFTP_Request_state> req( new GridFTP_Request_state(sess, own_session)); // get connexion session
+	std::auto_ptr<GridFTPRequestState> req( new GridFTPRequestState(sess, own_session)); // get connexion session
     GridFTPOperationCanceler canceler(context, req.get());
 
     req->start();

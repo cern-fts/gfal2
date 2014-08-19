@@ -67,7 +67,7 @@ TEST(gfalGridFTP,handle_creation)
     GridftpModule* copy = new GridftpModule(f);
     ASSERT_TRUE(copy != NULL);
     // create and delete properly
-    GridFTP_session* sess = f->gfal_globus_ftp_take_handle("gsiftp://fsdfdsfsd/fsdfds");
+    GridFTPSession* sess = f->gfal_globus_ftp_take_handle("gsiftp://fsdfdsfsd/fsdfds");
     f->gfal_globus_ftp_release_handle(sess);
 
     // wild delete for exception clean recovery

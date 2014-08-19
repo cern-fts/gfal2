@@ -327,13 +327,13 @@ globus_result_t parse_mlst_line(char *line,
 void GridftpModule::internal_globus_gass_stat(const char* path,  globus_gass_copy_glob_stat_t * gl_stat){
 
 	gfal_log(GFAL_VERBOSE_TRACE," -> [Gridftp_stat_module::globus_gass_stat] ");	
-    std::auto_ptr<GridFTP_session> sess(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)));
+    std::auto_ptr<GridFTPSession> sess(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path)));
 
     std::auto_ptr<Gass_attr_handler>  gass_attr_src( sess->generate_gass_copy_attr());
 
     globus_byte_t *buffer = NULL;
     globus_size_t buflen = 0;
-    std::auto_ptr<GridFTP_Request_state> req(new GridFTP_Request_state(sess.get(), false));
+    std::auto_ptr<GridFTPRequestState> req(new GridFTPRequestState(sess.get(), false));
 
     globus_result_t res = globus_ftp_client_mlst(sess->get_ftp_handle(),
                                                  path, sess->get_op_attr_ftp(),

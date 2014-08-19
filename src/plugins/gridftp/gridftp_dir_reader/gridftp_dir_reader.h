@@ -22,7 +22,7 @@ public:
 // Implementation for simple list
 class GridftpSimpleListReader: public GridftpDirReader {
 protected:
-    GridFTP_stream_state *stream;
+    GridFTPStreamState *stream;
     GridftpStreamBuffer  *stream_buffer;
 
 public:
@@ -35,7 +35,7 @@ public:
 // Implementation for MLSD
 class GridftpListReader: public GridftpDirReader {
 protected:
-    GridFTP_stream_state *stream;
+    GridFTPStreamState *stream;
     GridftpStreamBuffer  *stream_buffer;
 
 public:

@@ -10,9 +10,9 @@ extern globus_result_t parse_mlst_line(char *line, globus_gass_copy_glob_stat_t 
 GridftpListReader::GridftpListReader(GridftpModule* gsiftp, const char* path)
 {
     GridFTPFactory* factory = gsiftp->get_session_factory();
-    GridFTP_session* session = factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path));
+    GridFTPSession* session = factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path));
 
-    stream = new GridFTP_stream_state(session);
+    stream = new GridFTPStreamState(session);
 
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpListReader::GridftpListReader]");
     Glib::Mutex::Lock locker(stream->lock);
@@ -21,7 +21,7 @@ GridftpListReader::GridftpListReader(GridftpModule* gsiftp, const char* path)
             stream->sess->get_ftp_handle(), path,
             stream->sess->get_op_attr_ftp(),
             globus_basic_client_callback,
-            static_cast<GridFTP_Request_state*>(stream));
+            static_cast<GridFTPRequestState*>(stream));
     gfal_globus_check_result(GridftpListReaderQuark, res);
 
     stream_buffer = new GridftpStreamBuffer(stream, GridftpListReaderQuark);
