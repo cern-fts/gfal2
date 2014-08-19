@@ -118,6 +118,7 @@ int gfal_http_access(plugin_handle plugin_data, const char* url, int mode, GErro
     struct stat buf;
     GError* tmp_err = NULL;
 
+    memset(&buf, 0, sizeof(buf));
     if (gfal_http_stat(plugin_data, url, &buf, &tmp_err) != 0) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
         return -1;

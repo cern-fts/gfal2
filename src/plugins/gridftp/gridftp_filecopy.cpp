@@ -71,18 +71,18 @@ std::string lookup_host(const char *host, gboolean use_ipv6)
 
     struct addrinfo *i = addresses;
     while (i) {
-        inet_ntop(i->ai_family, i->ai_addr->sa_data, addrstr, 100);
+        inet_ntop(i->ai_family, i->ai_addr->sa_data, addrstr, sizeof(addrstr));
 
         switch (i->ai_family) {
         case AF_INET:
             ptr = &((struct sockaddr_in *) i->ai_addr)->sin_addr;
             if (ptr)
-                inet_ntop(i->ai_family, ptr, ip4str, 100);
+                inet_ntop(i->ai_family, ptr, ip4str, sizeof(ip4str));
             break;
         case AF_INET6:
             ptr = &((struct sockaddr_in6 *) i->ai_addr)->sin6_addr;
             if (ptr)
-                inet_ntop(i->ai_family, ptr, ip6str, 100);
+                inet_ntop(i->ai_family, ptr, ip6str, sizeof(ip6str));
             break;
         }
         i = i->ai_next;
