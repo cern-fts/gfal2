@@ -58,30 +58,30 @@ void GridftpModule::checksum(const char* url, const char* check_type,
 {
     gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::checksum] ");
     gfal_log(GFAL_VERBOSE_DEBUG," Checksum calculation %s for url %s", check_type, url);
-    std::auto_ptr<GridFTPRequestState> req( new GridFTPRequestState(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(url)),
-                                                                        GRIDFTP_REQUEST_FTP));
+    GridFTPRequestState req(_handle_factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(url)),
+                            GRIDFTP_REQUEST_FTP);
 
     if(buffer_length < 16)
         throw Gfal::CoreException(gfal_gridftp_scope_checksum(),"buffer length for checksum calculation is not enought",ENOBUFS);
 
-    req->start();
-    GridFTPOperationCanceler canceler(_handle_factory->get_handle(), req.get());
+    req.start();
+    GridFTPOperationCanceler canceler(_handle_factory->get_handle(), &req);
     globus_result_t res = globus_ftp_client_cksm(
-                req->sess->get_ftp_handle(),
+                req.sess->get_ftp_handle(),
                 url,
-                req->sess->get_op_attr_ftp(),
+                req.sess->get_op_attr_ftp(),
                 checksum_buffer,
                 start_offset,
                 ((data_length)?(data_length):(-1)),
                 check_type,
                 globus_basic_client_callback,
-                req.get());
+                &req);
     gfal_globus_check_result(gfal_gridftp_scope_checksum(), res);
     // wait for answer with a timeout
     const time_t timeout = gfal2_get_opt_integer_with_default(_handle_factory->get_handle(),
                                                               GRIDFTP_CONFIG_GROUP,
                                                               gridftp_checksum_calc_timeout, 1800);
-    req->wait_callback(gfal_gridftp_scope_checksum(), timeout);
+    req.wait_callback(gfal_gridftp_scope_checksum(), timeout);
     gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::checksum] ");
 }
 

@@ -243,11 +243,6 @@ globus_gass_copy_handleattr_t* GridFTPSession::get_gass_handle_attr(){
     return &(_sess->gass_handle_attr);
 }
 
-Gass_attr_handler* GridFTPSession::generate_gass_copy_attr(){
-    Gass_attr_handler* res = new Gass_attr_handler(&(_sess->operation_attr_ftp));
-    return res;
-}
-
 void GridFTPSession::clean(){
     // clean performance markers
     globus_result_t res = globus_gass_copy_register_performance_cb(&(_sess->gass_handle),

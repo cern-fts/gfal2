@@ -346,8 +346,8 @@ static void gridftp_do_copy(GridftpModule* module, GridFTPFactory* factory,
 
     GridFTPSession* sess = req.sess.get();
 
-    std::auto_ptr<Gass_attr_handler>  gass_attr_src(sess->generate_gass_copy_attr());
-    std::auto_ptr<Gass_attr_handler>  gass_attr_dst(sess->generate_gass_copy_attr());
+    Gass_attr_handler gass_attr_src(sess->get_op_attr_ftp());
+    Gass_attr_handler gass_attr_dst(sess->get_op_attr_ftp());
     Callback_handler callback_handler(factory->get_handle(), params, &req, src, dst, 0);
 
     req.start();
@@ -356,9 +356,9 @@ static void gridftp_do_copy(GridftpModule* module, GridFTPFactory* factory,
     globus_result_t res = globus_gass_copy_register_url_to_url(
         sess->get_gass_handle(),
         (char*)src,
-        &(gass_attr_src->attr_gass),
+        &(gass_attr_src.attr_gass),
         (char*)dst,
-        &(gass_attr_dst->attr_gass),
+        &(gass_attr_dst.attr_gass),
         globus_gass_basic_client_callback,
         &req
     );

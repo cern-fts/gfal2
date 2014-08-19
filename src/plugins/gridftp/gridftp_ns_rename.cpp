@@ -28,21 +28,19 @@ void GridftpModule::rename(const char* src, const char* dst)
 
     gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::rename] ");
 
-    std::auto_ptr<GridFTPRequestState> req(
-            new GridFTPRequestState(
-                    _handle_factory->gfal_globus_ftp_take_handle(
-                            gridftp_hostname_from_url(src)))); // get connexion session
+    GridFTPRequestState req(_handle_factory->gfal_globus_ftp_take_handle(
+                            gridftp_hostname_from_url(src))); // get connexion session
 
-    req->start();
+    req.start();
     globus_result_t res = globus_ftp_client_move(
-                req->sess->get_ftp_handle(),
+                req.sess->get_ftp_handle(),
                 src, dst,
-                req->sess->get_op_attr_ftp(),
+                req.sess->get_op_attr_ftp(),
                 globus_basic_client_callback,
-                req.get());
+                &req);
     gfal_globus_check_result(gfal_gridftp_scope_rename, res);
     // wait for answer
-    req->wait_callback(gfal_gridftp_scope_rename);
+    req.wait_callback(gfal_gridftp_scope_rename);
 
     gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::rename] ");
 

@@ -24,19 +24,19 @@ static Glib::Quark gfal_gridftp_scope_unlink(){
 void gridftp_unlink_internal(gfal2_context_t context, GridFTPSession* sess, const char * path, bool own_session){
 
 	gfal_log(GFAL_VERBOSE_TRACE," -> [GridftpModule::unlink] ");	
-	std::auto_ptr<GridFTPRequestState> req( new GridFTPRequestState(sess, own_session)); // get connexion session
-    GridFTPOperationCanceler canceler(context, req.get());
+	GridFTPRequestState req(sess, own_session); // get connexion session
+    GridFTPOperationCanceler canceler(context, &req);
 
-    req->start();
+    req.start();
 	globus_result_t res = globus_ftp_client_delete(
-				req->sess->get_ftp_handle(),
+				req.sess->get_ftp_handle(),
 				path,
-				req->sess->get_op_attr_ftp(),
+				req.sess->get_op_attr_ftp(),
 				globus_basic_client_callback,
-				req.get());
+				&req);
     gfal_globus_check_result(gfal_gridftp_scope_unlink(), res);
 	// wait for answer
-    req->wait_callback(gfal_gridftp_scope_unlink());
+    req.wait_callback(gfal_gridftp_scope_unlink());
 	gfal_log(GFAL_VERBOSE_TRACE," <- [GridftpModule::unlink] ");		
 }
 

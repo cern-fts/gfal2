@@ -139,7 +139,7 @@ struct GridFTPRequestState {
     int cancel_operation_async(const Glib::Quark &scope, const std::string & msg = "");
 };
 
-struct GridFTPStreamState : public GridFTPRequestState{
+struct GridFTPStreamState : public GridFTPRequestState {
  protected:
     off_t offset; // file offset in the stream
 	bool eof;     // end of file reached
@@ -240,7 +240,6 @@ public:
     globus_gass_copy_handle_t* get_gass_handle();
     globus_ftp_client_operationattr_t* get_op_attr_ftp();
     globus_gass_copy_handleattr_t* get_gass_handle_attr();
-    Gass_attr_handler* generate_gass_copy_attr();
 
     void set_nb_stream(const unsigned int nbstream);
     void set_tcp_buffer_size(const guint64 tcp_buffer_size);
