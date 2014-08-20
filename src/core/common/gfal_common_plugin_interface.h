@@ -521,11 +521,12 @@ struct _gfal_plugin_interface{
       * @param nbfiles: how many files are to be transferred
       * @param srcs: array of nbfiles sources
       * @param dsts: array of nbfiles destinations
+      * @param checkums: array of nbfiles checksums. it can be NULL
       * @param op_error:   Operation error
       * @param file_errors: Per file error
       */
      int (*copy_bulk)(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params,
-            size_t nbfiles, const char* const* srcs, const char* const* dsts,
+            size_t nbfiles, const char* const* srcs, const char* const* dsts, const char* const* checksums,
             GError** op_error, GError*** file_errors);
 
 	 // reserved for future usage

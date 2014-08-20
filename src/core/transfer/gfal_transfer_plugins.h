@@ -74,7 +74,7 @@ typedef int (*plugin_filecopy_call)(plugin_handle, gfal2_context_t, gfalt_params
         const char* dst, GError**);
 
 typedef int (*plugin_filecopy_bulk_call)(plugin_handle, gfal2_context_t, gfalt_params_t,
-        size_t nbfiles, const char* const* src, const char* const* dsts,
+        size_t nbfiles, const char* const* src, const char* const* dsts, const char* const* checksums,
         GError** op_error, GError*** file_errors);
 
 

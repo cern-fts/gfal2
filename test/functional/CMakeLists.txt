@@ -166,6 +166,9 @@ IF (FUNCTIONAL_TESTS)
                 add_executable(gfalt_test_copy_file_checksum_user "gfalt_test_copy_file_checksum_user.cpp")
                 target_link_libraries(gfalt_test_copy_file_checksum_user ${GFAL2_TRANSFER_LINK} ${GFAL2_LINK} test_shared)
                 
+                add_executable(gfalt_copy_bulk "gfalt_copy_bulk.cpp")
+                target_link_libraries(gfalt_copy_bulk ${GFAL2_TRANSFER_LINK} ${GFAL2_LINK} test_shared)
+                
 #                copy_files(${COPY_SRC} ${COPY_DST})
 #                add_test(functional_copyfile gfal2_copyfile.sh)
 #                add_test(functional_copyfile_srm gfal2_copyfile_srm.sh)
@@ -176,6 +179,7 @@ IF (FUNCTIONAL_TESTS)
                 add_test(copyfile_replace_${name} gfalt_test_copy_file_replace ${src_dir} ${dst_dir})
                 add_test(copyfile_test_${name} gfalt_test_copy_file ${src_dir} ${dst_dir})
                 add_test(copyfile_test_mkdir_${name} gfalt_test_copy_file_mkdir ${src_dir} ${dst_dir})
+                add_test(copyfile_bulk_${name} gfalt_copy_bulk ${src_dir} ${dst_dir})
         ENDFUNCTION(copy_file_test_full name dst_dir)
 
 

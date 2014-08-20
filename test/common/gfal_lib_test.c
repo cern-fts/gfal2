@@ -35,10 +35,10 @@ char* generate_random_uri(const char* uri_dir, const char* prefix, char* buff,
         size_t s_buff)
 {
     struct utsname info;
-    memset(&info,0, sizeof(struct utsname));
+    memset(&info, 0, sizeof(struct utsname));
     uname(&info);
     snprintf(buff, s_buff, "%s/%s_%s_%d%ld%ld", uri_dir, info.nodename, prefix, (int) getpid(),
-            (long) time(NULL ), (long) rand());
+            (long) time(NULL), (long) rand());
     return buff;
 }
 

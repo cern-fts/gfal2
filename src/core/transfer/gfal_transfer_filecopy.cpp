@@ -95,7 +95,7 @@ static int perform_copy(gfal2_context_t context, gfalt_params_t params,
 
 
 static int bulk_fallback(gfal2_context_t context, gfalt_params_t params,
-        size_t nbfiles, const char* const* srcs, const char* const* dsts,
+        size_t nbfiles, const char* const* srcs, const char* const* dsts, const char* const* checksums,
         GError** op_error, GError*** file_errors)
 {
     *file_errors = g_new0(GError*, nbfiles);
@@ -105,7 +105,7 @@ static int bulk_fallback(gfal2_context_t context, gfalt_params_t params,
 
 
 static int perform_bulk_copy(gfal2_context_t context, gfalt_params_t params,
-        size_t nbfiles, const char* const* srcs, const char* const* dsts,
+        size_t nbfiles, const char* const* srcs, const char* const* dsts, const char* const* checksums,
         GError** op_error, GError*** file_errors)
 {
     GError* tmp_err = NULL;
@@ -119,10 +119,10 @@ static int perform_bulk_copy(gfal2_context_t context, gfalt_params_t params,
 
     if (tmp_err == NULL) {
         if (p_copy == NULL) {
-            res = bulk_fallback(context, params, nbfiles, srcs, dsts, op_error, file_errors);
+            res = bulk_fallback(context, params, nbfiles, srcs, dsts, checksums, op_error, file_errors);
         }
         else {
-            res = p_copy(plugin_data, context, params, nbfiles, srcs, dsts, op_error, file_errors);
+            res = p_copy(plugin_data, context, params, nbfiles, srcs, dsts, checksums, op_error, file_errors);
         }
     }
 
@@ -177,7 +177,7 @@ int gfalt_copy_file(gfal2_context_t handle, gfalt_params_t params,
 
 
 int gfalt_copy_bulk(gfal2_context_t context, gfalt_params_t params, size_t nbfiles,
-        const char* const * srcs, const char* const * dsts,
+        const char* const * srcs, const char* const * dsts, const char* const* checksums,
         GError** op_error, GError*** file_errors)
 {
     g_return_val_err_if_fail(context && srcs && dsts, -1, op_error, "invalid source or/and destination values");
@@ -191,7 +191,7 @@ int gfalt_copy_bulk(gfal2_context_t context, gfalt_params_t params, size_t nbfil
 
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, op_error);
 
-    ret = perform_bulk_copy(context, params, nbfiles, srcs, dsts, op_error, file_errors);
+    ret = perform_bulk_copy(context, params, nbfiles, srcs, dsts, checksums, op_error, file_errors);
     gfalt_params_handle_delete(p, NULL);
 
     GFAL2_END_SCOPE_CANCEL(context);

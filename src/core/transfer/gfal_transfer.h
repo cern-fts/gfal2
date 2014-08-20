@@ -281,7 +281,7 @@ int gfalt_copy_file(gfal2_context_t context, gfalt_params_t params, const char* 
  * op_error will contain an error if something happened _before_ file transfering could be attempted
  */
 int gfalt_copy_bulk(gfal2_context_t context, gfalt_params_t params, size_t nbfiles,
-        const char* const * srcs, const char* const * dsts,
+        const char* const * srcs, const char* const * dsts, const char* const* checksums,
         GError** op_error, GError*** file_erros);
 
 
