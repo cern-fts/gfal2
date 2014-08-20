@@ -5,9 +5,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,8 +28,9 @@
 #include <globus_ftp_client.h>
 #include <globus_gass_copy.h>
 
-
 #define GRIDFTP_CONFIG_GROUP "GRIDFTP PLUGIN"
+
+extern const char* gridftp_ipv6_config;
 
 enum GridFTPRequestStatus{
 	GRIDFTP_REQUEST_NOT_LAUNCHED,
@@ -49,12 +50,12 @@ class GridFTPSession;
 struct GridFTPRequestState {
  protected:
    Glib::Mutex internal_lock;
-   
+
    int         errcode;
    std::string error;
-   
+
    GridFTPRequestStatus req_status;
-   
+
    inline void init_timeout(struct timespec * time_offset)
     {
         if (time_offset && timespec_isset(time_offset)) {
@@ -87,9 +88,9 @@ struct GridFTPRequestState {
     // cancel token
     gfal_cancel_token_t cancel_token;
     // ftp session
-	std::auto_ptr<GridFTPSession> sess;  
+	std::auto_ptr<GridFTPSession> sess;
     // request type
-    GridFTPRequestType request_type;   
+    GridFTPRequestType request_type;
     // params
     Glib::TimeVal end_time; // timeout trigger -> 0 if not enabled, usage of CLOCK_MONOTONIC is required.
     // enable/disable destroy when out of scope
@@ -160,12 +161,12 @@ struct GridFTPStreamState : public GridFTPRequestState {
     GridFTPRequestStatus stream_status;
     Glib::Mutex mux_stream_callback;
     Glib::Cond  cond_stream_callback;
-    
+
  public:
-   
+
    // ownership lock
    Glib::Mutex lock;
-   
+
 	GridFTPStreamState(GridFTPSession * s) : GridFTPRequestState(s) {
 		offset =0;
 		eof = false;
@@ -173,7 +174,7 @@ struct GridFTPStreamState : public GridFTPRequestState {
 	}
 
     virtual ~GridFTPStreamState();
-	
+
 	bool finished()
     {
         Glib::Mutex::Lock locker(internal_lock);
@@ -215,7 +216,7 @@ struct GridFTPStreamState : public GridFTPRequestState {
         Glib::Mutex::Lock locker(internal_lock);
         return stream_status;
     }
-    
+
     void set_stream_status(const GridFTPRequestStatus & st)
     {
         Glib::Mutex::Lock locker(internal_lock);
@@ -264,6 +265,7 @@ public:
     globus_gass_copy_handle_t* get_gass_handle();
     globus_ftp_client_operationattr_t* get_op_attr_ftp();
     globus_gass_copy_handleattr_t* get_gass_handle_attr();
+    globus_ftp_client_handleattr_t* get_ftp_handle_attr();
 
     void set_nb_stream(const unsigned int nbstream);
     void set_tcp_buffer_size(const guint64 tcp_buffer_size);
@@ -283,8 +285,6 @@ private:
     void set_ipv6(bool enable);
     void set_delayed_pass(bool enable);
     void set_dcau(const globus_ftp_control_dcau_t & _dcau);
-
-    void set_credentials(const char* ucert, const char* ukey);
 
     void clean();
     void purge();
@@ -390,4 +390,10 @@ void gfal_globus_check_error(const Glib::Quark & scope,
 
 std::string gridftp_hostname_from_url(const char * url);
 
-#endif /* GRIDFTPWRAPPER_H */ 
+void gfal_globus_store_error(GridFTPRequestState * state, globus_object_t *error);
+
+void gfal_globus_set_credentials(gfal2_context_t, globus_ftp_client_operationattr_t*);
+
+void gfal_globus_set_credentials(const char* ucert, const char* ukey, globus_ftp_client_operationattr_t*);
+
+#endif /* GRIDFTPWRAPPER_H */

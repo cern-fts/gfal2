@@ -45,6 +45,7 @@ Gass_attr_handler::Gass_attr_handler(globus_ftp_client_operationattr_t* ftp_oper
     // initialize gass copy attr
     globus_result_t res = globus_gass_copy_attr_init(&(attr_gass));
     gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);
+    globus_ftp_client_operationattr_init(&(operation_attr_ftp_for_gass));
     globus_ftp_client_operationattr_copy(&(operation_attr_ftp_for_gass), ftp_operation_attr);
     res = globus_gass_copy_attr_set_ftp(&(attr_gass), &operation_attr_ftp_for_gass);
     gfal_globus_check_result("GridFTPFactory::globus_gass_copy_handleattr_set_ftp_attr", res);
@@ -243,7 +244,22 @@ void GridFTPSession::disable_udt()
 }
 
 
-void GridFTPSession::set_credentials(const char* ucert, const char* ukey)
+void gfal_globus_set_credentials(gfal2_context_t context, globus_ftp_client_operationattr_t* opattr)
+{
+    gchar* ucert = gfal2_get_opt_string(context, "X509", "CERT", NULL);
+    gchar* ukey = gfal2_get_opt_string(context, "X509", "KEY", NULL);
+    if (ucert) {
+        gfal_log(GFAL_VERBOSE_TRACE, "GSIFTP using certificate %s", ucert);
+        if (ukey)
+            gfal_log(GFAL_VERBOSE_TRACE, "GSIFTP using private key %s", ukey);
+        gfal_globus_set_credentials(ucert, ukey, opattr);
+        g_free(ucert);
+        g_free(ukey);
+    }
+}
+
+
+void gfal_globus_set_credentials(const char* ucert, const char* ukey, globus_ftp_client_operationattr_t* opattr)
 {
     std::stringstream buffer;
     std::ifstream cert_stream(ucert);
@@ -280,7 +296,7 @@ void GridFTPSession::set_credentials(const char* ucert, const char* ukey)
                 err_buffer.str());
     }
     globus_ftp_client_operationattr_set_authorization(
-            &(_sess->operation_attr_ftp), cred_id, NULL, NULL, NULL, NULL);
+            opattr, cred_id, NULL, NULL, NULL, NULL);
 }
 
 
@@ -310,6 +326,10 @@ globus_gass_copy_handleattr_t* GridFTPSession::get_gass_handle_attr()
     return &(_sess->gass_handle_attr);
 }
 
+globus_ftp_client_handleattr_t* GridFTPSession::get_ftp_handle_attr()
+{
+    return &(_sess->attr_handle);
+}
 
 void GridFTPSession::clean()
 {
@@ -525,7 +545,12 @@ int gfal_globus_error_convert(globus_object_t * error, char ** str_error)
             *p = (*p == '\n' || *p == '\r') ? ' ' : *p;
             ++p;
         }
-        return scan_errstring(*str_error); // try to get errno
+        int errn = scan_errstring(*str_error); // try to get errno
+        if (errn == 0) {
+            globus_free(*str_error);
+            *str_error = NULL;
+        }
+        return errn;
     }
     return 0;
 }
@@ -594,16 +619,7 @@ GridFTPSession* GridFTPFactory::get_new_handle(const std::string & hostname)
     sess->set_ipv6(ipv6);
     sess->set_delayed_pass(delay_passv);
 
-    gchar* ucert = gfal2_get_opt_string(_handle, "X509", "CERT", NULL);
-    gchar* ukey = gfal2_get_opt_string(_handle, "X509", "KEY", NULL);
-    if (ucert) {
-        gfal_log(GFAL_VERBOSE_TRACE, "GSIFTP using certificate %s", ucert);
-        if (ukey)
-            gfal_log(GFAL_VERBOSE_TRACE, "GSIFTP using private key %s", ukey);
-        sess->set_credentials(ucert, ukey);
-        g_free(ucert);
-        g_free(ukey);
-    }
+    gfal_globus_set_credentials(_handle, &sess->_sess->operation_attr_ftp);
 
     return sess.release();
 }

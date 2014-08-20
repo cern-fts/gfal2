@@ -43,8 +43,9 @@ gboolean gridftp_check_url_transfer(plugin_handle handle, gfal2_context_t contex
     gboolean res = FALSE;
 
     if( src != NULL && dst != NULL){
-        if (type == GFAL_FILE_COPY && is_gridftp_uri(src) && is_gridftp_uri(dst))
-            res = TRUE;
+        bool is_gridftp_transfer = is_gridftp_uri(src) && is_gridftp_uri(dst);
+        if (type == GFAL_FILE_COPY || type == GFAL_BULK_COPY)
+            res = is_gridftp_transfer;
     }
     return res;
 }
@@ -149,11 +150,12 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)
     ret.writeG = &gfal_gridftp_writeG;
     ret.lseekG = &gfal_gridftp_lseekG;
     ret.checksum_calcG = &gfal_gridftp_checksumG;
-    ret.copy_file = &gridftp_plugin_filecopy;
-    ret.check_plugin_url_transfer = &gridftp_check_url_transfer;
     ret.renameG = &gfal_gridftp_renameG;
-
-    G_RETURN_ERR(ret, tmp_err, err);
+    ret.check_plugin_url_transfer = &gridftp_check_url_transfer;
+    ret.copy_file = &gridftp_plugin_filecopy;
+    ret.copy_bulk = &gridftp_bulk_copy;
+	
+	G_RETURN_ERR(ret, tmp_err, err);
 }
 
 };

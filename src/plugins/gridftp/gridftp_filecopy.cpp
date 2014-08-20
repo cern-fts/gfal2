@@ -39,13 +39,12 @@
 #include <exceptions/gerror_to_cpp.h>
 #include <exceptions/cpp_to_gerror.hpp>
 
-extern const char* gridftp_ipv6_config;
-
 static Glib::Quark GFAL_GRIDFTP_SCOPE_FILECOPY("GridFTPFileCopyModule::FileCopy");
 
 static Glib::Quark GFAL_GRIDFTP_DOMAIN_GSIFTP("GSIFTP");
 
 /*IPv6 compatible lookup*/
+static
 std::string lookup_host(const char *host, gboolean use_ipv6)
 {
     struct addrinfo hints, *addresses = NULL;
@@ -100,7 +99,6 @@ std::string lookup_host(const char *host, gboolean use_ipv6)
 }
 
 
-static
 std::string return_hostname(const std::string &uri, gboolean use_ipv6)
 {
     GError* error = NULL;
