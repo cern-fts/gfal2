@@ -270,7 +270,19 @@ gfalt_event_func gfalt_get_event_callback (gfalt_params_t params, GError** err);
  *  @param src source URL supported by GFAL
  *  @param dst destination URL supported by GFAL
 */
-int gfalt_copy_file(gfal2_context_t context, gfalt_params_t params, const char* src, const char* dst, GError** err);
+int gfalt_copy_file(gfal2_context_t context, gfalt_params_t params, const char* src,
+        const char* dst, GError** err);
+
+/**
+ * @brief bulk copy operation
+ * If not provided by the plugin, it will fallback to a serialized implementation
+ * Note that file_erros will point to an array of nbfiles pointers to GError, where each one
+ * corresponds to the source and destination pair in the same position
+ * op_error will contain an error if something happened _before_ file transfering could be attempted
+ */
+int gfalt_copy_bulk(gfal2_context_t context, gfalt_params_t params, size_t nbfiles,
+        const char* const * srcs, const char* const * dsts, const char* const* checksums,
+        GError** op_error, GError*** file_erros);
 
 
 //

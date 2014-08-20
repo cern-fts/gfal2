@@ -29,82 +29,80 @@
 #include <transfer/gfal_transfer_plugins.h>
 #include <transfer/gfal_transfer.h>
 
-
-#include "gridftpinterface.h"
-#include "gridftpwrapper.h"
-
-#include "gridftp_filecopy.h"
-#include "gridftp_namespace.h"
-
-typedef globus_gass_copy_glob_stat_t gfal_globus_stat_t;
+#include <globus_gass_copy.h>
 
 
+class GridFTPFactory;
 
-class GridftpModule 
-{
-	public:
-		GridftpModule(GridFTPFactoryInterface *);
-		virtual ~GridftpModule();
-		
-		virtual bool exists(const char* path);
+class GridFTPModule {
+public:
+    GridFTPModule(GridFTPFactory *);
+    virtual ~GridFTPModule();
 
-		// Execute an access call, map on stat due to protocol restrictions
-		virtual void access(const char* path, int mode);
-		
-		 // Execute a chmod query on path
-		virtual void chmod(const char* path, mode_t mode);
-		
-		 // Execute a open query on path
-		virtual gfal_file_handle open(const char* url, int flag, mode_t mode);
-		
-		// Execute a read/pread query
-		virtual ssize_t read(gfal_file_handle handle, void* buffer, size_t count);			
-		virtual ssize_t pread(gfal_file_handle handle, void* buffer, size_t count, off_t offset);
-		
-		// Execute a read/pread query
-		virtual ssize_t write(gfal_file_handle handle, const void* buffer, size_t count);			
-		virtual ssize_t pwrite(gfal_file_handle handle, const void* buffer, size_t count, off_t offset);		
-		
-		// seek a file
-		virtual off_t lseek(gfal_file_handle handle, off_t offset, int whence);	
-		
-		// close a file 
-		virtual int close(gfal_file_handle handle);
-		
-		//Execute a stat call on a gridftp URL
-		virtual void stat(const char*  path, struct stat * st);
-		
-		// remove a file entry
-		virtual void unlink(const char* path);
+    virtual bool exists(const char* path);
 
-		 // Execute a mkdir query on path
-		 virtual void mkdir(const char* path, mode_t mode);
-		 
-        virtual void checksum(const char* url, const char* check_type,
-                               char * checksum_buffer, size_t buffer_length,
-                               off_t start_offset, size_t data_length);
+    // Execute an access call, map on stat due to protocol restrictions
+    virtual void access(const char* path, int mode);
 
-        // Rename
-        virtual void rename(const char* src, const char* dst);
-		
-		// rmdir query on path
-	    virtual void rmdir(const char* path);	
+    // Execute a chmod query on path
+    virtual void chmod(const char* path, mode_t mode);
 
-        void autoCleanFileCopy(gfalt_params_t params, GError* checked_error, const char* dst);
+    // Execute a open query on path
+    virtual gfal_file_handle open(const char* url, int flag, mode_t mode);
 
-		// Execute a file transfer operation for gridftp URLs
-		virtual void filecopy(gfalt_params_t params, const char* src, const char* dst);
-		
+    // Execute a read/pread query
+    virtual ssize_t read(gfal_file_handle handle, void* buffer, size_t count);
+    virtual ssize_t pread(gfal_file_handle handle, void* buffer, size_t count,
+            off_t offset);
 
-				 
-		void internal_globus_gass_stat(const char* path,  gfal_globus_stat_t * gl_stat);
+    // Execute a read/pread query
+    virtual ssize_t write(gfal_file_handle handle, const void* buffer,
+            size_t count);
+    virtual ssize_t pwrite(gfal_file_handle handle, const void* buffer,
+            size_t count, off_t offset);
 
-		GridFTPFactoryInterface* get_session_factory() {
-		    return _handle_factory;
-		}
+    // seek a file
+    virtual off_t lseek(gfal_file_handle handle, off_t offset, int whence);
 
-	private:
-		GridFTPFactoryInterface * _handle_factory;
+    // close a file
+    virtual int close(gfal_file_handle handle);
+
+    //Execute a stat call on a gridftp URL
+    virtual void stat(const char* path, struct stat * st);
+
+    // remove a file entry
+    virtual void unlink(const char* path);
+
+    // Execute a mkdir query on path
+    virtual void mkdir(const char* path, mode_t mode);
+
+    virtual void checksum(const char* url, const char* check_type,
+            char * checksum_buffer, size_t buffer_length, off_t start_offset,
+            size_t data_length);
+
+    // Rename
+    virtual void rename(const char* src, const char* dst);
+
+    // rmdir query on path
+    virtual void rmdir(const char* path);
+
+    void autoCleanFileCopy(gfalt_params_t params, GError* checked_error,
+            const char* dst);
+
+    // Execute a file transfer operation for gridftp URLs
+    virtual void filecopy(gfalt_params_t params, const char* src,
+            const char* dst);
+
+    void internal_globus_gass_stat(const char* path,
+            globus_gass_copy_glob_stat_t * gl_stat);
+
+    GridFTPFactory* get_session_factory()
+    {
+        return _handle_factory;
+    }
+
+private:
+    GridFTPFactory * _handle_factory;
 
 };
 

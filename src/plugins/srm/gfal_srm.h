@@ -73,7 +73,7 @@ typedef struct _gfal_srmv2_opt{
 	enum gfal_srm_proto srm_proto_type;		// default protocol version
 	regex_t rexurl;
 	regex_t rex_full;
-	gfal_handle handle;
+	gfal2_context_t handle;
 	GSimpleCache* cache;
 
 	char srm_ifce_error_buffer[GFAL_ERRMSG_LEN];
@@ -110,11 +110,11 @@ char** srm_get_3rdparty_turls_sup_protocol(gfal2_context_t context);
 
 const char* gfal_srm_getName();
 
-gfal_plugin_interface gfal_srm_initG(gfal_handle handle, GError** err);
+gfal_plugin_interface gfal_srm_initG(gfal2_context_t handle, GError** err);
 
 void gfal_srm_destroyG(plugin_handle ch);
 
-void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal_handle handle);
+void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal2_context_t handle);
 
 
 inline char* gfal_srm_construct_key(const char* url, const char* prefix, char* buff, const size_t s_buff);

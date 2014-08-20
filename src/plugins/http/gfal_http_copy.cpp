@@ -25,13 +25,13 @@ struct PerfCallbackData {
 };
 
 
-static bool is_supported_scheme(const char* url)
+static bool is_streamed_scheme(const char* url)
 {
-    const char *schemes[] = {"http", "https", "dav", "davs", NULL};
+    const char *schemes[] = {"http:", "https:", "dav:", "davs:", NULL};
     const char *colon = strchr(url, ':');
     if (!colon)
         return false;
-    size_t scheme_len = colon - url;
+    size_t scheme_len = colon - url + 1;
     for (size_t i = 0; schemes[i] != NULL; ++i) {
         if (strncmp(url, schemes[i], scheme_len) == 0)
             return true;
@@ -40,7 +40,22 @@ static bool is_supported_scheme(const char* url)
 }
 
 
-static bool is_http_3rdcopy_enabled(gfal_context_t context)
+static bool is_3rd_scheme(const char* url)
+{
+    const char *schemes[] = {"http+3rd:", "https+3rd:", "dav+3rd:", "davs+3rd:", NULL};
+    const char *colon = strchr(url, ':');
+    if (!colon)
+        return false;
+    size_t scheme_len = colon - url + 1;
+    for (size_t i = 0; schemes[i] != NULL; ++i) {
+        if (strncmp(url, schemes[i], scheme_len) == 0)
+            return true;
+    }
+    return false;
+}
+
+
+static bool is_http_3rdcopy_enabled(gfal2_context_t context)
 {
     GError *err = NULL;
     bool enabled = gfal2_get_opt_boolean(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", &err);
@@ -96,7 +111,7 @@ static int gfal_http_copy_overwrite(plugin_handle plugin_data,
                              GFAL_EVENT_OVERWRITE_DESTINATION, "Deleted %s", dst);
     }
     else if (exists == 0) {
-        gfal_log(GFAL_VERBOSE_DEBUG, "Source does not exist");
+        gfal_log(GFAL_VERBOSE_DEBUG, "Destination does not exist");
     }
     else if (exists < 0) {
         gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_OVERWRITE);
@@ -123,7 +138,7 @@ static char* gfal_http_get_parent(const char* url)
 
 
 static int gfal_http_copy_make_parent(plugin_handle plugin_data,
-        gfalt_params_t params, gfal_context_t context,
+        gfalt_params_t params, gfal2_context_t context,
         const char* dst, GError** err)
 {
     GError *nestedError = NULL;
@@ -180,7 +195,7 @@ static int gfal_http_copy_checksum(gfal2_context_t context,
                                     checksum_value, sizeof(checksum_value),
                                     NULL);
     if (!checksum_type[0])
-        strcpy(checksum_type, "MD5");
+        g_strlcpy(checksum_type, "MD5", sizeof(checksum_type));
 
     GError *nestedError = NULL;
     char src_checksum[1024];
@@ -275,8 +290,32 @@ static int gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GE
     return -1;
 }
 
+// Only http or https
+// See LCGUTIL-473
+static std::string get_canonical_uri(const std::string& original)
+{
+    std::string scheme;
+    char last_scheme;
 
-static void gfal_http_third_party_copy(GfalHttpInternal* davix,
+    size_t plus_pos = original.find('+');
+    size_t colon_pos = original.find(':');
+
+    if (plus_pos < colon_pos)
+        last_scheme = original[plus_pos - 1];
+    else
+        last_scheme = original[colon_pos - 1];
+
+    if (last_scheme == 's')
+        scheme = "https";
+    else
+        scheme = "http";
+
+    std::string canonical = (scheme + original.substr(colon_pos));
+    return canonical;
+}
+
+
+static void gfal_http_third_party_copy(GfalHttpPluginData* davix,
         const char* src, const char* dst,
         gfalt_params_t params,
         GError** err)
@@ -293,8 +332,11 @@ static void gfal_http_third_party_copy(GfalHttpInternal* davix,
 
     copy.setPerformanceCallback(gfal_http_3rdcopy_perfcallback, &perfCallbackData);
 
+    std::string canonical_dst = get_canonical_uri(dst);
+    gfal_log(GFAL_VERBOSE_VERBOSE, "Normalize destination to %s", canonical_dst.c_str());
+
     Davix::DavixError* davError = NULL;
-    copy.copy(Davix::Uri(src), Davix::Uri(dst),
+    copy.copy(Davix::Uri(src), Davix::Uri(canonical_dst),
               gfalt_get_nbstreams(params, NULL),
               &davError);
 
@@ -379,7 +421,7 @@ static dav_ssize_t gfal_http_streamed_provider(void *userdata,
 
 
 static void gfal_http_streamed_copy(gfal2_context_t context,
-        GfalHttpInternal* davix,
+        GfalHttpPluginData* davix,
         const char* src, const char* dst,
         gfalt_params_t params,
         GError** err)
@@ -414,25 +456,64 @@ static void gfal_http_streamed_copy(gfal2_context_t context,
     request.setRequestBody(gfal_http_streamed_provider, src_stat.st_size, &provider);
     request.executeRequest(&dav_error);
 
+    gfal2_close(context, source_fd, &nested_err);
+    // Throw away this error
+    if (nested_err)
+        g_error_free(nested_err);
+
     if (dav_error != NULL) {
         davix2gliberr(dav_error, err);
         Davix::DavixError::clearError(&dav_error);
         return;
     }
+
+    // Double check the HTTP code
+    if (request.getRequestCode() >= 400) {
+        http2gliberr(err, request.getRequestCode(), __func__, "Failed to PUT the file");
+    }
+
+    gfal_log(GFAL_VERBOSE_VERBOSE, "HTTP code %d", request.getRequestCode());
+}
+
+
+void strip_3rd_from_url(const char* url_full, char* url, size_t url_size)
+{
+    const char* colon = strchr(url_full, ':');
+    const char* plus = strchr(url_full, '+');
+    if (!plus || !colon || plus > colon) {
+        g_strlcpy(url, url_full, url_size);
+    }
+    else {
+        size_t len = plus - url_full + 1;
+        if (len >= url_size)
+            len = url_size;
+        g_strlcpy(url, url_full, len);
+        g_strlcat(url, colon, url_size);
+    }
 }
 
 
 int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
-        gfalt_params_t params, const char* src, const char* dst, GError** err)
+        gfalt_params_t params, const char* src_full, const char* dst_full, GError** err)
 {
     GError* nested_error = NULL;
-    GfalHttpInternal* davix = gfal_http_get_plugin_context(plugin_data);
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
 
     plugin_trigger_event(params, http_plugin_domain,
                          GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_ENTER,
-                         "%s => %s", src, dst);
+                         "%s => %s", src_full, dst_full);
 
-    // When this flag is set, the plugin should handle overwriting,
+    // Determine if urls are 3rd party, and strip the +3rd if they are
+    char src[GFAL_URL_MAX_LEN], dst[GFAL_URL_MAX_LEN];
+    bool src_is_3rd = is_3rd_scheme(src_full);
+    bool dst_is_3rd = is_3rd_scheme(dst_full);;
+    strip_3rd_from_url(src_full, src, sizeof(src));
+    strip_3rd_from_url(dst_full, dst, sizeof(dst));
+
+    gfal_log(GFAL_VERBOSE_VERBOSE, "Using source: %s", src);
+    gfal_log(GFAL_VERBOSE_VERBOSE, "Using destination: %s", dst);
+
+    // When this flag is not set, the plugin should handle overwriting,
     // parent directory creation,...
     if (!gfalt_get_strict_copy_mode(params, NULL)) {
         plugin_trigger_event(params, http_plugin_domain,
@@ -455,18 +536,29 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
 
     plugin_trigger_event(params, http_plugin_domain,
                          GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_EXIT,
-                         "%s => %s", src, dst);
+                         "%s => %s", src_full, dst_full);
 
     // The real, actual, copy
     plugin_trigger_event(params, http_plugin_domain,
                          GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
-                         "%s => %s", src, dst);
+                         "%s => %s", src_full, dst_full);
 
-    if (!is_supported_scheme(src) || !is_http_3rdcopy_enabled(context)) {
+    if (!src_is_3rd && !dst_is_3rd) {
         gfal_http_streamed_copy(context, davix, src, dst, params, &nested_error);
     }
+    else if (src_is_3rd && dst_is_3rd) {
+        if (is_http_3rdcopy_enabled(context)) {
+            gfal_http_third_party_copy(davix, src, dst, params, &nested_error);
+        }
+        else {
+            gfal2_set_error(err, http_plugin_domain, ENOENT, __func__,
+                    "3rd party copy requested, but disabled in the configuration");
+        }
+    }
     else {
-        gfal_http_third_party_copy(davix, src, dst, params, &nested_error);
+        gfal2_set_error(err, http_plugin_domain, ENOENT, __func__,
+                    "Invalid combination of 3rd party and non 3rd party urls");
+        return -1;
     }
 
     plugin_trigger_event(params, http_plugin_domain,
@@ -494,11 +586,12 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
 }
 
 
-int gfal_http_copy_check(plugin_handle plugin_data, gfal_context_t context, const char* src,
+int gfal_http_copy_check(plugin_handle plugin_data, gfal2_context_t context, const char* src,
         const char* dst, gfal_url2_check check)
 {
     if (check != GFAL_FILE_COPY)
         return 0;
     // This plugin handles everything that writes into a http endpoint
-    return is_supported_scheme(dst);
+    return (is_streamed_scheme(dst) && !is_3rd_scheme(src)) || (is_3rd_scheme(src) && is_3rd_scheme(dst));
 }
+

@@ -43,7 +43,7 @@ static gboolean srm_has_schema(const char * surl){
 }
 
 
-gboolean plugin_url_check2(plugin_handle handle, gfal_context_t context,
+gboolean plugin_url_check2(plugin_handle handle, gfal2_context_t context,
         const char* src, const char* dst, gfal_url2_check type)
 {
     g_return_val_if_fail(handle != NULL && src != NULL && dst != NULL, FALSE);

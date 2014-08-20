@@ -187,7 +187,7 @@ static void srm_internal_copy_stat(gpointer origin, gpointer copy){
 /*
  * Init an opts struct with the default parameters
  * */
-void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal_handle handle){
+void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal2_context_t handle){
 	memset(opts, 0, sizeof(gfal_srmv2_opt));
 	gfal_checker_compile(opts, NULL);
 	opts->srm_proto_type = PROTO_SRMv2;
@@ -199,7 +199,7 @@ void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal_handle handle){
 /*
  * Init function, called before all
  * */
-gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
+gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err){
 	gfal_plugin_interface srm_plugin;
 	memset(&srm_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin
 	gfal_srmv2_opt* opts = g_new0(struct _gfal_srmv2_opt,1);	// define the srmv2 option struct and clear it
@@ -269,9 +269,8 @@ char* gfal_get_fullendpoint(const char* surl, GError** err){
 	g_return_val_err_if_fail(p && len_prefix && (p>(surl+len_prefix)) && len_endpoint_prefix,NULL,err,"[gfal_get_fullendpoint] full surl must contain ?SFN= and a valid prefix, fatal error");	// assertion on params
 	size_t resu_len = p - surl - len_prefix + len_endpoint_prefix;
     char* resu = calloc(resu_len + 1, sizeof(char));
-    strncpy(resu, GFAL_ENDPOINT_DEFAULT_PREFIX, len_endpoint_prefix);	// copy prefix
-    strncpy(resu + len_endpoint_prefix, surl + len_prefix, p - surl - len_prefix); // copy endpoint
-    resu[resu_len] = '\0';
+    g_strlcpy(resu, GFAL_ENDPOINT_DEFAULT_PREFIX, len_endpoint_prefix);	// copy prefix
+    g_strlcpy(resu + len_endpoint_prefix, surl + len_prefix, p - surl - len_prefix); // copy endpoint
 	return resu;
 }
 

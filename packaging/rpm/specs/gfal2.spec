@@ -2,9 +2,9 @@
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
 Name:               gfal2
-Version:            2.6.8
+Version:            2.7.0
 # https://fedoraproject.org/wiki/Packaging:NamingGuidelines#Release_Tag
-Release:            2%{?dist}
+Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 Group:              Applications/Internet
 License:            ASL 2.0
@@ -37,7 +37,7 @@ BuildRequires:      lfc-devel
 #rfio plugin dependencies
 BuildRequires:      dpm-devel
 #srm plugin dependencies
-BuildRequires:      srm-ifce-devel >= 1.20.0
+BuildRequires:      srm-ifce-devel >= 1.21.0
 #dcap plugin dependencies
 BuildRequires:      dcap-devel
 #gridftp plugin dependencies
@@ -49,7 +49,7 @@ BuildRequires:      gtest-devel
 
 Requires:           %{name}-core%{?_isa} = %{version}-%{release}
 Requires:           %{name}-transfer%{?_isa} = %{version}-%{release}
-BuildRequires:      srm-ifce >= 1.20.0
+BuildRequires:      srm-ifce >= 1.21.0
 
 %description
 GFAL 2.0 offers an a single and simple POSIX-like API 
@@ -282,11 +282,8 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
-* Mon Aug 11 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.6.8-2
- - Disable GridFTP session reuse by default
-
 * Mon Jul 28 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.6.8-1
- - Release 2.6.8 of GFAL2
+  - Release 2.6.8 of GFAL2
 
 * Wed Feb 26 2014 Adrien Devresse <adevress at cern.ch> - 2.5.5-1
  - Release 2.5.5 of GFAL2 

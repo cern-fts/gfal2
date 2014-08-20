@@ -49,11 +49,11 @@ const char* bdii_config_timeout = "TIMEOUT";
 /*
  * set the bdii value of the handle specified
  */
-void gfal_set_nobdiiG(gfal_handle handle, gboolean no_bdii_chk){
+void gfal_set_nobdiiG(gfal2_context_t handle, gboolean no_bdii_chk){
     gfal2_set_opt_boolean(handle, bdii_config_group, bdii_config_enable, !no_bdii_chk, NULL);
 }
 
-gboolean gfal_get_nobdiiG(gfal_handle handle){
+gboolean gfal_get_nobdiiG(gfal2_context_t handle){
     return (!gfal2_get_opt_boolean_with_default(handle, bdii_config_group,bdii_config_enable,TRUE));
 }
 
@@ -61,7 +61,7 @@ gboolean gfal_get_nobdiiG(gfal_handle handle){
  * define the bdii endpoint for the current handle
  * same purpose that the old LCG_GFAL_INFOSYS environment variable
  */
-void gfal_mds_set_infosys(gfal_handle handle, const char * infosys, GError** err){
+void gfal_mds_set_infosys(gfal2_context_t handle, const char * infosys, GError** err){
 	g_return_if_fail(handle && infosys);
 	// no manner to define infosys in is interface currently, just setup the env var,
 	// TODO : change this in is-interface and integrated module
@@ -85,7 +85,7 @@ void gfal_mds_define_bdii_endpoint(gfal2_context_t handle,  GError** err){
 /*
  * return the srm endpoints and their types, in the old way
  * */
-int gfal_mds_get_se_types_and_endpoints (gfal_context_t handle, const char *host, char ***se_types, char ***se_endpoints, GError** err){
+int gfal_mds_get_se_types_and_endpoints (gfal2_context_t handle, const char *host, char ***se_types, char ***se_endpoints, GError** err){
     GError* tmp_err = NULL;
     gfal_mds_endpoint tabend[GFAL_MDS_MAX_SRM_ENDPOINT];
 
@@ -110,7 +110,7 @@ int gfal_mds_get_se_types_and_endpoints (gfal_context_t handle, const char *host
  *  @return string if success or NULL & set the err if fail
  *
  */
- char * gfal_get_lfchost_bdii(gfal_handle handle, GError** err){
+ char * gfal_get_lfchost_bdii(gfal2_context_t handle, GError** err){
 		size_t s_errbuff = GFAL_ERRMSG_LEN;
 		char errbuff[s_errbuff];
 		memset(errbuff, '\0', sizeof(char)*s_errbuff);

@@ -27,7 +27,7 @@
 #include <common/gfal_types.h>
 
 typedef struct _gfal_plugin_dcap_handle{
-	gfal_handle handle;
+	gfal2_context_t handle;
 	struct dcap_proto_ops* ops;
 	regex_t rex;
 }* gfal_plugin_dcap_handle;
@@ -36,6 +36,6 @@ typedef struct _gfal_plugin_dcap_handle{
 GQuark gfal2_get_plugin_dcap_quark();
 
 // Entry point of the plugin
-gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err);
+gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err);
 
 

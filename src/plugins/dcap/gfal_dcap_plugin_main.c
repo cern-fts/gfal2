@@ -52,7 +52,7 @@ GQuark gfal2_get_plugin_dcap_quark()
     return g_quark_from_static_string(GFAL2_QUARK_PLUGINS "::DCAP");
 }
 
-static gfal_plugin_dcap_handle gfal_dcap_init_handle(gfal_handle handle,
+static gfal_plugin_dcap_handle gfal_dcap_init_handle(gfal2_context_t handle,
         GError** err)
 {
     gfal_plugin_dcap_handle ret = g_new0(struct _gfal_plugin_dcap_handle, 1);
@@ -65,7 +65,7 @@ static gfal_plugin_dcap_handle gfal_dcap_init_handle(gfal_handle handle,
 /*
  * Init function, called before all
  * */
-gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err)
+gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)
 {
     gfal_plugin_interface dcap_plugin;
     GError* tmp_err = NULL;

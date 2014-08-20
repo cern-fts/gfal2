@@ -4,10 +4,8 @@ cmake_minimum_required (VERSION 2.6)
 if (PLUGIN_HTTP)
     include     (CheckLibraryExists)
 
-    pkg_check_modules(DAVIX_PKG REQUIRED "davix>=0.3.0")
-    pkg_check_modules(DAVIX_COPY_PKG REQUIRED "davix_copy>=0.3.0")
-
-
+    pkg_check_modules(DAVIX_PKG REQUIRED "davix>=0.3.5")
+    pkg_check_modules(DAVIX_COPY_PKG REQUIRED "davix_copy>=0.3.5")
 
 
     # Includes
@@ -18,6 +16,10 @@ if (PLUGIN_HTTP)
     # link
     link_directories( ${DAVIX_PKG_LIBRARY_DIRS})
     link_directories( ${DAVIX_COPY_PKG_LIBRARY_DIRS})
+
+    # definitions
+    add_definitions (${DAVIX_PKG_CFLAGS})
+    add_definitions (${DAVIX_COPY_PKG_CFLAGS})
 
     # Build plugin
     file (GLOB src_http "gfal_http_*.cpp")

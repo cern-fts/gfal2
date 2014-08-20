@@ -22,11 +22,11 @@ public:
 // Implementation for simple list
 class GridftpSimpleListReader: public GridftpDirReader {
 protected:
-    GridFTP_stream_state *stream;
+    GridFTPStreamState *stream;
     GridftpStreamBuffer  *stream_buffer;
 
 public:
-    GridftpSimpleListReader(GridftpModule* gsiftp, const char* path);
+    GridftpSimpleListReader(GridFTPModule* gsiftp, const char* path);
     ~GridftpSimpleListReader();
     struct dirent* readdir();
     struct dirent* readdirpp(struct stat* st);
@@ -35,11 +35,11 @@ public:
 // Implementation for MLSD
 class GridftpListReader: public GridftpDirReader {
 protected:
-    GridFTP_stream_state *stream;
+    GridFTPStreamState *stream;
     GridftpStreamBuffer  *stream_buffer;
 
 public:
-    GridftpListReader(GridftpModule* gsiftp, const char* path);
+    GridftpListReader(GridFTPModule* gsiftp, const char* path);
     ~GridftpListReader();
     struct dirent* readdir();
     struct dirent* readdirpp(struct stat* st);

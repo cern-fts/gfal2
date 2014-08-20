@@ -1,20 +1,20 @@
 #pragma once
 #ifndef _GFAL_PROTOTYPES_H
 #define _GFAL_PROTOTYPES_H
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -24,20 +24,21 @@
  * @author Devresse Adrien
  * @version 0.0.1
  * @date 04/05/2011
- * 
+ *
  * */
 #include <glib.h>
- 
+#include "gfal_deprecated.h"
+
 
 #ifdef __cplusplus
 extern "C"
 {
-#endif 
+#endif
 
 /* globals enums list
  plugin check type
 */
-typedef enum _plugin_mode{
+typedef enum _plugin_mode {
 	GFAL_PLUGIN_ALL=0,
 	GFAL_PLUGIN_ACCESS,
 	GFAL_PLUGIN_CHMOD,
@@ -57,15 +58,14 @@ typedef enum _plugin_mode{
     GFAL_PLUGIN_UNLINK,
     GFAL_PLUGIN_CHECKSUM,
     GFAL_PLUGIN_MKDIR_REC,
-    GFAL_PLUGIN_BRING_ONLINE,
-	
+    GFAL_PLUGIN_BRING_ONLINE
+
 } plugin_mode;
 
-typedef enum _gfal_url2_check{
-	GFAL_FILE_COPY
-
+typedef enum _gfal_url2_check {
+	GFAL_FILE_COPY,
+	GFAL_BULK_COPY
 } gfal_url2_check;
-
 
 
 enum _GFAL_TYPE { GFAL_TYPE_INT=0, GFAL_TYPE_STRING=1 };
@@ -86,7 +86,7 @@ typedef struct _gfal_file_descriptor_container *gfal_fdesc_container_handle;
 typedef struct _gfal_file_handle_* gfal_file_handle;
 
 /* main */
-typedef struct gfal_handle_* gfal_handle;
+typedef GFAL2_DEPRECATED(gfal2_context) struct gfal_handle_* gfal_handle;
 typedef struct _gfal_descriptors_container gfal_descriptors_container;
 typedef struct _gfal_conf_container gfal_conf_container;
 
@@ -98,6 +98,6 @@ typedef enum _GFAL_PARAM_FUNC GFAL_PARAM_FUNC;
 
 #ifdef __cplusplus
 }
-#endif 
+#endif
 
 #endif

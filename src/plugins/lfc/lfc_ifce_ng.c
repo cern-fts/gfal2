@@ -1,23 +1,23 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
- 
+
 /*
-* 
+*
 * lfc_ifce_ng.c
 * main internal file of the lfc plugin module
 * author : Adrien Devresse
@@ -155,11 +155,11 @@ int lfc_configure_environment(struct lfc_ops * ops, const char* host, GError** e
 }
 
 
-// Routine for internal lfc hack, need to be call for the thread safety 
+// Routine for internal lfc hack, need to be call for the thread safety
 void gfal_lfc_init_thread(struct lfc_ops* ops){
 	if(_local_thread_init==FALSE){
 		Cth_pid_t th = pthread_self();
-		ops->_Cthread_addcid (NULL, 0, NULL, 0, &th, 0, NULL, 0); 
+		ops->_Cthread_addcid (NULL, 0, NULL, 0, &th, 0, NULL, 0);
 		_local_thread_init= TRUE;
 	}
 }
@@ -168,7 +168,7 @@ void gfal_lfc_init_thread(struct lfc_ops* ops){
 
 // WARNING : ALL SESSIONS and transactions for LFC disabled
 // REASONS : unstable, can just fail forever in case of connexion drop
-int gfal_lfc_startSession(struct lfc_ops* ops, GError ** err){ 
+int gfal_lfc_startSession(struct lfc_ops* ops, GError ** err){
     /*if (ops->startsess (ops->lfc_endpoint, "gfal 2.0 auto-session") < 0){
 		int sav_errno = gfal_lfc_get_errno(ops);
         gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
@@ -179,7 +179,7 @@ int gfal_lfc_startSession(struct lfc_ops* ops, GError ** err){
     return 0;
 }
 /* --> session reused disabled -> bugged in liblfc
-static int gfal_lfc_endSession(struct lfc_ops* ops, GError ** err){ 
+static int gfal_lfc_endSession(struct lfc_ops* ops, GError ** err){
 	if (ops->endsess() < 0){
 		int sav_errno = gfal_lfc_get_errno(ops);
         gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
@@ -200,18 +200,18 @@ void gfal_auto_maintain_session(struct lfc_ops* ops, GError ** err){
 			current = time(NULL);
 			session_timestamp = current + session_duration;
 		}
-		pthread_mutex_unlock(&m_session);	
+		pthread_mutex_unlock(&m_session);
 	}*/
 }
 
 void lfc_set_session_timeout(int timeout){
-	pthread_mutex_lock(&m_session);	
+	pthread_mutex_lock(&m_session);
 	session_duration = timeout;
 	pthread_mutex_unlock(&m_session);
 }
 
 
-static int gfal_lfc_startTransaction(struct lfc_ops* ops, GError ** err){ 
+static int gfal_lfc_startTransaction(struct lfc_ops* ops, GError ** err){
     /*if (ops->starttrans(ops->lfc_endpoint, "gfal 2.0 auto-trans")){
 		int sav_errno = gfal_lfc_get_errno(ops);
         gfal2_set_error(err, gfal2_get_plugin_lfc_quark() ,sav_errno, __func__,
@@ -222,10 +222,10 @@ static int gfal_lfc_startTransaction(struct lfc_ops* ops, GError ** err){
 	return 0;
 }
 
-static int gfal_lfc_endTransaction(struct lfc_ops* ops, GError ** err){ 
+static int gfal_lfc_endTransaction(struct lfc_ops* ops, GError ** err){
 	if (ops->endtrans() < 0){
 		int sav_errno = gfal_lfc_get_errno(ops);
-        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno,
+        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
                 "Error while start transaction with lfc, Error : %s ", gfal_lfc_get_strerror(ops));
 		return -1;
 	}
@@ -235,23 +235,23 @@ static int gfal_lfc_endTransaction(struct lfc_ops* ops, GError ** err){
 
 
 
-static int gfal_lfc_abortTransaction(struct lfc_ops* ops, GError ** err){ 
+static int gfal_lfc_abortTransaction(struct lfc_ops* ops, GError ** err){
 	if (ops->aborttrans() < 0){
 		int sav_errno = gfal_lfc_get_errno(ops);
-        gfal2_set_error(err,gfal2_get_plugin_lfc_quark(),sav_errno,
+        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
                 "Error while abort transaction with lfc,  Error : %s ", gfal_lfc_get_strerror(ops));
 		return -1;
 	}
 	return 0;
 }
 
- 
- 
+
+
 
 int gfal_convert_guid_to_lfn_r(plugin_handle handle, const char* guid, char* buff_lfn, size_t sbuff_lfn, GError ** err){
 	int ret;
 	int size = 0;
-	struct lfc_ops* ops = (struct lfc_ops*) handle;	
+	struct lfc_ops* ops = (struct lfc_ops*) handle;
 	gfal_lfc_init_thread(ops);
 	struct lfc_linkinfo* links = NULL;
 	if(ops->getlinks(NULL, guid, &size, &links) <0){
@@ -272,7 +272,7 @@ int gfal_convert_guid_to_lfn_r(plugin_handle handle, const char* guid, char* buf
 	free(links);
 	return ret;
  }
- 
+
 
 /*
  * load the shared library and link the symbol for the LFC usage
@@ -282,7 +282,7 @@ int gfal_convert_guid_to_lfn_r(plugin_handle handle, const char* guid, char* buf
 struct lfc_ops* gfal_load_lfc(const char* name, GError** err){
 	struct lfc_ops* lfc_sym=NULL;
 	GError * tmp_err=NULL;
-	
+
 	lfc_sym = calloc(1, sizeof(struct lfc_ops));
 	// static resolution
 	lfc_sym->addreplica = &lfc_addreplica;
@@ -298,7 +298,7 @@ struct lfc_ops* gfal_load_lfc(const char* name, GError** err){
 	lfc_sym->getreplica = &lfc_getreplica;
 	lfc_sym->lstat = &lfc_lstat;
 	lfc_sym->mkdirg =  &lfc_mkdirg;
-	lfc_sym->seterrbuf = &lfc_seterrbuf; 
+	lfc_sym->seterrbuf = &lfc_seterrbuf;
 	lfc_sym->setfsizeg = &lfc_setfsizeg;
 	lfc_sym->setfsize = &lfc_setfsize;
 	lfc_sym->starttrans = &lfc_starttrans;
@@ -377,35 +377,35 @@ int gfal_lfc_convert_lstat(struct stat* output, struct lfc_filestat* input, GErr
  * basic wrapper mkdir to the lfc api
  */
 static int gfal_lfc_mkdir(struct lfc_ops* ops, const char* path, mode_t mode, GError** err){
-	
+
 	char struid[37];
 	gfal_generate_guidG(struid,NULL);
-	
-	if(ops->mkdirg (path, struid, mode)){ 
+
+	if(ops->mkdirg (path, struid, mode)){
 		int sav_errno = gfal_lfc_get_errno(ops);
-        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno,
+        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
                 "Error while mkdir call in the lfc %s", strerror(sav_errno));
 		return -1;
-	}				
-	return 0;	
+	}
+	return 0;
 }
 
 
 /*
  * Begin a recursive call on mkdir to create a full tree path
  * @warning not safe, please ensure that string begin by "/"
- * 
+ *
  */
 int gfal_lfc_mkdir_rec(struct lfc_ops* ops, char* browser_path, const char* full_path, mode_t mode, GError** err){
 	int ret=-1;
-	char* next_sep= strchr(browser_path, G_DIR_SEPARATOR); 
+	char* next_sep= strchr(browser_path, G_DIR_SEPARATOR);
 	if(  next_sep == NULL || *(next_sep+1) == '\0'){ // last folder
 		return gfal_lfc_mkdir(ops, full_path, mode, err);
 	}else{
-		const int path_size =next_sep - full_path; 
+		const int path_size =next_sep - full_path;
 		GError* tmp_err = NULL;
 		char path[ path_size+1];
-		
+
 		*((char*) mempcpy(path, full_path, path_size )) = '\0';
 		ret = gfal_lfc_mkdir(ops, path, ( 0700 | mode) , &tmp_err);
 		if( ret== 0 || tmp_err->code == EEXIST || tmp_err->code == EACCES){
@@ -415,18 +415,18 @@ int gfal_lfc_mkdir_rec(struct lfc_ops* ops, char* browser_path, const char* full
 		g_propagate_error(err, tmp_err);
 		return ret;
 	}
-	
-} 
+
+}
 
 /*
  *  Implementation of mkdir -p call on the lfc
- * 
+ *
  * */
 int gfal_lfc_ifce_mkdirpG(struct lfc_ops* ops,const char* path, mode_t mode, gboolean pflag, GError**  err){
 	g_return_val_err_if_fail( ops && path, -1, err, "[gfal_lfc_ifce_mkdirpG] Invalid args in ops or/and path");
 	int ret;
 	GError* tmp_err = NULL;
-	
+
 	ret = gfal_lfc_startTransaction(ops, &tmp_err);
 	if(ret >=0 ){
 		ret = gfal_lfc_mkdir(ops, path, mode, &tmp_err); // try to create the directory, suppose the non-recursive case
@@ -449,16 +449,16 @@ int gfal_lfc_ifce_mkdirpG(struct lfc_ops* ops,const char* path, mode_t mode, gbo
 }
 /*
  * return a list of surls from a getreplica request
- * 
+ *
  */
 char ** gfal_lfc_getSURL(struct lfc_ops* ops, const char* path, GError** err){
 	struct lfc_filereplica* list = NULL;
 	char **replicas = NULL;
 	int size=0,i;
-	
+
 	if (ops->getreplica (path, NULL, NULL, &size, &list) < 0) {
 		int myerrno = gfal_lfc_get_errno(ops);
-        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), myerrno,
+        gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), myerrno, __func__,
                 "error reported from lfc : %s", gfal_lfc_get_strerror(ops));
 		return NULL;
 	}
@@ -469,7 +469,7 @@ char ** gfal_lfc_getSURL(struct lfc_ops* ops, const char* path, GError** err){
 	}
 	free(list);
 	return replicas;
-	
+
 }
 
 /*
@@ -482,7 +482,7 @@ int gfal_lfc_getComment(struct lfc_ops *ops, const char* lfn, char* buff, size_t
 	const size_t req_size = CA_MAXCOMMENTLEN+1;
 	char local_buff[CA_MAXCOMMENTLEN+1];
 	int ret, resu_len;
-	
+
 	if(buff == NULL || s_buff == 0)
 		return req_size;
 	else{
@@ -500,23 +500,23 @@ int gfal_lfc_getComment(struct lfc_ops *ops, const char* lfn, char* buff, size_t
 			}
 		}else{
 			resu_len = strnlen(local_buff, MIN(s_buff, req_size));
-			*((char*)mempcpy(buff, local_buff,resu_len )) = '\0';		
+			*((char*)mempcpy(buff, local_buff,resu_len )) = '\0';
 		}
 		return (ret==0)?(resu_len):-1;
 	}
 }
 
 int gfal_lfc_setComment(struct lfc_ops * ops, const char* lfn, const char* buff, size_t s_buff, GError** err){
-	g_return_val_err_if_fail(lfn, -1, err, "bad path");	
+	g_return_val_err_if_fail(lfn, -1, err, "bad path");
 	int res = -1;
 	char internal_buff[GFAL_URL_MAX_LEN];
 	GError* tmp_err=NULL;
-	
+
 	if(s_buff > 0 && buff != NULL){
 		*((char*)mempcpy(internal_buff, buff, MIN(s_buff, GFAL_URL_MAX_LEN-1))) = '\0';
 		if( (res = ops->setcomment(lfn, internal_buff)) !=0 ){
 			const int sav_errno = gfal_lfc_get_errno(ops);
-            gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno,
+            gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
                     "Error report from LFC : %s", gfal_lfc_get_strerror(ops) );
 		}
 	}else{
@@ -537,7 +537,7 @@ int gfal_lfc_getChecksum(struct lfc_ops* ops, const char* lfn, lfc_checksum* che
 	int ret;
 	if( (ret = gfal_lfc_statg(ops, lfn, &statbuf, &tmp_err)) == 0){
 		*((char*) mempcpy(checksum->type, statbuf.csumtype, sizeof(char)*3)) = '\0';
-		*((char*) mempcpy(checksum->value, statbuf.csumvalue, sizeof(char)*33)) = '\0';		
+		*((char*) mempcpy(checksum->value, statbuf.csumvalue, sizeof(char)*33)) = '\0';
 	}
 	if(tmp_err)
 		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
@@ -550,27 +550,29 @@ int gfal_lfc_statg(struct lfc_ops* ops, const char* lfn, struct lfc_filestatg* s
 		int sav_errno = gfal_lfc_get_errno(ops);
         gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
                 "Error report from LFC : %s", gfal_lfc_get_strerror(ops) );
-	}	
+	}
 	return ret;
 }
 
 ssize_t g_strv_catbuff(char** strv, char* buff, size_t size){
-	if(strv == NULL)
-		return -1;
-	const size_t sbuff = g_strv_length(strv);
-	ssize_t resu=0;
-	size_t i;
-	char* p = buff;
-	for(i=0; i < sbuff; ++i){
-		const size_t s_str= strnlen(strv[i], GFAL_URL_MAX_LEN);
-		resu += s_str+1;
-		if(buff && size){
-			*(p = (char*) mempcpy(p,strv[i], MIN(size, s_str) ))= '\0';
-			++p;
-		}
-		size = (size >= s_str+1)?(size-s_str-1):0;
-	}
-	return resu;
+    if (strv == NULL || buff == NULL)
+        return -1;
+    memset(buff, 0, size);
+    const size_t sbuff = g_strv_length(strv);
+    ssize_t resu = 0;
+    size_t i;
+    char* p = buff;
+    for (i = 0; i < sbuff; ++i) {
+        const size_t s_str = strnlen(strv[i], GFAL_URL_MAX_LEN);
+        resu += s_str + 1;
+        if (size) {
+            *(p = (char*) mempcpy(p, strv[i], MIN(size, s_str))) = '\n';
+            ++p;
+        }
+        size = (size >= s_str + 1) ? (size - s_str - 1) : 0;
+    }
+    buff[resu-1] = '\0';
+    return resu;
 }
 
 
@@ -615,11 +617,11 @@ char*  gfal_lfc_get_strerror(struct lfc_ops* ops){
  * @brief generate an uiid string
  * Generate a uuid string and copy it in the buf,
  * @warning buff must be > uuid size ( 37 bytes )
- * 
+ *
  * */
 void gfal_generate_guidG(char* buf, GError** err){
     uuid_t myuid;
-    
+
     uuid_generate_random(myuid);
     uuid_unparse (myuid, buf);
     uuid_clear(myuid);

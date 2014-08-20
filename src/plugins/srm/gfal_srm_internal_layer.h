@@ -122,6 +122,9 @@ struct _gfal_srm_external_call{
     int (*srm_abort_files)(struct srm_context *context,
     					   struct srm_abort_files_input *input,
     					   struct srmv2_filestatus **statuses);
+
+    // Ping
+    int (*srm_xping)(struct srm_context *context, struct srm_xping_output *output);
 };
 
 extern struct _gfal_srm_external_call gfal_srm_external_call;

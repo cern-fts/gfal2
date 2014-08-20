@@ -31,7 +31,7 @@
 #include <common/gfal_types.h>
 
 typedef struct _gfal_plugin_rfio_handle{
-	gfal_handle handle;
+	gfal2_context_t handle;
 	struct rfio_proto_ops* rf;
 	regex_t rex;
 }* gfal_plugin_rfio_handle;
@@ -42,7 +42,7 @@ gboolean gfal_rfio_check_url(plugin_handle, const char* url,  plugin_mode mode, 
 // LFC plugin GQuark
 GQuark gfal2_get_plugin_rfio_quark();
 
-gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err);
+gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err);
 
 
 

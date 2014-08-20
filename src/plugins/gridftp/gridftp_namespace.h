@@ -17,7 +17,9 @@
  * limitations under the License.
  */
 
+#include "gridftpwrapper.h"
 #include "gridftpmodule.h"
+
 
 #ifdef __cplusplus
 extern "C"
@@ -38,7 +40,7 @@ int gfal_gridftp_mkdirG(plugin_handle handle, const char* path, mode_t mode,
 
 int gfal_gridftp_rmdirG(plugin_handle handle, const char* url, GError** err);
 
-void gridftp_unlink_internal(gfal2_context_t context, GridFTP_session* sess,
+void gridftp_unlink_internal(gfal2_context_t context, GridFTPSession* sess,
         const char * path, bool own_session = true);
 
 int gfal_gridftp_unlinkG(plugin_handle handle, const char* url, GError** err);
@@ -52,8 +54,8 @@ gfal_file_handle gfal_gridftp_opendirG(plugin_handle handle, const char* path,
 struct dirent* gfal_gridftp_readdirG(plugin_handle handle, gfal_file_handle fh,
         GError** err);
 
-struct dirent* gfal_gridftp_readdirppG(plugin_handle handle, gfal_file_handle fh,
-        struct stat*, GError** err);
+struct dirent* gfal_gridftp_readdirppG(plugin_handle handle,
+        gfal_file_handle fh, struct stat*, GError** err);
 
 int gfal_gridftp_closedirG(plugin_handle handle, gfal_file_handle fh,
         GError** err);

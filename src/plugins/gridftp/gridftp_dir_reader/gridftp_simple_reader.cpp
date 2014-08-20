@@ -5,13 +5,13 @@
 static const Glib::Quark GridftpSimpleReaderQuark("GridftpSimpleListReader::readdir");
 
 
-GridftpSimpleListReader::GridftpSimpleListReader(GridftpModule* gsiftp, const char* path):
+GridftpSimpleListReader::GridftpSimpleListReader(GridFTPModule* gsiftp, const char* path):
     stream(NULL)
 {
-    GridFTPFactoryInterface* factory = gsiftp->get_session_factory();
-    GridFTP_session* session = factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path));
+    GridFTPFactory* factory = gsiftp->get_session_factory();
+    GridFTPSession* session = factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path));
 
-    stream = new GridFTP_stream_state(session);
+    stream = new GridFTPStreamState(session);
 
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpSimpleListReader::GridftpSimpleListReader]");
     Glib::Mutex::Lock locker(stream->lock);
@@ -21,7 +21,7 @@ GridftpSimpleListReader::GridftpSimpleListReader(GridftpModule* gsiftp, const ch
             stream->sess->get_ftp_handle(), path,
             stream->sess->get_op_attr_ftp(),
             globus_basic_client_callback,
-            static_cast<GridFTP_Request_state*>(stream));
+            static_cast<GridFTPRequestState*>(stream));
     gfal_globus_check_result(GridftpSimpleReaderQuark, res);
 
     stream_buffer = new GridftpStreamBuffer(stream, GridftpSimpleReaderQuark);
@@ -41,7 +41,7 @@ GridftpSimpleListReader::~GridftpSimpleListReader()
 static int gridftp_readdir_parser(const std::string& line, struct dirent* entry)
 {
     memset(entry->d_name, 0, sizeof(entry->d_name));
-    strncpy(entry->d_name, line.c_str(), sizeof(entry->d_name) - 1);
+    g_strlcpy(entry->d_name, line.c_str(), sizeof(entry->d_name));
     char *p = stpncpy(entry->d_name, line.c_str(), sizeof(entry->d_name));
     // clear new line madness
     do {

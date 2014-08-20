@@ -64,11 +64,12 @@ struct _gfal_srm_external_call gfal_srm_external_call = {
     .srm_abort_request = &srm_abort_request,
     .srm_getspacetokens = &srm_getspacetokens,
     .srm_getspacemd =  &srm_getspacemd,
-    .srm_abort_files = &srm_abort_files
+    .srm_abort_files = &srm_abort_files,
+    .srm_xping = &srm_xping
 };
 
 
-static srm_context_t gfal_srm_ifce_context_setup(gfal_context_t handle,
+static srm_context_t gfal_srm_ifce_context_setup(gfal2_context_t handle,
         const char* endpoint, const char* ucert, const char* ukey,
         char* errbuff, size_t s_errbuff, GError** err)
 {
@@ -173,14 +174,12 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
     }
 
     if (opts->srm_context) {
-        strncpy(opts->endpoint, full_endpoint, sizeof(opts->endpoint));
+        g_strlcpy(opts->endpoint, full_endpoint, GFAL_URL_MAX_LEN);
         if (ucert) {
-            strncpy(opts->x509_ucert, ucert, GFAL_URL_MAX_LEN);
-            opts->x509_ucert[GFAL_URL_MAX_LEN -1 ] = '\0';
+            g_strlcpy(opts->x509_ucert, ucert, GFAL_URL_MAX_LEN);
         }
         if (ukey) {
-            strncpy(opts->x509_ukey, ukey, sizeof(opts->x509_ukey));
-            opts->x509_ukey[GFAL_URL_MAX_LEN -1 ] = '\0';
+            g_strlcpy(opts->x509_ukey, ukey, sizeof(opts->x509_ukey));
         }
     }
 

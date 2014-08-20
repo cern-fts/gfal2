@@ -56,17 +56,17 @@ extern const char* bdii_config_group;
 extern const char* bdii_config_timeout;
 
 // 
-int gfal_mds_resolve_srm_endpoint(gfal_context_t handle, const char* base_url, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err);
+int gfal_mds_resolve_srm_endpoint(gfal2_context_t handle, const char* base_url, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err);
 
 // deprecated, use gfal_mds_resolve_srm_endpoint instead
-int gfal_mds_get_se_types_and_endpoints(gfal_context_t handle, const char *host, char ***se_types, char ***se_endpoints, GError** err);
+int gfal_mds_get_se_types_and_endpoints(gfal2_context_t handle, const char *host, char ***se_types, char ***se_endpoints, GError** err);
 
-char * gfal_get_lfchost_bdii(gfal_handle handle, GError** err);
+char * gfal_get_lfchost_bdii(gfal2_context_t handle, GError** err);
 
 
-void gfal_set_nobdiiG(gfal_handle handle, gboolean no_bdii_chk);
+void gfal_set_nobdiiG(gfal2_context_t handle, gboolean no_bdii_chk);
 
-gboolean gfal_get_nobdiiG(gfal_handle handle);
+gboolean gfal_get_nobdiiG(gfal2_context_t handle);
 
 #ifdef __cplusplus
 }

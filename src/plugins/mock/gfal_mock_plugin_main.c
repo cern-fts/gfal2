@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -20,11 +20,11 @@
  * plugin mock
  * author Michal Simon
  */
- 
- 
+
+
 
 #include <regex.h>
-#include <time.h> 
+#include <time.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -121,7 +121,7 @@ static gboolean gfal_mock_check_url(plugin_handle handle, const char* url, plugi
         //case GFAL_PLUGIN_CHECKSUM:
             return (gfal_lmock_path_checker(handle, url)==0);
 		default:
-			return FALSE;		
+			return FALSE;
 	}
 }
 
@@ -155,12 +155,12 @@ void gfal_plugin_mock_get_value(const char* url, const char* key, char* value)
 	{
 		// if it is not the last parameter ...
 		int size = end - str;
-		strncpy(value, str, size);
+		g_strlcpy(value, str, size);
 	}
 	else
 	{
 		// if it is the last parameter just copy the string until it ends
-		strcpy(value, str);
+		g_strlpy(value, str);
 	}
 }
 
@@ -217,7 +217,7 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
 		size = gfal_plugin_mock_get_size(buff);
 		break;
 	}
-	
+
 	if (size >= 0) buf->st_size = size;
 
 	// let's prepare for the next stat operation
@@ -228,7 +228,7 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
 	return 0;
 }
 
-gboolean gfal_plugin_mock_check_url_transfer(plugin_handle handle, gfal_context_t ctx, const char* src, const char* dst, gfal_url2_check type) {
+gboolean gfal_plugin_mock_check_url_transfer(plugin_handle handle, gfal2_context_t ctx, const char* src, const char* dst, gfal_url2_check type) {
     gboolean res = FALSE;
 
     if( src != NULL && dst != NULL){
@@ -337,7 +337,7 @@ int gfal_plugin_mock_filecopy(plugin_handle handle, gfal2_context_t context, gfa
 /*
  * Init function, called before all
  * */
-gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
+gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err){
 
 	gfal_plugin_interface mock_plugin;
     memset(&mock_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin

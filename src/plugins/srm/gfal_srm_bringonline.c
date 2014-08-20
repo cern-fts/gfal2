@@ -80,7 +80,7 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
                 case 0:
                 case 22: // SRM_FILE_PINNED
                     if (output.token)
-                        strncpy(token, output.token, tsize);
+                        g_strlcpy(token, output.token, tsize);
                     else
                         token[0] = '\0';
                     break;

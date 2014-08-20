@@ -509,7 +509,7 @@ int gfal_plugin_filechecksum_calc(plugin_handle data, const char* url, const cha
 /*
  * Init function, called before all
  * */
-gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
+gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err){
 	gfal_plugin_interface file_plugin;
     memset(&file_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin
 

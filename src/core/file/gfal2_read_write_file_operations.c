@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -39,7 +39,7 @@
  *  store a gfal_file_handle in the base, in a key/value model
  *  the key, else 0 if error occured and err is set correctly
  */
-static int gfal_rw_file_handle_store(gfal_handle handle, gfal_file_handle fhandle, GError** err){
+static int gfal_rw_file_handle_store(gfal2_context_t handle, gfal_file_handle fhandle, GError** err){
     g_return_val_err_if_fail( handle && fhandle, -1, err, "[gfal_rw_file_handle_store] invalid args");
     GError* tmp_err=NULL;
     int key=0;
@@ -82,7 +82,7 @@ int gfal2_creat (gfal2_context_t handle, const char *filename, mode_t mode, GErr
 /*
  *  map the file handle to the correct call
  */
-inline int gfal_rw_gfalfilehandle_read(gfal_handle handle, gfal_file_handle fh, void* buff, size_t s_buff, GError** err){
+inline int gfal_rw_gfalfilehandle_read(gfal2_context_t handle, gfal_file_handle fh, void* buff, size_t s_buff, GError** err){
     g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_rw_gfalfilehandle_read] incorrect args");
     GError *tmp_err=NULL;
     int ret = gfal_plugin_readG(handle, fh, buff, s_buff, &tmp_err);
@@ -124,7 +124,7 @@ static int gfal_rw_file_handle_delete(gfal_fdesc_container_handle container, int
     return ret;
 }
 
-static int gfal_rw_file_handle_close(gfal_handle handle, gfal_file_handle fhandle, GError ** err){
+static int gfal_rw_file_handle_close(gfal2_context_t handle, gfal_file_handle fhandle, GError ** err){
     GError* tmp_err=NULL;
     int ret = -1;
 
@@ -159,7 +159,7 @@ int gfal2_close(gfal2_context_t handle, int fd, GError ** err){
 }
 
 
-static int gfal_rw_gfalfilehandle_lseek(gfal_handle handle, gfal_file_handle fh, off_t offset, int whence, GError** err){
+static int gfal_rw_gfalfilehandle_lseek(gfal2_context_t handle, gfal_file_handle fh, off_t offset, int whence, GError** err){
     GError *tmp_err=NULL;
     int ret  = gfal_plugin_lseekG(handle, fh, offset, whence, &tmp_err);
     G_RETURN_ERR(ret, tmp_err, err);
@@ -188,7 +188,7 @@ int gfal2_flush(gfal2_context_t handle, int fd, GError ** err){
     return 0;
 }
 
-inline ssize_t gfal_rw_gfalfilehandle_pread(gfal_handle handle, gfal_file_handle fh, void* buff,
+inline ssize_t gfal_rw_gfalfilehandle_pread(gfal2_context_t handle, gfal_file_handle fh, void* buff,
                         size_t s_buff, off_t offset, GError** err){
     GError *tmp_err=NULL;
     ssize_t ret = gfal_plugin_preadG(handle, fh, buff, s_buff, offset, &tmp_err);
@@ -215,7 +215,7 @@ ssize_t gfal2_pread(gfal2_context_t handle, int fd, void * buff, size_t s_buff, 
 }
 
 
-int gfal_rw_gfalfilehandle_write(gfal_handle handle, gfal_file_handle fh, const void* buff, size_t s_buff, GError** err){
+int gfal_rw_gfalfilehandle_write(gfal2_context_t handle, gfal_file_handle fh, const void* buff, size_t s_buff, GError** err){
     GError *tmp_err=NULL;
     int ret = gfal_plugin_writeG(handle, fh, (void*) buff, s_buff, &tmp_err);
    G_RETURN_ERR(ret, tmp_err, err);
@@ -243,7 +243,7 @@ ssize_t gfal2_write(gfal2_context_t handle, int fd, const void *buff, size_t s_b
 /*
  *  map the file handle to the correct call for pwrite
  */
-int gfal_rw_gfalfilehandle_pwrite(gfal_handle handle, gfal_file_handle fh, const void* buff, size_t s_buff, off_t offset, GError** err){
+int gfal_rw_gfalfilehandle_pwrite(gfal2_context_t handle, gfal_file_handle fh, const void* buff, size_t s_buff, off_t offset, GError** err){
     g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_posix_gfalfilehandle_pwrite] incorrect args");
     GError *tmp_err=NULL;
     int ret = gfal_plugin_pwriteG(handle, fh, (void*) buff, s_buff, offset, &tmp_err);

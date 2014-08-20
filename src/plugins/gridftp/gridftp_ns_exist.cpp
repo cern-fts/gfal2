@@ -17,11 +17,11 @@
 #include <exceptions/cpp_to_gerror.hpp>
 
 
-bool GridftpModule::exists(const char* path)
+bool GridFTPModule::exists(const char* path)
 {
     try {
-        gfal_globus_stat_t gl_stat;
-        memset(&gl_stat,0, sizeof(gfal_globus_stat_t));
+        globus_gass_copy_glob_stat_t gl_stat;
+        memset(&gl_stat, 0, sizeof(globus_gass_copy_glob_stat_t));
         internal_globus_gass_stat(path, &gl_stat);
     }
     catch (Gfal::CoreException& e) {

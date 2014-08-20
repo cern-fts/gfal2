@@ -20,14 +20,15 @@
 static GQuark scope_copy_domain = g_quark_from_static_string("FileCopy::start_copy");
 
 
-
-static const plugin_filecopy_call find_copy_plugin(gfal2_context_t context,
+template <typename T>
+static T find_copy_plugin(gfal2_context_t context,
+        gfal_url2_check operation,
         const char* src, const char* dst, void** plugin_data,
         GError** error)
 {
     GError * tmp_err = NULL;
     plugin_pointer_handle start_list, p_list;
-    plugin_filecopy_call resu = NULL;
+    T resu = NULL;
 
     start_list = p_list = gfal_plugins_list_handler(context, &tmp_err);
     if (tmp_err != NULL) {
@@ -36,17 +37,20 @@ static const plugin_filecopy_call find_copy_plugin(gfal2_context_t context,
     }
 
     while (p_list->dlhandle != NULL) {
-        plugin_url_check2_call check_call =
-                p_list->plugin_api->check_plugin_url_transfer;
+        plugin_url_check2_call check_call = p_list->plugin_api->check_plugin_url_transfer;
         if (check_call != NULL) {
             gboolean compatible;
-            if ((compatible = check_call(p_list->plugin_data, context,
-                    src, dst, GFAL_FILE_COPY)) == TRUE) {
+            if ((compatible = check_call(p_list->plugin_data, context, src, dst, operation)) == TRUE) {
                 *plugin_data = p_list->plugin_data;
-                resu = p_list->plugin_api->copy_file;
-                break;
+                switch (operation) {
+                    case GFAL_FILE_COPY:
+                        resu = (T)p_list->plugin_api->copy_file;
+                        break;
+                    case GFAL_BULK_COPY:
+                        resu = (T)p_list->plugin_api->copy_bulk;
+                        break;
+                }
             }
-
         }
         p_list++;
     }
@@ -59,12 +63,12 @@ static int perform_copy(gfal2_context_t context, gfalt_params_t params,
         const char* src, const char* dst,
         GError** error)
 {
-    gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::FileCopy ");
+    gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::FileCopy");
     GError *tmp_err = NULL;
     int res = -1;
 
     void *plugin_data = NULL;
-    plugin_filecopy_call p_copy = find_copy_plugin(context, src, dst, &plugin_data, &tmp_err);
+    plugin_filecopy_call p_copy = find_copy_plugin<plugin_filecopy_call>(context, GFAL_FILE_COPY, src, dst, &plugin_data, &tmp_err);
 
     if (tmp_err == NULL) {
         if (p_copy == NULL) {
@@ -82,10 +86,85 @@ static int perform_copy(gfal2_context_t context, gfalt_params_t params,
         }
     }
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::FileCopy ");
+    gfal_log(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::FileCopy");
 
     if (tmp_err != NULL)
         gfal2_propagate_prefixed_error(error, tmp_err, __func__);
+    return res;
+}
+
+static void set_checksum(gfalt_params_t params, const char* checksum)
+{
+    if (checksum == NULL) {
+        gfalt_set_checksum_check(params, FALSE, NULL);
+        gfalt_set_user_defined_checksum(params, NULL, NULL, NULL);
+    }
+    else {
+        gfalt_set_checksum_check(params, TRUE, NULL);
+
+        const char* colon = strchr(checksum, ':');
+        if (colon == NULL) {
+            gfalt_set_user_defined_checksum(params, NULL, checksum, NULL);
+        }
+        else {
+            char chktype[64];
+            size_t chktype_len = colon - checksum;
+            g_strlcpy(chktype, checksum, chktype_len<64?chktype_len:64);
+            gfalt_set_user_defined_checksum(params, chktype, colon + 1, NULL);
+        }
+    }
+}
+
+
+static int bulk_fallback(gfal2_context_t context, gfalt_params_t params,
+        size_t nbfiles, const char* const* srcs, const char* const* dsts, const char* const* checksums,
+        GError** op_error, GError*** file_errors)
+{
+    *file_errors = g_new0(GError*, nbfiles);
+    int ret = 0;
+    for (size_t i = 0; i < nbfiles; ++i) {
+        if (checksums) {
+            const char* checksum = checksums[i];
+            set_checksum(params, checksum);
+        }
+        else {
+            set_checksum(params, NULL);
+        }
+
+        int subret = perform_copy(context, params, srcs[i], dsts[i], &(*file_errors)[i]);
+        if (subret < 0)
+            ret -= 1;
+    }
+    return ret;
+}
+
+
+static int perform_bulk_copy(gfal2_context_t context, gfalt_params_t params,
+        size_t nbfiles, const char* const* srcs, const char* const* dsts, const char* const* checksums,
+        GError** op_error, GError*** file_errors)
+{
+    GError* tmp_err = NULL;
+    int res = -1;
+
+    gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::BulkFileCopy");
+
+    void *plugin_data = NULL;
+    plugin_filecopy_bulk_call p_copy = find_copy_plugin<plugin_filecopy_bulk_call>(context, GFAL_BULK_COPY,
+            srcs[0], dsts[0], &plugin_data, &tmp_err);
+
+    if (tmp_err == NULL) {
+        if (p_copy == NULL) {
+            res = bulk_fallback(context, params, nbfiles, srcs, dsts, checksums, op_error, file_errors);
+        }
+        else {
+            res = p_copy(plugin_data, context, params, nbfiles, srcs, dsts, checksums, op_error, file_errors);
+        }
+    }
+
+    gfal_log(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::BulkFileCopy");
+
+    if (tmp_err != NULL)
+        gfal2_propagate_prefixed_error(op_error, tmp_err, __func__);
     return res;
 }
 
@@ -111,24 +190,48 @@ void gfalt_transfer_status_delete(gfalt_transfer_status_t state)
 int gfalt_copy_file(gfal2_context_t handle, gfalt_params_t params, 
 			const char* src, const char* dst,  GError** err)
 {
-	g_return_val_err_if_fail( handle && src && dst, -1, err, "invalid source or/and destination values");
-	gfalt_params_t p = NULL;
+    g_return_val_err_if_fail(handle && src && dst, -1, err, "invalid source or/and destination values");
+    gfalt_params_t p = NULL;
 
     GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
 
     int ret = -1;
     GError* nested_error = NULL;
-    if(params == NULL){
+    if (params == NULL) {
         p = gfalt_params_handle_new(NULL);
         ret = perform_copy(handle, p, src, dst, &nested_error);
     }
-    else{
+    else {
         ret = perform_copy(handle, params, src, dst, &nested_error);
     }
-	gfalt_params_handle_delete(p, NULL);
+    gfalt_params_handle_delete(p, NULL);
 
     GFAL2_END_SCOPE_CANCEL(handle);
-	G_RETURN_ERR(ret, nested_error, err);
+    G_RETURN_ERR(ret, nested_error, err);
+}
+
+
+int gfalt_copy_bulk(gfal2_context_t context, gfalt_params_t params, size_t nbfiles,
+        const char* const * srcs, const char* const * dsts, const char* const* checksums,
+        GError** op_error, GError*** file_errors)
+{
+    g_return_val_err_if_fail(context && srcs && dsts, -1, op_error, "invalid source or/and destination values");
+    gfalt_params_t p = NULL;
+
+    int ret = -1;
+    if (params == NULL) {
+        p = gfalt_params_handle_new(NULL);
+        params = p;
+    }
+
+    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, op_error);
+
+    ret = perform_bulk_copy(context, params, nbfiles, srcs, dsts, checksums, op_error, file_errors);
+    gfalt_params_handle_delete(p, NULL);
+
+    GFAL2_END_SCOPE_CANCEL(context);
+
+    return ret;
 }
 
 

@@ -3,16 +3,16 @@
 static const Glib::Quark GridftpListReaderQuark("GridftpSimpleListReader::readdir");
 
 // From gridftp_ns_stat.cpp
-extern globus_result_t parse_mlst_line(char *line, gfal_globus_stat_t *stat_info,
+extern globus_result_t parse_mlst_line(char *line, globus_gass_copy_glob_stat_t *stat_info,
         char *filename_buf, size_t filename_size);
 
 
-GridftpListReader::GridftpListReader(GridftpModule* gsiftp, const char* path)
+GridftpListReader::GridftpListReader(GridFTPModule* gsiftp, const char* path)
 {
-    GridFTPFactoryInterface* factory = gsiftp->get_session_factory();
-    GridFTP_session* session = factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path));
+    GridFTPFactory* factory = gsiftp->get_session_factory();
+    GridFTPSession* session = factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path));
 
-    stream = new GridFTP_stream_state(session);
+    stream = new GridFTPStreamState(session);
 
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpListReader::GridftpListReader]");
     Glib::Mutex::Lock locker(stream->lock);
@@ -21,7 +21,7 @@ GridftpListReader::GridftpListReader(GridftpModule* gsiftp, const char* path)
             stream->sess->get_ftp_handle(), path,
             stream->sess->get_op_attr_ftp(),
             globus_basic_client_callback,
-            static_cast<GridFTP_Request_state*>(stream));
+            static_cast<GridFTPRequestState*>(stream));
     gfal_globus_check_result(GridftpListReaderQuark, res);
 
     stream_buffer = new GridftpStreamBuffer(stream, GridftpListReaderQuark);
@@ -43,6 +43,7 @@ struct dirent* GridftpListReader::readdir()
     return readdirpp(&_);
 }
 
+
 static std::string& ltrim(std::string& str)
 {
     size_t i = 0;
@@ -51,6 +52,7 @@ static std::string& ltrim(std::string& str)
     str = str.substr(i);
     return str;
 }
+
 
 static std::string& rtrim(std::string& str)
 {
@@ -66,6 +68,7 @@ static std::string& trim(std::string& str)
     return ltrim(rtrim(str));
 }
 
+
 struct dirent* GridftpListReader::readdirpp(struct stat* st)
 {
     Glib::Mutex::Lock locker(stream->lock);
@@ -78,7 +81,7 @@ struct dirent* GridftpListReader::readdirpp(struct stat* st)
     if (trim(line).empty())
         return NULL;
 
-    gfal_globus_stat_t gl_stat;
+    globus_gass_copy_glob_stat_t gl_stat;
     char* unparsed = strdup(line.c_str());
     if (parse_mlst_line(unparsed, &gl_stat, dbuffer.d_name, sizeof(dbuffer.d_name)) != GLOBUS_SUCCESS) {
         free(unparsed);

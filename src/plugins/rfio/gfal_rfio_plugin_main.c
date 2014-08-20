@@ -61,7 +61,7 @@ GQuark gfal2_get_plugin_rfio_quark(){
 /*
  * Init function, called before all
  * */
-gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err){
+gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err){
 	gfal_plugin_interface rfio_plugin;
 	GError* tmp_err=NULL;
 	memset(&rfio_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin	
