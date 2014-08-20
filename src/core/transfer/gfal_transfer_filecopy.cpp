@@ -93,14 +93,49 @@ static int perform_copy(gfal2_context_t context, gfalt_params_t params,
     return res;
 }
 
+static void set_checksum(gfalt_params_t params, const char* checksum)
+{
+    if (checksum == NULL) {
+        gfalt_set_checksum_check(params, FALSE, NULL);
+        gfalt_set_user_defined_checksum(params, NULL, NULL, NULL);
+    }
+    else {
+        gfalt_set_checksum_check(params, TRUE, NULL);
+
+        const char* colon = strchr(checksum, ':');
+        if (colon == NULL) {
+            gfalt_set_user_defined_checksum(params, NULL, checksum, NULL);
+        }
+        else {
+            char chktype[64];
+            size_t chktype_len = colon - checksum;
+            g_strlcpy(chktype, checksum, chktype_len<64?chktype_len:64);
+            gfalt_set_user_defined_checksum(params, chktype, colon + 1, NULL);
+        }
+    }
+}
+
 
 static int bulk_fallback(gfal2_context_t context, gfalt_params_t params,
         size_t nbfiles, const char* const* srcs, const char* const* dsts, const char* const* checksums,
         GError** op_error, GError*** file_errors)
 {
     *file_errors = g_new0(GError*, nbfiles);
-    gfal2_set_error(op_error, scope_copy_domain, ENOSYS, __func__, "Bulk copy not implemented");
-    return -1;
+    int ret = 0;
+    for (size_t i = 0; i < nbfiles; ++i) {
+        if (checksums) {
+            const char* checksum = checksums[i];
+            set_checksum(params, checksum);
+        }
+        else {
+            set_checksum(params, NULL);
+        }
+
+        int subret = perform_copy(context, params, srcs[i], dsts[i], &(*file_errors)[i]);
+        if (subret < 0)
+            ret -= 1;
+    }
+    return ret;
 }
 
 
