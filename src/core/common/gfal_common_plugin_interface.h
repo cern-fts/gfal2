@@ -513,9 +513,24 @@ struct _gfal_plugin_interface{
       */
      int(*abort_files)(plugin_handle handle, int nbfiles, const char* const* uris, const char* token, GError ** err);
 
+     /**
+      * OPTIONAL: copy nbfiles files
+      * @param plugin_data : internal plugin context
+      * @param context : gfal2 context
+      * @param params: gfal2 transfer parameters
+      * @param nbfiles: how many files are to be transferred
+      * @param srcs: array of nbfiles sources
+      * @param dsts: array of nbfiles destinations
+      * @param op_error:   Operation error
+      * @param file_errors: Per file error
+      */
+     int (*copy_bulk)(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params,
+            size_t nbfiles, const char* const* srcs, const char* const* dsts,
+            GError** op_error, GError*** file_errors);
+
 	 // reserved for future usage
 	 //! @cond
-     void* future[16];
+     void* future[15];
 	 //! @endcond
 };
 

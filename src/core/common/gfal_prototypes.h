@@ -38,7 +38,7 @@ extern "C"
 /* globals enums list
  plugin check type
 */
-typedef enum _plugin_mode{
+typedef enum _plugin_mode {
 	GFAL_PLUGIN_ALL=0,
 	GFAL_PLUGIN_ACCESS,
 	GFAL_PLUGIN_CHMOD,
@@ -58,15 +58,14 @@ typedef enum _plugin_mode{
     GFAL_PLUGIN_UNLINK,
     GFAL_PLUGIN_CHECKSUM,
     GFAL_PLUGIN_MKDIR_REC,
-    GFAL_PLUGIN_BRING_ONLINE,
+    GFAL_PLUGIN_BRING_ONLINE
 
 } plugin_mode;
 
-typedef enum _gfal_url2_check{
-	GFAL_FILE_COPY
-
+typedef enum _gfal_url2_check {
+	GFAL_FILE_COPY,
+	GFAL_BULK_COPY
 } gfal_url2_check;
-
 
 
 enum _GFAL_TYPE { GFAL_TYPE_INT=0, GFAL_TYPE_STRING=1 };
