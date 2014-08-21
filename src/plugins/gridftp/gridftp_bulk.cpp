@@ -158,6 +158,24 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
     else
         globus_ftp_client_operationattr_set_net_stack(&ftp_operation_attr, "default");
 
+    int nbstreams = gfalt_get_nbstreams(pairs->params, NULL);
+    guint64 buffer_size = gfalt_get_tcp_buffer_size(pairs->params, NULL);
+    globus_ftp_control_parallelism_t parallelism;
+    globus_ftp_control_tcpbuffer_t tcp_buffer_size;
+
+    if (nbstreams > 1) {
+        parallelism.fixed.size = nbstreams;
+        parallelism.mode = GLOBUS_FTP_CONTROL_PARALLELISM_FIXED;
+        globus_ftp_client_operationattr_set_mode(&ftp_operation_attr, GLOBUS_FTP_CONTROL_MODE_EXTENDED_BLOCK);
+        globus_ftp_client_operationattr_set_parallelism(&ftp_operation_attr, &parallelism);
+    }
+    if (buffer_size > 0) {
+        tcp_buffer_size.mode = GLOBUS_FTP_CONTROL_TCPBUFFER_FIXED;
+        tcp_buffer_size.fixed.size = buffer_size;
+        globus_ftp_client_operationattr_set_tcp_buffer(&ftp_operation_attr, &tcp_buffer_size);
+    }
+
+
     gfal_cancel_token_t cancel_token;
     cancel_token = gfal2_register_cancel_callback(context, gridftp_bulk_cancel, ftp_handle);
 
