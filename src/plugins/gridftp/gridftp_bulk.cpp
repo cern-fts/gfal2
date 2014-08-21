@@ -178,8 +178,18 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
         gfal_globus_check_result("gridftp_bulk_copy", globus_return);
 
         globus_mutex_lock(&pairs->lock);
-        while (!pairs->done) {
-            globus_cond_wait(&pairs->cond, &pairs->lock);
+
+        guint64 timeout = gfalt_get_timeout(pairs->params, NULL);
+        globus_abstime_t timeout_expires;
+        GlobusTimeAbstimeGetCurrent(timeout_expires);
+        timeout_expires.tv_sec += timeout;
+
+        int wait_ret = 0;
+        while (!pairs->done && wait_ret != ETIMEDOUT) {
+            if (timeout > 0)
+                wait_ret = globus_cond_timedwait(&pairs->cond, &pairs->lock, &timeout_expires);
+            else
+                wait_ret = globus_cond_wait(&pairs->cond, &pairs->lock);
         }
         globus_mutex_unlock(&pairs->lock);
 
@@ -192,6 +202,10 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
                 res = -1;
                 g_free(err_buffer);
             }
+        }
+        else if (wait_ret == ETIMEDOUT) {
+            gfal2_set_error(op_error, GSIFTP_BULK_DOMAIN, ETIMEDOUT, __func__, "Transfer timed out");
+            res = -1;
         }
     }
     catch (const Gfal::CoreException& e) {
