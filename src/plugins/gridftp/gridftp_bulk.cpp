@@ -5,7 +5,7 @@
 #include <common/gfal_common_internal.h>
 #include <checksums/checksums.h>
 
-
+extern const char * gridftp_enable_udt;
 static const Glib::Quark GSIFTP_BULK_DOMAIN("GridFTP::Filecopy");
 
 
@@ -14,7 +14,7 @@ struct GridFTPBulkData {
             srcs(NULL), dsts(NULL), checksums(nbfiles),
             errn(new int[nbfiles]), fsize(new off_t[nbfiles]),
             index(0), nbfiles(nbfiles), started(new bool[nbfiles]),
-            params(NULL), ipv6(false), error(NULL), done(false)
+            params(NULL), ipv6(false), udt(false), error(NULL), done(false)
     {
         for (size_t i = 0; i < nbfiles; ++i) {
             started[i] = false;
@@ -44,11 +44,12 @@ struct GridFTPBulkData {
 
     gfalt_params_t params;
     bool ipv6;
+    bool udt;
 
     globus_mutex_t lock;
     globus_cond_t cond;
     globus_object_t* error;
-    globus_bool_t done;
+    bool done;
 };
 
 // Called by Globus when done
@@ -60,12 +61,13 @@ static void gridftp_done_callback(void * user_arg, globus_ftp_client_handle_t * 
     if (err) {
         data->error = globus_object_copy(err);
     }
-
-    for (size_t i = 0; i < data->nbfiles; ++i) {
-        if (data->started[i]) {
-            plugin_trigger_event(data->params, GSIFTP_BULK_DOMAIN, GFAL_EVENT_NONE,
-                    GFAL_EVENT_TRANSFER_EXIT,
-                    "Done %s => %s", data->srcs[i], data->dsts[i]);
+    else {
+        for (size_t i = 0; i < data->nbfiles; ++i) {
+            if (data->started[i]) {
+                plugin_trigger_event(data->params, GSIFTP_BULK_DOMAIN, GFAL_EVENT_NONE,
+                        GFAL_EVENT_TRANSFER_EXIT,
+                        "Done %s => %s", data->srcs[i], data->dsts[i]);
+            }
         }
     }
 
@@ -150,6 +152,11 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
     globus_ftp_client_operationattr_copy(&ftp_operation_attr, sess.get_op_attr_ftp());
     globus_ftp_client_operationattr_set_mode(&ftp_operation_attr, GLOBUS_FTP_CONTROL_MODE_EXTENDED_BLOCK);
     globus_ftp_client_operationattr_set_delayed_pasv(&ftp_operation_attr, GLOBUS_FALSE);
+
+    if (pairs->udt)
+        globus_ftp_client_operationattr_set_net_stack(&ftp_operation_attr, "udt");
+    else
+        globus_ftp_client_operationattr_set_net_stack(&ftp_operation_attr, "default");
 
     gfal_cancel_token_t cancel_token;
     cancel_token = gfal2_register_cancel_callback(context, gridftp_bulk_cancel, ftp_handle);
@@ -423,6 +430,8 @@ int gridftp_bulk_copy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
     pairs.params = params;
     pairs.ipv6 = gfal2_get_opt_boolean_with_default(context,
             GRIDFTP_CONFIG_GROUP, gridftp_ipv6_config, false);
+    pairs.udt = gfal2_get_opt_boolean_with_default(context,
+            GRIDFTP_CONFIG_GROUP, gridftp_enable_udt, false);
 
     // Preparation stage
     *file_errors = g_new0(GError*, nbfiles);
@@ -430,8 +439,21 @@ int gridftp_bulk_copy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
 
     // Transfer
     int transfer_ret = -1;
-    if (!gfal2_is_canceled(context))
+    if (!gfal2_is_canceled(context)) {
         transfer_ret = gridftp_pipeline_transfer(plugin_data, context, &pairs, op_error);
+        // If UDT was tried and it failed, give it another shot
+        if (transfer_ret < 0 && strstr((*op_error)->message, "udt driver not whitelisted")) {
+            pairs.udt = false;
+            pairs.done = false;
+            globus_object_free(pairs.error);
+            pairs.error = NULL;
+            g_error_free(*op_error);
+            *op_error = NULL;
+
+            gfal_log(GFAL_VERBOSE_VERBOSE, "UDT transfer failed! Disabling and retrying...");
+            transfer_ret = gridftp_pipeline_transfer(plugin_data, context, &pairs, op_error);
+        }
+    }
     if (transfer_ret < 0)
         total_failed = nbfiles;
 
