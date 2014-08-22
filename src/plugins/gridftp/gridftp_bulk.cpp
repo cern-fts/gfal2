@@ -4,6 +4,7 @@
 #include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_internal.h>
 #include <checksums/checksums.h>
+#include <globus_ftp_client_throughput_plugin.h>
 
 extern const char * gridftp_enable_udt;
 static const Glib::Quark GSIFTP_BULK_DOMAIN("GridFTP::Filecopy");
@@ -14,7 +15,7 @@ struct GridFTPBulkData {
             srcs(NULL), dsts(NULL), checksums(nbfiles),
             errn(new int[nbfiles]), fsize(new off_t[nbfiles]),
             index(0), nbfiles(nbfiles), started(new bool[nbfiles]),
-            params(NULL), ipv6(false), udt(false), error(NULL), done(false)
+            params(NULL), error(NULL), done(false)
     {
         for (size_t i = 0; i < nbfiles; ++i) {
             started[i] = false;
@@ -43,14 +44,25 @@ struct GridFTPBulkData {
     bool *started;
 
     gfalt_params_t params;
-    bool ipv6;
-    bool udt;
 
     globus_mutex_t lock;
     globus_cond_t cond;
     globus_object_t* error;
     bool done;
 };
+
+
+struct GridFTPBulkPerformance {
+    std::string source, destination;
+    gfalt_params_t params;
+    bool ipv6;
+    gfalt_monitor_func monitor_func;
+    void* monitor_data;
+    time_t start_time;
+
+    globus_ftp_client_plugin_t* plugin;
+};
+
 
 // Called by Globus when done
 static void gridftp_done_callback(void * user_arg, globus_ftp_client_handle_t * handle,
@@ -101,11 +113,7 @@ static void gridftp_pipeline_callback(globus_ftp_client_handle_t * handle, char 
         *dest_url = (char*)data->dsts[data->index];
         data->started[data->index] = true;
 
-        plugin_trigger_event(data->params, GSIFTP_BULK_DOMAIN, GFAL_EVENT_NONE,
-                GFAL_EVENT_TRANSFER_ENTER,
-                "Providing next pair: (%s) %s => (%s) %s",
-                return_hostname(*source_url, data->ipv6).c_str(), *source_url,
-                return_hostname(*dest_url, data->ipv6).c_str(), *dest_url);
+        gfal_log(GFAL_VERBOSE_VERBOSE, "Providing pair %s => %s", *source_url, *dest_url);
     }
     else {
         *source_url = NULL;
@@ -124,15 +132,90 @@ void gridftp_bulk_cancel(gfal2_context_t context, void* userdata)
 }
 
 
+static void gridftp_bulk_begin_cb(void * user_specific,
+        globus_ftp_client_handle_t * handle,
+        const char * source_url,
+        const char * dest_url)
+{
+    GridFTPBulkPerformance* original = static_cast<GridFTPBulkPerformance*>(user_specific);
+    GridFTPBulkPerformance* pd;
+    globus_ftp_client_throughput_plugin_get_user_specific(original->plugin, (void**)(&pd));
+
+    pd->source = source_url;
+    pd->destination = dest_url;
+    pd->start_time = time(NULL);
+
+    plugin_trigger_event(pd->params, GSIFTP_BULK_DOMAIN, GFAL_EVENT_NONE,
+            GFAL_EVENT_TRANSFER_ENTER,
+            "(%s) %s => (%s) %s",
+            return_hostname(source_url, pd->ipv6).c_str(), source_url,
+            return_hostname(dest_url, pd->ipv6).c_str(), dest_url);
+}
+
+
+static
+void gridftp_bulk_throughput_cb(void *user_specific,
+        globus_ftp_client_handle_t *handle, globus_off_t bytes,
+        float instantaneous_throughput, float avg_throughput)
+{
+    GridFTPBulkPerformance* original = static_cast<GridFTPBulkPerformance*>(user_specific);
+    GridFTPBulkPerformance* pd;
+    globus_ftp_client_throughput_plugin_get_user_specific(original->plugin, (void**)(&pd));
+
+    if (pd->monitor_func) {
+        gfalt_hook_transfer_plugin_t hook;
+        hook.bytes_transfered = bytes;
+        hook.average_baudrate = (size_t) avg_throughput;
+        hook.instant_baudrate = (size_t) instantaneous_throughput;
+        hook.transfer_time = (time(NULL) - pd->start_time);
+
+        gfalt_transfer_status_t state = gfalt_transfer_status_create(&hook);
+        pd->monitor_func(state, pd->source.c_str(), pd->destination.c_str(), pd->monitor_data);
+        gfalt_transfer_status_delete(state);
+    }
+}
+
+
+static
+void gridftp_bulk_complete_cb(void * user_specific,
+        globus_ftp_client_handle_t * handle, globus_bool_t success)
+{
+    GridFTPBulkPerformance* original = static_cast<GridFTPBulkPerformance*>(user_specific);
+    GridFTPBulkPerformance* pd;
+    globus_ftp_client_throughput_plugin_get_user_specific(original->plugin, (void**)(&pd));
+
+    plugin_trigger_event(pd->params, GSIFTP_BULK_DOMAIN, GFAL_EVENT_NONE,
+                        GFAL_EVENT_TRANSFER_EXIT,
+                        "Done %s => %s", pd->source.c_str(), pd->destination.c_str());
+}
+
+
+static
+void* gridftp_bulk_copy_perf_cb(void * user_specific)
+{
+    GridFTPBulkPerformance* pd = static_cast<GridFTPBulkPerformance*>(user_specific);
+    return new GridFTPBulkPerformance(*pd);
+}
+
+
+static
+void gridftp_bulk_destroy_perf_cb(void * user_specific)
+{
+    GridFTPBulkPerformance* pd = static_cast<GridFTPBulkPerformance*>(user_specific);
+    delete pd;
+}
+
+
 static
 int gridftp_pipeline_transfer(plugin_handle plugin_data,
-        gfal2_context_t context, GridFTPBulkData* pairs, GError** op_error)
+        gfal2_context_t context, bool udt, GridFTPBulkData* pairs, GError** op_error)
 {
     GridFTPModule* gsiftp = static_cast<GridFTPModule*>(plugin_data);
     GridFTPSession sess(
             gsiftp->get_session_factory()->gfal_globus_ftp_take_handle(
                     gridftp_hostname_from_url(pairs->srcs[0])));
 
+    globus_ftp_client_plugin_t throughput_plugin;
     globus_ftp_client_handle_t ftp_handle;
     globus_ftp_client_operationattr_t ftp_operation_attr;
     globus_ftp_client_handleattr_t* ftp_handle_attr = sess.get_ftp_handle_attr();
@@ -146,6 +229,20 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
 
     pairs->started[pairs->index] = true;
 
+    GridFTPBulkPerformance perf;
+    perf.params = pairs->params;
+    perf.ipv6 = gfal2_get_opt_boolean_with_default(context, GRIDFTP_CONFIG_GROUP, gridftp_ipv6_config, false);
+    perf.monitor_func = gfalt_get_monitor_callback(pairs->params, NULL);
+    perf.monitor_data = gfalt_get_user_data(pairs->params, NULL);
+    perf.plugin = &throughput_plugin;
+
+    globus_ftp_client_throughput_plugin_init(&throughput_plugin,
+            gridftp_bulk_begin_cb, NULL, gridftp_bulk_throughput_cb, gridftp_bulk_complete_cb,
+            &perf);
+    globus_ftp_client_throughput_plugin_set_copy_destroy(&throughput_plugin,
+            gridftp_bulk_copy_perf_cb, gridftp_bulk_destroy_perf_cb);
+    globus_ftp_client_handleattr_add_plugin(ftp_handle_attr, &throughput_plugin);
+
     globus_ftp_client_handleattr_set_pipeline(ftp_handle_attr, 0, gridftp_pipeline_callback, pairs);
     globus_ftp_client_handle_init(&ftp_handle, ftp_handle_attr);
     globus_ftp_client_operationattr_init(&ftp_operation_attr);
@@ -153,7 +250,7 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
     globus_ftp_client_operationattr_set_mode(&ftp_operation_attr, GLOBUS_FTP_CONTROL_MODE_EXTENDED_BLOCK);
     globus_ftp_client_operationattr_set_delayed_pasv(&ftp_operation_attr, GLOBUS_FALSE);
 
-    if (pairs->udt)
+    if (udt)
         globus_ftp_client_operationattr_set_net_stack(&ftp_operation_attr, "udt");
     else
         globus_ftp_client_operationattr_set_net_stack(&ftp_operation_attr, "default");
@@ -182,12 +279,6 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
     int res = 0;
     try {
         globus_result_t globus_return;
-
-        plugin_trigger_event(pairs->params, GSIFTP_BULK_DOMAIN, GFAL_EVENT_NONE,
-                GFAL_EVENT_TRANSFER_ENTER,
-                "Providing first pair: (%s) %s => (%s) %s",
-                return_hostname(pairs->srcs[pairs->index], pairs->ipv6).c_str(), pairs->srcs[pairs->index],
-                return_hostname(pairs->dsts[pairs->index], pairs->ipv6).c_str(), pairs->dsts[pairs->index]);
 
         globus_return = globus_ftp_client_third_party_transfer(&ftp_handle,
                 pairs->srcs[pairs->index], &ftp_operation_attr,
@@ -233,6 +324,9 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
     }
 
     gfal2_remove_cancel_callback(context, cancel_token);
+
+    globus_ftp_client_handleattr_remove_plugin(ftp_handle_attr, &throughput_plugin);
+    globus_ftp_client_throughput_plugin_destroy(&throughput_plugin);
 
     globus_ftp_client_handle_destroy(&ftp_handle);
     globus_ftp_client_operationattr_destroy(&ftp_operation_attr);
@@ -460,10 +554,6 @@ int gridftp_bulk_copy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
     }
     pairs.nbfiles = nbfiles;
     pairs.params = params;
-    pairs.ipv6 = gfal2_get_opt_boolean_with_default(context,
-            GRIDFTP_CONFIG_GROUP, gridftp_ipv6_config, false);
-    pairs.udt = gfal2_get_opt_boolean_with_default(context,
-            GRIDFTP_CONFIG_GROUP, gridftp_enable_udt, false);
 
     // Preparation stage
     *file_errors = g_new0(GError*, nbfiles);
@@ -472,10 +562,13 @@ int gridftp_bulk_copy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
     // Transfer
     int transfer_ret = -1;
     if (!gfal2_is_canceled(context)) {
-        transfer_ret = gridftp_pipeline_transfer(plugin_data, context, &pairs, op_error);
+        bool udt = gfal2_get_opt_boolean_with_default(context,
+                GRIDFTP_CONFIG_GROUP, gridftp_enable_udt, false);
+
+        transfer_ret = gridftp_pipeline_transfer(plugin_data, context, udt, &pairs, op_error);
         // If UDT was tried and it failed, give it another shot
-        if (transfer_ret < 0 && strstr((*op_error)->message, "udt driver not whitelisted")) {
-            pairs.udt = false;
+        if (transfer_ret < 0 && strstr((*op_error)->message, "udt driver not whitelisted") && !gfal2_is_canceled(context)) {
+            udt = false;
             pairs.done = false;
             globus_object_free(pairs.error);
             pairs.error = NULL;
@@ -483,7 +576,7 @@ int gridftp_bulk_copy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
             *op_error = NULL;
 
             gfal_log(GFAL_VERBOSE_VERBOSE, "UDT transfer failed! Disabling and retrying...");
-            transfer_ret = gridftp_pipeline_transfer(plugin_data, context, &pairs, op_error);
+            transfer_ret = gridftp_pipeline_transfer(plugin_data, context, udt, &pairs, op_error);
         }
     }
     if (transfer_ret < 0)

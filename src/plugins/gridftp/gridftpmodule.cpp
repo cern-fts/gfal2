@@ -22,6 +22,7 @@
 #include <globus_gass_copy.h>
 #include <globus_ftp_client.h>
 #include <globus_ftp_client_debug_plugin.h>
+#include <globus_ftp_client_throughput_plugin.h>
 
 
 //GOnce my_once = G_ONCE_INIT;
@@ -42,8 +43,6 @@ void core_init()
     Glib::init();
 }
 
-
-
 // gfunction prototype : gonce
 static void* init_globus(gpointer data)
 {
@@ -61,6 +60,10 @@ static void* init_globus(gpointer data)
             != GLOBUS_SUCCESS)
         throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_GLOBUS_INIT,
                 "Error globus init, globus ftp debug", result);
+    if ((result = globus_module_activate(GLOBUS_FTP_CLIENT_THROUGHPUT_PLUGIN_MODULE))
+            != GLOBUS_SUCCESS)
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_GLOBUS_INIT,
+                "Error globus init, globus ftp throughput plugin", result);
     return NULL;
 }
 
@@ -81,6 +84,10 @@ static void* deinit_globus(gpointer data)
             GLOBUS_FTP_CLIENT_DEBUG_PLUGIN_MODULE)) != GLOBUS_SUCCESS)
         throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_GLOBUS_INIT,
                 "Error globus deinit, globus ftp debug", result);
+    if ((result = globus_module_deactivate(
+            GLOBUS_FTP_CLIENT_THROUGHPUT_PLUGIN_MODULE)) != GLOBUS_SUCCESS)
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_GLOBUS_INIT,
+                "Error globus deinit, globus ftp throughput plugin", result);
     return NULL;
 }
 
