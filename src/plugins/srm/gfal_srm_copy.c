@@ -522,18 +522,23 @@ static int is_castor_endpoint(plugin_handle handle, const char* surl)
 {
     gfal_srmv2_opt* opts = (gfal_srmv2_opt*)handle;
 
+    if (!srm_check_url(surl)) {
+        gfal_log(GFAL_VERBOSE_VERBOSE, "Endpoint not SRM: %s", surl);
+        return 0;
+    }
+
     GError *tmp_err = NULL;
     srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
     if (tmp_err)
         g_error_free(tmp_err);
     if (!context) {
-        gfal_log(GFAL_VERBOSE_NORMAL, "Could not get a context for %s", surl);
+        gfal_log(GFAL_VERBOSE_VERBOSE, "Could not get a context for %s", surl);
         return -1;
     }
 
     struct srm_xping_output output;
     if (gfal_srm_external_call.srm_xping(context, &output) < 0) {
-        gfal_log(GFAL_VERBOSE_NORMAL, "Failed to ping %s", surl);
+        gfal_log(GFAL_VERBOSE_VERBOSE, "Failed to ping %s", surl);
         return -1;
     }
 
