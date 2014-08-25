@@ -597,7 +597,7 @@ int gfal_plugin_mkdirp(gfal2_context_t handle, const char* path, mode_t mode, gb
     if (p)
         res = p->mkdirpG(gfal_get_plugin_handle(p), path, mode, pflag, &tmp_err);
 
-    if (p && res < 0 && tmp_err->code == EEXIST) {
+    if (pflag && res < 0 && tmp_err->code == EEXIST) {
         g_error_free(tmp_err);
         tmp_err = NULL;
         res = 0;
