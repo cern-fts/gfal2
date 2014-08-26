@@ -24,9 +24,10 @@
 #include <globus_ftp_client_debug_plugin.h>
 
 const char* gridftp_version_config = "GRIDFTP_V2";
-const char* gridftp_session_reuse_config= "SESSION_REUSE";
-const char* gridftp_dcau_config= "DCAU";
-const char* gridftp_ipv6_config= "IPV6";
+const char* gridftp_session_reuse_config = "SESSION_REUSE";
+const char* gridftp_timeout = "OPERATION_TIMEOUT";
+const char* gridftp_dcau_config = "DCAU";
+const char* gridftp_ipv6_config = "IPV6";
 const char* gridftp_delay_passv_config = "DELAY_PASSV";
 
 struct RwStatus
@@ -331,6 +332,11 @@ globus_ftp_client_handleattr_t* GridFTPSession::get_ftp_handle_attr()
     return &(_sess->attr_handle);
 }
 
+GridFTPFactory* GridFTPSession::get_factory()
+{
+    return factory;
+}
+
 void GridFTPSession::clean()
 {
     // clean performance markers
@@ -381,6 +387,8 @@ GridFTPRequestState::GridFTPRequestState(GridFTPSession * s, bool own_session,
     req_status = GRIDFTP_REQUEST_NOT_LAUNCHED;
     this->own_session = own_session;
     this->request_type = request_type;
+    this->default_timeout = gfal2_get_opt_integer_with_default(
+            s->get_factory()->get_handle(), GRIDFTP_CONFIG_GROUP, gridftp_timeout, 300);
     canceling = false;
 }
 
@@ -762,7 +770,10 @@ void GridFTPRequestState::wait_callback(const Glib::Quark &scope,
     struct timespec st_timeout;
 
     st_timeout.tv_nsec = 0;
-    st_timeout.tv_sec = timeout;
+    if (timeout >= 0)
+        st_timeout.tv_sec = timeout;
+    else
+        st_timeout.tv_sec = default_timeout;
 
     gfal_log(GFAL_VERBOSE_TRACE,
             "   [GridFTP_Request_state::wait_callback] setup gsiftp timeout to %ld seconds",

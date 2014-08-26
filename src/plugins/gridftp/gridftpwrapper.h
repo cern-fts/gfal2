@@ -101,6 +101,8 @@ struct GridFTPRequestState {
     Glib::RWLock mux_req_state;
     Glib::Mutex mux_callback_lock;
     Glib::Cond signal_callback_main;
+    // default timeout
+    time_t default_timeout;
 
     inline void start()
     {
@@ -143,7 +145,7 @@ struct GridFTPRequestState {
         req_status = st;
     }
 
-    void wait_callback(const Glib::Quark & scope, time_t timeout = 300);
+    void wait_callback(const Glib::Quark & scope, time_t timeout = -1);
 
     void err_report(const Glib::Quark &scope);
 
@@ -266,6 +268,8 @@ public:
     globus_ftp_client_operationattr_t* get_op_attr_ftp();
     globus_gass_copy_handleattr_t* get_gass_handle_attr();
     globus_ftp_client_handleattr_t* get_ftp_handle_attr();
+
+    GridFTPFactory* get_factory();
 
     void set_nb_stream(const unsigned int nbstream);
     void set_tcp_buffer_size(const guint64 tcp_buffer_size);
