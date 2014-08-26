@@ -1,12 +1,14 @@
-#include "gridftp_filecopy.h"
-#include "gridftpwrapper.h"
-#include "gridftp_namespace.h"
 #include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_internal.h>
 #include <checksums/checksums.h>
 #include <globus_ftp_client_throughput_plugin.h>
 
-extern const char * gridftp_enable_udt;
+#include "gridftp_filecopy.h"
+#include "gridftpwrapper.h"
+#include "gridftp_namespace.h"
+#include "gridftp_plugin.h"
+
+
 static const Glib::Quark GSIFTP_BULK_DOMAIN("GridFTP::Filecopy");
 
 
@@ -231,7 +233,7 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
 
     GridFTPBulkPerformance perf;
     perf.params = pairs->params;
-    perf.ipv6 = gfal2_get_opt_boolean_with_default(context, GRIDFTP_CONFIG_GROUP, gridftp_ipv6_config, false);
+    perf.ipv6 = gfal2_get_opt_boolean_with_default(context, GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_IPV6, false);
     perf.monitor_func = gfalt_get_monitor_callback(pairs->params, NULL);
     perf.monitor_data = gfalt_get_user_data(pairs->params, NULL);
     perf.plugin = &throughput_plugin;
@@ -563,7 +565,7 @@ int gridftp_bulk_copy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
     int transfer_ret = -1;
     if (!gfal2_is_canceled(context)) {
         bool udt = gfal2_get_opt_boolean_with_default(context,
-                GRIDFTP_CONFIG_GROUP, gridftp_enable_udt, false);
+                GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_UDT, false);
 
         transfer_ret = gridftp_pipeline_transfer(plugin_data, context, udt, &pairs, op_error);
         // If UDT was tried and it failed, give it another shot

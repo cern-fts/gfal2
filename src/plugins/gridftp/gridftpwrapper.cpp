@@ -19,16 +19,11 @@
 #include <config/gfal_config.h>
 #include <cancel/gfal_cancel.h>
 #include <exceptions/gfalcoreexception.hpp>
+#include "gridftp_plugin.h"
 #include "gridftpwrapper.h"
 
 #include <globus_ftp_client_debug_plugin.h>
 
-const char* gridftp_version_config = "GRIDFTP_V2";
-const char* gridftp_session_reuse_config = "SESSION_REUSE";
-const char* gridftp_timeout = "OPERATION_TIMEOUT";
-const char* gridftp_dcau_config = "DCAU";
-const char* gridftp_ipv6_config = "IPV6";
-const char* gridftp_delay_passv_config = "DELAY_PASSV";
 
 struct RwStatus
 {
@@ -98,7 +93,7 @@ GridFTPSession::~GridFTPSession()
 
 void GridFTPSession::init()
 {
-    _sess = new Session_handler();
+    _sess = new SessionHandler();
     globus_result_t res;
 
     // init debug plugin
@@ -371,7 +366,7 @@ GridFTPFactory::GridFTPFactory(gfal2_context_t handle) :
 {
     GError * tmp_err = NULL;
     session_reuse = gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP,
-            gridftp_session_reuse_config, &tmp_err);
+            GRIDFTP_CONFIG_SESSION_REUSE, &tmp_err);
     gfal_log(GFAL_VERBOSE_TRACE, " define GSIFTP session re-use to %s",
             (session_reuse) ? "TRUE" : "FALSE");
     if (tmp_err)
@@ -388,7 +383,7 @@ GridFTPRequestState::GridFTPRequestState(GridFTPSession * s, bool own_session,
     this->own_session = own_session;
     this->request_type = request_type;
     this->default_timeout = gfal2_get_opt_integer_with_default(
-            s->get_factory()->get_handle(), GRIDFTP_CONFIG_GROUP, gridftp_timeout, 300);
+            s->get_factory()->get_handle(), GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_OP_TIMEOUT, 300);
     canceling = false;
 }
 
@@ -603,18 +598,18 @@ GridFTPSession* GridFTPFactory::get_new_handle(const std::string & hostname)
     GError * tmp_err = NULL;
     globus_ftp_control_dcau_t dcau_param;
     bool gridftp_v2 = gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP,
-            gridftp_version_config, &tmp_err);
+            GRIDFTP_CONFIG_V2, &tmp_err);
     if (tmp_err)
         throw Glib::Error(tmp_err);
 
     const bool ipv6 = gfal2_get_opt_boolean_with_default(_handle,
-            GRIDFTP_CONFIG_GROUP, gridftp_ipv6_config, false);
+            GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_IPV6, false);
     const bool delay_passv = gfal2_get_opt_boolean_with_default(_handle,
-            GRIDFTP_CONFIG_GROUP, gridftp_delay_passv_config, true);
+            GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_DELAY_PASSV, true);
 
     dcau_param.mode =
             (gfal2_get_opt_boolean(_handle, GRIDFTP_CONFIG_GROUP,
-                    gridftp_dcau_config, &tmp_err)) ?
+                    GRIDFTP_CONFIG_DCAU, &tmp_err)) ?
                     GLOBUS_FTP_CONTROL_DCAU_DEFAULT :
                     GLOBUS_FTP_CONTROL_DCAU_NONE;
     if (tmp_err)
@@ -665,7 +660,7 @@ void GridFTPFactory::gfal_globus_ftp_release_handle_internal(
         GridFTPSession* sess)
 {
     session_reuse = gfal2_get_opt_boolean_with_default(_handle,
-            GRIDFTP_CONFIG_GROUP, gridftp_session_reuse_config, FALSE);
+            GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_SESSION_REUSE, FALSE);
     if (session_reuse)
         recycle_session(sess);
     else {

@@ -22,6 +22,7 @@
 
 #include "gridftp_namespace.h"
 #include "gridftp_filecopy.h"
+#include "gridftp_plugin.h"
 
 #include <checksums/checksums.h>
 #include <uri/uri_util.h>
@@ -110,12 +111,6 @@ std::string return_hostname(const std::string &uri, gboolean use_ipv6)
     str << lookup_host(parsed.domain, use_ipv6) << ":" << parsed.port;
     return str.str();
 }
-
-
-const char * gridftp_checksum_transfer_config   = "COPY_CHECKSUM_TYPE";
-const char * gridftp_perf_marker_timeout_config = "PERF_MARKER_TIMEOUT";
-const char * gridftp_skip_transfer_config       = "SKIP_SOURCE_CHECKSUM";
-const char * gridftp_enable_udt                 = "ENABLE_UDT";
 
 
 // return 1 if deleted something
@@ -268,7 +263,7 @@ struct CallbackHandler{
                         msrc), dst(mdst), start_time(time(NULL)), timeout_value(
                         gfal2_get_opt_integer_with_default(context,
                                 GRIDFTP_CONFIG_GROUP,
-                                gridftp_perf_marker_timeout_config, 180)), timeout_time(
+                                GRIDFTP_CONFIG_TRANSFER_PERF_TIMEOUT, 180)), timeout_time(
                         time(NULL) + timeout_value), timer_pthread()
         {
             Glib::RWLock::ReaderLock l(req->mux_req_state);
@@ -423,7 +418,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
             tcp_buffer_size);
 
     gboolean enable_udt_transfers = gfal2_get_opt_boolean(factory->get_handle(),
-    GRIDFTP_CONFIG_GROUP, gridftp_enable_udt, NULL);
+            GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_UDT, NULL);
 
     if (enable_udt_transfers) {
         gfal_log(GFAL_VERBOSE_VERBOSE, "Trying UDT transfer");
@@ -524,10 +519,10 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
     gboolean checksum_check = gfalt_get_checksum_check(params, NULL);
     gboolean skip_source_checksum = gfal2_get_opt_boolean(
             _handle_factory->get_handle(),
-            GRIDFTP_CONFIG_GROUP, gridftp_skip_transfer_config,
+            GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_SKIP_CHECKSUM,
             NULL);
     gboolean use_ipv6 = gfal2_get_opt_boolean(_handle_factory->get_handle(),
-    GRIDFTP_CONFIG_GROUP, gridftp_ipv6_config,
+    GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_IPV6,
     NULL);
 
     if (checksum_check) {
@@ -542,7 +537,7 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
 
             default_checksum_type = gfal2_get_opt_string(
                     _handle_factory->get_handle(),
-                    GRIDFTP_CONFIG_GROUP, gridftp_checksum_transfer_config,
+                    GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_CHECKSUM,
                     &get_default_error);
             Gfal::gerror_to_cpp(&get_default_error);
 

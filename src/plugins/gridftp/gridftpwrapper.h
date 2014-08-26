@@ -28,19 +28,16 @@
 #include <globus_ftp_client.h>
 #include <globus_gass_copy.h>
 
-#define GRIDFTP_CONFIG_GROUP "GRIDFTP PLUGIN"
 
-extern const char* gridftp_ipv6_config;
 
-enum GridFTPRequestStatus{
-	GRIDFTP_REQUEST_NOT_LAUNCHED,
-	GRIDFTP_REQUEST_RUNNING,
-	GRIDFTP_REQUEST_FINISHED,
+enum GridFTPRequestStatus {
+    GRIDFTP_REQUEST_NOT_LAUNCHED,
+    GRIDFTP_REQUEST_RUNNING,
+    GRIDFTP_REQUEST_FINISHED,
 };
 
-enum GridFTPRequestType{
-    GRIDFTP_REQUEST_GASS,
-    GRIDFTP_REQUEST_FTP
+enum GridFTPRequestType {
+    GRIDFTP_REQUEST_GASS, GRIDFTP_REQUEST_FTP
 };
 
 class GridFTPFactory;
@@ -296,7 +293,7 @@ private:
     bool _isDirty;
     // handle ftp
 
-    struct Session_handler {
+    struct SessionHandler {
         globus_ftp_client_handle_t handle_ftp;
         globus_ftp_client_plugin_t debug_ftp_plugin;
         globus_ftp_client_handleattr_t attr_handle;
@@ -316,7 +313,7 @@ private:
     std::string hostname;
 
     // sess
-    Session_handler* _sess;
+    SessionHandler* _sess;
 
     friend class GridFTPFactory;
 };
