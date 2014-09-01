@@ -3,9 +3,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -104,12 +104,14 @@ static void set_checksum(gfalt_params_t params, const char* checksum)
 
         const char* colon = strchr(checksum, ':');
         if (colon == NULL) {
-            gfalt_set_user_defined_checksum(params, NULL, checksum, NULL);
+            char chktype[64], chkvalue[1];
+            gfalt_get_user_defined_checksum(params, chktype, sizeof(chktype), chkvalue, sizeof(chkvalue), NULL);
+            gfalt_set_user_defined_checksum(params, chktype, checksum, NULL);
         }
         else {
             char chktype[64];
             size_t chktype_len = colon - checksum;
-            g_strlcpy(chktype, checksum, chktype_len<64?chktype_len:64);
+            g_strlcpy(chktype, checksum, chktype_len < 64 ? chktype_len : 64);
             gfalt_set_user_defined_checksum(params, chktype, colon + 1, NULL);
         }
     }
@@ -186,8 +188,8 @@ void gfalt_transfer_status_delete(gfalt_transfer_status_t state)
 }
 
 
-	
-int gfalt_copy_file(gfal2_context_t handle, gfalt_params_t params, 
+
+int gfalt_copy_file(gfal2_context_t handle, gfalt_params_t params,
 			const char* src, const char* dst,  GError** err)
 {
     g_return_val_err_if_fail(handle && src && dst, -1, err, "invalid source or/and destination values");
