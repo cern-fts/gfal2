@@ -39,7 +39,7 @@ static bool is_gridftp_uri(const char* src)
 gboolean gridftp_check_url_transfer(plugin_handle handle, gfal2_context_t context, const char* src,
                                     const char* dst, gfal_url2_check type)
 {
-    g_return_val_if_fail(handle != NULL,FALSE);
+    g_return_val_if_fail(handle != NULL, FALSE);
     gboolean res = FALSE;
 
     if( src != NULL && dst != NULL){
@@ -154,7 +154,7 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)
     ret.check_plugin_url_transfer = &gridftp_check_url_transfer;
     ret.copy_file = &gridftp_plugin_filecopy;
     ret.copy_bulk = &gridftp_bulk_copy;
-	
+
 	G_RETURN_ERR(ret, tmp_err, err);
 }
 

@@ -28,17 +28,15 @@ void GridFTPModule::rename(const char* src, const char* dst)
 
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::rename] ");
 
-    GridFTPRequestState req(
-            _handle_factory->gfal_globus_ftp_take_handle(
-                    gridftp_hostname_from_url(src))); // get connection session
+    GridFTPSessionHandler handler(_handle_factory, src);
+    GridFTPRequestState req(&handler);
 
-    req.start();
-    globus_result_t res = globus_ftp_client_move(req.sess->get_ftp_handle(),
-            src, dst, req.sess->get_op_attr_ftp(), globus_basic_client_callback,
+    globus_result_t res = globus_ftp_client_move(req.handler->get_ftp_client_handle(),
+            src, dst, req.handler->get_ftp_client_operationattr(), globus_ftp_client_done_callback,
             &req);
     gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_RENAME, res);
     // wait for answer
-    req.wait_callback(GFAL_GRIDFTP_SCOPE_RENAME);
+    req.wait(GFAL_GRIDFTP_SCOPE_RENAME);
 
     gfal_log(GFAL_VERBOSE_TRACE, " <- [GridFTPModule::rename] ");
 

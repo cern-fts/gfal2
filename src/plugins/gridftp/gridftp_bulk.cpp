@@ -209,14 +209,12 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
         gfal2_context_t context, bool udt, GridFTPBulkData* pairs, GError** op_error)
 {
     GridFTPModule* gsiftp = static_cast<GridFTPModule*>(plugin_data);
-    GridFTPSession sess(
-            gsiftp->get_session_factory()->gfal_globus_ftp_take_handle(
-                    gridftp_hostname_from_url(pairs->srcs[0])));
+    GridFTPSessionHandler handler(gsiftp->get_session_factory(), pairs->srcs[0]);
 
     globus_ftp_client_plugin_t throughput_plugin;
     globus_ftp_client_handle_t ftp_handle;
     globus_ftp_client_operationattr_t ftp_operation_attr;
-    globus_ftp_client_handleattr_t* ftp_handle_attr = sess.get_ftp_handle_attr();
+    globus_ftp_client_handleattr_t* ftp_handle_attr = handler.get_ftp_client_handleattr();
 
     // First viable pair goes with the globus call
     pairs->index = 0;
@@ -244,7 +242,7 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
     globus_ftp_client_handleattr_set_pipeline(ftp_handle_attr, 0, gridftp_pipeline_callback, pairs);
     globus_ftp_client_handle_init(&ftp_handle, ftp_handle_attr);
     globus_ftp_client_operationattr_init(&ftp_operation_attr);
-    globus_ftp_client_operationattr_copy(&ftp_operation_attr, sess.get_op_attr_ftp());
+    globus_ftp_client_operationattr_copy(&ftp_operation_attr, handler.get_ftp_client_operationattr());
     globus_ftp_client_operationattr_set_mode(&ftp_operation_attr, GLOBUS_FTP_CONTROL_MODE_EXTENDED_BLOCK);
     globus_ftp_client_operationattr_set_delayed_pasv(&ftp_operation_attr, GLOBUS_FALSE);
 

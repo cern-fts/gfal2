@@ -2,38 +2,34 @@
 #include <glib.h>
 #include "gridftp_dir_reader.h"
 
-static const Glib::Quark GridftpSimpleReaderQuark("GridftpSimpleListReader::readdir");
+static const Glib::Quark GridFTPSimpleReaderQuark("GridftpSimpleListReader::readdir");
 
 
-GridftpSimpleListReader::GridftpSimpleListReader(GridFTPModule* gsiftp, const char* path):
-    stream(NULL)
+GridFTPSimpleListReader::GridFTPSimpleListReader(GridFTPModule* gsiftp, const char* path)
 {
     GridFTPFactory* factory = gsiftp->get_session_factory();
-    GridFTPSession* session = factory->gfal_globus_ftp_take_handle(gridftp_hostname_from_url(path));
-
-    stream = new GridFTPStreamState(session);
+    this->handler = new GridFTPSessionHandler(factory, path);
+    this->request_state = new GridFTPRequestState(this->handler);
+    this->stream_state = new GridFTPStreamState(this->handler);
 
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpSimpleListReader::GridftpSimpleListReader]");
-    Glib::Mutex::Lock locker(stream->lock);
-    stream->start();
     globus_result_t res = globus_ftp_client_list(
             // start req
-            stream->sess->get_ftp_handle(), path,
-            stream->sess->get_op_attr_ftp(),
-            globus_basic_client_callback,
-            static_cast<GridFTPRequestState*>(stream));
-    gfal_globus_check_result(GridftpSimpleReaderQuark, res);
+            this->handler->get_ftp_client_handle(), path,
+            this->handler->get_ftp_client_operationattr(),
+            globus_ftp_client_done_callback,
+            this->request_state);
+    gfal_globus_check_result(GridFTPSimpleReaderQuark, res);
 
-    stream_buffer = new GridftpStreamBuffer(stream, GridftpSimpleReaderQuark);
+    stream_buffer = new GridFTPStreamBuffer(this->stream_state, GridFTPSimpleReaderQuark);
 
     gfal_log(GFAL_VERBOSE_TRACE, " <- [GridftpSimpleListReader::GridftpSimpleListReader]");
 }
 
 
-GridftpSimpleListReader::~GridftpSimpleListReader()
+GridFTPSimpleListReader::~GridFTPSimpleListReader()
 {
-    delete stream_buffer;
-    delete stream;
+    this->request_state->wait(GridFTPSimpleReaderQuark);
 }
 
 
@@ -52,10 +48,8 @@ static int gridftp_readdir_parser(const std::string& line, struct dirent* entry)
 }
 
 
-struct dirent* GridftpSimpleListReader::readdir()
+struct dirent* GridFTPSimpleListReader::readdir()
 {
-    Glib::Mutex::Lock locker(stream->lock);
-
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpSimpleListReader::readdir]");
 
     std::string line;
@@ -64,7 +58,7 @@ struct dirent* GridftpSimpleListReader::readdir()
         return NULL;
 
     if (gridftp_readdir_parser(line, &dbuffer) != 0) {
-        throw Glib::Error(GridftpSimpleReaderQuark, EINVAL, Glib::ustring("Error parsing GridFTP line: ").append(line));
+        throw Glib::Error(GridFTPSimpleReaderQuark, EINVAL, Glib::ustring("Error parsing GridFTP line: ").append(line));
     }
 
     // Workaround for LCGUTIL-295
@@ -78,8 +72,8 @@ struct dirent* GridftpSimpleListReader::readdir()
 }
 
 
-struct dirent* GridftpSimpleListReader::readdirpp(struct stat* st)
+struct dirent* GridFTPSimpleListReader::readdirpp(struct stat* st)
 {
-    throw Glib::Error(GridftpSimpleReaderQuark, EBADF,
+    throw Glib::Error(GridFTPSimpleReaderQuark, EBADF,
                       "Can not call readdirpp after simple readdir");
 }

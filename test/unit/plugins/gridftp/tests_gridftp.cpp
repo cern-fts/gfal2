@@ -67,12 +67,12 @@ TEST(gfalGridFTP,handle_creation)
     GridFTPModule* copy = new GridFTPModule(f);
     ASSERT_TRUE(copy != NULL);
     // create and delete properly
-    GridFTPSession* sess = f->gfal_globus_ftp_take_handle("gsiftp://fsdfdsfsd/fsdfds");
-    f->gfal_globus_ftp_release_handle(sess);
+    GridFTPSession* session = f->get_session("gsiftp://fsdfdsfsd/fsdfds");
+    f->release_session(session, false);
 
     // wild delete for exception clean recovery
-    sess = f->gfal_globus_ftp_take_handle("gsiftp://fsdfdsfsd/fsdfds");
-    delete sess;
+    session = f->get_session("gsiftp://fsdfdsfsd/fsdfds");
+    delete session;
     delete copy;
     gfal_handle_freeG(h);
 }
