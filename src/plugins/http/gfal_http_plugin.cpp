@@ -25,6 +25,28 @@ static void gfal_http_refresh_params(gfal2_context_t handle, Davix::RequestParam
     if (insecure_mode) {
         params.setSSLCAcheck(false);
     }
+    gfal_http_get_ucert(params, handle);
+    gfal_http_get_aws(params, handle);
+}
+
+
+static void log_davix2gfal(void* userdata, int msg_level, const char* msg)
+{
+    int gfal_level = GFAL_VERBOSE_NORMAL;
+    switch (msg_level) {
+        case DAVIX_LOG_TRACE:
+            gfal_level = GFAL_VERBOSE_TRACE_PLUGIN;
+            break;
+        case DAVIX_LOG_DEBUG:
+            gfal_level = GFAL_VERBOSE_DEBUG;
+            break;
+        case DAVIX_LOG_VERBOSE:
+            gfal_level = GFAL_VERBOSE_VERBOSE;
+            break;
+        default:
+            gfal_level = GFAL_VERBOSE_NORMAL;
+    }
+    gfal_log(gfal_level, "Davix: %s", msg);
 }
 
 
@@ -33,14 +55,12 @@ GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
 {
     params.setTransparentRedirectionSupport(true);
     params.setUserAgent("gfal2::http");
-    gfal_http_get_ucert(params, handle);
-    gfal_http_get_aws(params, handle);
-
-    // enable grid mode
     context.loadModule("grid");
 
-
     gfal_http_refresh_params(handle, params);
+
+    davix_set_log_level(DAVIX_LOG_ALL);
+    davix_set_log_handler(log_davix2gfal, NULL);
 }
 
 
