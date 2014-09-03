@@ -34,8 +34,11 @@ GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
     params.setTransparentRedirectionSupport(true);
     params.setUserAgent("gfal2::http");
     gfal_http_get_ucert(params, handle);
+    gfal_http_get_aws(params, handle);
+
     // enable grid mode
     context.loadModule("grid");
+
 
     gfal_http_refresh_params(handle, params);
 }
@@ -76,7 +79,7 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
         case GFAL_PLUGIN_CHECKSUM:
             return (strncmp("http:", url, 5) == 0 || strncmp("https:", url, 6) == 0 ||
                  strncmp("dav:", url, 4) == 0 || strncmp("davs:", url, 5) == 0 ||
-                 strncmp("s3:", url, 4) == 0 || strncmp("s3s:", url, 5) == 0 ||
+                 strncmp("s3:", url, 3) == 0 || strncmp("s3s:", url, 4) == 0 ||
                  strncmp("http+3rd:", url, 9) == 0 || strncmp("https+3rd:", url, 10) == 0 ||
                  strncmp("dav+3rd:", url, 8) == 0 || strncmp("davs+3rd:", url, 9) == 0);
       default:
@@ -215,7 +218,7 @@ void gfal_http_get_ucert(RequestParams & params, gfal2_context_t handle)
 
         X509Credential cred;
         if(cred.loadFromFilePEM(ukey,ucert,"", &tmp_err) <0){
-            gfal_log(GFAL_VERBOSE_NORMAL,
+            gfal_log(GFAL_VERBOSE_VERBOSE,
                     "Could not load the user credentials: %s", tmp_err->getErrMsg().c_str());
         }else{
             params.setClientCertX509(cred);
@@ -225,6 +228,20 @@ void gfal_http_get_ucert(RequestParams & params, gfal2_context_t handle)
     g_free(ukey_p);
 }
 
+/// AWS implementation
+void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle)
+{
+    gchar *secret_key = gfal2_get_opt_string(handle, "S3", "ACCESS_TOKEN_SECRET", NULL);
+    gchar *access_key = gfal2_get_opt_string(handle, "S3", "ACCESS_TOKEN", NULL);
+
+    if (secret_key && access_key) {
+        gfal_log(GFAL_VERBOSE_DEBUG, "Setting S3 key pair");
+        params.setAwsAuthorizationKeys(secret_key, access_key);
+    }
+
+    g_free(secret_key);
+    g_free(access_key);
+}
 
 /// Init function
 extern "C" gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)

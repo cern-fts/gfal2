@@ -34,6 +34,7 @@ void http2gliberr(GError** err, int http, const char* func, const char* msg);
 
 // Cred setup
 void gfal_http_get_ucert(Davix::RequestParams & params, gfal2_context_t handle);
+void gfal_http_get_aws(Davix::RequestParams & params, gfal2_context_t handle);
 
 // Removes +3rd from the url, if there
 void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);
