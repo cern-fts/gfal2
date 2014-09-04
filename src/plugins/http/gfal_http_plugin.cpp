@@ -59,7 +59,10 @@ GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
 
     gfal_http_refresh_params(handle, params);
 
-    davix_set_log_level(DAVIX_LOG_ALL);
+    int dav_level = DAVIX_LOG_CRITICAL | DAVIX_LOG_WARNING | DAVIX_LOG_VERBOSE | DAVIX_LOG_DEBUG;
+    if (gfal_get_verbose() & GFAL_VERBOSE_TRACE_PLUGIN)
+        dav_level |= DAVIX_LOG_TRACE;
+    davix_set_log_level(dav_level);
     davix_set_log_handler(log_davix2gfal, NULL);
 }
 

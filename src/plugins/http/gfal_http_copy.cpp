@@ -27,7 +27,7 @@ struct PerfCallbackData {
 
 static bool is_streamed_scheme(const char* url)
 {
-    const char *schemes[] = {"http:", "https:", "dav:", "davs:", NULL};
+    const char *schemes[] = {"http:", "https:", "dav:", "davs:", "s3:", "s3s:", NULL};
     const char *colon = strchr(url, ':');
     if (!colon)
         return false;
@@ -449,7 +449,10 @@ static void gfal_http_streamed_copy(gfal2_context_t context,
         return;
     }
 
-    request.setParameters(davix->params);
+    Davix::RequestParams req_params(davix->params);
+    if (strncmp("s3:", dst, 3) == 0 || strncmp("s3s:", dst, 4) == 0)
+        req_params.setProtocol(Davix::RequestProtocol::AwsS3);
+    request.setParameters(req_params);
 
     HttpStreamProvider provider(src, dst, context, source_fd, params);
 
