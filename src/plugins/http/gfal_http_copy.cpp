@@ -328,15 +328,20 @@ static void gfal_http_third_party_copy(GfalHttpPluginData* davix,
             gfalt_get_user_data(params, NULL)
     );
 
-    Davix::DavixCopy copy(davix->context, &davix->params);
-
-    copy.setPerformanceCallback(gfal_http_3rdcopy_perfcallback, &perfCallbackData);
-
     std::string canonical_dst = get_canonical_uri(dst);
     gfal_log(GFAL_VERBOSE_VERBOSE, "Normalize destination to %s", canonical_dst.c_str());
 
+    Davix::Uri src_uri(src);
+    Davix::Uri dst_uri(canonical_dst);
+
+    Davix::RequestParams req_params;
+    davix->get_params(&req_params, src_uri);
+    Davix::DavixCopy copy(davix->context, &req_params);
+
+    copy.setPerformanceCallback(gfal_http_3rdcopy_perfcallback, &perfCallbackData);
+
     Davix::DavixError* davError = NULL;
-    copy.copy(Davix::Uri(src), Davix::Uri(canonical_dst),
+    copy.copy(src_uri, dst_uri,
               gfalt_get_nbstreams(params, NULL),
               &davError);
 
@@ -441,16 +446,19 @@ static void gfal_http_streamed_copy(gfal2_context_t context,
         return;
     }
 
+    Davix::Uri dst_uri(dst);
+
     Davix::DavixError* dav_error = NULL;
-    Davix::PutRequest request(davix->context, Davix::Uri(dst), &dav_error);
+    Davix::PutRequest request(davix->context, dst_uri, &dav_error);
     if (dav_error != NULL) {
         davix2gliberr(dav_error, err);
         Davix::DavixError::clearError(&dav_error);
         return;
     }
 
-    Davix::RequestParams req_params(davix->params);
-    if (strncmp("s3:", dst, 3) == 0 || strncmp("s3s:", dst, 4) == 0)
+    Davix::RequestParams req_params;
+    davix->get_params(&req_params, dst_uri);
+    if (dst_uri.getProtocol() == "s3" || dst_uri.getProtocol() == "s3s")
         req_params.setProtocol(Davix::RequestProtocol::AwsS3);
     request.setParameters(req_params);
 

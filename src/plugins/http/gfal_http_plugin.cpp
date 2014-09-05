@@ -18,15 +18,83 @@ static const char* gfal_http_get_name(void)
 }
 
 
-static void gfal_http_refresh_params(gfal2_context_t handle, Davix::RequestParams& params)
+/// Authn implementation
+static void gfal_http_get_ucert(RequestParams & params, gfal2_context_t handle)
 {
-    // disable SSL verification
+    std::string ukey, ucert;
+    DavixError* tmp_err=NULL;
+
+    // Try user defined first
+    gchar *ucert_p = gfal2_get_opt_string(handle, "X509", "CERT", NULL);
+    gchar *ukey_p = gfal2_get_opt_string(handle, "X509", "KEY", NULL);
+    if (ucert_p) {
+        ucert.assign(ucert_p);
+        ukey= (ukey_p != NULL)?(std::string(ukey_p)):(ucert);
+
+        X509Credential cred;
+        if(cred.loadFromFilePEM(ukey,ucert,"", &tmp_err) <0){
+            gfal_log(GFAL_VERBOSE_VERBOSE,
+                    "Could not load the user credentials: %s", tmp_err->getErrMsg().c_str());
+        }else{
+            params.setClientCertX509(cred);
+        }
+    }
+    g_free(ucert_p);
+    g_free(ukey_p);
+}
+
+
+/// AWS implementation
+static void gfal_http_get_aws_keys(gfal2_context_t handle, const std::string& group,
+        gchar** secret_key, gchar** access_key)
+{
+    *secret_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_TOKEN_SECRET", NULL);
+    *access_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_TOKEN", NULL);
+}
+
+static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, const Davix::Uri& uri)
+{
+    // Try generic configuration
+    gchar *secret_key;
+    gchar *access_key;
+    gfal_http_get_aws_keys(handle, "S3", &secret_key, &access_key);
+
+    // If not present, try S3:host
+    if (!secret_key) {
+        std::string group_label("S3:");
+        group_label += uri.getHost();
+        gfal_http_get_aws_keys(handle, group_label, &secret_key, &access_key);
+    }
+
+    // Last attempt, S3:host removing bucket
+    if (!secret_key) {
+        std::string group_label("S3:");
+        std::string host = uri.getHost();
+        size_t i = host.find('.');
+        if (i != std::string::npos) {
+            group_label += host.substr(i + 1);
+            gfal_http_get_aws_keys(handle, group_label, &secret_key, &access_key);
+        }
+    }
+
+    if (secret_key && access_key) {
+        gfal_log(GFAL_VERBOSE_DEBUG, "Setting S3 key pair");
+        params.setAwsAuthorizationKeys(secret_key, access_key);
+    }
+
+    g_free(secret_key);
+    g_free(access_key);
+}
+
+void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davix::Uri& uri)
+{
+    *req_params = reference_params;
     gboolean insecure_mode = gfal2_get_opt_boolean(handle, "HTTP PLUGIN", "INSECURE", NULL);
     if (insecure_mode) {
-        params.setSSLCAcheck(false);
+        req_params->setSSLCAcheck(false);
     }
-    gfal_http_get_ucert(params, handle);
-    gfal_http_get_aws(params, handle);
+    gfal_http_get_ucert(*req_params, handle);
+    gfal_http_get_aws(*req_params, handle, uri);
 }
 
 
@@ -51,13 +119,11 @@ static void log_davix2gfal(void* userdata, int msg_level, const char* msg)
 
 
 GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
-    context(), posix(&context), params(), handle(handle)
+    context(), posix(&context), reference_params(), handle(handle)
 {
-    params.setTransparentRedirectionSupport(true);
-    params.setUserAgent("gfal2::http");
+    reference_params.setTransparentRedirectionSupport(true);
+    reference_params.setUserAgent("gfal2::http");
     context.loadModule("grid");
-
-    gfal_http_refresh_params(handle, params);
 
     int dav_level = DAVIX_LOG_CRITICAL | DAVIX_LOG_WARNING | DAVIX_LOG_VERBOSE | DAVIX_LOG_DEBUG;
     if (gfal_get_verbose() & GFAL_VERBOSE_TRACE_PLUGIN)
@@ -69,10 +135,7 @@ GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
 
 GfalHttpPluginData* gfal_http_get_plugin_context(gpointer ptr)
 {
-    GfalHttpPluginData* plugin_data = static_cast<GfalHttpPluginData*>(ptr);
-    // Some parameters may change at run time!
-    gfal_http_refresh_params(plugin_data->handle, plugin_data->params);
-    return plugin_data;
+    return static_cast<GfalHttpPluginData*>(ptr);
 }
 
 
@@ -225,46 +288,6 @@ void http2gliberr(GError** err, int http, const char* func, const char* msg)
     gfal2_set_error(err, http_plugin_domain, errn, func, "%s: %s (HTTP %d)", msg, buffer, http);
 }
 
-
-/// Authn implementation
-void gfal_http_get_ucert(RequestParams & params, gfal2_context_t handle)
-{
-    std::string ukey, ucert;
-    DavixError* tmp_err=NULL;
-
-    // Try user defined first
-    gchar *ucert_p = gfal2_get_opt_string(handle, "X509", "CERT", NULL);
-    gchar *ukey_p = gfal2_get_opt_string(handle, "X509", "KEY", NULL);
-    if (ucert_p) {
-        ucert.assign(ucert_p);
-        ukey= (ukey_p != NULL)?(std::string(ukey_p)):(ucert);
-
-        X509Credential cred;
-        if(cred.loadFromFilePEM(ukey,ucert,"", &tmp_err) <0){
-            gfal_log(GFAL_VERBOSE_VERBOSE,
-                    "Could not load the user credentials: %s", tmp_err->getErrMsg().c_str());
-        }else{
-            params.setClientCertX509(cred);
-        }
-    }
-    g_free(ucert_p);
-    g_free(ukey_p);
-}
-
-/// AWS implementation
-void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle)
-{
-    gchar *secret_key = gfal2_get_opt_string(handle, "S3", "ACCESS_TOKEN_SECRET", NULL);
-    gchar *access_key = gfal2_get_opt_string(handle, "S3", "ACCESS_TOKEN", NULL);
-
-    if (secret_key && access_key) {
-        gfal_log(GFAL_VERBOSE_DEBUG, "Setting S3 key pair");
-        params.setAwsAuthorizationKeys(secret_key, access_key);
-    }
-
-    g_free(secret_key);
-    g_free(access_key);
-}
 
 /// Init function
 extern "C" gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)

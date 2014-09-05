@@ -19,7 +19,9 @@ int gfal_http_stat(plugin_handle plugin_data, const char* url,
 
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
-    if (davix->posix.stat64(&davix->params, stripped_url, &info, &daverr) != 0) {
+    Davix::RequestParams req_params;
+    davix->get_params(&req_params, Davix::Uri(stripped_url));
+    if (davix->posix.stat64(&req_params, stripped_url, &info, &daverr) != 0) {
         davix2gliberr(daverr, err);
         Davix::DavixError::clearError(&daverr);
         return -1;
@@ -37,7 +39,9 @@ int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, g
 
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
-    if (davix->posix.mkdir(&davix->params, stripped_url, mode, &daverr) != 0) {
+    Davix::RequestParams req_params;
+    davix->get_params(&req_params, Davix::Uri(stripped_url));
+    if (davix->posix.mkdir(&req_params, stripped_url, mode, &daverr) != 0) {
         davix2gliberr(daverr, err);
         Davix::DavixError::clearError(&daverr);
         return -1;
@@ -55,10 +59,13 @@ int gfal_http_unlinkG(plugin_handle plugin_data, const char* url, GError** err)
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
 
+    Davix::RequestParams req_params;
+    davix->get_params(&req_params, Davix::Uri(stripped_url));
+
     // Note: in WebDAV DELETE works for directories and files, so check ourselves
     // we are not unlinking a folder
     struct stat st;
-    if (davix->posix.stat(&davix->params, stripped_url, &st, &daverr) != 0) {
+    if (davix->posix.stat(&req_params, stripped_url, &st, &daverr) != 0) {
       davix2gliberr(daverr, err);
       Davix::DavixError::clearError(&daverr);
       return -1;
@@ -70,7 +77,7 @@ int gfal_http_unlinkG(plugin_handle plugin_data, const char* url, GError** err)
         return -1;
     }
 
-    if (davix->posix.unlink(&davix->params, stripped_url, &daverr) != 0) {
+    if (davix->posix.unlink(&req_params, stripped_url, &daverr) != 0) {
       davix2gliberr(daverr, err);
       Davix::DavixError::clearError(&daverr);
       return -1;
@@ -88,10 +95,13 @@ int gfal_http_rmdirG(plugin_handle plugin_data, const char* url, GError** err)
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
 
+    Davix::RequestParams req_params;
+    davix->get_params(&req_params, Davix::Uri(stripped_url));
+
     // Note: in WebDAV DELETE is recursive for directories, so check first if there is anything
     // inside and fail in that case
     struct stat st;
-    if (davix->posix.stat(&davix->params, stripped_url, &st, &daverr) != 0) {
+    if (davix->posix.stat(&req_params, stripped_url, &st, &daverr) != 0) {
       davix2gliberr(daverr, err);
       Davix::DavixError::clearError(&daverr);
       return -1;
@@ -103,7 +113,7 @@ int gfal_http_rmdirG(plugin_handle plugin_data, const char* url, GError** err)
         return -1;
     }
 
-    if (davix->posix.rmdir(&davix->params, stripped_url, &daverr) != 0) {
+    if (davix->posix.rmdir(&req_params, stripped_url, &daverr) != 0) {
       davix2gliberr(daverr, err);
       Davix::DavixError::clearError(&daverr);
       return -1;
@@ -171,7 +181,10 @@ gfal_file_handle gfal_http_opendir(plugin_handle plugin_data, const char* url,
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
 
-    DAVIX_DIR* dir = davix->posix.opendirpp(&davix->params, stripped_url, &daverr);
+    Davix::RequestParams req_params;
+    davix->get_params(&req_params, Davix::Uri(stripped_url));
+
+    DAVIX_DIR* dir = davix->posix.opendirpp(&req_params, stripped_url, &daverr);
     if (dir == NULL) {
         davix2gliberr(daverr, err);
         Davix::DavixError::clearError(&daverr);
@@ -253,8 +266,11 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
         return -1;
     }
 
+    Davix::RequestParams req_params;
+    davix->get_params(&req_params, Davix::Uri(stripped_url));
+
     Davix::File f(davix->context, Davix::Uri(stripped_url));
-    if(f.checksum(&davix->params, buffer_chk, check_type, &daverr) <0 ){
+    if(f.checksum(&req_params, buffer_chk, check_type, &daverr) <0 ){
         davix2gliberr(daverr, err);
         Davix::DavixError::clearError(&daverr);
     }

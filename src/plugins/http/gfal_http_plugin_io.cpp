@@ -20,7 +20,7 @@ gfal_file_handle gfal_http_fopen(plugin_handle plugin_data, const char* url, int
     Davix::DavixError* daverr = NULL;
 
     GfalHTTPFD* fd = new GfalHTTPFD();
-    fd->req_params = davix->params;
+    davix->get_params(&fd->req_params, Davix::Uri(stripped_url));
     if (strncmp("s3:", url, 3) == 0 || strncmp("s3s:", url, 4) == 0)
         fd->req_params.setProtocol(Davix::RequestProtocol::AwsS3);
 
