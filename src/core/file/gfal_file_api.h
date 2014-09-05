@@ -1,20 +1,20 @@
 #pragma once
 #ifndef _GFAL2_FILE_API_
 #define _GFAL2_FILE_API_
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 /**
@@ -38,7 +38,7 @@
 #ifdef __cplusplus
 extern "C"
 {
-#endif 
+#endif
 
 
 /*!
@@ -196,8 +196,8 @@ struct dirent* gfal2_readdir(gfal2_context_t context, DIR* d, GError ** err);
 ///  @brief return the next directory entry in addition of the entry meta-data
 ///
 ///  readdirpp get both of the directory entry informations and the stat informations in one operation, improving the performance in case of remote file system
-///  
-/// 
+///
+///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
 ///  @param d : directory handle created by \ref gfal2_opendir
 ///  @param err : GError error report
@@ -207,48 +207,48 @@ struct dirent* gfal2_readdirpp(gfal2_context_t context, DIR* d, struct stat* st,
 
 
 ///  @brief close a directory handle
-/// 
+///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
 ///  @param d : directory handle created by \ref gfal2_opendir
 ///  @param err : GError error report
-///  @return 0 if success, negative value if error, set err properly in case of error 
+///  @return 0 if success, negative value if error, set err properly in case of error
 ///
 int gfal2_closedir(gfal2_context_t context, DIR* d, GError ** err);
 
 
 
 ///  @brief create a symbolic link
-///  
+///
 ///  Symbolic links are not supported by all protocols, in case of non-supported feature
 ///  GFAL2 always return an error and set err to the code EPROTONOSUPPORT
-/// 
+///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
 ///  @param oldurl : origin file
 ///  @param newurl : symbolic link path
 ///  @param err : GError error report
-///  @return 0 if success, negative value if error, set err properly in case of error 
+///  @return 0 if success, negative value if error, set err properly in case of error
 ///
 int gfal2_symlink(gfal2_context_t context, const char* odlurl, const char* newurl, GError ** err);
 
 ///  @brief read a symbolic link value, provide the linked file path
-///  
+///
 ///  Symbolic links are not supported by all protocols, in case of non-supported feature
 ///  GFAL2 always return an error and set err to the code EPROTONOSUPPORT.
 ///  gfal2_readlink follows the POSIX behavior and does not add a null byte at the end of the buffer if the link is truncated.
-/// 
+///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
 ///  @param url : path of the symbolic link to read
 ///  @param buff : buffer for symbolic link value
 ///  @param buffsiz : maximum number of bytes to write
 ///  @param err : GError error report
-///  @return size of the link value in bytes if success, negative value if error. set err properly in case of error 
+///  @return size of the link value in bytes if success, negative value if error. set err properly in case of error
 ///
 ssize_t gfal2_readlink(gfal2_context_t context, const char* url, char* buff, size_t buffsiz, GError ** err);
 
 ///  @brief Delete a file entry
-///  
+///
 ///  Does not work for Collections or directory.
-/// 
+///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
 ///  @param url : path of the file to delete
 ///  @param err : GError error report
@@ -257,9 +257,9 @@ ssize_t gfal2_readlink(gfal2_context_t context, const char* url, char* buff, siz
 int gfal2_unlink(gfal2_context_t context, const char* url, GError ** err);
 
 ///  @brief list extended attributes of a resource.
-///  
+///
 ///  Extended attributes keys are concatenated in the buffer and separated by a null character
-/// 
+///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
 ///  @param url : path of the resource
 ///  @param list : buffer for the extended attribute keys
@@ -270,8 +270,8 @@ int gfal2_unlink(gfal2_context_t context, const char* url, GError ** err);
 ssize_t gfal2_listxattr (gfal2_context_t context, const char *url, char *list, size_t size, GError ** err);
 
 ///  @brief get an extended attribute value of a resource.
-///  
-/// 
+///
+///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
 ///  @param url : path of the resource
 ///  @param name : key of the extended attribute
@@ -284,8 +284,8 @@ ssize_t gfal2_getxattr (gfal2_context_t context, const char *url, const char *na
                         void *value, size_t size, GError ** err);
 
 ///  @brief set an extended attribute value of a resource.
-///  
-/// 
+///
+///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
 ///  @param url : path of the resource
 ///  @param name : key of the extended attribute to define/set
@@ -393,97 +393,95 @@ int gfal2_abort_files(gfal2_context_t context, int nbfiles, const char* const* u
 
 /**
  * @brief Open a file, return GFAL2 file descriptor
- * 
+ *
  *  gfal_open supports the same flags than the POSIX open call
- * 
+ *
  *  O_TRUNC
  *		  If  the file already exists and is a regular file and the open mode allows writing (i.e., is O_RDWR or O_WRONLY) it will be truncated to length 0.  If the file is a FIFO or termi‐
  *		  nal device file, the O_TRUNC flag is ignored.  Otherwise the effect of O_TRUNC is unspecified.
- * 
+ *
  *  O_APPEND
  *		  The  file  is opened in append mode.  Before each write(2), the file offset is positioned at the end of the file, as if with lseek(2).  O_APPEND may lead to corrupted files on NFS
  *		  file systems if more than one process appends data to a file at once.  This is because NFS does not support appending to a file, so the client kernel has  to  simulate  it,  which
  *		  can't be done without a race condition.
- * 
+ *
  *   O_CREAT
- *            If the file does not exist it will be created.  The owner (user ID) of the file is set to the effective user ID of the process.  The group ownership (group ID) is  set  either  to
- *            the  effective  group  ID of the process or to the group ID of the parent directory (depending on file system type and mount options, and the mode of the parent directory, see the
- *             mount options bsdgroups and sysvgroups described in mount(8)).
+ *        If the file does not exist it will be created.  The owner (user ID) of the file is set to the effective user ID of the process.  The group ownership (group ID) is  set  either  to
+ *        the  effective  group  ID of the process or to the group ID of the parent directory (depending on file system type and mount options, and the mode of the parent directory, see the
+ *        mount options bsdgroups and sysvgroups described in mount(8)).
  *
- *             mode specifies the permissions to use in case a new file is created.  This argument must be supplied when O_CREAT is specified in flags; if O_CREAT is not specified, then mode  is
- *             ignored.   The  effective  permissions  are  modified  by  the process's umask in the usual way: The permissions of the created file are (mode & ~umask).  Note that this mode only
- *             applies to future accesses of the newly created file; the open() call that creates a read-only file may well return a read/write file descriptor.
+ *        mode specifies the permissions to use in case a new file is created.  This argument must be supplied when O_CREAT is specified in flags; if O_CREAT is not specified, then mode  is
+ *        ignored.   The  effective  permissions  are  modified  by  the process's umask in the usual way: The permissions of the created file are (mode & ~umask).  Note that this mode only
+ *        applies to future accesses of the newly created file; the open() call that creates a read-only file may well return a read/write file descriptor.
  *
- * 
- * 
- *       O_DIRECT 
- *             Try to minimize cache effects of the I/O to and from this file.  In general this will degrade performance, but it is useful in special situations, such  as  when  applications  do
- *             their  own  caching.   File I/O is done directly to/from user space buffers.  The O_DIRECT flag on its own makes at an effort to transfer data synchronously, but does not give the
- *             guarantees of the O_SYNC that data and necessary metadata are transferred.  To guarantee synchronous I/O the O_SYNC must be used in addition to O_DIRECT.  See NOTES below for fur‐
- *             ther discussion.
- * 
- *      O_LARGEFILE
- *             (LFS) Allow files whose sizes cannot be represented in an off_t (but can be represented in an off64_t) to be opened.  The _LARGEFILE64_SOURCE macro must be defined (before includ‐
- *             ing  any  header  files)  in  order  to  obtain this definition.  Setting the _FILE_OFFSET_BITS feature test macro to 64 (rather than using O_LARGEFILE) is the preferred method of
- *             obtaining method of accessing large files on 32-bit systems
- * 
+ *   O_DIRECT
+ *        Try to minimize cache effects of the I/O to and from this file.  In general this will degrade performance, but it is useful in special situations, such  as  when  applications  do
+ *        their  own  caching.   File I/O is done directly to/from user space buffers.  The O_DIRECT flag on its own makes at an effort to transfer data synchronously, but does not give the
+ *        guarantees of the O_SYNC that data and necessary metadata are transferred.  To guarantee synchronous I/O the O_SYNC must be used in addition to O_DIRECT.  See NOTES below for fur‐
+ *        ther discussion.
+ *
+ *   O_LARGEFILE
+ *        (LFS) Allow files whose sizes cannot be represented in an off_t (but can be represented in an off64_t) to be opened.  The _LARGEFILE64_SOURCE macro must be defined (before includ‐
+ *        ing  any  header  files)  in  order  to  obtain this definition.  Setting the _FILE_OFFSET_BITS feature test macro to 64 (rather than using O_LARGEFILE) is the preferred method of
+ *        obtaining method of accessing large files on 32-bit systems
+ *
  * @param context : gfal2 handle, see \ref gfal2_context_new
  * @param url : url of the file to open
  * @param flags : flags to use ( similar to open )
  * @param err : GError error report
  * @return This routine return a valid file descriptor if the operation is a success
- *  or -1 if error occured. In case of Error, err is set properly 
+ *  or -1 if error occured. In case of Error, err is set properly
  */
 int gfal2_open(gfal2_context_t context, const char * url, int flag, GError ** err);
 
 ///
 /// Same than \ref gfal2_open but allow to specify the default right of the file
-/// 
+///
 int gfal2_open2(gfal2_context_t context, const char * url, int flag, mode_t mode, GError ** err);
 
 
 ///
 /// \ref gfal2_creat is equivalent to \ref gfal2_open2 with flags equal to O_CREAT|O_WRONLY|O_TRUNC.
-/// 
+///
 int gfal2_creat (gfal2_context_t context, const char *filename, mode_t mode, GError ** err);
 
 
 /**
  * @brief read data from a GFAL2 file descriptor
- * 
+ *
  * @param context : gfal2 handle, see \ref gfal2_context_new
- * @param fd : GFAL2 file descriptor of the file 
+ * @param fd : GFAL2 file descriptor of the file
  * @param buff : buffer for read data
  * @param size : maximum size to read
- * @param err : GError error report* 
- * @return On  success,  the  number  of  bytes read is returned 
- *   (zero indicates end of file), and the file position is advanced 
- *   by this number.  It is not an error if this number is 
+ * @param err : GError error report*
+ * @return On  success,  the  number  of  bytes read is returned
+ *   (zero indicates end of file), and the file position is advanced
+ *   by this number.  It is not an error if this number is
  *   smaller than the number of bytes requested. or a negative value is returned when an error occurs
- *  In case of Error, err is set properly 
+ *  In case of Error, err is set properly
  */
 ssize_t gfal2_read(gfal2_context_t context, int fd, void* buff, size_t s_buff, GError ** err);
 
 /**
  * @brief write data to a GFAL2 file descriptor
- * 
+ *
  * @param context : gfal2 handle, see \ref gfal2_context_new
- * @param fd : GFAL2 file descriptor of the file 
+ * @param fd : GFAL2 file descriptor of the file
  * @param buff : buffer with data to write
  * @param s_buff : maximum size to write
  * @param err : GError error report*
- * @return On  success,  the  number  of  bytes written is returned 
- *   (zero indicates end of file), and the file position is advanced 
- *   by this number.  It is not an error if this number is 
+ * @return On  success,  the  number  of  bytes written is returned
+ *   (zero indicates end of file), and the file position is advanced
+ *   by this number.  It is not an error if this number is
  *   smaller than the number of bytes requested. or a negative value is returned when an error occurs.
- *  In case of Error, err is set properly 
+ *  In case of Error, err is set properly
  */
 ssize_t gfal2_write(gfal2_context_t context, int fd, const void *buff, size_t s_buff, GError ** err);
 
 ///  @brief move the file cursor
-///  
+///
 ///  move the file cursor of the GFAL2 file descriptor fd to offset
-/// 
+///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
 ///  @param fd : file descriptor
 ///  @param offset : new position of the cursor
@@ -494,8 +492,8 @@ ssize_t gfal2_write(gfal2_context_t context, int fd, const void *buff, size_t s_
 off_t gfal2_lseek (gfal2_context_t context, int fd, off_t offset, int whence, GError ** err);
 
 ///  @brief close a file GFAL2 descriptor
-///  
-/// 
+///
+///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
 ///  @param fd : file descriptor
 ///  @param err : GError error report
@@ -504,8 +502,8 @@ off_t gfal2_lseek (gfal2_context_t context, int fd, off_t offset, int whence, GE
 int gfal2_close(gfal2_context_t context, int fd, GError ** err);
 
 ///  @brief flush all buffered data for the given file descriptor
-///  
-/// 
+///
+///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
 ///  @param fd : file descriptor
 ///  @param err : GError error report
@@ -520,12 +518,12 @@ ssize_t gfal2_pwrite(gfal2_context_t context, int fd, const void * buffer, size_
 
 
 /**
-	@} 
+	@}
     End of the FILE group
 */
 #ifdef __cplusplus
 }
-#endif 
+#endif
 
 
 #endif // _GFAL2_FILE_API_

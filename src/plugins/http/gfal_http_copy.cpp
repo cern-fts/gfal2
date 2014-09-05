@@ -594,7 +594,7 @@ int gfal_http_copy_check(plugin_handle plugin_data, gfal2_context_t context, con
 {
     if (check != GFAL_FILE_COPY)
         return 0;
-    // This plugin handles everything that writes into a http endpoint
+    // This plugin handles everything that writes into an http endpoint
     return (is_streamed_scheme(dst) && !is_3rd_scheme(src)) || (is_3rd_scheme(src) && is_3rd_scheme(dst));
 }
 
