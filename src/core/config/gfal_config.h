@@ -60,10 +60,24 @@ extern "C"
  * @param group_name : group name of the parameter
  * @param key : key of the parameter
  * @param error : GError error report system
- * @return parameter value
+ * @return parameter value. Must be freed using g_free
  **/
 gchar * gfal2_get_opt_string(gfal2_context_t handle, const gchar *group_name,
                                     const gchar *key, GError **error);
+
+/**
+* @brief similar to \ref gfal2_get_opt_string but return a default value if
+* an error occurs
+ *
+ * @param handle : context of gfal 2.0
+ * @param group_name : group name of the parameter
+ * @param key : key of the parameter
+ * @param default_value : Default value
+ * @return parameter value. Must be freed using g_free
+ **/
+gchar * gfal2_get_opt_string_with_default(gfal2_context_t handle, const gchar *group_name,
+                                    const gchar *key, const gchar* default_value);
+
 
 
 /**
@@ -95,7 +109,7 @@ gint gfal2_get_opt_integer(gfal2_context_t handle, const gchar *group_name,
 
 /**
 * @brief similar to \ref gfal2_get_opt_integer but return a default value if
-* an error occures
+* an error occurs
 *
 * @param handle : context of gfal 2.0
 * @param group_name : group name of the parameter
