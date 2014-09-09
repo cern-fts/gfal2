@@ -59,7 +59,7 @@ static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, co
     gchar *access_key;
     gfal_http_get_aws_keys(handle, "S3", &secret_key, &access_key);
 
-    // If not present, try S3:host
+    // If not present, try S3:HOST
     if (!secret_key) {
         std::string group_label("S3:");
         group_label += uri.getHost();
@@ -73,6 +73,7 @@ static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, co
         size_t i = host.find('.');
         if (i != std::string::npos) {
             group_label += host.substr(i + 1);
+            std::transform(group_label.begin(), group_label.end(), group_label.begin(), ::toupper);
             gfal_http_get_aws_keys(handle, group_label, &secret_key, &access_key);
         }
     }
