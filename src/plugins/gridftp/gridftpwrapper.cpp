@@ -226,7 +226,7 @@ void gfal_globus_set_credentials(const char* ucert, const char* ukey, globus_ftp
     }
 
     buffer << cert_stream.rdbuf();
-    if (ukey) {
+    if (ukey && strcmp(ucert, ukey) != 0) {
         std::ifstream key_stream(ukey);
         if (key_stream.bad())
             throw Glib::Error(GFAL_GRIDFTP_SCOPE_REQ_STATE, errno,
@@ -241,7 +241,7 @@ void gfal_globus_set_credentials(const char* ucert, const char* ukey, globus_ftp
     OM_uint32 minor_status, major_status;
     gss_cred_id_t cred_id;
     major_status = gss_import_cred(&minor_status, &cred_id,
-    GSS_C_NO_OID, 0, // 0 = Pass credentials; 1 = Pass path as X509_USER_PROXY=...
+            GSS_C_NO_OID, 0, // 0 = Pass credentials; 1 = Pass path as X509_USER_PROXY=...
             &buffer_desc, 0, NULL);
     g_free(buffer_desc.value);
 
