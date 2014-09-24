@@ -39,7 +39,7 @@ static int gfal_mkdir_srmv2_internal(srm_context_t context, const char* path, mo
     mkdir_input.dir_name = (char*) path;
     res  = gfal_srm_external_call.srm_mkdir(context, &mkdir_input);
 
-    if(res <0) {
+    if (res < 0) {
         gfal_srm_report_error(context->errbuf, &tmp_err);
         res = -1;
     }
@@ -74,6 +74,10 @@ int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError*
         else {
             g_clear_error(&tmp_err);
             ret = gfal_mkdir_srmv2_internal(context, surl, mode, &tmp_err);
+            if (ret < 0 && tmp_err->code == EEXIST) {
+                ret = 0;
+                g_clear_error(&tmp_err);
+            }
         }
     }
     gfal_log(GFAL_VERBOSE_TRACE, "   [gfal_srm_mkdir_recG] <-");
