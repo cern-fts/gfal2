@@ -25,7 +25,7 @@
 #include "gridftp_plugin.h"
 
 #include <checksums/checksums.h>
-#include <uri/uri_util.h>
+#include <uri/gfal_uri.h>
 #include <transfer/gfal_transfer_types_internal.h>
 #include <file/gfal_file_api.h>
 

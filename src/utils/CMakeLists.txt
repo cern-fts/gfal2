@@ -21,3 +21,6 @@ set(mds_cache_link ${mds_cache_link} PARENT_SCOPE)
 set(is_ifce_link  ${is_ifce_link} PARENT_SCOPE )
 set(gfal2_utils_src ${gfal2_utils_src} PARENT_SCOPE)
 set(gfal2_mds_def ${gfal2_mds_def} PARENT_SCOPE)
+
+install (FILES "uri/gfal_uri.h"
+         DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/utils)

@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "uri_util.h"
+#include "gfal_uri.h"
 
 #include "common/gfal_common_err_helpers.h"
 

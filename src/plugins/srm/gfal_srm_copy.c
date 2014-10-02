@@ -27,7 +27,7 @@
 #include <file/gfal_file_api.h>
 #include <transfer/gfal_transfer.h>
 #include <transfer/gfal_transfer_plugins.h>
-#include <uri/uri_util.h>
+#include <uri/gfal_uri.h>
 
 #include "gfal_srm_getput.h"
 #include "gfal_srm_namespace.h"

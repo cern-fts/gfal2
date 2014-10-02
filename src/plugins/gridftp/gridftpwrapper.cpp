@@ -15,7 +15,7 @@
 #include <memory>
 #include <fstream>
 #include <sstream>
-#include <uri/uri_util.h>
+#include <uri/gfal_uri.h>
 #include <config/gfal_config.h>
 #include <cancel/gfal_cancel.h>
 #include <exceptions/gfalcoreexception.hpp>
