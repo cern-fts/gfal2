@@ -97,7 +97,7 @@ gchar * gfal2_get_opt_string_with_default(gfal2_context_t handle, const gchar *g
  * @return parameter value
  **/
 gint gfal2_set_opt_string(gfal2_context_t handle, const gchar *group_name,
-                                    const gchar *key, gchar* value, GError **error);
+                                    const gchar *key, const gchar* value, GError **error);
 
 /**
  * @brief get an integer parameter in the current GFAL 2.0 configuration

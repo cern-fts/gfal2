@@ -188,7 +188,7 @@ gchar * gfal2_get_opt_string_with_default(gfal2_context_t handle, const gchar *g
 }
 
 gint gfal2_set_opt_string(gfal2_context_t handle, const gchar *group_name,
-                                    const gchar *key, gchar* value, GError **error){
+                                    const gchar *key, const gchar* value, GError **error){
     g_assert(handle != NULL);
     GError * tmp_err=NULL;
     gfal_conf_t c = gfal_handle_to_conf(handle);
