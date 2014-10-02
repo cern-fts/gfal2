@@ -1,12 +1,10 @@
-#include <common/gfal_common_err_helpers.h>
-#include <common/gfal_common_internal.h>
-#include <checksums/checksums.h>
-#include <globus_ftp_client_throughput_plugin.h>
-
 #include "gridftp_filecopy.h"
 #include "gridftpwrapper.h"
 #include "gridftp_namespace.h"
 #include "gridftp_plugin.h"
+
+#include <globus_ftp_client_throughput_plugin.h>
+#include <checksums/checksums.h>
 
 
 static const Glib::Quark GSIFTP_BULK_DOMAIN("GridFTP::Filecopy");

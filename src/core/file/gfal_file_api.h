@@ -1,6 +1,3 @@
-#pragma once
-#ifndef _GFAL2_FILE_API_
-#define _GFAL2_FILE_API_
 /*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
@@ -23,6 +20,14 @@
  * @author Devresse Adrien
  * @version 2.0.0
  */
+
+#pragma once
+#ifndef _GFAL2_FILE_API_
+#define _GFAL2_FILE_API_
+
+#if !defined(__GFAL2_H_INSIDE__) && !defined(__GFAL2_BUILD__)
+#   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
+#endif
 
 #include <sys/types.h>
 #include <fcntl.h>

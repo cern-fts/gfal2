@@ -1,42 +1,41 @@
+/*
+* Copyright @ Members of the EMI Collaboration, 2010.
+* See www.eu-emi.eu for details on the copyright holders.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+/**
+  * @file gfal_constants.h
+  * the global constant declarations of gfal core
+  * @author Devresse Adrien , Baud Jean-Philippe
+*/
+
 #pragma once
 #ifndef _GFAL_CONSTANTS_H
 #define _GFAL_CONSTANTS_H
 
-/* 
-* Copyright @ Members of the EMI Collaboration, 2010.
-* See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
-*
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
-* limitations under the License.
-*/
- 
-
- 
-/**
-  * @file gfal_constants.h 
-  * the global constant declarations of gfal core
-  * @author Devresse Adrien , Baud Jean-Philippe 
-*/
+#if !defined(__GFAL2_H_INSIDE__) && !defined(__GFAL2_BUILD__)
+#   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
+#endif
 
 #ifdef __cplusplus
 extern "C"
 {
-#endif 
-
-
+#endif
 
 
 #define MAX_PLUGIN_LIST 15
-#define GFAL_MODULE_NAME_SIZE 	1024	
+#define GFAL_MODULE_NAME_SIZE 	1024
 #define GFAL_NEWFILE_SIZE         1024
 
 
@@ -71,26 +70,26 @@ extern "C"
 #define GFAL_CONFIG_DIR_SUFFIX "gfal2.d"
 
 //! xattr standard keys for getxattr / setxattr
-//! replicas listing 
-#define GFAL_XATTR_REPLICA "user.replicas" // global key of replicas for the extended attributes 
+//! replicas listing
+#define GFAL_XATTR_REPLICA "user.replicas" // global key of replicas for the extended attributes
 //! xattr standard keys for getxattr / setxattr
 //! guid information
-#define GFAL_XATTR_GUID "user.guid" // global key for the guid of a file 
+#define GFAL_XATTR_GUID "user.guid" // global key for the guid of a file
 //! xattr standard keys for getxattr / setxattr
 //! file comment
-#define GFAL_XATTR_COMMENT "user.comment" // global key for the comments of a file 
+#define GFAL_XATTR_COMMENT "user.comment" // global key for the comments of a file
 //! xattr standard keys for getxattr / setxattr
-//! file checksum type 
+//! file checksum type
 #define GFAL_XATTR_CHKSUM_TYPE "user.chksumtype"
 //! xattr standard keys for getxattr / setxattr
-//! file checksum  
+//! file checksum
 #define GFAL_XATTR_CHKSUM_VALUE "user.checksum"
 //! xattr standard keys for getxattr / setxattr
 //! file availability status
-//! this key can be used to check or set the stage status of a file  
-#define GFAL_XATTR_STATUS "user.status" 
+//! this key can be used to check or set the stage status of a file
+#define GFAL_XATTR_STATUS "user.status"
 
-// xattr standard values 
+// xattr standard values
 // list of standard values return by getxattr for status key
 
 //! string value to use/compare for extended attribute user.status
@@ -117,6 +116,6 @@ extern "C"
 
 #ifdef __cplusplus
 }
-#endif 
+#endif
 
 #endif

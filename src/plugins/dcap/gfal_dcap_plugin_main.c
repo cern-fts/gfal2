@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright @ Members of the EMI Collaboration, 2010.
  * See www.eu-emi.eu for details on the copyright holders.
  *
@@ -22,13 +22,9 @@
  */
 
 #include <regex.h>
-#include <time.h> 
+#include <time.h>
 #include <string.h>
 #include <stdlib.h>
-#include <common/gfal_common_internal.h>
-#include <common/gfal_common_err_helpers.h>
-#include <common/gfal_common_plugin.h>
-#include <common/gfal_types.h>
 #include "gfal_dcap_plugin_layer.h"
 #include "gfal_dcap_plugin_main.h"
 #include "gfal_dcap_plugin_bindings.h"

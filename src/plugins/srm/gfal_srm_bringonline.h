@@ -27,7 +27,6 @@
 #include <glib.h>
 
 #include "gfal_srm.h"
-#include <common/gfal_types.h>
 
 int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl,
                              time_t pintime, time_t timeout,

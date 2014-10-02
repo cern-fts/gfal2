@@ -38,12 +38,6 @@
 #include "gfal_srm_url_check.h"
 #include "gfal_srm_internal_ls.h"
 
-#include <cancel/gfal_cancel.h>
-#include <common/gfal_common_err_helpers.h>
-#include <common/gfal_common_plugin.h>
-
-#include <file/gfal_file_api.h>
-
 #include <gssapi.h>
 #include <globus_gss_assist.h>
 

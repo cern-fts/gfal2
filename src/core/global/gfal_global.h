@@ -1,6 +1,3 @@
-#pragma once
-#ifndef GFAL_GLOBAL_HPP
-#define GFAL_GLOBAL_HPP
 /*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
@@ -18,6 +15,20 @@
 * limitations under the License.
 */
 
+/**
+ * @file gfal_global.h
+ * @brief gfal2 context management functions
+ * @author Devresse Adrien
+ **/
+
+#pragma once
+#ifndef GFAL_GLOBAL_HPP
+#define GFAL_GLOBAL_HPP
+
+#if !defined(__GFAL2_H_INSIDE__) && !defined(__GFAL2_BUILD__)
+#   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
+#endif
+
 #include <glib.h>
 #include <common/gfal_prototypes.h>
 #include <common/gfal_deprecated.h>
@@ -26,14 +37,6 @@
 extern "C"
 {
 #endif  // __cplusplus
-
-/**
- * @file gfal_global.h
- * @brief gfal2 context management functions
- * @author Devresse Adrien
- *
- * */
-
 
 /**
  * a gfal context is a separated instance of the gfal library
@@ -107,4 +110,3 @@ GQuark gfal2_get_plugins_quark();
 
 
 #endif /* GFAL_GLOBAL_HPP */
-

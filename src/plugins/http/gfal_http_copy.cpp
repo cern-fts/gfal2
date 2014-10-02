@@ -1,12 +1,9 @@
 #include <davix.hpp>
 #include <copy/davixcopy.hpp>
 #include <unistd.h>
-#include <transfer/gfal_transfer_plugins.h>
-#include <config/gfal_config.h>
 #include <checksums/checksums.h>
 #include <cstdio>
-#include <common/gfal_common_err_helpers.h>
-#include <file/gfal_file_api.h>
+#include <cstring>
 #include "gfal_http_plugin.h"
 
 

@@ -31,9 +31,6 @@
 #include <regex.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <common/gfal_common_internal.h>
-#include <common/gfal_common_err_helpers.h>
-#include <logger/gfal_logger.h>
 #include <mds/gfal_mds.h>
 
 #include "gfal_srm_endpoint.h"

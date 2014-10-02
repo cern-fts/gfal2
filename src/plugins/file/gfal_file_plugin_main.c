@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -20,11 +20,11 @@
  * brief file plugin
  * author Devresse Adrien
  */
- 
- 
+
+
 
 #include <regex.h>
-#include <time.h> 
+#include <time.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -36,13 +36,8 @@
 #include <attr/xattr.h>
 #include <zlib.h>
 
-#include <common/gfal_constants.h>
-#include <common/gfal_types.h>
-#include <common/gfal_common_plugin.h>
-#include <common/gfal_common_err_helpers.h>
+#include <gfal_plugins_api.h>
 #include <checksums/checksums.h>
-#include <fdesc/gfal_file_handle.h>
-#include <file/gfal_file_api.h>
 
 const char* file_prefix="file:";
 unsigned int s_prefix = 0;
@@ -110,7 +105,7 @@ static gboolean gfal_file_check_url(plugin_handle handle, const char* url, plugi
         case GFAL_PLUGIN_CHECKSUM:
             return (gfal_lfile_path_checker(handle, url)==0);
 		default:
-			return FALSE;		
+			return FALSE;
 	}
 }
 

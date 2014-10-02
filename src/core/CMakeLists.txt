@@ -13,6 +13,7 @@ file (GLOB src_posix      "posix/*.c*")
 
 # Core library
 add_definitions(-DVERSION="${VERSION_STRING}")
+add_definitions(-D__GFAL2_BUILD__)
 
 add_library (gfal2 SHARED ${src_cancel}
                           ${src_common}

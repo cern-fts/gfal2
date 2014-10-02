@@ -28,11 +28,6 @@
 #include <gfal_srm_ifce_types.h>
 #include <glib.h>
 
-#include <common/gfal_types.h>
-#include <common/gfal_common_err_helpers.h>
-#include <config/gfal_config.h>
-#include <transfer/gfal_transfer.h>
-
 #include "gfal_srm_endpoint.h"
 #include "gfal_srm.h"
 

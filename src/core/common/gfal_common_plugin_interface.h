@@ -1,6 +1,3 @@
-#pragma once
-#ifndef _GFAL_PLUGIN_INTERFACE_
-#define _GFAL_PLUGIN_INTERFACE_
 /*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
@@ -25,11 +22,20 @@
  *  plugin specific related API
  * */
 
+#pragma once
+#ifndef _GFAL_PLUGIN_INTERFACE_
+#define _GFAL_PLUGIN_INTERFACE_
+
+#if !defined(__GFAL2_H_INSIDE__) && !defined(__GFAL2_BUILD__)
+#   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h"
+#endif
+
 #include <glib.h>
 #include <common/gfal_prototypes.h>
 #include <common/gfal_constants.h>
 #include <global/gfal_global.h>
 #include <transfer/gfal_transfer_types.h>
+#include <sys/stat.h>
 
 #ifdef __cplusplus
 extern "C"

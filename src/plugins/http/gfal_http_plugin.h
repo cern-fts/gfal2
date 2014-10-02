@@ -1,9 +1,7 @@
 #ifndef _GFAL_HTTP_PLUGIN_H
 #define _GFAL_HTTP_PLUGIN_H
 
-#include <fdesc/gfal_file_handle.h>
-#include <common/gfal_common_plugin.h>
-#include <common/gfal_types.h>
+#include <gfal_plugins_api.h>
 
 
 #include <davix.hpp>

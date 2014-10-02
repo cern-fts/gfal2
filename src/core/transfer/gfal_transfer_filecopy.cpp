@@ -16,6 +16,7 @@
 #include <common/gfal_common_plugin.h>
 #include <transfer/gfal_transfer_internal.h>
 #include <transfer/gfal_transfer_types_internal.h>
+#include <cancel/gfal_cancel.h>
 
 static GQuark scope_copy_domain = g_quark_from_static_string("FileCopy::start_copy");
 

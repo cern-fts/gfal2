@@ -27,7 +27,7 @@
 #include "gfal_srm_namespace.h"
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_endpoint.h"
-#include <common/gfal_common_err_helpers.h>
+
 
 static int gfal_mkdir_srmv2_internal(srm_context_t context, const char* path, mode_t mode, GError** err)
 {

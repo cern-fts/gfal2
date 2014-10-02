@@ -36,15 +36,7 @@
 #include <serrno.h>
 #include <uuid/uuid.h>
 
-#include <config/gfal_config.h>
-
-#include <common/gfal_prototypes.h>
-#include <common/gfal_types.h>
-#include <common/gfal_common_plugin.h>
-#include <logger/gfal_logger.h>
-
 #include <mds/gfal_mds.h>
-#include <config/gfal_config.h>
 
 #include "gfal_lfc.h"
 #include "lfc_ifce_ng.h"

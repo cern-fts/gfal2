@@ -1,24 +1,32 @@
+/*
+* Copyright @ Members of the EMI Collaboration, 2010.
+* See www.eu-emi.eu for details on the copyright holders.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+/**
+ * @file gfal_transfer_types.h
+ * @author Adrien Devresse
+ */
+
 #pragma once
 #ifndef _GFAL2_TRANSFER_TYPES_
 #define _GFAL2_TRANSFER_TYPES_
 
-/* 
-* Copyright @ Members of the EMI Collaboration, 2010.
-* See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
-*
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
-* limitations under the License.
-*/
- 
+#if !defined(__GFAL2_H_INSIDE__) && !defined(__GFAL2_BUILD__)
+#   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
+#endif
+
 #include <stdlib.h>
 #include <glib.h>
 #include <sys/time.h>
@@ -26,21 +34,17 @@
 #define GFALT_DEFAULT_TRANSFERT_TIMEOUT 3600
 #define GFALT_DEFAULT_NB_STREAM			0
 
- 
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif  // __cplusplus
 
-/**
- * @file gfal_transfer_types.h
- * @author Adrien Devresse
- */
 
 /**
  * @brief container for transfer related parameters
  * */
-typedef struct _gfalt_params_t* gfalt_params_t; 
+typedef struct _gfalt_params_t* gfalt_params_t;
 
 /**
  * @brief internal status of a copy file action

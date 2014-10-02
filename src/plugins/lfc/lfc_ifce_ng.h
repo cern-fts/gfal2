@@ -1,28 +1,28 @@
 #pragma once
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
- 
+
  /*
   * lfc_ifce_ng.h
   * internal header of the lfc plugin module
   * author Adrien Devresse
  */
- 
+
 #define GFAL_MAX_LFCHOST_LEN 1024
 
 #define NSTYPE_LFC
@@ -32,9 +32,7 @@
 #include <Cthread_typedef.h>
 #include <regex.h>
 
-#include <common/gfal_prototypes.h>
-#include <common/gfal_types.h>
-#include <common/gfal_constants.h>
+#include <gfal_plugins_api.h>
 #include <gsimplecache/gcachemain.h>
 
 
@@ -58,7 +56,7 @@ struct lfc_ops {
     char* lfc_conn_retry;
     char* lfc_conn_try_int;
     char* lfc_conn_timeout;
-    regex_t rex; // regular expression compiled 
+    regex_t rex; // regular expression compiled
     gfal2_context_t handle;
     GSimpleCache* cache_stat;
 #if defined(_REENTRANT) || defined(_THREAD_SAFE) || (defined(_WIN32) && (defined(_MT) || defined(_DLL)))
@@ -97,7 +95,7 @@ struct lfc_ops {
     struct dirent* (*readdir)(lfc_DIR *);
     struct lfc_direnstat* (*readdirx)(lfc_DIR *dirp);
     int (*rmdir)(const char *);
-    int (*startsess) (char *, char *); 
+    int (*startsess) (char *, char *);
     int (*endsess) ();
     int (*Cthread_init)();
     int (*_Cthread_addcid)(char *, int, char *, int, Cth_pid_t *, unsigned, void *(*)(void *), int);
@@ -136,9 +134,9 @@ char ** gfal_lfc_getSURL(struct lfc_ops* ops, const char* path, GError** err);
 
 void gfal_lfc_init_thread(struct lfc_ops* ops);
 
-int gfal_lfc_startSession(struct lfc_ops* ops, GError ** err); 
+int gfal_lfc_startSession(struct lfc_ops* ops, GError ** err);
 
-void gfal_auto_maintain_session(struct lfc_ops* ops, GError ** err); 
+void gfal_auto_maintain_session(struct lfc_ops* ops, GError ** err);
 
 ssize_t g_strv_catbuff(char** strv, char* buff, size_t size);
 

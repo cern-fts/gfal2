@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -22,19 +22,12 @@
  * @author Devresse Adrien
  * @version 0.1
  * @date 30/06/2011
- * 
+ *
  **/
- 
-
-
 
 #include <regex.h>
-#include <time.h> 
+#include <time.h>
 #include <string.h>
-#include <common/gfal_common_err_helpers.h>
-#include <common/gfal_common_plugin.h>
-#include <common/gfal_types.h>
-#include <logger/gfal_logger.h>
 #include "gfal_rfio_plugin_layer.h"
 #include "gfal_rfio_plugin_main.h"
 #include "gfal_rfio_plugin_bindings.h"
@@ -48,7 +41,7 @@ void gfal_rfio_destroyG(plugin_handle handle);
 int gfal_rfio_regex_compile(regex_t * rex, GError** err){
 	int ret = regcomp(rex, "^rfio://([:alnum:]|-|/|.|_)+$",REG_ICASE | REG_EXTENDED);
 	g_return_val_err_if_fail(ret==0,-1,err,"[gfal_rfio_internal_check_url] fail to compile regex, report this bug");
-	return ret;	
+	return ret;
 }
 
 
@@ -64,12 +57,12 @@ GQuark gfal2_get_plugin_rfio_quark(){
 gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err){
 	gfal_plugin_interface rfio_plugin;
 	GError* tmp_err=NULL;
-	memset(&rfio_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin	
+	memset(&rfio_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin
 	gfal_plugin_rfio_handle h = g_new(struct _gfal_plugin_rfio_handle,1);
 	h->handle = handle;
 	h->rf = gfal_rfio_internal_loader(&tmp_err);
 	gfal_rfio_regex_compile(&h->rex, err);
-	rfio_plugin.plugin_data = (void*) h;	
+	rfio_plugin.plugin_data = (void*) h;
 	rfio_plugin.check_plugin_url = &gfal_rfio_check_url;
 	rfio_plugin.getName= &gfal_rfio_getName;
 	rfio_plugin.plugin_delete= &gfal_rfio_destroyG;
@@ -94,7 +87,7 @@ gboolean gfal_rfio_internal_check_url(gfal_plugin_rfio_handle rh, const char* su
         gfal2_set_error(err, gfal2_get_plugin_rfio_quark(), EINVAL, __func__,
                 "Invalid surl, surl too long or NULL");
 		return FALSE;
-	}	
+	}
 	int ret=  regexec(&rh->rex,surl,0,NULL,0);
 	return (ret==0)?TRUE:FALSE;
 }
@@ -117,7 +110,7 @@ gboolean gfal_rfio_check_url(plugin_handle ch, const char* url,  plugin_mode mod
 			default:
 				ret =  FALSE;
 				break;
-	}	
+	}
 	if(tmp_err)
 		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return ret;

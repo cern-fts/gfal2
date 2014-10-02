@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright @ Members of the EMI Collaboration, 2010.
  * See www.eu-emi.eu for details on the copyright holders.
  *
@@ -31,13 +31,8 @@
 #include <dirent.h>
 
 #include <regex.h>
-#include <time.h> 
+#include <time.h>
 #include <dlfcn.h>
-#include <common/gfal_common_err_helpers.h>
-#include <common/gfal_common_internal.h>
-#include <common/gfal_common_plugin.h>
-#include <common/gfal_types.h>
-#include <logger/gfal_logger.h>
 #include "gfal_dcap_plugin_layer.h"
 
 typedef int (*lstat_t)(const char *, struct stat *);

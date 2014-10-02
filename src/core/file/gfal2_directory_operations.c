@@ -28,6 +28,7 @@
 #include <common/gfal_common_filedescriptor.h>
 #include <common/gfal_common_dir_handle.h>
 #include <logger/gfal_logger.h>
+#include <cancel/gfal_cancel.h>
 
 //
 // Mapping for the gfal 2.0  opendir/readdir/closedir operations

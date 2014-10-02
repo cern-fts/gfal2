@@ -16,9 +16,7 @@
 */
 
 
-#include <config/gfal_config.h>
 #include <exceptions/cpp_to_gerror.hpp>
-#include <common/gfal_common_err_helpers.h>
 
 #include "gridftp_namespace.h"
 #include "gridftp_plugin.h"

@@ -17,7 +17,6 @@
 #include <cstring>
 #include <errno.h>
 #include <fcntl.h>
-#include <logger/gfal_logger.h>
 #include <pugixml.hpp>
 #include <string>
 #include "gfal_mds_internal.h"

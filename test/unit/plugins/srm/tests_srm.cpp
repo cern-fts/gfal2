@@ -19,9 +19,6 @@
 #include "tests_srm.h"
 #include <gtest/gtest.h>
 #include <gfal_api.h>
-#include <common/gfal_types.h>
-
-#include <common/gfal_common_internal.h>
 
 extern "C"{
 
@@ -30,14 +27,9 @@ extern "C"{
 
 }
 
-
-
-
-
-
 TEST(gfalPlugin, srmTest){
 	GError * tmp_err=NULL;
-	gfal2_context_t handle = gfal_initG(&tmp_err);
+	gfal2_context_t handle = gfal2_context_new(&tmp_err);
     ASSERT_TRUE(tmp_err== NULL && handle);
 
 	gfal_srmv2_opt opts;
@@ -54,7 +46,5 @@ TEST(gfalPlugin, srmTest){
     ASSERT_TRUE(res == FALSE);
 	res = plugin_url_check2(&opts, handle, "sr", "", GFAL_FILE_COPY);
     ASSERT_TRUE(res == FALSE);
-    gfal_handle_freeG(handle);
+    gfal2_context_free(handle);
 }
-
-

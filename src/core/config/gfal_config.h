@@ -1,6 +1,3 @@
-#pragma once
-#ifndef GFAL_CONFIG_H
-#define GFAL_CONFIG_H
 /*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
@@ -17,6 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
+#pragma once
+#ifndef GFAL_CONFIG_H
+#define GFAL_CONFIG_H
+
+#if !defined(__GFAL2_H_INSIDE__) && !defined(__GFAL2_BUILD__)
+#   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
+#endif
 
 #include <glib.h>
 #include <global/gfal_global.h>

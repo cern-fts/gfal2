@@ -1,7 +1,7 @@
-#include <errno.h>
+#include <cstring>
+#include <cerrno>
 #include <glib.h>
 #include <unistd.h>
-#include <common/gfal_common_err_helpers.h>
 #include "gfal_http_plugin.h"
 
 

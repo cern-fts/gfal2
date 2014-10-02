@@ -33,15 +33,6 @@ extern "C"
 {
 #endif
 
-#define GFAL2_BEGIN_SCOPE_CANCEL(context, ret_err_value, err) \
-    do{                                                       \
-    if(gfal2_start_scope_cancel(context, err) < 0){           \
-        return ret_err_value;                                 \
-    }                                                         \
-    }while(0)
-
-#define GFAL2_END_SCOPE_CANCEL(context) \
-    gfal2_end_scope_cancel(context)
 
 /// init function
 gfal2_context_t gfal_initG(GError** err);
@@ -50,11 +41,6 @@ gfal2_context_t gfal_initG(GError** err);
 void gfal_handle_freeG(gfal2_context_t handle);
 
 GQuark gfal_cancel_quark();
-
-
-int gfal2_start_scope_cancel(gfal2_context_t context, GError** err);
-
-int gfal2_end_scope_cancel(gfal2_context_t context);
 
 
 #ifdef __cplusplus
