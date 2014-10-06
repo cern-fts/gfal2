@@ -63,6 +63,11 @@ static int unlink_if_exists(gfal2_context_t context, gfalt_params_t params,
         return -1;
     }
 
+    if (S_ISFIFO(st.st_mode) || S_ISCHR(st.st_mode) || S_ISBLK(st.st_mode) || S_ISSOCK(st.st_mode)) {
+        gfal_log(GFAL_VERBOSE_VERBOSE, "%s is a special file (%o), so keep going", surl, S_IFMT & st.st_mode);
+        return 0;
+    }
+
     if (!gfalt_get_replace_existing_file(params,NULL)) {
         gfal2_set_error(error, local_copy_domain, EEXIST, __func__, "The file exists and overwrite is not set");
         return -1;
