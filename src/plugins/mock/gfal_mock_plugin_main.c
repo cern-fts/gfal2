@@ -160,7 +160,7 @@ void gfal_plugin_mock_get_value(const char* url, const char* key, char* value)
 	else
 	{
 		// if it is the last parameter just copy the string until it ends
-		g_strlpy(value, str);
+	    g_stpcpy(value, str);
 	}
 }
 
