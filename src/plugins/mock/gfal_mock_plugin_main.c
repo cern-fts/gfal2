@@ -79,7 +79,7 @@ static unsigned int mock_prefix_len(){
 }
 
 static gboolean is_mock_uri(const char* src){
-    return (strncmp(src, mock_prefix, s_prefix) == 0);
+    return (strncmp(src, mock_prefix, mock_prefix_len()) == 0);
 }
 
 /*
