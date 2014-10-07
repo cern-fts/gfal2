@@ -73,7 +73,7 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
             status = output.filestatuses[0].status;
             switch (status) {
                 case 0:
-                case 22: // SRM_FILE_PINNED
+                case EAGAIN:
                     if (output.token)
                         g_strlcpy(token, output.token, tsize);
                     else
@@ -175,7 +175,7 @@ static int gfal_srmv2_bring_online_poll_internal(srm_context_t context,
         status = output.filestatuses[0].status;
         switch (status) {
             case 0:
-            case 22:
+            case EAGAIN:
                 break;
             default:
                 gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),

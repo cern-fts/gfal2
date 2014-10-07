@@ -135,6 +135,7 @@ URLs, the dcap protocol is used on the DCACHE storage system
 Summary:            Provide the srm access for %{name}
 Group:              Applications/Internet
 Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
+Requires:           srm-ifce >= 1.21.1
 
 
 %description plugin-srm
