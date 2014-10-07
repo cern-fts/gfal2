@@ -29,7 +29,7 @@ function usage
     echo
     echo "Prerequistes:"
     echo 
-    echo " - BUILD_ROOT must be set to to the root of the build/checkout of the lcgutil project. Example:"
+    echo " - BUILD_ROOT must be set to to the root of the build/checkout of the gfal2 project. Example:"
     echo
     echo " export BUILD_ROOT=/home/$USER/workspace"
     echo

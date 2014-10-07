@@ -1,11 +1,11 @@
 /**
 	\mainpage GFAL 2.0  Documentation
-    \author lcg-util section, CERN IT-SDC-ID ( lcgutil-support@cern.ch )
+    \author Data Management Clients support, CERN IT-SDC-ID ( dmc-support@cern.ch )
 	\author Devresse Adrien ( adrien.devresse@cern.ch )
 	\author Alejandro Alvarez Ayllon  ( Alejandro.Alvarez.Ayllon@cern.ch )
 
 <h2>GFAL 2.0 Wiki:</h2>
-- <a href="https://svnweb.cern.ch/trac/lcgutil/wiki/gfal2">GFAL2 wiki </a>
+- <a href="http://dmc.web.cern.ch/">Data Management Clients web page</a>
 
 <h2>API:</h2>	
 Main file : gfal_api.h
