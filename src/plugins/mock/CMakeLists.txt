@@ -5,7 +5,7 @@ if (PLUGIN_MOCK)
     file (GLOB src_file "*.c*")
 
     add_library (plugin_mock SHARED ${src_file})
-    target_link_libraries (plugin_mock gfal2)
+    target_link_libraries (plugin_mock gfal2 gfal2_transfer)
 
 
     set_target_properties(plugin_mock   PROPERTIES
