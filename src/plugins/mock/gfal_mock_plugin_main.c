@@ -194,6 +194,26 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
 	//   - stat source
 	//   - stat destination before transfer
 	//   - stat destination after transfer
+	
+	/*USE HARDCODED FOR NOW SINCE RUCIO WOULD LIKE TO USE IT*/
+	buf->st_size = 10;
+	
+        time_t epoch_time;
+    	struct tm *tm_p;
+    	epoch_time = time( NULL );
+    	tm_p = localtime( &epoch_time );
+        int secs =  tm_p->tm_sec;	
+	
+	if(secs == 5 || secs == 15 || secs == 25 || secs == 45 || secs == 60)
+	{
+		gfal_plugin_mock_report_error("Mock failure", err);	
+		return -1;
+        }		
+	
+	return 0;
+	
+	
+	
 	static int order = 0;
 
 	int size = 0;
