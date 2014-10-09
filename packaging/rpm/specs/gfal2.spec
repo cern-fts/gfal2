@@ -1,6 +1,9 @@
 # unversionned doc dir F20 change https://fedoraproject.org/wiki/Changes/UnversionedDocdirs
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
+%{!?_with_mock_plugin: %{!?_without_mock_plugin: %define _with_mock_plugin -DPLUGIN_MOCK=TRUE}}
+
+
 Name:               gfal2
 Version:            2.7.2
 # https://fedoraproject.org/wiki/Packaging:NamingGuidelines#Release_Tag
@@ -163,6 +166,16 @@ Requires:           davix-libs >= 0.3.2
 Provide the HTTP and WevDAV support for %{name}.
 this plugin is able to do third-party copy with Webdav
 
+%if %{?_with_mock_plugin:1}%{!?_with_mock_plugin:0}
+%package plugin-mock
+Summary:            Provide a Mock dummy protocol for %{name}
+Group:              Applications/Internet
+Requires:           %{name}-core%{?_isa} = %{version}-%{release}
+
+%description plugin-mock
+Provide a dummy mock:// protocol for %{name}.
+%endif
+
 %package all
 Summary:            Meta package for GFAL 2.0 install
 Group:              Applications/Internet
@@ -191,6 +204,7 @@ make clean
 %cmake \
 -DDOC_INSTALL_DIR=%{_pkgdocdir} \
 -DUNIT_TESTS=TRUE \
+%{_with_mock_plugin}\
 .
 make %{?_smp_mflags}
 make doc
@@ -277,6 +291,13 @@ make DESTDIR=%{buildroot} install
 %{_libdir}/%{name}-plugins/libgfal_plugin_http.so*
 %{_pkgdocdir}/README_PLUGIN_HTTP
 %config(noreplace) %{_sysconfdir}/%{name}.d/http_plugin.conf
+
+%if %{?_with_mock_plugin:1}%{!?_with_mock_plugin:0}
+%files plugin-mock
+%{_libdir}/%{name}-plugins/libgfal_plugin_mock.so*
+%{_pkgdocdir}/README_PLUGIN_MOCK
+%config(noreplace) %{_sysconfdir}/%{name}.d/mock_plugin.conf
+%endif
 
 %files all
 %{_pkgdocdir}/README
