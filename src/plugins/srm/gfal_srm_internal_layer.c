@@ -138,10 +138,14 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
     gchar* ucert = gfal2_get_opt_string(opts->handle, "X509", "CERT", NULL);
     gchar* ukey = gfal2_get_opt_string(opts->handle, "X509", "KEY", NULL);
 
+
+
     // Try with existing one
     if (opts->srm_context) {
         if (is_same_context(opts, full_endpoint, ucert, ukey)) {
             gfal_log(GFAL_VERBOSE_VERBOSE, "SRM context recycled for %s", full_endpoint);
+            g_free(ucert);
+            g_free(ukey);
             return opts->srm_context;
         }
         else {
@@ -182,6 +186,9 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
             g_strlcpy(opts->x509_ukey, ukey, sizeof(opts->x509_ukey));
         }
     }
+
+    g_free(ucert);
+    g_free(ukey);
 
     return opts->srm_context;
 }
