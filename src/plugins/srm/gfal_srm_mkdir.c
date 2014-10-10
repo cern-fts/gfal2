@@ -64,7 +64,7 @@ int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError*
         ret = gfal_statG_srmv2_internal(context, &st, NULL, surl, &tmp_err);
         if (ret == 0) {
             if (!S_ISDIR(st.st_mode)) {
-                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), ENOTDIR, __func__, "it is a file");
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), ENOTDIR, __func__, "%s it is a file", surl);
                 ret = -1;
             }
             else {
