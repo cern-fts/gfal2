@@ -96,7 +96,7 @@ static int gfal_srm_rm_srmv2_internal(srm_context_t context, int nbfiles, const 
         gfal_srm_external_call.srm_srm2__TReturnStatus_delete(
                 output.retstatus);
         gfal_srm_external_call.srm_srmv2_filestatus_delete(output.statuses,
-                ret);
+                nbfiles);
     }
     else {
         gfal_srm_report_error(context->errbuf, &errors[0]);
