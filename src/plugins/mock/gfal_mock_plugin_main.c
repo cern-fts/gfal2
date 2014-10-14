@@ -21,8 +21,7 @@
  * author Michal Simon
  */
 
-
-
+#include <glib.h>
 #include <regex.h>
 #include <time.h>
 #include <unistd.h>
@@ -34,13 +33,9 @@
 #include <sys/stat.h>
 #include <attr/xattr.h>
 
-#include <common/gfal_constants.h>
-#include <common/gfal_types.h>
-#include <common/gfal_common_plugin.h>
-#include <common/gfal_common_err_helpers.h>
-#include <fdesc/gfal_file_handle.h>
-#include <config/gfal_config.h>
+#include <gfal_plugins_api.h>
 #include <transfer/gfal_transfer.h>
+#include <common/gfal_common_err_helpers.h>
 #include <checksums/checksums.h>
 
 
@@ -104,20 +99,20 @@ int gfal_lmock_path_checker(plugin_handle handle, const char * url){
 static gboolean gfal_mock_check_url(plugin_handle handle, const char* url, plugin_mode mode, GError** err){
     g_return_val_err_if_fail(url != NULL, EINVAL, err, "[gfal_lfile_path_checker] Invalid url ");
 	switch(mode){
-        case GFAL_PLUGIN_ACCESS:
-        case GFAL_PLUGIN_MKDIR:
+        //case GFAL_PLUGIN_ACCESS:
+        //case GFAL_PLUGIN_MKDIR:
 		case GFAL_PLUGIN_STAT:
 		case GFAL_PLUGIN_LSTAT:
-		case GFAL_PLUGIN_RMDIR:
-		case GFAL_PLUGIN_OPENDIR:
-		case GFAL_PLUGIN_OPEN:
-		case GFAL_PLUGIN_CHMOD:
+		//case GFAL_PLUGIN_RMDIR:
+		//case GFAL_PLUGIN_OPENDIR:
+		//case GFAL_PLUGIN_OPEN:
+		//case GFAL_PLUGIN_CHMOD:
 		case GFAL_PLUGIN_UNLINK:
-		case GFAL_PLUGIN_GETXATTR:
-		case GFAL_PLUGIN_LISTXATTR:
-        case GFAL_PLUGIN_SETXATTR:
-        case GFAL_PLUGIN_RENAME:
-        case GFAL_PLUGIN_SYMLINK:
+		//case GFAL_PLUGIN_GETXATTR:
+		//case GFAL_PLUGIN_LISTXATTR:
+        //case GFAL_PLUGIN_SETXATTR:
+        //case GFAL_PLUGIN_RENAME:
+        //case GFAL_PLUGIN_SYMLINK:
         //case GFAL_PLUGIN_CHECKSUM:
             return (gfal_lmock_path_checker(handle, url)==0);
 		default:
@@ -127,7 +122,7 @@ static gboolean gfal_mock_check_url(plugin_handle handle, const char* url, plugi
 
 void gfal_plugin_mock_report_error(const char* msg, GError** err)
 {
-    g_set_error(err, gfal2_get_plugin_mock_quark(), errno, msg);
+    g_set_error(err, gfal2_get_plugin_mock_quark(), errno, "%s", msg);
 }
 
 
@@ -160,7 +155,7 @@ void gfal_plugin_mock_get_value(const char* url, const char* key, char* value)
 	else
 	{
 		// if it is the last parameter just copy the string until it ends
-		g_strlpy(value, str);
+		strcpy(value, str);
 	}
 }
 
@@ -227,6 +222,17 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
 	// unless we would like to emulate the file is not there
 	return 0;
 }
+
+
+int gfal_plugin_mock_unlink(plugin_handle plugin_data, const char* url, GError** err)
+{
+    if (g_random_int() % 2 == 0) {
+        g_set_error(err, gfal2_get_plugin_mock_quark(), ENOENT, "%s does not exist", url);
+        return -1;
+    }
+    return 0;
+}
+
 
 gboolean gfal_plugin_mock_check_url_transfer(plugin_handle handle, gfal2_context_t ctx, const char* src, const char* dst, gfal_url2_check type) {
     gboolean res = FALSE;
@@ -347,6 +353,8 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err){
     mock_plugin.getName= &gfal_mock_plugin_getName;
 
     mock_plugin.statG = &gfal_plugin_mock_stat;
+    mock_plugin.lstatG = &gfal_plugin_mock_stat;
+    mock_plugin.unlinkG = &gfal_plugin_mock_unlink;
 
     mock_plugin.check_plugin_url_transfer = &gfal_plugin_mock_check_url_transfer;
     mock_plugin.copy_file = &gfal_plugin_mock_filecopy;

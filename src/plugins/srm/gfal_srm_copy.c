@@ -150,7 +150,7 @@ static int srm_resolve_get_turl(plugin_handle handle, gfalt_params_t params,
     if (srm_check_url(surl)) {
         gfal_log(GFAL_VERBOSE_TRACE, "\t\tGET surl -> turl dst resolution start");
         res = gfal_srm_get_rd3_turl(handle, params, surl, turl, turl_size, token, token_size, &tmp_err);
-        if (res == 0) {
+        if (res >= 0) {
             gfal_log(GFAL_VERBOSE_TRACE, "\t\tGET surl -> turl dst resolution finished: %s -> %s (%s)",
                     surl, turl, token);
         }
@@ -187,7 +187,7 @@ static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
                     turl, turl_size,
                     token, token_size,
                     &tmp_err);
-            if (res == 0) {
+            if (res >= 0) {
                 gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl src resolution ended : %s -> %s (%s)",
                         surl, turl, token);
             }
