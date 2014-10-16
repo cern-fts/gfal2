@@ -46,9 +46,7 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
     memset(&output, 0, sizeof(output));
 
     if (params != NULL) {
-        context->timeout      = timeout;
-        context->timeout_conn = timeout;
-        context->timeout_ops  = timeout;
+        srm_set_desired_request_time(context, timeout);
 
         input.nbfiles        = nbfiles;
         input.surls          = (char**)surl;
