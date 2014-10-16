@@ -40,7 +40,7 @@ BuildRequires:      lfc-devel
 #rfio plugin dependencies
 BuildRequires:      dpm-devel
 #srm plugin dependencies
-BuildRequires:      srm-ifce-devel >= 1.21.0
+BuildRequires:      srm-ifce-devel >= 1.21.3
 #dcap plugin dependencies
 BuildRequires:      dcap-devel
 #gridftp plugin dependencies
@@ -52,7 +52,6 @@ BuildRequires:      gtest-devel
 
 Requires:           %{name}-core%{?_isa} = %{version}-%{release}
 Requires:           %{name}-transfer%{?_isa} = %{version}-%{release}
-BuildRequires:      srm-ifce >= 1.21.0
 
 %description
 GFAL 2.0 offers an a single and simple POSIX-like API 
@@ -138,7 +137,7 @@ URLs, the dcap protocol is used on the DCACHE storage system
 Summary:            Provide the srm access for %{name}
 Group:              Applications/Internet
 Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
-Requires:           srm-ifce >= 1.21.1
+Requires:           srm-ifce >= 1.21.3
 
 
 %description plugin-srm
