@@ -40,7 +40,7 @@ BuildRequires:      lfc-devel
 #rfio plugin dependencies
 BuildRequires:      dpm-devel
 #srm plugin dependencies
-BuildRequires:      srm-ifce-devel >= 1.21.0
+BuildRequires:      srm-ifce-devel >= 1.21.3
 #dcap plugin dependencies
 BuildRequires:      dcap-devel
 #gridftp plugin dependencies
