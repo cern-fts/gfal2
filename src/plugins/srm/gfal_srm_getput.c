@@ -316,8 +316,7 @@ int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl,
                 srm_get_3rdparty_turls_sup_protocol(opts->handle));
         gfal_srm_params_set_size(params, surl_file_size);
 
-        ret = gfal_srm_mTURLS_internal(opts, params, SRM_PUT, surls, &resu,
-                &tmp_err);
+        ret = gfal_srm_mTURLS_internal(opts, params, SRM_PUT, surls, &resu, &tmp_err);
         if (ret >= 0) {
             if (resu[0].err_code == 0) {
                 g_strlcpy(buff_turl, resu[0].turl, size_turl);
