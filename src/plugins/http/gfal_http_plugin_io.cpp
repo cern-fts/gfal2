@@ -30,6 +30,7 @@ gfal_file_handle gfal_http_fopen(plugin_handle plugin_data, const char* url, int
     if (fd->davix_fd == NULL) {
         davix2gliberr(daverr, err);
         Davix::DavixError::clearError(&daverr);
+        delete fd;
         return NULL;
     }
     return gfal_file_handle_new(http_module_name, fd);
