@@ -376,51 +376,64 @@ int gfal2_release_file(gfal2_context_t context, const char* url, const char* tok
 
 int gfal2_bring_online_list(gfal2_context_t context, int nbfiles,
         const char* const* urls, time_t pintime, time_t timeout, char* token,
-        size_t tsize, int async, GError ** err)
+        size_t tsize, int async, GError ** errors)
 {
-    GError* tmp_err = NULL;
     int res = -1;
-    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
+    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, errors);
+
     if (urls == NULL || *urls == NULL || context == NULL) {
-        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context or/and urls are incorrect arguments");
+        int i;
+        for (i = 0; i < nbfiles; ++i) {
+            g_set_error(&errors[i], gfal2_get_core_quark(), EFAULT, "context or/and urls are incorrect arguments");
+        }
+        res = -1;
     }
     else {
-        res = gfal_plugin_bring_online_listG(context, nbfiles, urls, pintime, timeout, token, tsize, async, &tmp_err);
+        res = gfal_plugin_bring_online_listG(context, nbfiles, urls, pintime, timeout, token, tsize, async, errors);
     }
     GFAL2_END_SCOPE_CANCEL(context);
-    G_RETURN_ERR(res, tmp_err, err);
+    return res;
 }
 
 
-int gfal2_bring_online_poll_list(gfal2_context_t context, int nbfiles, const char* const* urls, const char* token, GError ** err)
+int gfal2_bring_online_poll_list(gfal2_context_t context, int nbfiles,
+        const char* const * urls, const char* token, GError ** errors)
 {
-    GError* tmp_err = NULL;
     int res = -1;
-    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
+    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, errors);
+
     if (urls == NULL || *urls == NULL || context == NULL) {
-        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context or/and urls are incorrect arguments");
+        int i;
+        for (i = 0; i < nbfiles; ++i) {
+            g_set_error(&errors[i], gfal2_get_core_quark(), EFAULT, "context or/and urls are incorrect arguments");
+        }
+        res = -1;
     }
     else {
-        res = gfal_plugin_bring_online_poll_listG(context, nbfiles, urls, token, &tmp_err);
+        res = gfal_plugin_bring_online_poll_listG(context, nbfiles, urls, token, errors);
     }
     GFAL2_END_SCOPE_CANCEL(context);
-    G_RETURN_ERR(res, tmp_err, err);
+    return res;
 }
 
 
-int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char* const* urls, const char* token, GError ** err)
+int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char* const* urls, const char* token, GError ** errors)
 {
-    GError* tmp_err = NULL;
     int res = -1;
-    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
+    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, errors);
+
     if (urls == NULL || *urls == NULL || context == NULL) {
-        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context or/and urls are incorrect arguments");
+        int i;
+        for (i = 0; i < nbfiles; ++i) {
+            g_set_error(&errors[i], gfal2_get_core_quark(), EFAULT, "context or/and urls are incorrect arguments");
+        }
+        res = -1;
     }
     else {
-        res = gfal_plugin_release_file_listG(context, nbfiles, urls, token, &tmp_err);
+        res = gfal_plugin_release_file_listG(context, nbfiles, urls, token, errors);
     }
     GFAL2_END_SCOPE_CANCEL(context);
-    G_RETURN_ERR(res, tmp_err, err);
+    return res;
 }
 
 

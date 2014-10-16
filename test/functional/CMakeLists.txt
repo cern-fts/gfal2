@@ -16,6 +16,12 @@ IF (FUNCTIONAL_TESTS)
             ${GLIB2_PKG_INCLUDE_DIRS}
             ${GTEST_INCLUDE_DIR}
         )
+        
+        add_executable(gfal_test_bringonline "gfal_test_bringonline.cpp")
+        target_link_libraries(gfal_test_bringonline ${GFAL2_LINK} test_shared)
+        FUNCTION(test_bringonline name dir_path)
+                add_test(gfal_test_bringonline_${name} gfal_test_bringonline ${dir_path})
+        ENDFUNCTION(test_bringonline name valid_file)
 
         add_executable(gfal_test_checksum "gfal_test_checksum.c")
         target_link_libraries(gfal_test_checksum ${GFAL2_LINK} test_shared)
