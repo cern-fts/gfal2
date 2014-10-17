@@ -184,7 +184,7 @@ int gfal_srm_getTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl
 	char* surls[]= { (char*)surl, NULL };
 	int ret = -1;
 
-	gfal_srm_params_t params = gfal_srm_params_new(opts, & tmp_err);
+	gfal_srm_params_t params = gfal_srm_params_new(opts);
 	if(params != NULL){
 		ret= gfal_srm_mTURLS_internal(opts, params, SRM_GET, surls, &resu, &tmp_err);
 		if(ret >0){
@@ -215,7 +215,7 @@ int gfal_srm_getTURL_checksum(plugin_handle ch, const char* surl, char* buff_tur
     char* surls[]= { (char*)surl, NULL };
     int ret = -1;
 
-    gfal_srm_params_t params = gfal_srm_params_new(opts, & tmp_err);
+    gfal_srm_params_t params = gfal_srm_params_new(opts);
     if(params != NULL){
         gfal_srm_params_set_protocols(params, srm_get_3rdparty_turls_sup_protocol(opts->handle));
         ret= gfal_srm_mTURLS_internal(opts, params, SRM_GET, surls, &resu, &tmp_err);
@@ -250,7 +250,7 @@ int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl,
     char* surls[] = { (char*) surl, NULL };
     int ret = -1;
 
-    gfal_srm_params_t params = gfal_srm_params_new(opts, &tmp_err);
+    gfal_srm_params_t params = gfal_srm_params_new(opts);
     if (params != NULL ) {
         gfal_srm_params_set_spacetoken(params, gfalt_get_src_spacetoken(p, NULL ));
         gfal_srm_params_set_protocols(params,
@@ -286,7 +286,7 @@ int gfal_srm_getTURLS(gfal_srmv2_opt* opts, char** surls, gfal_srm_result** resu
 	GError* tmp_err=NULL;
 	int ret=-1;
 
-	gfal_srm_params_t params = gfal_srm_params_new(opts, & tmp_err);
+	gfal_srm_params_t params = gfal_srm_params_new(opts);
 	if(params != NULL){
 		if( gfal_srm_surl_group_checker	(opts, surls, &tmp_err) == TRUE){
 			ret = gfal_srm_mTURLS_internal(opts, params, SRM_GET, surls, resu,  &tmp_err);
@@ -309,7 +309,7 @@ int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl,
     char* surls[] = { (char*) surl, NULL };
     int ret = -1;
 
-    gfal_srm_params_t params = gfal_srm_params_new(opts, &tmp_err);
+    gfal_srm_params_t params = gfal_srm_params_new(opts);
     if (params != NULL ) {
         gfal_srm_params_set_spacetoken(params, gfalt_get_dst_spacetoken(p, NULL ));
         gfal_srm_params_set_protocols(params,
@@ -348,7 +348,7 @@ int gfal_srm_putTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl
 	char* surls[]= { (char*)surl, NULL };
 	int ret = -1;
 
-	gfal_srm_params_t params = gfal_srm_params_new(opts, & tmp_err);
+	gfal_srm_params_t params = gfal_srm_params_new(opts);
 	if(params != NULL){
 		ret= gfal_srm_mTURLS_internal(opts, params, SRM_PUT, surls, &resu,  &tmp_err);
 		if(ret >0){
@@ -378,7 +378,7 @@ int gfal_srm_putTURLS(gfal_srmv2_opt* opts , char** surls, gfal_srm_result** res
 	GError* tmp_err=NULL;
 	int ret=-1;
 
-	gfal_srm_params_t params = gfal_srm_params_new(opts, & tmp_err);
+	gfal_srm_params_t params = gfal_srm_params_new(opts);
 	if(params != NULL){
 		if( gfal_srm_surl_group_checker	(opts, surls, &tmp_err) == TRUE){
 			ret = gfal_srm_mTURLS_internal(opts, params, SRM_PUT, surls, resu, &tmp_err);

@@ -142,8 +142,8 @@ IF(PLUGIN_SRM)
         test_gfal_test_mkdir_unlink("SRM_STORM"   "${srm_prefix_storm}")
         test_gfal_test_mkdir_unlink("SRM_DCACHE"  "${srm_prefix_dcache}")
         # stat tests
-        stat_test_all( "SRM_DPM" ${srm_prefix_dpm})
-        stat_test_all( "SRM_DCACHE" ${srm_prefix_dcache})
+        stat_test_all("SRM_DPM" ${srm_prefix_dpm})
+        stat_test_all("SRM_DCACHE" ${srm_prefix_dcache})
         # checksum tests
         checksum_test_simple("SRM_DPM_ADLER32" ${srm_prefix_dpm} ADLER32)
         checksum_test_simple("SRM_DPM_MD5" ${srm_prefix_dpm} MD5)
@@ -165,6 +165,11 @@ IF(PLUGIN_SRM)
         rwt_test_seq("SRM_DCAP" ${srm_valid_dir_root} 100 4560) 
 
         rwt_test_seq("SRM_STORM" ${srm_prefix_storm} 100 4560)
+        
+        # Bringonline
+        test_bringonline("SRM_DPM" ${srm_prefix_dpm})
+        test_bringonline("SRM_DCACHE" ${srm_prefix_dcache})
+        # Note: STORM may not support tapes
                 
 #       chmod_test_all("SRM_DCACHE" ${srm_valid_dcache_chmod} 0565 060 360 767)  -> disabled, since unavailable on dcache
 #       stat_test_all( "SRM_EOS" ${srm_valid_EOS_stat})

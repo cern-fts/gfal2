@@ -26,7 +26,7 @@ static gchar* get_spacetoken_from_config(gfal_srmv2_opt* handle)
 }
 
 
-gfal_srm_params_t gfal_srm_params_new(gfal_srmv2_opt* handle, GError ** err)
+gfal_srm_params_t gfal_srm_params_new(gfal_srmv2_opt* handle)
 {
     gfal_srm_params_t
     res = g_new0(struct _gfal_srm_params,1);

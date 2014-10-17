@@ -343,14 +343,15 @@ int gfal2_release_file(gfal2_context_t context, const char* url,
 ///  @param timeout : timeout
 ///  @param token : The token will be put in the buffer pointed by this
 ///  @param async: Asynchronous request (does not block if != 0)
-///  @param err : GError error report
+///  @param errors : Preallocated array of nbfiles pointers to GError. User must allocate and free.
 ///  @return 0 if the request has been queued, > 0 if the file is pinned, < 0 on error
+///  @note  Even if the result is > 0, you need to check each individual file status
 ///
 int gfal2_bring_online_list(gfal2_context_t context, int nbfiles, const char* const* urls,
                        time_t pintime, time_t timeout,
                        char* token, size_t tsize,
                        int async,
-                       GError ** err);
+                       GError ** errors);
 
 ///  @brief Check for a bring online request
 ///
@@ -358,15 +359,18 @@ int gfal2_bring_online_list(gfal2_context_t context, int nbfiles, const char* co
 ///  @param nbfiles : number of files
 ///  @param urls : urls of files
 ///  @param token : As set by gfal2_bring_online
-///  @param err : GError error report
+///  @param errors : Preallocated array of nbfiles pointers to GError. User must allocate and free.
 ///  @return 0 if the request is queued, > 0 if the file is pinned, < 0 on error
+///  @note  Even if the result is > 0, you need to check each individual file status
 ///
 int gfal2_bring_online_poll_list(gfal2_context_t context, int nbfiles, const char* const* urls,
-                            const char* token, GError ** err);
+                            const char* token, GError ** errors);
 
 ///  @brief Release a file
+///  @param errors : Preallocated array of nbfiles pointers to GError. User must allocate and free.
+///  @note  Even if the result is > 0, you need to check each individual file status
 int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char* const* urls,
-                       const char* token, GError ** err);
+                       const char* token, GError ** errors);
 
 ///  @brief Perform a bulk deletion
 ///
@@ -384,6 +388,8 @@ int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char* co
 int gfal2_unlink_list(gfal2_context_t context, int nbfiles, const char* const* uris, GError ** errors);
 
 /// @brief abort a list of files
+///  @param err : Preallocated array of nbfiles pointers to GError. User must allocate and free.
+///  @note  Even if the result is > 0, you need to check each individual file status
 int gfal2_abort_files(gfal2_context_t context, int nbfiles, const char* const* urls, const char* token, GError ** errors);
 
 /////////////////////////////////////////////////////

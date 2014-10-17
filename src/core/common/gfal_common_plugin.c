@@ -934,43 +934,66 @@ int gfal_plugin_release_fileG(gfal2_context_t handle, const char* uri, const cha
 
 
 int gfal_plugin_bring_online_listG(gfal2_context_t handle, int nbfiles, const char* const* uris,
-        time_t pintime, time_t timeout, char* token, size_t tsize, int async, GError ** err)
+        time_t pintime, time_t timeout, char* token, size_t tsize, int async, GError ** errors)
 {
-
     GError* tmp_err = NULL;
     int resu = -1;
     gfal_plugin_interface* p = gfal_find_plugin(handle, *uris, GFAL_PLUGIN_BRING_ONLINE, &tmp_err);
 
-    if (p)
+    if (p) {
         resu = p->bring_online_list(gfal_get_plugin_handle(p), nbfiles, uris, pintime, timeout,
-                token, tsize, async, &tmp_err);
-    G_RETURN_ERR(resu, tmp_err, err);
+                token, tsize, async, errors);
+    }
+    else {
+        int i;
+        for (i = 0; i < nbfiles; ++i) {
+            errors[i] = g_error_copy(tmp_err);
+        }
+        g_error_free(tmp_err);
+    }
+    return resu;
 }
 
 
 int gfal_plugin_bring_online_poll_listG(gfal2_context_t handle, int nbfiles, const char* const* uris,
-        const char* token, GError ** err)
+        const char* token, GError ** errors)
 {
     GError* tmp_err = NULL;
     int resu = -1;
     gfal_plugin_interface* p = gfal_find_plugin(handle, *uris, GFAL_PLUGIN_BRING_ONLINE, &tmp_err);
 
-    if (p)
-        resu = p->bring_online_poll_list(gfal_get_plugin_handle(p), nbfiles, uris, token, &tmp_err);
-    G_RETURN_ERR(resu, tmp_err, err);
+    if (p) {
+        resu = p->bring_online_poll_list(gfal_get_plugin_handle(p), nbfiles, uris, token, errors);
+    }
+    else {
+        int i;
+        for (i = 0; i < nbfiles; ++i) {
+            errors[i] = g_error_copy(tmp_err);
+        }
+        g_error_free(tmp_err);
+    }
+    G_RETURN_ERR(resu, tmp_err, errors);
 }
 
 
 int gfal_plugin_release_file_listG(gfal2_context_t handle, int nbfiles, const char* const* uris,
-        const char* token, GError ** err)
+        const char* token, GError ** errors)
 {
     GError* tmp_err = NULL;
     int resu = -1;
     gfal_plugin_interface* p = gfal_find_plugin(handle, *uris, GFAL_PLUGIN_BRING_ONLINE, &tmp_err);
 
-    if (p)
-        resu = p->release_file_list(gfal_get_plugin_handle(p), nbfiles, uris, token, &tmp_err);
-    G_RETURN_ERR(resu, tmp_err, err);
+    if (p) {
+        resu = p->release_file_list(gfal_get_plugin_handle(p), nbfiles, uris, token, errors);
+    }
+    else {
+        int i;
+        for (i = 0; i < nbfiles; ++i) {
+            errors[i] = g_error_copy(tmp_err);
+        }
+        g_error_free(tmp_err);
+    }
+    G_RETURN_ERR(resu, tmp_err, errors);
 }
 
 
