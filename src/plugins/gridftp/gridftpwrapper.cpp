@@ -245,9 +245,21 @@ void gfal_globus_set_credentials(const char* ucert, const char* ukey, globus_ftp
 
     if (major_status != GSS_S_COMPLETE) {
         std::stringstream err_buffer;
-        err_buffer << "Could not load the user credentials (" << major_status
-                << ":" << minor_status << ")";
-        throw Glib::Error(GFAL_GRIDFTP_SCOPE_REQ_STATE, EINVAL,
+
+        err_buffer << "Could not load the user credentials: ";
+
+        globus_object_t * error = globus_error_get(major_status);
+        char* globus_errstr;
+        int globus_errno = gfal_globus_error_convert(error, &globus_errstr);
+        if (globus_errstr) {
+            err_buffer << *globus_errstr;
+            g_free (globus_errstr);
+        }
+        globus_object_free(error);
+
+        err_buffer << " (" << globus_errno << ")";
+
+        throw Glib::Error(GFAL_GRIDFTP_SCOPE_REQ_STATE, globus_errno,
                 err_buffer.str());
     }
     globus_ftp_client_operationattr_set_authorization(
@@ -456,8 +468,8 @@ void gfal_globus_check_result(const Glib::Quark & scope, globus_result_t res)
         globus_object_t * error = globus_error_get(res); // get error from result code
         if (error == NULL)
             throw Gfal::CoreException(scope,
-                    "Unknown error  unable to map result code to globus error",
-                    ENOENT);
+                    "Unknown error: unable to map result code to globus error",
+                    EINVAL);
         gfal_globus_check_error(scope, error);
     }
 }
