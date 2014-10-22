@@ -111,6 +111,7 @@ static void log_davix2gfal(void* userdata, int msg_level, const char* msg)
             gfal_level = GFAL_VERBOSE_DEBUG;
             break;
         case DAVIX_LOG_VERBOSE:
+        case DAVIX_LOG_WARNING:
             gfal_level = GFAL_VERBOSE_VERBOSE;
             break;
         default:
@@ -123,15 +124,15 @@ static void log_davix2gfal(void* userdata, int msg_level, const char* msg)
 GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
     context(), posix(&context), reference_params(), handle(handle)
 {
-    reference_params.setTransparentRedirectionSupport(true);
-    reference_params.setUserAgent("gfal2::http");
-    context.loadModule("grid");
-
+    davix_set_log_handler(log_davix2gfal, NULL);
     int dav_level = DAVIX_LOG_CRITICAL | DAVIX_LOG_WARNING | DAVIX_LOG_VERBOSE | DAVIX_LOG_DEBUG;
     if (gfal_get_verbose() & GFAL_VERBOSE_TRACE_PLUGIN)
         dav_level |= DAVIX_LOG_TRACE;
     davix_set_log_level(dav_level);
-    davix_set_log_handler(log_davix2gfal, NULL);
+
+    reference_params.setTransparentRedirectionSupport(true);
+    reference_params.setUserAgent("gfal2::http");
+    context.loadModule("grid");
 }
 
 
