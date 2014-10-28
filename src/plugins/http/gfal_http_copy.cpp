@@ -1,12 +1,9 @@
 #include <davix.hpp>
 #include <copy/davixcopy.hpp>
 #include <unistd.h>
-#include <transfer/gfal_transfer_plugins.h>
-#include <config/gfal_config.h>
 #include <checksums/checksums.h>
 #include <cstdio>
-#include <common/gfal_common_err_helpers.h>
-#include <file/gfal_file_api.h>
+#include <cstring>
 #include "gfal_http_plugin.h"
 
 
@@ -27,7 +24,7 @@ struct PerfCallbackData {
 
 static bool is_streamed_scheme(const char* url)
 {
-    const char *schemes[] = {"http:", "https:", "dav:", "davs:", NULL};
+    const char *schemes[] = {"http:", "https:", "dav:", "davs:", "s3:", "s3s:", NULL};
     const char *colon = strchr(url, ':');
     if (!colon)
         return false;
@@ -328,15 +325,20 @@ static void gfal_http_third_party_copy(GfalHttpPluginData* davix,
             gfalt_get_user_data(params, NULL)
     );
 
-    Davix::DavixCopy copy(davix->context, &davix->params);
-
-    copy.setPerformanceCallback(gfal_http_3rdcopy_perfcallback, &perfCallbackData);
-
     std::string canonical_dst = get_canonical_uri(dst);
     gfal_log(GFAL_VERBOSE_VERBOSE, "Normalize destination to %s", canonical_dst.c_str());
 
+    Davix::Uri src_uri(src);
+    Davix::Uri dst_uri(canonical_dst);
+
+    Davix::RequestParams req_params;
+    davix->get_params(&req_params, src_uri);
+    Davix::DavixCopy copy(davix->context, &req_params);
+
+    copy.setPerformanceCallback(gfal_http_3rdcopy_perfcallback, &perfCallbackData);
+
     Davix::DavixError* davError = NULL;
-    copy.copy(Davix::Uri(src), Davix::Uri(canonical_dst),
+    copy.copy(src_uri, dst_uri,
               gfalt_get_nbstreams(params, NULL),
               &davError);
 
@@ -441,15 +443,21 @@ static void gfal_http_streamed_copy(gfal2_context_t context,
         return;
     }
 
+    Davix::Uri dst_uri(dst);
+
     Davix::DavixError* dav_error = NULL;
-    Davix::PutRequest request(davix->context, Davix::Uri(dst), &dav_error);
+    Davix::PutRequest request(davix->context, dst_uri, &dav_error);
     if (dav_error != NULL) {
         davix2gliberr(dav_error, err);
         Davix::DavixError::clearError(&dav_error);
         return;
     }
 
-    request.setParameters(davix->params);
+    Davix::RequestParams req_params;
+    davix->get_params(&req_params, dst_uri);
+    if (dst_uri.getProtocol() == "s3" || dst_uri.getProtocol() == "s3s")
+        req_params.setProtocol(Davix::RequestProtocol::AwsS3);
+    request.setParameters(req_params);
 
     HttpStreamProvider provider(src, dst, context, source_fd, params);
 
@@ -591,7 +599,7 @@ int gfal_http_copy_check(plugin_handle plugin_data, gfal2_context_t context, con
 {
     if (check != GFAL_FILE_COPY)
         return 0;
-    // This plugin handles everything that writes into a http endpoint
+    // This plugin handles everything that writes into an http endpoint
     return (is_streamed_scheme(dst) && !is_3rd_scheme(src)) || (is_3rd_scheme(src) && is_3rd_scheme(dst));
 }
 
