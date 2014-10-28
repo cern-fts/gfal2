@@ -88,7 +88,7 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
             default:
                 gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
                             output.filestatuses[i].status, __func__,
-                            "error on the bring online request : %s ",
+                            "error on the bring online request: %s ",
                             output.filestatuses[i].explanation);
                 ++nterminal;
                 break;
@@ -183,11 +183,15 @@ static int gfal_srmv2_bring_online_poll_internal(srm_context_t context,
                 ++nterminal;
                 break;
             case EAGAIN:
+                gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
+                                EAGAIN, __func__,
+                                "still queued: %s ",
+                                output.filestatuses[i].explanation);
                 break;
             default:
                 gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
                         output.filestatuses[i].status, __func__,
-                        "error on the bring online request : %s ", output.filestatuses[i].explanation);
+                        "error on the bring online request: %s ", output.filestatuses[i].explanation);
                 ++nterminal;
         }
     }
