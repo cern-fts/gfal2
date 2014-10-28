@@ -1,4 +1,3 @@
-#pragma once
 /*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
@@ -22,8 +21,16 @@
  * @author Devresse Adrien
  * */
 
+#pragma once
+#ifndef GFAL_COMMON_ERR_HELPERS_H
+#define GFAL_COMMON_ERR_HELPERS_H
+
 #include <errno.h>
 #include <glib.h>
+
+#if !defined(__GFAL2_H_INSIDE__) && !defined(__GFAL2_BUILD__)
+#   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -73,3 +80,5 @@ void gfal2_propagate_prefixed_error(GError       **dest,
 if(tmp_err)\
     gfal2_propagate_prefixed_error(err, tmp_err, __func__);\
 return ret
+
+#endif /* GFAL_COMMON_ERR_HELPERS_H */

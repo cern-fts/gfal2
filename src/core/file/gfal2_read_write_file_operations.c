@@ -25,7 +25,7 @@
 #include <common/gfal_common_filedescriptor.h>
 #include <common/gfal_common_file_handle.h>
 #include <logger/gfal_logger.h>
-
+#include <cancel/gfal_cancel.h>
 
 //
 // Mapping for the gfal 2.0  open/read/write/close opeations of the file interface

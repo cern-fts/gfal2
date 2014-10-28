@@ -1,6 +1,3 @@
-#pragma once
-#ifndef _GFAL_PROTOTYPES_H
-#define _GFAL_PROTOTYPES_H
 /*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
@@ -18,7 +15,6 @@
 * limitations under the License.
 */
 
-
 /**
  * @file contain all the prototypes needed by the gfal common files
  * @author Devresse Adrien
@@ -26,6 +22,15 @@
  * @date 04/05/2011
  *
  * */
+
+#pragma once
+#ifndef _GFAL_PROTOTYPES_H
+#define _GFAL_PROTOTYPES_H
+
+#if !defined(__GFAL2_H_INSIDE__) && !defined(__GFAL2_BUILD__)
+#   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
+#endif
+
 #include <glib.h>
 #include "gfal_deprecated.h"
 
@@ -93,7 +98,6 @@ typedef struct _gfal_conf_container gfal_conf_container;
 
 typedef enum _GFAL_TYPE GFAL_TYPE;
 typedef enum _GFAL_PARAM_FUNC GFAL_PARAM_FUNC;
-
 
 
 #ifdef __cplusplus

@@ -170,8 +170,25 @@ gchar * gfal2_get_opt_string(gfal2_context_t handle, const gchar *group_name,
     return res;
 }
 
+gchar * gfal2_get_opt_string_with_default(gfal2_context_t handle, const gchar *group_name,
+                                    const gchar *key, const gchar* default_value)
+{
+    g_assert(handle != NULL);
+    GError* tmp_err = NULL;
+
+    gchar* value = gfal2_get_opt_string(handle, group_name, key, &tmp_err);
+    if (tmp_err) {
+        gfal_log(GFAL_VERBOSE_DEBUG, " impossible to get string parameter %s:%s, set to default value %s, err %s", group_name, key,
+                        default_value, tmp_err->message );
+        g_clear_error(&tmp_err);
+        value = g_strdup(default_value);
+    }
+
+    return value;
+}
+
 gint gfal2_set_opt_string(gfal2_context_t handle, const gchar *group_name,
-                                    const gchar *key, gchar* value, GError **error){
+                                    const gchar *key, const gchar* value, GError **error){
     g_assert(handle != NULL);
     GError * tmp_err=NULL;
     gfal_conf_t c = gfal_handle_to_conf(handle);

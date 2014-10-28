@@ -18,6 +18,10 @@
 #ifndef _GFAL_DEPRECATED_H_
 #define _GFAL_DEPRECATED_H_
 
+#if !defined(__GFAL2_H_INSIDE__) && !defined(__GFAL2_BUILD__)
+#   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
+#endif
+
 
 #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
 #define GFAL2_DEPRECATED(alt) __attribute__ ((deprecated("Use '" #alt "' instead")))

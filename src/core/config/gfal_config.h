@@ -1,6 +1,3 @@
-#pragma once
-#ifndef GFAL_CONFIG_H
-#define GFAL_CONFIG_H
 /*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
@@ -17,6 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
+#pragma once
+#ifndef GFAL_CONFIG_H
+#define GFAL_CONFIG_H
+
+#if !defined(__GFAL2_H_INSIDE__) && !defined(__GFAL2_BUILD__)
+#   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
+#endif
 
 #include <glib.h>
 #include <global/gfal_global.h>
@@ -60,10 +65,24 @@ extern "C"
  * @param group_name : group name of the parameter
  * @param key : key of the parameter
  * @param error : GError error report system
- * @return parameter value
+ * @return parameter value. Must be freed using g_free
  **/
 gchar * gfal2_get_opt_string(gfal2_context_t handle, const gchar *group_name,
                                     const gchar *key, GError **error);
+
+/**
+* @brief similar to \ref gfal2_get_opt_string but return a default value if
+* an error occurs
+ *
+ * @param handle : context of gfal 2.0
+ * @param group_name : group name of the parameter
+ * @param key : key of the parameter
+ * @param default_value : Default value
+ * @return parameter value. Must be freed using g_free
+ **/
+gchar * gfal2_get_opt_string_with_default(gfal2_context_t handle, const gchar *group_name,
+                                    const gchar *key, const gchar* default_value);
+
 
 
 /**
@@ -78,7 +97,7 @@ gchar * gfal2_get_opt_string(gfal2_context_t handle, const gchar *group_name,
  * @return parameter value
  **/
 gint gfal2_set_opt_string(gfal2_context_t handle, const gchar *group_name,
-                                    const gchar *key, gchar* value, GError **error);
+                                    const gchar *key, const gchar* value, GError **error);
 
 /**
  * @brief get an integer parameter in the current GFAL 2.0 configuration
@@ -95,7 +114,7 @@ gint gfal2_get_opt_integer(gfal2_context_t handle, const gchar *group_name,
 
 /**
 * @brief similar to \ref gfal2_get_opt_integer but return a default value if
-* an error occures
+* an error occurs
 *
 * @param handle : context of gfal 2.0
 * @param group_name : group name of the parameter

@@ -39,6 +39,18 @@ static int create_parent(gfal2_context_t context, gfalt_params_t params,
     }
 
     GError* nested_error = NULL;
+    struct stat st;
+    if (gfal2_stat(context, parent, &st, &nested_error) < 0) {
+        if (nested_error->code != ENOENT) {
+            gfal2_propagate_prefixed_error(error, nested_error, __func__);
+            return -1;
+        }
+        g_clear_error(&nested_error);
+    }
+    else {
+        return 0;
+    }
+
     gfal2_mkdir_rec(context, parent, 0755, &nested_error);
     if (nested_error != NULL) {
         gfal2_propagate_prefixed_error(error, nested_error, __func__);
@@ -61,6 +73,11 @@ static int unlink_if_exists(gfal2_context_t context, gfalt_params_t params,
         }
         gfal2_propagate_prefixed_error(error, nested_error, __func__);
         return -1;
+    }
+
+    if (S_ISFIFO(st.st_mode) || S_ISCHR(st.st_mode) || S_ISBLK(st.st_mode) || S_ISSOCK(st.st_mode)) {
+        gfal_log(GFAL_VERBOSE_VERBOSE, "%s is a special file (%o), so keep going", surl, S_IFMT & st.st_mode);
+        return 0;
     }
 
     if (!gfalt_get_replace_existing_file(params,NULL)) {

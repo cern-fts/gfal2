@@ -1,4 +1,3 @@
-#pragma once
 /*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
@@ -16,13 +15,18 @@
 * limitations under the License.
 */
 
+/* gfal_common_plugin.h
+ * common lib for the plugin management
+ * author : Devresse Adrien
+ */
 
+#pragma once
+#ifndef GFAL_COMMON_PLUGIN_H
+#define GFAL_COMMON_PLUGIN_H
 
-// gfal_common_plugin.h
-// common lib for the plugin management
-// author : Devresse Adrien
-
-
+#if !defined(__GFAL2_H_INSIDE__) && !defined(__GFAL2_BUILD__)
+#   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
+#endif
 
 #include <stdarg.h>
 #include <glib.h>
@@ -90,3 +94,6 @@ gfal_plugin_interface* gfal_plugin_map_file_handle(gfal2_context_t handle, gfal_
 #ifdef __cplusplus
 }
 #endif // __cplusplus
+
+#endif /* GFAL_COMMON_PLUGIN_H */
+

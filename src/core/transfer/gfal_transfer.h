@@ -1,37 +1,19 @@
-#pragma once
-#ifndef _GFAL2_TRANSFER_
-#define _GFAL2_TRANSFER_
-
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
-
-
-#include <transfer/gfal_transfer_types.h>
-#include <global/gfal_global.h>
-#include <logger/gfal_logger.h>
-#include <common/gfal_constants.h>
-
- 
-#ifdef __cplusplus
-extern "C"
-{
-#endif  // __cplusplus
-
 
 /**
  * @file gfal_transfer.h
@@ -42,6 +24,26 @@ extern "C"
  *    - flow control for the transfer
  *  @author Adrien Devresse
  */
+
+#pragma once
+#ifndef _GFAL2_TRANSFER_
+#define _GFAL2_TRANSFER_
+
+#if !defined(__GFAL2_H_INSIDE__) && !defined(__GFAL2_BUILD__)
+#   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
+#endif
+
+
+#include <transfer/gfal_transfer_types.h>
+#include <global/gfal_global.h>
+#include <logger/gfal_logger.h>
+#include <common/gfal_constants.h>
+
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif  // __cplusplus
 
 /*!
     \defgroup transfer_group File Transfer API
@@ -234,7 +236,7 @@ gint gfalt_set_user_data(gfalt_params_t, gpointer user_data, GError** err);
 gpointer gfalt_get_user_data(gfalt_params_t,  GError** err);
 
 
-     
+
 /**
  * @brief define a callback for monitoring the current transfer
  * The default value is NULL and no monitoring will occur
@@ -259,7 +261,7 @@ gfalt_event_func gfalt_get_event_callback (gfalt_params_t params, GError** err);
 
 
 //
-// Main function for transfer launch 
+// Main function for transfer launch
 //
 
 /**
