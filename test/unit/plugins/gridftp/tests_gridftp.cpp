@@ -17,6 +17,7 @@
 
 
 #include "tests_gridftp.h"
+#include <gfal_api.h>
 #include <plugins/gridftp/gridftp_plugin.h>
 #include <plugins/gridftp/gridftpmodule.h>
 #include <plugins/gridftp/gridftpwrapper.h>
@@ -66,12 +67,12 @@ TEST(gfalGridFTP,handle_creation)
     GridFTPModule* copy = new GridFTPModule(f);
     ASSERT_TRUE(copy != NULL);
     // create and delete properly
-    GridFTPSession* session = f->get_session("gsiftp://fsdfdsfsd/fsdfds");
-    f->release_session(session, false);
+    GridFTPSession* sess = f->gfal_globus_ftp_take_handle("gsiftp://fsdfdsfsd/fsdfds");
+    f->gfal_globus_ftp_release_handle(sess);
 
     // wild delete for exception clean recovery
-    session = f->get_session("gsiftp://fsdfdsfsd/fsdfds");
-    delete session;
+    sess = f->gfal_globus_ftp_take_handle("gsiftp://fsdfdsfsd/fsdfds");
+    delete sess;
     delete copy;
     gfal2_context_free(h);
 }

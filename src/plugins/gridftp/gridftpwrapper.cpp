@@ -15,9 +15,7 @@
 #include <memory>
 #include <fstream>
 #include <sstream>
-#include <uri/uri_util.h>
-#include <config/gfal_config.h>
-#include <cancel/gfal_cancel.h>
+#include <uri/gfal_uri.h>
 #include <exceptions/gfalcoreexception.hpp>
 #include "gridftpwrapper.h"
 

@@ -15,7 +15,6 @@
 * limitations under the License.
 */
 
-#include <config/gfal_config.h>
 #include <exceptions/cpp_to_gerror.hpp>
 #include <globus_ftp_client.h>
 #include "gridftp_namespace.h"

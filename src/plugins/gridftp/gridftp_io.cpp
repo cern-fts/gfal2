@@ -16,8 +16,6 @@
 #include <string>
 #include <sstream>
 
-#include <fdesc/gfal_file_handle.h>
-#include <common/gfal_common_filedescriptor.h>
 #include <exceptions/cpp_to_gerror.hpp>
 #include "gridftp_io.h"
 #include "gridftp_namespace.h"
@@ -233,7 +231,7 @@ gfal_file_handle GridFTPModule::open(const char* url, int flag, mode_t mode)
 
 ssize_t GridFTPModule::read(gfal_file_handle handle, void* buffer, size_t count)
 {
-    GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(handle->fdesc);
+    GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(gfal_file_handle_get_fdesc(handle));
     ssize_t ret;
 
     Glib::Mutex::Lock locker(desc->lock);
@@ -257,7 +255,7 @@ ssize_t GridFTPModule::read(gfal_file_handle handle, void* buffer, size_t count)
 ssize_t GridFTPModule::write(gfal_file_handle handle, const void* buffer,
         size_t count)
 {
-    GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(handle->fdesc);
+    GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(gfal_file_handle_get_fdesc(handle));
     ssize_t ret;
 
     Glib::Mutex::Lock locker(desc->lock);
@@ -281,16 +279,15 @@ ssize_t GridFTPModule::write(gfal_file_handle handle, const void* buffer,
 ssize_t GridFTPModule::pread(gfal_file_handle handle, void* buffer,
         size_t count, off_t offset)
 {
-    GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(handle->fdesc);
-    return gridftp_rw_internal_pread(_handle_factory, desc, buffer, count,
-            offset);
+    GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(gfal_file_handle_get_fdesc(handle));
+    return gridftp_rw_internal_pread(_handle_factory, desc, buffer, count, offset);
 }
 
 
 ssize_t GridFTPModule::pwrite(gfal_file_handle handle, const void* buffer,
         size_t count, off_t offset)
 {
-    GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(handle->fdesc);
+    GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(gfal_file_handle_get_fdesc(handle));
     return gridftp_rw_internal_pwrite(_handle_factory, desc, buffer, count,
             offset);
 }
@@ -298,7 +295,7 @@ ssize_t GridFTPModule::pwrite(gfal_file_handle handle, const void* buffer,
 
 off_t GridFTPModule::lseek(gfal_file_handle handle, off_t offset, int whence)
 {
-    GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(handle->fdesc);
+    GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(gfal_file_handle_get_fdesc(handle));
 
     Glib::Mutex::Lock locker(desc->lock);
     switch (whence) {
@@ -320,7 +317,7 @@ off_t GridFTPModule::lseek(gfal_file_handle handle, off_t offset, int whence)
 
 int GridFTPModule::close(gfal_file_handle handle)
 {
-    GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(handle->fdesc);
+    GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(gfal_file_handle_get_fdesc(handle));
     if (desc) {
         gridftp_rw_commit_put(GFAL_GRIDFTP_SCOPE_CLOSE, desc);
         gridftp_rw_valid_get(GFAL_GRIDFTP_SCOPE_CLOSE, desc);

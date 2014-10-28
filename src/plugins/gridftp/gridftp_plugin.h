@@ -1,8 +1,4 @@
-#pragma once
-#ifndef GRIDFTP_PLUGIN_H
-#define GRIDFTP_PLUGIN_H
 /*
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +11,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#pragma once
+#ifndef GRIDFTP_PLUGIN_H
+#define GRIDFTP_PLUGIN_H
+
+#include <gfal_plugins_api.h>
+
+// Configuration options
+#define GRIDFTP_CONFIG_GROUP          "GRIDFTP PLUGIN"
+#define GRIDFTP_CONFIG_IPV6           "IPV6"
+#define GRIDFTP_CONFIG_V2             "GRIDFTP_V2"
+#define GRIDFTP_CONFIG_SESSION_REUSE  "SESSION_REUSE"
+#define GRIDFTP_CONFIG_OP_TIMEOUT     "OPERATION_TIMEOUT"
+#define GRIDFTP_CONFIG_DCAU           "DCAU"
+#define GRIDFTP_CONFIG_DELAY_PASSV    "DELAY_PASSV"
+
+#define GRIDFTP_CONFIG_TRANSFER_CHECKSUM       "COPY_CHECKSUM_TYPE"
+#define GRIDFTP_CONFIG_TRANSFER_PERF_TIMEOUT   "PERF_MARKER_TIMEOUT"
+#define GRIDFTP_CONFIG_TRANSFER_SKIP_CHECKSUM  "SKIP_SOURCE_CHECKSUM"
+#define GRIDFTP_CONFIG_TRANSFER_UDT            "ENABLE_UDT"
+
 
 #ifdef __cplusplus
 extern "C" {

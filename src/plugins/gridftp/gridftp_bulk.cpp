@@ -1,12 +1,13 @@
 #include "gridftp_filecopy.h"
 #include "gridftpwrapper.h"
 #include "gridftp_namespace.h"
-#include <common/gfal_common_err_helpers.h>
-#include <common/gfal_common_internal.h>
-#include <checksums/checksums.h>
+#include "gridftp_plugin.h"
+
 #include <globus_ftp_client_throughput_plugin.h>
+#include <checksums/checksums.h>
 
 extern const char * gridftp_enable_udt;
+
 static const Glib::Quark GSIFTP_BULK_DOMAIN("GridFTP::Filecopy");
 
 
