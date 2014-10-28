@@ -23,10 +23,6 @@
  * @date 29/09/2011
  * */
 
-#include <common/gfal_constants.h>
-#include <common/gfal_common_err_helpers.h>
-#include <file/gfal_file_api.h>
-
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_getput.h"
 #include "gfal_srm_url_check.h"

@@ -15,7 +15,7 @@
 
 #include "gfal_srm_request.h"
 #include "gfal_srm_internal_layer.h"
-#include <config/gfal_config.h>
+
 
 static gchar* get_spacetoken_from_config(gfal_srmv2_opt* handle)
 {

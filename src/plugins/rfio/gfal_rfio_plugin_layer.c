@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -22,19 +22,14 @@
  * @author Devresse Adrien
  * @version 0.1
  * @date 30/06/2011
- * 
+ *
  **/
 
-
 #include <regex.h>
-#include <time.h> 
+#include <time.h>
 #include <dlfcn.h>
 #include <stdlib.h>
-#include <common/gfal_common_internal.h>
-#include <common/gfal_common_err_helpers.h>
-#include <common/gfal_common_plugin.h>
-#include <common/gfal_types.h>
-#include <logger/gfal_logger.h>
+#include <string.h>
 #include "gfal_rfio_plugin_layer.h"
 #include "gfal_rfio_plugin_main.h"
 
@@ -60,7 +55,7 @@ struct rfio_proto_ops * gfal_rfio_internal_loader_base(GError** err){
                     EPROTONOSUPPORT, __func__,
                     " library %s for the rfio_plugin cannot be loaded properly, failure : %s ",
                     libname, dlerror());
-		}	
+		}
 	}else{
         gfal_log(GFAL_VERBOSE_VERBOSE, "lib rfio is not defined in LCG_RFIO_TYPE, try to found it ");
 		char* tab_lib[] = { libdpm_name, libcastor_name, NULL};
@@ -68,11 +63,11 @@ struct rfio_proto_ops * gfal_rfio_internal_loader_base(GError** err){
 		while(*p != NULL){
 			if((dlhandle = dlopen (*p, RTLD_LAZY)) != NULL){
                 gfal_log(GFAL_VERBOSE_VERBOSE, "rfio library %s found! configured to use it", *p);
-				break;	
+				break;
 			}
 			p++;
 		}
-	    if(!dlhandle){	
+	    if(!dlhandle){
             gfal2_set_error(&tmp_err, gfal2_get_plugin_rfio_quark(), EPROTONOSUPPORT, __func__,
                     "Unable to find %s or %s, failure : %s ", libcastor_name, libdpm_name, dlerror());
 		}
@@ -106,7 +101,7 @@ struct rfio_proto_ops * gfal_rfio_internal_loader_base(GError** err){
 	if(tmp_err)
 			gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 	return pops;
-	
+
 }
 
 

@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -25,9 +25,7 @@
 #include <string.h>
 
 #include "gfal_srm.h"
-#include <common/gfal_constants.h>
-#include <common/gfal_common_err_helpers.h>
-#include "gfal_srm_internal_layer.h" 
+#include "gfal_srm_internal_layer.h"
 #include "gfal_srm_namespace.h"
 #include "gfal_srm_space.h"
 
@@ -48,13 +46,13 @@ ssize_t gfal_srm_geturl_getxattrG(plugin_handle handle, const char* path, const 
 		ret = strlen(buff)* sizeof(char);
 	}
 
-	G_RETURN_ERR(ret, tmp_err, err);	
+	G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
 /*
  * implementation of the getxattr for turl resolution, pin management and spacetoken set/get
- * 
+ *
  * */
 ssize_t gfal_srm_getxattrG(plugin_handle handle, const char* path,
         const char* name, void* buff, size_t s_buff, GError** err)
@@ -85,10 +83,10 @@ ssize_t gfal_srm_getxattrG(plugin_handle handle, const char* path,
 
 
 /*
- * lfc getxattr implem 
+ * lfc getxattr implem
  * */
 ssize_t gfal_srm_listxattrG(plugin_handle handle, const char* path, char* list, size_t size, GError** err){
-	ssize_t res = 0;	
+	ssize_t res = 0;
 	char** p= srm_listxattr;
 	char* plist= list;
 	while(*p != NULL){

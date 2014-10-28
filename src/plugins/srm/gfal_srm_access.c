@@ -25,9 +25,6 @@
  * */
 #include <string.h>
 #include "gfal_srm_namespace.h"
-#include <common/gfal_constants.h>
-#include <common/gfal_common_err_helpers.h>
-#include <common/gfal_common_plugin.h>
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_endpoint.h"
 

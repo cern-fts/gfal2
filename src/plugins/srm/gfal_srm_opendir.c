@@ -31,8 +31,6 @@
 #include <stdio.h>
 #include "gfal_srm.h"
 #include "gfal_srm_opendir.h"
-#include <common/gfal_common_err_helpers.h>
-#include <common/gfal_common_filedescriptor.h>
 #include "gfal_srm_namespace.h"
 #include "gfal_srm_endpoint.h"
 #include "gfal_srm_internal_layer.h"

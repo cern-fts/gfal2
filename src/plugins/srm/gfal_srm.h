@@ -25,10 +25,7 @@
 #include <string.h>
 #include <regex.h>
 
-
-#include <common/gfal_prototypes.h>
-#include <common/gfal_types.h>
-#include <common/gfal_constants.h>
+#include <gfal_plugins_api.h>
 #include <gsimplecache/gcachemain.h>
 
 #define GFAL_PREFIX_SRM "srm://"

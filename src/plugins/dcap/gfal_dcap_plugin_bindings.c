@@ -25,17 +25,12 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <dirent.h>
-
+#include <string.h>
 #include <regex.h>
 #include <time.h>
 #include <glib.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <common/gfal_common_internal.h>
-#include <common/gfal_common_err_helpers.h>
-#include <common/gfal_common_plugin.h>
-#include <common/gfal_common_filedescriptor.h>
-#include <common/gfal_types.h>
 #include "gfal_dcap_plugin_layer.h"
 #include "gfal_dcap_plugin_bindings.h"
 #include "gfal_dcap_plugin_main.h"
@@ -96,7 +91,7 @@ ssize_t gfal_dcap_readG(plugin_handle handle, gfal_file_handle fd, void* buff,
         size_t s_buff, GError** err)
 {
     gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
-    ssize_t ret = h->ops->read(GPOINTER_TO_INT(fd->fdesc), buff, s_buff);
+    ssize_t ret = h->ops->read(GPOINTER_TO_INT(gfal_file_handle_get_fdesc(fd)), buff, s_buff);
     if (ret < 0)
         dcap_report_error(h, __func__, err);
     else
@@ -111,7 +106,7 @@ ssize_t gfal_dcap_preadG(plugin_handle handle, gfal_file_handle fd, void* buff,
         size_t s_buff, off_t offset, GError** err)
 {
     gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
-    ssize_t ret = h->ops->pread(GPOINTER_TO_INT(fd->fdesc), buff, s_buff,
+    ssize_t ret = h->ops->pread(GPOINTER_TO_INT(gfal_file_handle_get_fdesc(fd)), buff, s_buff,
             offset);
     if (ret < 0)
         dcap_report_error(h, __func__, err);
@@ -127,7 +122,7 @@ ssize_t gfal_dcap_pwriteG(plugin_handle handle, gfal_file_handle fd,
         const void* buff, size_t s_buff, off_t offset, GError** err)
 {
     gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
-    ssize_t ret = h->ops->pwrite(GPOINTER_TO_INT(fd->fdesc), buff, s_buff,
+    ssize_t ret = h->ops->pwrite(GPOINTER_TO_INT(gfal_file_handle_get_fdesc(fd)), buff, s_buff,
             offset);
     if (ret < 0)
         dcap_report_error(h, __func__, err);
@@ -140,7 +135,7 @@ off_t gfal_dcap_lseekG(plugin_handle handle, gfal_file_handle fd, off_t offset,
         int whence, GError** err)
 {
     gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
-    off_t ret = h->ops->lseek(GPOINTER_TO_INT(fd->fdesc), offset, (int) whence);
+    off_t ret = h->ops->lseek(GPOINTER_TO_INT(gfal_file_handle_get_fdesc(fd)), offset, (int) whence);
     if (ret == ((off_t) 0) - 1)
         dcap_report_error(h, __func__, err);
     else
@@ -152,7 +147,7 @@ ssize_t gfal_dcap_writeG(plugin_handle handle, gfal_file_handle fd,
         const void* buff, size_t s_buff, GError** err)
 {
     gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
-    ssize_t ret = h->ops->write(GPOINTER_TO_INT(fd->fdesc), buff, s_buff);
+    ssize_t ret = h->ops->write(GPOINTER_TO_INT(gfal_file_handle_get_fdesc(fd)), buff, s_buff);
     if (ret < 0)
         dcap_report_error(h, __func__, err);
     else
@@ -163,7 +158,7 @@ ssize_t gfal_dcap_writeG(plugin_handle handle, gfal_file_handle fd,
 int gfal_dcap_closeG(plugin_handle handle, gfal_file_handle fd, GError ** err)
 {
     gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
-    int ret = h->ops->close(GPOINTER_TO_INT(fd->fdesc));
+    int ret = h->ops->close(GPOINTER_TO_INT(gfal_file_handle_get_fdesc(fd)));
     if (ret != 0) {
         dcap_report_error(h, __func__, err);
     }
@@ -256,7 +251,7 @@ gfal_file_handle gfal_dcap_opendirG(plugin_handle handle, const char* path,
 int gfal_dcap_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err)
 {
     gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
-    int ret = h->ops->closedir(fh->fdesc);
+    int ret = h->ops->closedir(gfal_file_handle_get_fdesc(fh));
     if (ret != 0) {
         dcap_report_error(h, __func__, err);
     }
@@ -270,7 +265,7 @@ struct dirent* gfal_dcap_readdirG(plugin_handle handle, gfal_file_handle fh,
         GError** err)
 {
     gfal_plugin_dcap_handle h = (gfal_plugin_dcap_handle) handle;
-    struct dirent* ret = h->ops->readdir(fh->fdesc);
+    struct dirent* ret = h->ops->readdir(gfal_file_handle_get_fdesc(fh));
     if (ret == NULL && *(h->ops->geterror()) != 0) {
         dcap_report_error(h, __func__, err);
     }

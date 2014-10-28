@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -20,7 +20,7 @@
  *  gfal_dcap_plugin_layer.h
  *  file for the external call, abstraction layer for mock purpose
  *  author: Devresse Adrien
- * 
+ *
  **/
 
 #include <sys/stat.h>
@@ -29,11 +29,9 @@
 #include <dirent.h>
 
 #include <glib.h>
-#include <common/gfal_common_internal.h>
-#include <common/gfal_common_plugin.h>
-#include <common/gfal_types.h>
-
 #include <dcap.h>
+
+#include <gfal_plugins_api.h>
 
 
 struct dcap_proto_ops {
@@ -51,7 +49,7 @@ struct dcap_proto_ops {
 	int	(*open)(const char *, int, ...);
 	DIR	*(*opendir)(const char *);
 	ssize_t	(*read)(int, void *, size_t);
-	
+
 	ssize_t (*pread)(int fildes, void *buf, size_t nbytes, off_t offset);
 	ssize_t (*pwrite)(int fildes, const void *buf, size_t nbytes, off_t offset);
 	struct dirent	*(*readdir)(DIR *);
@@ -65,4 +63,3 @@ struct dcap_proto_ops {
 
 
 extern struct dcap_proto_ops * (*gfal_dcap_internal_loader)(GError** err);
-
