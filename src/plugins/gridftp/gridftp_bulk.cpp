@@ -184,10 +184,6 @@ void gridftp_bulk_complete_cb(void * user_specific,
     GridFTPBulkPerformance* original = static_cast<GridFTPBulkPerformance*>(user_specific);
     GridFTPBulkPerformance* pd;
     globus_ftp_client_throughput_plugin_get_user_specific(original->plugin, (void**)(&pd));
-
-    plugin_trigger_event(pd->params, GSIFTP_BULK_DOMAIN, GFAL_EVENT_NONE,
-                        GFAL_EVENT_TRANSFER_EXIT,
-                        "Done %s => %s", pd->source.c_str(), pd->destination.c_str());
 }
 
 
