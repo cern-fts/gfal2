@@ -23,7 +23,7 @@ Michail Salichos ( Michail.Salichos@cern.ch )
 
 # Documentation 
 
- See https://svnweb.cern.ch/trac/lcgutil/wiki/gfal2 for more details
+ See http://dmc.web.cern.ch/projects/gfal-2/home for more details
 
 
 # How to compile GFAL 2.0 ?
@@ -59,4 +59,4 @@ make test
  Any contribution, patch or external plugins is welcome.
  
 # Contact 
-	lcgutil-devel@cern.ch
+	dmc-devel@cern.ch
