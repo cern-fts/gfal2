@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "uri_util.h"
+#include "gfal_uri.h"
 
 #include "common/gfal_common_err_helpers.h"
 
@@ -61,6 +61,7 @@ int gfal_parse_uri(const char* uri, gfal_uri* parsed, GError** err)
     ret = regexec(&preg, uri, 9, pmatch, 0);
     if (ret != 0) {
         regerror(ret, &preg, buffer, sizeof(buffer));
+        regfree(&preg);
         gfal2_set_error(err, scope_uri(), EINVAL, __func__, "Could not match the uri: %s", buffer);
         return -1;
     }
@@ -74,6 +75,7 @@ int gfal_parse_uri(const char* uri, gfal_uri* parsed, GError** err)
     _cpmatch(parsed->path, uri, &pmatch[7], sizeof(parsed->path));
     _cpmatch(parsed->query, uri, &pmatch[8], sizeof(parsed->query));
 
+    regfree(&preg);
     return 0;
 }
 

@@ -1,14 +1,14 @@
 #pragma once
-#ifndef GFAL_URI_UTIL_H
-#define GFAL_URI_UTIL_H
+#ifndef GFAL_URI_H
+#define GFAL_URI_H
 /*
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,6 +47,6 @@ int gfal_parse_uri(const char* uri, gfal_uri* parsed, GError** err);
 
 #ifdef __cplusplus
 }
-#endif 
+#endif
 
 #endif

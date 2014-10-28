@@ -1,21 +1,21 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
- 
- 
+
+
  /*
   * @brief  header file for the bdii request part of gfal
   * @author : Devresse Adrien
@@ -27,9 +27,7 @@
 #define GFAL_MDS_MAX_SRM_ENDPOINT 100
 
 #include <glib.h>
-#include <common/gfal_prototypes.h>
-#include <common/gfal_types.h>
-#include <config/gfal_config.h>
+#include <gfal_api.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,7 +53,7 @@ extern const char* bdii_config_var;
 extern const char* bdii_config_group;
 extern const char* bdii_config_timeout;
 
-// 
+//
 int gfal_mds_resolve_srm_endpoint(gfal2_context_t handle, const char* base_url, gfal_mds_endpoint* endpoints, size_t s_endpoint, GError** err);
 
 // deprecated, use gfal_mds_resolve_srm_endpoint instead
@@ -71,5 +69,5 @@ gboolean gfal_get_nobdiiG(gfal2_context_t handle);
 #ifdef __cplusplus
 }
 #endif
- 
- 
+
+

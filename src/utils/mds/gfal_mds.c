@@ -31,10 +31,6 @@
 #include <ctype.h>
 #include <sys/time.h>
 #include <pthread.h>
-#include <common/gfal_prototypes.h>
-#include <common/gfal_types.h>
-#include <common/gfal_common_internal.h>
-#include <config/gfal_config.h>
 
 #include "gfal_mds_internal.h"
 
