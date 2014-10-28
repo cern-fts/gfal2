@@ -3,7 +3,7 @@
 
 
 #include <gfal_api.h>
-#include <utils/uri/uri_util.h>
+#include <utils/uri/gfal_uri.h>
 #include <gtest/gtest.h>
 
 

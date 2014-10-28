@@ -1,7 +1,3 @@
-
-
-
-
 #include <gfal_api.h>
 #include <gtest/gtest.h>
 

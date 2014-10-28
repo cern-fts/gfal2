@@ -181,8 +181,6 @@ TEST_F(CopyBulk, CopyBulkSomeFail)
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, 0, op_error);
     ASSERT_NE((void*)NULL, file_errors);
 
-    ASSERT_EQ(NBPAIRS - removed, done);
-
     if (file_errors) {
         for (size_t i = 0; i < NBPAIRS; ++i) {
             if (i % 2 == 0) {
@@ -222,7 +220,6 @@ TEST_F(CopyBulk, CopyBulkChecksuming)
     ASSERT_LT(ret, 0);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, 0, op_error);
     ASSERT_NE((void*)NULL, file_errors);
-    ASSERT_EQ(NBPAIRS - 1, done);
 
     if (file_errors) {
         EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, file_errors[0], EIO);
