@@ -252,7 +252,7 @@ void gfal_globus_set_credentials(const char* ucert, const char* ukey, globus_ftp
         char* globus_errstr;
         int globus_errno = gfal_globus_error_convert(error, &globus_errstr);
         if (globus_errstr) {
-            err_buffer << *globus_errstr;
+            err_buffer << globus_errstr;
             g_free (globus_errstr);
         }
         globus_object_free(error);
