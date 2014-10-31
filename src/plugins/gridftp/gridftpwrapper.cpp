@@ -218,7 +218,7 @@ void gfal_globus_set_credentials(const char* ucert, const char* ukey, globus_ftp
 {
     std::stringstream buffer;
     std::ifstream cert_stream(ucert);
-    if (cert_stream.bad()) {
+    if (!cert_stream.good()) {
         throw Glib::Error(GFAL_GRIDFTP_SCOPE_REQ_STATE, errno,
                 "Could not open the user certificate");
     }
@@ -248,7 +248,7 @@ void gfal_globus_set_credentials(const char* ucert, const char* ukey, globus_ftp
 
         err_buffer << "Could not load the user credentials: ";
 
-        globus_object_t * error = globus_error_get(major_status);
+        globus_object_t * error = globus_error_get(minor_status);
         char* globus_errstr;
         int globus_errno = gfal_globus_error_convert(error, &globus_errstr);
         if (globus_errstr) {
