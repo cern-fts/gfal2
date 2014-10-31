@@ -130,6 +130,9 @@ IF (FUNCTIONAL_TESTS)
         add_executable(gfal_mv "gfal_mv.c")
         target_link_libraries(gfal_mv ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES})
 
+        add_executable(gfal_test_set_creds "gfal_test_set_creds.c")
+        target_link_libraries(gfal_test_set_creds ${GFAL2_LINK} ${GLIB2_PKG_LIBRARIES})
+
         FUNCTION(mkdir_test_all name prefix)
                 add_test(gfal_mkdir_full_${name} gfal_test_mkdir_full ${prefix})
         ENDFUNCTION(mkdir_test_all name prefix)        
