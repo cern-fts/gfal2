@@ -19,7 +19,11 @@ BuildRoot:          %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXX
 #main lib dependencies
 BuildRequires:      cmake
 BuildRequires:      doxygen
+%if 0%{?el5}
 BuildRequires:      glib2-devel
+%else
+BuildRequires:      glib2-devel >= 2.28
+%endif
 BuildRequires:      glibmm24-devel
 BuildRequires:      libattr-devel
 BuildRequires:      openldap-devel
@@ -62,6 +66,12 @@ of the %{name} installed plugins.
 %package core
 Summary:            Core of the Grid File access Library 2.0
 Group:              Applications/Internet
+
+%if 0%{?el5}
+Requires:           glib2
+%else
+Requires:           glib2 >= 2.28
+%endif
 
 %description core
 The main library of %{name}. 
