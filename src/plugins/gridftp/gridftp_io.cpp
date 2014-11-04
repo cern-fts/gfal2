@@ -121,7 +121,7 @@ ssize_t gridftp_rw_internal_pread(GridFTPFactory * factory,
             globus_ftp_client_done_callback, &request_state);
     gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_INTERNAL_PREAD, res);
 
-    ssize_t r_size = gridftp_read_stream(GFAL_GRIDFTP_SCOPE_INTERNAL_PREAD, &stream_state, buffer, s_buff);
+    ssize_t r_size = gridftp_read_stream(GFAL_GRIDFTP_SCOPE_INTERNAL_PREAD, &stream_state, buffer, s_buff, true);
 
     request_state.wait(GFAL_GRIDFTP_SCOPE_INTERNAL_PREAD);
     gfal_log(GFAL_VERBOSE_TRACE, "[GridFTPModule::internal_pread] <-");
@@ -211,7 +211,7 @@ ssize_t GridFTPModule::read(gfal_file_handle handle, void* buffer, size_t count)
     Glib::Mutex::Lock locker(desc->lock);
     if (desc->is_not_seeked() && is_read_only(desc->open_flags) && desc->stream != NULL) {
         gfal_log(GFAL_VERBOSE_TRACE, " read in the GET main flow ... ");
-        ret = gridftp_read_stream(GFAL_GRIDFTP_SCOPE_READ, desc->stream, buffer, count);
+        ret = gridftp_read_stream(GFAL_GRIDFTP_SCOPE_READ, desc->stream, buffer, count, false);
     }
     else {
         gfal_log(GFAL_VERBOSE_TRACE, " read with a pread ... ");

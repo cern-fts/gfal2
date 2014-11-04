@@ -640,7 +640,7 @@ void GridFTPRequestState::cancel(const Glib::Quark &scope, const std::string& ms
 
 
 GridFTPStreamState::GridFTPStreamState(GridFTPSessionHandler * s):
-        GridFTPRequestState(s), offset(0), buffer_size(0), eof(false)
+        GridFTPRequestState(s), offset(0), buffer_size(0), eof(false), expect_eof(false)
 {
 }
 
@@ -682,7 +682,7 @@ void gfal_griftp_stream_read_done_callback(void *user_arg,
     gfal_stream_done_callback_err_handling(state, handle, error, buffer, length,
             offset, eof);
 
-    if (eof) {
+    if (!state->expect_eof || eof) {
         state->done = true;
         globus_cond_signal(&state->cond);
     }
@@ -723,7 +723,7 @@ void gfal_griftp_stream_write_done_callback(void *user_arg,
 
 
 ssize_t gridftp_read_stream(const Glib::Quark & scope,
-        GridFTPStreamState* stream, void* buffer, size_t s_read)
+        GridFTPStreamState* stream, void* buffer, size_t s_read, bool expect_eof)
 {
     gfal_log(GFAL_VERBOSE_TRACE, "  -> [gridftp_read_stream]");
 
@@ -733,6 +733,7 @@ ssize_t gridftp_read_stream(const Glib::Quark & scope,
         return 0;
     stream->done = false;
     stream->buffer_size = s_read;
+    stream->expect_eof = expect_eof;
     globus_result_t res = globus_ftp_client_register_read(
             stream->handler->get_ftp_client_handle(),
             (globus_byte_t*) buffer,

@@ -71,9 +71,10 @@ class GridFTPRequestState {
 
 class GridFTPStreamState: public GridFTPRequestState {
 public:
-    off_t offset; // file offset in the stream
+    off_t offset;    // file offset in the stream
     globus_size_t buffer_size;
-	bool eof;     // end of file reached
+	bool eof;        // end of file reached
+	bool expect_eof; // true for partial reads, false for streamed reads
 
 	GridFTPStreamState(GridFTPSessionHandler * s);
     virtual ~GridFTPStreamState();
@@ -186,7 +187,8 @@ void globus_gass_client_done_callback(
 
 // do atomic read operation from globus async call
 ssize_t gridftp_read_stream(const Glib::Quark & scope,
-        GridFTPStreamState* stream, void* buffer, size_t s_read);
+        GridFTPStreamState* stream, void* buffer, size_t s_read,
+        bool expect_eof);
 
 // do atomic write operation from globus async call
 ssize_t gridftp_write_stream(const Glib::Quark & scope,
