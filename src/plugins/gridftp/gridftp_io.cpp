@@ -93,7 +93,7 @@ inline bool is_write_only(int open_flags)
 inline int gridftp_rw_commit_put(const Glib::Quark & scope, GridFTPFileDesc* desc)
 {
     char buffer[2];
-    if (is_write_only(desc->open_flags) && desc->stream) {
+    if (is_write_only(desc->open_flags) && desc->stream && !desc->stream->eof) {
         gfal_log(GFAL_VERBOSE_TRACE,
                 "Commit change for the current stream PUT ... ");
         gridftp_write_stream(GFAL_GRIDFTP_SCOPE_WRITE, desc->stream, buffer, 0, true);
