@@ -653,7 +653,7 @@ static
 void gfal_stream_done_callback(void *user_arg,
         globus_ftp_client_handle_t *handle, globus_object_t *globus_error,
         globus_byte_t *buffer, globus_size_t length, globus_off_t offset,
-        globus_bool_t eof, const char* err_msg_offset)
+        globus_bool_t eof)
 {
     GridFTPStreamState* state = static_cast<GridFTPStreamState*>(user_arg);
 
@@ -684,8 +684,7 @@ void gfal_griftp_stream_read_done_callback(void *user_arg,
 {
 
     gfal_stream_done_callback(user_arg, handle, error, buffer, length,
-            offset, eof,
-            " Invalid read callback call from globus, out of order");
+            offset, eof);
 }
 
 
@@ -696,8 +695,7 @@ void gfal_griftp_stream_write_done_callback(void *user_arg,
         globus_bool_t eof)
 {
     gfal_stream_done_callback(user_arg, handle, error, buffer, length,
-            offset, eof,
-            " Invalid write callback call from globus, out of order");
+            offset, eof);
 }
 
 
