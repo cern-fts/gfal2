@@ -1,4 +1,4 @@
-// sequential little read/write 
+// sequential little read/write
 /**
  * Compile command : gcc gfal_testrw_seq.c `pkg-config --libs --cflags gfal2`
  */
@@ -100,14 +100,14 @@ int main(int argc, char **argv)
     }
     printf("close successful\n");
 
+    g_assert(gfal_unlink(buff_name) == 0);
+
     for (i = 0; i < size_total; i++) {
         if (ibuf[i] != obuf[i]) {
             fprintf(stderr, "compare failed at offset %ld\n", i);
             exit(1);
         }
     }
-
-    g_assert(gfal_unlink(buff_name) == 0);
 
     printf("compare successful\n");
     return 0;
