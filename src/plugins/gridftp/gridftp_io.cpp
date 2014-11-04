@@ -288,9 +288,12 @@ off_t GridFTPModule::lseek(gfal_file_handle handle, off_t offset, int whence)
         return desc->current_offset;
     }
 
+    gfal_log(GFAL_VERBOSE_VERBOSE, "New offset set to %lld", (long long)(new_offset));
+
     // If the new offset does not correspond with the current offset,
     // abort initial GET/PUT operation if running
     if (!desc->request->done) {
+        gfal_log(GFAL_VERBOSE_VERBOSE, "Abort GridFTP request done at open(...)");
         globus_ftp_client_abort(desc->handler->get_ftp_client_handle());
         try {
             desc->request->wait(GFAL_GRIDFTP_SCOPE_LSEEK);
@@ -415,9 +418,9 @@ extern "C" off_t gfal_gridftp_lseekG(plugin_handle ch, gfal_file_handle fd,
     off_t ret = -1;
     gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_lseekG]");
     CPP_GERROR_TRY
-                ret = ((static_cast<GridFTPModule*>(ch))->lseek(fd, offset,
-                        whence));
-            CPP_GERROR_CATCH(&tmp_err);
+        ret = ((static_cast<GridFTPModule*>(ch))->lseek(fd, offset,
+                whence));
+    CPP_GERROR_CATCH(&tmp_err);
     gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_lseekG]<-");
     G_RETURN_ERR(ret, tmp_err, err);
 
