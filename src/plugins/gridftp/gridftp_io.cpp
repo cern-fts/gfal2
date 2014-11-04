@@ -262,10 +262,34 @@ ssize_t GridFTPModule::pwrite(gfal_file_handle handle, const void* buffer,
 off_t GridFTPModule::lseek(gfal_file_handle handle, off_t offset, int whence)
 {
     GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(gfal_file_handle_get_fdesc(handle));
-
     Glib::Mutex::Lock locker(desc->lock);
 
-    // When we seek, cancel the operation we start automatically when opening
+    // Calculate new offset
+    off_t new_offset;
+    switch (whence) {
+        case SEEK_SET:
+            new_offset = offset;
+            break;
+        case SEEK_CUR:
+            new_offset = desc->current_offset + offset;
+            break;
+        case SEEK_END:
+        default:
+            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_LSEEK, "Invalid whence", EINVAL);
+    }
+
+    // If the new offset is the same we have, we are good
+    // This is done to avoid seeking when actually the reads/writes are done sequentially
+    // This happens, for instance, with gfalFS, which will do parallel writes and reads, but
+    // in order
+    if (new_offset == desc->current_offset) {
+        gfal_log(GFAL_VERBOSE_VERBOSE, "New and current offsets are the same (%lld), so do not seek",
+                (long long)(new_offset));
+        return desc->current_offset;
+    }
+
+    // If the new offset does not correspond with the current offset,
+    // abort initial GET/PUT operation if running
     if (!desc->request->done) {
         globus_ftp_client_abort(desc->handler->get_ftp_client_handle());
         try {
@@ -277,20 +301,8 @@ off_t GridFTPModule::lseek(gfal_file_handle handle, off_t offset, int whence)
         }
     }
     desc->reset();
+    desc->current_offset = new_offset;
 
-    switch (whence) {
-    case SEEK_SET:
-        desc->current_offset = offset;
-        break;
-    case SEEK_CUR:
-        desc->current_offset += offset;
-        break;
-    case SEEK_END: // not supported for now ( no meaning in write-once files ... )
-    default:
-        std::ostringstream o;
-        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_LSEEK, "Invalid whence",
-                EINVAL);
-    }
     return desc->current_offset;
 }
 
