@@ -93,7 +93,7 @@ inline bool is_write_only(int open_flags)
 inline int gridftp_rw_commit_put(const Glib::Quark & scope, GridFTPFileDesc* desc)
 {
     char buffer[2];
-    if (is_write_only(desc->open_flags)) {
+    if (is_write_only(desc->open_flags) && desc->stream) {
         gfal_log(GFAL_VERBOSE_TRACE,
                 "Commit change for the current stream PUT ... ");
         gridftp_write_stream(GFAL_GRIDFTP_SCOPE_WRITE, desc->stream, buffer, 0, true);
@@ -147,7 +147,7 @@ ssize_t gridftp_rw_internal_pwrite(GridFTPFactory * factory,
     gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_INTERNAL_PWRITE, res);
 
     ssize_t r_size = gridftp_write_stream(GFAL_GRIDFTP_SCOPE_INTERNAL_PWRITE,
-            &stream, buffer, s_buff, false); // write block
+            &stream, buffer, s_buff, true); // write block
 
     request_state.wait(GFAL_GRIDFTP_SCOPE_INTERNAL_PWRITE);
     gfal_log(GFAL_VERBOSE_TRACE, "[GridFTPModule::internal_pwrite] <-");
@@ -264,6 +264,20 @@ off_t GridFTPModule::lseek(gfal_file_handle handle, off_t offset, int whence)
     GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(gfal_file_handle_get_fdesc(handle));
 
     Glib::Mutex::Lock locker(desc->lock);
+
+    // When we seek, cancel the operation we start automatically when opening
+    if (!desc->request->done) {
+        globus_ftp_client_abort(desc->handler->get_ftp_client_handle());
+        try {
+            desc->request->wait(GFAL_GRIDFTP_SCOPE_LSEEK);
+        }
+        catch (const Gfal::CoreException& e) {
+            if (e.code() != ECANCELED)
+                throw;
+        }
+    }
+    desc->reset();
+
     switch (whence) {
     case SEEK_SET:
         desc->current_offset = offset;

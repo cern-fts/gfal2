@@ -72,6 +72,7 @@ class GridFTPRequestState {
 class GridFTPStreamState: public GridFTPRequestState {
 public:
     off_t offset; // file offset in the stream
+    globus_size_t buffer_size;
 	bool eof;     // end of file reached
 
 	GridFTPStreamState(GridFTPSessionHandler * s);

@@ -639,7 +639,8 @@ void GridFTPRequestState::cancel(const Glib::Quark &scope, const std::string& ms
 }
 
 
-GridFTPStreamState::GridFTPStreamState(GridFTPSessionHandler * s): GridFTPRequestState(s), offset(0), eof(false)
+GridFTPStreamState::GridFTPStreamState(GridFTPSessionHandler * s):
+        GridFTPRequestState(s), offset(0), buffer_size(0), eof(false)
 {
 }
 
@@ -650,14 +651,11 @@ GridFTPStreamState::~GridFTPStreamState()
 
 
 static
-void gfal_stream_done_callback(void *user_arg,
+void gfal_stream_done_callback_err_handling(GridFTPStreamState* state,
         globus_ftp_client_handle_t *handle, globus_object_t *globus_error,
         globus_byte_t *buffer, globus_size_t length, globus_off_t offset,
         globus_bool_t eof)
 {
-    GridFTPStreamState* state = static_cast<GridFTPStreamState*>(user_arg);
-
-    globus_mutex_lock(&state->lock);
     if (globus_error != GLOBUS_SUCCESS) {
         char *err_buffer;
         int err_code = gfal_globus_error_convert(globus_error, &err_buffer);
@@ -669,10 +667,6 @@ void gfal_stream_done_callback(void *user_arg,
 
     state->offset += length;
     state->eof = eof;
-
-    state->done = true;
-    globus_cond_signal(&state->cond);
-    globus_mutex_unlock(&state->lock);
 }
 
 
@@ -682,9 +676,30 @@ void gfal_griftp_stream_read_done_callback(void *user_arg,
         globus_byte_t *buffer, globus_size_t length, globus_off_t offset,
         globus_bool_t eof)
 {
+    GridFTPStreamState* state = static_cast<GridFTPStreamState*>(user_arg);
+    globus_mutex_lock(&state->lock);
 
-    gfal_stream_done_callback(user_arg, handle, error, buffer, length,
+    gfal_stream_done_callback_err_handling(state, handle, error, buffer, length,
             offset, eof);
+
+    if (eof) {
+        state->done = true;
+        globus_cond_signal(&state->cond);
+    }
+    else {
+        // It may happen that the buffer size and the requested size are of
+        // the same size, and there is enough data to fill it.
+        // If that's the case, a second callback will be done with EOF, and we need
+        // to get it, or waiting for the operation completion will block forever
+        globus_ftp_client_register_read(
+                            handle,
+                            buffer,
+                            state->buffer_size,
+                            gfal_griftp_stream_read_done_callback,
+                            state);
+    }
+
+    globus_mutex_unlock(&state->lock);
 }
 
 
@@ -694,8 +709,16 @@ void gfal_griftp_stream_write_done_callback(void *user_arg,
         globus_byte_t *buffer, globus_size_t length, globus_off_t offset,
         globus_bool_t eof)
 {
-    gfal_stream_done_callback(user_arg, handle, error, buffer, length,
+    GridFTPStreamState* state = static_cast<GridFTPStreamState*>(user_arg);
+    globus_mutex_lock(&state->lock);
+
+    gfal_stream_done_callback_err_handling(state, handle, error, buffer, length,
             offset, eof);
+
+    state->done = true;
+
+    globus_cond_signal(&state->cond);
+    globus_mutex_unlock(&state->lock);
 }
 
 
@@ -709,9 +732,13 @@ ssize_t gridftp_read_stream(const Glib::Quark & scope,
     if (stream->eof)
         return 0;
     stream->done = false;
+    stream->buffer_size = s_read;
     globus_result_t res = globus_ftp_client_register_read(
-            stream->handler->get_ftp_client_handle(), (globus_byte_t*) buffer, s_read,
-            gfal_griftp_stream_read_done_callback, stream);
+            stream->handler->get_ftp_client_handle(),
+            (globus_byte_t*) buffer,
+            s_read,
+            gfal_griftp_stream_read_done_callback,
+            stream);
     gfal_globus_check_result(scope, res);
     stream->wait(scope);
     return stream->offset - initial_offset;
@@ -726,7 +753,8 @@ ssize_t gridftp_write_stream(const Glib::Quark & scope,
     off_t initial_offset = stream->offset;
 
     stream->done = false;
-	globus_result_t res = globus_ftp_client_register_write( stream->handler->get_ftp_client_handle(),
+	globus_result_t res = globus_ftp_client_register_write(
+	    stream->handler->get_ftp_client_handle(),
 		(globus_byte_t*) buffer,
 		s_write,
 		initial_offset,
