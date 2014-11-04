@@ -41,7 +41,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    printf("Stat OK:\n\tMode:\t%04o\n\tSize:\t%d\n", st.st_mode, st.st_size);
+    printf("Stat OK:\n\tMode:\t%04o\n\tSize:\t%zd\n", st.st_mode, st.st_size);
 
     gfal2_context_free(context);
     return 0;
