@@ -72,9 +72,13 @@ IF (FUNCTIONAL_TESTS)
                 add_test(gfal_rw_size_${name} gfal_test_rw_full ${path} ${size})
         ENDFUNCTION(rwt_test_all name path size)
         
-        FUNCTION(rwt_test_seq name path size size_read)
-                add_test(gfal_rw_seq_${name} gfal_test_rw_seq ${path} ${size} ${size_read})                
-        ENDFUNCTION(rwt_test_seq name path size size_read)
+        FUNCTION(rwt_test_seq name path size_read size)
+                add_test(gfal_rw_seq_${name} gfal_test_rw_seq ${path} ${size_read} ${size})
+        ENDFUNCTION(rwt_test_seq name path size_read size)
+        
+        FUNCTION(rwt_test_seek name path size_read size)
+            add_test(gfal_rw_seek_${name} gfal_test_rw_seek ${path} ${size_read} ${size})
+        ENDFUNCTION(rwt_test_seek name path size)
                 
         add_executable(gfal_test_read        "gfal_test_read.c")
         target_link_libraries(gfal_test_read ${GFAL2_LINK} test_shared)
@@ -98,7 +102,10 @@ IF (FUNCTIONAL_TESTS)
         target_link_libraries(gfal_test_rw_full ${GFAL2_LINK} test_shared)
         
         add_executable(gfal_test_rw_seq        "gfal_test_rw_seq.c")
-        target_link_libraries(gfal_test_rw_seq ${GFAL2_LINK} test_shared) 
+        target_link_libraries(gfal_test_rw_seq ${GFAL2_LINK} test_shared)
+        
+        add_executable(gfal_test_rw_seek        "gfal_test_rw_seek.c")
+        target_link_libraries(gfal_test_rw_seek ${GFAL2_LINK} test_shared) 
         
         add_executable(gfal_test_get        "gfal_test_get.c")
         target_link_libraries(gfal_test_get ${GFAL2_LINK})

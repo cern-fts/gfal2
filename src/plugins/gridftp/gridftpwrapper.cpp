@@ -827,7 +827,6 @@ void GridFTPStreamState::poll_callback_stream(const Glib::Quark & scope)
 {
     gfal_log(GFAL_VERBOSE_TRACE, " -> go polling for request ");
     {
-
         Glib::Mutex::Lock l(mux_stream_callback);
         // wait for a globus signal or for a timeout
         // if canceling logic -> wait until end
@@ -886,14 +885,11 @@ void gridftp_wait_for_write(const Glib::Quark & scope,
 
 
 
-void gfal_stream_callback_prototype(void *user_arg,
+void gfal_stream_callback_prototype(GridFTPStreamState *state,
         globus_ftp_client_handle_t *handle, globus_object_t *error,
         globus_byte_t *buffer, globus_size_t length, globus_off_t offset,
-        globus_bool_t eof, const char* err_msg_offset)
+        globus_bool_t eof)
 {
-    GridFTPStreamState* state = static_cast<GridFTPStreamState*>(user_arg);
-    Glib::Mutex::Lock l(state->mux_stream_callback);
-
     if (error != GLOBUS_SUCCESS) {	// check error status
         gfal_globus_store_error(state, error);
         // gfal_log(GFAL_VERBOSE_TRACE," read error %s , code %d", state->error, state->errcode);
@@ -902,7 +898,7 @@ void gfal_stream_callback_prototype(void *user_arg,
         // verify read
         //gfal_log(GFAL_VERBOSE_TRACE," read %d bytes , eof %d %d,%d", length, eof, state->offset, offset);
         if (state->get_offset() != offset) {
-            state->set_error(err_msg_offset);
+            state->set_error("Bad offset");
             state->set_error_code(EIO);
         }
         else {
@@ -912,7 +908,6 @@ void gfal_stream_callback_prototype(void *user_arg,
         }
     }
     state->set_stream_status(GRIDFTP_REQUEST_FINISHED);
-    state->cond_stream_callback.broadcast();
 }
 
 
@@ -921,33 +916,56 @@ void gfal_griftp_stream_read_callback(void *user_arg,
         globus_byte_t *buffer, globus_size_t length, globus_off_t offset,
         globus_bool_t eof)
 {
+    GridFTPStreamState* state = static_cast<GridFTPStreamState*>(user_arg);
+    Glib::Mutex::Lock l(state->mux_stream_callback);
 
-    gfal_stream_callback_prototype(user_arg, handle, error, buffer, length,
-            offset, eof,
-            " Invalid read callback call from globus, out of order");
+    gfal_stream_callback_prototype(state, handle, error, buffer, length,
+            offset, eof);
+
+    if (!state->get_expect_eof() || eof) {
+        state->cond_stream_callback.broadcast();
+    }
+    else {
+        // It may happen that the buffer size and the requested size are of
+        // the same size, and there is enough data to fill it.
+        // If that's the case, a second callback will be done with EOF, and we need
+        // to get it, or waiting for the operation completion will block forever
+        globus_ftp_client_register_read(
+                            handle,
+                            buffer,
+                            state->get_buffer_size(),
+                            gfal_griftp_stream_read_callback,
+                            state);
+    }
 }
 
 
-static void gfal_griftp_stream_write_callback(void *user_arg,
+void gfal_griftp_stream_write_callback(void *user_arg,
         globus_ftp_client_handle_t *handle, globus_object_t *error,
         globus_byte_t *buffer, globus_size_t length, globus_off_t offset,
         globus_bool_t eof)
 {
-    gfal_stream_callback_prototype(user_arg, handle, error, buffer, length,
-            offset, eof,
-            " Invalid write callback call from globus, out of order");
+    GridFTPStreamState* state = static_cast<GridFTPStreamState*>(user_arg);
+    Glib::Mutex::Lock l(state->mux_stream_callback);
+
+    gfal_stream_callback_prototype(state, handle, error, buffer, length,
+            offset, eof);
+    state->cond_stream_callback.broadcast();
 }
 
 
 ssize_t gridftp_read_stream(const Glib::Quark & scope,
-        GridFTPStreamState* stream, void* buffer, size_t s_read)
+        GridFTPStreamState* stream, void* buffer, size_t s_read, bool expect_eof)
 {
     gfal_log(GFAL_VERBOSE_TRACE, "  -> [gridftp_read_stream]");
     off_t initial_offset = stream->get_offset();
 
     if (stream->is_eof())
         return 0;
+
     stream->set_stream_status(GRIDFTP_REQUEST_RUNNING);
+    stream->set_buffer_size(s_read);
+    stream->set_expect_eof(expect_eof);
     globus_result_t res = globus_ftp_client_register_read(
             stream->sess->get_ftp_handle(), (globus_byte_t*) buffer, s_read,
             gfal_griftp_stream_read_callback, stream);

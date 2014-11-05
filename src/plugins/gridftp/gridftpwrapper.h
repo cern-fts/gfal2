@@ -157,7 +157,9 @@ struct GridFTPRequestState {
 struct GridFTPStreamState : public GridFTPRequestState {
  protected:
     off_t offset; // file offset in the stream
+    off_t buffer_size; // buffer size
 	bool eof;     // end of file reached
+	bool expect_eof; // true for partial reads, false for streamed reads
     GridFTPRequestStatus stream_status;
     Glib::Mutex mux_stream_callback;
     Glib::Cond  cond_stream_callback;
@@ -167,9 +169,11 @@ struct GridFTPStreamState : public GridFTPRequestState {
    // ownership lock
    Glib::Mutex lock;
 
-	GridFTPStreamState(GridFTPSession * s) : GridFTPRequestState(s) {
-		offset =0;
+	GridFTPStreamState(GridFTPSession * s, bool own_session=true) : GridFTPRequestState(s, own_session) {
+		offset = 0;
+		buffer_size = 0;
 		eof = false;
+		expect_eof = false;
         stream_status = GRIDFTP_REQUEST_NOT_LAUNCHED;
 	}
 
@@ -211,6 +215,26 @@ struct GridFTPStreamState : public GridFTPRequestState {
         offset += diff;
     }
 
+    void set_buffer_size(off_t size)
+    {
+        buffer_size = size;
+    }
+
+    off_t get_buffer_size()
+    {
+        return buffer_size;
+    }
+
+    void set_expect_eof(bool expect)
+    {
+        expect_eof = expect;
+    }
+
+    bool get_expect_eof()
+    {
+        return expect_eof;
+    }
+
     GridFTPRequestStatus get_stream_status(void)
     {
         Glib::Mutex::Lock locker(internal_lock);
@@ -226,10 +250,14 @@ struct GridFTPStreamState : public GridFTPRequestState {
     void poll_callback_stream(const Glib::Quark & scope);
     void wait_callback_stream(const Glib::Quark & scope);
 
-    friend void gfal_stream_callback_prototype(void *user_arg,
+    friend void gfal_griftp_stream_read_callback(void *user_arg,
             globus_ftp_client_handle_t *handle, globus_object_t *error,
             globus_byte_t *buffer, globus_size_t length, globus_off_t offset,
-            globus_bool_t eof, const char* err_msg_offset);
+            globus_bool_t eof);
+    friend void gfal_griftp_stream_write_callback(void *user_arg,
+            globus_ftp_client_handle_t *handle, globus_object_t *error,
+            globus_byte_t *buffer, globus_size_t length, globus_off_t offset,
+            globus_bool_t eof);
 };
 
 
@@ -369,7 +397,8 @@ void globus_gass_basic_client_callback(
 
 // do atomic read operation from globus async call
 ssize_t gridftp_read_stream(const Glib::Quark & scope,
-        GridFTPStreamState* stream, void* buffer, size_t s_read);
+        GridFTPStreamState* stream, void* buffer, size_t s_read,
+        bool expect_eof);
 
 // do atomic write operation from globus async call
 ssize_t gridftp_write_stream(const Glib::Quark & scope,
