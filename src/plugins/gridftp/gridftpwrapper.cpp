@@ -248,7 +248,7 @@ void gfal_globus_set_credentials(const char* ucert, const char* ukey, globus_ftp
 
         err_buffer << "Could not load the user credentials: ";
 
-        globus_object_t * error = globus_error_get(minor_status);
+        globus_object_t * error = globus_error_get(major_status);
         char* globus_errstr;
         int globus_errno = gfal_globus_error_convert(error, &globus_errstr);
         if (globus_errstr) {
@@ -436,6 +436,9 @@ int gfal_globus_error_convert(globus_object_t * error, char ** str_error)
             *str_error = NULL;
         }
         return errn;
+    }
+    else {
+        *str_error = NULL;
     }
     return 0;
 }
