@@ -1,4 +1,32 @@
-GFAL 2.0 RELEASE-NOTE:
+GFAL2 RELEASE-NOTES:
+
+* Fri Nov 07 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.7.6
+- [DMC-469] - LFC Plugin: Calling gfal2_set_error with wrong parameters
+- [DMC-473] - HTTP Plugin: 3rd party copy should translate non canonical urls (davs+3rd...) to https
+- [DMC-485] - Core: Recursive mkdir() fail when because of a race an intermediate directory is created
+- [DMC-502] - GridFTP Plugin: if ucert == ukey, do not concatenate them
+- [DMC-504] - SRM Plugin: mkdir-ing an existing directory must nor fail
+- [DMC-509] - Core: Cannot use unix special files as a destination for file transfer
+- [DMC-510] - srm-ifce is not mapping correctly status codes (Was Revert DMC-433)
+- [DMC-515] - bring online timeout is not set correctly in gfal_srmv2_bring_online_internal
+- [DMC-516] - SRM Plugin: Bringonline internals only checks for the status of the first file
+- [DMC-523] - Core: Do not try to create parent directory if it exists already (local copy)
+- [DMC-531] - GridFTP Plugin: Partial read and write missing EOF's
+- [DMC-453] - Deprecate gfal_handle and gfal_context_t inside gfal2
+- [DMC-463] - GridFTP Plugin: Log storage IPv6
+- [DMC-465] - HTTP Plugin: Make possible dissabling certificate verification
+- [DMC-507] - Core: Expose URI API publicly
+- [DMC-508] - Deprecate direct inclusion of header files
+- [DMC-533] - GridFTP Plugin: Partial read and write, avoid seeking if not strictly required
+- [DMC-445] - HTTP Plugin: 3rd party copies explicit (davs+3rd://)
+- [DMC-448] - SRM Plugin: Disable GridFTP session reuse if a castor srm endpoint is involved
+- [DMC-452] - Core: For convenience, xattr user.checksum directly mapped to gfal2_checksum
+- [DMC-459] - Core: New method to load configuration from a file (gfal2_load_opts_from_file)
+- [DMC-466] - LFC Plugin: Handle replica deletion via extended attributes
+- [DMC-490] - HTTP Plugin: Add support for AWS credentials
+- [DMC-493] - Core: Add gfal2_get_opt_string_with_default
+- [DMC-460] - GridFTP Plugin: Trimming bug in gridftp_readdir_parser
+- [DMC-462] - GridFTP Plugin: Pipeline copy support
 
 * Mon Jul 28 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.6.8
 - [LCGUTIL-169] - GFAL 2.0 : Enable tests for xrootd and http supports
