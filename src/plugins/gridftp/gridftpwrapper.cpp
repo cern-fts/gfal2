@@ -718,7 +718,6 @@ void GridFTPRequestState::poll_callback(const Glib::Quark &scope)
     bool timeout = false;
     Glib::RWLock::ReaderLock l(mux_req_state);
     {
-
         Glib::Mutex::Lock l(mux_callback_lock);
         // wait for a globus signal or for a timeout
         // if canceling logic -> wait until end
@@ -890,6 +889,7 @@ void gfal_stream_callback_prototype(GridFTPStreamState *state,
         globus_byte_t *buffer, globus_size_t length, globus_off_t offset,
         globus_bool_t eof)
 {
+    state->set_eof(eof);
     if (error != GLOBUS_SUCCESS) {	// check error status
         gfal_globus_store_error(state, error);
         // gfal_log(GFAL_VERBOSE_TRACE," read error %s , code %d", state->error, state->errcode);
@@ -903,7 +903,6 @@ void gfal_stream_callback_prototype(GridFTPStreamState *state,
         }
         else {
             state->increase_offset(length);
-            state->set_eof(eof);
             state->set_error_code(0);
         }
     }
