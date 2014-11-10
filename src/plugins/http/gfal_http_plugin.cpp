@@ -97,6 +97,16 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davi
     }
     gfal_http_get_ucert(*req_params, handle);
     gfal_http_get_aws(*req_params, handle, uri);
+
+    if (uri.getProtocol().compare(0, 4, "http") == 0 || uri.getProtocol().compare(0, 3, "dav") == 0) {
+        req_params->setProtocol(Davix::RequestProtocol::Webdav);
+    }
+    else if (uri.getProtocol().compare(0, 2, "s3") == 0) {
+        req_params->setProtocol(Davix::RequestProtocol::AwsS3);
+    }
+    else {
+        req_params->setProtocol(Davix::RequestProtocol::Auto);
+    }
 }
 
 
