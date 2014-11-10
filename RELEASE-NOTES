@@ -1,5 +1,9 @@
 GFAL2 RELEASE-NOTES:
 
+* Mon Nov 10 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.7.7
+- [DMC-539] - GridFTP Plugin: Transfers from gridftp endpoints hang when a read operation fails
+- [DMC-541] - GridFTP and SRM plugins: Transferring from Castor SRM to non-SRM fail with "Connection refused"
+
 * Fri Nov 07 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.7.6
 - [DMC-469] - LFC Plugin: Calling gfal2_set_error with wrong parameters
 - [DMC-473] - HTTP Plugin: 3rd party copy should translate non canonical urls (davs+3rd...) to https
