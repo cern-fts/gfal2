@@ -169,10 +169,17 @@ gfal_file_handle GridFTPModule::open(const char* url, int flag, mode_t mode)
     globus_result_t res;
 
     // check ENOENT condition for R_ONLY
-    if (is_read_only(desc->open_flags) && this->exists(url) == false) {
-        char err_buff[2048];
-        snprintf(err_buff, 2048, " gridftp open error : %s on url %s", strerror(ENOENT), url);
-        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_OPEN, err_buff, ENOENT);
+    if (is_read_only(desc->open_flags)) {
+        // Castor TURLs are really one-use-only, so with this dirty hack we allow
+        // the SRM plugin to disable this check if the endpoint is Castor
+        gboolean check_file_exists = gfal2_get_opt_boolean_with_default(
+                get_session_factory()->get_gfal2_context(), "GRIDFTP PLUGIN",
+                "STAT_ON_OPEN", TRUE);
+        if (check_file_exists && !this->exists(url)) {
+            char err_buff[2048];
+            snprintf(err_buff, 2048, " gridftp open error : %s on url %s", strerror(ENOENT), url);
+            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_OPEN, err_buff, ENOENT);
+        }
     }
 
     if (is_read_only(desc->open_flags)) {

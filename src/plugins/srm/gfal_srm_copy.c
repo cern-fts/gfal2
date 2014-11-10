@@ -558,8 +558,9 @@ static void castor_gridftp_session_hack(plugin_handle handle, gfal2_context_t co
 
     if (src_is_castor || dst_is_castor) {
         gfal_log(GFAL_VERBOSE_VERBOSE,
-                "Found a Castor endpoint, or could not determine version! Disabling GridFTP session reuse");
-        gfal2_set_opt_boolean(context, "GRIDFTP PLUGIN", "SESSION_REUSE", 0, NULL);
+                "Found a Castor endpoint, or could not determine version! Disabling GridFTP session reuse and stat on open");
+        gfal2_set_opt_boolean(context, "GRIDFTP PLUGIN", "SESSION_REUSE", FALSE, NULL);
+        gfal2_set_opt_boolean(context, "GRIDFTP PLUGIN", "STAT_ON_OPEN", FALSE, NULL);
     }
     else {
         gfal_log(GFAL_VERBOSE_VERBOSE,
