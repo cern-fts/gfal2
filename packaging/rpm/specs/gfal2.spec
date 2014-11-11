@@ -22,7 +22,7 @@ BuildRequires:      doxygen
 %if 0%{?el5}
 BuildRequires:      glib2-devel
 %else
-BuildRequires:      glib2-devel >= 2.28
+BuildRequires:      glib2-devel
 %endif
 BuildRequires:      glibmm24-devel
 BuildRequires:      libattr-devel
@@ -70,7 +70,7 @@ Group:              Applications/Internet
 %if 0%{?el5}
 Requires:           glib2
 %else
-Requires:           glib2 >= 2.28
+Requires:           glib2
 %endif
 
 %description core
