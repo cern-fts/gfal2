@@ -41,28 +41,30 @@ inline static int gfal_rw_dir_handle_store(gfal2_context_t handle, gfal_file_han
     g_return_val_err_if_fail(handle && fhandle, 0, err, "[gfal_rw_dir_handle_store] handle invalid");
     GError* tmp_err=NULL;
     int key = 0;
-    gfal_fdesc_container_handle container= gfal_dir_handle_container_instance(&(handle->fdescs), &tmp_err);
+    gfal_fdesc_container_handle container = gfal_dir_handle_container_instance(&(handle->fdescs), &tmp_err);
     if(container)
         key = gfal_add_new_file_desc(container, (gpointer) fhandle, &tmp_err);
     G_RETURN_ERR(key, tmp_err, err);
 }
 
 
-DIR* gfal2_opendir(gfal2_context_t handle, const char* name, GError ** err){
-    GError* tmp_err=NULL;
-    gfal_file_handle ret= NULL;
+DIR* gfal2_opendir(gfal2_context_t handle, const char* name, GError ** err)
+{
+    GError* tmp_err = NULL;
+    gfal_file_handle ret = NULL;
     GFAL2_BEGIN_SCOPE_CANCEL(handle, NULL, err);
-    if(name == NULL || handle ==NULL){
+    if (name == NULL || handle == NULL) {
         g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "uri  or/and handle are NULL");
-    }else{
+    }
+    else {
         ret = gfal_plugin_opendirG(handle, name, &tmp_err);
     }
 
     int key = 0;
-    if(ret)
+    if (ret)
         key = gfal_rw_dir_handle_store(handle, ret, &tmp_err);
     GFAL2_END_SCOPE_CANCEL(handle);
-    G_RETURN_ERR( GINT_TO_POINTER(key), tmp_err, err);
+    G_RETURN_ERR(GINT_TO_POINTER(key), tmp_err, err);
 }
 
 
@@ -199,7 +201,7 @@ int gfal2_closedir(gfal2_context_t handle, DIR* d, GError ** err){
         gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
         if( fh != NULL){
             ret = gfal_rw_dir_handle_close(handle, fh, &tmp_err);
-            if(ret==0){
+            if (ret == 0) {
                 ret = gfal_rw_dir_handle_delete(container, key, &tmp_err);
             }
         }
