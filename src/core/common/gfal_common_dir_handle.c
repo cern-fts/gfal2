@@ -52,7 +52,8 @@ gfal_fdesc_container_handle gfal_dir_handle_container_instance(gfal_descriptors_
 
 void gfal_dir_handle_container_delete(gfal_descriptors_container* fdescs){
 	pthread_mutex_lock(&m_dir_container);
-	g_hash_table_destroy(fdescs->dir_container->container);
+	if (fdescs->dir_container && fdescs->dir_container->container)
+	    g_hash_table_destroy(fdescs->dir_container->container);
 	free(fdescs->dir_container);
 	fdescs->dir_container = NULL;
 	pthread_mutex_unlock(&m_dir_container);
