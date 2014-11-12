@@ -272,6 +272,7 @@ ssize_t gfal_srm_space_getxattrG(plugin_handle handle, const char* path,
     if (context) {
         ret_size = gfal_srm_space_property(context, subprop_name, (char*)buff, s_buff, &nested_error);
     }
+    gfal_srm_ifce_easy_context_release(opts, context);
 
     if (nested_error != NULL)
         gfal2_propagate_prefixed_error(err, nested_error, __func__);

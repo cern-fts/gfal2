@@ -91,6 +91,7 @@ int	gfal_srm_chmodG(plugin_handle ch, const char * path , mode_t mode, GError** 
         gfal_srm_cache_stat_remove(ch, path);
         ret = gfal_srmv2_chmod_internal(context, path, mode, &tmp_err);
     }
+    gfal_srm_ifce_easy_context_release(opts, context);
 
     if (ret != 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);

@@ -64,6 +64,7 @@ int gfal_srm_renameG(plugin_handle plugin_data, const char* oldurl,
         gfal_srm_cache_stat_remove(plugin_data, oldurl);
         ret = gfal_srm_rename_internal_srmv2(context, oldurl, urlnew, &tmp_err);
     }
+    gfal_srm_ifce_easy_context_release(opts, context);
 
     if (ret != 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);

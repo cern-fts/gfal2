@@ -71,6 +71,7 @@ int gfal_srm_statG(plugin_handle ch, const char* surl, struct stat* buf, GError*
         else {
             ret = -1;
         }
+        gfal_srm_ifce_easy_context_release(opts, context);
     }
 
     if(tmp_err)

@@ -151,7 +151,7 @@ int gfal_srm_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err)
 {
 	g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_srm_opendirG] Invalid args");
 	gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;
-	//gfal_srm_external_call.srm_srmv2_mdfilestatus_delete(oh->srm_ls_resu, 1); --> disable because of error in memory management in srm-ifce
+	gfal_srm_ifce_easy_context_release(handle, oh->context);
 	g_free(oh);
     gfal_file_handle_delete(fh);
 	return 0;

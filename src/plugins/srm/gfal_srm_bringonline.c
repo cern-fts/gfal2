@@ -120,6 +120,7 @@ int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl,
         ret = gfal_srmv2_bring_online_internal(context, opts, 1, &surl,
                     pintime, timeout, token, tsize, async, &tmp_err);
     }
+    gfal_srm_ifce_easy_context_release(opts, context);
 
     if (tmp_err) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
@@ -146,8 +147,10 @@ int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char* con
         return -1;
     }
 
-    return gfal_srmv2_bring_online_internal(context, opts, nbfiles, surls,
-            pintime, timeout, token, tsize, async, errors);
+    int ret = gfal_srmv2_bring_online_internal(context, opts, nbfiles, surls,
+                pintime, timeout, token, tsize, async, errors);
+    gfal_srm_ifce_easy_context_release(opts, context);
+    return ret;
 }
 
 
@@ -218,6 +221,7 @@ int gfal_srmv2_bring_online_pollG(plugin_handle ch, const char* surl,
     if (context != NULL) {
         ret = gfal_srmv2_bring_online_poll_internal(context, 1, &surl, token, &tmp_err);
     }
+    gfal_srm_ifce_easy_context_release(opts, context);
 
     if (tmp_err) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
@@ -245,7 +249,9 @@ int gfal_srmv2_bring_online_poll_listG(plugin_handle ch, int nbfiles,
         return -1;
     }
 
-    return gfal_srmv2_bring_online_poll_internal(context, nbfiles, surls, token, errors);
+    int ret = gfal_srmv2_bring_online_poll_internal(context, nbfiles, surls, token, errors);
+    gfal_srm_ifce_easy_context_release(opts, context);
+    return ret;
 }
 
 
@@ -306,6 +312,7 @@ int gfal_srmv2_release_fileG(plugin_handle ch, const char* surl,
     if (context != NULL) {
         ret = gfal_srmv2_release_file_internal(context, opts, 1, &surl, token, &tmp_err);
     }
+    gfal_srm_ifce_easy_context_release(opts, context);
 
     if (tmp_err) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
@@ -333,7 +340,9 @@ int gfal_srmv2_release_file_listG(plugin_handle ch, int nbfiles, const char* con
         return -1;
     }
 
-    return gfal_srmv2_release_file_internal(context, opts, nbfiles, surls, token, errors);
+    int ret = gfal_srmv2_release_file_internal(context, opts, nbfiles, surls, token, errors);
+    gfal_srm_ifce_easy_context_release(opts, context);
+    return ret;
 }
 
 
@@ -400,5 +409,7 @@ int gfal_srm2_abort_filesG(plugin_handle ch, int nbfiles, const char* const* sur
         return -1;
     }
 
-    return gfal_srmv2_abort_files_internal(context, opts, nbfiles, surls, token, errors);
+    int ret = gfal_srmv2_abort_files_internal(context, opts, nbfiles, surls, token, errors);
+    gfal_srm_ifce_easy_context_release(opts, context);
+    return ret;
 }

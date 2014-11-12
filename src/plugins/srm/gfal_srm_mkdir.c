@@ -80,6 +80,7 @@ int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError*
             }
         }
     }
+    gfal_srm_ifce_easy_context_release(opts, context);
     gfal_log(GFAL_VERBOSE_TRACE, "   [gfal_srm_mkdir_recG] <-");
     G_RETURN_ERR(ret, tmp_err, err);
 }
@@ -113,6 +114,7 @@ int gfal_srm_mkdirG(plugin_handle ch, const char* surl, mode_t mode, gboolean pf
                 ret = gfal_mkdir_srmv2_internal(context, surl, mode, &tmp_err);
             }
         }
+        gfal_srm_ifce_easy_context_release(opts, context);
         gfal_log(GFAL_VERBOSE_TRACE, "   [gfal_srm_mkdirG] <-");
     }
 

@@ -193,3 +193,9 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
     return opts->srm_context;
 }
 
+
+void gfal_srm_ifce_easy_context_release(gfal_srmv2_opt* opts,
+        srm_context_t context)
+{
+    // NOOP really
+}

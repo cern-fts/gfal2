@@ -534,6 +534,7 @@ static int is_castor_endpoint(plugin_handle handle, const char* surl)
     struct srm_xping_output output;
     if (gfal_srm_external_call.srm_xping(context, &output) < 0) {
         gfal_log(GFAL_VERBOSE_VERBOSE, "Failed to ping %s", surl);
+        gfal_srm_ifce_easy_context_release(opts, context);
         return -1;
     }
 
@@ -545,7 +546,7 @@ static int is_castor_endpoint(plugin_handle handle, const char* surl)
         }
     }
     srm_xping_output_free(output);
-
+    gfal_srm_ifce_easy_context_release(opts, context);
     return is_castor;
 }
 
