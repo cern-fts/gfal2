@@ -417,6 +417,8 @@ static int scan_errstring(const char *p) {
         ret = EACCES;
     else if (strstr(p, "the operation was aborted"))
         ret = ECANCELED;
+    else if (strstr(p, "s a directory"))
+        ret = EISDIR;
     return ret;
 }
 
