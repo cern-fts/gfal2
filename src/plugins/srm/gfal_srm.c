@@ -169,6 +169,7 @@ void gfal_srm_destroyG(plugin_handle ch){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
 	regfree(&opts->rexurl);
 	regfree(&opts->rex_full);
+	g_static_rec_mutex_free(&opts->srm_context_mutex);
 	srm_context_free(opts->srm_context);
 	gsimplecache_delete(opts->cache);
 	free(opts);
@@ -187,6 +188,7 @@ void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal2_context_t handle){
 	opts->srm_proto_type = PROTO_SRMv2;
 	opts->handle = handle;
     opts->cache = gsimplecache_new(5000, &srm_internal_copy_stat, sizeof(struct extended_stat));
+    g_static_rec_mutex_init(&opts->srm_context_mutex);
 }
 
 

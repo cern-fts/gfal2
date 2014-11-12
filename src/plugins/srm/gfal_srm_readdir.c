@@ -100,7 +100,10 @@ static int gfal_srm_readdir_internal(plugin_handle ch,
 	memset(&input, 0, sizeof(input));
 	memset(&output, 0, sizeof(output));
 
-	context = oh->context;
+	context = gfal_srm_ifce_easy_context(ch, oh->surl, &tmp_err);
+	if (!context) {
+	    G_RETURN_ERR(resu, tmp_err, err);
+	}
 
     input.nbfiles = 1;
     input.surls = tab_surl;
@@ -136,6 +139,7 @@ static int gfal_srm_readdir_internal(plugin_handle ch,
     }
     gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
 
+    gfal_srm_ifce_easy_context_release(ch, context);
     G_RETURN_ERR(resu, tmp_err, err);
 }
 

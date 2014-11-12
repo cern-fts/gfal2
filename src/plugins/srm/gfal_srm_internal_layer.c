@@ -138,7 +138,7 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
     gchar* ucert = gfal2_get_opt_string(opts->handle, "X509", "CERT", NULL);
     gchar* ukey = gfal2_get_opt_string(opts->handle, "X509", "KEY", NULL);
 
-
+    g_static_rec_mutex_lock(&opts->srm_context_mutex);
 
     // Try with existing one
     if (opts->srm_context) {
@@ -186,6 +186,9 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
             g_strlcpy(opts->x509_ukey, ukey, sizeof(opts->x509_ukey));
         }
     }
+    else {
+        g_static_rec_mutex_unlock(&opts->srm_context_mutex);
+    }
 
     g_free(ucert);
     g_free(ukey);
@@ -197,5 +200,6 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
 void gfal_srm_ifce_easy_context_release(gfal_srmv2_opt* opts,
         srm_context_t context)
 {
-    // NOOP really
+    if (opts && context)
+        g_static_rec_mutex_unlock(&opts->srm_context_mutex);
 }
