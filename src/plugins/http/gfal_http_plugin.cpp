@@ -138,7 +138,9 @@ GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
     int dav_level = DAVIX_LOG_CRITICAL | DAVIX_LOG_WARNING | DAVIX_LOG_VERBOSE | DAVIX_LOG_DEBUG;
     if (gfal_get_verbose() & GFAL_VERBOSE_TRACE_PLUGIN)
         dav_level |= DAVIX_LOG_TRACE;
-    davix_set_log_level(dav_level);
+
+    int dav_config_level = gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", "LOG_LEVEL", 0);
+    davix_set_log_level(dav_level | dav_config_level);
 
     reference_params.setTransparentRedirectionSupport(true);
     reference_params.setUserAgent("gfal2::http");
