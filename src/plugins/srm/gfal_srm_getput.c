@@ -26,6 +26,61 @@
 #include "gfal_srm_endpoint.h"
 
 
+// Make sure the TURL returned by the endpoint is one of the requested protocols
+static int validate_turls(int n_results, gfal_srm_result** resu,
+        gfal_srm_params_t params, GError** tmp_err)
+{
+    int failed = 0;
+    int n_protocols = g_strv_length(params->protocols);
+    int i, j;
+
+    for (i = 0; i < n_results && !failed; ++i) {
+        const char* turl = (*resu)[i].turl;
+
+        // Never ever accept file, even if it was asked for
+        if (strncmp("file:", turl, 5) == 0) {
+            failed = -1;
+            gfal2_set_error(tmp_err, gfal2_get_plugin_srm_quark(), EBADMSG, __func__,
+                    "file:// is not a valid turl");
+            break;
+        }
+        else if (turl[0] == '/') {
+            failed = -1;
+            gfal2_set_error(tmp_err, gfal2_get_plugin_srm_quark(), EBADMSG, __func__,
+                    "A turl can not start with /");
+            break;
+        }
+
+        // If error is set, skip the check
+        if ((*resu)[i].err_code != 0)
+            continue;
+
+        // Check the turl protocol is in the request list
+        int matching_protocol = 0;
+        for (j = 0; j < n_protocols; ++j) {
+            size_t proto_len = strlen(params->protocols[j]);
+            if (strncmp(params->protocols[j], turl, proto_len) == 0 && turl[proto_len] == ':') {
+                matching_protocol = 1;
+                break;
+            }
+        }
+
+        // If no matching protocol, fail already
+        if (!matching_protocol) {
+            failed = -1;
+            gfal2_set_error(tmp_err, gfal2_get_plugin_srm_quark(), EBADMSG, __func__,
+                    "The SRM endpoint returned a protocol that wasn't requested: %s");
+        }
+    }
+    // Didn't match, so free and set an error
+    if (failed) {
+        free(*resu);
+        *resu = NULL;
+    }
+    return failed;
+}
+
+
 static int gfal_srm_convert_filestatuses_to_srm_result(struct srmv2_pinfilestatus* statuses, char* reqtoken, int n, gfal_srm_result** resu, GError** err){
 	g_return_val_err_if_fail(statuses && n && resu, -1, err, "[gfal_srm_convert_filestatuses_to_srm_result] args invalids");
 	*resu = calloc(n, sizeof(gfal_srm_result));
@@ -168,8 +223,16 @@ static int gfal_srm_mTURLS_internal(gfal_srmv2_opt* opts, gfal_srm_params_t para
     }
     gfal_srm_ifce_easy_context_release(opts, context);
 
-    if (ret < 0)
+    if (ret < 0) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+    }
+    else {
+        int n_results = g_strv_length(surls);
+        if (validate_turls(n_results, resu, params, &tmp_err)) {
+            gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+            ret = -1;
+        }
+    }
 
     return ret;
 }
@@ -232,9 +295,6 @@ int gfal_srm_getTURL_checksum(plugin_handle ch, const char* surl, char* buff_tur
     }
     G_RETURN_ERR(ret, tmp_err, err);
 }
-
-
-
 
 //  execute a get for thirdparty transfer turl
 int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl,
