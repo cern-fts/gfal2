@@ -3,9 +3,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,29 +35,44 @@ GQuark GFAL_EVENT_OVERWRITE_DESTINATION = g_quark_from_static_string("OVERWRITE"
 
 
 int plugin_trigger_event(gfalt_params_t params, GQuark domain,
-                         gfal_event_side_t side, GQuark stage,
-                         const char* fmt, ...) {
-  if (params->event_callback) {
-    struct _gfalt_event event;
-    char buffer[512] = {0};
-    GTimeVal tmst;
-
-    g_get_current_time(&tmst);
-
-    event.domain = domain;
-    event.side   = side;
-    event.stage  = stage;
-    event.timestamp = tmst.tv_sec * 1000 + tmst.tv_usec / 1000;
-
+        gfal_event_side_t side, GQuark stage, const char* fmt, ...)
+{
+    char buffer[512] = { 0 };
     va_list msg_args;
     va_start(msg_args, fmt);
     vsnprintf(buffer, sizeof(buffer), fmt, msg_args);
     va_end(msg_args);
-    event.description = buffer;
 
-    params->event_callback(&event, params->user_data);
-  }
-  return 0;
+    if (params->event_callback) {
+        struct _gfalt_event event;
+        GTimeVal tmst;
+
+        g_get_current_time(&tmst);
+
+        event.domain = domain;
+        event.side = side;
+        event.stage = stage;
+        event.timestamp = tmst.tv_sec * 1000 + tmst.tv_usec / 1000;
+        event.description = buffer;
+
+        params->event_callback(&event, params->user_data);
+    }
+
+    const char* side_str;
+    switch (side) {
+        case GFAL_EVENT_SOURCE:
+            side_str = "SOURCE";
+            break;
+        case GFAL_EVENT_DESTINATION:
+            side_str = "DESTINATION";
+            break;
+        default:
+            side_str = "BOTH";
+    }
+
+    gfal_log(GFAL_VERBOSE_VERBOSE, "Event triggered: %s %s %s %s",
+            side_str, g_quark_to_string(domain), g_quark_to_string(stage), buffer);;
+    return 0;
 }
 
 void gfalt_propagate_prefixed_error(GError **dest, GError *src, const gchar *function,
