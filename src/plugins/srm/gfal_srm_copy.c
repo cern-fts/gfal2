@@ -405,15 +405,11 @@ static void srm_release_get(plugin_handle handle, const char* surl, const char* 
     GError* release_error = NULL;
     gfal_srmv2_release_fileG(handle, surl, token, &release_error);
     if (release_error != NULL) {
-        if (*err == NULL) {
-            *err = release_error;
-        }
-        else {
-            gfal_log(GFAL_VERBOSE_VERBOSE,
-                    "Got an error when releasing the source file: %s",
-                    release_error->message);
-            g_error_free(release_error);
-        }
+        gfal_log(GFAL_VERBOSE_VERBOSE,
+                "Got an error when releasing the source file: %s",
+                release_error->message);
+        gfal_log(GFAL_VERBOSE_VERBOSE,
+                "It will be ignored!");
     }
 }
 
