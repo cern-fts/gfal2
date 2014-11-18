@@ -120,7 +120,7 @@ static int gfal_srm_readdir_internal(plugin_handle ch,
      */
     ret = gfal_srm_external_call.srm_ls(context, &input, &output);
 
-    if(ret >=0){
+    if (ret >= 0) {
         srmv2_mdstatuses = output.statuses;
         if(srmv2_mdstatuses[0].status != 0){
             gfal2_set_error(err, gfal2_get_plugin_srm_quark(), srmv2_mdstatuses->status, __func__,
@@ -162,12 +162,16 @@ static struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch,
         return NULL ; // limited mode in order to not overload the srm server ( slow )
     }
 
-    // Empty directory
-    if (oh->srm_ls_resu == NULL || oh->srm_ls_resu->nbsubpaths == 0) {
-        return NULL;
+    // Error
+    if (tmp_err) {
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     }
-
-    if (!tmp_err) {
+    // Empty directory
+    else if (oh->srm_ls_resu == NULL || oh->srm_ls_resu->nbsubpaths == 0) {
+        ret = NULL;
+    }
+    // There is an answer
+    else {
         ret = gfal_srm_readdir_convert_result(ch, oh->surl,
                 &oh->srm_ls_resu->subpaths[oh->slice_index], &oh->current_readdir,
                 st,
@@ -176,8 +180,7 @@ static struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch,
         oh->count++;
         oh->slice_index++;
     }
-    else
-        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+
     return ret;
 }
 
