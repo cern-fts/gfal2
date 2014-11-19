@@ -93,6 +93,11 @@ static int unlink_if_exists(gfal2_context_t context, gfalt_params_t params,
         }
         g_error_free(nested_error);
     }
+    else {
+        plugin_trigger_event(params, local_copy_domain,
+                GFAL_EVENT_DESTINATION, GFAL_EVENT_OVERWRITE_DESTINATION,
+                "Deleted %s", surl);
+    }
 
     return 0;
 }
@@ -131,6 +136,10 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
         const char* src, const char* dst, GError** error)
 {
     GError *nested_error = NULL;
+
+    plugin_trigger_event(params, local_copy_domain,
+            GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
+            "%s => %s", src, dst);
 
     gfal_log(GFAL_VERBOSE_TRACE, " open src file : %s ", src);
     gfal_file_handle f_src = gfal_plugin_openG(context, src, O_RDONLY, 0, &nested_error);
@@ -189,6 +198,10 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
         return -1;
     }
     else {
+
+        plugin_trigger_event(params, local_copy_domain,
+                    GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
+                    "%s => %s", src, dst);
         return 0;
     }
 }
