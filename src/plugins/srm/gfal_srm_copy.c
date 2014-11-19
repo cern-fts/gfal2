@@ -143,10 +143,10 @@ static int srm_resolve_get_turl(plugin_handle handle, gfalt_params_t params,
 
     int res = 0;
     if (srm_check_url(surl)) {
-        gfal_log(GFAL_VERBOSE_TRACE, "\t\tGET surl -> turl dst resolution start");
+        gfal_log(GFAL_VERBOSE_TRACE, "\t\tGET surl -> turl resolution start");
         res = gfal_srm_get_rd3_turl(handle, params, surl, turl, turl_size, token, token_size, &tmp_err);
         if (res >= 0) {
-            gfal_log(GFAL_VERBOSE_TRACE, "\t\tGET surl -> turl dst resolution finished: %s -> %s (%s)",
+            gfal_log(GFAL_VERBOSE_TRACE, "\t\tGET surl -> turl resolution finished: %s -> %s (%s)",
                     surl, turl, token);
         }
     }
@@ -175,7 +175,7 @@ static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
 
     int res = 0;
     if (srm_check_url(surl)) {
-        gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl src resolution start ");
+        gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl resolution start ");
         res = srm_plugin_prepare_dest_put(handle, context, params, surl, &tmp_err);
         if (res == 0) {
             res = gfal_srm_put_rd3_turl(handle, params, surl, file_size_surl,
@@ -183,7 +183,7 @@ static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
                     token, token_size,
                     &tmp_err);
             if (res >= 0) {
-                gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl src resolution ended : %s -> %s (%s)",
+                gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl resolution ended : %s -> %s (%s)",
                         surl, turl, token);
             }
             else {
