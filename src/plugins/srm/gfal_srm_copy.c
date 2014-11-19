@@ -31,8 +31,19 @@
 #include "gfal_srm_bringonline.h"
 
 
-GQuark srm_domain(){
+GQuark srm_domain()
+{
     return g_quark_from_static_string("SRM");
+}
+
+static GQuark gfal2_get_srm_get_quark()
+{
+    return g_quark_from_static_string("SRM:GET");
+}
+
+static GQuark gfal2_get_srm_put_quark()
+{
+    return g_quark_from_static_string("SRM:PUT");
 }
 
 
@@ -148,6 +159,9 @@ static int srm_resolve_get_turl(plugin_handle handle, gfalt_params_t params,
         if (res >= 0) {
             gfal_log(GFAL_VERBOSE_TRACE, "\t\tGET surl -> turl dst resolution finished: %s -> %s (%s)",
                     surl, turl, token);
+            plugin_trigger_event(params, gfal2_get_plugin_srm_quark(),
+                        GFAL_EVENT_SOURCE, gfal2_get_srm_get_quark(),
+                        "Got TURL %s => %s", surl, turl);
         }
     }
     else {
@@ -185,6 +199,9 @@ static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
             if (res >= 0) {
                 gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl src resolution ended : %s -> %s (%s)",
                         surl, turl, token);
+                plugin_trigger_event(params, gfal2_get_plugin_srm_quark(),
+                            GFAL_EVENT_DESTINATION, gfal2_get_srm_put_quark(),
+                            "Got TURL %s => %s", surl, turl);
             }
             else {
                 gfalt_propagate_prefixed_error(err, tmp_err, __func__, GFALT_ERROR_DESTINATION, "SRM_PUT_TURL");
