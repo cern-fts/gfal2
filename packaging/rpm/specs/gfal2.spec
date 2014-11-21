@@ -241,8 +241,11 @@ make DESTDIR=%{buildroot} install
 
 %files
 %{_bindir}/gfal2_version
-%{_pkgdocdir}/DESCRIPTION
 %{_mandir}/man1/gfal2_version.1*
+%{_pkgdocdir}/DESCRIPTION
+%{_pkgdocdir}/README
+%{_pkgdocdir}/LICENSE
+%{_pkgdocdir}/RELEASE-NOTES
 
 %files core
 %{_libdir}/libgfal2.so.*
@@ -251,7 +254,6 @@ make DESTDIR=%{buildroot} install
 %dir %{_sysconfdir}/%{name}.d
 %{_libdir}/%{name}-plugins/libgfal_plugin_file.so*
 %{_pkgdocdir}/README_PLUGIN_FILE
-%{_pkgdocdir}/LICENSE
 %config(noreplace) %{_sysconfdir}/%{name}.d/bdii.conf
 %config(noreplace) %{_sysconfdir}/%{name}.d/gfal2_core.conf
 
@@ -265,7 +267,6 @@ make DESTDIR=%{buildroot} install
 %{_libdir}/pkgconfig/gfal_transfer.pc
 %{_libdir}/libgfal2.so
 %{_libdir}/libgfal_transfer.so
-%{_pkgdocdir}/RELEASE-NOTES
 
 %files doc
 %{_pkgdocdir}/readme.html
