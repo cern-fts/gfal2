@@ -58,7 +58,7 @@ typedef struct _gfalt_transfer_status* gfalt_transfer_status_t;
  *  @param dst : URL of the dest file
  *  @param user_data : external pointer provided before
  * */
-typedef void (*gfalt_monitor_func)(gfalt_transfer_status_t h, const char* src, const char* dst, gpointer user_data)  ;
+typedef void (*gfalt_monitor_func)(gfalt_transfer_status_t h, const char* src, const char* dst, gpointer user_data);
 
 
 /**
