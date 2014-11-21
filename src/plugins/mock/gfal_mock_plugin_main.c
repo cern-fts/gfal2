@@ -183,50 +183,44 @@ void gfal_plugin_mock_get_checksum(char* buff, char* checksum)
 	strcpy(checksum, str + 1);
 }
 
-int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct stat* buf, GError ** err){
-
+int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct stat* buf, GError ** err)
+{
 	// it is assumed that the stat operations will be done in following order:
 	//   - stat source
 	//   - stat destination before transfer
 	//   - stat destination after transfer
-	
-	/*USE HARDCODED FOR NOW SINCE RUCIO WOULD LIKE TO USE IT*/
-	buf->st_size = 10;
-	
-        time_t epoch_time;
-    	struct tm *tm_p;
-    	epoch_time = time( NULL );
-    	tm_p = localtime( &epoch_time );
-        int secs =  tm_p->tm_sec;	
-	
+    time_t epoch_time;
+    struct tm *tm_p;
+    epoch_time = time( NULL);
+    tm_p = localtime(&epoch_time);
+    int secs = tm_p->tm_sec;
+
 	if(secs == 5 || secs == 15 || secs == 25 || secs == 45 || secs == 60)
 	{
-		gfal_plugin_mock_report_error("Mock failure", err);	
+		gfal_plugin_mock_report_error("Mock failure", err);
 		return -1;
-        }		
-	
-	return 0;
-	
-	
-	
+    }
+
 	static int order = 0;
 
 	int size = 0;
 	char buff[GFAL_URL_MAX_LEN] = { 0 };
 
+	// Try FILE_SIZE by default, if not set, use 10
+	gfal_plugin_mock_get_value(path, FILE_SIZE, buff);
+	buf->st_size = gfal_plugin_mock_get_size(buff);
+	if (buf->st_size == 0)
+	    buf->st_size = 10;
+
+	// Try specific size for each stage
 	switch (order)
 	{
-
 	case STAT_SOURCE:
-		gfal_plugin_mock_get_value(path, FILE_SIZE, buff);
-		size = gfal_plugin_mock_get_size(buff);
-		break;
-
+	    break;
 	case STAT_DESTINATION_PRE:
 		gfal_plugin_mock_get_value(path, FILE_SIZE_PRE, buff);
 		size = gfal_plugin_mock_get_size(buff);
 		break;
-
 	case STAT_DESTINATION_POST:
 		gfal_plugin_mock_get_value(path, FILE_SIZE_POST, buff);
 		size = gfal_plugin_mock_get_size(buff);
