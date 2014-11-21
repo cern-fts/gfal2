@@ -85,7 +85,7 @@ IF(NOT ONLY_TESTS)
     add_definitions( -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_GNU_SOURCE)
 
     #install doc license
-    install(FILES "LICENSE" "README" "RELEASE-NOTES" "DESCRIPTION"
+    install(FILES "LICENSE" "README" "RELEASE-NOTES" "DESCRIPTION" "readme.html"
 			DESTINATION ${DOC_INSTALL_DIR})
 			
     # install global configuration files

@@ -268,6 +268,7 @@ make DESTDIR=%{buildroot} install
 %{_pkgdocdir}/RELEASE-NOTES
 
 %files doc
+%{_pkgdocdir}/readme.html
 %{_pkgdocdir}/html/
 %{_pkgdocdir}/examples/
 
