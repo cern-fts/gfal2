@@ -54,8 +54,10 @@ BuildRequires:      davix-devel >= 0.3.0
 #tests dependencies
 BuildRequires:      gtest-devel
 
-Requires:           %{name}-core%{?_isa} = %{version}-%{release}
-Requires:           %{name}-transfer%{?_isa} = %{version}-%{release}
+Obsoletes:          %{name}-core%{?_isa} < %{version}-%{release}
+Provides:           %{name}-core%{?_isa} = %{version}-%{release}
+Obsoletes:          %{name}-transfer%{?_isa} < %{version}-%{release}
+Provides:           %{name}-transfer%{?_isa} = %{version}-%{release}
 
 %description
 GFAL 2.0 offers an a single and simple POSIX-like API 
@@ -63,35 +65,10 @@ for the file operations in grids and cloud environments.
 The set of supported protocols depends 
 of the %{name} installed plugins.
 
-%package core
-Summary:            Core of the Grid File access Library 2.0
-Group:              Applications/Internet
-
-Requires:           gfal2%{?_isa} = %{version}-%{release}
-%if 0%{?el5}
-Requires:           glib2
-%else
-Requires:           glib2
-%endif
-
-%description core
-The main library of %{name}. 
-the %{name} protocol support relies on a plugin system.
-
-%package transfer
-Summary:            File Transfer logic of %{name}
-Group:              Applications/Internet
-Requires:           %{name}-core%{?_isa} = %{version}-%{release}
-
-%description transfer
-%{name}-transfer is the high level API for file transfer operations
-in %{name}. It supports third-party copy.
-
 %package devel
 Summary:            Development files of %{name}
 Group:              Applications/Internet
-Requires:           %{name}-core%{?_isa} = %{version}-%{release}
-Requires:           %{name}-transfer%{?_isa} = %{version}-%{release} 
+Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           glib2-devel%{?_isa}
 Requires:           libattr-devel%{?_isa} 
 Requires:           pkgconfig
@@ -105,7 +82,6 @@ Group:              Documentation
 %if 0%{?fedora} > 10 || 0%{?rhel}>5
 BuildArch:          noarch
 %endif
-
 Requires:           gfal2%{?_isa} = %{version}-%{release}
 
 %description doc
@@ -115,7 +91,7 @@ Documentation, Doxygen and examples of %{name}.
 %package plugin-file
 Summary:            Provides file support for %{name}
 Group:              Applications/Internet
-Requires:           %{name}-core%{?_isa} = %{version}-%{release}
+Requires:           %{name}%{?_isa} = %{version}-%{release}
 
 %description plugin-file
 Provides the file support (file://) for %{name}.
@@ -125,7 +101,7 @@ to remote or the other way around.
 %package plugin-lfc
 Summary:            Provides the lfc support for %{name}
 Group:              Applications/Internet
-Requires:           %{name}-core%{?_isa} = %{version}-%{release}
+Requires:           %{name}%{?_isa} = %{version}-%{release}
 
 %description plugin-lfc
 Provides the lfc support (lfn://) for %{name}.
@@ -136,7 +112,7 @@ for the LFC catalog.
 %package plugin-rfio
 Summary:            Provides the rfio support for %{name}
 Group:              Applications/Internet
-Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
+Requires:           %{name}%{?_isa} = %{version}-%{release} 
 Requires:           dpm-libs%{?_isa}
 
 %description plugin-rfio
@@ -149,7 +125,7 @@ and on the Castor storage systems.
 %package plugin-dcap
 Summary:            Provides the support access for %{name}
 Group:              Applications/Internet
-Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
+Requires:           %{name}%{?_isa} = %{version}-%{release} 
 Requires:           dcap-tunnel-gsi%{?_isa}
 
 %description plugin-dcap
@@ -161,7 +137,7 @@ URLs, the dcap protocol is used on the DCACHE storage system
 %package plugin-srm
 Summary:            Provides the srm access for %{name}
 Group:              Applications/Internet
-Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
+Requires:           %{name}%{?_isa} = %{version}-%{release} 
 Requires:           srm-ifce >= 1.21.3
 
 %description plugin-srm
@@ -173,7 +149,7 @@ the third party transfer support on the SRM URLs.
 %package plugin-gridftp
 Summary:            Provides the gridftp support for %{name}
 Group:              Applications/Internet
-Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
+Requires:           %{name}%{?_isa} = %{version}-%{release} 
 
 %description plugin-gridftp
 Provides the gridftp support (gsiftp://) for %{name}. 
@@ -184,7 +160,7 @@ the third party transfer support on the GSIFTP URLs.
 %package plugin-http
 Summary:            Provides the HTTP/DAV support for %{name}
 Group:              Applications/Internet
-Requires:           %{name}-core%{?_isa} = %{version}-%{release}
+Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           davix-libs >= 0.3.2
 
 %description plugin-http
@@ -195,7 +171,7 @@ this plugin is able to do third-party copy with WebDAV if the storage supports i
 %package plugin-mock
 Summary:            Provides a Mock dummy protocol for %{name}
 Group:              Applications/Internet
-Requires:           %{name}-core%{?_isa} = %{version}-%{release}
+Requires:           %{name}%{?_isa} = %{version}-%{release}
 
 %description plugin-mock
 Provides a dummy mock:// protocol for %{name}.
@@ -205,7 +181,7 @@ Provides a dummy mock:// protocol for %{name}.
 %package all
 Summary:            Meta package for GFAL 2.0 install
 Group:              Applications/Internet
-Requires:           %{name}-core%{?_isa} = %{version}-%{release}
+Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           %{name}-transfer%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-file%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-lfc%{?_isa} = %{version}-%{release}
@@ -248,34 +224,27 @@ rm -rf %{buildroot}
 make DESTDIR=%{buildroot} install
 
 
-%post core -p /sbin/ldconfig
+%post -p /sbin/ldconfig
 
-%postun core -p /sbin/ldconfig
-
-%post transfer -p /sbin/ldconfig
-
-%postun transfer -p /sbin/ldconfig
-
+%postun -p /sbin/ldconfig
 
 %files
 %{_bindir}/gfal2_version
+%{_libdir}/libgfal2.so.*
+%{_libdir}/libgfal_transfer.so.*
+%dir %{_libdir}/%{name}-plugins
+%dir %{_sysconfdir}/%{name}.d
+%config(noreplace) %{_sysconfdir}/%{name}.d/bdii.conf
+%config(noreplace) %{_sysconfdir}/%{name}.d/gfal2_core.conf
+
 %{_mandir}/man1/gfal2_version.1*
 %dir %{_pkgdocdir}
 %{_pkgdocdir}/DESCRIPTION
 %{_pkgdocdir}/README
 %{_pkgdocdir}/LICENSE
 %{_pkgdocdir}/RELEASE-NOTES
-
-%files core
-%{_libdir}/libgfal2.so.*
-%dir %{_libdir}/%{name}-plugins
-%dir %{_sysconfdir}/%{name}.d
-%config(noreplace) %{_sysconfdir}/%{name}.d/bdii.conf
-%config(noreplace) %{_sysconfdir}/%{name}.d/gfal2_core.conf
-
-%files transfer
-%{_libdir}/libgfal_transfer.so.*
 %{_pkgdocdir}/README_TRANSFER
+
 
 %files devel
 %{_includedir}/%{name}/
