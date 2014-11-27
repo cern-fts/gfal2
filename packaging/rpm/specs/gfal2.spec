@@ -67,6 +67,7 @@ of the %{name} installed plugins.
 Summary:            Core of the Grid File access Library 2.0
 Group:              Applications/Internet
 
+Requires:           gfal2%{?_isa} = %{version}-%{release}
 %if 0%{?el5}
 Requires:           glib2
 %else
@@ -105,6 +106,8 @@ Group:              Documentation
 BuildArch:          noarch
 %endif
 
+Requires:           gfal2%{?_isa} = %{version}-%{release}
+
 %description doc
 Documentation, Doxygen and examples of %{name}.
 
@@ -125,7 +128,7 @@ Group:              Applications/Internet
 Requires:           %{name}-core%{?_isa} = %{version}-%{release}
 
 %description plugin-lfc
-Provides the lfc support (LFN://) for %{name}.
+Provides the lfc support (lfn://) for %{name}.
 The LFC plugin allows read-only POSIX operations 
 for the LFC catalog.
 
@@ -137,7 +140,7 @@ Requires:           %{name}-core%{?_isa} = %{version}-%{release}
 Requires:           dpm-libs%{?_isa}
 
 %description plugin-rfio
-Provides the rfio support (RFIO://) for %{name}. 
+Provides the rfio support (rfio://) for %{name}. 
 The rfio plugin provides the POSIX operations for 
 the rfio URLs, the rfio protocol is used on the DPM 
 and on the Castor storage systems.
@@ -150,7 +153,7 @@ Requires:           %{name}-core%{?_isa} = %{version}-%{release}
 Requires:           dcap-tunnel-gsi%{?_isa}
 
 %description plugin-dcap
-Provides the dcap support (GSIDCAP://, DCAP://) for %{name}. 
+Provides the dcap support (gsidcap://, dcap://) for %{name}. 
 The dcap plugin provides the POSIX operations for the dcap \
 URLs, the dcap protocol is used on the DCACHE storage system
 
@@ -162,7 +165,7 @@ Requires:           %{name}-core%{?_isa} = %{version}-%{release}
 Requires:           srm-ifce >= 1.21.3
 
 %description plugin-srm
-Provides the srm support (SRM://) for %{name}. 
+Provides the srm support (srm://) for %{name}. 
 The srm plugin provides the POSIX operations and 
 the third party transfer support on the SRM URLs.
 
@@ -173,7 +176,7 @@ Group:              Applications/Internet
 Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
 
 %description plugin-gridftp
-Provides the gridftp support (GSIFTP://) for %{name}. 
+Provides the gridftp support (gsiftp://) for %{name}. 
 The gridftp plugin provides the POSIX operations and 
 the third party transfer support on the GSIFTP URLs.
 
@@ -185,9 +188,8 @@ Requires:           %{name}-core%{?_isa} = %{version}-%{release}
 Requires:           davix-libs >= 0.3.2
 
 %description plugin-http
-Provides the HTTP and WevDAV support for %{name}.
-this plugin is ab
-le to do third-party copy with Webdav
+Provides the HTTP (http[s]://) and WevDAV (dav[s]://) support for %{name}.
+this plugin is able to do third-party copy with WebDAV if the storage supports it.
 
 %if %{?_with_mock_plugin:1}%{!?_with_mock_plugin:0}
 %package plugin-mock
@@ -258,6 +260,7 @@ make DESTDIR=%{buildroot} install
 %files
 %{_bindir}/gfal2_version
 %{_mandir}/man1/gfal2_version.1*
+%dir %{_pkgdocdir}
 %{_pkgdocdir}/DESCRIPTION
 %{_pkgdocdir}/README
 %{_pkgdocdir}/LICENSE
@@ -266,7 +269,6 @@ make DESTDIR=%{buildroot} install
 %files core
 %{_libdir}/libgfal2.so.*
 %dir %{_libdir}/%{name}-plugins
-%dir %{_pkgdocdir}
 %dir %{_sysconfdir}/%{name}.d
 %config(noreplace) %{_sysconfdir}/%{name}.d/bdii.conf
 %config(noreplace) %{_sysconfdir}/%{name}.d/gfal2_core.conf
