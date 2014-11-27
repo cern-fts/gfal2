@@ -54,10 +54,10 @@ BuildRequires:      davix-devel >= 0.3.0
 #tests dependencies
 BuildRequires:      gtest-devel
 
-Obsoletes:          %{name}-core%{?_isa} < %{version}-%{release}
-Provides:           %{name}-core%{?_isa} = %{version}-%{release}
-Obsoletes:          %{name}-transfer%{?_isa} < %{version}-%{release}
-Provides:           %{name}-transfer%{?_isa} = %{version}-%{release}
+Obsoletes:          %{name}-core < %{version}-%{release}
+Provides:           %{name}-core = %{version}-%{release}
+Obsoletes:          %{name}-transfer < %{version}-%{release}
+Provides:           %{name}-transfer = %{version}-%{release}
 
 %description
 GFAL 2.0 offers an a single and simple POSIX-like API 
