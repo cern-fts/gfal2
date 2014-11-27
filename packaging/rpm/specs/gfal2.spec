@@ -182,7 +182,6 @@ Provides a dummy mock:// protocol for %{name}.
 Summary:            Meta package for GFAL 2.0 install
 Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
-Requires:           %{name}-transfer%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-file%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-lfc%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-dcap%{?_isa} = %{version}-%{release}
