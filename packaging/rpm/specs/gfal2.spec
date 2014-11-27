@@ -105,96 +105,112 @@ Group:              Documentation
 BuildArch:          noarch
 %endif
 
-
 %description doc
-documentation, Doxygen and examples of %{name} .
+Documentation, Doxygen and examples of %{name}.
+
+
+%package plugin-file
+Summary:            Provides file support for %{name}
+Group:              Applications/Internet
+Requires:           %{name}-core%{?_isa} = %{version}-%{release}
+
+%description plugin-file
+Provides the file support (file://) for %{name}.
+The file plugin provides local file operations, as copying from local
+to remote or the other way around.
 
 %package plugin-lfc
-Summary:            Provide the lfc support for %{name}
+Summary:            Provides the lfc support for %{name}
 Group:              Applications/Internet
-Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
-
+Requires:           %{name}-core%{?_isa} = %{version}-%{release}
 
 %description plugin-lfc
-Provide the lfc support (LFN://) for %{name}.
+Provides the lfc support (LFN://) for %{name}.
 The LFC plugin allows read-only POSIX operations 
 for the LFC catalog.
 
+
 %package plugin-rfio
-Summary:            Provide the rfio support for %{name}
+Summary:            Provides the rfio support for %{name}
 Group:              Applications/Internet
 Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
 Requires:           dpm-libs%{?_isa}
 
 %description plugin-rfio
-Provide the rfio support (RFIO://) for %{name}. 
+Provides the rfio support (RFIO://) for %{name}. 
 The rfio plugin provides the POSIX operations for 
 the rfio URLs, the rfio protocol is used on the DPM 
 and on the Castor storage systems.
 
+
 %package plugin-dcap
-Summary:            Provide the support access for %{name}
+Summary:            Provides the support access for %{name}
 Group:              Applications/Internet
 Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
 Requires:           dcap-tunnel-gsi%{?_isa}
 
 %description plugin-dcap
-Provide the dcap support (GSIDCAP://, DCAP://) for %{name}. 
+Provides the dcap support (GSIDCAP://, DCAP://) for %{name}. 
 The dcap plugin provides the POSIX operations for the dcap \
 URLs, the dcap protocol is used on the DCACHE storage system
 
+
 %package plugin-srm
-Summary:            Provide the srm access for %{name}
+Summary:            Provides the srm access for %{name}
 Group:              Applications/Internet
 Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
 Requires:           srm-ifce >= 1.21.3
 
-
 %description plugin-srm
-Provide the srm support (SRM://) for %{name}. 
+Provides the srm support (SRM://) for %{name}. 
 The srm plugin provides the POSIX operations and 
 the third party transfer support on the SRM URLs.
 
+
 %package plugin-gridftp
-Summary:            Provide the gridftp support for %{name}
+Summary:            Provides the gridftp support for %{name}
 Group:              Applications/Internet
 Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
 
 %description plugin-gridftp
-Provide the gridftp support (GSIFTP://) for %{name}. 
+Provides the gridftp support (GSIFTP://) for %{name}. 
 The gridftp plugin provides the POSIX operations and 
 the third party transfer support on the GSIFTP URLs.
 
+
 %package plugin-http
-Summary:            Provide the HTTP/DAV support for %{name}
+Summary:            Provides the HTTP/DAV support for %{name}
 Group:              Applications/Internet
 Requires:           %{name}-core%{?_isa} = %{version}-%{release}
 Requires:           davix-libs >= 0.3.2
 
 %description plugin-http
-Provide the HTTP and WevDAV support for %{name}.
-this plugin is able to do third-party copy with Webdav
+Provides the HTTP and WevDAV support for %{name}.
+this plugin is ab
+le to do third-party copy with Webdav
 
 %if %{?_with_mock_plugin:1}%{!?_with_mock_plugin:0}
 %package plugin-mock
-Summary:            Provide a Mock dummy protocol for %{name}
+Summary:            Provides a Mock dummy protocol for %{name}
 Group:              Applications/Internet
 Requires:           %{name}-core%{?_isa} = %{version}-%{release}
 
 %description plugin-mock
-Provide a dummy mock:// protocol for %{name}.
+Provides a dummy mock:// protocol for %{name}.
 %endif
+
 
 %package all
 Summary:            Meta package for GFAL 2.0 install
 Group:              Applications/Internet
-Requires:           %{name}-core%{?_isa} = %{version}-%{release} 
-Requires:           %{name}-transfer%{?_isa} = %{version}-%{release} 
-Requires:           %{name}-plugin-lfc%{?_isa} = %{version}-%{release} 
-Requires:           %{name}-plugin-dcap%{?_isa} = %{version}-%{release} 
-Requires:           %{name}-plugin-srm%{?_isa} = %{version}-%{release} 
-Requires:           %{name}-plugin-rfio%{?_isa} = %{version}-%{release} 
-Requires:           %{name}-plugin-gridftp%{?_isa} = %{version}-%{release} 
+Requires:           %{name}-core%{?_isa} = %{version}-%{release}
+Requires:           %{name}-transfer%{?_isa} = %{version}-%{release}
+Requires:           %{name}-plugin-file%{?_isa} = %{version}-%{release}
+Requires:           %{name}-plugin-lfc%{?_isa} = %{version}-%{release}
+Requires:           %{name}-plugin-dcap%{?_isa} = %{version}-%{release}
+Requires:           %{name}-plugin-srm%{?_isa} = %{version}-%{release}
+Requires:           %{name}-plugin-rfio%{?_isa} = %{version}-%{release}
+Requires:           %{name}-plugin-gridftp%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-http%{?_isa} = %{version}-%{release}
 
 
@@ -252,8 +268,6 @@ make DESTDIR=%{buildroot} install
 %dir %{_libdir}/%{name}-plugins
 %dir %{_pkgdocdir}
 %dir %{_sysconfdir}/%{name}.d
-%{_libdir}/%{name}-plugins/libgfal_plugin_file.so*
-%{_pkgdocdir}/README_PLUGIN_FILE
 %config(noreplace) %{_sysconfdir}/%{name}.d/bdii.conf
 %config(noreplace) %{_sysconfdir}/%{name}.d/gfal2_core.conf
 
@@ -272,6 +286,10 @@ make DESTDIR=%{buildroot} install
 %{_pkgdocdir}/readme.html
 %{_pkgdocdir}/html/
 %{_pkgdocdir}/examples/
+
+%files plugin-file
+%{_libdir}/%{name}-plugins/libgfal_plugin_file.so*
+%{_pkgdocdir}/README_PLUGIN_FILE
 
 %files plugin-lfc
 %{_libdir}/%{name}-plugins/libgfal_plugin_lfc.so*
@@ -411,8 +429,8 @@ make DESTDIR=%{buildroot} install
  - implement the parent folder creation logic with gridftp
  - add support for lfc://host/path URL style for the lfc plugin
  - switch off_t to 64bits size by default ( _FILE_OFFSET_BITS=64)
- - provide a "nobdii" like option
- - provide the choice of turl protocol resolution for srm plugin
+ - Provides a "nobdii" like option
+ - Provides the choice of turl protocol resolution for srm plugin
 
 * Fri Jul 20 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-1
  - Official initial release candidate of gfal 2.0
