@@ -30,18 +30,25 @@
 #include <glib.h>
 #include <common/gfal_common_filedescriptor.h>
 
-typedef struct _gfal_srm_opendir_handle{
-	char surl[GFAL_URL_MAX_LEN];
-    struct srmv2_mdfilestatus *srm_ls_resu;
-	struct dirent current_readdir;
+typedef struct _gfal_srm_opendir_handle {
+    // SURL we are listing
+    char surl[GFAL_URL_MAX_LEN];
 
-	int slice_offset; // offset of the next slice to be requested
+    // Buffer where to store read entries, and returned by readdir calls
+    struct dirent dirent_buffer;
 
-	int count;        // number of entries processed so far
-	int max_count;    // maximum number of entries to be processed
+    // Will be set to 1 by gfal_srm_readdirppG if the directory was too big
+    // and we decided to read in chunks
+    int is_chunked_listing;
 
-	int slice_index;  // array position inside srm_ls_resu
+    // These two are used internally in chunk listing, to keep track
+    int chunk_offset;
+    int chunk_size;
 
+    // Array of file statuses as returned by srm-ifce
+    struct srmv2_mdfilestatus *srm_file_statuses;
+    // Array position inside srm_file_statuses while iterating
+    int response_index;
 }* gfal_srm_opendir_handle;
 
 gfal_file_handle gfal_srm_opendirG(plugin_handle handle, const char* path, GError ** err);

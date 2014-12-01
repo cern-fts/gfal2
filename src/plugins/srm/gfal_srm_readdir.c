@@ -33,6 +33,11 @@
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_internal_ls.h"
 
+/**
+ * Casts a 64 bits stat into whatever stat type we are using in this compilation unit.
+ * Intended for cases where we compile using 32 bits size types, which I don't believe to be
+ * the case any more, but just in case...
+ */
 static void gfal_srm_stat64_to_stat(const struct stat64* st64, struct stat *st)
 {
     if (sizeof(struct stat64) == sizeof(struct stat))
@@ -55,35 +60,49 @@ static void gfal_srm_stat64_to_stat(const struct stat64* st64, struct stat *st)
 }
 
 
-inline static struct dirent* gfal_srm_readdir_convert_result(plugin_handle ch,
-        const char* surl, struct srmv2_mdfilestatus * statuses,
-        struct dirent* output, struct stat* st, GError ** err)
+/**
+ * Converts a SRM status into a dirent + struct stat
+ * Returns, for convenience, the same pointer passed as dir_ent
+ */
+static struct dirent* gfal_srm_readdir_convert_result(plugin_handle ch,
+        const char* parent_surl, const struct srmv2_mdfilestatus * srm_status,
+        struct dirent* dir_ent, struct stat* st, GError ** err)
 {
-    struct dirent* resu = NULL;
-    resu = output;
     char buff_surlfull[GFAL_URL_MAX_LEN];
-    char* p = strrchr(statuses->surl, '/'); // keep only the file name + /
+
+    char* p = strrchr(srm_status->surl, '/');
     if (p != NULL) {
-        g_strlcpy(buff_surlfull, surl, GFAL_URL_MAX_LEN);
+        g_strlcpy(buff_surlfull, parent_surl, GFAL_URL_MAX_LEN);
         g_strlcat(buff_surlfull, p, GFAL_URL_MAX_LEN);
-        resu->d_reclen = g_strlcpy(resu->d_name, p + 1, GFAL_URL_MAX_LEN); // without '/'
 
-        if (S_ISDIR(statuses->stat.st_mode))
-            resu->d_type = DT_DIR;
-        else if (S_ISLNK(statuses->stat.st_mode))
-            resu->d_type = DT_LNK;
-        else
-            resu->d_type = DT_REG;
-
-        gfal_srm_stat64_to_stat(&statuses->stat, st);
-        gfal_srm_cache_stat_add(ch, buff_surlfull, st, &statuses->locality);
+        dir_ent->d_reclen = g_strlcpy(dir_ent->d_name, p + 1, GFAL_URL_MAX_LEN);
     }
+    else {
+        g_strlcpy(buff_surlfull, parent_surl, GFAL_URL_MAX_LEN);
+        g_strlcat(buff_surlfull, "/", GFAL_URL_MAX_LEN);
+        g_strlcat(buff_surlfull, p, GFAL_URL_MAX_LEN);
+
+        dir_ent->d_reclen = g_strlcpy(dir_ent->d_name, srm_status->surl, GFAL_URL_MAX_LEN);
+    }
+
+    if (S_ISDIR(srm_status->stat.st_mode))
+        dir_ent->d_type = DT_DIR;
+    else if (S_ISLNK(srm_status->stat.st_mode))
+        dir_ent->d_type = DT_LNK;
     else
-        g_strlcpy(resu->d_name, statuses->surl, GFAL_URL_MAX_LEN);
-    return resu;
+        dir_ent->d_type = DT_REG;
+
+    gfal_srm_stat64_to_stat(&srm_status->stat, st);
+    // Stores cache information
+    gfal_srm_cache_stat_add(ch, buff_surlfull, st, &srm_status->locality);
+
+    return dir_ent;
 }
 
 
+/**
+ * Wraps the actual call to srm-ifce
+ */
 static int gfal_srm_readdir_internal(plugin_handle ch,
         gfal_srm_opendir_handle oh, GError** err)
 {
@@ -108,34 +127,32 @@ static int gfal_srm_readdir_internal(plugin_handle ch,
     input.nbfiles = 1;
     input.surls = tab_surl;
     input.numlevels = 1;
-    input.count = oh->max_count - oh->count;
-    input.offset = &oh->slice_offset;
+    input.count = oh->chunk_size;
+    // Mind that srm_ls may - or may not - modify the value pointed by input.offset
+    int offset_buffer = oh->chunk_offset;
+    input.offset = &offset_buffer;
 
-    oh->slice_index = 0;
-
-    /*
-     * Mind that srm_ls will modify the value pointed by input.offset, so even if it has some
-     * value, it will be reset to the offset of the next chunk if any!
-     * Why is it called input then? I don't know.
-     */
+    oh->response_index = 0;
     ret = gfal_srm_external_call.srm_ls(context, &input, &output);
 
     if (ret >= 0) {
         srmv2_mdstatuses = output.statuses;
-        if(srmv2_mdstatuses[0].status != 0){
-            gfal2_set_error(err, gfal2_get_plugin_srm_quark(), srmv2_mdstatuses->status, __func__,
+        if (srmv2_mdstatuses[0].status != 0) {
+            gfal2_set_error(err, gfal2_get_plugin_srm_quark(),
+                    srmv2_mdstatuses->status, __func__,
                     "Error reported from srm_ifce : %d %s",
                     srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
             resu = -1;
 
-        }else {
-            oh->srm_ls_resu = &srmv2_mdstatuses[0];
-            //cache system
+        }
+        else {
+            oh->srm_file_statuses = &srmv2_mdstatuses[0];
             resu = 0;
         }
-    }else{
+    }
+    else {
         gfal_srm_report_error(context->errbuf, &tmp_err);
-        resu=-1;
+        resu = -1;
     }
     gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
 
@@ -144,55 +161,67 @@ static int gfal_srm_readdir_internal(plugin_handle ch,
 }
 
 
+/**
+ * Wraps the SRM request.
+ * Request each chunks, then iterates through the responses as readdir is called
+ */
 static struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch,
         gfal_srm_opendir_handle oh, struct stat* st, GError** err)
 {
-    struct dirent* ret = NULL;
     GError* tmp_err = NULL;
 
-    if (oh->srm_ls_resu == NULL ) {
+    // Nothing yet, so get the bulk
+    if (oh->srm_file_statuses == NULL) {
         gfal_srm_readdir_internal(ch, oh, &tmp_err);
-        if (tmp_err && tmp_err->code == EINVAL) { // fix in the case of short size SRMLs support, ( dcap )
-            g_clear_error(&tmp_err);
-            oh->max_count = 1000;
-            gfal_srm_readdir_internal(ch, oh, &tmp_err);
+        if (tmp_err) {
+            gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+            return NULL;
         }
     }
-    else if (oh->slice_index >= oh->srm_ls_resu->nbsubpaths) {
-        return NULL ; // limited mode in order to not overload the srm server ( slow )
-    }
 
-    // Error
-    if (tmp_err) {
-        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
-    }
     // Empty directory
-    else if (oh->srm_ls_resu == NULL || oh->srm_ls_resu->nbsubpaths == 0) {
-        ret = NULL;
+    if (oh->srm_file_statuses == NULL || oh->srm_file_statuses->nbsubpaths == 0) {
+        return NULL;
     }
-    // There is an answer
-    else {
-        ret = gfal_srm_readdir_convert_result(ch, oh->surl,
-                &oh->srm_ls_resu->subpaths[oh->slice_index], &oh->current_readdir,
-                st,
-                &tmp_err);
 
-        oh->count++;
-        oh->slice_index++;
+    // Done here
+    if (oh->response_index >= oh->srm_file_statuses->nbsubpaths) {
+        return NULL;
+    }
+
+    // Iterate and return statuses
+    struct dirent* ret = gfal_srm_readdir_convert_result(ch, oh->surl,
+            &oh->srm_file_statuses->subpaths[oh->response_index], &oh->dirent_buffer,
+            st, &tmp_err);
+    oh->response_index++;
+
+    // If chunk listing, and the index passed the last entry in the buffer,
+    // release, and prepare next bulk
+    if (oh->is_chunked_listing && oh->response_index >= oh->chunk_size) {
+        oh->chunk_offset += oh->chunk_size;
+        gfal_srm_external_call.srm_srmv2_mdfilestatus_delete(oh->srm_file_statuses, 1);
+        oh->srm_file_statuses = NULL;
     }
 
     return ret;
 }
 
 
+/**
+ * Only read.
+ * SRM listing returns the file stat anyway, so wrap Read + Stat and discard the stat
+ */
 struct dirent* gfal_srm_readdirG(plugin_handle ch, gfal_file_handle fh, GError** err)
 {
 	g_return_val_err_if_fail( ch && fh, NULL, err, "[gfal_srm_readdirG] Invalid args");
-	struct stat _;
+	struct stat _; // Ignore this
 	return gfal_srm_readdirppG(ch, fh, &_, err);
 }
 
 
+/**
+ * Read + Stat
+ */
 struct dirent* gfal_srm_readdirppG(plugin_handle ch,
         gfal_file_handle fh, struct stat* st, GError** err)
 {
@@ -203,7 +232,33 @@ struct dirent* gfal_srm_readdirppG(plugin_handle ch,
     gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;
     ret = gfal_srm_readdir_pipeline(ch, oh, st, &tmp_err);
 
-    if(tmp_err)
+    // Directory too big, so prepare to read in chunks and delegate
+    if (tmp_err && tmp_err->code == EFBIG) {
+        // If we already tried, abort!
+        if (oh->is_chunked_listing) {
+            gfal2_propagate_prefixed_error_extended(err, tmp_err, __func__,
+                    "EFBIG received when already trying chunk listing");
+            return NULL;
+        }
+        // Prepare for chunk listing, and re-issue
+        g_clear_error(&tmp_err);
+        oh->is_chunked_listing = 1;
+        oh->chunk_offset = 0;
+        oh->chunk_size = 1000;
+        oh->response_index = 0;
+
+        gfal_log(GFAL_VERBOSE_VERBOSE,
+                "EFBIG while listing SRM directory, trying with chunk listing of size %d",
+                oh->chunk_size);
+
+        ret = gfal_srm_readdir_pipeline(ch, oh, st, &tmp_err);
+        if (tmp_err)
+            gfal2_propagate_prefixed_error_extended(err, tmp_err, __func__,
+                                "Failed when attempting chunk listing");
+    }
+    // Just an error
+    else if(tmp_err) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+    }
     return ret;
 }
