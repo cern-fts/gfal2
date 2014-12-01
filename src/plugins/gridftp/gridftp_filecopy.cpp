@@ -338,6 +338,8 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
 {
     GError * tmp_err = NULL;
 
+    gboolean is_strict_mode = gfalt_get_strict_copy_mode(params, NULL);
+
     const time_t timeout = gfalt_get_timeout(params, &tmp_err);
     Gfal::gerror_to_cpp(&tmp_err);
 
@@ -346,7 +348,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
     const guint64 tcp_buffer_size = gfalt_get_tcp_buffer_size(params, &tmp_err);
     Gfal::gerror_to_cpp(&tmp_err);
 
-    if (gfalt_get_strict_copy_mode(params, NULL) == false) {
+    if (!is_strict_mode) {
         // If 1, the destination was deleted. So the parent directory is there!
         if (gridftp_filecopy_delete_existing(module, params, dst) == 0)
             gridftp_create_parent_copy(module, params, dst);
@@ -463,7 +465,8 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
     char checksum_src[GFAL_URL_MAX_LEN] = { 0 };
     char checksum_dst[GFAL_URL_MAX_LEN] = { 0 };
 
-    gboolean checksum_check = gfalt_get_checksum_check(params, NULL);
+    gboolean checksum_check =
+            gfalt_get_checksum_check(params, NULL) && !gfalt_get_strict_copy_mode(params, NULL);
     gboolean skip_source_checksum = gfal2_get_opt_boolean(
             _handle_factory->get_gfal2_context(),
             GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_SKIP_CHECKSUM,
@@ -541,8 +544,7 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
                 return_hostname(src, use_ipv6).c_str(), src,
                 return_hostname(dst, use_ipv6).c_str(), dst);
         try {
-            gridftp_filecopy_copy_file_internal(this, _handle_factory, params,
-                    src, dst);
+            gridftp_filecopy_copy_file_internal(this, _handle_factory, params, src, dst);
         }
         catch (Gfal::TransferException & e) {
             throw;
