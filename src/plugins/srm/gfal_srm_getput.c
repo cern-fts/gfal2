@@ -69,7 +69,8 @@ static int validate_turls(int n_results, gfal_srm_result** resu,
         if (!matching_protocol) {
             failed = -1;
             gfal2_set_error(tmp_err, gfal2_get_plugin_srm_quark(), EBADMSG, __func__,
-                    "The SRM endpoint returned a protocol that wasn't requested: %s");
+                    "The SRM endpoint returned a protocol that wasn't requested: %s",
+                    turl);
         }
     }
     // Didn't match, so free and set an error
