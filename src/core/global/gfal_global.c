@@ -42,6 +42,18 @@ void gfal2_context_free(gfal2_context_t context){
     gfal_handle_freeG(context);
 }
 
+gchar** gfal2_get_plugin_names(gfal2_context_t context) {
+    gchar** array = g_new0(gchar*, context->plugin_opt.plugin_number + 1);
+    int i;
+
+    for (i = 0; i < context->plugin_opt.plugin_number; ++i) {
+        array[i] = g_strdup(context->plugin_opt.plugin_list[i].getName());
+    }
+    array[i] = NULL;
+
+    return array;
+}
+
 gfal2_context_t gfal_context_new(GError ** err){
     return gfal2_context_new(err);
 }
