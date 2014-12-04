@@ -44,6 +44,10 @@ static void test_eexist(const char* test_root)
        g_assert_not_reached();
     }
     g_assert(gfal_posix_code_error() == 0);
+
+    // Make sure it is not there!
+    g_assert(gfal_access(dir_name, F_OK) < 0);
+    gfal_posix_clear_error();
 }
 
 static void test_eexist2(const char* test_root)
@@ -63,6 +67,10 @@ static void test_eexist2(const char* test_root)
         g_assert_not_reached();
     }
     g_assert(gfal_posix_code_error() == 0);
+
+    // Make sure it is not there!
+    g_assert(gfal_access(dir_name, F_OK) < 0);
+    gfal_posix_clear_error();
 }
 
 static void test_nested(const char* test_root)
