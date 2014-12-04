@@ -30,6 +30,7 @@ static void test_enoent(const char* test_root)
 
 static void test_eexist(const char* test_root)
 {
+    struct stat st;
     char dir_name[2048];
     generate_random_uri(test_root, "testrmdir_full_exist", dir_name, 2048);
 
@@ -38,6 +39,11 @@ static void test_eexist(const char* test_root)
        gfal_posix_check_error();
        g_assert_not_reached();
     }
+
+    // Trigger a stat, this will activate the cache (i.e. srm)
+    // Regression for DMC-584
+    g_assert(gfal_stat(dir_name, &st) == 0);
+
     g_assert(gfal_posix_code_error() == 0);
     if(gfal_rmdir(dir_name) != 0) {
        gfal_posix_check_error();
@@ -46,12 +52,13 @@ static void test_eexist(const char* test_root)
     g_assert(gfal_posix_code_error() == 0);
 
     // Make sure it is not there!
-    g_assert(gfal_access(dir_name, F_OK) < 0);
+    g_assert(gfal_stat(dir_name, &st) < 0);
     gfal_posix_clear_error();
 }
 
 static void test_eexist2(const char* test_root)
 {
+    struct stat st;
     char dir_name[2048];
     generate_random_uri(test_root, "testrmdir_full_exist2", dir_name, 2048);
 
@@ -61,6 +68,11 @@ static void test_eexist2(const char* test_root)
         gfal_posix_check_error();
         g_assert_not_reached();
     }
+
+    // Trigger a stat, this will activate the cache (i.e. srm)
+    // Regression for DMC-584
+    g_assert(gfal_stat(dir_name, &st) == 0);
+
     g_assert(gfal_posix_code_error() == 0);
     if(gfal_rmdir(dir_name) != 0) {
         gfal_posix_check_error();
@@ -69,7 +81,7 @@ static void test_eexist2(const char* test_root)
     g_assert(gfal_posix_code_error() == 0);
 
     // Make sure it is not there!
-    g_assert(gfal_access(dir_name, F_OK) < 0);
+    g_assert(gfal_stat(dir_name, &st) < 0);
     gfal_posix_clear_error();
 }
 

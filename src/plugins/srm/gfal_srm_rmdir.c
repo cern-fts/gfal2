@@ -76,6 +76,7 @@ int gfal_srm_rmdirG(plugin_handle ch, const char* surl, GError** err)
         ret = gfal_statG_srmv2_internal(context, &st, NULL, surl, &tmp_err);
         if (ret == 0) {
             if (S_ISDIR(st.st_mode)) {
+                gfal_srm_cache_stat_remove(ch, surl); // invalidate cache entry
                 ret = gfal_srmv2_rmdir_internal(context, surl, &tmp_err);
             }
             else {
@@ -92,7 +93,3 @@ int gfal_srm_rmdirG(plugin_handle ch, const char* surl, GError** err)
 
     return ret;
 }
-
-
-
-
