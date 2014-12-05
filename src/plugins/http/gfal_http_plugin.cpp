@@ -25,7 +25,7 @@ static int get_corresponding_davix_log_level()
 
     if (gfal2_log_level & GFAL_VERBOSE_TRACE_PLUGIN)
         davix_log_level = DAVIX_LOG_TRACE;
-    if ((gfal2_log_level & GFAL_VERBOSE_DEBUG) || (gfal2_log_level & GFAL_VERBOSE_TRACE))
+    else if ((gfal2_log_level & GFAL_VERBOSE_DEBUG) || (gfal2_log_level & GFAL_VERBOSE_TRACE))
         davix_log_level = DAVIX_LOG_DEBUG;
     else if (gfal2_log_level & GFAL_VERBOSE_VERBOSE)
         davix_log_level = DAVIX_LOG_VERBOSE;
