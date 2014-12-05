@@ -23,7 +23,7 @@ static int get_precomputed(const char* algorithm, const char** content,
         { "MD5", "d0fb2562f39431dbe78c140581ca06b8" },
         { "SHA1", "87c813e21babb87879588dc6009770f3c2b5d2f6" },
         { "ADLER32", "111a0c0c" },
-        { "CRC32", "ecb904fa" },
+        { "CRC32", "3971548410" },
         { NULL, NULL }
     };
 

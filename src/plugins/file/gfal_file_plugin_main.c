@@ -379,7 +379,7 @@ static ssize_t crc32_update(void* chk_handler, const char* buffer, size_t s){
 
 static int crc32_getResult(void* chk_handler, char* resu, size_t s_b){
     unsigned long* lp = (unsigned long*) chk_handler;
-    snprintf(resu, s_b, "%lx", *lp);
+    snprintf(resu, s_b, "%ld", *lp);
     free(lp);
     return 0;
 }
