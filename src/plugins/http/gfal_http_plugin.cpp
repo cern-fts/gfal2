@@ -154,7 +154,7 @@ GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
     int davix_config_level = gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", "LOG_LEVEL", 0);
     if (davix_config_level)
         davix_level = davix_config_level;
-    davix_set_log_level(davix_config_level);
+    davix_set_log_level(davix_level);
 
     reference_params.setTransparentRedirectionSupport(true);
     reference_params.setUserAgent("gfal2::http");
