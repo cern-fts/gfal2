@@ -202,6 +202,12 @@ TEST_F(CopyBulk, CopyBulkSomeFail)
 
 TEST_F(CopyBulk, CopyBulkChecksuming)
 {
+    // Xrootd is problematic, as several endpoints may not implement checksuming, so skip this
+    if (strncmp("root://", sources[0], 7) == 0) {
+        SKIP_TEST(CopyBulkChecksuming);
+        return;
+    }
+
     const char *checksums[NBPAIRS] = {0};
 
     // All checksums fine, except first
