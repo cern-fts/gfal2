@@ -130,6 +130,7 @@ int gfal_srm_unlink_listG(plugin_handle ch, int nbfiles, const char* const* path
 
             ret = gfal_srm_rm_srmv2_internal(context, nbfiles, paths, err);
         }
+        gfal_srm_ifce_easy_context_release(opts, context);
     }
 
     if (tmp_err) {

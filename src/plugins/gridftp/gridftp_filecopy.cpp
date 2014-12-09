@@ -22,6 +22,7 @@
 
 #include "gridftp_namespace.h"
 #include "gridftp_filecopy.h"
+#include "gridftp_plugin.h"
 
 #include <checksums/checksums.h>
 #include <uri/gfal_uri.h>
@@ -110,12 +111,6 @@ std::string return_hostname(const std::string &uri, gboolean use_ipv6)
 }
 
 
-const char * gridftp_checksum_transfer_config   = "COPY_CHECKSUM_TYPE";
-const char * gridftp_perf_marker_timeout_config = "PERF_MARKER_TIMEOUT";
-const char * gridftp_skip_transfer_config       = "SKIP_SOURCE_CHECKSUM";
-const char * gridftp_enable_udt                 = "ENABLE_UDT";
-
-
 // return 1 if deleted something
 int gridftp_filecopy_delete_existing(GridFTPModule* module,
         gfalt_params_t params, const char * url)
@@ -184,7 +179,7 @@ void gridftp_create_parent_copy(GridFTPModule* module, gfalt_params_t params,
             }
 
             GError* tmp_err = NULL;
-            (void) gfal2_mkdir_rec(module->get_session_factory()->get_handle(),
+            (void) gfal2_mkdir_rec(module->get_session_factory()->get_gfal2_context(),
                     current_uri, 0755, &tmp_err);
             Gfal::gerror_to_cpp(&tmp_err);
         }
@@ -203,40 +198,20 @@ void gsiftp_3rd_callback(void* user_args, globus_gass_copy_handle_t* handle, glo
 //
 // Performance callback object
 // contain the performance callback parameter
-// an the auto cancel logic on performance callback inaticity
-struct CallbackHandler{
-
-    CallbackHandler(gfal2_context_t context, gfalt_params_t params,
-            GridFTPRequestState* req, const char* src, const char* dst,
-            size_t src_size) :
-            args(NULL)
-    {
-        GError * tmp_err = NULL;
-        gfalt_monitor_func callback = gfalt_get_monitor_callback(params,
-                &tmp_err);
-        Gfal::gerror_to_cpp(&tmp_err);
-        gpointer user_args = gfalt_get_user_data(params, &tmp_err);
-        Gfal::gerror_to_cpp(&tmp_err);
-
-        if (callback) {
-            args = new callback_args(context, callback, user_args, src, dst,
-                    req, src_size);
-        }
-    }
+// and the auto cancel logic on performance callback inactivity
+struct CallbackHandler {
 
     static void* func_timer(void* v)
     {
-        callback_args* args = (callback_args*) v;
+        CallbackHandler* args = (CallbackHandler*) v;
         while (time(NULL) < args->timeout_time) {
             if (pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL) != 0) {
-                gfal_log(GFAL_VERBOSE_TRACE,
-                        " thread setcancelstate error, interrupt performance marker timer");
+                gfal_log(GFAL_VERBOSE_TRACE, "thread setcancelstate error, interrupt performance marker timer");
                 return NULL;
             }
             usleep(500000);
             if (pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL) != 0) {
-                gfal_log(GFAL_VERBOSE_TRACE,
-                        " thread setcancelstate error, interrupt performance marker timer");
+                gfal_log(GFAL_VERBOSE_TRACE, "thread setcancelstate error, interrupt performance marker timer");
                 return NULL;
             }
         }
@@ -245,74 +220,63 @@ struct CallbackHandler{
         msg << "Transfer canceled because the gsiftp performance marker timeout of "
             << args->timeout_value
             << " seconds has been exceeded, or all performance markers during that period indicated zero bytes transferred";
-        args->req->cancel_operation_async(GFAL_GRIDFTP_SCOPE_FILECOPY, msg.str());
+        args->req->cancel(GFAL_GRIDFTP_SCOPE_FILECOPY, msg.str());
 
         return NULL;
     }
 
-    virtual ~CallbackHandler()
+    CallbackHandler(gfal2_context_t context, gfalt_params_t params,
+            GridFTPRequestState* req, const char* src, const char* dst,
+            size_t src_size):
+                req(req), src(src), dst(dst), start_time(0), timeout_value(0),
+                timeout_time(0), timer_pthread(0), source_size(src_size)
     {
-        if (args) {
-            delete args;
-        }
-    }
+        callback = gfalt_get_monitor_callback(params, NULL);
+        user_args = gfalt_get_user_data(params, NULL);
 
-    struct callback_args {
-        callback_args(gfal2_context_t context,
-                const gfalt_monitor_func mcallback, gpointer muser_args,
-                const char* msrc, const char* mdst, GridFTPRequestState* mreq,
-                size_t src_size) :
-                callback(mcallback), user_args(muser_args), req(mreq), src(
-                        msrc), dst(mdst), start_time(time(NULL)), timeout_value(
-                        gfal2_get_opt_integer_with_default(context,
-                                GRIDFTP_CONFIG_GROUP,
-                                gridftp_perf_marker_timeout_config, 180)), timeout_time(
-                        time(NULL) + timeout_value), timer_pthread()
-        {
-            Glib::RWLock::ReaderLock l(req->mux_req_state);
+        if (callback) {
+            start_time = time(NULL);
+            timeout_value = gfal2_get_opt_integer_with_default(context,
+                        GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_PERF_TIMEOUT, 180);
+            timeout_time = start_time + timeout_value;
+
             globus_gass_copy_register_performance_cb(
-                    req->sess->get_gass_handle(), gsiftp_3rd_callback,
+                    req->handler->get_gass_copy_handle(), gsiftp_3rd_callback,
                     (gpointer) this);
 
             if (timeout_value > 0) {
-                pthread_create(&timer_pthread, NULL,
-                        CallbackHandler::func_timer, this);
+                pthread_create(&timer_pthread, NULL, CallbackHandler::func_timer, this);
             }
-
-            source_size = src_size;
         }
+    }
 
-        virtual ~callback_args()
-        {
-            if (timeout_value > 0) {
-                void * res;
-                pthread_cancel(timer_pthread);
-                pthread_join(timer_pthread, &res);
-            }
-            Glib::RWLock::ReaderLock l(req->mux_req_state);
-            globus_gass_copy_register_performance_cb(
-                    req->sess->get_gass_handle(), NULL, NULL);
+    virtual ~CallbackHandler()
+    {
+        if (timeout_value > 0) {
+            pthread_cancel(timer_pthread);
+            pthread_join(timer_pthread, NULL);
         }
+        globus_gass_copy_register_performance_cb(req->handler->get_gass_copy_handle(), NULL, NULL);
+    }
 
-        gfalt_monitor_func callback;
-        gpointer user_args;
-        GridFTPRequestState* req;
-        const char* src;
-        const char* dst;
-        time_t start_time;
-        int timeout_value;
-        time_t timeout_time;
-        pthread_t timer_pthread;
-        globus_off_t source_size;
-    }*args;
+
+    gfalt_monitor_func callback;
+    gpointer user_args;
+    GridFTPRequestState* req;
+    const char* src;
+    const char* dst;
+    time_t start_time;
+    int timeout_value;
+    time_t timeout_time;
+    pthread_t timer_pthread;
+    globus_off_t source_size;
 };
 
 
 void gsiftp_3rd_callback(void* user_args, globus_gass_copy_handle_t* handle,
         globus_off_t total_bytes, float throughput, float avg_throughput)
 {
-    CallbackHandler::callback_args * args =
-            (CallbackHandler::callback_args *) user_args;
+    CallbackHandler* args = (CallbackHandler*)user_args;
 
     gfalt_hook_transfer_plugin_t hook;
     hook.bytes_transfered = total_bytes;
@@ -327,13 +291,11 @@ void gsiftp_3rd_callback(void* user_args, globus_gass_copy_handle_t* handle,
     // If throughput != 0, or the file has been already sent, reset timer callback
     // [LCGUTIL-440] Some endpoints calculate the checksum before closing, so we will
     //               get throughput = 0 for a while, and the transfer should not fail
-    if (throughput != 0.0
-            || (args->source_size > 0 && args->source_size <= total_bytes)) {
-        GridFTPRequestState* req = args->req;
-        Glib::RWLock::ReaderLock l(req->mux_req_state);
+    if (throughput != 0.0 || (args->source_size > 0 && args->source_size <= total_bytes)) {
+        //GridFTPRequestState* req = args->req;
+        //Glib::RWLock::ReaderLock l(req->mux_req_state);
         if (args->timeout_value > 0) {
-            gfal_log(GFAL_VERBOSE_TRACE,
-                    "Performance marker received, re-arm timer");
+            gfal_log(GFAL_VERBOSE_TRACE, "Performance marker received, re-arm timer");
             args->timeout_time = time(NULL) + args->timeout_value;
         }
     }
@@ -350,37 +312,22 @@ void gridftp_do_copy(GridFTPModule* module, GridFTPFactory* factory,
         gfalt_params_t params, const char* src, const char* dst,
         GridFTPRequestState& req, time_t timeout)
 {
-    /*
-     This will not work with Castor
-     struct stat src_stat;
+    GassCopyAttrHandler gass_attr_src(req.handler->get_ftp_client_operationattr());
+    GassCopyAttrHandler gass_attr_dst(req.handler->get_ftp_client_operationattr());
+    CallbackHandler callback_handler(factory->get_gfal2_context(), params, &req, src, dst, 0);
 
-     try {
-     module->stat(src, &src_stat);
-     }
-     catch (...) {
-     src_stat.st_size = 0;
-     }
-     */
-
-    GridFTPSession* sess = req.sess.get();
-
-    Gass_attr_handler gass_attr_src(sess->get_op_attr_ftp());
-    Gass_attr_handler gass_attr_dst(sess->get_op_attr_ftp());
-    CallbackHandler callback_handler(factory->get_handle(), params, &req, src,
-            dst, 0);
-
-    req.start();
     gfal_log(GFAL_VERBOSE_TRACE,
             "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s",
             src, dst);
-    GridFTPOperationCanceler canceler(factory->get_handle(), &req);
+
     globus_result_t res = globus_gass_copy_register_url_to_url(
-            sess->get_gass_handle(), (char*) src, &(gass_attr_src.attr_gass),
+            req.handler->get_gass_copy_handle(),
+            (char*) src, &(gass_attr_src.attr_gass),
             (char*) dst, &(gass_attr_dst.attr_gass),
-            globus_gass_basic_client_callback, &req);
+            globus_gass_client_done_callback, &req);
 
     gfal_globus_check_result("GridFTPFileCopyModule::filecopy", res);
-    req.wait_callback(GFAL_GRIDFTP_SCOPE_FILECOPY, timeout);
+    req.wait(GFAL_GRIDFTP_SCOPE_FILECOPY, timeout);
 }
 
 
@@ -391,6 +338,8 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
 {
     GError * tmp_err = NULL;
 
+    gboolean is_strict_mode = gfalt_get_strict_copy_mode(params, NULL);
+
     const time_t timeout = gfalt_get_timeout(params, &tmp_err);
     Gfal::gerror_to_cpp(&tmp_err);
 
@@ -399,35 +348,32 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
     const guint64 tcp_buffer_size = gfalt_get_tcp_buffer_size(params, &tmp_err);
     Gfal::gerror_to_cpp(&tmp_err);
 
-    if (gfalt_get_strict_copy_mode(params, NULL) == false) {
+    if (!is_strict_mode) {
         // If 1, the destination was deleted. So the parent directory is there!
         if (gridftp_filecopy_delete_existing(module, params, dst) == 0)
             gridftp_create_parent_copy(module, params, dst);
     }
 
-    GridFTPRequestState req(
-            factory->gfal_globus_ftp_take_handle(
-                    gridftp_hostname_from_url(src)), true,
-            GRIDFTP_REQUEST_GASS);
-    GridFTPSession* sess = req.sess.get();
+    GridFTPSessionHandler handler(factory, src);
+    GridFTPRequestState req(&handler, GRIDFTP_REQUEST_GASS);
 
-    sess->set_nb_stream(nbstream);
+    handler.session->set_nb_streams(nbstream);
     gfal_log(GFAL_VERBOSE_TRACE,
             "   [GridFTPFileCopyModule::filecopy] setup gsiftp number of streams to %d",
             nbstream);
-    sess->set_tcp_buffer_size(tcp_buffer_size);
+    handler.session->set_tcp_buffer_size(tcp_buffer_size);
     gfal_log(GFAL_VERBOSE_TRACE,
             "   [GridFTPFileCopyModule::filecopy] setup gsiftp buffer size to %d",
             tcp_buffer_size);
 
-    gboolean enable_udt_transfers = gfal2_get_opt_boolean(factory->get_handle(),
-    GRIDFTP_CONFIG_GROUP, gridftp_enable_udt, NULL);
+    gboolean enable_udt_transfers = gfal2_get_opt_boolean(factory->get_gfal2_context(),
+            GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_UDT, NULL);
 
     if (enable_udt_transfers) {
         gfal_log(GFAL_VERBOSE_VERBOSE, "Trying UDT transfer");
         plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP, GFAL_EVENT_NONE,
                 g_quark_from_static_string("UDT:ENABLE"), "Trying UDT");
-        sess->enable_udt();
+        handler.session->set_udt(true);
     }
 
     try {
@@ -445,7 +391,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
                     "UDT failed. Falling back to default mode: %s",
                     e.what().c_str());
 
-            sess->disable_udt();
+            handler.session->set_udt(false);
             gridftp_do_copy(module, factory, params, src, dst, req, timeout);
         }
         // Else, rethrow
@@ -519,13 +465,14 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
     char checksum_src[GFAL_URL_MAX_LEN] = { 0 };
     char checksum_dst[GFAL_URL_MAX_LEN] = { 0 };
 
-    gboolean checksum_check = gfalt_get_checksum_check(params, NULL);
+    gboolean checksum_check =
+            gfalt_get_checksum_check(params, NULL) && !gfalt_get_strict_copy_mode(params, NULL);
     gboolean skip_source_checksum = gfal2_get_opt_boolean(
-            _handle_factory->get_handle(),
-            GRIDFTP_CONFIG_GROUP, gridftp_skip_transfer_config,
+            _handle_factory->get_gfal2_context(),
+            GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_SKIP_CHECKSUM,
             NULL);
-    gboolean use_ipv6 = gfal2_get_opt_boolean(_handle_factory->get_handle(),
-    GRIDFTP_CONFIG_GROUP, gridftp_ipv6_config,
+    gboolean use_ipv6 = gfal2_get_opt_boolean(_handle_factory->get_gfal2_context(),
+    GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_IPV6,
     NULL);
 
     if (checksum_check) {
@@ -539,8 +486,8 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
             char *default_checksum_type;
 
             default_checksum_type = gfal2_get_opt_string(
-                    _handle_factory->get_handle(),
-                    GRIDFTP_CONFIG_GROUP, gridftp_checksum_transfer_config,
+                    _handle_factory->get_gfal2_context(),
+                    GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_CHECKSUM,
                     &get_default_error);
             Gfal::gerror_to_cpp(&get_default_error);
 
@@ -597,8 +544,7 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
                 return_hostname(src, use_ipv6).c_str(), src,
                 return_hostname(dst, use_ipv6).c_str(), dst);
         try {
-            gridftp_filecopy_copy_file_internal(this, _handle_factory, params,
-                    src, dst);
+            gridftp_filecopy_copy_file_internal(this, _handle_factory, params, src, dst);
         }
         catch (Gfal::TransferException & e) {
             throw;

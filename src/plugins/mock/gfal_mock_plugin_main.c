@@ -120,9 +120,9 @@ static gboolean gfal_mock_check_url(plugin_handle handle, const char* url, plugi
 	}
 }
 
-void gfal_plugin_mock_report_error(const char* msg, GError** err)
+void gfal_plugin_mock_report_error(const char* msg, int errn, GError** err)
 {
-    g_set_error(err, gfal2_get_plugin_mock_quark(), errno, "%s", msg);
+    g_set_error(err, gfal2_get_plugin_mock_quark(), errn, "%s", msg);
 }
 
 
@@ -183,50 +183,44 @@ void gfal_plugin_mock_get_checksum(char* buff, char* checksum)
 	strcpy(checksum, str + 1);
 }
 
-int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct stat* buf, GError ** err){
-
+int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct stat* buf, GError ** err)
+{
 	// it is assumed that the stat operations will be done in following order:
 	//   - stat source
 	//   - stat destination before transfer
 	//   - stat destination after transfer
-	
-	/*USE HARDCODED FOR NOW SINCE RUCIO WOULD LIKE TO USE IT*/
-	buf->st_size = 10;
-	
-        time_t epoch_time;
-    	struct tm *tm_p;
-    	epoch_time = time( NULL );
-    	tm_p = localtime( &epoch_time );
-        int secs =  tm_p->tm_sec;	
-	
+    time_t epoch_time;
+    struct tm *tm_p;
+    epoch_time = time( NULL);
+    tm_p = localtime(&epoch_time);
+    int secs = tm_p->tm_sec;
+
 	if(secs == 5 || secs == 15 || secs == 25 || secs == 45 || secs == 60)
 	{
-		gfal_plugin_mock_report_error("Mock failure", err);	
+		gfal_plugin_mock_report_error("Mock failure", ENOENT, err);
 		return -1;
-        }		
-	
-	return 0;
-	
-	
-	
+    }
+
 	static int order = 0;
 
 	int size = 0;
 	char buff[GFAL_URL_MAX_LEN] = { 0 };
 
+	// Try FILE_SIZE by default, if not set, use 10
+	gfal_plugin_mock_get_value(path, FILE_SIZE, buff);
+	buf->st_size = gfal_plugin_mock_get_size(buff);
+	if (buf->st_size == 0)
+	    buf->st_size = 10;
+
+	// Try specific size for each stage
 	switch (order)
 	{
-
 	case STAT_SOURCE:
-		gfal_plugin_mock_get_value(path, FILE_SIZE, buff);
-		size = gfal_plugin_mock_get_size(buff);
-		break;
-
+	    break;
 	case STAT_DESTINATION_PRE:
 		gfal_plugin_mock_get_value(path, FILE_SIZE_PRE, buff);
 		size = gfal_plugin_mock_get_size(buff);
 		break;
-
 	case STAT_DESTINATION_POST:
 		gfal_plugin_mock_get_value(path, FILE_SIZE_POST, buff);
 		size = gfal_plugin_mock_get_size(buff);
@@ -273,7 +267,7 @@ gboolean gfal_plugin_mock_checksum_verify(const char* src_chk, const char* dst_c
     {
     	if (strcmp(src_chk, dst_chk) != 0)
     	{
-			gfal_plugin_mock_report_error("SRC and DST checksum are different.", err);
+			gfal_plugin_mock_report_error("SRC and DST checksum are different", EIO, err);
 			return FALSE;
     	}
     	// source and destination checksums match
@@ -282,13 +276,13 @@ gboolean gfal_plugin_mock_checksum_verify(const char* src_chk, const char* dst_c
     // if user and source were defined ...
 	if (*src_chk != '\0' && strcmp(src_chk, user_defined_chk) != 0)
 	{
-		gfal_plugin_mock_report_error("USER_DEFINE and SRC checksums are different.", err);
+		gfal_plugin_mock_report_error("USER_DEFINE and SRC checksums are different", EIO, err);
 		return FALSE;
 	}
 	// compare user and destination
 	if (strcmp(dst_chk, user_defined_chk) != 0)
 	{
-		gfal_plugin_mock_report_error("USER_DEFINE and DST checksums are different.", err);
+		gfal_plugin_mock_report_error("USER_DEFINE and DST checksums are different", EIO, err);
 		return FALSE;
 	}
 

@@ -143,3 +143,6 @@ void gfal_srm_report_error(char* errbuff, GError** err);
 
 srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
         const char* surl, GError** err);
+
+void gfal_srm_ifce_easy_context_release(gfal_srmv2_opt* opts,
+        srm_context_t context);

@@ -75,7 +75,9 @@ typedef struct _gfal_srmv2_opt{
 
 	char srm_ifce_error_buffer[GFAL_ERRMSG_LEN];
 
+	GStaticRecMutex srm_context_mutex; // Avoid same context being used from more than one thread at the time
 	srm_context_t srm_context;
+
 	// Used to know if the srm context must be cleaned
 	char x509_ucert[GFAL_URL_MAX_LEN], x509_ukey[GFAL_URL_MAX_LEN];
 	char endpoint[GFAL_URL_MAX_LEN];

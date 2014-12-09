@@ -5,7 +5,7 @@
 #include <iostream>
 #include "../gridftpwrapper.h"
 
-class GridftpStreamBuffer: public std::streambuf {
+class GridFTPStreamBuffer: public std::streambuf {
 protected:
     GridFTPStreamState* gstream;
     char buffer[4096];
@@ -19,12 +19,12 @@ protected:
     }
 
 public:
-    GridftpStreamBuffer(GridFTPStreamState* gsiftp_stream, const Glib::Quark& quark):
+    GridFTPStreamBuffer(GridFTPStreamState* gsiftp_stream, const Glib::Quark& quark):
         gstream(gsiftp_stream), quark(quark) {
         fetch_more();
     }
 
-    virtual ~GridftpStreamBuffer() {
+    virtual ~GridFTPStreamBuffer() {
     }
 
     int_type underflow() {

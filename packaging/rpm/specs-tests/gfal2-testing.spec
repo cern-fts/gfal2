@@ -2,7 +2,7 @@
 %define debug_package %{nil}
 
 Name:				gfal2-testing
-Version:			2.7.6
+Version:			2.6.3
 Release:			1.%{checkout_tag}%{?dist}
 Summary:			Grid file access library 2.0
 Group:				Applications/Internet

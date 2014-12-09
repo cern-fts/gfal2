@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>gfal2</title>
+		<style type="text/css">
+		html {
+			background: gray;
+			display: table;
+			margin: auto;
+			margin-top: 1em;
+		}
+		body {
+			display: table-cell;
+			background: white;
+			width: 90ex;
+			padding: 1em 4ex;
+		}
+		p {
+			text-align: justify;
+		}
+		dt {
+			font-weight: bold;
+		}
+		</style>
+	</head>
+	<body>
+		<h1>gfal2</h1>
+		
+		<h2>Description</h2>
+		<p>
+			The Grid File Access Library 2 offers a POSIX interface to the distributed files system supported by WLCG.<br />
+			Differents file systems are supported by a collections of GFAL 2 plugins, this is a non complete list:
+		</p>
+		<ul>
+			<li>LFC (Logical File Catalog), with lfn://</li>
+			<li>SRM (Storage Resource Manager) with srm://</li>
+			<li>RFIO (Remote File I/O) with rfio://</li>
+			<li>DCAP (Remote FTP for dCache ) with gsidcap://</li>
+			<li>HTTP/Webdav with cluster, third party copy and client side credential support.</li>
+		</ul>
+
+		</p>
+		
+		<h2>Installation</h2>
+		<p>
+			GFAL2 itself abstracts the access to different underlying storage systems - including local -, but in order to get
+			support for a given protocol, its corresponding plugin needs to be installed.
+		</p>
+		<ul>
+			<li>gfal2-plugin-lfc</li>
+			<li>gfal2-plugin-srm</li>
+			<li>gfal2-plugin-rfio</li>
+			<li>gfal2-plugin-dcap</li>
+			<li>gfal2-plugin-http</li>
+		</ul>
+		<p>
+			For convenience we provide a package called gfal2-all, which will trigger the installation of all these packages.<br />
+			gfal2-devel is required only for development.<br />
+			A typical installation can be done as easy as bellow:
+		</p>
+		<pre>yum install gfal2-all gfal2-devel</pre>
+		<p>
+			Shipped separatly there is also available a plugin for XRootD (root://) protocol: gfal2-plugin-xrootd
+		</p>
+		
+		<h2>API Documentation</h2>
+		<p>
+			<a href="html/index.html">Doxygen documentation</a><br />
+			You can also have a look at the <a href="examples">examples</a> folder to see some simple usage of the API.
+		</p>
+		
+		<h2>License</h2>
+		<p>
+			This software is licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache 2 License</a>.
+			See <a href="LICENSE">LICENSE</a> for details.
+		</p>
+		
+		<h2>Release Notes</h2>
+		<p>
+			See <a href="RELEASE-NOTES">RELEASE-NOTES</a> for a detailed changelog.
+		</p>
+		
+		<h2>Contact</h2>
+		<p>
+			You can notify bugs or ask for feature requests via
+		</p>
+		<dl>
+			<dt>Tracker</dt>
+			<dd><a href="https://its.cern.ch/jira/browse/DMC/component/10808">https://its.cern.ch/jira/browse/DMC/component/10808</a></dd>
+			<dt>Mailing list</dt>
+			<dd><a href="mailto:dmc-support@cern.ch">dmc-support@cern.ch</a></dd>
+		</dl>
+	</body>
+</html>

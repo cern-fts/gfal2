@@ -94,6 +94,7 @@ static int gfal_srm_cheksumG_internal(plugin_handle ch, const char* surl,
     if (context != NULL) {
         ret = gfal_checksumG_srmv2_internal(context, surl, buf_checksum, s_checksum, buf_chktype, s_chktype, &tmp_err);
     }
+    gfal_srm_ifce_easy_context_release(opts, context);
 
     if (ret != 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);

@@ -69,7 +69,8 @@ static int validate_turls(int n_results, gfal_srm_result** resu,
         if (!matching_protocol) {
             failed = -1;
             gfal2_set_error(tmp_err, gfal2_get_plugin_srm_quark(), EBADMSG, __func__,
-                    "The SRM endpoint returned a protocol that wasn't requested: %s");
+                    "The SRM endpoint returned a protocol that wasn't requested: %s",
+                    turl);
         }
     }
     // Didn't match, so free and set an error
@@ -221,6 +222,7 @@ static int gfal_srm_mTURLS_internal(gfal_srmv2_opt* opts, gfal_srm_params_t para
         else
             ret = gfal_srm_putTURLS_srmv2_internal(context, opts, params, surls, resu, &tmp_err);
     }
+    gfal_srm_ifce_easy_context_release(opts, context);
 
     if (ret < 0) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
@@ -488,6 +490,7 @@ int gfal_srm_putdone(gfal_srmv2_opt* opts , char** surls, const char* token,  GE
     if (context != NULL) {
         ret = gfal_srm_putdone_srmv2_internal(context, surls, token, &tmp_err);
     }
+    gfal_srm_ifce_easy_context_release(opts, context);
 
     if (ret < 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
@@ -532,6 +535,7 @@ int srm_abort_request_plugin(plugin_handle * handle , const char* surl,
     if (context != NULL) {
         ret = srmv2_abort_request_internal(context, surl, reqtoken, &tmp_err);
     }
+    gfal_srm_ifce_easy_context_release(opts, context);
 
     gfal_log(GFAL_VERBOSE_TRACE, " [srm_abort_request] <-");
 

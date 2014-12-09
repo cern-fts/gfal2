@@ -31,8 +31,19 @@
 #include "gfal_srm_bringonline.h"
 
 
-GQuark srm_domain(){
+GQuark srm_domain()
+{
     return g_quark_from_static_string("SRM");
+}
+
+static GQuark gfal2_get_srm_get_quark()
+{
+    return g_quark_from_static_string("SRM:GET");
+}
+
+static GQuark gfal2_get_srm_put_quark()
+{
+    return g_quark_from_static_string("SRM:PUT");
 }
 
 
@@ -148,6 +159,9 @@ static int srm_resolve_get_turl(plugin_handle handle, gfalt_params_t params,
         if (res >= 0) {
             gfal_log(GFAL_VERBOSE_TRACE, "\t\tGET surl -> turl resolution finished: %s -> %s (%s)",
                     surl, turl, token);
+            plugin_trigger_event(params, gfal2_get_plugin_srm_quark(),
+                        GFAL_EVENT_SOURCE, gfal2_get_srm_get_quark(),
+                        "Got TURL %s => %s", surl, turl);
         }
     }
     else {
@@ -185,6 +199,9 @@ static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
             if (res >= 0) {
                 gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl resolution ended : %s -> %s (%s)",
                         surl, turl, token);
+                plugin_trigger_event(params, gfal2_get_plugin_srm_quark(),
+                            GFAL_EVENT_DESTINATION, gfal2_get_srm_put_quark(),
+                            "Got TURL %s => %s", surl, turl);
             }
             else {
                 gfalt_propagate_prefixed_error(err, tmp_err, __func__, GFALT_ERROR_DESTINATION, "SRM_PUT_TURL");
@@ -405,15 +422,11 @@ static void srm_release_get(plugin_handle handle, const char* surl, const char* 
     GError* release_error = NULL;
     gfal_srmv2_release_fileG(handle, surl, token, &release_error);
     if (release_error != NULL) {
-        if (*err == NULL) {
-            *err = release_error;
-        }
-        else {
-            gfal_log(GFAL_VERBOSE_VERBOSE,
-                    "Got an error when releasing the source file: %s",
-                    release_error->message);
-            g_error_free(release_error);
-        }
+        gfal_log(GFAL_VERBOSE_VERBOSE,
+                "Got an error when releasing the source file: %s",
+                release_error->message);
+        gfal_log(GFAL_VERBOSE_VERBOSE,
+                "It will be ignored!");
     }
 }
 
@@ -534,6 +547,7 @@ static int is_castor_endpoint(plugin_handle handle, const char* surl)
     struct srm_xping_output output;
     if (gfal_srm_external_call.srm_xping(context, &output) < 0) {
         gfal_log(GFAL_VERBOSE_VERBOSE, "Failed to ping %s", surl);
+        gfal_srm_ifce_easy_context_release(opts, context);
         return -1;
     }
 
@@ -545,7 +559,7 @@ static int is_castor_endpoint(plugin_handle handle, const char* surl)
         }
     }
     srm_xping_output_free(output);
-
+    gfal_srm_ifce_easy_context_release(opts, context);
     return is_castor;
 }
 

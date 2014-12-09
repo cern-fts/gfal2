@@ -10,7 +10,9 @@ if (PLUGIN_GRIDFTP)
 
     target_link_libraries(plugin_gridftp gfal2 gfal2_transfer
 			              ${GLOBUS_GASS_COPY_PKG_LIBRARIES}
-                          gomp)
+                          gomp
+                          globus_gssapi_gsi)
+
     include_directories(${GLOBUS_GASS_COPY_PKG_INCLUDE_DIRS}
 	        			${GRIDFTP_IFCE_INCLUDE_DIRS} 	 
         				${GLIBMM_PKG_INCLUDE_DIRS})

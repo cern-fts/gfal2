@@ -29,14 +29,11 @@ int main(int argc, char **argv)
     g_strlcat(buff, "/", 2048);
     g_strlcat(buff, "testfileunlink_enoent", 2048);
 
-
-
-
     printf ("unlinking (deleting) the file: %s\n", buff);
     err = gfal_unlink (buff);
 	gfal_posix_check_error();
 	err = gfal_posix_code_error();
-	if (err != ENOENT) { 
+	if (err != ENOENT) {
 		exit (1);
 	} else {
 		exit(0);

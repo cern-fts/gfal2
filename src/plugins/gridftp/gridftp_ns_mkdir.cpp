@@ -28,17 +28,15 @@ void GridFTPModule::mkdir(const char* path, mode_t mode)
                 "Invalid arguments path or mode ");
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::mkdir] ");
 
-    GridFTPRequestState req(
-            _handle_factory->gfal_globus_ftp_take_handle(
-                    gridftp_hostname_from_url(path))); // get connection session
+    GridFTPSessionHandler handler(_handle_factory, path);
+    GridFTPRequestState req(&handler);
 
-    req.start();
-    globus_result_t res = globus_ftp_client_mkdir(req.sess->get_ftp_handle(),
-            path, req.sess->get_op_attr_ftp(), globus_basic_client_callback,
+    globus_result_t res = globus_ftp_client_mkdir(req.handler->get_ftp_client_handle(),
+            path, req.handler->get_ftp_client_operationattr(), globus_ftp_client_done_callback,
             &req);
     gfal_globus_check_result("GridFTPModule::mkdir", res);
     // wait for answer
-    req.wait_callback(GFAL_GRIDFTP_SCOPE_MKDIR);
+    req.wait(GFAL_GRIDFTP_SCOPE_MKDIR);
 
     gfal_log(GFAL_VERBOSE_TRACE, " <- [GridFTPModule::mkdir] ");
 

@@ -12,8 +12,8 @@
 /**
  *
  * Description: This test creates a directory then tries to unlink it.
- * It is the failure of the unlink operation which is checked. 
- * Unlink on directoies should fail.
+ * It is the failure of the unlink operation which is checked.
+ * Unlink on directories should fail.
  * The test will also fail if the cleanup (rmdir) of the directory fails.
 */
 
@@ -53,5 +53,5 @@ int main(int argc, char **argv)
 	gfal_posix_check_error();
 	exit (1);
    }
-   return ret;	
+   return ret;
 }

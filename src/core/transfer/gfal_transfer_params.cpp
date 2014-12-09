@@ -3,9 +3,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,7 +21,7 @@
 
 // external C bindings
 extern "C" {
-	
+
 void gfalt_params_handle_init(gfalt_params_t p, GError ** err){
 	p->callback = NULL;
 	p->lock = false;
@@ -48,7 +48,7 @@ gfalt_params_t gfalt_params_handle_copy(gfalt_params_t params, GError ** err){
 }
 
 gfalt_params_t gfalt_params_handle_new(GError ** err){
-	
+
     gfalt_params_t p = g_new0(struct _gfalt_params_t,1);
 	gfalt_params_handle_init(p, err);
 	return p;
@@ -76,15 +76,15 @@ gint gfalt_set_timeout(gfalt_params_t params, guint64 timeout, GError** err){
 
 
 guint64 gfalt_get_timeout(gfalt_params_t params, GError** err){
-	g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");		
-	return params->timeout;	
-}	
+	g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+	return params->timeout;
+}
 
 
 gint gfalt_set_nbstreams(gfalt_params_t params, guint nbstreams, GError** err){
 	g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid parameter handle");
 	params->nb_data_streams = nbstreams;
-	return 0;	
+	return 0;
 }
 
 //
@@ -111,26 +111,26 @@ gboolean gfalt_get_local_transfer_perm(gfalt_params_t params, GError ** err){
 }
 
 gint gfalt_set_replace_existing_file(gfalt_params_t params, gboolean replace, GError** err){
-	g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");	
+	g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
 	params->replace_existing	= replace;
 	return 0;
 }
 
 gboolean gfalt_get_replace_existing_file(gfalt_params_t params,  GError** err){
-	g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");		
-	return params->replace_existing;	
+	g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+	return params->replace_existing;
 }
 
 gint gfalt_set_offset_from_source(gfalt_params_t params, off_t offset, GError** err){
-	g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");	
+	g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
 	params->start_offset	= offset;
 	return 0;
 }
 
 gint gfalt_set_user_data(gfalt_params_t params, gpointer user_data, GError** err){
-	g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");	
+	g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
 	params->user_data	= user_data;
-	return 0;	
+	return 0;
 }
 
 gpointer gfalt_get_user_data(gfalt_params_t params, GError** err){
@@ -193,7 +193,7 @@ gint gfalt_set_src_spacetoken(gfalt_params_t params, const char* srm_spacetoken,
 }
 
 
-gchar* gfalt_get_src_spacetoken(gfalt_params_t params, GError** err){
+const gchar* gfalt_get_src_spacetoken(gfalt_params_t params, GError** err){
     return params->src_space_token;
 }
 
@@ -206,7 +206,7 @@ gint gfalt_set_dst_spacetoken(gfalt_params_t params, const char* srm_spacetoken,
 }
 
 
-gchar* gfalt_get_dst_spacetoken(gfalt_params_t params, GError** err){
+const gchar* gfalt_get_dst_spacetoken(gfalt_params_t params, GError** err){
     return params->dst_space_token;
 }
 
@@ -224,7 +224,7 @@ gboolean gfalt_get_checksum_check(gfalt_params_t params, GError** err){
 //
 gint gfalt_set_create_parent_dir(gfalt_params_t params, gboolean value, GError** err){
     params->parent_dir_create=value;
-    return 0;	
+    return 0;
 }
 
 //

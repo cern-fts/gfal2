@@ -1,17 +1,17 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
@@ -32,10 +32,10 @@
 
 
 //
-// 
+//
 //
 int gfal_access (const char *path, int amode){
-	return gfal_posix_internal_access(path, amode);	
+	return gfal_posix_internal_access(path, amode);
 }
 
 //
@@ -67,13 +67,13 @@ int gfal_lstat(const char* path, struct stat* buff){
 
 int gfal_mkdirp( const char* path, mode_t mode){
 	return  gfal_posix_internal_mkdir( path, mode);
-	
+
 }
 
 
 int gfal_mkdir( const char* path, mode_t mode){
 	return  gfal_mkdirp( path, mode);
-	
+
 }
 
 
@@ -88,7 +88,7 @@ DIR* gfal_opendir(const char* name){
 
 
 struct dirent* gfal_readdir(DIR* d){
-	return gfal_posix_internal_readdir(d);	
+	return gfal_posix_internal_readdir(d);
 }
 
 
@@ -189,7 +189,7 @@ void gfal_posix_release_error(){
 
 void gfal_posix_clear_error(){
 	g_clear_error( gfal_posix_get_last_error());
-	errno =0;	
+	errno =0;
 }
 
 int gfal_posix_code_error(){
@@ -201,7 +201,7 @@ int gfal_posix_code_error(){
 int gfal_posix_check_error(){
 	GError* err=NULL;
 	if((err = *gfal_posix_get_last_error()) != NULL) {
-		g_printerr("[gfal]%s\n", err->message);
+		g_printerr("[gfal] %s\n", err->message);
 		return 1;
 	}
 	return 0;
@@ -218,7 +218,7 @@ char* gfal_posix_strerror_r(char* buff_err, size_t s_err){
     }
     return buff_err;
  }
- 
+
 ssize_t gfal_pread(int fd, void * buffer, size_t count, off_t offset){
 	return gfal_posix_internal_pread(fd, buffer, count, offset);
 }
@@ -232,4 +232,4 @@ ssize_t gfal_pwrite(int fd, const void * buffer, size_t count, off_t offset){
 gfal2_context_t gfal_posix_get_context(){
     return gfal_posix_instance();
 }
- 
+

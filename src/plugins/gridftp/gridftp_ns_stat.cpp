@@ -337,22 +337,19 @@ void GridFTPModule::internal_globus_gass_stat(const char* path,
 
     gfal_log(GFAL_VERBOSE_TRACE,
             " -> [Gridftp_stat_module::globus_gass_stat] ");
-    GridFTPSession sess(
-            _handle_factory->gfal_globus_ftp_take_handle(
-                    gridftp_hostname_from_url(path)));
 
-    Gass_attr_handler gass_attr_src(sess.get_op_attr_ftp());
+    GridFTPSessionHandler handler(_handle_factory, path);
 
     globus_byte_t *buffer = NULL;
     globus_size_t buflen = 0;
-    GridFTPRequestState req(&sess, false);
+    GridFTPRequestState req(&handler);
 
-    globus_result_t res = globus_ftp_client_mlst(sess.get_ftp_handle(), path,
-            sess.get_op_attr_ftp(), &buffer, &buflen,
-            globus_basic_client_callback, &req);
+    globus_result_t res = globus_ftp_client_mlst(handler.get_ftp_client_handle(), path,
+            handler.get_ftp_client_operationattr(), &buffer, &buflen,
+            globus_ftp_client_done_callback, &req);
 
     gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_STAT, res);
-    req.wait_callback(GFAL_GRIDFTP_SCOPE_STAT);
+    req.wait(GFAL_GRIDFTP_SCOPE_STAT);
 
     gfal_log(GFAL_VERBOSE_TRACE,
             "   <- [Gridftp_stat_module::internal_globus_gass_stat] Got '%s'",

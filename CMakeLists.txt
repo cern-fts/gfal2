@@ -51,8 +51,8 @@ set(PROJECT_NAME_TRANSFER "gfal_transfer")
 set(OUTPUT_NAME_TRANSFER "gfal_transfer")
 
 set(VERSION_MAJOR  2)
-set(VERSION_MINOR  7)
-set(VERSION_PATCH  8)
+set(VERSION_MINOR  8)
+set(VERSION_PATCH  0)
 set(VERSION_STRING ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 
@@ -85,7 +85,7 @@ IF(NOT ONLY_TESTS)
     add_definitions( -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_GNU_SOURCE)
 
     #install doc license
-    install(FILES "LICENSE" "README" "RELEASE-NOTES" "DESCRIPTION"
+    install(FILES "LICENSE" "README" "RELEASE-NOTES" "DESCRIPTION" "readme.html"
 			DESTINATION ${DOC_INSTALL_DIR})
 			
     # install global configuration files

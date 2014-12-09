@@ -95,6 +95,7 @@ int gfal_srm_accessG(plugin_handle ch, const char* surl, int mode, GError** err)
     if (context != NULL) {
         ret = gfal_access_srmv2_internal(context, surl, mode, &tmp_err);
     }
+    gfal_srm_ifce_easy_context_release(opts, context);
 
     if (ret != 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);

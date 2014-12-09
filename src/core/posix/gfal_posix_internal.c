@@ -41,18 +41,23 @@
 
 
 
-pthread_mutex_t m_instance =PTHREAD_MUTEX_INITIALIZER;
-static gfal2_context_t handle=NULL;
+pthread_mutex_t m_instance = PTHREAD_MUTEX_INITIALIZER;
+static gfal2_context_t handle = NULL;
 
-static __thread GError* last_error=NULL;
+static __thread GError* last_error = NULL;
+
+static void gfal_posix_free_handle(void) {
+    gfal_handle_freeG(handle);
+}
 
 inline gfal2_context_t gfal_posix_instance(){
 	if(handle == NULL){
-		pthread_mutex_lock(&m_instance);
-		if(handle == NULL){
-			handle= gfal_initG(&last_error);
-		}
-		pthread_mutex_unlock(&m_instance);
+        pthread_mutex_lock(&m_instance);
+        if (handle == NULL) {
+            handle = gfal_initG(&last_error);
+        }
+        atexit(gfal_posix_free_handle);
+        pthread_mutex_unlock(&m_instance);
 	}
 	return handle;
 }

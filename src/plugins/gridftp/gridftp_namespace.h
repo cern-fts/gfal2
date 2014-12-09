@@ -40,8 +40,7 @@ int gfal_gridftp_mkdirG(plugin_handle handle, const char* path, mode_t mode,
 
 int gfal_gridftp_rmdirG(plugin_handle handle, const char* url, GError** err);
 
-void gridftp_unlink_internal(gfal2_context_t context, GridFTPSession* sess,
-        const char * path, bool own_session = true);
+void gridftp_unlink_internal(gfal2_context_t context, GridFTPSessionHandler* sess, const char * path);
 
 int gfal_gridftp_unlinkG(plugin_handle handle, const char* url, GError** err);
 

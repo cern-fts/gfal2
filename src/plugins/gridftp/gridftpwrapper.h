@@ -16,6 +16,7 @@
  */
 
 #include <gfal_api.h>
+#include <exceptions/gfalcoreexception.hpp>
 #include <time_utils.h>
 
 #include <ctime>
@@ -28,255 +29,61 @@
 #include <globus_ftp_client.h>
 #include <globus_gass_copy.h>
 
-#define GRIDFTP_CONFIG_GROUP "GRIDFTP PLUGIN"
 
-extern const char* gridftp_ipv6_config;
-
-enum GridFTPRequestStatus{
-	GRIDFTP_REQUEST_NOT_LAUNCHED,
-	GRIDFTP_REQUEST_RUNNING,
-	GRIDFTP_REQUEST_FINISHED,
-};
-
-enum GridFTPRequestType{
-    GRIDFTP_REQUEST_GASS,
-    GRIDFTP_REQUEST_FTP
-};
-
+// Forward declarations
 class GridFTPFactory;
-class GridFTPSession;
+class GridFTPSessionHandler;
+class GridFTPSessionHandler;
+class GridFTPRequestState;
+class GridFTPStreamState;
 
 
-struct GridFTPRequestState {
- protected:
-   Glib::Mutex internal_lock;
+enum GridFTPRequestStatus {
+    GRIDFTP_REQUEST_NOT_LAUNCHED,
+    GRIDFTP_REQUEST_RUNNING,
+    GRIDFTP_REQUEST_FINISHED,
+};
 
-   int         errcode;
-   std::string error;
+enum GridFTPRequestType {
+    GRIDFTP_REQUEST_GASS, GRIDFTP_REQUEST_FTP
+};
 
-   GridFTPRequestStatus req_status;
 
-   inline void init_timeout(struct timespec * time_offset)
-    {
-        if (time_offset && timespec_isset(time_offset)) {
-            end_time.assign_current_time();
-            end_time.add_seconds(time_offset->tv_sec);
-            end_time.add_microseconds(time_offset->tv_nsec / 1000);
-        }
-        else {
-            end_time = Glib::TimeVal(0, 0);
-        }
-    }
 
-    inline void set_end_time(struct timespec * my_end_time)
-    {
-        if (my_end_time && timespec_isset(my_end_time)) {
-            end_time = Glib::TimeVal(my_end_time->tv_sec,
-                    my_end_time->tv_nsec / 1000);
-        }
-        else {
-            end_time = Glib::TimeVal(0, 0);
-        }
-    }
-
-   void poll_callback(const Glib::Quark & scope);
-
+class GridFTPRequestState {
  public:
-    GridFTPRequestState(GridFTPSession * s, bool own_session=true,  GridFTPRequestType request_type = GRIDFTP_REQUEST_FTP);
+    GridFTPRequestState(GridFTPSessionHandler * s, GridFTPRequestType request_type = GRIDFTP_REQUEST_FTP);
 	virtual ~GridFTPRequestState();
 
-    // cancel token
-    gfal_cancel_token_t cancel_token;
-    // ftp session
-	std::auto_ptr<GridFTPSession> sess;
-    // request type
-    GridFTPRequestType request_type;
-    // params
-    Glib::TimeVal end_time; // timeout trigger -> 0 if not enabled, usage of CLOCK_MONOTONIC is required.
-    // enable/disable destroy when out of scope
-    bool own_session;
-    // bool canceling
-    bool canceling;
-    // mutex for state checking
-    Glib::RWLock mux_req_state;
-    Glib::Mutex mux_callback_lock;
-    Glib::Cond signal_callback_main;
+	void wait(const Glib::Quark &scope, time_t timeout = -1);
+	void cancel(const Glib::Quark &scope, const std::string& msg);
 
-    inline void start()
-    {
-        this->req_status = GRIDFTP_REQUEST_RUNNING;
-    }
+	GridFTPSessionHandler* handler;
+	GridFTPRequestType request_type;
 
-    inline int get_error_code(void)
-    {
-        Glib::Mutex::Lock locker(internal_lock);
-        return errcode;
-    }
+    globus_mutex_t lock;
+    globus_cond_t cond;
+    Gfal::CoreException* error;
+    bool done;
 
-    inline void set_error_code(int code)
-    {
-        Glib::Mutex::Lock locker(internal_lock);
-        errcode = code;
-    }
-
-    inline std::string get_error(void)
-    {
-        Glib::Mutex::Lock locker(internal_lock);
-        return error;
-    }
-
-    inline void set_error(const std::string & errstr)
-    {
-        Glib::Mutex::Lock locker(internal_lock);
-        error = errstr;
-    }
-
-    inline GridFTPRequestStatus get_req_status(void)
-    {
-        Glib::Mutex::Lock locker(internal_lock);
-        return req_status;
-    }
-
-    inline void set_req_status(const GridFTPRequestStatus & st)
-    {
-        Glib::Mutex::Lock locker(internal_lock);
-        req_status = st;
-    }
-
-    void wait_callback(const Glib::Quark & scope, time_t timeout = 300);
-
-    void err_report(const Glib::Quark &scope);
-
-    void cancel_operation(const Glib::Quark &scope,
-            const std::string & msg = "");
-
-    int cancel_operation_async(const Glib::Quark &scope,
-            const std::string & msg = "");
+    time_t default_timeout;
 };
 
-struct GridFTPStreamState : public GridFTPRequestState {
- protected:
-    off_t offset; // file offset in the stream
-    off_t buffer_size; // buffer size
-	bool eof;     // end of file reached
-	bool expect_eof; // true for partial reads, false for streamed reads
-    GridFTPRequestStatus stream_status;
-    Glib::Mutex mux_stream_callback;
-    Glib::Cond  cond_stream_callback;
-
- public:
-
-   // ownership lock
-   Glib::Mutex lock;
-
-	GridFTPStreamState(GridFTPSession * s, bool own_session=true) : GridFTPRequestState(s, own_session) {
-		offset = 0;
-		buffer_size = 0;
-		eof = false;
-		expect_eof = false;
-        stream_status = GRIDFTP_REQUEST_NOT_LAUNCHED;
-	}
-
-    virtual ~GridFTPStreamState();
-
-	bool finished()
-    {
-        Glib::Mutex::Lock locker(internal_lock);
-        return (stream_status == GRIDFTP_REQUEST_FINISHED);
-    }
-
-    inline bool is_eof(void)
-    {
-        Glib::Mutex::Lock locker(internal_lock);
-        return eof;
-    }
-
-    inline void set_eof(bool end)
-    {
-        Glib::Mutex::Lock locker(internal_lock);
-        eof = end;
-    }
-
-    inline off_t get_offset(void)
-    {
-        Glib::Mutex::Lock locker(internal_lock);
-        return offset;
-    }
-
-    void set_offset(off_t off)
-    {
-        Glib::Mutex::Lock locker(internal_lock);
-        offset = off;
-    }
-
-    void increase_offset(off_t diff)
-    {
-        Glib::Mutex::Lock locker(internal_lock);
-        offset += diff;
-    }
-
-    void set_buffer_size(off_t size)
-    {
-        buffer_size = size;
-    }
-
-    off_t get_buffer_size()
-    {
-        return buffer_size;
-    }
-
-    void set_expect_eof(bool expect)
-    {
-        expect_eof = expect;
-    }
-
-    bool get_expect_eof()
-    {
-        return expect_eof;
-    }
-
-    GridFTPRequestStatus get_stream_status(void)
-    {
-        Glib::Mutex::Lock locker(internal_lock);
-        return stream_status;
-    }
-
-    void set_stream_status(const GridFTPRequestStatus & st)
-    {
-        Glib::Mutex::Lock locker(internal_lock);
-        stream_status = st;
-    }
-
-    void poll_callback_stream(const Glib::Quark & scope);
-    void wait_callback_stream(const Glib::Quark & scope);
-
-    friend void gfal_griftp_stream_read_callback(void *user_arg,
-            globus_ftp_client_handle_t *handle, globus_object_t *error,
-            globus_byte_t *buffer, globus_size_t length, globus_off_t offset,
-            globus_bool_t eof);
-    friend void gfal_griftp_stream_write_callback(void *user_arg,
-            globus_ftp_client_handle_t *handle, globus_object_t *error,
-            globus_byte_t *buffer, globus_size_t length, globus_off_t offset,
-            globus_bool_t eof);
-};
-
-
-class GridFTPOperationCanceler {
+class GridFTPStreamState: public GridFTPRequestState {
 public:
-    GridFTPOperationCanceler(gfal2_context_t context,
-            GridFTPRequestState* state);
-    ~GridFTPOperationCanceler();
+    off_t offset;    // file offset in the stream
+    globus_size_t buffer_size;
+	bool eof;        // end of file reached
+	bool expect_eof; // true for partial reads, false for streamed reads
 
-private:
-    GridFTPRequestState* _state;
-    gfal_cancel_token_t _cancel_token;
-    gfal2_context_t _context;
+	GridFTPStreamState(GridFTPSessionHandler * s);
+    virtual ~GridFTPStreamState();
 };
 
 
-struct Gass_attr_handler {
-    Gass_attr_handler(globus_ftp_client_operationattr_t* ftp_operation_attr);
-    ~Gass_attr_handler();
+struct GassCopyAttrHandler {
+    GassCopyAttrHandler(globus_ftp_client_operationattr_t* ftp_operation_attr);
+    ~GassCopyAttrHandler();
     globus_gass_copy_attr_t attr_gass;
     globus_ftp_client_operationattr_t operation_attr_ftp_for_gass;
 };
@@ -284,113 +91,96 @@ struct Gass_attr_handler {
 
 class GridFTPSession {
 public:
-    GridFTPSession(GridFTPFactory* f, const std::string & thostname);
-
-    GridFTPSession(GridFTPSession *src);
+    GridFTPSession(const std::string& hostname);
     ~GridFTPSession();
 
-    globus_ftp_client_handle_t* get_ftp_handle();
-    globus_gass_copy_handle_t* get_gass_handle();
-    globus_ftp_client_operationattr_t* get_op_attr_ftp();
-    globus_gass_copy_handleattr_t* get_gass_handle_attr();
-    globus_ftp_client_handleattr_t* get_ftp_handle_attr();
+    std::string hostname;
 
-    void set_nb_stream(const unsigned int nbstream);
-    void set_tcp_buffer_size(const guint64 tcp_buffer_size);
-    void enable_udt();
-    void disable_udt();
+    globus_ftp_client_handle_t handle_ftp;
+    globus_ftp_client_plugin_t debug_ftp_plugin;
+    globus_ftp_client_handleattr_t attr_handle;
+    globus_ftp_client_operationattr_t operation_attr_ftp;
+    globus_gass_copy_handle_t gass_handle;
+    globus_gass_copy_handleattr_t gass_handle_attr;
+    globus_ftp_control_dcau_t dcau_control;
+
+    // options
+    globus_ftp_control_parallelism_t parallelism;
+    globus_ftp_control_mode_t mode;
+    globus_ftp_control_tcpbuffer_t tcp_buffer_size;
+
+    // Handy option setters
+    void set_gridftpv2(bool v2);
+    void set_ipv6(bool ipv6);
+    void set_udt(bool udt);
+    void set_dcau(bool dcau);
+    void set_delayed_pass(bool enable);
+    void set_nb_streams(unsigned int nbstreams);
+    void set_tcp_buffer_size(guint64 tcp_buffer_size);
+};
+
+
+class GridFTPSessionHandler {
+public:
+    GridFTPSessionHandler(GridFTPFactory* f, const std::string &uri);
+    ~GridFTPSessionHandler();
+
+    globus_ftp_client_handle_t* get_ftp_client_handle();
+    globus_gass_copy_handle_t* get_gass_copy_handle();
+    globus_ftp_client_operationattr_t* get_ftp_client_operationattr();
+    globus_gass_copy_handleattr_t* get_gass_copy_handleattr();
+    globus_ftp_client_handleattr_t* get_ftp_client_handleattr();
+
+    GridFTPFactory* get_factory();
 
     void disable_reuse();
 
+    GridFTPSession* session;
+
 private:
-    void init();
-
-    void configure_gridftp_handle_attr();
-    void configure_default_stream_attributes();
-    void apply_default_stream_attribute();
-    void apply_default_tcp_buffer_attributes();
-    void set_gridftpv2(bool v2);
-    void set_ipv6(bool enable);
-    void set_delayed_pass(bool enable);
-    void set_dcau(const globus_ftp_control_dcau_t & _dcau);
-
-    void clean();
-    void purge();
-
     bool _isDirty;
-    // handle ftp
 
-    struct Session_handler {
-        globus_ftp_client_handle_t handle_ftp;
-        globus_ftp_client_plugin_t debug_ftp_plugin;
-        globus_ftp_client_handleattr_t attr_handle;
-        globus_ftp_client_operationattr_t operation_attr_ftp;
-        globus_gass_copy_handle_t gass_handle;
-        globus_gass_copy_handleattr_t gass_handle_attr;
-        globus_ftp_control_dcau_t dcau;
-
-        // options
-        globus_ftp_control_parallelism_t parallelism;
-        globus_ftp_control_mode_t mode;
-        globus_ftp_control_tcpbuffer_t tcp_buffer_size;
-    };
-
-    // internal fields
     GridFTPFactory* factory;
     std::string hostname;
-
-    // sess
-    Session_handler* _sess;
-
-    friend class GridFTPFactory;
 };
 
 
 class GridFTPFactory {
 public:
     GridFTPFactory(gfal2_context_t handle);
-    virtual ~GridFTPFactory();
+    ~GridFTPFactory();
 
-    /**
-     * provide session handle for most of the operations
-     *
-     * */
-    virtual GridFTPSession* gfal_globus_ftp_take_handle(
-            const std::string & hostname);
-    /**
-     * destruct an existing session handle, close the connection and desallocate memory
-     *
-     * */
-    virtual void gfal_globus_ftp_release_handle(GridFTPSession* h);
+    /** Get a suitable session, new or reused
+     **/
+    GridFTPSession* get_session(const std::string &hostname);
 
-    virtual gfal2_context_t get_handle();
+    /** Release the session, and close it if should not be reused
+     * If destroy is true, the session will NOT be reused even if session reuse is configured
+     **/
+    void release_session(GridFTPSession* h, bool destroy = false);
+
+    gfal2_context_t get_gfal2_context();
 
 private:
-    gfal2_context_t _handle;
+    gfal2_context_t gfal2_context;
     // session re-use management
     bool session_reuse;
     unsigned int size_cache;
     // session cache
-    std::multimap<std::string, GridFTPSession*> sess_cache;
+    std::multimap<std::string, GridFTPSession*> session_cache;
     Glib::Mutex mux_cache;
+
     void recycle_session(GridFTPSession* sess);
     void clear_cache();
-    GridFTPSession* get_recycled_handle(const std::string & hostname);
-    GridFTPSession* get_new_handle(const std::string & hostname);
-
-    void gfal_globus_ftp_release_handle_internal(GridFTPSession* sess);
-
-    void configure_gridftp_handle_attr(globus_ftp_client_handleattr_t * attrs);
-
-    friend class GridFTPSession;
+    GridFTPSession* get_recycled_handle(const std::string &hostname);
+    GridFTPSession* get_new_handle(const std::string &hostname);
 };
 
 
-void globus_basic_client_callback(void * user_arg,
+void globus_ftp_client_done_callback(void * user_arg,
         globus_ftp_client_handle_t * handle, globus_object_t * error);
 
-
-void globus_gass_basic_client_callback(
+void globus_gass_client_done_callback(
         void * callback_arg,
         globus_gass_copy_handle_t * handle,
         globus_object_t * error);
@@ -412,14 +202,6 @@ int gfal_globus_error_convert(globus_object_t * error, char ** str_error);
 
 // throw Glib::Error if error associated with this result
 void gfal_globus_check_result(const Glib::Quark & scope, globus_result_t res);
-
-// throw Glib::Error if error is present
-void gfal_globus_check_error(const Glib::Quark & scope,
-        globus_object_t * error);
-
-std::string gridftp_hostname_from_url(const char * url);
-
-void gfal_globus_store_error(GridFTPRequestState * state, globus_object_t *error);
 
 void gfal_globus_set_credentials(gfal2_context_t, globus_ftp_client_operationattr_t*);
 

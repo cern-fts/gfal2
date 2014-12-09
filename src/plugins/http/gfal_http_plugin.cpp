@@ -18,6 +18,21 @@ static const char* gfal_http_get_name(void)
     return http_module_name;
 }
 
+static int get_corresponding_davix_log_level()
+{
+    int davix_log_level = DAVIX_LOG_CRITICAL;
+    int gfal2_log_level = gfal_get_verbose();
+
+    if (gfal2_log_level & GFAL_VERBOSE_TRACE_PLUGIN)
+        davix_log_level = DAVIX_LOG_TRACE;
+    else if ((gfal2_log_level & GFAL_VERBOSE_DEBUG) || (gfal2_log_level & GFAL_VERBOSE_TRACE))
+        davix_log_level = DAVIX_LOG_DEBUG;
+    else if (gfal2_log_level & GFAL_VERBOSE_VERBOSE)
+        davix_log_level = DAVIX_LOG_VERBOSE;
+
+    return davix_log_level;
+}
+
 
 /// Authn implementation
 static void gfal_http_get_ucert(RequestParams & params, gfal2_context_t handle)
@@ -97,6 +112,19 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davi
     }
     gfal_http_get_ucert(*req_params, handle);
     gfal_http_get_aws(*req_params, handle, uri);
+
+    if (uri.getProtocol().compare(0, 4, "http") == 0 || uri.getProtocol().compare(0, 3, "dav") == 0) {
+        req_params->setProtocol(Davix::RequestProtocol::Webdav);
+    }
+    else if (uri.getProtocol().compare(0, 2, "s3") == 0) {
+        req_params->setProtocol(Davix::RequestProtocol::AwsS3);
+    }
+    else {
+        req_params->setProtocol(Davix::RequestProtocol::Auto);
+    }
+
+    // Reset here the verbosity level
+    davix_set_log_level(get_corresponding_davix_log_level());
 }
 
 
@@ -110,12 +138,8 @@ static void log_davix2gfal(void* userdata, int msg_level, const char* msg)
         case DAVIX_LOG_DEBUG:
             gfal_level = GFAL_VERBOSE_DEBUG;
             break;
-        case DAVIX_LOG_VERBOSE:
-        case DAVIX_LOG_WARNING:
-            gfal_level = GFAL_VERBOSE_VERBOSE;
-            break;
         default:
-            gfal_level = GFAL_VERBOSE_NORMAL;
+            gfal_level = GFAL_VERBOSE_VERBOSE;
     }
     gfal_log(gfal_level, "Davix: %s", msg);
 }
@@ -125,10 +149,12 @@ GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
     context(), posix(&context), reference_params(), handle(handle)
 {
     davix_set_log_handler(log_davix2gfal, NULL);
-    int dav_level = DAVIX_LOG_CRITICAL | DAVIX_LOG_WARNING | DAVIX_LOG_VERBOSE | DAVIX_LOG_DEBUG;
-    if (gfal_get_verbose() & GFAL_VERBOSE_TRACE_PLUGIN)
-        dav_level |= DAVIX_LOG_TRACE;
-    davix_set_log_level(dav_level);
+    int davix_level = get_corresponding_davix_log_level();
+
+    int davix_config_level = gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", "LOG_LEVEL", 0);
+    if (davix_config_level)
+        davix_level = davix_config_level;
+    davix_set_log_level(davix_level);
 
     reference_params.setTransparentRedirectionSupport(true);
     reference_params.setUserAgent("gfal2::http");

@@ -67,18 +67,21 @@ static void _parse_opendir_parameters(char* parameters, gfal_srm_opendir_handle 
                     *value = '\0';
                     ++value;
                     if (strcasecmp("offset", key) == 0) {
-                        h->slice_offset = atoi(value);
+                        h->chunk_offset = atoi(value);
                     }
                     else if (strcasecmp("count", key) == 0) {
-                        h->max_count = atoi(value);
+                        h->chunk_size = atoi(value);
                     }
                 }
             } while ((pair = strtok_r(NULL, ";", &saveptr)));
         }
     }
     else {
-        h->slice_offset = 0;
-        h->max_count = 0;
+        h->chunk_offset = 0;
+        h->chunk_size = 0;
+    }
+    if (h->chunk_offset || h->chunk_size) {
+        h->is_chunked_listing = 1;
     }
 }
 
@@ -100,8 +103,7 @@ static gfal_file_handle gfal_srm_opendir_internal(srm_context_t context,
 
     if (exist == 0) {
         if (S_ISDIR(st.st_mode)) {
-            gfal_srm_opendir_handle h =
-                    g_new0(struct _gfal_srm_opendir_handle, 1);
+            gfal_srm_opendir_handle h = g_new0(struct _gfal_srm_opendir_handle, 1);
 
             char *p = stpncpy(h->surl, real_surl, GFAL_URL_MAX_LEN);
             // remove trailing '/'
@@ -109,7 +111,6 @@ static gfal_file_handle gfal_srm_opendir_internal(srm_context_t context,
                 *p = '\0';
             }
 
-            h->context = context;
             _parse_opendir_parameters(parameters, h);
             resu = gfal_file_handle_new2(gfal_srm_getName(), (gpointer) h, NULL,
                                          real_surl);
@@ -140,6 +141,7 @@ gfal_file_handle gfal_srm_opendirG(plugin_handle ch, const char* surl, GError **
 	if (context) {
 	    resu = gfal_srm_opendir_internal(context, surl, &tmp_err);
 	}
+	gfal_srm_ifce_easy_context_release(opts, context);
 
     if(tmp_err)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
@@ -151,7 +153,7 @@ int gfal_srm_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err)
 {
 	g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_srm_opendirG] Invalid args");
 	gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;
-	//gfal_srm_external_call.srm_srmv2_mdfilestatus_delete(oh->srm_ls_resu, 1); --> disable because of error in memory management in srm-ifce
+	gfal_srm_external_call.srm_srmv2_mdfilestatus_delete(oh->srm_file_statuses, 1);
 	g_free(oh);
     gfal_file_handle_delete(fh);
 	return 0;

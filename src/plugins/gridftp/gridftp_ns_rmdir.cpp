@@ -29,17 +29,16 @@ void GridFTPModule::rmdir(const char* path)
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::rmdir] ");
 
     try {
-        GridFTPRequestState req(
-                _handle_factory->gfal_globus_ftp_take_handle(
-                        gridftp_hostname_from_url(path))); // get connection session
+        GridFTPSessionHandler handler(_handle_factory, path);
+        GridFTPRequestState req(&handler);
 
-        req.start();
         globus_result_t res = globus_ftp_client_rmdir(
-                req.sess->get_ftp_handle(), path, req.sess->get_op_attr_ftp(),
-                globus_basic_client_callback, &req);
+                req.handler->get_ftp_client_handle(), path,
+                req.handler->get_ftp_client_operationattr(),
+                globus_ftp_client_done_callback, &req);
         gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_RMDIR, res);
         // wait for answer
-        req.wait_callback(GFAL_GRIDFTP_SCOPE_RMDIR);
+        req.wait(GFAL_GRIDFTP_SCOPE_RMDIR);
     }
     catch (Glib::Error & e) {
         if (e.code() == EEXIST) // false ENOTEMPTY errno, do conversion

@@ -93,6 +93,11 @@ static int unlink_if_exists(gfal2_context_t context, gfalt_params_t params,
         }
         g_error_free(nested_error);
     }
+    else {
+        plugin_trigger_event(params, local_copy_domain,
+                GFAL_EVENT_DESTINATION, GFAL_EVENT_OVERWRITE_DESTINATION,
+                "Deleted %s", surl);
+    }
 
     return 0;
 }
@@ -131,6 +136,10 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
         const char* src, const char* dst, GError** error)
 {
     GError *nested_error = NULL;
+
+    plugin_trigger_event(params, local_copy_domain,
+            GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
+            "%s => %s", src, dst);
 
     gfal_log(GFAL_VERBOSE_TRACE, " open src file : %s ", src);
     gfal_file_handle f_src = gfal_plugin_openG(context, src, O_RDONLY, 0, &nested_error);
@@ -189,6 +198,10 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
         return -1;
     }
     else {
+
+        plugin_trigger_event(params, local_copy_domain,
+                    GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
+                    "%s => %s", src, dst);
         return 0;
     }
 }
@@ -207,7 +220,7 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
     gboolean is_checksum_enabled = !is_strict_mode && gfalt_get_checksum_check(params, NULL);
 
     // Source checksum
-    if (is_checksum_enabled) {
+    if (is_checksum_enabled && !is_strict_mode) {
         plugin_trigger_event(params, local_copy_domain, GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER, "");
         gfalt_get_user_defined_checksum(params,
                                         checksum_type, sizeof(checksum_type),
@@ -231,19 +244,21 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
         plugin_trigger_event(params, local_copy_domain, GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT, "");
     }
 
-    // Parent directory
-    create_parent(context, params, dst, &nested_error);
-    if (nested_error != NULL) {
-        gfal2_propagate_prefixed_error(error, nested_error, __func__);
-        return -1;
-    }
-
-    // Remove if exists and overwrite is set
     if (!is_strict_mode) {
-        unlink_if_exists(context, params, dst, &nested_error);
+        // Parent directory
+        create_parent(context, params, dst, &nested_error);
         if (nested_error != NULL) {
             gfal2_propagate_prefixed_error(error, nested_error, __func__);
             return -1;
+        }
+
+        // Remove if exists and overwrite is set
+        if (!is_strict_mode) {
+            unlink_if_exists(context, params, dst, &nested_error);
+            if (nested_error != NULL) {
+                gfal2_propagate_prefixed_error(error, nested_error, __func__);
+                return -1;
+            }
         }
     }
 
@@ -255,7 +270,7 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
     }
 
     // Destination checksum
-    if (is_checksum_enabled) {
+    if (is_checksum_enabled && !is_strict_mode) {
         char destination_checksum[1024];
 
         plugin_trigger_event(params, local_copy_domain, GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER, "");

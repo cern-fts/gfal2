@@ -28,17 +28,15 @@ void GridFTPModule::chmod(const char* path, mode_t mode)
                 "Invalid arguments path or mode ");
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::chmod] ");
 
-    GridFTPRequestState req(
-            _handle_factory->gfal_globus_ftp_take_handle(
-                    gridftp_hostname_from_url(path))); // get connection session
+    GridFTPSessionHandler handler(_handle_factory, path);
+    GridFTPRequestState req(&handler);
 
-    req.start();
-    globus_result_t res = globus_ftp_client_chmod(req.sess->get_ftp_handle(),
-            path, mode, req.sess->get_op_attr_ftp(),
-            globus_basic_client_callback, &req);
+    globus_result_t res = globus_ftp_client_chmod(req.handler->get_ftp_client_handle(),
+            path, mode, req.handler->get_ftp_client_operationattr(),
+            globus_ftp_client_done_callback, &req);
     gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_CHMOD, res);
     // wait for answer
-    req.wait_callback(GFAL_GRIDFTP_SCOPE_CHMOD);
+    req.wait(GFAL_GRIDFTP_SCOPE_CHMOD);
 
     gfal_log(GFAL_VERBOSE_TRACE, " <- [GridFTPModule::chmod] ");
 

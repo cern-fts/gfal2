@@ -41,8 +41,8 @@ extern "C"
 /**
  * a gfal context is a separated instance of the gfal library
  * Each context owns his parameters, file descriptors
- * Context allows to have separated instance of GFAL with differents parameters
- *  providing an advanced interface to  GFAL
+ * Context allows to have separated instance of GFAL with different parameters
+ * providing an advanced interface to  GFAL
  */
 typedef struct gfal_handle_* gfal2_context_t;
 // backward compatibility
@@ -50,7 +50,6 @@ typedef GFAL2_DEPRECATED(gfal2_context_t) gfal2_context_t gfal_context_t;
 
 ///
 ///   @brief create a gfal2 context
-///
 ///
 ///   Each context contain its own set of parameters and configurations ( \ref config_group )
 ///
@@ -62,11 +61,16 @@ typedef GFAL2_DEPRECATED(gfal2_context_t) gfal2_context_t gfal_context_t;
 gfal2_context_t gfal2_context_new(GError ** err);
 
 ///
-///  free a gfal2 context
+///  Free a gfal2 context
 ///  It is safe to delete a NULL context
 ///  Thread-safe
 ///
 void gfal2_context_free(gfal2_context_t context);
+
+///
+/// Get list of loaded plugins
+/// The returned list must be freed using g_strfreev
+gchar** gfal2_get_plugin_names(gfal2_context_t context);
 
 
 ///   @deprecated

@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <mds/gfal_mds.h>
+#include <uri/gfal_uri.h>
 
 #include "gfal_srm_endpoint.h"
 
@@ -116,8 +117,12 @@ static enum gfal_srm_proto gfal_convert_proto_from_bdii(const char* se_type_bdii
  * select the best protocol choice and the best endpoint choice  from a list of protocol and endpoints obtained by the bdii
  *
  */
-static int gfal_select_best_protocol_and_endpointG(gfal_srmv2_opt* opts, char** tab_se_type, char** tab_endpoint, char* buff_endpoint, size_t s_buff, enum gfal_srm_proto* srm_type, GError** err){
-	g_return_val_err_if_fail(opts && buff_endpoint && s_buff && srm_type && tab_se_type && tab_endpoint, -1, err, "[gfal_select_best_protocol_and_endpoint] Invalid value");
+static int gfal_select_best_protocol_and_endpointG(gfal_srmv2_opt* opts,
+        char** tab_se_type, char** tab_endpoint, char* buff_endpoint,
+        size_t s_buff, enum gfal_srm_proto* srm_type, GError** err)
+{
+	g_return_val_err_if_fail(opts && buff_endpoint && s_buff && srm_type && tab_se_type && tab_endpoint, -1, err,
+	        "[gfal_select_best_protocol_and_endpoint] Invalid value");
 	char** pse =tab_se_type;
 	enum gfal_srm_proto* p_pref = &(opts->srm_proto_type);
 	while( *p_pref != PROTO_ERROR_UNKNOW){
@@ -143,34 +148,6 @@ static int gfal_select_best_protocol_and_endpointG(gfal_srmv2_opt* opts, char** 
 
 
 /*
- * @brief get the hostname from a surl
- *  @return return 0 if success else -1 and err is set
- */
-static int  gfal_get_hostname_from_surlG(const char * surl, char* buff_hostname, size_t s_buff, GError** err){
-	 const int srm_prefix_len = strlen(GFAL_PREFIX_SRM);
-	 const int surl_len = strnlen(surl,GFAL_URL_MAX_LEN);
-	 g_return_val_err_if_fail(surl &&  (srm_prefix_len < surl_len)  && (surl_len < GFAL_URL_MAX_LEN),-1, err, "[gfal_get_hostname_from_surl] invalid value in params");
-
-	 char* p;
-	 if((p = strchr(surl+srm_prefix_len,'/')) ==NULL){
-        gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__, "url invalid");
-		return -1;
-	 }
-
-	 if(s_buff > (p-surl-srm_prefix_len)){
-		*((char*) mempcpy(buff_hostname, surl+srm_prefix_len, p-surl-srm_prefix_len)) = '\0';
-		if(*buff_hostname =='\0'){
-            gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__, "url invalid");
-			return -1;
-		}
-		return 0;
-	}
-	gfal2_set_error(err, gfal2_get_plugin_srm_quark(), ENOBUFS, __func__, "buffer size too small");
-	return -1;
- }
-
-
-/*
  * get endpoint from the bdii system only
  * 0 == success
  * < 0 error
@@ -188,7 +165,9 @@ static int gfal_get_endpoint_and_setype_from_bdiiG(gfal_srmv2_opt* opts, const c
     char hostname[GFAL_URL_MAX_LEN];
     int ret = -1;
     GError* tmp_err = NULL;
-    if ((ret = gfal_get_hostname_from_surlG(surl, hostname, GFAL_URL_MAX_LEN, &tmp_err)) == 0) { // get the hostname
+
+    ret = gfal_hostname_from_uri(surl, hostname, sizeof(hostname), &tmp_err);
+    if (ret == 0) { // get the hostname
 
         if ((ret = gfal_mds_get_se_types_and_endpoints(opts->handle, hostname, &tab_se_type, &tab_endpoint, &tmp_err)) == 0) { // questioning the bdii
             ret = gfal_select_best_protocol_and_endpointG(opts, tab_se_type, tab_endpoint, buff_endpoint,
@@ -219,8 +198,7 @@ int gfal_srm_determine_endpoint(gfal_srmv2_opt* opts, const char* surl,
     gboolean isFullEndpoint = gfal_check_fullendpoint_in_surlG(opts, surl, &tmp_err); // check if a full endpoint exist
     if (!tmp_err) {
         if (isFullEndpoint == TRUE) { // if full endpoint contained in url, get it and set type to default type
-            if (gfal_get_fullendpointG(surl, buff_endpoint, s_buff, &tmp_err)
-                    == 0) {
+            if (gfal_get_fullendpointG(surl, buff_endpoint, s_buff, &tmp_err) == 0) {
                 *srm_type = opts->srm_proto_type;
                 ret = 0;
                 gfal_log(GFAL_VERBOSE_DEBUG,
