@@ -80,6 +80,7 @@ public:
         gfalt_set_user_defined_checksum(params, NULL, NULL, NULL);
         gfalt_set_checksum_check(params, FALSE, NULL);
         gfalt_set_replace_existing_file(params, FALSE, NULL);
+        gfalt_set_create_parent_dir(params, FALSE, NULL);
     }
 
     virtual void TearDown() {
@@ -202,7 +203,7 @@ TEST_F(CopyBulk, CopyBulkSomeFail)
 
 TEST_F(CopyBulk, CopyBulkChecksuming)
 {
-    // Xrootd is problematic, as several endpoints may not implement checksuming, so skip this
+    // Xrootd is problematic, as several endpoints may not implement checksums, so skip this
     if (strncmp("root://", sources[0], 7) == 0) {
         SKIP_TEST(CopyBulkChecksuming);
         return;
@@ -297,6 +298,36 @@ TEST_F(CopyBulk, CopyOverwrite)
         g_error_free(op_error);
 }
 
+
+TEST_F(CopyBulk, MkParentDir)
+{
+    int ret;
+
+    for (size_t i = 0; i < NBPAIRS; ++i) {
+        char buffer[2048];
+
+        generate_random_uri(destinations[i], "mkparent", buffer, sizeof(buffer));
+        strncpy(destinations[i], buffer, 2048);
+    }
+
+    GError* op_error = NULL;
+    GError** file_errors = NULL;
+
+    gfalt_set_replace_existing_file(params, TRUE, NULL);
+    gfalt_set_create_parent_dir(params, TRUE, NULL);
+    ret = gfalt_copy_bulk(handle, params, NBPAIRS, sources, destinations, NULL, &op_error, &file_errors);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, op_error);
+
+    if (file_errors) {
+        for (size_t i = 0; i < NBPAIRS; ++i) {
+            EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, file_errors[i]);
+        }
+        g_free(file_errors);
+    }
+
+    if (op_error)
+        g_error_free(op_error);
+}
 
 int main(int argc, char** argv)
 {

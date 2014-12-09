@@ -402,6 +402,7 @@ int gridftp_bulk_prepare_destination(plugin_handle plugin_data,
         gfal2_context_t context, GridFTPBulkData* pairs, GError** file_errors)
 {
     int nfailed = 0;
+    std::list<std::string> created_parents;
 
     for (size_t i = 0; i < pairs->nbfiles; ++i) {
         // May have failed when preparing the source!
@@ -413,10 +414,24 @@ int gridftp_bulk_prepare_destination(plugin_handle plugin_data,
             }
             else {
                 try {
-                    gridftp_filecopy_delete_existing((GridFTPModule*) plugin_data,
-                            pairs->params, pairs->dsts[i]);
-                    gridftp_create_parent_copy((GridFTPModule*) plugin_data,
-                            pairs->params, pairs->dsts[i]);
+                    const char* slash = strrchr(pairs->dsts[i], '/');
+                    std::string parent;
+                    if (slash)
+                        parent.assign(pairs->dsts[i], 0, slash - pairs->dsts[i]);
+
+                    gridftp_filecopy_delete_existing(
+                            (GridFTPModule*) plugin_data, pairs->params,
+                            pairs->dsts[i]);
+
+                    if (slash &&
+                        std::find(created_parents.begin(), created_parents.end(), parent) != created_parents.end()) {
+                        gfal_log(GFAL_VERBOSE_VERBOSE, "Skip mkdir of %s", parent.c_str());
+                    }
+                    else {
+                        gridftp_create_parent_copy((GridFTPModule*) plugin_data,
+                                pairs->params, pairs->dsts[i]);
+                        created_parents.push_back(parent);
+                    }
                 }
                 catch (const Gfal::TransferException& e) {
                     gfal2_set_error(&(file_errors[i]), GSIFTP_BULK_DOMAIN, e.code(),
