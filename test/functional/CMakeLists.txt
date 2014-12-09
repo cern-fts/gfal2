@@ -116,8 +116,7 @@ if(FUNCTIONAL_TESTS)
         function(gfal_test_set_credentials name prefix)
             add_test(gfal_test_set_credentials_${name} gfal_test_set_creds ${prefix})
         endfunction(gfal_test_set_credentials name prefix)    
-    
-        
+
         # Tests for file transfer
         if(MAIN_TRANSFER)
                 
@@ -157,6 +156,12 @@ if(FUNCTIONAL_TESTS)
                     add_test(copyfile_bulk_${name} gfalt_test_copy_bulk ${src_dir} ${dst_dir})
                 endfunction(copy_file_test_full name dst_dir)
 
+                function(copy_file_test_no_checksum name src_dir dst_dir)
+                    add_test(copyfile_replace_${name} gfalt_test_copy_file_replace ${src_dir} ${dst_dir})
+                    add_test(copyfile_test_${name} gfalt_test_copy_file ${src_dir} ${dst_dir})
+                    add_test(copyfile_test_mkdir_${name} gfalt_test_copy_file_mkdir ${src_dir} ${dst_dir})
+                    add_test(copyfile_bulk_${name} gfalt_test_copy_bulk ${src_dir} ${dst_dir})
+                endfunction(copy_file_test_no_checksum name src_dir dst_dir)
 
                 function(copy_file_test_simple name src_dir dst_dir)
                     add_test(copyfile_test_${name} gfalt_test_copy_file ${src_dir} ${dst_dir})

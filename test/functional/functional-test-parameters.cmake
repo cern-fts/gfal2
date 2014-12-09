@@ -258,6 +258,11 @@ IF(EXISTS "/usr/lib64/gfal2-plugins/libgfal_plugin_xrootd.so" OR
     rwt_test_all("XROOTD_single" ${root_valid_dir_root} 1)
     rwt_test_seq("XROOTD" ${root_valid_dir_root} 100 4560)
     rwt_test_seq("XROOTD_single" ${root_valid_dir_root} 1 10)
+
+    # Copies
+    IF (MAIN_TRANSFER)
+        copy_file_test_no_checksum("XROOTD" ${root_valid_dir_root} ${root_valid_dir_root})
+    ENDIF (MAIN_TRANSFER)
 ENDIF()
 
 IF (MAIN_TRANSFER)
@@ -300,9 +305,4 @@ IF (MAIN_TRANSFER)
         copy_file_test_simple("STORM_TO_FILE" ${srm_prefix_storm}  ${file_prefix})
         copy_file_test_simple("FILE_TO_STORM" ${file_prefix}  ${srm_prefix_storm})
 
-        # generic timeout tests
-        # not reliable test, disable auto execution
-        #copy_file_test_timeout("SRM_DPM"    "${srm_valid_dcache_bigfile}" "${srm_valid_dir_root}")
-        #copy_file_test_timeout("SRM_DCACHE" "${srm_valid_dcache_bigfile}" "${srm_valid_dcache_dir_root}" )
-        #copy_file_test_timeout("SRM_STORM" "${srm_valid_dcache_bigfile}" "${srm_prefix_storm}" )
 ENDIF (MAIN_TRANSFER)
