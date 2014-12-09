@@ -133,7 +133,7 @@ gint gfalt_set_src_spacetoken(gfalt_params_t params, const char* srm_spacetoken,
 /**
   get the source spacetoken for SRM transfers
 */
-gchar* gfalt_get_src_spacetoken(gfalt_params_t params, GError** err);
+const gchar* gfalt_get_src_spacetoken(gfalt_params_t params, GError** err);
 
 /**
   set the destination spacetoken for SRM transfers
@@ -143,7 +143,7 @@ gint gfalt_set_dst_spacetoken(gfalt_params_t params, const char* srm_spacetoken,
 /**
   get the destination spacetoken for SRM transfers
 */
-gchar* gfalt_get_dst_spacetoken(gfalt_params_t params, GError** err);
+const gchar* gfalt_get_dst_spacetoken(gfalt_params_t params, GError** err);
 
 // CONSISTENCY OPTIONS
 
