@@ -66,7 +66,7 @@ GassCopyAttrHandler::~GassCopyAttrHandler()
 
 
 GridFTPSessionHandler::GridFTPSessionHandler(GridFTPFactory* f, const std::string &uri) :
-        _isDirty(false), factory(f), hostname(gridftp_hostname_from_url(uri))
+        factory(f), hostname(gridftp_hostname_from_url(uri))
 {
     this->session = f->get_session(this->hostname);
 }
@@ -75,7 +75,7 @@ GridFTPSessionHandler::GridFTPSessionHandler(GridFTPFactory* f, const std::strin
 GridFTPSessionHandler::~GridFTPSessionHandler()
 {
     try {
-        factory->release_session(this->session, this->_isDirty);
+        factory->release_session(this->session);
     }
     catch (const std::exception& e) {
         gfal_log(GFAL_VERBOSE_NORMAL,
@@ -293,20 +293,16 @@ globus_gass_copy_handleattr_t* GridFTPSessionHandler::get_gass_copy_handleattr()
     return &(session->gass_handle_attr);
 }
 
+
 globus_ftp_client_handleattr_t* GridFTPSessionHandler::get_ftp_client_handleattr()
 {
     return &(session->attr_handle);
 }
 
+
 GridFTPFactory* GridFTPSessionHandler::get_factory()
 {
     return factory;
-}
-
-
-void GridFTPSessionHandler::disable_reuse()
-{
-    _isDirty = true;
 }
 
 
@@ -514,11 +510,12 @@ GridFTPSession* GridFTPFactory::get_session(const std::string &hostname)
 }
 
 
-void GridFTPFactory::release_session(GridFTPSession* session, bool destroy)
+void GridFTPFactory::release_session(GridFTPSession* session)
 {
     session_reuse = gfal2_get_opt_boolean_with_default(gfal2_context, GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_SESSION_REUSE, FALSE);
-    if (session_reuse && !destroy)
+    if (session_reuse) {
         recycle_session(session);
+    }
     else {
         gfal_log(GFAL_VERBOSE_TRACE, "destroy gridftp session for %s ...", session->hostname.c_str());
         delete session;
