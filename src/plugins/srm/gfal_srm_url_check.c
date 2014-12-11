@@ -43,14 +43,10 @@ gboolean plugin_url_check2(plugin_handle handle, gfal2_context_t context,
         const char* src, const char* dst, gfal_url2_check type)
 {
     g_return_val_if_fail(handle != NULL && src != NULL && dst != NULL, FALSE);
-    gboolean res = FALSE;
     gboolean src_srm = srm_check_url(src);
     gboolean dst_srm = srm_check_url(dst);
     gboolean src_valid_url = src_srm || srm_has_schema(src);
     gboolean dst_valid_url = dst_srm || srm_has_schema(dst);
 
-    if (src != NULL && dst != NULL ) {
-        res = (type == GFAL_FILE_COPY && ((src_srm && dst_valid_url) || (dst_srm && src_valid_url)));
-    }
-    return res;
+    return (type == GFAL_FILE_COPY && ((src_srm && dst_valid_url) || (dst_srm && src_valid_url)));
 }
