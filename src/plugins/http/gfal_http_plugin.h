@@ -16,7 +16,6 @@ public:
 
     void get_params(Davix::RequestParams*, const Davix::Uri& uri);
 
-private:
     Davix::RequestParams reference_params;
     gfal2_context_t      handle;
 };

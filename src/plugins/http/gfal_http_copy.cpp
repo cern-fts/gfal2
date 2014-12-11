@@ -62,11 +62,11 @@ static bool is_http_3rdcopy_enabled(gfal2_context_t context)
 }
 
 
-static int gfal_http_exists(plugin_handle plugin_data,
+static int gfal_http_copy_exists(GfalHttpPluginData* plugin_data,
         const char* url, GError** err)
 {
     GError *nestedError = NULL;
-    int access_stat = gfal_http_access(plugin_data, url, F_OK, &nestedError);
+    int access_stat = gfal2_access(plugin_data->handle, url, F_OK, &nestedError);
 
     if (access_stat == 0) {
         return 1;
@@ -82,12 +82,12 @@ static int gfal_http_exists(plugin_handle plugin_data,
 }
 
 
-static int gfal_http_copy_overwrite(plugin_handle plugin_data,
+static int gfal_http_copy_overwrite(GfalHttpPluginData* plugin_data,
         gfalt_params_t params,  const char *dst, GError** err)
 {
     GError *nestedError = NULL;
 
-    int exists = gfal_http_exists(plugin_data, dst, &nestedError);
+    int exists = gfal_http_copy_exists(plugin_data, dst, &nestedError);
 
     if (exists > 0) {
         if (!gfalt_get_replace_existing_file(params,NULL)) {
@@ -96,7 +96,7 @@ static int gfal_http_copy_overwrite(plugin_handle plugin_data,
             return -1;
         }
 
-        gfal_http_unlinkG(plugin_data, dst, &nestedError);
+        gfal2_unlink(plugin_data->handle, dst, &nestedError);
         if (nestedError) {
             gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_OVERWRITE);
             return -1;
@@ -134,9 +134,8 @@ static char* gfal_http_get_parent(const char* url)
 }
 
 
-static int gfal_http_copy_make_parent(plugin_handle plugin_data,
-        gfalt_params_t params, gfal2_context_t context,
-        const char* dst, GError** err)
+static int gfal_http_copy_make_parent(GfalHttpPluginData* plugin_data,
+        gfalt_params_t params, const char* dst, GError** err)
 {
     GError *nestedError = NULL;
 
@@ -150,7 +149,7 @@ static int gfal_http_copy_make_parent(plugin_handle plugin_data,
         return -1;
     }
 
-    int exists = gfal_http_exists(plugin_data, parent, &nestedError);
+    int exists = gfal_http_copy_exists(plugin_data, parent, &nestedError);
     // Error
     if (exists < 0) {
         gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_PARENT);
@@ -162,7 +161,7 @@ static int gfal_http_copy_make_parent(plugin_handle plugin_data,
     }
     // Does not exist
     else {
-        gfal2_mkdir_rec(context, parent, 0755, &nestedError);
+        gfal2_mkdir_rec(plugin_data->handle, parent, 0755, &nestedError);
         if (nestedError) {
             gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_PARENT);
             return -1;
@@ -176,8 +175,7 @@ static int gfal_http_copy_make_parent(plugin_handle plugin_data,
 // dst may be NULL. In that case, the user-defined checksum
 // is compared with the source checksum.
 // If dst != NULL, then user-defined is ignored
-static int gfal_http_copy_checksum(gfal2_context_t context,
-        plugin_handle plugin_data,
+static int gfal_http_copy_checksum(GfalHttpPluginData* plugin_data,
         gfalt_params_t params,
         const char *src, const char *dst,
         GError** err)
@@ -197,7 +195,7 @@ static int gfal_http_copy_checksum(gfal2_context_t context,
     GError *nestedError = NULL;
     char src_checksum[1024];
     // src may not be http!
-    gfal2_checksum(context, src, checksum_type,
+    gfal2_checksum(plugin_data->handle, src, checksum_type,
                    0, 0, src_checksum, sizeof(src_checksum),
                    &nestedError);
 
@@ -266,11 +264,11 @@ static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfDat
 
 /// Clean dst, update err if failed during cleanup with something else than ENOENT,
 /// returns always -1 for convenience
-static int gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GError** err)
+static int gfal_http_copy_cleanup(GfalHttpPluginData* plugin_data, const char* dst, GError** err)
 {
     GError *unlink_err = NULL;
     if ((*err)->code != EEXIST) {
-        if (gfal_http_unlinkG(plugin_data, dst, &unlink_err) != 0) {
+        if (gfal2_unlink(plugin_data->handle, dst, &unlink_err) != 0) {
             if (unlink_err->code != ENOENT) {
                 gfal_log(GFAL_VERBOSE_VERBOSE,
                          "When trying to clean the destination: %s", unlink_err->message);
@@ -291,6 +289,10 @@ static int gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GE
 // See LCGUTIL-473
 static std::string get_canonical_uri(const std::string& original)
 {
+    // Account for non-http urls
+    if (!is_3rd_scheme(original.c_str()) && !is_streamed_scheme(original.c_str()))
+        return original;
+
     std::string scheme;
     char last_scheme;
 
@@ -312,7 +314,7 @@ static std::string get_canonical_uri(const std::string& original)
 }
 
 
-static void gfal_http_third_party_copy(GfalHttpPluginData* davix,
+static void gfal_http_third_party_copy(GfalHttpPluginData* plugin_data,
         const char* src, const char* dst,
         gfalt_params_t params,
         GError** err)
@@ -332,8 +334,8 @@ static void gfal_http_third_party_copy(GfalHttpPluginData* davix,
     Davix::Uri dst_uri(canonical_dst);
 
     Davix::RequestParams req_params;
-    davix->get_params(&req_params, src_uri);
-    Davix::DavixCopy copy(davix->context, &req_params);
+    plugin_data->get_params(&req_params, src_uri);
+    Davix::DavixCopy copy(plugin_data->context, &req_params);
 
     copy.setPerformanceCallback(gfal_http_3rdcopy_perfcallback, &perfCallbackData);
 
@@ -501,11 +503,11 @@ void strip_3rd_from_url(const char* url_full, char* url, size_t url_size)
 }
 
 
-int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
+int gfal_http_copy(plugin_handle plugin_handle, gfal2_context_t context,
         gfalt_params_t params, const char* src_full, const char* dst_full, GError** err)
 {
     GError* nested_error = NULL;
-    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
+    GfalHttpPluginData* plugin_data = gfal_http_get_plugin_context(plugin_handle);
 
     plugin_trigger_event(params, http_plugin_domain,
                          GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_ENTER,
@@ -527,7 +529,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         plugin_trigger_event(params, http_plugin_domain,
                              GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER,
                              "");
-        if (gfal_http_copy_checksum(context, plugin_data, params, src, NULL, &nested_error) != 0) {
+        if (gfal_http_copy_checksum(plugin_data, params, src, NULL, &nested_error) != 0) {
             gfal2_propagate_prefixed_error(err, nested_error, __func__);
             return -1;
         }
@@ -536,7 +538,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                              "");
 
         if (gfal_http_copy_overwrite(plugin_data, params, dst, &nested_error) != 0 ||
-            gfal_http_copy_make_parent(plugin_data, params, context, dst, &nested_error) != 0) {
+            gfal_http_copy_make_parent(plugin_data, params, dst, &nested_error) != 0) {
             gfal2_propagate_prefixed_error(err, nested_error, __func__);
             return -1;
         }
@@ -552,18 +554,18 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          "%s => %s", src_full, dst_full);
 
     if (!src_is_3rd && !dst_is_3rd) {
-        gfal_http_streamed_copy(context, davix, src, dst, params, &nested_error);
+        gfal_http_streamed_copy(context, plugin_data, src, dst, params, &nested_error);
     }
-    else if (src_is_3rd && dst_is_3rd) {
+    else if (src_is_3rd) {
         if (is_http_3rdcopy_enabled(context)) {
-            gfal_http_third_party_copy(davix, src, dst, params, &nested_error);
+            gfal_http_third_party_copy(plugin_data, src, dst, params, &nested_error);
         }
         else {
             gfal2_set_error(err, http_plugin_domain, ENOENT, __func__,
                     "3rd party copy requested, but disabled in the configuration");
         }
     }
-    else {
+    else if (!src_is_3rd && dst_is_3rd){
         gfal2_set_error(err, http_plugin_domain, ENOENT, __func__,
                     "Invalid combination of 3rd party and non 3rd party urls");
         return -1;
@@ -583,7 +585,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         plugin_trigger_event(params, http_plugin_domain,
                              GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER,
                              "");
-        if (gfal_http_copy_checksum(context, plugin_data, params, src, dst, err) != 0)
+        if (gfal_http_copy_checksum(plugin_data, params, src, dst, err) != 0)
             return gfal_http_copy_cleanup(plugin_data, dst, err);
         plugin_trigger_event(params, http_plugin_domain,
                              GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_EXIT,
@@ -599,7 +601,6 @@ int gfal_http_copy_check(plugin_handle plugin_data, gfal2_context_t context, con
 {
     if (check != GFAL_FILE_COPY)
         return 0;
-    // This plugin handles everything that writes into an http endpoint
-    return (is_streamed_scheme(dst) && !is_3rd_scheme(src)) || (is_3rd_scheme(src) && is_3rd_scheme(dst));
+    // This plugin handles everything that writes into an http endpoint, but also 3rd party copies from http to anything
+    return (is_streamed_scheme(dst) && !is_3rd_scheme(src)) || (is_3rd_scheme(src));
 }
-
