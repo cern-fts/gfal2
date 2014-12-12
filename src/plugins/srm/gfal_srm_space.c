@@ -213,11 +213,13 @@ static ssize_t gfal_srm_space_token_descr_info(srm_context_t context,
             offset += (s - 1); // String \0
             json_putc(buff, s_buff, ',', &offset);
         }
-        if (buff[offset - 1] == ',')
-            --offset; // Strip last comma
-        json_putc(buff, s_buff, ']', &offset);
-        json_putc(buff, s_buff, '\0', &offset);
-        ret_size = offset;
+        if (ret_size >= 0) {
+            if (buff[offset - 1] == ',')
+                --offset; // Strip last comma
+            json_putc(buff, s_buff, ']', &offset);
+            json_putc(buff, s_buff, '\0', &offset);
+            ret_size = offset;
+        }
     }
 
     if (tmp_err != NULL)

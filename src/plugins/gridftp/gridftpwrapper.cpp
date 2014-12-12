@@ -66,7 +66,7 @@ GassCopyAttrHandler::~GassCopyAttrHandler()
 
 
 GridFTPSessionHandler::GridFTPSessionHandler(GridFTPFactory* f, const std::string &uri) :
-        _isDirty(false), factory(f), hostname(gridftp_hostname_from_url(uri))
+        factory(f), hostname(gridftp_hostname_from_url(uri))
 {
     this->session = f->get_session(this->hostname);
 }
@@ -75,7 +75,7 @@ GridFTPSessionHandler::GridFTPSessionHandler(GridFTPFactory* f, const std::strin
 GridFTPSessionHandler::~GridFTPSessionHandler()
 {
     try {
-        factory->release_session(this->session, this->_isDirty);
+        factory->release_session(this->session);
     }
     catch (const std::exception& e) {
         gfal_log(GFAL_VERBOSE_NORMAL,
@@ -293,20 +293,16 @@ globus_gass_copy_handleattr_t* GridFTPSessionHandler::get_gass_copy_handleattr()
     return &(session->gass_handle_attr);
 }
 
+
 globus_ftp_client_handleattr_t* GridFTPSessionHandler::get_ftp_client_handleattr()
 {
     return &(session->attr_handle);
 }
 
+
 GridFTPFactory* GridFTPSessionHandler::get_factory()
 {
     return factory;
-}
-
-
-void GridFTPSessionHandler::disable_reuse()
-{
-    _isDirty = true;
 }
 
 
@@ -514,11 +510,12 @@ GridFTPSession* GridFTPFactory::get_session(const std::string &hostname)
 }
 
 
-void GridFTPFactory::release_session(GridFTPSession* session, bool destroy)
+void GridFTPFactory::release_session(GridFTPSession* session)
 {
     session_reuse = gfal2_get_opt_boolean_with_default(gfal2_context, GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_SESSION_REUSE, FALSE);
-    if (session_reuse && !destroy)
+    if (session_reuse) {
         recycle_session(session);
+    }
     else {
         gfal_log(GFAL_VERBOSE_TRACE, "destroy gridftp session for %s ...", session->hostname.c_str());
         delete session;
@@ -577,13 +574,13 @@ GridFTPRequestState::GridFTPRequestState(GridFTPSessionHandler* s,
 
 GridFTPRequestState::~GridFTPRequestState()
 {
-    globus_mutex_destroy(&lock);
-    globus_cond_destroy(&cond);
-    delete error;
     if (!done) {
         this->cancel(GFAL_GRIDFTP_SCOPE_REQ_STATE,
                 "GridFTPRequestState destructor called before the operation finished!");
     }
+    globus_mutex_destroy(&lock);
+    globus_cond_destroy(&cond);
+    delete error;
 }
 
 
@@ -604,23 +601,29 @@ void GridFTPRequestState::wait(const Glib::Quark &scope, time_t timeout)
             timeout);
 
     globus_abstime_t timeout_expires;
-            GlobusTimeAbstimeGetCurrent(timeout_expires);
-            timeout_expires.tv_sec += timeout;
+    GlobusTimeAbstimeGetCurrent(timeout_expires);
+    timeout_expires.tv_sec += timeout;
 
     gfal_cancel_token_t cancel_token;
     cancel_token = gfal2_register_cancel_callback(handler->get_factory()->get_gfal2_context(), gridftp_cancel, this);
 
     globus_mutex_lock(&lock);
     int wait_ret = 0;
-    while (!done) {
+    while (!done && wait_ret != ETIMEDOUT) {
         wait_ret = globus_cond_timedwait(&cond, &lock, &timeout_expires);
     }
     globus_mutex_unlock(&lock);
 
     gfal2_remove_cancel_callback(handler->get_factory()->get_gfal2_context(), cancel_token);
 
-    if (wait_ret == ETIMEDOUT)
+    // Operation expired, so cancel and raise an error
+    if (wait_ret == ETIMEDOUT) {
+        gfal_log(GFAL_VERBOSE_TRACE,
+                "   [GridFTP_Request_state::wait_callback] Operation timeout of %d seconds expired, canceling...",
+                timeout);
+        gridftp_cancel(handler->get_factory()->get_gfal2_context(), this);
         throw Gfal::CoreException(scope, "Operation timed out", ETIMEDOUT);
+    }
 
     if (error) {
         if (error->domain() != Glib::Quark("").id())
@@ -639,6 +642,7 @@ void GridFTPRequestState::cancel(const Glib::Quark &scope, const std::string& ms
     else {
         globus_gass_copy_cancel(handler->get_gass_copy_handle(),
                 globus_gass_client_done_callback, this);
+        this->wait(scope, default_timeout);
     }
     error = new Gfal::CoreException(scope, msg, ECANCELED);
 }

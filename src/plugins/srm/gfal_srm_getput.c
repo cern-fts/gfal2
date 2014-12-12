@@ -37,14 +37,7 @@ static int validate_turls(int n_results, gfal_srm_result** resu,
     for (i = 0; i < n_results && !failed; ++i) {
         const char* turl = (*resu)[i].turl;
 
-        // Never ever accept file, even if it was asked for
-        if (strncmp("file:", turl, 5) == 0) {
-            failed = -1;
-            gfal2_set_error(tmp_err, gfal2_get_plugin_srm_quark(), EBADMSG, __func__,
-                    "file:// is not a valid turl");
-            break;
-        }
-        else if (turl[0] == '/') {
+        if (turl[0] == '/') {
             failed = -1;
             gfal2_set_error(tmp_err, gfal2_get_plugin_srm_quark(), EBADMSG, __func__,
                     "A turl can not start with /");

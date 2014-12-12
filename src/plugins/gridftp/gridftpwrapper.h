@@ -133,13 +133,9 @@ public:
 
     GridFTPFactory* get_factory();
 
-    void disable_reuse();
-
     GridFTPSession* session;
 
 private:
-    bool _isDirty;
-
     GridFTPFactory* factory;
     std::string hostname;
 };
@@ -155,9 +151,8 @@ public:
     GridFTPSession* get_session(const std::string &hostname);
 
     /** Release the session, and close it if should not be reused
-     * If destroy is true, the session will NOT be reused even if session reuse is configured
      **/
-    void release_session(GridFTPSession* h, bool destroy = false);
+    void release_session(GridFTPSession* h);
 
     gfal2_context_t get_gfal2_context();
 

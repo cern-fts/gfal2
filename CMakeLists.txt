@@ -52,9 +52,8 @@ set(OUTPUT_NAME_TRANSFER "gfal_transfer")
 
 set(VERSION_MAJOR  2)
 set(VERSION_MINOR  8)
-set(VERSION_PATCH  0)
+set(VERSION_PATCH  1)
 set(VERSION_STRING ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
-
 
 # out of project test compilation
 SET(ONLY_TESTS FALSE
