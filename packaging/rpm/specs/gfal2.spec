@@ -56,10 +56,8 @@ BuildRequires:      gtest-devel
 
 Obsoletes:          %{name}-core < %{version}-%{release}
 Provides:           %{name}-core = %{version}-%{release}
-Conflicts:          %{name}-core
 Obsoletes:          %{name}-transfer < %{version}-%{release}
 Provides:           %{name}-transfer = %{version}-%{release}
-Conflicts:          %{name}-transfer
 
 %description
 GFAL 2.0 offers an a single and simple POSIX-like API 
