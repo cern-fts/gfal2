@@ -574,13 +574,13 @@ GridFTPRequestState::GridFTPRequestState(GridFTPSessionHandler* s,
 
 GridFTPRequestState::~GridFTPRequestState()
 {
-    globus_mutex_destroy(&lock);
-    globus_cond_destroy(&cond);
-    delete error;
     if (!done) {
         this->cancel(GFAL_GRIDFTP_SCOPE_REQ_STATE,
                 "GridFTPRequestState destructor called before the operation finished!");
     }
+    globus_mutex_destroy(&lock);
+    globus_cond_destroy(&cond);
+    delete error;
 }
 
 
@@ -601,23 +601,29 @@ void GridFTPRequestState::wait(const Glib::Quark &scope, time_t timeout)
             timeout);
 
     globus_abstime_t timeout_expires;
-            GlobusTimeAbstimeGetCurrent(timeout_expires);
-            timeout_expires.tv_sec += timeout;
+    GlobusTimeAbstimeGetCurrent(timeout_expires);
+    timeout_expires.tv_sec += timeout;
 
     gfal_cancel_token_t cancel_token;
     cancel_token = gfal2_register_cancel_callback(handler->get_factory()->get_gfal2_context(), gridftp_cancel, this);
 
     globus_mutex_lock(&lock);
     int wait_ret = 0;
-    while (!done) {
+    while (!done && wait_ret != ETIMEDOUT) {
         wait_ret = globus_cond_timedwait(&cond, &lock, &timeout_expires);
     }
     globus_mutex_unlock(&lock);
 
     gfal2_remove_cancel_callback(handler->get_factory()->get_gfal2_context(), cancel_token);
 
-    if (wait_ret == ETIMEDOUT)
+    // Operation expired, so cancel and raise an error
+    if (wait_ret == ETIMEDOUT) {
+        gfal_log(GFAL_VERBOSE_TRACE,
+                "   [GridFTP_Request_state::wait_callback] Operation timeout of %d seconds expired, canceling...",
+                timeout);
+        gridftp_cancel(handler->get_factory()->get_gfal2_context(), this);
         throw Gfal::CoreException(scope, "Operation timed out", ETIMEDOUT);
+    }
 
     if (error) {
         if (error->domain() != Glib::Quark("").id())
@@ -636,6 +642,7 @@ void GridFTPRequestState::cancel(const Glib::Quark &scope, const std::string& ms
     else {
         globus_gass_copy_cancel(handler->get_gass_copy_handle(),
                 globus_gass_client_done_callback, this);
+        this->wait(scope, default_timeout);
     }
     error = new Gfal::CoreException(scope, msg, ECANCELED);
 }
