@@ -1,4 +1,5 @@
 #include <string.h>
+#include <vector>
 
 #include <gfal_api.h>
 #include <common/gfal_common_err_helpers.h>
@@ -161,14 +162,15 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
 
     const time_t timeout = perf_data.start + gfalt_get_timeout(params, NULL);
     ssize_t s_file = 1;
-    char buff[DEFAULT_BUFFER_SIZE];
 
-    gfal_log(GFAL_VERBOSE_TRACE, "  begin local transfer %s ->  %s with buffer size %ld", src, dst, sizeof(buff));
+    std::vector<char> buffer(DEFAULT_BUFFER_SIZE);
+
+    gfal_log(GFAL_VERBOSE_TRACE, "  begin local transfer %s ->  %s with buffer size %ld", src, dst, sizeof(buffer));
 
     while (s_file > 0 && !nested_error) {
-        s_file = gfal_plugin_readG(context, f_src, buff, sizeof(buff), &nested_error);
+        s_file = gfal_plugin_readG(context, f_src, buffer.data(), DEFAULT_BUFFER_SIZE, &nested_error);
         if (s_file > 0)
-            gfal_plugin_writeG(context, f_dst, buff, s_file, &nested_error);
+            gfal_plugin_writeG(context, f_dst, buffer.data(), s_file, &nested_error);
 
         perf_data.done += s_file;
         perf_data.done_since_last_update += s_file;
