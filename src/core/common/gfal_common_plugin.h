@@ -49,17 +49,17 @@ extern "C"
 {
 #endif  // __cplusplus
 
-typedef struct _plugin_pointer_handle{
+typedef struct _plugin_pointer_handle {
     gfal_plugin_interface* plugin_api;                  // plugin official API
     void* dlhandle;                                     // dlhandle of the plugin
     void* plugin_data;                                  // plugin internal data
     char plugin_name[GFAL_URL_MAX_LEN];                 // plugin name
     char plugin_lib[GFAL_URL_MAX_LEN];                  // plugin library path
-} *plugin_pointer_handle;
+}*plugin_pointer_handle;
 
 /*
  *
- *  This API is a plugin reserved API and should be used by GFAL 2.0's plugins only
+ *  This API is a plugin reserved API and should be used by GFAL2's plugins only
  *  Backward compatibility of this API is not guarantee
  *
  * */
