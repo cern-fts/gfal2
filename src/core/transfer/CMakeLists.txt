@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 
 if (MAIN_TRANSFER)
-        file (GLOB src_trans "*.cpp" )
+        file (GLOB src_trans "*.c")
         list (APPEND header_transfer "gfal_transfer.h" "gfal_transfer_types.h" "gfal_transfer_plugins.h")
 
         add_definitions( ${GLIB2_PKG_CFLAGS} ${GTHREAD2_PKG_CFLAGS} ${GLIBMM_PKG_CFLAGS})

@@ -14,28 +14,45 @@
  */
 #include <stdio.h>
 #include <glib.h>
+#include <time.h>
 
 #include <transfer/gfal_transfer_internal.h>
 #include <transfer/gfal_transfer_types_internal.h>
-
-#include <ctime>
-
-
-GQuark GFAL_EVENT_PREPARE_ENTER = g_quark_from_static_string("PREPARE:ENTER");
-GQuark GFAL_EVENT_PREPARE_EXIT = g_quark_from_static_string("PREPARE:EXIT");
-GQuark GFAL_EVENT_TRANSFER_ENTER = g_quark_from_static_string("TRANSFER:ENTER");
-GQuark GFAL_EVENT_TRANSFER_EXIT = g_quark_from_static_string("TRANSFER:EXIT");
-GQuark GFAL_EVENT_CLOSE_ENTER = g_quark_from_static_string("CLOSE:ENTER");
-GQuark GFAL_EVENT_CLOSE_EXIT = g_quark_from_static_string("CLOSE:EXIT");
-GQuark GFAL_EVENT_CHECKSUM_ENTER = g_quark_from_static_string("CHECKSUM:ENTER");
-GQuark GFAL_EVENT_CHECKSUM_EXIT = g_quark_from_static_string("CHECKSUM:EXIT");
-GQuark GFAL_EVENT_CANCEL_ENTER = g_quark_from_static_string("CANCEL:ENTER");
-GQuark GFAL_EVENT_CANCEL_EXIT = g_quark_from_static_string("CANCEL:EXIT");
-GQuark GFAL_EVENT_OVERWRITE_DESTINATION = g_quark_from_static_string("OVERWRITE");
+#include <common/gfal_common_err_helpers.h>
 
 
-int plugin_trigger_event(gfalt_params_t params, GQuark domain,
-        gfal_event_side_t side, GQuark stage, const char* fmt, ...)
+
+GQuark GFAL_EVENT_PREPARE_ENTER;
+GQuark GFAL_EVENT_PREPARE_EXIT;
+GQuark GFAL_EVENT_TRANSFER_ENTER;
+GQuark GFAL_EVENT_TRANSFER_EXIT;
+GQuark GFAL_EVENT_CLOSE_ENTER;
+GQuark GFAL_EVENT_CLOSE_EXIT;
+GQuark GFAL_EVENT_CHECKSUM_ENTER;
+GQuark GFAL_EVENT_CHECKSUM_EXIT;
+GQuark GFAL_EVENT_CANCEL_ENTER;
+GQuark GFAL_EVENT_CANCEL_EXIT;
+GQuark GFAL_EVENT_OVERWRITE_DESTINATION;
+
+
+__attribute__((constructor))
+static void init_event_quarks() {
+    GFAL_EVENT_PREPARE_ENTER = g_quark_from_static_string("PREPARE:ENTER");
+    GFAL_EVENT_PREPARE_EXIT = g_quark_from_static_string("PREPARE:EXIT");
+    GFAL_EVENT_TRANSFER_ENTER = g_quark_from_static_string("TRANSFER:ENTER");
+    GFAL_EVENT_TRANSFER_EXIT = g_quark_from_static_string("TRANSFER:EXIT");
+    GFAL_EVENT_CLOSE_ENTER = g_quark_from_static_string("CLOSE:ENTER");
+    GFAL_EVENT_CLOSE_EXIT = g_quark_from_static_string("CLOSE:EXIT");
+    GFAL_EVENT_CHECKSUM_ENTER = g_quark_from_static_string("CHECKSUM:ENTER");
+    GFAL_EVENT_CHECKSUM_EXIT = g_quark_from_static_string("CHECKSUM:EXIT");
+    GFAL_EVENT_CANCEL_ENTER = g_quark_from_static_string("CANCEL:ENTER");
+    GFAL_EVENT_CANCEL_EXIT = g_quark_from_static_string("CANCEL:EXIT");
+    GFAL_EVENT_OVERWRITE_DESTINATION = g_quark_from_static_string("OVERWRITE");
+}
+
+
+int plugin_trigger_event(gfalt_params_t params, GQuark domain, gfal_event_side_t side,
+        GQuark stage, const char* fmt, ...)
 {
     char buffer[512] = { 0 };
     va_list msg_args;
@@ -72,7 +89,6 @@ int plugin_trigger_event(gfalt_params_t params, GQuark domain,
 
     gfal_log(GFAL_VERBOSE_VERBOSE, "Event triggered: %s %s %s %s", side_str,
             g_quark_to_string(domain), g_quark_to_string(stage), buffer);
-    ;
     return 0;
 }
 
@@ -80,11 +96,13 @@ int plugin_trigger_event(gfalt_params_t params, GQuark domain,
 void gfalt_propagate_prefixed_error(GError **dest, GError *src, const gchar *function,
         const gchar *side, const gchar *note)
 {
-    if (note)
+    if (note) {
         gfal2_propagate_prefixed_error_extended(dest, src, function, "%s %s ", side,
                 note);
-    else
+    }
+    else {
         gfal2_propagate_prefixed_error_extended(dest, src, function, "%s ", side);
+    }
 }
 
 

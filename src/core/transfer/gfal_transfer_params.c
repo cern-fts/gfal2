@@ -13,28 +13,26 @@
  * limitations under the License.
  */
 
-#include <transfer/gfal_transfer_types_internal.h>
-#include <cerrno>
-#include <cstdlib>
-#include <cstring>
+#include <common/gfal_common_err_helpers.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
 
-
-// external C bindings
-extern "C" {
+#include "gfal_transfer_types_internal.h"
 
 
 void gfalt_params_handle_init(gfalt_params_t p, GError ** err)
 {
     p->callback = NULL;
-    p->lock = false;
+    p->lock = FALSE;
     p->nb_data_streams = GFALT_DEFAULT_NB_STREAM;
     p->timeout = GFALT_DEFAULT_TRANSFERT_TIMEOUT;
     p->start_offset = 0;
     p->tcp_buffer_size = 0;
-    p->replace_existing = false;
-    p->local_transfers = true;
-    p->strict_mode = false;
-    p->parent_dir_create = false;
+    p->replace_existing = FALSE;
+    p->local_transfers = TRUE;
+    p->strict_mode = FALSE;
+    p->parent_dir_create = FALSE;
     uuid_clear(p->uuid);
     p->event_callback = NULL;
 }
@@ -64,7 +62,7 @@ gfalt_params_t gfalt_params_handle_new(GError ** err)
 void gfalt_params_handle_delete(gfalt_params_t params, GError ** err)
 {
     if (params) {
-        params->lock = false;
+        params->lock = FALSE;
         g_free(params->src_space_token);
         g_free(params->dst_space_token);
         g_free(params->user_checksum);
@@ -77,8 +75,7 @@ void gfalt_params_handle_delete(gfalt_params_t params, GError ** err)
 
 gint gfalt_set_timeout(gfalt_params_t params, guint64 timeout, GError** err)
 {
-    g_return_val_err_if_fail(params != NULL, -1, err,
-            "[BUG] invalid parameter handle value");
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid parameter handle value");
     params->timeout = timeout;
     return 0;
 }
@@ -348,6 +345,4 @@ time_t gfalt_copy_get_elapsed_time(gfalt_transfer_status_t s, GError ** err)
 {
     g_return_val_err_if_fail(s != NULL, -1, err, "[BUG] invalid transfer status handle");
     return s->hook->transfer_time;
-}
-
 }
