@@ -218,12 +218,14 @@ static int gfal_module_load(gfal2_context_t handle, char* module_name, GError** 
     void* dlhandle = dlopen(module_name, RTLD_NOW);
     GError * tmp_err = NULL;
     int res = -1;
-    if (dlhandle == NULL)
+    if (dlhandle == NULL) {
         g_set_error(&tmp_err, gfal2_get_plugins_quark(), EINVAL,
                 "Unable to open the %s plugin specified in the plugin directory, failure : %s",
                 module_name, dlerror());
-    else
+    }
+    else {
         res = gfal_module_init(handle, dlhandle, module_name, &tmp_err);
+    }
     if (tmp_err)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     return res;
@@ -401,8 +403,8 @@ int gfal_plugins_sort(gfal2_context_t handle, GError ** err)
 }
 
 //
-// Instance all plugins for use if it's not the case
-// return the number of plugin available
+// Instantiate all plugins for use if it's not the case
+// return the number of plugins available
 //
 int gfal_plugins_instance(gfal2_context_t handle, GError** err)
 {

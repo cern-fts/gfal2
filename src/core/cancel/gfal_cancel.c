@@ -30,10 +30,11 @@
 //
 
 
-int gfal2_cancel(gfal2_context_t context){
+int gfal2_cancel(gfal2_context_t context)
+{
     if (!context)
         return -1;
-    else if(context->cancel == TRUE) // avoid recursive calls
+    else if (context->cancel == TRUE) // avoid recursive calls
         return 0;
 
     g_mutex_lock(context->mux_cancel);
@@ -41,53 +42,63 @@ int gfal2_cancel(gfal2_context_t context){
     context->cancel = TRUE;
     g_hook_list_invoke(&context->cancel_hooks, TRUE);
     g_mutex_unlock(context->mux_cancel);
-    while( (g_atomic_int_get(&(context->running_ops))) > 0){
+    while ((g_atomic_int_get(&(context->running_ops))) > 0) {
         usleep(50);
     }
     context->cancel = FALSE;
     return n_cancel;
 }
 
-gboolean gfal2_is_canceled(gfal2_context_t context){
+
+gboolean gfal2_is_canceled(gfal2_context_t context)
+{
     return context->cancel;
 }
 
 
-//  increase number of the running task for the cancel logic
-// return negative value if task is canceled
-int gfal2_start_scope_cancel(gfal2_context_t context, GError** err){
-    if(context && context->cancel){
-        g_set_error(err, gfal_cancel_quark(), ECANCELED, "[gfal2_cancel] operation canceled by user");
+// Increase number of the running task for the cancel logic
+// Return negative value if task is canceled
+int gfal2_start_scope_cancel(gfal2_context_t context, GError** err)
+{
+    if (context && context->cancel) {
+        g_set_error(err, gfal_cancel_quark(), ECANCELED,
+                "[gfal2_cancel] operation canceled by user");
         return -1;
     }
     g_atomic_int_inc(&(context->running_ops));
     return 0;
 }
 
-int gfal2_end_scope_cancel(gfal2_context_t context){
-    if(context)
-    	(void)g_atomic_int_dec_and_test(&(context->running_ops));
+
+int gfal2_end_scope_cancel(gfal2_context_t context)
+{
+    if (context)
+        (void) g_atomic_int_dec_and_test(&(context->running_ops));
     return 0;
 }
 
 
-struct gfal_hook_data_s{
+struct gfal_hook_data_s {
     void* userdata;
     gfal2_context_t context;
     gfal_cancel_hook_cb cb;
 };
 
 
-static void gfal_ghook_cancel_wrapper(gpointer data){
-  struct gfal_hook_data_s* d  = data;
-  d->cb(d->context, d->userdata);
+static void gfal_ghook_cancel_wrapper(gpointer data)
+{
+    struct gfal_hook_data_s* d = data;
+    d->cb(d->context, d->userdata);
 }
 
-gfal_cancel_token_t gfal2_register_cancel_callback(gfal2_context_t context, gfal_cancel_hook_cb cb, void* userdata){
+
+gfal_cancel_token_t gfal2_register_cancel_callback(gfal2_context_t context,
+        gfal_cancel_hook_cb cb, void* userdata)
+{
     g_assert(context && cb);
     g_mutex_lock(context->mux_cancel);
     GHook* h = g_hook_alloc(&context->cancel_hooks);
-    struct gfal_hook_data_s* d = g_new(struct gfal_hook_data_s,1);
+    struct gfal_hook_data_s* d = g_new(struct gfal_hook_data_s, 1);
     d->context = context;
     d->userdata = userdata;
     d->cb = cb;
@@ -100,7 +111,9 @@ gfal_cancel_token_t gfal2_register_cancel_callback(gfal2_context_t context, gfal
 }
 
 
-void gfal2_remove_cancel_callback(gfal2_context_t context, gfal_cancel_token_t token){
+void gfal2_remove_cancel_callback(gfal2_context_t context,
+        gfal_cancel_token_t token)
+{
     g_assert(context && token);
     g_mutex_lock(context->mux_cancel);
     GHook* cb = (GHook*) token;
@@ -108,8 +121,8 @@ void gfal2_remove_cancel_callback(gfal2_context_t context, gfal_cancel_token_t t
     g_mutex_unlock(context->mux_cancel);
 }
 
-///
-///
-GQuark gfal_cancel_quark(){
+
+GQuark gfal_cancel_quark()
+{
     return g_quark_from_string("[gfal2_cancel]");
 }

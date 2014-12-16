@@ -35,22 +35,23 @@
 #include "gfal_posix_api.h"
 
 
-int gfal_posix_internal_symlink(const char* oldpath, const char* newpath){
-	GError* tmp_err = NULL;
-	gfal2_context_t handle;
-	int ret=-1;
+int gfal_posix_internal_symlink(const char* oldpath, const char* newpath)
+{
+    GError* tmp_err = NULL;
+    gfal2_context_t handle;
+    int ret = -1;
 
-	if( (handle = gfal_posix_instance() ) ==NULL){
-		errno = EIO;
-		return -1;
-	}
+    if ((handle = gfal_posix_instance()) == NULL) {
+        errno = EIO;
+        return -1;
+    }
 
-    ret = gfal2_symlink(handle, oldpath, newpath,&tmp_err);
+    ret = gfal2_symlink(handle, oldpath, newpath, &tmp_err);
 
-	if(tmp_err){
-		gfal_posix_register_internal_error(handle, "[gfal_symlink]", tmp_err);
-		errno = tmp_err->code;
-	}
+    if (tmp_err) {
+        gfal_posix_register_internal_error(handle, "[gfal_symlink]", tmp_err);
+        errno = tmp_err->code;
+    }
 
-	return (ret)?-1:0;
+    return (ret) ? -1 : 0;
 }

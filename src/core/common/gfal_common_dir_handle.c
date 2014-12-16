@@ -36,25 +36,32 @@ pthread_mutex_t m_dir_container = PTHREAD_MUTEX_INITIALIZER;
 
 
 // return the singleton of the file descriptor container for the directories
-gfal_fdesc_container_handle gfal_dir_handle_container_instance(gfal_descriptors_container* fdescs, GError** err){
-	gfal_fdesc_container_handle dir_handle = fdescs->dir_container;
-	if(dir_handle == NULL){
-		pthread_mutex_lock(&m_dir_container);
-		if(fdescs->dir_container == NULL){
-			dir_handle = fdescs->dir_container = gfal_file_descriptor_handle_create(NULL);
-			if(!dir_handle)
-                gfal2_set_error(err, gfal2_get_core_quark(), EIO, __func__, "Error while init directories file descriptor container");
-		}
-		pthread_mutex_unlock(&m_dir_container);
-	}
-	return dir_handle;
+gfal_fdesc_container_handle gfal_dir_handle_container_instance(
+        gfal_descriptors_container* fdescs, GError** err)
+{
+    gfal_fdesc_container_handle dir_handle = fdescs->dir_container;
+    if (dir_handle == NULL) {
+        pthread_mutex_lock(&m_dir_container);
+        if (fdescs->dir_container == NULL) {
+            dir_handle = gfal_file_descriptor_handle_create(NULL);
+            fdescs->dir_container = dir_handle;
+
+            if (!dir_handle)
+                gfal2_set_error(err, gfal2_get_core_quark(), EIO, __func__,
+                        "Error while init directories file descriptor container");
+        }
+        pthread_mutex_unlock(&m_dir_container);
+    }
+    return dir_handle;
 }
 
-void gfal_dir_handle_container_delete(gfal_descriptors_container* fdescs){
-	pthread_mutex_lock(&m_dir_container);
-	if (fdescs->dir_container && fdescs->dir_container->container)
-	    g_hash_table_destroy(fdescs->dir_container->container);
-	free(fdescs->dir_container);
-	fdescs->dir_container = NULL;
-	pthread_mutex_unlock(&m_dir_container);
+
+void gfal_dir_handle_container_delete(gfal_descriptors_container* fdescs)
+{
+    pthread_mutex_lock(&m_dir_container);
+    if (fdescs->dir_container && fdescs->dir_container->container)
+        g_hash_table_destroy(fdescs->dir_container->container);
+    free(fdescs->dir_container);
+    fdescs->dir_container = NULL;
+    pthread_mutex_unlock(&m_dir_container);
 }

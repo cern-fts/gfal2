@@ -33,51 +33,43 @@
 #include <common/gfal_common_plugin.h>
 
 
-/*
- * Implementation of the read functions
- *
- */
-inline int gfal_posix_internal_read(int fd, void* buff, size_t s_buff){
-	 GError* tmp_err=NULL;
-	 gfal2_context_t handle;
-	 int res = -1;
 
-	if((handle = gfal_posix_instance()) == NULL){
-		errno = EIO;
-		return -1;
-	}
+int gfal_posix_internal_read(int fd, void* buff, size_t s_buff)
+{
+    GError* tmp_err = NULL;
+    gfal2_context_t handle;
+    int res = -1;
+
+    if ((handle = gfal_posix_instance()) == NULL) {
+        errno = EIO;
+        return -1;
+    }
 
     res = gfal2_read(handle, fd, buff, s_buff, &tmp_err);
-	if(tmp_err){
-		gfal_posix_register_internal_error(handle, "[gfal_read]", tmp_err);
-		errno = tmp_err->code;
-	}
-	return res;
+    if (tmp_err) {
+        gfal_posix_register_internal_error(handle, "[gfal_read]", tmp_err);
+        errno = tmp_err->code;
+    }
+    return res;
 }
 
 
+ssize_t gfal_posix_internal_pread(int fd, void* buff, size_t s_buff,
+        off_t offset)
+{
+    GError* tmp_err = NULL;
+    gfal2_context_t handle;
+    ssize_t res = -1;
 
+    if ((handle = gfal_posix_instance()) == NULL) {
+        errno = EIO;
+        return -1;
+    }
 
-
-
-/*
- * Implementation of the pread function
- *
- */
-inline ssize_t gfal_posix_internal_pread(int fd, void* buff, size_t s_buff, off_t offset){
-	 GError* tmp_err=NULL;
-	 gfal2_context_t handle;
-	 ssize_t res = -1;
-
-	if((handle = gfal_posix_instance()) == NULL){
-		errno = EIO;
-		return -1;
-	}
-
-    res = gfal2_pread(handle,fd,buff, s_buff,offset, &tmp_err);
-	if(tmp_err){
-		gfal_posix_register_internal_error(handle, "[gfal_pread]", tmp_err);
-		errno = tmp_err->code;
-	}
-	return res;
+    res = gfal2_pread(handle, fd, buff, s_buff, offset, &tmp_err);
+    if (tmp_err) {
+        gfal_posix_register_internal_error(handle, "[gfal_pread]", tmp_err);
+        errno = tmp_err->code;
+    }
+    return res;
 }

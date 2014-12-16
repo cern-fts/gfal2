@@ -36,27 +36,23 @@
 
 
 
-/*
- *  list the extended attribute of a file, internal call
- * */
-ssize_t gfal_posix_internal_listxattr (const char *path, char *list, size_t size){
-	 GError* tmp_err=NULL;
-	 gfal2_context_t handle;
-	 ssize_t res= -1;
+ssize_t gfal_posix_internal_listxattr(const char *path, char *list, size_t size)
+{
+    GError* tmp_err = NULL;
+    gfal2_context_t handle;
+    ssize_t res = -1;
 
-	if((handle = gfal_posix_instance()) == NULL){
-		errno = EIO;
-		return -1;
-	}
+    if ((handle = gfal_posix_instance()) == NULL) {
+        errno = EIO;
+        return -1;
+    }
 
     res = gfal2_listxattr(handle, path, list, size, &tmp_err);
-	if(tmp_err){
-		gfal_posix_register_internal_error(handle, "[gfal_listxattr]", tmp_err);
-		errno = tmp_err->code;
-	}
-	return res;
-
-
+    if (tmp_err) {
+        gfal_posix_register_internal_error(handle, "[gfal_listxattr]", tmp_err);
+        errno = tmp_err->code;
+    }
+    return res;
 }
 
 

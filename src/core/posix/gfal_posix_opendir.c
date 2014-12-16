@@ -30,33 +30,32 @@
 #include <common/gfal_types.h>
 #include <common/gfal_common_plugin.h>
 
-
 #include "gfal_posix_api.h"
 #include "gfal_posix_internal.h"
 #include <common/gfal_common_filedescriptor.h>
 #include <common/gfal_common_dir_handle.h>
 
 
-inline DIR* gfal_posix_internal_opendir(const char* name){
-	GError* tmp_err=NULL;
 
-	gfal2_context_t handle;
+DIR* gfal_posix_internal_opendir(const char* name)
+{
+    GError* tmp_err = NULL;
+
+    gfal2_context_t handle;
     DIR* key = NULL;
 
-	if((handle = gfal_posix_instance()) == NULL){
-		errno = EIO;
-		return NULL;
-	}
+    if ((handle = gfal_posix_instance()) == NULL) {
+        errno = EIO;
+        return NULL;
+    }
     key = gfal2_opendir(handle, name, &tmp_err);
 
-	if(tmp_err){
-		gfal_posix_register_internal_error(handle, "[gfal_opendir]", tmp_err);
-		errno = tmp_err->code;
-	}else{
-		errno=0;
-	}
-	return GINT_TO_POINTER(key);
+    if (tmp_err) {
+        gfal_posix_register_internal_error(handle, "[gfal_opendir]", tmp_err);
+        errno = tmp_err->code;
+    }
+    else {
+        errno = 0;
+    }
+    return GINT_TO_POINTER(key);
 }
-
-
-

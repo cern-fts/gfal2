@@ -1,23 +1,23 @@
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
 /**
  * @file gfal_logger.c
- * @brief log functions 
+ * @brief log functions
  * @author Devresse Adrien
  * */
 
@@ -59,22 +59,25 @@ int gfal_set_verbose (int value)
     return (0);
 }
 
-void gfal_internal_logger(const int verbose_lvl, const char* msg, va_list args){
-	GLogLevelFlags log_level=G_LOG_LEVEL_MESSAGE;
-	g_logv(gfal2_log_prefix, log_level, msg, args);
+
+static void gfal_internal_logger(const int verbose_lvl, const char* msg, va_list args)
+{
+    GLogLevelFlags log_level = G_LOG_LEVEL_MESSAGE;
+    g_logv(gfal2_log_prefix, log_level, msg, args);
 }
 
 
-guint gfal_log_set_handler(GLogFunc log_func,
-                                gpointer user_data){
-	return g_log_set_handler (gfal2_log_prefix, G_LOG_LEVEL_MASK, log_func, user_data);					 
+guint gfal_log_set_handler(GLogFunc log_func, gpointer user_data)
+{
+    return g_log_set_handler(gfal2_log_prefix, G_LOG_LEVEL_MASK, log_func,
+            user_data);
 }
 
 /**
- * \brief display a verbose message 
- * 
+ * \brief display a verbose message
+ *
  * msg is displayed if current verbose level is superior to verbose mode specified
- * 
+ *
  */
 void gfal_log(int verbose_lvl, const char* msg, ...)
 {

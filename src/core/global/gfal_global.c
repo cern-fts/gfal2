@@ -19,30 +19,38 @@
 #include <global/gfal_global.h>
 #include <common/gfal_common_internal.h>
 
-GQuark gfal2_get_core_quark(){
+GQuark gfal2_get_core_quark()
+{
     return g_quark_from_static_string(GFAL2_QUARK_CORE);
 }
 
-GQuark gfal2_get_config_quark(){
+
+GQuark gfal2_get_config_quark()
+{
     return g_quark_from_static_string(GFAL2_QUARK_CONFIG);
 }
 
 
-GQuark gfal2_get_plugins_quark(){
+GQuark gfal2_get_plugins_quark()
+{
     return g_quark_from_static_string(GFAL2_QUARK_PLUGINS);
 }
 
 
-gfal2_context_t gfal2_context_new(GError ** err){
+gfal2_context_t gfal2_context_new(GError ** err)
+{
     return gfal_initG(err);
 }
 
 
-void gfal2_context_free(gfal2_context_t context){
+void gfal2_context_free(gfal2_context_t context)
+{
     gfal_handle_freeG(context);
 }
 
-gchar** gfal2_get_plugin_names(gfal2_context_t context) {
+
+gchar** gfal2_get_plugin_names(gfal2_context_t context)
+{
     gchar** array = g_new0(gchar*, context->plugin_opt.plugin_number + 1);
     int i;
 
@@ -54,10 +62,14 @@ gchar** gfal2_get_plugin_names(gfal2_context_t context) {
     return array;
 }
 
-gfal2_context_t gfal_context_new(GError ** err){
+
+gfal2_context_t gfal_context_new(GError ** err)
+{
     return gfal2_context_new(err);
 }
 
-void gfal_context_free(gfal2_context_t context){
+
+void gfal_context_free(gfal2_context_t context)
+{
     return gfal2_context_free(context);
 }

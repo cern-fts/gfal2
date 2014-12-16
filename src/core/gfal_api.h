@@ -34,9 +34,8 @@
 // log  api
 #include <logger/gfal_logger.h>
 
-// main gfal 2.0 API for file operations
+// main gfal2 API for file operations
 #include <file/gfal_file_api.h>
-
 
 // operation control api
 #include <cancel/gfal_cancel.h>

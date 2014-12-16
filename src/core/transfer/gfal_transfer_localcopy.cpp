@@ -11,6 +11,7 @@
 static GQuark local_copy_domain = g_quark_from_static_string("FileCopy::local_copy");
 const size_t DEFAULT_BUFFER_SIZE = 4000000;
 
+
 static char* get_parent(const char* url)
 {
     char *parent = g_strdup(url);
@@ -103,11 +104,13 @@ static int unlink_if_exists(gfal2_context_t context, gfalt_params_t params,
     return 0;
 }
 
+
 struct perf_data_t {
     time_t start, last_update, now;
     size_t done;
     size_t done_since_last_update;
 };
+
 
 static void send_performance_data(gfalt_params_t params, const char* src, const char* dst, const perf_data_t& perf)
 {

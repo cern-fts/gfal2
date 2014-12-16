@@ -70,19 +70,23 @@ int plugin_trigger_event(gfalt_params_t params, GQuark domain,
             side_str = "BOTH";
     }
 
-    gfal_log(GFAL_VERBOSE_VERBOSE, "Event triggered: %s %s %s %s",
-            side_str, g_quark_to_string(domain), g_quark_to_string(stage), buffer);;
+    gfal_log(GFAL_VERBOSE_VERBOSE, "Event triggered: %s %s %s %s", side_str,
+            g_quark_to_string(domain), g_quark_to_string(stage), buffer);
+    ;
     return 0;
 }
+
 
 void gfalt_propagate_prefixed_error(GError **dest, GError *src, const gchar *function,
         const gchar *side, const gchar *note)
 {
     if (note)
-        gfal2_propagate_prefixed_error_extended(dest, src, function, "%s %s ", side, note);
+        gfal2_propagate_prefixed_error_extended(dest, src, function, "%s %s ", side,
+                note);
     else
         gfal2_propagate_prefixed_error_extended(dest, src, function, "%s ", side);
 }
+
 
 void gfalt_set_error(GError **err, GQuark domain, gint code, const gchar *function,
         const char *side, const gchar *note, const gchar *format, ...)

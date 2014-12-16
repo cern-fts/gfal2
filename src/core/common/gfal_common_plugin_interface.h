@@ -68,7 +68,7 @@ typedef gfal_plugin_interface* (*gfal_plugin_init_t)(gfal2_context_t handle, GEr
  *  the minimum calls are : getName, plugin_delete, check_plugin_url
  *  all the unused function pointers must be set to NULL
  */
-struct _gfal_plugin_interface{
+struct _gfal_plugin_interface {
 	 //! @cond
      // internal gfal data : touching this triggers the death of a kitty
 	void * gfal_data;
