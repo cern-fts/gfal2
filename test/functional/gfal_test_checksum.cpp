@@ -5,9 +5,9 @@
 #include <stdlib.h>
 #include <common/gfal_lib_test.h>
 #include <common/gfal_gtest_asserts.h>
+#include <exceptions/gfalcoreexception.hpp>
 #include <utils/exceptions/gerror_to_cpp.h>
 #include <utils/checksums/checksums.h>
-#include <glibmm.h>
 
 
 // Given an algorithm, returns a pre-calculated content with the hash in the requested
@@ -67,7 +67,7 @@ public:
         GError* error = NULL;
 
         if (get_precomputed(algorithm, &precomputed_content, &precomputed_hash) != 0) {
-            throw Glib::Error(g_quark_from_static_string("TestChecksum"),
+            throw Gfal::CoreException(g_quark_from_static_string("TestChecksum"),
                     EINVAL, "Could not get the pre-calculated checksum");
         }
 

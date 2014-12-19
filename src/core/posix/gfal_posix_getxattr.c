@@ -21,7 +21,6 @@
  * @brief file for the internal function of the getxattr function
  * @author Devresse Adrien
  * @date 19/07/2011
- *
  **/
 
 #include <stdio.h>
@@ -33,32 +32,26 @@
 #include <common/gfal_types.h>
 #include <common/gfal_common_plugin.h>
 
-
 #include "gfal_posix_internal.h"
 
 
 
-ssize_t gfal_posix_internal_getxattr (const char *path, const char *name,
-                        void *value, size_t size){
-	 GError* tmp_err=NULL;
-	 gfal2_context_t handle;
-	 ssize_t res= -1;
+ssize_t gfal_posix_internal_getxattr(const char *path, const char *name,
+        void *value, size_t size)
+{
+    GError* tmp_err = NULL;
+    gfal2_context_t handle;
+    ssize_t res = -1;
 
-	if((handle = gfal_posix_instance()) == NULL){
-		errno = EIO;
-		return -1;
-	}
+    if ((handle = gfal_posix_instance()) == NULL) {
+        errno = EIO;
+        return -1;
+    }
 
     res = gfal2_getxattr(handle, path, name, value, size, &tmp_err);
-	if(tmp_err){
-		gfal_posix_register_internal_error(handle, "[gfal_getxattr]", tmp_err);
-		errno = tmp_err->code;
-	}
-	return res;
-
-
+    if (tmp_err) {
+        gfal_posix_register_internal_error(handle, "[gfal_getxattr]", tmp_err);
+        errno = tmp_err->code;
+    }
+    return res;
 }
-
-
-
-

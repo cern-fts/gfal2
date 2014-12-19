@@ -82,7 +82,7 @@ gboolean gfal_plugin_checker_safe(gfal_plugin_interface* cata_list,
     else {
         gfal2_set_error(terr, gfal2_get_plugins_quark(), EPROTONOSUPPORT,
                 __func__,
-                "unexcepted NULL \
+                "unexpected NULL \
 				pointer for a call to the url checker in the \
 				plugin %s",
                 cata_list->getName());
@@ -218,12 +218,14 @@ static int gfal_module_load(gfal2_context_t handle, char* module_name, GError** 
     void* dlhandle = dlopen(module_name, RTLD_NOW);
     GError * tmp_err = NULL;
     int res = -1;
-    if (dlhandle == NULL)
+    if (dlhandle == NULL) {
         g_set_error(&tmp_err, gfal2_get_plugins_quark(), EINVAL,
                 "Unable to open the %s plugin specified in the plugin directory, failure : %s",
                 module_name, dlerror());
-    else
+    }
+    else {
         res = gfal_module_init(handle, dlhandle, module_name, &tmp_err);
+    }
     if (tmp_err)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     return res;
@@ -375,6 +377,11 @@ gint gfal_plugin_compare(gconstpointer a, gconstpointer b)
 //
 int gfal_plugins_sort(gfal2_context_t handle, GError ** err)
 {
+    if (handle->plugin_opt.sorted_plugin) {
+        g_list_free(handle->plugin_opt.sorted_plugin);
+        handle->plugin_opt.sorted_plugin = NULL;
+    }
+
     int i;
     for (i = 0; i < handle->plugin_opt.plugin_number; ++i) {
         handle->plugin_opt.sorted_plugin = g_list_append(
@@ -401,8 +408,8 @@ int gfal_plugins_sort(gfal2_context_t handle, GError ** err)
 }
 
 //
-// Instance all plugins for use if it's not the case
-// return the number of plugin available
+// Instantiate all plugins for use if it's not the case
+// return the number of plugins available
 //
 int gfal_plugins_instance(gfal2_context_t handle, GError** err)
 {
@@ -458,6 +465,21 @@ gfal_plugin_interface* gfal_find_plugin(gfal2_context_t handle, const char * url
 }
 
 
+int gfal2_register_plugin(gfal2_context_t handle, const gfal_plugin_interface* ifce,
+        GError** error)
+{
+    if (handle->plugin_opt.plugin_number >= MAX_PLUGIN_LIST) {
+        gfal2_set_error(error, gfal2_get_plugins_quark(), ENOMEM,
+                __func__, "Not enough space to allocate a new plugin");
+        return -1;
+    }
+
+    int i = handle->plugin_opt.plugin_number;
+    handle->plugin_opt.plugin_number++;
+    handle->plugin_opt.plugin_list[i] = *ifce;
+
+    return gfal_plugins_sort(handle, error);
+}
 
 
 //  Execute an access function on the first plugin compatible in the plugin list
@@ -1027,6 +1049,7 @@ int gfal_plugin_unlink_listG(gfal2_context_t handle, int nbfiles, const char* co
 
     return res;
 }
+
 
 int gfal_plugin_abort_filesG(gfal2_context_t handle, int nbfiles, const char* const* uris, const char* token, GError ** err)
 {

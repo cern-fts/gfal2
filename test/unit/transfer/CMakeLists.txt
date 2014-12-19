@@ -8,7 +8,7 @@ IF (UNIT_TESTS )
 IF (MAIN_TRANSFER)
 
     include_directories( "../ " "../libcpp/" ${GLIB2_PKG_INCLUDE_DIRS}
-                                                ${GTHREAD2_PKG_INCLUDE_DIRS}  ${GLIBMM_PKG_INCLUDE_DIRS})
+                                                ${GTHREAD2_PKG_INCLUDE_DIRS})
     FILE(GLOB src_test_transfer "*.c*")
 
     add_executable(unit_test_transfer_params_exe    ${src_test_transfer} )

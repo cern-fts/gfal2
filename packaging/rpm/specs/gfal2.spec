@@ -24,7 +24,6 @@ BuildRequires:      glib2-devel
 %else
 BuildRequires:      glib2-devel
 %endif
-BuildRequires:      glibmm24-devel
 BuildRequires:      libattr-devel
 BuildRequires:      openldap-devel
 %if ! 0%{?el5}
@@ -56,10 +55,8 @@ BuildRequires:      gtest-devel
 
 Obsoletes:          %{name}-core < %{version}-%{release}
 Provides:           %{name}-core = %{version}-%{release}
-Conflicts:          %{name}-core
 Obsoletes:          %{name}-transfer < %{version}-%{release}
 Provides:           %{name}-transfer = %{version}-%{release}
-Conflicts:          %{name}-transfer
 
 %description
 GFAL 2.0 offers an a single and simple POSIX-like API 

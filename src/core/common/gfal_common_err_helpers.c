@@ -18,10 +18,11 @@ void gfal2_set_error(GError **err, GQuark domain, gint code,
     va_end(args);
 
     if (gfal_get_verbose() & GFAL_VERBOSE_DEBUG)
-        g_set_error(err, domain, code, "[%s] %s", function, buffer);
+    g_set_error(err, domain, code, "[%s] %s", function, buffer);
     else
-        g_set_error_literal(err, domain, code, buffer);
+    g_set_error_literal(err, domain, code, buffer);
 }
+
 
 void gfal2_propagate_prefixed_error_extended(GError **dest, GError *src,
         const gchar *function, const gchar *format, ...)
@@ -50,6 +51,7 @@ void gfal2_propagate_prefixed_error_extended(GError **dest, GError *src,
         g_prefix_error(dest, "%s", buffer);
     }
 }
+
 
 void gfal2_propagate_prefixed_error(GError **dest, GError *src,
         const gchar *function)

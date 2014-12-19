@@ -1,14 +1,19 @@
 #include <string.h>
 
 #include <gfal_api.h>
-#include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_plugin_interface.h>
 #include <checksums/checksums.h>
 #include "gfal_transfer_plugins.h"
 #include "gfal_transfer_internal.h"
 
-static GQuark local_copy_domain = g_quark_from_static_string("FileCopy::local_copy");
+
 const size_t DEFAULT_BUFFER_SIZE = 4000000;
+
+
+static GQuark local_copy_domain() {
+    return g_quark_from_static_string("FileCopy::local_copy");
+}
+
 
 static char* get_parent(const char* url)
 {
@@ -33,7 +38,7 @@ static int create_parent(gfal2_context_t context, gfalt_params_t params,
 
     char *parent = get_parent(surl);
     if (!parent) {
-        gfalt_set_error(error, local_copy_domain, EINVAL, __func__,
+        gfalt_set_error(error, local_copy_domain(), EINVAL, __func__,
                 GFALT_ERROR_DESTINATION, GFALT_ERROR_PARENT, "Could not get the parent directory of %s", surl);
         return -1;
     }
@@ -81,7 +86,7 @@ static int unlink_if_exists(gfal2_context_t context, gfalt_params_t params,
     }
 
     if (!gfalt_get_replace_existing_file(params,NULL)) {
-        gfal2_set_error(error, local_copy_domain, EEXIST, __func__, "The file exists and overwrite is not set");
+        gfal2_set_error(error, local_copy_domain(), EEXIST, __func__, "The file exists and overwrite is not set");
         return -1;
     }
 
@@ -94,7 +99,7 @@ static int unlink_if_exists(gfal2_context_t context, gfalt_params_t params,
         g_error_free(nested_error);
     }
     else {
-        plugin_trigger_event(params, local_copy_domain,
+        plugin_trigger_event(params, local_copy_domain(),
                 GFAL_EVENT_DESTINATION, GFAL_EVENT_OVERWRITE_DESTINATION,
                 "Deleted %s", surl);
     }
@@ -102,13 +107,15 @@ static int unlink_if_exists(gfal2_context_t context, gfalt_params_t params,
     return 0;
 }
 
+
 struct perf_data_t {
     time_t start, last_update, now;
     size_t done;
     size_t done_since_last_update;
 };
 
-static void send_performance_data(gfalt_params_t params, const char* src, const char* dst, const perf_data_t& perf)
+
+static void send_performance_data(gfalt_params_t params, const char* src, const char* dst, const struct perf_data_t* perf)
 {
     gfalt_monitor_func callback = gfalt_get_monitor_callback(params, NULL);
     gpointer callback_data = gfalt_get_user_data(params, NULL);
@@ -118,12 +125,12 @@ static void send_performance_data(gfalt_params_t params, const char* src, const 
 
     gfalt_hook_transfer_plugin_t hook;
 
-    time_t total_time = perf.now - perf.start;
-    time_t inc_time = perf.now - perf.last_update;
+    time_t total_time = perf->now - perf->start;
+    time_t inc_time = perf->now - perf->last_update;
 
-    hook.average_baudrate = static_cast<size_t>(perf.done / total_time);
-    hook.bytes_transfered = static_cast<size_t>(perf.done);
-    hook.instant_baudrate = static_cast<size_t>(perf.done_since_last_update / inc_time);
+    hook.average_baudrate = (size_t)(perf->done / total_time);
+    hook.bytes_transfered = (size_t)(perf->done);
+    hook.instant_baudrate = (size_t)(perf->done_since_last_update / inc_time);
     hook.transfer_time    = total_time;
 
     gfalt_transfer_status_t state = gfalt_transfer_status_create(&hook);
@@ -137,7 +144,7 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
 {
     GError *nested_error = NULL;
 
-    plugin_trigger_event(params, local_copy_domain,
+    plugin_trigger_event(params, local_copy_domain(),
             GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
             "%s => %s", src, dst);
 
@@ -155,40 +162,42 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
         return -1;
     }
 
-    perf_data_t perf_data;
+    struct perf_data_t perf_data;
     perf_data.start = perf_data.now = perf_data.last_update = time(NULL);
     perf_data.done = perf_data.done_since_last_update = 0;
 
     const time_t timeout = perf_data.start + gfalt_get_timeout(params, NULL);
     ssize_t s_file = 1;
-    char buff[DEFAULT_BUFFER_SIZE];
 
-    gfal_log(GFAL_VERBOSE_TRACE, "  begin local transfer %s ->  %s with buffer size %ld", src, dst, sizeof(buff));
+    char* buffer = g_malloc0(DEFAULT_BUFFER_SIZE);
+
+    gfal_log(GFAL_VERBOSE_TRACE, "  begin local transfer %s ->  %s with buffer size %ld", src, dst, DEFAULT_BUFFER_SIZE);
 
     while (s_file > 0 && !nested_error) {
-        s_file = gfal_plugin_readG(context, f_src, buff, sizeof(buff), &nested_error);
+        s_file = gfal_plugin_readG(context, f_src, buffer, DEFAULT_BUFFER_SIZE, &nested_error);
         if (s_file > 0)
-            gfal_plugin_writeG(context, f_dst, buff, s_file, &nested_error);
+            gfal_plugin_writeG(context, f_dst, buffer, s_file, &nested_error);
 
         perf_data.done += s_file;
         perf_data.done_since_last_update += s_file;
 
         // Make sure we don't have to cancel
         if (gfal2_is_canceled(context))
-            g_set_error(&nested_error, local_copy_domain, ECANCELED, "Transfer canceled");
+            g_set_error(&nested_error, local_copy_domain(), ECANCELED, "Transfer canceled");
         // Timed-out?
         else {
             perf_data.now = time(NULL);
             if (perf_data.now >= timeout) {
-                g_set_error(&nested_error, local_copy_domain, ETIMEDOUT, "Transfer canceled because the timeout expired");
+                g_set_error(&nested_error, local_copy_domain(), ETIMEDOUT, "Transfer canceled because the timeout expired");
             }
             else if (perf_data.now - perf_data.last_update > 5) {
-                send_performance_data(params, src, dst, perf_data);
+                send_performance_data(params, src, dst, &perf_data);
                 perf_data.done_since_last_update = 0;
                 perf_data.last_update = perf_data.now;
             }
         }
     }
+    g_free(buffer);
 
     gfal_plugin_closeG(context, f_dst, (nested_error)?NULL:(&nested_error));
     gfal_plugin_closeG(context, f_src, (nested_error)?NULL:(&nested_error));
@@ -198,10 +207,8 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
         return -1;
     }
     else {
-
-        plugin_trigger_event(params, local_copy_domain,
-                    GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
-                    "%s => %s", src, dst);
+        plugin_trigger_event(params, local_copy_domain(), GFAL_EVENT_NONE,
+                GFAL_EVENT_TRANSFER_EXIT, "%s => %s", src, dst);
         return 0;
     }
 }
@@ -221,7 +228,7 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
 
     // Source checksum
     if (is_checksum_enabled && !is_strict_mode) {
-        plugin_trigger_event(params, local_copy_domain, GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER, "");
+        plugin_trigger_event(params, local_copy_domain(), GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER, "");
         gfalt_get_user_defined_checksum(params,
                                         checksum_type, sizeof(checksum_type),
                                         user_checksum, sizeof(user_checksum),
@@ -236,12 +243,12 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
         }
 
         if (user_checksum[0] && gfal_compare_checksums(user_checksum, source_checksum, 1024) != 0) {
-            gfal2_set_error(error, local_copy_domain, EIO, __func__,
+            gfal2_set_error(error, local_copy_domain(), EIO, __func__,
                     "Source checksum and user-specified checksum do not match: %s != %s", source_checksum, user_checksum);
             return -1;
         }
 
-        plugin_trigger_event(params, local_copy_domain, GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT, "");
+        plugin_trigger_event(params, local_copy_domain(), GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT, "");
     }
 
     if (!is_strict_mode) {
@@ -273,7 +280,7 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
     if (is_checksum_enabled && !is_strict_mode) {
         char destination_checksum[1024];
 
-        plugin_trigger_event(params, local_copy_domain, GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER, "");
+        plugin_trigger_event(params, local_copy_domain(), GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER, "");
 
         gfal2_checksum(context, dst, checksum_type, 0, 0, destination_checksum, sizeof(destination_checksum), &nested_error);
         if (nested_error != NULL) {
@@ -282,12 +289,12 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
         }
 
         if (gfal_compare_checksums(source_checksum, destination_checksum, 1204) != 0) {
-            gfal2_set_error(error, local_copy_domain, EIO, __func__,
+            gfal2_set_error(error, local_copy_domain(), EIO, __func__,
                     "Source checksum and destination checksum do not match: %s != %s", source_checksum, destination_checksum);
             return -1;
         }
 
-        plugin_trigger_event(params, local_copy_domain, GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_EXIT, "");
+        plugin_trigger_event(params, local_copy_domain(), GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_EXIT, "");
     }
 
     gfal_log(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::start_local_copy ");

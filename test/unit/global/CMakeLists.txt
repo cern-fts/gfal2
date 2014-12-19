@@ -1,12 +1,6 @@
 
+add_executable(gfal2_test_exe "global_test.cpp" ${gfal2_utils_src})
 
-SET(src_global "global_test.cpp")
+target_link_libraries(gfal2_test_exe ${GFAL2_LINK} ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES})
 
-add_executable(g_test_gfal2_text_exe ${src_global} ${gfal2_utils_src}
-               )
-target_link_libraries(g_test_gfal2_text_exe ${GFAL2_LINK} ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} ${GLIBMM_PKG_LIBRARIES})
-
-add_test(g_test_gfal2_text g_test_gfal2_text_exe )
-
-
-
+add_test(gfal2_test_exe gfal2_test_exe)

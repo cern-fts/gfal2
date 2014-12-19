@@ -46,19 +46,16 @@ static const char *gfalversion = VERSION_STR(VERSION);
 
 // initialization
 __attribute__((constructor))
-void core_init(){
+void core_init()
+{
 #if  (!GLIB_CHECK_VERSION (2, 32, 0))
     if (!g_thread_supported())
-      g_thread_init(NULL);
+    g_thread_init(NULL);
 #endif
 }
 
 
-
-
- /*
- * initiate a gfal's context with default parameters for use
- */
+// Initiate a gfal's context with default parameters for use
 gfal2_context_t gfal_initG (GError** err)
 {
 	GError* tmp_err=NULL;
@@ -71,7 +68,7 @@ gfal2_context_t gfal_initG (GError** err)
 	handle->plugin_opt.plugin_number= 0;
 
     if((handle->conf = gfal_conf_new(&tmp_err)) && !tmp_err){
-        // load and instanciate all the plugins
+        // load and instantiate all the plugins
         gfal_plugins_instance(handle, &tmp_err);
         // cancel logic init
         handle->cancel = FALSE;
@@ -81,7 +78,7 @@ gfal2_context_t gfal_initG (GError** err)
     }
 
 
-    if(tmp_err){
+    if (tmp_err) {
         if (handle && handle->conf)
             gfal_conf_delete(handle->conf);
         g_free(handle);
@@ -90,28 +87,25 @@ gfal2_context_t gfal_initG (GError** err)
     G_RETURN_ERR(handle, tmp_err, err);
 }
 
-//free a gfal's handle, safe if null
-void gfal_handle_freeG (gfal2_context_t handle){
-	if(handle == NULL)
-		return;
-	gfal_plugins_delete(handle, NULL);
-	gfal_dir_handle_container_delete(&(handle->fdescs));
-	gfal_conf_delete(handle->conf);
+
+// free a gfal's handle, safe if null
+void gfal_handle_freeG(gfal2_context_t handle)
+{
+    if (handle == NULL)
+        return;
+    gfal_plugins_delete(handle, NULL);
+    gfal_dir_handle_container_delete(&(handle->fdescs));
+    gfal_conf_delete(handle->conf);
     g_list_free(handle->plugin_opt.sorted_plugin);
     g_mutex_free(handle->mux_cancel);
     g_hook_list_clear(&handle->cancel_hooks);
-	g_free(handle);
-	handle = NULL;
+    g_free(handle);
+    handle = NULL;
 }
 
 
-//return a string of the current gfal version
-char *gfal_version(){
+// return a string of the current gfal version
+char *gfal_version()
+{
     return (char*) gfalversion;
 }
-
-
-
-
-
-

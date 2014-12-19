@@ -33,46 +33,43 @@
 #include <common/gfal_common_plugin.h>
 
 
-/*
- * Implementation of the write call
- *
- */
-int gfal_posix_internal_write(int fd, void* buff, size_t s_buff){
-	 GError* tmp_err=NULL;
-	 gfal2_context_t handle;
-	 int res = -1;
 
-	if((handle = gfal_posix_instance()) == NULL){
-		errno = EIO;
-		return -1;
-	}
+int gfal_posix_internal_write(int fd, void* buff, size_t s_buff)
+{
+    GError* tmp_err = NULL;
+    gfal2_context_t handle;
+    int res = -1;
+
+    if ((handle = gfal_posix_instance()) == NULL) {
+        errno = EIO;
+        return -1;
+    }
 
     res = gfal2_write(handle, fd, buff, s_buff, &tmp_err);
-	if(tmp_err){
-		gfal_posix_register_internal_error(handle, "[gfal_write]", tmp_err);
-		errno = tmp_err->code;
-	}
-	return res;
+    if (tmp_err) {
+        gfal_posix_register_internal_error(handle, "[gfal_write]", tmp_err);
+        errno = tmp_err->code;
+    }
+    return res;
 }
 
 
+ssize_t gfal_posix_internal_pwrite(int fd, void* buff, size_t s_buff,
+        off_t offset)
+{
+    GError* tmp_err = NULL;
+    gfal2_context_t handle;
+    int res = -1;
 
+    if ((handle = gfal_posix_instance()) == NULL) {
+        errno = EIO;
+        return -1;
+    }
 
-// Implementation of the pwrite call
-ssize_t gfal_posix_internal_pwrite(int fd, void* buff, size_t s_buff, off_t offset){
-	 GError* tmp_err=NULL;
-	 gfal2_context_t handle;
-	 int res = -1;
-
-	if((handle = gfal_posix_instance()) == NULL){
-		errno = EIO;
-		return -1;
-	}
-
-    res= gfal2_pwrite(handle, fd, buff, s_buff,offset , &tmp_err);
-	if(tmp_err){
-		gfal_posix_register_internal_error(handle, "[gfal_pwrite]", tmp_err);
-		errno = tmp_err->code;
-	}
-	return res;
+    res = gfal2_pwrite(handle, fd, buff, s_buff, offset, &tmp_err);
+    if (tmp_err) {
+        gfal_posix_register_internal_error(handle, "[gfal_pwrite]", tmp_err);
+        errno = tmp_err->code;
+    }
+    return res;
 }

@@ -34,73 +34,89 @@
 
 
 // generate a new unique key
-static int gfal_file_key_generatorG(gfal_fdesc_container_handle fhandle, GError** err){
-	g_return_val_err_if_fail(fhandle, 0, err, "[gfal_file_descriptor_generatorG] Invalid  arg file handle");
-	int ret= rand();
-	GHashTable* c = fhandle->container;
-	if(g_hash_table_size(c) > G_MAXINT/2 ){
-        gfal2_set_error(err, gfal2_get_plugins_quark(), EMFILE, __func__, "Too many files open");
-		ret = 0;
-	}else {
-		while(ret ==0 || g_hash_table_lookup(c, GINT_TO_POINTER(ret)) != NULL){
-			ret = rand();
-		}
-	}
-	return ret;
+static int gfal_file_key_generatorG(gfal_fdesc_container_handle fhandle, GError** err)
+{
+    g_return_val_err_if_fail(fhandle, 0, err,
+            "[gfal_file_descriptor_generatorG] Invalid  arg file handle");
+    int ret = rand();
+    GHashTable* c = fhandle->container;
+    if (g_hash_table_size(c) > G_MAXINT / 2) {
+        gfal2_set_error(err, gfal2_get_plugins_quark(), EMFILE, __func__,
+                "Too many files open");
+        ret = 0;
+    }
+    else {
+        while (ret == 0 || g_hash_table_lookup(c, GINT_TO_POINTER(ret)) != NULL) {
+            ret = rand();
+        }
+    }
+    return ret;
 }
 
 /*
  * Add the given file handle to the and return a file descriptor
  * return the associated key if success else 0 and set err
  */
-int gfal_add_new_file_desc(gfal_fdesc_container_handle fhandle, gpointer pfile, GError** err){
-	g_return_val_err_if_fail(fhandle && pfile, 0, err, "[gfal_add_new_file_desc] Invalid  arg fhandle and/or pfile");
-	pthread_mutex_lock(&(fhandle->m_container));
-	GError* tmp_err=NULL;
-	GHashTable* c = fhandle->container;
-	int key = gfal_file_key_generatorG(fhandle, &tmp_err);
-	if(key !=0){
-		g_hash_table_insert(c, GINT_TO_POINTER(key), pfile);
-	}
-	if(tmp_err){
-	    gfal2_propagate_prefixed_error(err, tmp_err, __func__);
-	}
-	pthread_mutex_unlock(&(fhandle->m_container));
-	return key;
+int gfal_add_new_file_desc(gfal_fdesc_container_handle fhandle, gpointer pfile,
+        GError** err)
+{
+    g_return_val_err_if_fail(fhandle && pfile, 0, err,
+            "[gfal_add_new_file_desc] Invalid  arg fhandle and/or pfile");
+    pthread_mutex_lock(&(fhandle->m_container));
+    GError* tmp_err = NULL;
+    GHashTable* c = fhandle->container;
+    int key = gfal_file_key_generatorG(fhandle, &tmp_err);
+    if (key != 0) {
+        g_hash_table_insert(c, GINT_TO_POINTER(key), pfile);
+    }
+    if (tmp_err) {
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+    }
+    pthread_mutex_unlock(&(fhandle->m_container));
+    return key;
 }
 
 //return the associated file handle for the given file descriptor or NULL if the key is not present and err is set
-gpointer gfal_get_file_desc(gfal_fdesc_container_handle fhandle, int key, GError** err){
-	pthread_mutex_lock(&(fhandle->m_container));
-	GHashTable* c = fhandle->container;
-	gpointer p =  g_hash_table_lookup(c, GINT_TO_POINTER(key));
-	if(!p)
-        gfal2_set_error(err, gfal2_get_plugins_quark(), EBADF, __func__, "bad file descriptor");
-	pthread_mutex_unlock(&(fhandle->m_container));
-	return p;
+gpointer gfal_get_file_desc(gfal_fdesc_container_handle fhandle, int key,
+        GError** err)
+{
+    pthread_mutex_lock(&(fhandle->m_container));
+    GHashTable* c = fhandle->container;
+    gpointer p = g_hash_table_lookup(c, GINT_TO_POINTER(key));
+    if (!p)
+        gfal2_set_error(err, gfal2_get_plugins_quark(), EBADF, __func__,
+                "bad file descriptor");
+    pthread_mutex_unlock(&(fhandle->m_container));
+    return p;
 }
+
 
 // remove the associated file handle associated with the given file descriptor
 // return true if success else false
-gboolean gfal_remove_file_desc(gfal_fdesc_container_handle fhandle, int key, GError** err){
-	pthread_mutex_lock(&(fhandle->m_container));
-	GHashTable* c = fhandle->container;
-	gboolean p =  g_hash_table_remove(c, GINT_TO_POINTER(key));
-	if(!p)
-        gfal2_set_error(err, gfal2_get_plugins_quark(), EBADF, __func__, "bad file descriptor");
-	pthread_mutex_unlock(&(fhandle->m_container));
-	return p;
- }
-
+gboolean gfal_remove_file_desc(gfal_fdesc_container_handle fhandle, int key,
+        GError** err)
+{
+    pthread_mutex_lock(&(fhandle->m_container));
+    GHashTable* c = fhandle->container;
+    gboolean p = g_hash_table_remove(c, GINT_TO_POINTER(key));
+    if (!p)
+        gfal2_set_error(err, gfal2_get_plugins_quark(), EBADF, __func__,
+                "bad file descriptor");
+    pthread_mutex_unlock(&(fhandle->m_container));
+    return p;
+}
 
 
 //create a new file descriptor container with the given destroyer function to an element of the container
- gfal_fdesc_container_handle gfal_file_descriptor_handle_create(GDestroyNotify destroyer){
-	  gfal_fdesc_container_handle d = calloc(1, sizeof(struct _gfal_file_descriptor_container));
-	  d->container = g_hash_table_new_full(NULL, NULL, NULL, destroyer);
-	  pthread_mutex_init(&(d->m_container),NULL);
-	  return d;
- }
+gfal_fdesc_container_handle gfal_file_descriptor_handle_create(
+        GDestroyNotify destroyer)
+{
+    gfal_fdesc_container_handle d = calloc(1,
+            sizeof(struct _gfal_file_descriptor_container));
+    d->container = g_hash_table_new_full(NULL, NULL, NULL, destroyer);
+    pthread_mutex_init(&(d->m_container), NULL);
+    return d;
+}
 
 
  /*
@@ -110,28 +126,34 @@ gboolean gfal_remove_file_desc(gfal_fdesc_container_handle fhandle, int key, GEr
  *  @param fdesc : original descriptor
  *  @warning need to be free manually
  * */
-gfal_file_handle gfal_file_handle_new(const char*  module_name, gpointer fdesc){
-	gfal_file_handle f = g_new(struct _gfal_file_handle_,1);
-	g_strlcpy(f->module_name, module_name, GFAL_MODULE_NAME_SIZE);
-	f->lock = g_mutex_new ();
-	f->offset = 0;
-	f->fdesc = fdesc;
-	f->ext_data = NULL;
+gfal_file_handle gfal_file_handle_new(const char* module_name, gpointer fdesc)
+{
+    gfal_file_handle f = g_new(struct _gfal_file_handle_, 1);
+    g_strlcpy(f->module_name, module_name, GFAL_MODULE_NAME_SIZE);
+    f->lock = g_mutex_new();
+    f->offset = 0;
+    f->fdesc = fdesc;
+    f->ext_data = NULL;
     f->path = NULL;
-	return f;
+    return f;
 }
+
 
 /*
  * same than gfal_file_handle but with external data storage support
  */
-gfal_file_handle gfal_file_handle_ext_new(const char*  module_name, gpointer fdesc, gpointer ext_data){
+gfal_file_handle gfal_file_handle_ext_new(const char* module_name,
+        gpointer fdesc, gpointer ext_data)
+{
     return gfal_file_handle_new2(module_name, fdesc, ext_data, NULL);
 }
 
 
-gfal_file_handle gfal_file_handle_new2(const char *module_name, gpointer fdesc, gpointer user_data, const char *file_path){
+gfal_file_handle gfal_file_handle_new2(const char *module_name, gpointer fdesc,
+        gpointer user_data, const char *file_path)
+{
     gfal_file_handle f = gfal_file_handle_new(module_name, fdesc);
-    if(file_path)
+    if (file_path)
         f->path = g_strdup(file_path);
     f->ext_data = user_data;
     return f;
@@ -141,22 +163,28 @@ gfal_file_handle gfal_file_handle_new2(const char *module_name, gpointer fdesc, 
 /**
 * return the file descriptor of this gfal file handle
 */
-gpointer gfal_file_handle_get_fdesc(gfal_file_handle fh){
-	return fh->fdesc;
+gpointer gfal_file_handle_get_fdesc(gfal_file_handle fh)
+{
+    return fh->fdesc;
 }
 
-void gfal_file_handle_set_fdesc(gfal_file_handle fh, gpointer fdesc) {
+
+void gfal_file_handle_set_fdesc(gfal_file_handle fh, gpointer fdesc)
+{
     fh->fdesc = fdesc;
 }
 
 /**
 * return the user data of this gfal file descriptor
 */
-gpointer gfal_file_handle_get_user_data(gfal_file_handle fh){
-	return fh->ext_data;
+gpointer gfal_file_handle_get_user_data(gfal_file_handle fh)
+{
+    return fh->ext_data;
 }
 
-const gchar* gfal_file_handle_get_path(gfal_file_handle fh) {
+
+const gchar* gfal_file_handle_get_path(gfal_file_handle fh)
+{
     return fh->path;
 }
 
@@ -166,33 +194,40 @@ const gchar* gfal_file_handle_get_path(gfal_file_handle fh) {
  * @warning does not free the handle
  *
  * */
-gfal_file_handle gfal_file_handle_bind(gfal_fdesc_container_handle h, int file_desc, GError** err){
-	g_return_val_err_if_fail(file_desc, 0, err, "[gfal_dir_handle_bind] invalid dir descriptor");
-	GError* tmp_err = NULL;
-	gfal_file_handle resu=NULL;
-	resu = gfal_get_file_desc(h, file_desc, &tmp_err);
-	if(tmp_err)
-	    gfal2_propagate_prefixed_error(err, tmp_err, __func__);
-	return resu;
+gfal_file_handle gfal_file_handle_bind(gfal_fdesc_container_handle h,
+        int file_desc, GError** err)
+{
+    g_return_val_err_if_fail(file_desc, 0, err,
+            "[gfal_dir_handle_bind] invalid dir descriptor");
+    GError* tmp_err = NULL;
+    gfal_file_handle resu = NULL;
+    resu = gfal_get_file_desc(h, file_desc, &tmp_err);
+    if (tmp_err)
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+    return resu;
 }
 
 
-void gfal_file_handle_lock(gfal_file_handle fh){
-	g_assert(fh);
-	g_mutex_lock(fh->lock);
+void gfal_file_handle_lock(gfal_file_handle fh)
+{
+    g_assert(fh);
+    g_mutex_lock(fh->lock);
 }
 
-void gfal_file_handle_unlock(gfal_file_handle fh){
-	g_assert(fh);
-	g_mutex_unlock(fh->lock);
+
+void gfal_file_handle_unlock(gfal_file_handle fh)
+{
+    g_assert(fh);
+    g_mutex_unlock(fh->lock);
 }
 
 
 //  Delete a gfal_file handle
-void gfal_file_handle_delete(gfal_file_handle fh){
-	if(fh){
-		g_mutex_free(fh->lock);
+void gfal_file_handle_delete(gfal_file_handle fh)
+{
+    if (fh) {
+        g_mutex_free(fh->lock);
         g_free(fh->path);
-		g_free(fh);
-	}
+        g_free(fh);
+    }
 }

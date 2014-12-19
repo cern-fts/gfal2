@@ -2,40 +2,46 @@
 #ifndef GFALCOREEXCEPTION_H
 #define GFALCOREEXCEPTION_H
 
-/* 
+/*
 * Copyright @ Members of the EMI Collaboration, 2010.
 * See www.eu-emi.eu for details on the copyright holders.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License"); 
-* you may not use this file except in compliance with the License. 
-* You may obtain a copy of the License at 
 *
-*    http://www.apache.org/licenses/LICENSE-2.0 
-* 
-* Unless required by applicable law or agreed to in writing, software 
-* distributed under the License is distributed on an "AS IS" BASIS, 
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-* See the License for the specific language governing permissions and 
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
 * limitations under the License.
 */
 
+#include <exception>
+#include <glib.h>
+#include <string>
 
-#include <glibmm.h>
 
 namespace Gfal{
 
-class CoreException: public Glib::Error
+class CoreException: public std::exception
 {
 	public:
-        CoreException(GQuark scope, const std::string & msg, int mode);
-		CoreException(const Glib::Quark & scope, const std::string & msg, int mode);
+        CoreException(GQuark scope, int code, const std::string & msg);
+        CoreException(const GError* error);
 		virtual ~CoreException() throw();
 
-		virtual const char* message_only() const throw();
+		virtual GQuark domain() const throw ();
+		virtual const char* what() const throw();
+		virtual const std::string& what_str() const throw();
+		virtual int code() const throw();
 
-	
 	private:
-		/* add your private declarations */
+		GQuark _scope;
+		std::string _msg;
+		int _code;
 };
 
 class TransferException: public CoreException {
@@ -43,15 +49,9 @@ public:
     std::string side;
     std::string note;
 
-    TransferException(GQuark scope, const std::string & msg, int code,
+    TransferException(GQuark scope, int code, const std::string & msg,
             const std::string & side, const std::string & note = std::string()):
-                CoreException(scope, msg, code), side(side), note(note)
-    {
-    }
-
-    TransferException(const Glib::Quark & scope, const std::string & msg, int code,
-            const std::string & side, const std::string & note = std::string()):
-                CoreException(scope, msg, code), side(side), note(note)
+                CoreException(scope, code, msg), side(side), note(note)
     {
     }
 
@@ -62,4 +62,4 @@ public:
 
 }
 
-#endif /* GFALCOREEXCEPTION_H */ 
+#endif /* GFALCOREEXCEPTION_H */

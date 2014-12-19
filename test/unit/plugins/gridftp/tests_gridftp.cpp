@@ -67,7 +67,7 @@ TEST(gfalGridFTP,handle_creation)
     ASSERT_TRUE(copy != NULL);
     // create and delete properly
     GridFTPSession* session = f->get_session("gsiftp://fsdfdsfsd/fsdfds");
-    f->release_session(session, false);
+    f->release_session(session);
 
     // wild delete for exception clean recovery
     session = f->get_session("gsiftp://fsdfdsfsd/fsdfds");

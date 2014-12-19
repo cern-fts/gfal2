@@ -2,7 +2,7 @@
 #include <glib.h>
 #include "gridftp_dir_reader.h"
 
-static const Glib::Quark GridFTPSimpleReaderQuark("GridftpSimpleListReader::readdir");
+static const GQuark GridFTPSimpleReaderQuark = g_quark_from_static_string("GridftpSimpleListReader::readdir");
 
 
 GridFTPSimpleListReader::GridFTPSimpleListReader(GridFTPModule* gsiftp, const char* path)
@@ -58,7 +58,8 @@ struct dirent* GridFTPSimpleListReader::readdir()
         return NULL;
 
     if (gridftp_readdir_parser(line, &dbuffer) != 0) {
-        throw Glib::Error(GridFTPSimpleReaderQuark, EINVAL, Glib::ustring("Error parsing GridFTP line: ").append(line));
+        throw Gfal::CoreException(GridFTPSimpleReaderQuark, EINVAL,
+                std::string("Error parsing GridFTP line: ").append(line));
     }
 
     // Workaround for LCGUTIL-295
@@ -74,6 +75,6 @@ struct dirent* GridFTPSimpleListReader::readdir()
 
 struct dirent* GridFTPSimpleListReader::readdirpp(struct stat* st)
 {
-    throw Glib::Error(GridFTPSimpleReaderQuark, EBADF,
-                      "Can not call readdirpp after simple readdir");
+    throw Gfal::CoreException(GridFTPSimpleReaderQuark, EBADF,
+            "Can not call readdirpp after simple readdir");
 }

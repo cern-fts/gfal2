@@ -38,26 +38,22 @@
 #include <common/gfal_common_dir_handle.h>
 
 
-/*
- * Implementation of the readdir functions
- *
- */
-inline struct dirent* gfal_posix_internal_readdir(DIR* dir){
-	 GError* tmp_err=NULL;
-	 gfal2_context_t handle;
-	 struct dirent* res= NULL;
 
-	if((handle = gfal_posix_instance()) == NULL){
-		errno = EIO;
-		return NULL;
-	}
+struct dirent* gfal_posix_internal_readdir(DIR* dir)
+{
+    GError* tmp_err = NULL;
+    gfal2_context_t handle;
+    struct dirent* res = NULL;
+
+    if ((handle = gfal_posix_instance()) == NULL) {
+        errno = EIO;
+        return NULL;
+    }
 
     res = gfal2_readdir(handle, dir, &tmp_err);
-	if(tmp_err){
-		gfal_posix_register_internal_error(handle, "[gfal_readdir]", tmp_err);
-		errno = tmp_err->code;
-	}
-	return res;
+    if (tmp_err) {
+        gfal_posix_register_internal_error(handle, "[gfal_readdir]", tmp_err);
+        errno = tmp_err->code;
+    }
+    return res;
 }
-
-

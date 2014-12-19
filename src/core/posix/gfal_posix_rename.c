@@ -32,24 +32,25 @@
 #include <common/gfal_common_plugin.h>
 
 #include "gfal_posix_internal.h"
-
 #include "gfal_posix_api.h"
 
-int gfal_posix_internal_rename(const char* oldpath, const char* newpath){
-	GError* tmp_err = NULL;
-	gfal2_context_t handle;
-	int ret=-1;
 
-	if( (handle = gfal_posix_instance() ) ==NULL){
-		errno = EIO;
-		return -1;
-	}
+int gfal_posix_internal_rename(const char* oldpath, const char* newpath)
+{
+    GError* tmp_err = NULL;
+    gfal2_context_t handle;
+    int ret = -1;
+
+    if ((handle = gfal_posix_instance()) == NULL) {
+        errno = EIO;
+        return -1;
+    }
 
     ret = gfal2_rename(handle, oldpath, newpath, &tmp_err);
-	if(tmp_err){
-		gfal_posix_register_internal_error(handle, "[gfal_rename]", tmp_err);
-		errno = tmp_err->code;
-	}
+    if (tmp_err) {
+        gfal_posix_register_internal_error(handle, "[gfal_rename]", tmp_err);
+        errno = tmp_err->code;
+    }
 
-	return (ret)?-1:0;
+    return (ret) ? -1 : 0;
 }

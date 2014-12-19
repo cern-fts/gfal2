@@ -31,8 +31,10 @@ struct RwStatus
 };
 
 
-static Glib::Quark GFAL_GRIDFTP_SCOPE_REQ_STATE("GridFTPModule::RequestState");
-
+static const GQuark GFAL_GRIDFTP_SCOPE_REQ_STATE = g_quark_from_static_string("GridFTPModule::RequestState");
+static const GQuark GFAL_GRIDFTP_GASS_COPY_HANDLER = g_quark_from_static_string("GridFTPModule::GassCopyAttrHandler");
+static const GQuark GFAL_GRIDFTP_SESSION = g_quark_from_static_string("GridFTPModule::GridFTPSession");
+static const GQuark GFAL_GLOBUS_DONE_SCOPE = g_quark_from_static_string("GridFTPModule::Done");
 
 static std::string gridftp_hostname_from_url(const std::string& url)
 {
@@ -40,8 +42,9 @@ static std::string gridftp_hostname_from_url(const std::string& url)
     char buffer[GFAL_URL_MAX_LEN];
     buffer[0] = '\0';
     const int res = gfal_hostname_from_uri(url.c_str(), buffer, GFAL_URL_MAX_LEN, &tmp_err);
-    if (res < 0)
-        throw Glib::Error(tmp_err);
+    if (res < 0) {
+        throw Gfal::CoreException(tmp_err);
+    }
     return std::string(buffer);
 }
 
@@ -50,11 +53,11 @@ GassCopyAttrHandler::GassCopyAttrHandler(globus_ftp_client_operationattr_t* ftp_
 {
     // initialize gass copy attr
     globus_result_t res = globus_gass_copy_attr_init(&(attr_gass));
-    gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);
+    gfal_globus_check_result(GFAL_GRIDFTP_GASS_COPY_HANDLER, res);
     globus_ftp_client_operationattr_init(&(operation_attr_ftp_for_gass));
     globus_ftp_client_operationattr_copy(&(operation_attr_ftp_for_gass), ftp_operation_attr);
     res = globus_gass_copy_attr_set_ftp(&(attr_gass), &operation_attr_ftp_for_gass);
-    gfal_globus_check_result("GridFTPFactory::globus_gass_copy_handleattr_set_ftp_attr", res);
+    gfal_globus_check_result(GFAL_GRIDFTP_GASS_COPY_HANDLER, res);
 
 }
 
@@ -66,7 +69,7 @@ GassCopyAttrHandler::~GassCopyAttrHandler()
 
 
 GridFTPSessionHandler::GridFTPSessionHandler(GridFTPFactory* f, const std::string &uri) :
-        _isDirty(false), factory(f), hostname(gridftp_hostname_from_url(uri))
+        factory(f), hostname(gridftp_hostname_from_url(uri))
 {
     this->session = f->get_session(this->hostname);
 }
@@ -75,7 +78,7 @@ GridFTPSessionHandler::GridFTPSessionHandler(GridFTPFactory* f, const std::strin
 GridFTPSessionHandler::~GridFTPSessionHandler()
 {
     try {
-        factory->release_session(this->session, this->_isDirty);
+        factory->release_session(this->session);
     }
     catch (const std::exception& e) {
         gfal_log(GFAL_VERBOSE_NORMAL,
@@ -93,29 +96,29 @@ GridFTPSession::GridFTPSession(const std::string& hostname): hostname(hostname)
     globus_result_t res;
 
     res = globus_ftp_client_debug_plugin_init(&debug_ftp_plugin, stderr, "gridftp debug :");
-    gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_ops_attr", res);
+    gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
 
     res = globus_ftp_client_operationattr_init(&operation_attr_ftp);
-    gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_ops_attr", res);
+    gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
 
     res = globus_ftp_client_handleattr_init(&attr_handle);
-    gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle_attr", res);
+    gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
 
     globus_ftp_client_handleattr_set_cache_all(&attr_handle, GLOBUS_TRUE); // enable session re-use
     if (gfal_get_verbose() & GFAL_VERBOSE_TRACE_PLUGIN)
         globus_ftp_client_handleattr_add_plugin(&attr_handle, &debug_ftp_plugin);
 
     res = globus_gass_copy_handleattr_init(&gass_handle_attr);
-    gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);
+    gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
 
     res = globus_gass_copy_handleattr_set_ftp_attr(&gass_handle_attr, &attr_handle);
-    gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);
+    gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
 
     res = globus_gass_copy_handle_init(&gass_handle, &gass_handle_attr);
-    gfal_globus_check_result("GridFTPFactory::gfal_globus_ftp_take_handle", res);
+    gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
 
     res = globus_gass_copy_get_ftp_handle(&gass_handle, &handle_ftp);
-    gfal_globus_check_result("GridFTPFactory::GridFTP_session", res);
+    gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
 
     this->set_nb_streams(0);
 }
@@ -219,16 +222,17 @@ void gfal_globus_set_credentials(const char* ucert, const char* ukey, globus_ftp
     std::stringstream buffer;
     std::ifstream cert_stream(ucert);
     if (!cert_stream.good()) {
-        throw Glib::Error(GFAL_GRIDFTP_SCOPE_REQ_STATE, errno,
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_REQ_STATE, errno,
                 "Could not open the user certificate");
     }
 
     buffer << cert_stream.rdbuf();
     if (ukey && strcmp(ucert, ukey) != 0) {
         std::ifstream key_stream(ukey);
-        if (key_stream.bad())
-            throw Glib::Error(GFAL_GRIDFTP_SCOPE_REQ_STATE, errno,
+        if (key_stream.bad()) {
+            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_REQ_STATE, errno,
                     "Could not open the user private key");
+        }
         buffer << key_stream.rdbuf();
     }
 
@@ -259,7 +263,7 @@ void gfal_globus_set_credentials(const char* ucert, const char* ukey, globus_ftp
 
         err_buffer << " (" << globus_errno << ")";
 
-        throw Glib::Error(GFAL_GRIDFTP_SCOPE_REQ_STATE, globus_errno,
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_REQ_STATE, globus_errno,
                 err_buffer.str());
     }
     globus_ftp_client_operationattr_set_authorization(
@@ -271,7 +275,7 @@ globus_ftp_client_handle_t* GridFTPSessionHandler::get_ftp_client_handle()
 {
     globus_result_t res = globus_gass_copy_get_ftp_handle(&(session->gass_handle),
             &(session->handle_ftp));
-    gfal_globus_check_result("GridFTPFactory::GridFTP_session", res);
+    gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
     return &(session->handle_ftp);
 }
 
@@ -293,20 +297,16 @@ globus_gass_copy_handleattr_t* GridFTPSessionHandler::get_gass_copy_handleattr()
     return &(session->gass_handle_attr);
 }
 
+
 globus_ftp_client_handleattr_t* GridFTPSessionHandler::get_ftp_client_handleattr()
 {
     return &(session->attr_handle);
 }
 
+
 GridFTPFactory* GridFTPSessionHandler::get_factory()
 {
     return factory;
-}
-
-
-void GridFTPSessionHandler::disable_reuse()
-{
-    _isDirty = true;
 }
 
 
@@ -318,32 +318,38 @@ GridFTPFactory::GridFTPFactory(gfal2_context_t handle) :
             GRIDFTP_CONFIG_SESSION_REUSE, &tmp_err);
     gfal_log(GFAL_VERBOSE_TRACE, " define GSIFTP session re-use to %s",
             (session_reuse) ? "TRUE" : "FALSE");
-    if (tmp_err)
-        throw Glib::Error(tmp_err);
+    if (tmp_err) {
+        throw Gfal::CoreException(tmp_err);
+    }
     size_cache = 400;
+    globus_mutex_init(&mux_cache, NULL);
 }
 
 
 void GridFTPFactory::clear_cache()
 {
+    globus_mutex_lock(&mux_cache);
+
     gfal_log(GFAL_VERBOSE_TRACE, "gridftp session cache garbage collection ...");
     std::multimap<std::string, GridFTPSession*>::iterator it;
     for (it = session_cache.begin(); it != session_cache.end(); ++it) {
         delete (*it).second;
     }
     session_cache.clear();
+    globus_mutex_unlock(&mux_cache);
 }
 
 
 void GridFTPFactory::recycle_session(GridFTPSession* session)
 {
-    Glib::Mutex::Lock l(mux_cache);
+    globus_mutex_lock(&mux_cache);
 
     if (session_cache.size() > size_cache)
         clear_cache();
 
     gfal_log(GFAL_VERBOSE_TRACE, "insert gridftp session for %s in cache ...", session->hostname.c_str());
     session_cache.insert(std::pair<std::string, GridFTPSession*>(session->hostname, session));
+    globus_mutex_unlock(&mux_cache);
 }
 
 
@@ -351,11 +357,14 @@ void GridFTPFactory::recycle_session(GridFTPSession* session)
 GridFTPSession* GridFTPFactory::get_recycled_handle(
         const std::string & hostname)
 {
-    Glib::Mutex::Lock l(mux_cache);
+    globus_mutex_lock(&mux_cache);
+
     GridFTPSession* session = NULL;
-    std::multimap<std::string, GridFTPSession*>::iterator it = session_cache.find(
-            hostname); // try to find a session explicitly associated with this handle
-    if (it == session_cache.end()) { // if no session found, take a generic one
+    // try to find a session explicitly associated with this handle
+    std::multimap<std::string, GridFTPSession*>::iterator it = session_cache.find(hostname);
+
+    // if no session found, take a generic one
+    if (it == session_cache.end()) {
         gfal_log(GFAL_VERBOSE_TRACE,
                 "no session associated with this hostname, try find generic one .... ");
         it = session_cache.begin();
@@ -368,6 +377,8 @@ GridFTPSession* GridFTPFactory::get_recycled_handle(
     else {
         gfal_log(GFAL_VERBOSE_TRACE, "no session found in cache for %s!", hostname.c_str());
     }
+
+    globus_mutex_unlock(&mux_cache);
     return session;
 }
 
@@ -375,7 +386,6 @@ GridFTPSession* GridFTPFactory::get_recycled_handle(
 GridFTPFactory::~GridFTPFactory()
 {
     try {
-        Glib::Mutex::Lock l(mux_cache);
         clear_cache();
     }
     catch (const std::exception & e) {
@@ -386,6 +396,7 @@ GridFTPFactory::~GridFTPFactory()
         gfal_log(GFAL_VERBOSE_NORMAL,
                 "Caught an unknown exception inside ~GridFTPFactory()!!");
     }
+    globus_mutex_destroy(&mux_cache);
 }
 
 
@@ -447,7 +458,7 @@ int gfal_globus_error_convert(globus_object_t * error, char ** str_error)
 
 
 static
-void gfal_globus_check_error(const Glib::Quark & scope, globus_object_t * error)
+void gfal_globus_check_error(GQuark scope, globus_object_t * error)
 {
     if (error != GLOBUS_SUCCESS) {
         int globus_errno;
@@ -461,20 +472,19 @@ void gfal_globus_check_error(const Glib::Quark & scope, globus_object_t * error)
             g_free(glob_str);
         }
         globus_object_free(error);
-        throw Gfal::CoreException(scope, errbuff, globus_errno);
+        throw Gfal::CoreException(scope, globus_errno, errbuff);
     }
 }
 
 
-void gfal_globus_check_result(const Glib::Quark & scope, globus_result_t res)
+void gfal_globus_check_result(GQuark scope, globus_result_t res)
 {
     if (res != GLOBUS_SUCCESS) {
 
         globus_object_t * error = globus_error_get(res); // get error from result code
         if (error == NULL)
-            throw Gfal::CoreException(scope,
-                    "Unknown error: unable to map result code to globus error",
-                    EINVAL);
+            throw Gfal::CoreException(scope, EINVAL,
+                    "Unknown error: unable to map result code to globus error");
         gfal_globus_check_error(scope, error);
     }
 }
@@ -514,11 +524,12 @@ GridFTPSession* GridFTPFactory::get_session(const std::string &hostname)
 }
 
 
-void GridFTPFactory::release_session(GridFTPSession* session, bool destroy)
+void GridFTPFactory::release_session(GridFTPSession* session)
 {
     session_reuse = gfal2_get_opt_boolean_with_default(gfal2_context, GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_SESSION_REUSE, FALSE);
-    if (session_reuse && !destroy)
+    if (session_reuse) {
         recycle_session(session);
+    }
     else {
         gfal_log(GFAL_VERBOSE_TRACE, "destroy gridftp session for %s ...", session->hostname.c_str());
         delete session;
@@ -532,18 +543,18 @@ void gfal_globus_done_callback(void* user_args,
 {
     GridFTPRequestState* state = (GridFTPRequestState*) user_args;
 
-    globus_mutex_lock(&state->lock);
+    globus_mutex_lock(&state->mutex);
     if (globus_error != GLOBUS_SUCCESS) {
         char *err_buffer;
         int err_code = gfal_globus_error_convert(globus_error, &err_buffer);
         char err_static[128];
         g_strlcpy(err_static, err_buffer, sizeof(err_static));
         g_free(err_buffer);
-        state->error = new Gfal::CoreException(Glib::Quark(""), err_static, err_code);
+        state->error = new Gfal::CoreException(GFAL_GLOBUS_DONE_SCOPE, err_code, err_static);
     }
     state->done = true;
     globus_cond_signal(&state->cond);
-    globus_mutex_unlock(&state->lock);
+    globus_mutex_unlock(&state->mutex);
 }
 
 
@@ -570,20 +581,20 @@ GridFTPRequestState::GridFTPRequestState(GridFTPSessionHandler* s,
 {
     this->default_timeout = gfal2_get_opt_integer_with_default(
             s->get_factory()->get_gfal2_context(), GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_OP_TIMEOUT, 300);
-    globus_mutex_init(&lock, NULL);
+    globus_mutex_init(&mutex, NULL);
     globus_cond_init(&cond, NULL);
 }
 
 
 GridFTPRequestState::~GridFTPRequestState()
 {
-    globus_mutex_destroy(&lock);
-    globus_cond_destroy(&cond);
-    delete error;
     if (!done) {
         this->cancel(GFAL_GRIDFTP_SCOPE_REQ_STATE,
                 "GridFTPRequestState destructor called before the operation finished!");
     }
+    globus_mutex_destroy(&mutex);
+    globus_cond_destroy(&cond);
+    delete error;
 }
 
 
@@ -591,11 +602,11 @@ static
 void gridftp_cancel(gfal2_context_t context, void* userdata)
 {
     GridFTPRequestState* state = (GridFTPRequestState*)userdata;
-    state->cancel(g_quark_to_string(gfal_cancel_quark()), "Operation canceled from gfal2_cancel");
+    state->cancel(gfal_cancel_quark(), "Operation canceled from gfal2_cancel");
 }
 
 
-void GridFTPRequestState::wait(const Glib::Quark &scope, time_t timeout)
+void GridFTPRequestState::wait(GQuark scope, time_t timeout)
 {
     if (timeout < 0)
         timeout = default_timeout;
@@ -604,34 +615,40 @@ void GridFTPRequestState::wait(const Glib::Quark &scope, time_t timeout)
             timeout);
 
     globus_abstime_t timeout_expires;
-            GlobusTimeAbstimeGetCurrent(timeout_expires);
-            timeout_expires.tv_sec += timeout;
+    GlobusTimeAbstimeGetCurrent(timeout_expires);
+    timeout_expires.tv_sec += timeout;
 
     gfal_cancel_token_t cancel_token;
     cancel_token = gfal2_register_cancel_callback(handler->get_factory()->get_gfal2_context(), gridftp_cancel, this);
 
-    globus_mutex_lock(&lock);
+    globus_mutex_lock(&mutex);
     int wait_ret = 0;
-    while (!done) {
-        wait_ret = globus_cond_timedwait(&cond, &lock, &timeout_expires);
+    while (!done && wait_ret != ETIMEDOUT) {
+        wait_ret = globus_cond_timedwait(&cond, &mutex, &timeout_expires);
     }
-    globus_mutex_unlock(&lock);
+    globus_mutex_unlock(&mutex);
 
     gfal2_remove_cancel_callback(handler->get_factory()->get_gfal2_context(), cancel_token);
 
-    if (wait_ret == ETIMEDOUT)
-        throw Gfal::CoreException(scope, "Operation timed out", ETIMEDOUT);
+    // Operation expired, so cancel and raise an error
+    if (wait_ret == ETIMEDOUT) {
+        gfal_log(GFAL_VERBOSE_TRACE,
+                "   [GridFTP_Request_state::wait_callback] Operation timeout of %d seconds expired, canceling...",
+                timeout);
+        gridftp_cancel(handler->get_factory()->get_gfal2_context(), this);
+        throw Gfal::CoreException(scope, ETIMEDOUT, "Operation timed out");
+    }
 
     if (error) {
-        if (error->domain() != Glib::Quark("").id())
-            throw Gfal::CoreException(scope, error->what(), error->code());
+        if (error->domain() != 0)
+            throw Gfal::CoreException(scope, error->code(), error->what());
         else
             throw *error;
     }
 }
 
 
-void GridFTPRequestState::cancel(const Glib::Quark &scope, const std::string& msg)
+void GridFTPRequestState::cancel(GQuark scope, const std::string& msg)
 {
     if (request_type == GRIDFTP_REQUEST_FTP) {
         globus_ftp_client_abort(handler->get_ftp_client_handle());
@@ -639,8 +656,9 @@ void GridFTPRequestState::cancel(const Glib::Quark &scope, const std::string& ms
     else {
         globus_gass_copy_cancel(handler->get_gass_copy_handle(),
                 globus_gass_client_done_callback, this);
+        this->wait(scope, default_timeout);
     }
-    error = new Gfal::CoreException(scope, msg, ECANCELED);
+    error = new Gfal::CoreException(scope, ECANCELED, msg);
 }
 
 
@@ -667,7 +685,7 @@ void gfal_stream_done_callback_err_handling(GridFTPStreamState* state,
         char err_static[128];
         g_strlcpy(err_static, err_buffer, sizeof(err_static));
         g_free(err_buffer);
-        state->error = new Gfal::CoreException(Glib::Quark(""), err_static, err_code);
+        state->error = new Gfal::CoreException(GFAL_GLOBUS_DONE_SCOPE, err_code, err_static);
     }
 
     state->offset += length;
@@ -682,7 +700,7 @@ void gfal_griftp_stream_read_done_callback(void *user_arg,
         globus_bool_t eof)
 {
     GridFTPStreamState* state = static_cast<GridFTPStreamState*>(user_arg);
-    globus_mutex_lock(&state->lock);
+    globus_mutex_lock(&state->mutex);
 
     gfal_stream_done_callback_err_handling(state, handle, error, buffer, length,
             offset, eof);
@@ -704,7 +722,7 @@ void gfal_griftp_stream_read_done_callback(void *user_arg,
                             state);
     }
 
-    globus_mutex_unlock(&state->lock);
+    globus_mutex_unlock(&state->mutex);
 }
 
 
@@ -715,7 +733,7 @@ void gfal_griftp_stream_write_done_callback(void *user_arg,
         globus_bool_t eof)
 {
     GridFTPStreamState* state = static_cast<GridFTPStreamState*>(user_arg);
-    globus_mutex_lock(&state->lock);
+    globus_mutex_lock(&state->mutex);
 
     gfal_stream_done_callback_err_handling(state, handle, error, buffer, length,
             offset, eof);
@@ -723,11 +741,11 @@ void gfal_griftp_stream_write_done_callback(void *user_arg,
     state->done = true;
 
     globus_cond_signal(&state->cond);
-    globus_mutex_unlock(&state->lock);
+    globus_mutex_unlock(&state->mutex);
 }
 
 
-ssize_t gridftp_read_stream(const Glib::Quark & scope,
+ssize_t gridftp_read_stream(GQuark scope,
         GridFTPStreamState* stream, void* buffer, size_t s_read, bool expect_eof)
 {
     gfal_log(GFAL_VERBOSE_TRACE, "  -> [gridftp_read_stream]");
@@ -751,7 +769,7 @@ ssize_t gridftp_read_stream(const Glib::Quark & scope,
 }
 
 
-ssize_t gridftp_write_stream(const Glib::Quark & scope,
+ssize_t gridftp_write_stream(GQuark scope,
         GridFTPStreamState* stream, const void* buffer, size_t s_write,
         bool eof)
 {

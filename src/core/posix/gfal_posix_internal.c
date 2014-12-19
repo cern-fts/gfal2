@@ -35,47 +35,52 @@
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_internal.h>
 
-
-
 #include "gfal_posix_internal.h"
-
 
 
 pthread_mutex_t m_instance = PTHREAD_MUTEX_INITIALIZER;
 static gfal2_context_t handle = NULL;
-
 static __thread GError* last_error = NULL;
 
-static void gfal_posix_free_handle(void) {
+
+static void gfal_posix_free_handle(void)
+{
     gfal_handle_freeG(handle);
 }
 
-inline gfal2_context_t gfal_posix_instance(){
-	if(handle == NULL){
+
+gfal2_context_t gfal_posix_instance()
+{
+    if (handle == NULL) {
         pthread_mutex_lock(&m_instance);
         if (handle == NULL) {
             handle = gfal_initG(&last_error);
         }
         atexit(gfal_posix_free_handle);
         pthread_mutex_unlock(&m_instance);
-	}
-	return handle;
+    }
+    return handle;
 }
 
-inline GError** gfal_posix_get_last_error(){
-	return &last_error;
+
+GError** gfal_posix_get_last_error()
+{
+    return &last_error;
 }
 
 
 /*
  *  register the last error in the handle and display a VERBOSE warning if an error was registered and not deleted
  * */
-inline void gfal_posix_register_internal_error(gfal2_context_t mhandle, const char* prefix, GError * tmp_err){
-	GError** err = gfal_posix_get_last_error();
-	if(*err != NULL){
-		gfal_log(GFAL_VERBOSE_NORMAL, "%s Warning : existing registered error replaced ! old err : %s ", prefix, (*err)->message);
-		g_clear_error(err);
-	}
-	gfal2_propagate_prefixed_error(err, tmp_err, prefix);
+void gfal_posix_register_internal_error(gfal2_context_t mhandle,
+        const char* prefix, GError * tmp_err)
+{
+    GError** err = gfal_posix_get_last_error();
+    if (*err != NULL) {
+        gfal_log(GFAL_VERBOSE_NORMAL,
+                "%s Warning : existing registered error replaced ! old err : %s ",
+                prefix, (*err)->message);
+        g_clear_error(err);
+    }
+    gfal2_propagate_prefixed_error(err, tmp_err, prefix);
 }
-

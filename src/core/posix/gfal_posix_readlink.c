@@ -33,25 +33,24 @@
 #include <common/gfal_types.h>
 #include <common/gfal_common_plugin.h>
 
- /*
-  *  internal implementation of gfal_readlink
-  * */
-inline ssize_t gfal_posix_internal_readlink(const char* path, char* buf, size_t buffsiz){
-	gfal2_context_t handle;
-	GError* tmp_err = NULL;
-	ssize_t ret = -1;
 
-	if( (handle = gfal_posix_instance()) == NULL){
-		errno = EIO;
-		return -1;
-	}
+
+ssize_t gfal_posix_internal_readlink(const char* path, char* buf,
+        size_t buffsiz)
+{
+    gfal2_context_t handle;
+    GError* tmp_err = NULL;
+    ssize_t ret = -1;
+
+    if ((handle = gfal_posix_instance()) == NULL) {
+        errno = EIO;
+        return -1;
+    }
 
     ret = gfal2_readlink(handle, path, buf, buffsiz, &tmp_err);
-	if(tmp_err){ // error reported
-		gfal_posix_register_internal_error(handle, "[gfal_readlink]", tmp_err);
-		errno = tmp_err->code;
-	}
-	return ret;
+    if (tmp_err) { // error reported
+        gfal_posix_register_internal_error(handle, "[gfal_readlink]", tmp_err);
+        errno = tmp_err->code;
+    }
+    return ret;
 }
-
-
