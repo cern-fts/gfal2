@@ -24,7 +24,6 @@ BuildRequires:      glib2-devel
 %else
 BuildRequires:      glib2-devel
 %endif
-BuildRequires:      glibmm24-devel
 BuildRequires:      libattr-devel
 BuildRequires:      openldap-devel
 %if ! 0%{?el5}

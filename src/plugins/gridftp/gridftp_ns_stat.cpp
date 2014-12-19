@@ -21,15 +21,17 @@
 #include "gridftpwrapper.h"
 
 
-static Glib::Quark GFAL_GRIDFTP_SCOPE_STAT("Gridftp_stat_module::stat");
-static Glib::Quark GFAL_GRIDFTP_SCOPE_ACCESS("Gridftp_stat_module::access");
+static const GQuark GFAL_GRIDFTP_SCOPE_STAT = g_quark_from_static_string("Gridftp_stat_module::stat");
+static const GQuark GFAL_GRIDFTP_SCOPE_ACCESS = g_quark_from_static_string("Gridftp_stat_module::access");
 
 
 void GridFTPModule::stat(const char* path, struct stat * st)
 {
-    if (path == NULL || st == NULL)
-        throw Glib::Error(GFAL_GRIDFTP_SCOPE_STAT, EINVAL,
+    if (path == NULL || st == NULL) {
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_STAT, EINVAL,
                 "Invalid arguments path or stat ");
+    }
+
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::stat] ");
     globus_gass_copy_glob_stat_t gl_stat;
     memset(&gl_stat, 0, sizeof(globus_gass_copy_glob_stat_t));
@@ -53,10 +55,10 @@ void GridFTPModule::stat(const char* path, struct stat * st)
 
 void GridFTPModule::access(const char* path, int mode)
 {
-    if (path == NULL)
-        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_STAT,
-                "Invalid arguments path or stat ",
-                EINVAL);
+    if (path == NULL) {
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_STAT, EINVAL,
+                "Invalid arguments path or stat ");
+    }
 
     gfal_log(GFAL_VERBOSE_TRACE, " -> [Gridftp_stat_module::access] ");
     globus_gass_copy_glob_stat_t gl_stat;
@@ -71,20 +73,20 @@ void GridFTPModule::access(const char* path, int mode)
     }
 
     const mode_t file_mode = (mode_t) gl_stat.mode;
-    if (((file_mode & ( S_IRUSR | S_IRGRP | S_IROTH)) == FALSE)
-            && (mode & R_OK))
-        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_ACCESS,
-                "No read access ", EACCES);
+    if (((file_mode & ( S_IRUSR | S_IRGRP | S_IROTH)) == FALSE) && (mode & R_OK)) {
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_ACCESS, EACCES,
+                "No read access");
+    }
 
-    if (((file_mode & ( S_IWUSR | S_IWGRP | S_IWOTH)) == FALSE)
-            && (mode & W_OK))
-        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_ACCESS,
-                "No write access ", EACCES);
+    if (((file_mode & ( S_IWUSR | S_IWGRP | S_IWOTH)) == FALSE) && (mode & W_OK)) {
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_ACCESS, EACCES,
+                "No write access");
+    }
 
-    if (((file_mode & ( S_IXUSR | S_IXGRP | S_IXOTH)) == FALSE)
-            && (mode & X_OK))
-        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_ACCESS,
-                "No execute access ", EACCES);
+    if (((file_mode & ( S_IXUSR | S_IXGRP | S_IXOTH)) == FALSE) && (mode & X_OK)) {
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_ACCESS, EACCES,
+                "No execute access");
+    }
 
     gfal_log(GFAL_VERBOSE_TRACE, " <- [Gridftp_stat_module::access] ");
 }

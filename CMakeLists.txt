@@ -72,10 +72,8 @@ include_directories(${CMAKE_SOURCE_DIR}/src/utils)
 
 # Core and plugins
 IF(NOT ONLY_TESTS)
-    pkg_search_module(GLIBMM_PKG REQUIRED glibmm glibmm-2.6 glibmm-2.4)
     pkg_check_modules(UUID_PKG REQUIRED uuid)
 
-    include_directories(${GLIBMM_PKG_INCLUDE_DIRS})
 
    # general parameters for configuration
     add_definitions( -DGFAL_PLUGIN_DIR_DEFAULT="${PLUGIN_INSTALL_DIR}" )

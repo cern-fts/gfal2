@@ -21,10 +21,10 @@
 
 #include <ctime>
 #include <algorithm>
+#include <map>
 #include <memory>
 
 #include <glib.h>
-#include <glibmm.h>
 
 #include <globus_ftp_client.h>
 #include <globus_gass_copy.h>
@@ -55,13 +55,13 @@ class GridFTPRequestState {
     GridFTPRequestState(GridFTPSessionHandler * s, GridFTPRequestType request_type = GRIDFTP_REQUEST_FTP);
 	virtual ~GridFTPRequestState();
 
-	void wait(const Glib::Quark &scope, time_t timeout = -1);
-	void cancel(const Glib::Quark &scope, const std::string& msg);
+	void wait(GQuark scope, time_t timeout = -1);
+	void cancel(GQuark scope, const std::string& msg);
 
 	GridFTPSessionHandler* handler;
 	GridFTPRequestType request_type;
 
-    globus_mutex_t lock;
+    globus_mutex_t mutex;
     globus_cond_t cond;
     Gfal::CoreException* error;
     bool done;
@@ -163,7 +163,7 @@ private:
     unsigned int size_cache;
     // session cache
     std::multimap<std::string, GridFTPSession*> session_cache;
-    Glib::Mutex mux_cache;
+    globus_mutex_t mux_cache;
 
     void recycle_session(GridFTPSession* sess);
     void clear_cache();
@@ -181,12 +181,12 @@ void globus_gass_client_done_callback(
         globus_object_t * error);
 
 // do atomic read operation from globus async call
-ssize_t gridftp_read_stream(const Glib::Quark & scope,
+ssize_t gridftp_read_stream(GQuark scope,
         GridFTPStreamState* stream, void* buffer, size_t s_read,
         bool expect_eof);
 
 // do atomic write operation from globus async call
-ssize_t gridftp_write_stream(const Glib::Quark & scope,
+ssize_t gridftp_write_stream(GQuark scope,
         GridFTPStreamState* stream, const void* buffer, size_t s_write,
         bool eof);
 
@@ -196,7 +196,7 @@ ssize_t gridftp_write_stream(const Glib::Quark & scope,
 int gfal_globus_error_convert(globus_object_t * error, char ** str_error);
 
 // throw Glib::Error if error associated with this result
-void gfal_globus_check_result(const Glib::Quark & scope, globus_result_t res);
+void gfal_globus_check_result(GQuark scope, globus_result_t res);
 
 void gfal_globus_set_credentials(gfal2_context_t, globus_ftp_client_operationattr_t*);
 

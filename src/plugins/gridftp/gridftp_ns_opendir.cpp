@@ -18,7 +18,7 @@
 #include "gridftp_namespace.h"
 #include "gridftp_plugin.h"
 
-static const Glib::Quark GFAL_GRIDFTP_SCOPE_OPENDIR("gfal_gridftp_opendirG");
+static const GQuark GFAL_GRIDFTP_SCOPE_OPENDIR = g_quark_from_static_string("gfal_gridftp_opendirG");
 
 
 extern "C" gfal_file_handle gfal_gridftp_opendirG(plugin_handle handle,

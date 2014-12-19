@@ -18,14 +18,16 @@
 #include <exceptions/cpp_to_gerror.hpp>
 
 
-static Glib::Quark GFAL_GRIDFTP_SCOPE_RMDIR("GridFTPModule::rmdir");
+static const GQuark GFAL_GRIDFTP_SCOPE_RMDIR = g_quark_from_static_string("GridFTPModule::rmdir");
 
 
 void GridFTPModule::rmdir(const char* path)
 {
-    if (path == NULL)
-        throw Glib::Error(GFAL_GRIDFTP_SCOPE_RMDIR, EINVAL,
+    if (path == NULL) {
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_RMDIR, EINVAL,
                 "Invalid arguments path");
+    }
+
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::rmdir] ");
 
     try {
@@ -40,9 +42,9 @@ void GridFTPModule::rmdir(const char* path)
         // wait for answer
         req.wait(GFAL_GRIDFTP_SCOPE_RMDIR);
     }
-    catch (Glib::Error & e) {
+    catch (Gfal::CoreException & e) {
         if (e.code() == EEXIST) // false ENOTEMPTY errno, do conversion
-            throw Glib::Error(e.domain(), ENOTEMPTY, e.what());
+            throw Gfal::CoreException(e.domain(), ENOTEMPTY, e.what());
         throw e;
     }
 

@@ -18,7 +18,6 @@ Requires:		cmake%{?_isa}
 Requires:		gfal2-devel%{?_isa}
 Requires:		gfal2-all%{?_isa}
 Requires:		voms-clients%{?_isa}
-Requires:		glibmm24-devel%{?_isa}
 Requires:		libattr-devel%{?_isa}
 Requires:		openldap-devel%{?_isa}
 #tests dependencies

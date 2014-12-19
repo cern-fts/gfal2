@@ -14,7 +14,7 @@ IF (PLUGIN_GRIDFTP)
         pkg_check_modules(GLOBUS_GASS_COPY_PKG REQUIRED globus-gass-copy)
 
         include_directories( "../ " "../libcpp/" ${GLIB2_PKG_INCLUDE_DIRS}
-                                                ${GTHREAD2_PKG_INCLUDE_DIRS}  ${GLIBMM_PKG_INCLUDE_DIRS})
+                                                ${GTHREAD2_PKG_INCLUDE_DIRS})
 
         add_definitions( ${GLOBUS_GASS_COPY_PKG_CFLAGS}    ${OpenMP_C_FLAGS})
 

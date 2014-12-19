@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright @ Members of the EMI Collaboration, 2010.
  * See www.eu-emi.eu for details on the copyright holders.
  *
@@ -17,16 +17,14 @@
 
 #include "gfalcoreexception.hpp"
 
-Gfal::CoreException::CoreException(GQuark scope, const std::string & msg, int code):
-        Glib::Error(scope, code, msg)
+Gfal::CoreException::CoreException(GQuark scope, int code, const std::string& msg):
+        _scope(scope), _msg(msg), _code(code)
 {
-
 }
 
-Gfal::CoreException::CoreException(const Glib::Quark & scope, const std::string & msg, int code) :
-        Glib::Error(scope.id(), code, msg)
+Gfal::CoreException::CoreException(const GError* error):
+    _scope(error->domain), _msg(error->message), _code(error->code)
 {
-
 }
 
 Gfal::CoreException::~CoreException() throw ()
@@ -34,7 +32,22 @@ Gfal::CoreException::~CoreException() throw ()
 
 }
 
-const char* Gfal::CoreException::message_only() const throw ()
+GQuark Gfal::CoreException::domain() const throw ()
 {
-    return what().c_str();
+    return _scope;
+}
+
+const char* Gfal::CoreException::what() const throw ()
+{
+    return _msg.c_str();
+}
+
+const std::string& Gfal::CoreException::what_str() const throw ()
+{
+    return _msg;
+}
+
+int Gfal::CoreException::code() const throw ()
+{
+    return _code;
 }

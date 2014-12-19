@@ -18,14 +18,15 @@
 #include <exceptions/cpp_to_gerror.hpp>
 
 
-static Glib::Quark GFAL_GRIDFTP_SCOPE_CHMOD("GridFTPModule::chmod");
+static const GQuark GFAL_GRIDFTP_SCOPE_CHMOD = g_quark_from_static_string("GridFTPModule::chmod");
 
 
 void GridFTPModule::chmod(const char* path, mode_t mode)
 {
-    if (path == NULL)
-        throw Glib::Error(GFAL_GRIDFTP_SCOPE_CHMOD, EINVAL,
-                "Invalid arguments path or mode ");
+    if (path == NULL) {
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_CHMOD, EINVAL,
+                "Invalid arguments path or mode");
+    }
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::chmod] ");
 
     GridFTPSessionHandler handler(_handle_factory, path);

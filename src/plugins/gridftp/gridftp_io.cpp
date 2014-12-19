@@ -21,13 +21,13 @@
 #include "gridftp_namespace.h"
 #include "gridftp_plugin.h"
 
-static Glib::Quark GFAL_GRIDFTP_SCOPE_OPEN("GridFTPModule::open");
-static Glib::Quark GFAL_GRIDFTP_SCOPE_READ("GridFTPModule::read");
-static Glib::Quark GFAL_GRIDFTP_SCOPE_INTERNAL_PREAD("GridFTPModule::internal_pread");
-static Glib::Quark GFAL_GRIDFTP_SCOPE_WRITE("GridFTPModule::write");
-static Glib::Quark GFAL_GRIDFTP_SCOPE_INTERNAL_PWRITE("GridFTPModule::internal_pwrite");
-static Glib::Quark GFAL_GRIDFTP_SCOPE_LSEEK("GridFTPModule::lseek");
-static Glib::Quark GFAL_GRIDFTP_SCOPE_CLOSE("GridFTPModule::close");
+static const GQuark GFAL_GRIDFTP_SCOPE_OPEN = g_quark_from_static_string("GridFTPModule::open");
+static const GQuark GFAL_GRIDFTP_SCOPE_READ = g_quark_from_static_string("GridFTPModule::read");
+static const GQuark GFAL_GRIDFTP_SCOPE_INTERNAL_PREAD = g_quark_from_static_string("GridFTPModule::internal_pread");
+static const GQuark GFAL_GRIDFTP_SCOPE_WRITE = g_quark_from_static_string("GridFTPModule::write");
+static const GQuark GFAL_GRIDFTP_SCOPE_INTERNAL_PWRITE = g_quark_from_static_string("GridFTPModule::internal_pwrite");
+static const GQuark GFAL_GRIDFTP_SCOPE_LSEEK = g_quark_from_static_string("GridFTPModule::lseek");
+static const GQuark GFAL_GRIDFTP_SCOPE_CLOSE = g_quark_from_static_string("GridFTPModule::close");
 
 
 const size_t readdir_len = 65000;
@@ -39,7 +39,7 @@ struct GridFTPFileDesc {
     int open_flags;
     off_t current_offset;
     std::string url;
-    Glib::Mutex lock;
+    globus_mutex_t mutex;
 
     GridFTPFileDesc(GridFTPSessionHandler* h, GridFTPRequestState* r,
             GridFTPStreamState * s, const std::string & _url, int flags) :
@@ -49,6 +49,7 @@ struct GridFTPFileDesc {
         this->open_flags = flags;
         current_offset = 0;
         url = _url;
+        globus_mutex_init(&mutex, NULL);
     }
 
     virtual ~GridFTPFileDesc()
@@ -57,6 +58,7 @@ struct GridFTPFileDesc {
         delete stream;
         delete request;
         delete handler;
+        globus_mutex_destroy(&mutex);
     }
 
     bool is_not_seeked()
@@ -90,7 +92,7 @@ inline bool is_write_only(int open_flags)
 }
 
 
-inline int gridftp_rw_commit_put(const Glib::Quark & scope, GridFTPFileDesc* desc)
+inline int gridftp_rw_commit_put(GQuark scope, GridFTPFileDesc* desc)
 {
     char buffer[2];
     if (is_write_only(desc->open_flags) && desc->stream && !desc->stream->eof) {
@@ -178,7 +180,7 @@ gfal_file_handle GridFTPModule::open(const char* url, int flag, mode_t mode)
         if (check_file_exists && !this->exists(url)) {
             char err_buff[2048];
             snprintf(err_buff, 2048, " gridftp open error : %s on url %s", strerror(ENOENT), url);
-            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_OPEN, err_buff, ENOENT);
+            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_OPEN, ENOENT, err_buff);
         }
     }
 
@@ -215,16 +217,23 @@ ssize_t GridFTPModule::read(gfal_file_handle handle, void* buffer, size_t count)
     GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(gfal_file_handle_get_fdesc(handle));
     ssize_t ret;
 
-    Glib::Mutex::Lock locker(desc->lock);
-    if (desc->is_not_seeked() && is_read_only(desc->open_flags) && desc->stream != NULL) {
-        gfal_log(GFAL_VERBOSE_TRACE, " read in the GET main flow ... ");
-        ret = gridftp_read_stream(GFAL_GRIDFTP_SCOPE_READ, desc->stream, buffer, count, false);
+    globus_mutex_lock(&desc->mutex);
+    try {
+        if (desc->is_not_seeked() && is_read_only(desc->open_flags) && desc->stream != NULL) {
+            gfal_log(GFAL_VERBOSE_TRACE, " read in the GET main flow ... ");
+            ret = gridftp_read_stream(GFAL_GRIDFTP_SCOPE_READ, desc->stream, buffer, count, false);
+        }
+        else {
+            gfal_log(GFAL_VERBOSE_TRACE, " read with a pread ... ");
+            ret = gridftp_rw_internal_pread(_handle_factory, desc, buffer, count, desc->current_offset);
+        }
     }
-    else {
-        gfal_log(GFAL_VERBOSE_TRACE, " read with a pread ... ");
-        ret = gridftp_rw_internal_pread(_handle_factory, desc, buffer, count, desc->current_offset);
+    catch (...) {
+        globus_mutex_unlock(&desc->mutex);
+        throw;
     }
     desc->current_offset += ret;
+    globus_mutex_unlock(&desc->mutex);
     return ret;
 }
 
@@ -235,16 +244,23 @@ ssize_t GridFTPModule::write(gfal_file_handle handle, const void* buffer,
     GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(gfal_file_handle_get_fdesc(handle));
     ssize_t ret;
 
-    Glib::Mutex::Lock locker(desc->lock);
-    if (desc->is_not_seeked() && is_write_only(desc->open_flags) && desc->stream != NULL) {
-        gfal_log(GFAL_VERBOSE_TRACE, " write in the PUT main flow ... ");
-        ret = gridftp_write_stream(GFAL_GRIDFTP_SCOPE_WRITE, desc->stream, buffer, count, false);
+    globus_mutex_lock(&desc->mutex);
+    try {
+        if (desc->is_not_seeked() && is_write_only(desc->open_flags) && desc->stream != NULL) {
+            gfal_log(GFAL_VERBOSE_TRACE, " write in the PUT main flow ... ");
+            ret = gridftp_write_stream(GFAL_GRIDFTP_SCOPE_WRITE, desc->stream, buffer, count, false);
+        }
+        else {
+            gfal_log(GFAL_VERBOSE_TRACE, " write with a pwrite ... ");
+            ret = gridftp_rw_internal_pwrite(_handle_factory, desc, buffer, count, desc->current_offset);
+        }
     }
-    else {
-        gfal_log(GFAL_VERBOSE_TRACE, " write with a pwrite ... ");
-        ret = gridftp_rw_internal_pwrite(_handle_factory, desc, buffer, count, desc->current_offset);
+    catch (...) {
+        globus_mutex_unlock(&desc->mutex);
+        throw;
     }
     desc->current_offset += ret;
+    globus_mutex_unlock(&desc->mutex);
     return ret;
 }
 
@@ -269,50 +285,57 @@ ssize_t GridFTPModule::pwrite(gfal_file_handle handle, const void* buffer,
 off_t GridFTPModule::lseek(gfal_file_handle handle, off_t offset, int whence)
 {
     GridFTPFileDesc* desc = static_cast<GridFTPFileDesc*>(gfal_file_handle_get_fdesc(handle));
-    Glib::Mutex::Lock locker(desc->lock);
+    globus_mutex_lock(&desc->mutex);
 
-    // Calculate new offset
-    off_t new_offset;
-    switch (whence) {
-        case SEEK_SET:
-            new_offset = offset;
-            break;
-        case SEEK_CUR:
-            new_offset = desc->current_offset + offset;
-            break;
-        case SEEK_END:
-        default:
-            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_LSEEK, "Invalid whence", EINVAL);
-    }
-
-    // If the new offset is the same we have, we are good
-    // This is done to avoid seeking when actually the reads/writes are done sequentially
-    // This happens, for instance, with gfalFS, which will do parallel writes and reads, but
-    // in order
-    if (new_offset == desc->current_offset) {
-        gfal_log(GFAL_VERBOSE_VERBOSE, "New and current offsets are the same (%lld), so do not seek",
-                (long long)(new_offset));
-        return desc->current_offset;
-    }
-
-    gfal_log(GFAL_VERBOSE_VERBOSE, "New offset set to %lld", (long long)(new_offset));
-
-    // If the new offset does not correspond with the current offset,
-    // abort initial GET/PUT operation if running
-    if (!desc->request->done) {
-        gfal_log(GFAL_VERBOSE_VERBOSE, "Abort GridFTP request done at open(...)");
-        globus_ftp_client_abort(desc->handler->get_ftp_client_handle());
-        try {
-            desc->request->wait(GFAL_GRIDFTP_SCOPE_LSEEK);
+    try {
+        // Calculate new offset
+        off_t new_offset;
+        switch (whence) {
+            case SEEK_SET:
+                new_offset = offset;
+                break;
+            case SEEK_CUR:
+                new_offset = desc->current_offset + offset;
+                break;
+            case SEEK_END:
+            default:
+                throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_LSEEK, EINVAL, "Invalid whence");
         }
-        catch (const Gfal::CoreException& e) {
-            if (e.code() != ECANCELED)
-                throw;
-        }
-    }
-    desc->reset();
-    desc->current_offset = new_offset;
 
+        // If the new offset is the same we have, we are good
+        // This is done to avoid seeking when actually the reads/writes are done sequentially
+        // This happens, for instance, with gfalFS, which will do parallel writes and reads, but
+        // in order
+        if (new_offset == desc->current_offset) {
+            gfal_log(GFAL_VERBOSE_VERBOSE, "New and current offsets are the same (%lld), so do not seek",
+                    (long long)(new_offset));
+            globus_mutex_unlock(&desc->mutex);
+            return desc->current_offset;
+        }
+
+        gfal_log(GFAL_VERBOSE_VERBOSE, "New offset set to %lld", (long long)(new_offset));
+
+        // If the new offset does not correspond with the current offset,
+        // abort initial GET/PUT operation if running
+        if (!desc->request->done) {
+            gfal_log(GFAL_VERBOSE_VERBOSE, "Abort GridFTP request done at open(...)");
+            globus_ftp_client_abort(desc->handler->get_ftp_client_handle());
+            try {
+                desc->request->wait(GFAL_GRIDFTP_SCOPE_LSEEK);
+            }
+            catch (const Gfal::CoreException& e) {
+                if (e.code() != ECANCELED)
+                    throw;
+            }
+        }
+        desc->reset();
+        desc->current_offset = new_offset;
+    }
+    catch (...) {
+        globus_mutex_unlock(&desc->mutex);
+        throw;
+    }
+    globus_mutex_unlock(&desc->mutex);
     return desc->current_offset;
 }
 
