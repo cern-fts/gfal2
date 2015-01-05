@@ -1,3 +1,21 @@
+/*
+* Copyright @ CERN, 2014.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+#include <string>
+#include <vector>
+
 #include "gridftp_filecopy.h"
 #include "gridftpwrapper.h"
 #include "gridftp_namespace.h"
@@ -7,7 +25,7 @@
 #include <checksums/checksums.h>
 
 
-static const Glib::Quark GSIFTP_BULK_DOMAIN("GridFTP::Filecopy");
+static const GQuark GSIFTP_BULK_DOMAIN = g_quark_from_static_string("GridFTP::Filecopy");
 
 
 struct GridFTPBulkData {
@@ -278,7 +296,7 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
                 pairs->srcs[pairs->index], &ftp_operation_attr,
                 pairs->dsts[pairs->index], &ftp_operation_attr,
                 GLOBUS_NULL, gridftp_done_callback, pairs);
-        gfal_globus_check_result("gridftp_bulk_copy", globus_return);
+        gfal_globus_check_result(GSIFTP_BULK_DOMAIN, globus_return);
 
         globus_mutex_lock(&pairs->lock);
 
@@ -312,8 +330,8 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
         }
     }
     catch (const Gfal::CoreException& e) {
-        gfal_log(GFAL_VERBOSE_NORMAL, "Bulk transfer failed with %s", e.what().c_str());
-        gfal2_set_error(op_error, e.domain(), e.code(), __func__, "%s", e.what().c_str());
+        gfal_log(GFAL_VERBOSE_NORMAL, "Bulk transfer failed with %s", e.what());
+        gfal2_set_error(op_error, e.domain(), e.code(), __func__, "%s", e.what());
         res = -1;
     }
 
@@ -402,7 +420,7 @@ int gridftp_bulk_prepare_destination(plugin_handle plugin_data,
         gfal2_context_t context, GridFTPBulkData* pairs, GError** file_errors)
 {
     int nfailed = 0;
-    std::list<std::string> created_parents;
+    std::vector<std::string> created_parents;
 
     for (size_t i = 0; i < pairs->nbfiles; ++i) {
         // May have failed when preparing the source!
@@ -435,7 +453,7 @@ int gridftp_bulk_prepare_destination(plugin_handle plugin_data,
                 }
                 catch (const Gfal::TransferException& e) {
                     gfal2_set_error(&(file_errors[i]), GSIFTP_BULK_DOMAIN, e.code(),
-                            __func__, "%s", e.what().c_str());
+                            __func__, "%s", e.what());
                     pairs->errn[i] = e.code();
                 }
             }

@@ -68,9 +68,9 @@ typedef gfal_plugin_interface* (*gfal_plugin_init_t)(gfal2_context_t handle, GEr
  *  the minimum calls are : getName, plugin_delete, check_plugin_url
  *  all the unused function pointers must be set to NULL
  */
-struct _gfal_plugin_interface{
+struct _gfal_plugin_interface {
 	 //! @cond
-     // internal gfal data : touching this triggers the death of a kitty
+     // internal gfal data: do not modify it
 	void * gfal_data;
 	//! @endcond
 
@@ -542,12 +542,19 @@ struct _gfal_plugin_interface{
 };
 
 //! @cond
-struct _plugin_opts{
-	gfal_plugin_interface plugin_list[MAX_PLUGIN_LIST];
+struct _plugin_opts {
+    gfal_plugin_interface plugin_list[MAX_PLUGIN_LIST];
     GList* sorted_plugin;
-	int plugin_number;
+    int plugin_number;
 };
 //! @endcond
+
+/**
+ * Trigger plugin instantiation from the client code
+ * The passed interface is copied, so you can, if needed, free it after the call
+ */
+int gfal2_register_plugin(gfal2_context_t handle, const gfal_plugin_interface* ifce,
+        GError** error);
 
 
 // internal API for inter plugin communication
@@ -555,8 +562,6 @@ struct _plugin_opts{
 int gfal_plugins_accessG(gfal2_context_t handle, const char* path, int mode, GError** err);
 int gfal_plugin_rmdirG(gfal2_context_t handle, const char* path, GError** err);
 ssize_t gfal_plugin_readlinkG(gfal2_context_t handle, const char* path, char* buff, size_t buffsiz, GError** err);
-
-
 
 
 int gfal_plugin_chmodG(gfal2_context_t handle, const char* path, mode_t mode, GError** err);
@@ -626,5 +631,3 @@ int gfal_plugin_abort_filesG(gfal2_context_t handle, int nbfiles, const char* co
 
 
 #endif
-
-

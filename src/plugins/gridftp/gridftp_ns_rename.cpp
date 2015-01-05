@@ -17,14 +17,15 @@
 #include "gridftpwrapper.h"
 #include <exceptions/cpp_to_gerror.hpp>
 
-static const Glib::Quark GFAL_GRIDFTP_SCOPE_RENAME("GridFTPModule::rmdir");
+static const GQuark GFAL_GRIDFTP_SCOPE_RENAME = g_quark_from_static_string("GridFTPModule::rmdir");
 
 
 void GridFTPModule::rename(const char* src, const char* dst)
 {
-    if (src == NULL || dst == NULL)
-        throw Glib::Error(GFAL_GRIDFTP_SCOPE_RENAME, EINVAL,
+    if (src == NULL || dst == NULL) {
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_RENAME, EINVAL,
                 "Invalid source and/or destination");
+    }
 
     gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::rename] ");
 
@@ -55,7 +56,7 @@ int gfal_gridftp_renameG(plugin_handle handle, const char * oldurl,
     CPP_GERROR_TRY
                 (static_cast<GridFTPModule*>(handle))->rename(oldurl, newurl);
                 ret = 0;
-            CPP_GERROR_CATCH(&tmp_err);
+    CPP_GERROR_CATCH(&tmp_err);
     gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_rename]<-");
     G_RETURN_ERR(ret, tmp_err, err);
 }

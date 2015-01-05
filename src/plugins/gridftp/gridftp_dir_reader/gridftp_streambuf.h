@@ -10,7 +10,7 @@ protected:
     GridFTPStreamState* gstream;
     char buffer[4096];
 
-    Glib::Quark quark;
+    GQuark quark;
 
     ssize_t fetch_more() {
         ssize_t rsize = gridftp_read_stream(quark, gstream, buffer, sizeof(buffer) - 1, false);
@@ -19,7 +19,7 @@ protected:
     }
 
 public:
-    GridFTPStreamBuffer(GridFTPStreamState* gsiftp_stream, const Glib::Quark& quark):
+    GridFTPStreamBuffer(GridFTPStreamState* gsiftp_stream, GQuark quark):
         gstream(gsiftp_stream), quark(quark) {
         fetch_more();
     }

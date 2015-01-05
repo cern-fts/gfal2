@@ -35,26 +35,22 @@
 #include  <common/gfal_constants.h>
 
 
-/*
- * Implementation of the rmdir function
- *
- * */
-int gfal_posix_internal_rmdir(const char* path){
-    GError* tmp_err=NULL;
-    gfal2_context_t handle;
-    int res= -1;
 
-    if((handle = gfal_posix_instance()) == NULL){
+int gfal_posix_internal_rmdir(const char* path)
+{
+    GError* tmp_err = NULL;
+    gfal2_context_t handle;
+    int res = -1;
+
+    if ((handle = gfal_posix_instance()) == NULL) {
         errno = EIO;
         return -1;
     }
 
-    res =gfal2_rmdir(handle, path, &tmp_err);
-    if(tmp_err){
+    res = gfal2_rmdir(handle, path, &tmp_err);
+    if (tmp_err) {
         gfal_posix_register_internal_error(handle, "[gfal_rmdir]", tmp_err);
         errno = tmp_err->code;
     }
     return res;
-
 }
-

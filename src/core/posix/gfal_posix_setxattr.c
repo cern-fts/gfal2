@@ -37,30 +37,22 @@
 
 
 
-/*
- *  set a value to a extended attribute
- * */
-int gfal_posix_internal_setxattr (const char *path, const char *name,
-			   const void *value, size_t size, int flags){
-	 GError* tmp_err=NULL;
-	 gfal2_context_t handle;
-	 int res= -1;
+int gfal_posix_internal_setxattr(const char *path, const char *name,
+        const void *value, size_t size, int flags)
+{
+    GError* tmp_err = NULL;
+    gfal2_context_t handle;
+    int res = -1;
 
-	if((handle = gfal_posix_instance()) == NULL){
-		errno = EIO;
-		return -1;
-	}
+    if ((handle = gfal_posix_instance()) == NULL) {
+        errno = EIO;
+        return -1;
+    }
 
     res = gfal2_setxattr(handle, path, name, value, size, flags, &tmp_err);
-	if(tmp_err){
-		gfal_posix_register_internal_error(handle, "[gfal_setxattr]", tmp_err);
-		errno = tmp_err->code;
-	}
-	return res;
-
-
+    if (tmp_err) {
+        gfal_posix_register_internal_error(handle, "[gfal_setxattr]", tmp_err);
+        errno = tmp_err->code;
+    }
+    return res;
 }
-
-
-
-

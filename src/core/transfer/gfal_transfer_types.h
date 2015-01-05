@@ -102,7 +102,7 @@ typedef void (*gfalt_event_func)(const gfalt_event_t e, gpointer user_data);
 
 // plugin reserved API
 //! @cond
-typedef struct _gfalt_hook_transfer_plugin{
+typedef struct _gfalt_hook_transfer_plugin {
     gpointer plugin_transfer_data;
     int status;
     size_t average_baudrate;
@@ -112,6 +112,7 @@ typedef struct _gfalt_hook_transfer_plugin{
     void* futur_usage[25];
 } gfalt_hook_transfer_plugin_t;
 //! @endcond
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

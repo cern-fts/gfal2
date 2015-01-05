@@ -1,14 +1,14 @@
 cmake_minimum_required (VERSION 2.6)
 
 if (MAIN_TRANSFER)
-        file (GLOB src_trans "*.cpp" )
+        file (GLOB src_trans "*.c")
         list (APPEND header_transfer "gfal_transfer.h" "gfal_transfer_types.h" "gfal_transfer_plugins.h")
 
-        add_definitions( ${GLIB2_PKG_CFLAGS} ${GTHREAD2_PKG_CFLAGS} ${GLIBMM_PKG_CFLAGS})
+        add_definitions( ${GLIB2_PKG_CFLAGS} ${GTHREAD2_PKG_CFLAGS})
 
-        add_library(gfal2_transfer  SHARED ${src_trans} ${src_libcpp} ${src_exceptions} ${gfal2_utils_src})
+        add_library(gfal2_transfer  SHARED ${src_trans} ${gfal2_utils_src})
         target_link_libraries(gfal2_transfer ${GLIB2_PKG_LIBRARIES} ${GTHREAD2_PKG_LIBRARIES})
-        target_link_libraries(gfal2_transfer ${UUID_PKG_LIBRARIES} ${OUTPUT_NAME_MAIN} ${GLIBMM_PKG_LIBRARIES})
+        target_link_libraries(gfal2_transfer ${UUID_PKG_LIBRARIES} ${OUTPUT_NAME_MAIN})
 
         set_target_properties(gfal2_transfer PROPERTIES
                                      LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/src/core
@@ -30,4 +30,3 @@ if (MAIN_TRANSFER)
                 DESTINATION ${DOC_INSTALL_DIR})
 
 endif (MAIN_TRANSFER)
-

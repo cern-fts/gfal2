@@ -23,13 +23,16 @@
 #include <cancel/gfal_cancel.h>
 
 // fiel descriptor checksum calculation
-GQuark gfal_checksum_file_quark(){
+GQuark gfal_checksum_file_quark()
+{
     return gfal2_get_core_quark();
 }
 
+
 int gfal2_checksum(gfal2_context_t handle, const char* url, const char* check_type,
                  off_t start_offset, size_t data_length,
-                char * checksum_buffer, size_t buffer_length, GError ** err){
+                char * checksum_buffer, size_t buffer_length, GError ** err)
+{
     if( !(handle != NULL && url != NULL && check_type != NULL
                              && checksum_buffer != NULL && buffer_length != 0)){
         g_set_error(err, gfal_checksum_file_quark(),EFAULT, "Invalid parameters to %s",__func__);

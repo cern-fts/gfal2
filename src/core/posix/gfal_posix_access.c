@@ -35,20 +35,21 @@
 #include <common/gfal_constants.h>
 
 
-int gfal_posix_internal_access (const char *path, int amode){
-	int resu = -1;
-	GError* tmp_err=NULL;
-	gfal2_context_t handle;
+int gfal_posix_internal_access(const char *path, int amode)
+{
+    int resu = -1;
+    GError* tmp_err = NULL;
+    gfal2_context_t handle;
 
-	if((handle = gfal_posix_instance()) == NULL){
-		errno = EIO;
-		return -1;
-	}
+    if ((handle = gfal_posix_instance()) == NULL) {
+        errno = EIO;
+        return -1;
+    }
 
     resu = gfal2_access(handle, path, amode, &tmp_err);
-	if(tmp_err){ // error reported
-		gfal_posix_register_internal_error(handle, "[gfal_access]", tmp_err);
-		errno = tmp_err->code;
-	}
-	return (resu)?(-1):0;
+    if (tmp_err) { // error reported
+        gfal_posix_register_internal_error(handle, "[gfal_access]", tmp_err);
+        errno = tmp_err->code;
+    }
+    return (resu) ? (-1) : 0;
 }

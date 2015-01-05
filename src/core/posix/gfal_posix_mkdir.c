@@ -35,26 +35,23 @@
 #include <common/gfal_constants.h>
 
 
-/*
- * Implementation of the mkdir function
- *
- * */
- int gfal_posix_internal_mkdir(const char* path, mode_t mode){
-	 GError* tmp_err=NULL;
-	 gfal2_context_t handle;
-	 int res= -1;
 
-	if((handle = gfal_posix_instance()) == NULL){
-		errno = EIO;
-		return -1;
-	}
+ int gfal_posix_internal_mkdir(const char* path, mode_t mode)
+{
+    GError* tmp_err = NULL;
+    gfal2_context_t handle;
+    int res = -1;
+
+    if ((handle = gfal_posix_instance()) == NULL) {
+        errno = EIO;
+        return -1;
+    }
 
     res = gfal2_mkdir(handle, path, mode, &tmp_err);
-	if(tmp_err){
-		gfal_posix_register_internal_error(handle, "[gfal_mkdir]", tmp_err);
-		errno = tmp_err->code;
-	}
-	return res;
+    if (tmp_err) {
+        gfal_posix_register_internal_error(handle, "[gfal_mkdir]", tmp_err);
+        errno = tmp_err->code;
+    }
+    return res;
 
- }
-
+}

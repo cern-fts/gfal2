@@ -38,9 +38,9 @@
 #include <exceptions/gerror_to_cpp.h>
 #include <exceptions/cpp_to_gerror.hpp>
 
-static Glib::Quark GFAL_GRIDFTP_SCOPE_FILECOPY("GridFTPFileCopyModule::FileCopy");
+static const GQuark GFAL_GRIDFTP_SCOPE_FILECOPY = g_quark_from_string("GridFTPFileCopyModule::FileCopy");
 
-static Glib::Quark GFAL_GRIDFTP_DOMAIN_GSIFTP("GSIFTP");
+static const GQuark GFAL_GRIDFTP_DOMAIN_GSIFTP = g_quark_from_string("GSIFTP");
 
 /*IPv6 compatible lookup*/
 static
@@ -104,7 +104,7 @@ std::string return_hostname(const std::string &uri, gboolean use_ipv6)
     gfal_uri parsed;
     gfal_parse_uri(uri.c_str(), &parsed, &error);
     if (error)
-        throw Glib::Error(error);
+        throw Gfal::CoreException(error);
     std::ostringstream str;
     str << lookup_host(parsed.domain, use_ipv6) << ":" << parsed.port;
     return str.str();
@@ -133,9 +133,8 @@ int gridftp_filecopy_delete_existing(GridFTPModule* module,
             char err_buff[GFAL_ERRMSG_LEN];
             snprintf(err_buff, GFAL_ERRMSG_LEN,
                     " Destination already exist %s, Cancel", url);
-            throw Gfal::TransferException(GFAL_GRIDFTP_SCOPE_FILECOPY,
-                    err_buff,
-                    EEXIST, GFALT_ERROR_DESTINATION, GFALT_ERROR_EXISTS);
+            throw Gfal::TransferException(GFAL_GRIDFTP_SCOPE_FILECOPY, EEXIST,
+                    err_buff, GFALT_ERROR_DESTINATION, GFALT_ERROR_EXISTS);
         }
     }
     return 0;
@@ -167,10 +166,11 @@ void gridftp_create_parent_copy(GridFTPModule* module, gfalt_params_t params,
 
             try {
                 module->stat(current_uri, &st);
-                if (!S_ISDIR(st.st_mode))
-                    throw Gfal::TransferException(GFAL_GRIDFTP_SCOPE_FILECOPY,
+                if (!S_ISDIR(st.st_mode)) {
+                    throw Gfal::TransferException(GFAL_GRIDFTP_SCOPE_FILECOPY, ENOTDIR,
                             "The parent of the destination file exists, but it is not a directory",
-                            ENOTDIR, GFALT_ERROR_DESTINATION);
+                            GFALT_ERROR_DESTINATION);
+                }
                 return;
             }
             catch (Gfal::CoreException& e) {
@@ -184,10 +184,9 @@ void gridftp_create_parent_copy(GridFTPModule* module, gfalt_params_t params,
             Gfal::gerror_to_cpp(&tmp_err);
         }
         else {
-            throw Gfal::TransferException(GFAL_GRIDFTP_SCOPE_FILECOPY,
-                    "Impossible to create directory " + std::string(current_uri)
-                            + " : invalid path",
-                    EINVAL, GFALT_ERROR_DESTINATION);
+            throw Gfal::TransferException(GFAL_GRIDFTP_SCOPE_FILECOPY, EINVAL,
+                    "Impossible to create directory " + std::string(current_uri) + " : invalid path",
+                    GFALT_ERROR_DESTINATION);
         }
         gfal_log(GFAL_VERBOSE_TRACE, " [gridftp_create_parent_copy] <-");
     }
@@ -326,7 +325,7 @@ void gridftp_do_copy(GridFTPModule* module, GridFTPFactory* factory,
             (char*) dst, &(gass_attr_dst.attr_gass),
             globus_gass_client_done_callback, &req);
 
-    gfal_globus_check_result("GridFTPFileCopyModule::filecopy", res);
+    gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_FILECOPY, res);
     req.wait(GFAL_GRIDFTP_SCOPE_FILECOPY, timeout);
 }
 
@@ -381,15 +380,14 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
     }
     catch (Gfal::CoreException& e) {
         // Try again if the failure was related to udt
-        if (e.what().find("udt driver not whitelisted")
-                != Glib::ustring::npos) {
+        if (e.what_str().find("udt driver not whitelisted") != std::string::npos) {
             gfal_log(GFAL_VERBOSE_VERBOSE,
                     "UDT transfer failed! Disabling and retrying...");
 
             plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP, GFAL_EVENT_NONE,
                     g_quark_from_static_string("UDT:DISABLE"),
                     "UDT failed. Falling back to default mode: %s",
-                    e.what().c_str());
+                    e.what());
 
             handler.session->set_udt(false);
             gridftp_do_copy(module, factory, params, src, dst, req, timeout);
@@ -415,8 +413,7 @@ void gridftp_checksum_transfer_verify(const char * src_chk, const char* dst_chk,
         if (gfal_compare_checksums(src_chk, dst_chk, GFAL_URL_MAX_LEN) != 0) {
             ss << "SRC and DST checksum are different. Source: " << src_chk
                     << " Destination: " << dst_chk;
-            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_FILECOPY, ss.str(),
-            EIO);
+            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_FILECOPY, EIO, ss.str());
         }
     }
     else {
@@ -425,16 +422,14 @@ void gridftp_checksum_transfer_verify(const char * src_chk, const char* dst_chk,
                         GFAL_URL_MAX_LEN) != 0) {
             ss << "USER_DEFINE and SRC checksums are different. "
                     << user_defined_chk << " != " << src_chk;
-            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_FILECOPY, ss.str(),
-            EIO);
+            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_FILECOPY, EIO, ss.str());
         }
 
         if (gfal_compare_checksums(dst_chk, user_defined_chk, GFAL_URL_MAX_LEN)
                 != 0) {
             ss << "USER_DEFINE and DST checksums are different. "
                     << user_defined_chk << " != " << dst_chk;
-            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_FILECOPY, ss.str(),
-            EIO);
+            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_FILECOPY, EIO, ss.str());
         }
     }
 }
@@ -525,14 +520,14 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
                         checksum_type, checksum_src);
             }
         }
-        catch (const Glib::Error &e) {
-            throw Gfal::TransferException(e.domain(), e.what(), e.code(),
+        catch (const Gfal::CoreException &e) {
+            throw Gfal::TransferException(e.domain(), e.code(), e.what(),
                     GFALT_ERROR_SOURCE);
         }
         catch (...) {
-            throw Gfal::TransferException(GFAL_GRIDFTP_DOMAIN_GSIFTP,
+            throw Gfal::TransferException(GFAL_GRIDFTP_DOMAIN_GSIFTP, EIO,
                     "Undefined Exception caught while getting the source checksum!!",
-                    EIO, GFALT_ERROR_SOURCE);
+                    GFALT_ERROR_SOURCE);
         }
     }
 
@@ -549,14 +544,14 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
         catch (Gfal::TransferException & e) {
             throw;
         }
-        catch (Glib::Error & e) {
+        catch (const Gfal::CoreException & e) {
             autoCleanFileCopy(params, transfer_error, dst);
-            throw Gfal::TransferException(e.domain(), e.what(), e.code(),
+            throw Gfal::TransferException(e.domain(), e.code(), e.what(),
                     GFALT_ERROR_TRANSFER);
         }
         catch (std::exception & e) {
             autoCleanFileCopy(params, transfer_error, dst);
-            throw Gfal::TransferException(GFAL_GRIDFTP_DOMAIN_GSIFTP, e.what(), EIO,
+            throw Gfal::TransferException(GFAL_GRIDFTP_DOMAIN_GSIFTP, EIO, e.what(),
                     GFALT_ERROR_TRANSFER, "UNEXPECTED");
         }
         catch (...) {
@@ -582,13 +577,13 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
             gridftp_checksum_transfer_verify(checksum_src, checksum_dst,
                     checksum_user_defined);
         }
-        catch (Glib::Error & e) {
-            throw Gfal::TransferException(e.domain(), e.what(), e.code(),
+        catch (const Gfal::CoreException& e) {
+            throw Gfal::TransferException(e.domain(), e.code(), e.what(),
                     GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM);
         }
         catch (...) {
-            throw Gfal::TransferException(GFAL_GRIDFTP_DOMAIN_GSIFTP,
-                    "Unexpected exception", EIO, GFALT_ERROR_TRANSFER);
+            throw Gfal::TransferException(GFAL_GRIDFTP_DOMAIN_GSIFTP, EIO,
+                    "Unexpected exception", GFALT_ERROR_TRANSFER);
         }
 
         plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
@@ -614,7 +609,7 @@ extern "C" int gridftp_plugin_filecopy(plugin_handle handle, gfal2_context_t con
                 (static_cast<GridFTPModule*>(handle))->filecopy(params, src,
                         dst);
                 ret = 0;
-            CPP_GERROR_CATCH(&tmp_err);
+    CPP_GERROR_CATCH(&tmp_err);
     gfal_log(GFAL_VERBOSE_TRACE, "  [gridftp_plugin_filecopy]<-");
     G_RETURN_ERR(ret, tmp_err, err);
 }

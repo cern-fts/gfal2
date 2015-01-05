@@ -1,6 +1,6 @@
 #include "gridftp_dir_reader.h"
 
-static const Glib::Quark GridftpListReaderQuark("GridftpSimpleListReader::readdir");
+static const GQuark GridftpListReaderQuark = g_quark_from_static_string("GridftpSimpleListReader::readdir");
 
 // From gridftp_ns_stat.cpp
 extern globus_result_t parse_mlst_line(char *line, globus_gass_copy_glob_stat_t *stat_info,
@@ -82,7 +82,8 @@ struct dirent* GridFTPListReader::readdirpp(struct stat* st)
     char* unparsed = strdup(line.c_str());
     if (parse_mlst_line(unparsed, &gl_stat, dbuffer.d_name, sizeof(dbuffer.d_name)) != GLOBUS_SUCCESS) {
         free(unparsed);
-        throw Glib::Error(GridftpListReaderQuark, EINVAL, Glib::ustring("Error parsing GridFTP line: '").append(line).append("\'"));
+        throw Gfal::CoreException(GridftpListReaderQuark, EINVAL,
+                std::string("Error parsing GridFTP line: '").append(line).append("\'"));
     }
     free(unparsed);
 

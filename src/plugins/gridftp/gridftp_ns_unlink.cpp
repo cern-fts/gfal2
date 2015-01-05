@@ -17,7 +17,7 @@
 #include "gridftp_namespace.h"
 #include <exceptions/cpp_to_gerror.hpp>
 
-static Glib::Quark GFAL_GRIDFTP_SCOPE_UNLINK("GridFTPModule::unlink");
+static const GQuark GFAL_GRIDFTP_SCOPE_UNLINK = g_quark_from_static_string("GridFTPModule::unlink");
 
 
 void gridftp_unlink_internal(gfal2_context_t context, GridFTPSessionHandler* sess, const char * path)
@@ -36,9 +36,10 @@ void gridftp_unlink_internal(gfal2_context_t context, GridFTPSessionHandler* ses
 
 void GridFTPModule::unlink(const char* path)
 {
-    if (path == NULL)
-        throw Glib::Error(GFAL_GRIDFTP_SCOPE_UNLINK, EINVAL,
+    if (path == NULL) {
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_UNLINK, EINVAL,
                 "Invalid arguments path");
+    }
 
     GridFTPSessionHandler handler(_handle_factory, path);
     gridftp_unlink_internal(_handle_factory->get_gfal2_context(), &handler, path);
