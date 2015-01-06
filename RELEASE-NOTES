@@ -1,5 +1,44 @@
 GFAL2 RELEASE-NOTES:
 
+* Tue Jan 06 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.8.1
+- [DMC-529] - [EPEL7 Only] GridFTP fails to load the configured credentials
+- [DMC-531] - GridFTP Plugin: Partial read and write missing EOF's
+- [DMC-541] - GridFTP and SRM plugins: Transferring from Castor SRM to non-SRM fail with "Connection refused"
+- [DMC-544] - GridFTP Plugin: Map "System error in name: Is a directory" to EISDIR
+- [DMC-553] - SRM Plugin: TURLS retrieved from a SRM endpoint should be of one of the requested protocols
+- [DMC-559] - SRM Plugin: gfal_srm_readdir_pipeline ignore errors
+- [DMC-563] - SRM Plugin: Typo in TURL resolution when copying
+- [DMC-566] - Mock plugin: Only size should be enough to specify the file size
+- [DMC-570] - GridFTP Plugin: Establishing an lfc connection before loading GridFTP makes the GridFTP plugin freeze in most (all?) operations
+- [DMC-580] - Core: Do not try to create parent on "transfer only" copies
+- [DMC-582] - SRM Plugin: Missing parameter in call to gfal2_set_error when the protocol is not expected
+- [DMC-584] - SRM Plugin: Cache does not invalidate entries when removing a directory
+- [DMC-587] - File: CRC32 should be represented in decimal
+- [DMC-596] - SRM Plugin: Getting file:// is a legitimate use case
+- [DMC-597] - GridFTP Plugin: Sessions are not reused
+- [DMC-598] - GridFTP Plugin: Transfer timeout is not taken into account
+- [DMC-601] - Core: Streamed copy buffer should be moved to the heap
+- [DMC-565] - Mock plugin: Reduce default sleep time for transferring to ~5 secs
+- [DMC-530] - SRM plugin doesn't seem to handle urls without path
+- [DMC-533] - GridFTP Plugin: Partial read and write, avoid seeking if not strictly required
+- [DMC-540] - HTTP Plugin: Assume DAV when http/https urls are used
+- [DMC-556] - SRM Plugin: On copies, an error on RELEASE should not be considered an error
+- [DMC-558] - Core: Log when events are triggered
+- [DMC-560] - Core: Notify events also in streamed copies
+- [DMC-568] - GridFTP Plugin: Enforce thread model to pthread
+- [DMC-574] - File Plugin: Package separately
+- [DMC-575] - SRM Plugin: Try listing in chunks when the storage replies "too many results"
+- [DMC-589] - HTTP Plugin: Reduce the verbosity level configured for Davix
+- [DMC-592] - GridFTP Plugin: In bulk copies, avoid redundant parent creation
+- [DMC-562] - SRM Plugin: Trigger events for TURL resolution when copying
+- [DMC-583] - Core: Add call to recover list of installed plugins
+- [DMC-487] - GridFTP Plugin: Refactoring
+- [DMC-536] - SRM Plugin: Protect the srm context with recursive mutexes
+- [DMC-550] - HTTP Plugin: Add option to configure davix log level for debugging
+- [DMC-576] - Merge gfal2, gfal2-core and gfal2-transfer in one single package
+- [DMC-603] - Core: Transfer logic from c++ to c
+- [DMC-604] - Remove dependency on glibmm24
+
 * Mon Nov 17 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.7.8
 - [DMC-553] - TURLS retrieved from a SRM endpoint should be of one of the requested protocols
 
