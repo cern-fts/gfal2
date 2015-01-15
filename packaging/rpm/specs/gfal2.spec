@@ -50,7 +50,7 @@ BuildRequires:      dcap-devel
 #gridftp plugin dependencies
 BuildRequires:      globus-gass-copy-devel
 #http plugin dependencies
-BuildRequires:      davix-devel >= 0.3.0
+BuildRequires:      davix-devel >= 0.4.0
 #tests dependencies
 BuildRequires:      gtest-devel
 

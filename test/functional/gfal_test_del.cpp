@@ -64,7 +64,8 @@ public:
 
     virtual void TearDown() {
         for (int i = 0; i < N_FILES; ++i) {
-            gfal_unlink(files[i]);
+            if (gfal_unlink(files[i]) < 0)
+                gfal_rmdir(files[i]);
         }
     }
 };
@@ -139,6 +140,48 @@ TEST_F(DeleteTest, BulkDeletionOddFail)
         if (i % 2 == 0) {
             ret = gfal2_stat(context, files[i], &st, &err);
             EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, err, ENOENT);
+        }
+    }
+}
+
+TEST_F(DeleteTest, BulkDeletionIsDir)
+{
+    int ret;
+
+    // Remove odd files and create a directory instead
+    for (int i = 0; i < N_FILES; ++i) {
+        GError* err = NULL;
+        if (i % 2) {
+            ret = gfal2_unlink(context, files[i], &err);
+            EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, err);
+            gfal2_mkdir(context, files[i], 0775, &err);
+            EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, err);
+        }
+    }
+
+    GError *errors[N_FILES] = {0};
+    ret = gfal2_unlink_list(context, N_FILES, files, errors);
+    EXPECT_LT(ret, 0);
+
+    for (int i = 0; i < N_FILES; ++i) {
+        if (i % 2) {
+            EXPECT_PRED_FORMAT3(AssertGfalErrno, -1, errors[i], EISDIR);
+        }
+        else {
+            EXPECT_EQ(NULL, errors[i]);
+        }
+    }
+
+    // Were they really removed?
+    struct stat st;
+    for (int i = 0; i < N_FILES; ++i) {
+        GError *err = NULL;
+        ret = gfal2_stat(context, files[i], &st, &err);
+        if (i % 2 == 0) {
+            EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, err, ENOENT);
+        }
+        else {
+            EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, err);
         }
     }
 }

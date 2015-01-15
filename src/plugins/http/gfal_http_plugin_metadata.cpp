@@ -62,21 +62,6 @@ int gfal_http_unlinkG(plugin_handle plugin_data, const char* url, GError** err)
     Davix::RequestParams req_params;
     davix->get_params(&req_params, Davix::Uri(stripped_url));
 
-    // Note: in WebDAV DELETE works for directories and files, so check ourselves
-    // we are not unlinking a folder
-    struct stat st;
-    if (davix->posix.stat(&req_params, stripped_url, &st, &daverr) != 0) {
-      davix2gliberr(daverr, err);
-      Davix::DavixError::clearError(&daverr);
-      return -1;
-    }
-
-    if (S_ISDIR(st.st_mode)) {
-        gfal2_set_error(err, http_plugin_domain, EISDIR, __func__,
-                  "Can not unlink a directory");
-        return -1;
-    }
-
     if (davix->posix.unlink(&req_params, stripped_url, &daverr) != 0) {
       davix2gliberr(daverr, err);
       Davix::DavixError::clearError(&daverr);

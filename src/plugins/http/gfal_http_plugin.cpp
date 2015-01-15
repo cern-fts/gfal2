@@ -243,6 +243,10 @@ static int davix2errno(StatusCode::Code code)
             errcode = EPERM;
             break;
 
+        case StatusCode::IsADirectory:
+            errcode = EISDIR;
+            break;
+
         case StatusCode::IsNotADirectory:
             errcode = ENOTDIR;
             break;
