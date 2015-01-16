@@ -606,9 +606,8 @@ extern "C" int gridftp_plugin_filecopy(plugin_handle handle, gfal2_context_t con
     int ret = -1;
     gfal_log(GFAL_VERBOSE_TRACE, "  -> [gridftp_plugin_filecopy]");
     CPP_GERROR_TRY
-                (static_cast<GridFTPModule*>(handle))->filecopy(params, src,
-                        dst);
-                ret = 0;
+        (static_cast<GridFTPModule*>(handle))->filecopy(params, src, dst);
+        ret = 0;
     CPP_GERROR_CATCH(&tmp_err);
     gfal_log(GFAL_VERBOSE_TRACE, "  [gridftp_plugin_filecopy]<-");
     G_RETURN_ERR(ret, tmp_err, err);
