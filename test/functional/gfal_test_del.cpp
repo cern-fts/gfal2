@@ -158,7 +158,7 @@ TEST_F(DeleteTest, BulkDeletionIsDir)
     // The first must fail
     for (int i = 0; i < N_FILES; ++i) {
         if (i == 0) {
-            EXPECT_PRED_FORMAT3(AssertGfalErrno, -1, errors[i], EISDIR);
+            EXPECT_NE((void*)NULL, errors[i]);
         }
         else {
             EXPECT_EQ(NULL, errors[i]);
