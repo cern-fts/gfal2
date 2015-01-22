@@ -4,14 +4,13 @@ cmake_minimum_required (VERSION 2.6)
 if (PLUGIN_FILE)
     file (GLOB src_file "*.c*")
 
-    pkg_check_modules(ZLIB_PKG REQUIRED zlib)
+    find_package (ZLIB REQUIRED)
 
-
-    include_directories(${ZLIB_PKG_INCLUDE_DIRS})
+    include_directories(${ZLIB_INCLUDE_DIRS})
 
 
     add_library (plugin_file SHARED ${src_file} ${gfal2_src_checksum})
-    target_link_libraries (plugin_file gfal2 ${ZLIB_PKG_LIBRARIES})
+    target_link_libraries (plugin_file gfal2 ${ZLIB_LIBRARIES})
 
 
     set_target_properties(plugin_file   PROPERTIES

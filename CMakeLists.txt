@@ -1,100 +1,86 @@
 ## cmake build script for srm-ifce
 project (gfal2)
 cmake_minimum_required (VERSION 2.6)
-message("cmake source dir : ${CMAKE_SOURCE_DIR}")
+message ("cmake source dir : ${CMAKE_SOURCE_DIR}")
 
 # default set of options
-SET(MAIN_CORE TRUE
-        CACHE STRING "enable compilation of the main library")
-SET(MAIN_TRANSFER TRUE
-        CACHE STRING "enable compilation of the transfer library")
-
-SET(PLUGIN_LFC TRUE
-        CACHE STRING "enable compilation of the lfc plugin")
-SET(PLUGIN_SRM TRUE
-        CACHE STRING "enable compilation of the srm plugin")
-SET(PLUGIN_RFIO TRUE
-        CACHE STRING "enable compilation of the RFIO plugin")
-SET(PLUGIN_DCAP TRUE
-        CACHE STRING "enable compilation of the DCAP plugin")
-SET(PLUGIN_FILE TRUE
-        CACHE STRING "enable compilation of the local File plugin")
-SET(PLUGIN_GRIDFTP TRUE
-        CACHE STRING "enable compilation of the GRIDFTP plugin")
-SET(PLUGIN_HTTP TRUE
-        CACHE STRING "enable compilation of the HTTP plugin")
-SET(PLUGIN_MOCK FALSE
-        CACHE STRING "enable compilation of the MOCK plugin")
+set (MAIN_CORE      TRUE CACHE STRING "enable compilation of the main library")
+set (MAIN_TRANSFER  TRUE CACHE STRING "enable compilation of the transfer library")
+set (PLUGIN_LFC     TRUE CACHE STRING "enable compilation of the lfc plugin")
+set (PLUGIN_SRM     TRUE CACHE STRING "enable compilation of the srm plugin")
+set (PLUGIN_RFIO    TRUE CACHE STRING "enable compilation of the RFIO plugin")
+set (PLUGIN_DCAP    TRUE CACHE STRING "enable compilation of the DCAP plugin")
+set (PLUGIN_FILE    TRUE CACHE STRING "enable compilation of the local File plugin")
+set (PLUGIN_GRIDFTP TRUE CACHE STRING "enable compilation of the GRIDFTP plugin")
+set (PLUGIN_HTTP    TRUE CACHE STRING "enable compilation of the HTTP plugin")
+set (PLUGIN_MOCK    FALSE CACHE STRING "enable compilation of the MOCK plugin")
 
 # build type
-set(CMAKE_BUILD_TYPE "RelWithDebInfo"
-	CACHE STRING "type of build")
+set (CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "type of build")
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
-# load module
+set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
+
+# load modules
 include(DefineInstallationPaths REQUIRED)
 include(MacroCopyFile REQUIRED)
 include(ReleaseDebugAutoFlags REQUIRED)
 include(CMakeGeneratePkgConfig REQUIRED)
 include(MacroAddDoxygen REQUIRED)
 
-find_package(PkgConfig REQUIRED)
-
-#enable testing
-INCLUDE(CTest)
+# enable testing
+include (CTest)
 
 #define PROJECT vars
-set(PROJECT_NAME_MAIN "gfal2")
-set(OUTPUT_NAME_MAIN "gfal2")
+set (PROJECT_NAME_MAIN "gfal2")
+set (OUTPUT_NAME_MAIN "gfal2")
 
-set(PROJECT_NAME_TRANSFER "gfal_transfer")
-set(OUTPUT_NAME_TRANSFER "gfal_transfer")
+set (PROJECT_NAME_TRANSFER "gfal_transfer")
+set (OUTPUT_NAME_TRANSFER "gfal_transfer")
 
-set(VERSION_MAJOR  2)
-set(VERSION_MINOR  9)
-set(VERSION_PATCH  0)
-set(VERSION_STRING ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
+set (VERSION_MAJOR  2)
+set (VERSION_MINOR  9)
+set (VERSION_PATCH  0)
+set (VERSION_STRING ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 # out of project test compilation
-SET(ONLY_TESTS FALSE
-	CACHE STRING "enable or disable out of project dir")
+set (ONLY_TESTS FALSE CACHE STRING "build only the tests")
+set (SKIP_TESTS FALSE CACHE STRING "skip the tests")
 
 # libs checks
-pkg_check_modules(GLIB2_PKG REQUIRED glib-2.0)
-pkg_check_modules(GTHREAD2_PKG REQUIRED gthread-2.0)
+find_package (GLIB2 REQUIRED)
+find_package (GTHREAD2 REQUIRED)
 
 # include directories
-include_directories(${GLIB2_PKG_INCLUDE_DIRS})
-include_directories(${GTHREAD2_PKG_INCLUDE_DIRS})
-include_directories(${CMAKE_SOURCE_DIR}/src/core)
-include_directories(${CMAKE_SOURCE_DIR}/src/utils)
-
+include_directories (${GLIB2_INCLUDE_DIRS})
+include_directories (${GTHREAD2_INCLUDE_DIRS})
+include_directories (${CMAKE_SOURCE_DIR}/src/core)
+include_directories (${CMAKE_SOURCE_DIR}/src/utils)
 
 # Core and plugins
-IF(NOT ONLY_TESTS)
-    pkg_check_modules(UUID_PKG REQUIRED uuid)
-
-
-   # general parameters for configuration
-    add_definitions( -DGFAL_PLUGIN_DIR_DEFAULT="${PLUGIN_INSTALL_DIR}" )
-    add_definitions( -DGFAL_CONFIG_DIR_DEFAULT="${SYSCONF_INSTALL_DIR}" )
+if (NOT ONLY_TESTS)
+    find_package (UUID REQUIRED)
+    
+    # general parameters for configuration
+    add_definitions ( -DGFAL_PLUGIN_DIR_DEFAULT="${PLUGIN_INSTALL_DIR}" )
+    add_definitions ( -DGFAL_CONFIG_DIR_DEFAULT="${SYSCONF_INSTALL_DIR}" )
     # add file offset 64 for 32 bits
-    add_definitions( -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_GNU_SOURCE)
+    add_definitions ( -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_GNU_SOURCE)
 
     #install doc license
-    install(FILES "LICENSE" "README" "RELEASE-NOTES" "DESCRIPTION" "readme.html"
-			DESTINATION ${DOC_INSTALL_DIR})
+    install (FILES "LICENSE" "README" "RELEASE-NOTES" "DESCRIPTION" "readme.html"
+			 DESTINATION ${DOC_INSTALL_DIR})
 			
     # install global configuration files
-    LIST(APPEND lst_conf_files "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/gfal2_core.conf" "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/bdii.conf")
-    install(FILES ${lst_conf_files}
-                        DESTINATION ${SYSCONF_INSTALL_DIR}/gfal2.d/)
-
+    list (APPEND lst_conf_files "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/gfal2_core.conf" "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/bdii.conf")
+    install (FILES ${lst_conf_files}
+             DESTINATION ${SYSCONF_INSTALL_DIR}/gfal2.d/)
 
     add_subdirectory (doc)
     add_subdirectory (src)
 
-ENDIF(NOT ONLY_TESTS)
+endif (NOT ONLY_TESTS)
 
-add_subdirectory (test)
+if (NOT SKIP_TESTS)
+    add_subdirectory (test)
+endif (NOT SKIP_TESTS)
 
