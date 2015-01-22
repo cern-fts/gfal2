@@ -30,14 +30,21 @@ else ()
     # SRM-IFCE Libraries
     find_library(SRM_IFCE_LIBRARIES
         NAMES gfal_srm_ifce
-        HINTS ${SRM_IFCE_LOCATION}/lib ${SRM_IFCE_LOCATION}/lib64 ${SRM_IFCE_LOCATION}/lib32 ${STAGE_DIR}/lib ${STAGE_DIR}/lib64
+        HINTS
+            ${SRM_IFCE_LOCATION}/lib ${SRM_IFCE_LOCATION}/lib64 ${SRM_IFCE_LOCATION}/lib32
+            ${STAGE_DIR}/lib ${STAGE_DIR}/lib64
+            ${CMAKE_INSTALL_PREFIX}/Grid/srm-ifce/*/${PLATFORM}/lib
+            ${CMAKE_INSTALL_PREFIX}/Grid/srm-ifce/*/${PLATFORM}/lib64
         DOC "The main srm-ifce library"
     )
     
     # SRM-IFCE Include Directories
     find_path(SRM_IFCE_INCLUDE_DIR 
         NAMES gfal_srm_ifce.h
-        HINTS ${SRM_IFCE_LOCATION} ${SRM_IFCE_LOCATION}/include ${SRM_IFCE_LOCATION}/include/* ${STAGE_DIR}/include ${STAGE_DIR}/include
+        HINTS
+            ${SRM_IFCE_LOCATION} ${SRM_IFCE_LOCATION}/include ${SRM_IFCE_LOCATION}/include/*
+            ${STAGE_DIR}/include ${STAGE_DIR}/include
+            ${CMAKE_INSTALL_PREFIX}/Grid/srm-ifce/*/${PLATFORM}/include
         DOC "The srm-ifce include directory"
     )
     set (SRM_IFCE_CFLAGS "")

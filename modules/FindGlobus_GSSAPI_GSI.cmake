@@ -24,15 +24,16 @@ else (GLOBUS_GSSAPI_GSI_PKG_FOUND)
         NAMES globus_gssapi_gsi
         HINTS ${GLOBUS_GSSAPI_GSI_LOCATION} 
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/
-              ${CMAKE_INSTALL_PREFIX}/epel/*/${PLATFORM}/
+              ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib
+              ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib64
         DOC "The main globus-gssapi-gsi library"
     )
 
     find_path(GLOBUS_GSSAPI_GSI_INCLUDE_DIRS 
-        NAMES globus_gss_assist.h
+        NAMES gssapi.h
         HINTS ${GLOBUS_GSSAPI_GSI_LOCATION}/include/*
-              ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/
-              ${CMAKE_INSTALL_PREFIX}/epel/*/${PLATFORM}/
+              ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/include
+              ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/include
         DOC "The globus-gssapi-gsi include directory"
     )
 

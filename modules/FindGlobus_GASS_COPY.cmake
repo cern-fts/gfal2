@@ -24,7 +24,8 @@ else (GLOBUS_GASS_COPY_PKG_FOUND)
         NAMES globus_gass_copy
         HINTS ${GLOBUS_GASS_COPY_LOCATION} 
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/
-              ${CMAKE_INSTALL_PREFIX}/epel/*/${PLATFORM}/
+              ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib
+              ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib64
         DOC "The main globus-gass-copy library"
     )
 
@@ -32,7 +33,7 @@ else (GLOBUS_GASS_COPY_PKG_FOUND)
         NAMES globus_gass_copy.h
         HINTS ${GLOBUS_GASS_COPY_LOCATION}/include/*
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/
-              ${CMAKE_INSTALL_PREFIX}/epel/*/${PLATFORM}/
+              ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/
         DOC "The globus-gass-copy include directory"
     )
 

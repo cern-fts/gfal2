@@ -25,30 +25,45 @@ if (DAVIX_PKG_FOUND AND DAVIX_COPY_PKG_FOUND)
 else ()
     # Davix Libraries
     find_library(DAVIX_MAIN_LIBRARY
-        NAMES libdavix.so
-        HINTS ${DAVIX_LOCATION}/lib ${DAVIX_LOCATION}/lib64 ${DAVIX_LOCATION}/lib32 ${STAGE_DIR}/lib ${STAGE_DIR}/lib64
+        NAMES davix
+        HINTS
+            ${DAVIX_LOCATION}/lib ${DAVIX_LOCATION}/lib64 ${DAVIX_LOCATION}/lib32
+            ${STAGE_DIR}/lib ${STAGE_DIR}/lib64
+            ${CMAKE_INSTALL_PREFIX}/Davix/*/${PLATFORM}/lib
+            ${CMAKE_INSTALL_PREFIX}/Davix/*/${PLATFORM}/lib64
         DOC "The main davix library"
     )
     
     find_library(DAVIX_COPY_LIBRARY
-        NAMES libdavix_copy.so
-        HINTS ${DAVIX_LOCATION}/lib ${DAVIX_LOCATION}/lib64 ${DAVIX_LOCATION}/lib32 ${STAGE_DIR}/lib ${STAGE_DIR}/lib64
-        DOC "The main davix library"
+        NAMES davix_copy
+        HINTS
+            ${DAVIX_LOCATION}/lib ${DAVIX_LOCATION}/lib64 ${DAVIX_LOCATION}/lib32
+            ${STAGE_DIR}/lib ${STAGE_DIR}/lib64
+            ${CMAKE_INSTALL_PREFIX}/Davix/*/${PLATFORM}/lib
+            ${CMAKE_INSTALL_PREFIX}/Davix/*/${PLATFORM}/lib64
+        DOC "The davix copy library"
     )
     
-    set(DAVIX_LIBRARIES ${DAVIX_MAIN_LIBRARY} ${DAVIX_COPY_LIBRARY})
+    set (DAVIX_LIBRARIES ${DAVIX_MAIN_LIBRARY})
     
     # Davix Include Directories
     find_path(DAVIX_INCLUDE_DIR 
         NAMES davix.hpp
-        HINTS ${DAVIX_LOCATION} ${DAVIX_LOCATION}/include ${DAVIX_LOCATION}/include/* ${STAGE_DIR}/include ${STAGE_DIR}/include
+        HINTS
+            ${DAVIX_LOCATION} ${DAVIX_LOCATION}/include ${DAVIX_LOCATION}/include/*
+            ${STAGE_DIR}/include ${STAGE_DIR}/include
+            ${CMAKE_INSTALL_PREFIX}/Davix/*/${PLATFORM}/include/*
         DOC "Davix include directory"
     )
-    if(DAVIX_INCLUDE_DIR)
-        message(STATUS "DAVIX includes found in ${DAVIX_INCLUDE_DIR}")
-    endif()
     
     set (DAVIX_CFLAGS "")
+endif()
+
+if (DAVIX_LIBRARIES)
+    message ("DAVIX libraries: ${DAVIX_LIBRARIES}")
+endif (DAVIX_LIBRARIES)
+if(DAVIX_INCLUDE_DIR)
+    message(STATUS "DAVIX includes found in ${DAVIX_INCLUDE_DIR}")
 endif()
 
 # -----------------------------------------------------

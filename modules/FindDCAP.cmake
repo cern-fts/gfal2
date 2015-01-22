@@ -19,8 +19,10 @@ find_library(DCAP_LIBRARIES
     NAMES dcap
     HINTS ${DCAP_LOCATION}
           ${STAGE_DIR}
-          ${CMAKE_INSTALL_PREFIX}/dcap/*/${PLATFORM}/
-          ${CMAKE_INSTALL_PREFIX}/Grid/dcap/*/${PLATFORM}/
+          ${CMAKE_INSTALL_PREFIX}/dcap/*/${PLATFORM}/lib
+          ${CMAKE_INSTALL_PREFIX}/dcap/*/${PLATFORM}/lib64
+          ${CMAKE_INSTALL_PREFIX}/Grid/dcap/*/${PLATFORM}/lib
+          ${CMAKE_INSTALL_PREFIX}/Grid/dcap/*/${PLATFORM}/lib64
     DOC "The main DCAP library"
 )
 
@@ -34,9 +36,13 @@ find_path(DCAP_INCLUDE_DIR
     HINTS ${DCAP_LOCATION}
           ${STAGE_DIR}
           ${CMAKE_INSTALL_PREFIX}/dcap/*/${PLATFORM}/
-          ${CMAKE_INSTALL_PREFIX}/Grid/dcap/*/${PLATFORM}/ 
+          ${CMAKE_INSTALL_PREFIX}/Grid/dcap/*/${PLATFORM}/include
     DOC "The DCAP include directory"
 )
+
+if (DCAP_LIBRARIES)
+    message (STATUS "DCAP libraries found in ${DCAP_LIBRARIES}")
+endif (DCAP_LIBRARIES)
 if(DCAP_INCLUDE_DIR)
     message(STATUS "DCAP includes found in ${DCAP_INCLUDE_DIR}")
 endif()
