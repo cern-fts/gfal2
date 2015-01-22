@@ -1,0 +1,60 @@
+#
+# This module detects if SRM-IFCE is installed and determines where the
+# include files and libraries are.
+#
+# This code sets the following variables:
+# 
+# DAVIX_LIBRARIES   = full path to the SRM-IFCE libraries
+# DAVIX_INCLUDE_DIR = include dir to be used when using the SRM-IFCE library
+# DAVIX_FOUND       = set to true if SRM-IFCE was found successfully
+#
+# DAVIX_LOCATION
+#   setting this enables search for SRM-IFCE libraries / headers in this location
+
+# ----------------------------------------------------- 
+# Try with pkgconfig first
+# -----------------------------------------------------
+
+pkg_check_modules(DAVIX_PKG davix>=0.3.5)
+pkg_check_modules(DAVIX_COPY_PKG davix_copy>=0.3.5)
+
+if (DAVIX_PKG_FOUND AND DAVIX_COPY_PKG_FOUND)
+    set (DAVIX_INCLUDE_DIR "${DAVIX_PKG_INCLUDE_DIRS}" "${DAVIX_COPY_PKG_INCLUDE_DIRS}")
+    set (DAVIX_LIBRARIES "${DAVIX_PKG_LIBRARIES}" "${DAVIX_COPY_PKG_LIBRARIES}")
+    set (DAVIX_CFLAGS "${DAVIX_PKG_CFLAGS} ${DAVIX_COPY_PKG_FLAGS}")
+else ()
+    # Davix Libraries
+    find_library(DAVIX_MAIN_LIBRARY
+        NAMES libdavix.so
+        HINTS ${DAVIX_LOCATION}/lib ${DAVIX_LOCATION}/lib64 ${DAVIX_LOCATION}/lib32 ${STAGE_DIR}/lib ${STAGE_DIR}/lib64
+        DOC "The main davix library"
+    )
+    
+    find_library(DAVIX_COPY_LIBRARY
+        NAMES libdavix_copy.so
+        HINTS ${DAVIX_LOCATION}/lib ${DAVIX_LOCATION}/lib64 ${DAVIX_LOCATION}/lib32 ${STAGE_DIR}/lib ${STAGE_DIR}/lib64
+        DOC "The main davix library"
+    )
+    
+    set(DAVIX_LIBRARIES ${DAVIX_MAIN_LIBRARY} ${DAVIX_COPY_LIBRARY})
+    
+    # Davix Include Directories
+    find_path(DAVIX_INCLUDE_DIR 
+        NAMES davix.hpp
+        HINTS ${DAVIX_LOCATION} ${DAVIX_LOCATION}/include ${DAVIX_LOCATION}/include/* ${STAGE_DIR}/include ${STAGE_DIR}/include
+        DOC "Davix include directory"
+    )
+    if(DAVIX_INCLUDE_DIR)
+        message(STATUS "DAVIX includes found in ${DAVIX_INCLUDE_DIR}")
+    endif()
+    
+    set (DAVIX_CFLAGS "")
+endif()
+
+# -----------------------------------------------------
+# handle the QUIETLY and REQUIRED arguments and set DAVIX_FOUND to TRUE if 
+# all listed variables are TRUE
+# -----------------------------------------------------
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(DAVIX DEFAULT_MSG DAVIX_LIBRARIES DAVIX_INCLUDE_DIR)
+mark_as_advanced(DAVIX_LIBRARIES DAVIX_INCLUDE_DIR DAVIX_CFLAGS)

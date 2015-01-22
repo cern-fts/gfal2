@@ -12,22 +12,21 @@
 # For details see the accompanying COPYING file.
 
 
-macro (macro_copy_file _src _dst)
-  # Removes all path containing .svn or CVS or CMakeLists.txt during the copy
-  if (NOT ${_src} MATCHES ".*\\.svn|CVS|CMakeLists\\.txt.*")
+macro(copy_files GLOBPAT DESTINATION)
+  file(GLOB COPY_FILES
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    ${GLOBPAT})
+  add_custom_target(copy ALL
+    COMMENT "Copying files: ${GLOBPAT}")
 
-    if (CMAKE_VERBOSE_MAKEFILE)
-      message(STATUS "Copy file from ${_src} to ${_dst}")
-    endif (CMAKE_VERBOSE_MAKEFILE)
+  foreach(FILENAME ${COPY_FILES})
+    set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}")
+    set(DST "${DESTINATION}/${FILENAME}")
 
-    # Creates directory if necessary
-    get_filename_component(_path ${_dst} PATH)
-    file(MAKE_DIRECTORY ${_path})
+    add_custom_command(
+      TARGET copy
+      COMMAND ${CMAKE_COMMAND} -E copy ${SRC} ${DST}
+      )
+  endforeach(FILENAME)
+endmacro(copy_files)
 
-    execute_process(
-      COMMAND
-        ${CMAKE_COMMAND} -E copy_if_different ${_src} ${_dst}
-      OUTPUT_QUIET
-    )
-  endif (NOT ${_src} MATCHES ".*\\.svn|CVS|CMakeLists\\.txt.*")
-endmacro (macro_copy_file)
