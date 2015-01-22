@@ -16,7 +16,7 @@ create_tmp_dir() {
 }
 
 get_attrs_spec(){
-        export SPEC_CONTENT="$(rpm -E "`cat $1 | head -n 50`")"
+    export SPEC_CONTENT="$(rpm -E "`cat $1 | head -n 50`")"
 	export PKG_VERSION="$( echo "$SPEC_CONTENT" | grep "Version:"  | sed 's@Version:\(.*\)@\1@g' | sed -e 's/^[ \t]*//')"
 	export PKG_RELEASE="$( echo "$SPEC_CONTENT" | grep "Version:"  | sed 's@Release:\(.*\)@\1@g' | sed -e 's/^[ \t]*//')"	
 	export PKG_NAME="$(echo "$SPEC_CONTENT" | grep "Name:" | sed 's@Name:\(.*\)@\1@g' | sed -e 's/^[ \t]*//')"
@@ -33,7 +33,7 @@ create_tarball(){
 	SRC_FOLDER="/$TMP_DIR/$PKG_NAME-$PKG_VERSION"
 	mkdir -p "$SRC_FOLDER"
 	echo "copy files..."
-	cp -r $1/* $SRC_FOLDER/
+	cp -rL $1/* $SRC_FOLDER/
 	CURRENT_DIR=$PWD
 	cd $TMP_DIR
 	echo "copy files..."
