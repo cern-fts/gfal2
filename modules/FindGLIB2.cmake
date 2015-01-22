@@ -12,7 +12,7 @@
 #   setting this enables search for glib2 libraries / headers in this location
 
 find_package (PkgConfig)
-pkg_check_modules (GLIB2_PKG QUIET glib-2.0)
+pkg_check_modules (GLIB2_PKG glib-2.0)
 
 if (GLIB2_PKG_FOUND)
     set (GLIB2_LIBRARIES ${GLIB2_PKG_LIBRARIES})

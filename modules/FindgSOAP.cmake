@@ -22,7 +22,7 @@
 
 
 find_package(PkgConfig)
-pkg_check_modules(PC_GSOAP QUIET gsoap)
+pkg_check_modules(PC_GSOAP gsoap)
 
 IF(PC_GSOAP_FOUND)
 
