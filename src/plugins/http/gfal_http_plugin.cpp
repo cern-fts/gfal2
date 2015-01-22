@@ -125,6 +125,9 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davi
 
     // Reset here the verbosity level
     davix_set_log_level(get_corresponding_davix_log_level());
+
+    // Avoid retries
+    req_params->setOperationRetry(0);
 }
 
 
