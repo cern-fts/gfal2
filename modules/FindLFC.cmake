@@ -39,7 +39,16 @@ if(LFC_INCLUDE_DIR)
     message(STATUS "LFC includes found in ${LFC_INCLUDE_DIR}")
 endif()
 
-
+# -----------------------------------------------------
+# LCGDM  Include Directories
+# -----------------------------------------------------
+find_path(LCGDM_INCLUDE_DIR
+    NAMES Cinit.h
+    HINTS ${LCGDM_LOCATION} ${LCGDM_LOCATION}/include
+              ${LCGDM_LOCATION}/include/lcgdm /usr/include/lcgdm
+              ${LCGDM_LOCATION}/include/dpm /usr/include/dpm /usr/include/lfc
+    DOC "The LCGDM include directory"
+)
 
 # -----------------------------------------------------
 # handle the QUIETLY and REQUIRED arguments and set LFC_FOUND to TRUE if 
