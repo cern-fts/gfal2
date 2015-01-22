@@ -61,6 +61,7 @@ int gfal_http_unlinkG(plugin_handle plugin_data, const char* url, GError** err)
 
     Davix::RequestParams req_params;
     davix->get_params(&req_params, Davix::Uri(stripped_url));
+    req_params.setMetalinkMode(Davix::MetalinkMode::Disable);
 
     if (davix->posix.unlink(&req_params, stripped_url, &daverr) != 0) {
       davix2gliberr(daverr, err);
