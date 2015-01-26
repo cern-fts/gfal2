@@ -106,7 +106,7 @@ static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, co
 void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davix::Uri& uri)
 {
     *req_params = reference_params;
-    gboolean insecure_mode = gfal2_get_opt_boolean(handle, "HTTP PLUGIN", "INSECURE", NULL);
+    gboolean insecure_mode = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "INSECURE", FALSE);
     if (insecure_mode) {
         req_params->setSSLCAcheck(false);
     }
@@ -122,6 +122,10 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davi
     else {
         req_params->setProtocol(Davix::RequestProtocol::Auto);
     }
+
+    // Keep alive
+    gboolean keep_alive = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "KEEP_ALIVE", TRUE);
+    req_params->setKeepAlive(keep_alive);
 
     // Reset here the verbosity level
     davix_set_log_level(get_corresponding_davix_log_level());
