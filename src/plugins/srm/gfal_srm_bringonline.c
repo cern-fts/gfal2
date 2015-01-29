@@ -352,46 +352,43 @@ static int gfal_srmv2_abort_files_internal(srm_context_t context, gfal_srmv2_opt
     struct srm_abort_files_input input;
     struct srmv2_filestatus      *statuses;
     GError                       *tmp_err = NULL;
-    gfal_srm_params_t             params = gfal_srm_params_new(opts);
+    int i;
 
-    if (params != NULL) {
-          if (token)
-              gfal_log(GFAL_VERBOSE_VERBOSE, "Abort file with token %s", token);
-          else
-              gfal_log(GFAL_VERBOSE_VERBOSE, "Abort file without token");
+    if (token)
+        gfal_log(GFAL_VERBOSE_VERBOSE, "Abort file with token %s", token);
+    else
+        gfal_log(GFAL_VERBOSE_VERBOSE, "Abort file without token");
 
-          // Perform
-          input.nbfiles  = nbfiles;
-          input.reqtoken = NULL;
-          input.surls    = (char**)surl;
-          if(token)
-          input.reqtoken = (char*)token;
+    // Perform
+    input.nbfiles  = nbfiles;
+    input.reqtoken = NULL;
+    input.surls    = (char**)surl;
+    if(token)
+        input.reqtoken = (char*)token;
 
-          int ret = gfal_srm_external_call.srm_abort_files(context, &input, &statuses);
+    int ret = gfal_srm_external_call.srm_abort_files(context, &input, &statuses);
 
-          if (ret < 0) {
-              gfal_srm_report_error(context->errbuf, &tmp_err);
-          }
-          else {
-              int i;
-              for (i = 0; i < nbfiles; ++i) {
-                  if (statuses[i].status != 0) {
-                    gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
-                                statuses[i].status, __func__,
-                                "error on the release request : %s ", statuses[0].explanation);
-                  }
-              }
-              gfal_srm_external_call.srm_srmv2_filestatus_delete(statuses, 1);
-          }
-    }
-
-    if (tmp_err != NULL) {
-        gfal2_propagate_prefixed_error(errors, tmp_err, __func__);
-        return -1;
+    if (ret < 0) {
+        gfal_srm_report_error(context->errbuf, &tmp_err);
+        for (i = 0; i < nbfiles; ++i) {
+            errors[i] = g_error_copy(tmp_err);
+        }
+        g_error_free(tmp_err);
     }
     else {
-        return 0;
+        ret = 0;
+        for (i = 0; i < nbfiles; ++i) {
+            if (statuses[i].status != 0) {
+                gfal2_set_error(&(errors[i]), gfal2_get_plugin_srm_quark(),
+                        statuses[i].status, __func__,
+                        "error on the abort request : %s ", statuses[i].explanation);
+                ret -= 1;
+            }
+        }
+        gfal_srm_external_call.srm_srmv2_filestatus_delete(statuses, 1);
     }
+
+    return ret;
 }
 
 int gfal_srm2_abort_filesG(plugin_handle ch, int nbfiles, const char* const* surls, const char* token, GError ** errors)
