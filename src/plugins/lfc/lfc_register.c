@@ -36,7 +36,7 @@ static int _lfc_touch(struct lfc_ops* ops, const char* path, const char* guid,
 
     last_slash = strrchr(path, '/');
     if (last_slash != NULL) {
-        size_t dir_len = last_slash - path;
+        size_t dir_len = last_slash - path + 1;
         char *dir = g_malloc0(dir_len);
         g_strlcpy(dir, path, dir_len);
 
