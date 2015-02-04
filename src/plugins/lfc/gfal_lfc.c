@@ -39,12 +39,15 @@
 static gboolean init_thread = FALSE;
 pthread_mutex_t m_lfcinit=PTHREAD_MUTEX_INITIALIZER;
 
-typedef struct _lfc_opendir_handle{
-	char url[GFAL_URL_MAX_LEN];
-	struct dirent current_dir;
-} *lfc_opendir_handle;
+typedef struct _lfc_opendir_handle {
+    char url[GFAL_URL_MAX_LEN];
+    struct dirent current_dir;
+}*lfc_opendir_handle;
 
-static char* file_xattr[] = { GFAL_XATTR_GUID, GFAL_XATTR_REPLICA, GFAL_XATTR_COMMENT,  NULL }; //GFAL_XATTR_CHKSUM_TYPE, GFAL_XATTR_CHKSUM_VALUE removed attributes, no checksum is correctly set on LFC
+static char* file_xattr[] = {
+    GFAL_XATTR_GUID, GFAL_XATTR_REPLICA, GFAL_XATTR_COMMENT,
+    NULL
+};
 
 /*
  * just return the name of the layer
@@ -135,6 +138,8 @@ int url_converter(plugin_handle handle, const char * url, char** host,
     if (strncmp(url, "lfn", 3) == 0) {
         if (path)
             *path = lfc_urlconverter(url, GFAL_LFC_PREFIX);
+        if (host)
+            *host = g_strdup(lfc_plugin_get_lfc_env((struct lfc_ops*)handle, "LFC_HOST"));
         res = 0;
     }
     else if (strncmp(url, "lfc", 3) == 0) {

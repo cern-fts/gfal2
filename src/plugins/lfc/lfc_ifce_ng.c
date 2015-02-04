@@ -68,6 +68,17 @@ static void lfc_plugin_set_lfc_env(struct lfc_ops* ops, const char* var_name,
 }
 
 
+const char* lfc_plugin_get_lfc_env(struct lfc_ops* ops, const char* var_name)
+{
+    if (ops->get_env) {
+        return ops->get_env(var_name);
+    }
+    else {
+        return g_getenv(var_name);
+    }
+}
+
+
 int lfc_configure_environment(struct lfc_ops * ops, const char* host, GError** err)
 {
     GError * tmp_err=NULL;
@@ -320,6 +331,7 @@ struct lfc_ops* gfal_load_lfc(const char* name, GError** err){
 
     if(lib_handle) {
         lfc_sym->set_env = dlsym(lib_handle, "lfc_setenv");
+        lfc_sym->get_env = dlsym(lib_handle, "lfc_getenv");
         dlclose(lib_handle);
     }
     else {
