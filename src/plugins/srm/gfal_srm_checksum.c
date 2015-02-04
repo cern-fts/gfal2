@@ -46,7 +46,7 @@ static int gfal_checksumG_srmv2_internal(srm_context_t context, const char* surl
     input.offset = 0;
     input.count = 0;
 
-    ret = gfal_srm_external_call.srm_ls(context,&input,&output);					// execute ls
+    ret = gfal_srm_external_call.srm_ls(context,&input,&output);
 
     if(ret >=0){
         srmv2_mdstatuses = output.statuses;
@@ -129,7 +129,7 @@ int gfal_srm_checksumG_fallback(plugin_handle handle, const char* url, const cha
         gfal_log(GFAL_VERBOSE_DEBUG, "registered checksum type %s", buffer_type);
         if(strncasecmp(check_type, buffer_type,GFAL_URL_MAX_LEN) != 0){
             // does not match the correct type
-            // this can be because checksum is nto populated on DPM server, cause the first gsiftp checksum calculation
+            // this can be because checksum is populated on DPM server, cause the first gsiftp checksum calculation
             res = -1; // cancel result
         }
     }

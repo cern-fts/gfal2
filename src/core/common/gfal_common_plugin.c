@@ -318,14 +318,14 @@ char ** gfal_localize_plugins(GError** err)
     char * gfal_plugin_dir = (char*) g_getenv(GFAL_PLUGIN_DIR_ENV);
     if (gfal_plugin_dir != NULL) {
         gfal_log(GFAL_VERBOSE_VERBOSE,
-                "... %s environnement variable specified, try to load the plugins in given dir : %s",
+                "... %s environment variable specified, try to load the plugins in given dir : %s",
                 GFAL_PLUGIN_DIR_ENV, gfal_plugin_dir);
     }
     else {
         /* GFAL_PLUGIN_DIR_DEFAULT defined at compilation time */
         gfal_plugin_dir = GFAL_PLUGIN_DIR_DEFAULT G_DIR_SEPARATOR_S;
         gfal_log(GFAL_VERBOSE_VERBOSE,
-                "... no %s environnement variable specified, try to load plugins in the default directory : %s",
+                "... no %s environment variable specified, try to load plugins in the default directory : %s",
                 GFAL_PLUGIN_DIR_ENV, gfal_plugin_dir);
 
     }
