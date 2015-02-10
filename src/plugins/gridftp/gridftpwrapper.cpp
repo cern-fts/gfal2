@@ -606,27 +606,35 @@ void gridftp_cancel(gfal2_context_t context, void* userdata)
 }
 
 
-void GridFTPRequestState::wait(GQuark scope, time_t timeout)
+static int callback_cond_wait(GridFTPRequestState* req, time_t timeout)
 {
-    if (timeout < 0)
-        timeout = default_timeout;
-    gfal_log(GFAL_VERBOSE_TRACE,
-            "   [GridFTP_Request_state::wait_callback] setup gsiftp timeout to %ld seconds",
-            timeout);
-
     globus_abstime_t timeout_expires;
     GlobusTimeAbstimeGetCurrent(timeout_expires);
     timeout_expires.tv_sec += timeout;
 
+    globus_mutex_lock(&req->mutex);
+    int wait_ret = 0;
+    while (!req->done && wait_ret != ETIMEDOUT) {
+        wait_ret = globus_cond_timedwait(&req->cond, &req->mutex, &timeout_expires);
+    }
+    globus_mutex_unlock(&req->mutex);
+    return wait_ret;
+}
+
+
+void GridFTPRequestState::wait(GQuark scope, time_t timeout)
+{
+    if (timeout < 0)
+        timeout = default_timeout;
+
+    gfal_log(GFAL_VERBOSE_TRACE,
+            "   [GridFTP_Request_state::wait_callback] setup gsiftp timeout to %ld seconds",
+            timeout);
+
     gfal_cancel_token_t cancel_token;
     cancel_token = gfal2_register_cancel_callback(handler->get_factory()->get_gfal2_context(), gridftp_cancel, this);
 
-    globus_mutex_lock(&mutex);
-    int wait_ret = 0;
-    while (!done && wait_ret != ETIMEDOUT) {
-        wait_ret = globus_cond_timedwait(&cond, &mutex, &timeout_expires);
-    }
-    globus_mutex_unlock(&mutex);
+    int wait_ret = callback_cond_wait(this, timeout);
 
     gfal2_remove_cancel_callback(handler->get_factory()->get_gfal2_context(), cancel_token);
 
@@ -636,6 +644,10 @@ void GridFTPRequestState::wait(GQuark scope, time_t timeout)
                 "   [GridFTP_Request_state::wait_callback] Operation timeout of %d seconds expired, canceling...",
                 timeout);
         gridftp_cancel(handler->get_factory()->get_gfal2_context(), this);
+
+        // Wait again for the callback, ignoring timeout this time
+        callback_cond_wait(this, timeout);
+
         throw Gfal::CoreException(scope, ETIMEDOUT, "Operation timed out");
     }
 
