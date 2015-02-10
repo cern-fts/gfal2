@@ -393,9 +393,9 @@ extern "C" int gfal_gridftp_accessG(plugin_handle handle, const char* name,
     int ret = -1;
     gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_accessG]");
     CPP_GERROR_TRY
-                (static_cast<GridFTPModule*>(handle))->access(name, mode);
-                ret = 0;
-            CPP_GERROR_CATCH(&tmp_err);
+        (static_cast<GridFTPModule*>(handle))->access(name, mode);
+        ret = 0;
+    CPP_GERROR_CATCH(&tmp_err);
     gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_accessG]<-");
     G_RETURN_ERR(ret, tmp_err, err);
 }
