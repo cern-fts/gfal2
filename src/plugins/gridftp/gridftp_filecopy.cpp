@@ -587,8 +587,8 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
         }
 
         plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
-                GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_EXIT, "%s",
-                checksum_type);
+                GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_EXIT, "%s=%s",
+                checksum_type, checksum_dst);
     }
 }
 
