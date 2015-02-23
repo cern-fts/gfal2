@@ -21,7 +21,8 @@ find_library(CGSI_GSOAP_PATH
     HINTS
         ${CGSI_GSOAP_LOCATION}
         ${STAGE_DIR}
-        ${CMAKE_INSTALL_PREFIX}/cgsigsoap/*/${PLATFORM}/
+        ${CMAKE_INSTALL_PREFIX}/cgsigsoap/*/${PLATFORM}/lib
+        ${CMAKE_INSTALL_PREFIX}/cgsigsoap/*/${PLATFORM}/lib64
     DOC "The main CGSI_GSOAP library"
 )
 
@@ -38,7 +39,8 @@ find_path(CGSI_GSOAP_INCLUDE_DIRS
     NAMES cgsi_plugin.h
     HINTS ${CGSI_GSOAP_LOCATION}
           ${STAGE_DIR}/include
-          ${CMAKE_INSTALL_PREFIX}/cgsigsoap/*/${PLATFORM}/
+          ${CMAKE_INSTALL_PREFIX}/cgsigsoap/*/${PLATFORM}
+          ${CMAKE_INSTALL_PREFIX}/cgsigsoap/*/${PLATFORM}/include
     DOC "The CGSI_GSOAP include directory"
 )
 if(CGSI_GSOAP_INCLUDE_DIRS)
