@@ -668,7 +668,6 @@ void GridFTPRequestState::cancel(GQuark scope, const std::string& msg)
     else {
         globus_gass_copy_cancel(handler->get_gass_copy_handle(),
                 globus_gass_client_done_callback, this);
-        this->wait(scope, default_timeout);
     }
     error = new Gfal::CoreException(scope, ECANCELED, msg);
 }

@@ -219,9 +219,22 @@ struct CallbackHandler {
         msg << "Transfer canceled because the gsiftp performance marker timeout of "
             << args->timeout_value
             << " seconds has been exceeded, or all performance markers during that period indicated zero bytes transferred";
-        args->req->cancel(GFAL_GRIDFTP_SCOPE_FILECOPY, msg.str());
 
-        return NULL;
+        try {
+            args->req->cancel(GFAL_GRIDFTP_SCOPE_FILECOPY, msg.str());
+            fprintf(stderr, "ALL COOL\n");
+        }
+        catch (Gfal::CoreException& e) {
+            gfal_log(GFAL_VERBOSE_VERBOSE,
+                    "Exception while cancelling on performance marker timeout: %s",
+                    e.what());
+        }
+        catch (...) {
+            gfal_log(GFAL_VERBOSE_VERBOSE,
+                    "Unknown exception while cancelling on performance marker timeout");
+        }
+
+        pthread_exit(NULL);
     }
 
     CallbackHandler(gfal2_context_t context, gfalt_params_t params,
@@ -233,19 +246,18 @@ struct CallbackHandler {
         callback = gfalt_get_monitor_callback(params, NULL);
         user_args = gfalt_get_user_data(params, NULL);
 
-        if (callback) {
+        timeout_value = gfal2_get_opt_integer_with_default(context,
+                    GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_PERF_TIMEOUT, 180);
+
+        if (timeout_value > 0) {
             start_time = time(NULL);
-            timeout_value = gfal2_get_opt_integer_with_default(context,
-                        GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_PERF_TIMEOUT, 180);
             timeout_time = start_time + timeout_value;
 
             globus_gass_copy_register_performance_cb(
                     req->handler->get_gass_copy_handle(), gsiftp_3rd_callback,
                     (gpointer) this);
 
-            if (timeout_value > 0) {
-                pthread_create(&timer_pthread, NULL, CallbackHandler::func_timer, this);
-            }
+            pthread_create(&timer_pthread, NULL, CallbackHandler::func_timer, this);
         }
     }
 
@@ -283,9 +295,11 @@ void gsiftp_3rd_callback(void* user_args, globus_gass_copy_handle_t* handle,
     hook.instant_baudrate = (size_t) throughput;
     hook.transfer_time = (time(NULL) - args->start_time);
 
-    gfalt_transfer_status_t state = gfalt_transfer_status_create(&hook);
-    args->callback(state, args->src, args->dst, args->user_args);
-    gfalt_transfer_status_delete(state);
+    if (args->callback) {
+        gfalt_transfer_status_t state = gfalt_transfer_status_create(&hook);
+        args->callback(state, args->src, args->dst, args->user_args);
+        gfalt_transfer_status_delete(state);
+    }
 
     // If throughput != 0, or the file has been already sent, reset timer callback
     // [LCGUTIL-440] Some endpoints calculate the checksum before closing, so we will
