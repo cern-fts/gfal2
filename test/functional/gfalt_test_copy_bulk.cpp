@@ -60,8 +60,8 @@ public:
         int ret;
         GError* error = NULL;
 
-        generate_random_uri(source_root, "copyfile_bulk_user_source", source_base, 2048);
-        generate_random_uri(destination_root, "copyfile_bulk_user_destination", dest_base, 2048);
+        generate_random_uri(source_root, "copyfile_bulk_source", source_base, 2048);
+        generate_random_uri(destination_root, "copyfile_bulk_destination", dest_base, 2048);
 
         for (size_t i = 0; i < NBPAIRS; ++i) {
             snprintf(sources[i], 2048, "%s_%zu", source_base, i);
@@ -87,6 +87,7 @@ public:
         for (size_t i = 0; i < NBPAIRS; ++i) {
             gfal_unlink(sources[i]);
             gfal_unlink(destinations[i]);
+            gfal_rmdir(destinations[i]);
         }
     }
 };
