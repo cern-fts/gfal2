@@ -182,8 +182,10 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
         perf_data.done_since_last_update += s_file;
 
         // Make sure we don't have to cancel
-        if (gfal2_is_canceled(context))
-            g_set_error(&nested_error, local_copy_domain(), ECANCELED, "Transfer canceled");
+        if (gfal2_is_canceled(context)) {
+            if (nested_error == NULL)
+                g_set_error(&nested_error, local_copy_domain(), ECANCELED, "Transfer canceled");
+        }
         // Timed-out?
         else {
             perf_data.now = time(NULL);
