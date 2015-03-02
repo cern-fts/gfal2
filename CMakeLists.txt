@@ -26,6 +26,10 @@ include(MacroCopyFile REQUIRED)
 include(ReleaseDebugAutoFlags REQUIRED)
 include(CMakeGeneratePkgConfig REQUIRED)
 include(MacroAddDoxygen REQUIRED)
+include(CMakeCXX11Support REQUIRED)
+
+# Enable C++11 support
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX11_FLAG_ENABLE}")
 
 # enable testing
 include (CTest)
