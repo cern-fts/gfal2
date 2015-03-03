@@ -800,7 +800,7 @@ int gfal_plugin_readG(gfal2_context_t handle, gfal_file_handle fh, void* buff, s
 
 // Simulate a pread operation in case of non-parallels read support
 // this is slower than a normal pread/pwrite operation
-inline ssize_t gfal_plugin_simulate_preadG(gfal2_context_t handle, gfal_plugin_interface* if_cata, gfal_file_handle fh, void* buff, size_t s_buff,
+static ssize_t gfal_plugin_simulate_preadG(gfal2_context_t handle, gfal_plugin_interface* if_cata, gfal_file_handle fh, void* buff, size_t s_buff,
         off_t offset, GError** err)
 {
     GError* tmp_err = NULL;
@@ -839,7 +839,7 @@ ssize_t gfal_plugin_preadG(gfal2_context_t handle, gfal_file_handle fh, void* bu
 
 // Simulate a pread operation in case of non-parallels write support
 // this is slower than a normal pread/pwrite operation
-inline ssize_t gfal_plugin_simulate_pwriteG(gfal2_context_t handle, gfal_plugin_interface* if_cata, gfal_file_handle fh, void* buff, size_t s_buff,
+static ssize_t gfal_plugin_simulate_pwriteG(gfal2_context_t handle, gfal_plugin_interface* if_cata, gfal_file_handle fh, void* buff, size_t s_buff,
         off_t offset, GError** err)
 {
     GError* tmp_err = NULL;

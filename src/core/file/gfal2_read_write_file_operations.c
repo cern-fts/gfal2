@@ -82,7 +82,7 @@ int gfal2_creat (gfal2_context_t handle, const char *filename, mode_t mode, GErr
 /*
  *  map the file handle to the correct call
  */
-inline int gfal_rw_gfalfilehandle_read(gfal2_context_t handle, gfal_file_handle fh, void* buff, size_t s_buff, GError** err){
+static int gfal_rw_gfalfilehandle_read(gfal2_context_t handle, gfal_file_handle fh, void* buff, size_t s_buff, GError** err){
     g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_rw_gfalfilehandle_read] incorrect args");
     GError *tmp_err=NULL;
     int ret = gfal_plugin_readG(handle, fh, buff, s_buff, &tmp_err);
@@ -188,7 +188,7 @@ int gfal2_flush(gfal2_context_t handle, int fd, GError ** err){
     return 0;
 }
 
-inline ssize_t gfal_rw_gfalfilehandle_pread(gfal2_context_t handle, gfal_file_handle fh, void* buff,
+static ssize_t gfal_rw_gfalfilehandle_pread(gfal2_context_t handle, gfal_file_handle fh, void* buff,
                         size_t s_buff, off_t offset, GError** err){
     GError *tmp_err=NULL;
     ssize_t ret = gfal_plugin_preadG(handle, fh, buff, s_buff, offset, &tmp_err);
