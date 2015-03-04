@@ -51,6 +51,17 @@ static void init_event_quarks() {
 }
 
 
+static void plugin_trigger_event_callback(gpointer data, gpointer user_data)
+{
+
+    gfalt_event_t event = (gfalt_event_t)user_data;
+    struct _gfalt_callback_entry* entry = (struct _gfalt_callback_entry*)data;
+    gfalt_event_func callback = (gfalt_event_func)entry->func;
+
+    callback(event, entry->udata);
+}
+
+
 int plugin_trigger_event(gfalt_params_t params, GQuark domain, gfal_event_side_t side,
         GQuark stage, const char* fmt, ...)
 {
@@ -60,20 +71,18 @@ int plugin_trigger_event(gfalt_params_t params, GQuark domain, gfal_event_side_t
     vsnprintf(buffer, sizeof(buffer), fmt, msg_args);
     va_end(msg_args);
 
-    if (params->event_callback) {
-        struct _gfalt_event event;
-        GTimeVal tmst;
+    struct _gfalt_event event;
+    GTimeVal tmst;
 
-        g_get_current_time(&tmst);
+    g_get_current_time(&tmst);
 
-        event.domain = domain;
-        event.side = side;
-        event.stage = stage;
-        event.timestamp = tmst.tv_sec * 1000 + tmst.tv_usec / 1000;
-        event.description = buffer;
+    event.domain = domain;
+    event.side = side;
+    event.stage = stage;
+    event.timestamp = tmst.tv_sec * 1000 + tmst.tv_usec / 1000;
+    event.description = buffer;
 
-        params->event_callback(&event, params->user_data);
-    }
+    g_sequence_foreach(params->event_callbacks, plugin_trigger_event_callback, &event);
 
     const char* side_str;
     switch (side) {
@@ -89,6 +98,35 @@ int plugin_trigger_event(gfalt_params_t params, GQuark domain, gfal_event_side_t
 
     gfal_log(GFAL_VERBOSE_VERBOSE, "Event triggered: %s %s %s %s", side_str,
             g_quark_to_string(domain), g_quark_to_string(stage), buffer);
+    return 0;
+}
+
+
+struct _gfalt_monitor_data {
+    gfalt_transfer_status_t* status;
+    const char* src, *dst;
+};
+
+
+static void plugin_trigger_monitor_callback(gpointer data, gpointer user_data)
+{
+
+    struct _gfalt_monitor_data* monitor = (struct _gfalt_monitor_data*)user_data;
+    struct _gfalt_callback_entry* entry = (struct _gfalt_callback_entry*)data;
+    gfalt_monitor_func callback = (gfalt_monitor_func)entry->func;
+
+    callback(*monitor->status, monitor->src, monitor->dst, entry->udata);
+}
+
+
+int plugin_trigger_monitor(gfalt_params_t params, gfalt_transfer_status_t status,
+        const char* src, const char* dst)
+{
+    struct _gfalt_monitor_data monitor;
+    monitor.status = &status;
+    monitor.src = src;
+    monitor.dst = dst;
+    g_sequence_foreach(params->monitor_callbacks, plugin_trigger_monitor_callback, &monitor);
     return 0;
 }
 

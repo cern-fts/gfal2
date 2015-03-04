@@ -46,16 +46,20 @@ struct _gfalt_params_t{
 
     // performance callback
 	gpointer user_data;			// user data information for the monitoring callback
-	gfalt_monitor_func callback;
 	size_t buffer_size; // internal buffer size per flow for non-third party transfer
 
-	// Event callback
-	gfalt_event_func event_callback;
+	// callback lists
+	GSequence* monitor_callbacks;
+	GSequence* event_callbacks;
 };
 
 
-struct _gfalt_transfer_status{
+struct _gfalt_transfer_status {
     const gfalt_hook_transfer_plugin_t* hook;
+};
+
+struct _gfalt_callback_entry {
+    gpointer func, udata;
 };
 
 #endif //_GFAL2_TRANSFER_TYPES_INTERNAL_

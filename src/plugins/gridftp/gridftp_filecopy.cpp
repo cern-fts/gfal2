@@ -240,12 +240,9 @@ struct CallbackHandler {
     CallbackHandler(gfal2_context_t context, gfalt_params_t params,
             GridFTPRequestState* req, const char* src, const char* dst,
             size_t src_size):
-                req(req), src(src), dst(dst), start_time(0), timeout_value(0),
+                params(params), req(req), src(src), dst(dst), start_time(0), timeout_value(0),
                 timeout_time(0), timer_pthread(0), source_size(src_size)
     {
-        callback = gfalt_get_monitor_callback(params, NULL);
-        user_args = gfalt_get_user_data(params, NULL);
-
         timeout_value = gfal2_get_opt_integer_with_default(context,
                     GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_PERF_TIMEOUT, 180);
 
@@ -270,9 +267,7 @@ struct CallbackHandler {
         globus_gass_copy_register_performance_cb(req->handler->get_gass_copy_handle(), NULL, NULL);
     }
 
-
-    gfalt_monitor_func callback;
-    gpointer user_args;
+    gfalt_params_t params;
     GridFTPRequestState* req;
     const char* src;
     const char* dst;
@@ -295,11 +290,9 @@ void gsiftp_3rd_callback(void* user_args, globus_gass_copy_handle_t* handle,
     hook.instant_baudrate = (size_t) throughput;
     hook.transfer_time = (time(NULL) - args->start_time);
 
-    if (args->callback) {
-        gfalt_transfer_status_t state = gfalt_transfer_status_create(&hook);
-        args->callback(state, args->src, args->dst, args->user_args);
-        gfalt_transfer_status_delete(state);
-    }
+    gfalt_transfer_status_t state = gfalt_transfer_status_create(&hook);
+    plugin_trigger_monitor(args->params, state, args->src, args->dst);
+    gfalt_transfer_status_delete(state);
 
     // If throughput != 0, or the file has been already sent, reset timer callback
     // [LCGUTIL-440] Some endpoints calculate the checksum before closing, so we will

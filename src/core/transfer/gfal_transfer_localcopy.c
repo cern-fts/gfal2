@@ -117,12 +117,6 @@ struct perf_data_t {
 
 static void send_performance_data(gfalt_params_t params, const char* src, const char* dst, const struct perf_data_t* perf)
 {
-    gfalt_monitor_func callback = gfalt_get_monitor_callback(params, NULL);
-    gpointer callback_data = gfalt_get_user_data(params, NULL);
-
-    if (!callback)
-        return;
-
     gfalt_hook_transfer_plugin_t hook;
 
     time_t total_time = perf->now - perf->start;
@@ -134,7 +128,7 @@ static void send_performance_data(gfalt_params_t params, const char* src, const 
     hook.transfer_time    = total_time;
 
     gfalt_transfer_status_t state = gfalt_transfer_status_create(&hook);
-    callback(state, src, dst, callback_data);
+    plugin_trigger_monitor(params, state, src, dst);
     gfalt_transfer_status_delete(state);
 }
 

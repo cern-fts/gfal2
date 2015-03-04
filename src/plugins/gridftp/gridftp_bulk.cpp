@@ -74,8 +74,6 @@ struct GridFTPBulkPerformance {
     std::string source, destination;
     gfalt_params_t params;
     bool ipv6;
-    gfalt_monitor_func monitor_func;
-    void* monitor_data;
     time_t start_time;
 
     globus_ftp_client_plugin_t* plugin;
@@ -180,17 +178,15 @@ void gridftp_bulk_throughput_cb(void *user_specific,
     GridFTPBulkPerformance* pd;
     globus_ftp_client_throughput_plugin_get_user_specific(original->plugin, (void**)(&pd));
 
-    if (pd->monitor_func) {
-        gfalt_hook_transfer_plugin_t hook;
-        hook.bytes_transfered = bytes;
-        hook.average_baudrate = (size_t) avg_throughput;
-        hook.instant_baudrate = (size_t) instantaneous_throughput;
-        hook.transfer_time = (time(NULL) - pd->start_time);
+    gfalt_hook_transfer_plugin_t hook;
+    hook.bytes_transfered = bytes;
+    hook.average_baudrate = (size_t) avg_throughput;
+    hook.instant_baudrate = (size_t) instantaneous_throughput;
+    hook.transfer_time = (time(NULL) - pd->start_time);
 
-        gfalt_transfer_status_t state = gfalt_transfer_status_create(&hook);
-        pd->monitor_func(state, pd->source.c_str(), pd->destination.c_str(), pd->monitor_data);
-        gfalt_transfer_status_delete(state);
-    }
+    gfalt_transfer_status_t state = gfalt_transfer_status_create(&hook);
+    plugin_trigger_monitor(pd->params, state, pd->source.c_str(), pd->destination.c_str());
+    gfalt_transfer_status_delete(state);
 }
 
 
@@ -244,8 +240,6 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
     GridFTPBulkPerformance perf;
     perf.params = pairs->params;
     perf.ipv6 = gfal2_get_opt_boolean_with_default(context, GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_IPV6, false);
-    perf.monitor_func = gfalt_get_monitor_callback(pairs->params, NULL);
-    perf.monitor_data = gfalt_get_user_data(pairs->params, NULL);
     perf.plugin = &throughput_plugin;
 
     globus_ftp_client_throughput_plugin_init(&throughput_plugin,

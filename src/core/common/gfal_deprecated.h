@@ -33,4 +33,14 @@
 #warning "No deprecation rule for your compiler!"
 #endif
 
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
+#define GFAL2_DEPRECATED_NOALT __attribute__ ((deprecated))
+#elif __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1)
+#define GFAL2_DEPRECATED_NOALT __attribute__((__deprecated__))
+#elif defined(_MSC_VER) && (_MSC_VER >= 1300)
+#define GFAL2_DEPRECATED_NOALT __declspec(deprecated)
+#else
+#warning "No deprecation rule for your compiler!"
+#endif
+
 #endif

@@ -210,7 +210,6 @@ gint gfalt_set_user_defined_checksum(gfalt_params_t param, const gchar* chktype,
 gint gfalt_get_user_defined_checksum(gfalt_params_t params, gchar* chktype_buff, size_t chk_type_len,
                                 gchar* checksum_buff, size_t checksum_len, GError** err);
 
-// Utility functions
 /**
    enable or disable the destination parent directory creation
 */
@@ -222,42 +221,62 @@ gint gfalt_set_create_parent_dir(gfalt_params_t, gboolean value, GError** err);
 gboolean gfalt_get_create_parent_dir(gfalt_params_t, GError** err);
 
 
-// Monitoring functions
 
 /**
  * set the user_data pointer for the monitoring callback
  * */
-gint gfalt_set_user_data(gfalt_params_t, gpointer user_data, GError** err);
-
+GFAL2_DEPRECATED_NOALT gint gfalt_set_user_data(gfalt_params_t, gpointer user_data, GError** err);
 
 /**
  * get the user_data pointer for the monitoring callback
  * */
-gpointer gfalt_get_user_data(gfalt_params_t,  GError** err);
-
-
+GFAL2_DEPRECATED_NOALT gpointer gfalt_get_user_data(gfalt_params_t,  GError** err);
 
 /**
  * @brief define a callback for monitoring the current transfer
  * The default value is NULL and no monitoring will occur
 */
-gint gfalt_set_monitor_callback(gfalt_params_t params, gfalt_monitor_func callback, GError** err);
+GFAL2_DEPRECATED(gfalt_add_monitor_callback) gint gfalt_set_monitor_callback(gfalt_params_t params, gfalt_monitor_func callback, GError** err);
 
 /**
  * @brief get the current monitor callback
 */
-gfalt_monitor_func gfalt_get_monitor_callback(gfalt_params_t params, GError** err);
+GFAL2_DEPRECATED(plugin_trigger_monitor) gfalt_monitor_func gfalt_get_monitor_callback(gfalt_params_t params, GError** err);
 
 /**
  * @brief Define a callback for event monitoring
  * The default value is NULL and no monitoring will occur
  */
-gint gfalt_set_event_callback(gfalt_params_t params, gfalt_event_func callback, GError** err);
+GFAL2_DEPRECATED(gfalt_add_event_callback) gint gfalt_set_event_callback(gfalt_params_t params, gfalt_event_func callback, GError** err);
 
 /**
  * @brief Get the current event monitor callback.
  */
-gfalt_event_func gfalt_get_event_callback (gfalt_params_t params, GError** err);
+GFAL2_DEPRECATED(plugin_trigger_event) gfalt_event_func gfalt_get_event_callback (gfalt_params_t params, GError** err);
+
+
+
+/**
+ * @brief Add a new callback for monitoring the current transfer
+ * Adding the same callback with a different udata will just change the udata, but the callback will not be called twice.
+ */
+gint gfalt_add_monitor_callback(gfalt_params_t params, gfalt_monitor_func callback, gpointer udata, GError** err);
+
+/**
+ * @brief Remove an installed monitor callback
+ */
+gint gfalt_remove_monitor_callback(gfalt_params_t params, gfalt_monitor_func callback, GError** err);
+
+/**
+ * @brief Add a new callback for event monitoring
+ * Adding the same callback with a different udata will just change the udata, but the callback will not be called twice.
+ */
+gint gfalt_add_event_callback(gfalt_params_t params, gfalt_event_func callback, gpointer udata, GError** err);
+
+/**
+ * @brief Remove an installed callback
+ */
+gint gfalt_remove_event_callback(gfalt_params_t params, gfalt_event_func callback, GError** err);
 
 
 //
