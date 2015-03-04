@@ -413,12 +413,12 @@ gfal_plugin_interface* gfal_find_plugin(gfal2_context_t handle, const char * url
     if (n_plugins > 0) {
         GList * plugin_list = g_list_first(handle->plugin_opt.sorted_plugin);
         while (plugin_list != NULL) {
-            gfal_plugin_interface* cata_list = plugin_list->data;
-            compatible = gfal_plugin_checker_safe(cata_list, url, acc_mode, &tmp_err);
+            gfal_plugin_interface* plugin_ifce = plugin_list->data;
+            compatible = gfal_plugin_checker_safe(plugin_ifce, url, acc_mode, &tmp_err);
             if (tmp_err)
                 break;
             if (compatible)
-                return cata_list;
+                return plugin_ifce;
             plugin_list = g_list_next(plugin_list);
         }
     }
