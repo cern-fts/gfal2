@@ -34,21 +34,24 @@ void gfalt_params_handle_init(gfalt_params_t p, GError ** err)
     p->parent_dir_create = FALSE;
     uuid_clear(p->uuid);
 
-    p->monitor_callbacks = g_sequence_new(g_free);
-    p->event_callbacks = g_sequence_new(g_free);
+    p->monitor_callbacks = NULL;
+    p->event_callbacks = NULL;
 }
 
 
-static void gfalt_append_callback(gpointer data, gpointer user_data)
+static GSList* gfalt_params_copy_callbacks(const GSList* original)
 {
-    GSequence* seq = (GSequence*)user_data;
-    struct _gfalt_callback_entry* entry = (struct _gfalt_callback_entry*)data;
-
-    struct _gfalt_callback_entry* new_entry = g_new0(struct _gfalt_callback_entry, 1);
-    new_entry->func = entry->func;
-    new_entry->udata = entry->udata;
-
-    g_sequence_append(seq, new_entry);
+    GSList* copy = NULL;
+    const GSList* p = original;
+    while (p) {
+        struct _gfalt_callback_entry* original_entry = (struct _gfalt_callback_entry*)p->data;
+        struct _gfalt_callback_entry* new_entry = g_new0(struct _gfalt_callback_entry, 1);
+        new_entry->func = original_entry->func;
+        new_entry->udata = original_entry->udata;
+        copy = g_slist_append(copy, new_entry);
+        p = g_slist_next(p);
+    }
+    return copy;
 }
 
 
@@ -61,10 +64,8 @@ gfalt_params_t gfalt_params_handle_copy(gfalt_params_t params, GError ** err)
     p->user_checksum = g_strdup(params->user_checksum);
     p->user_checksum_type = g_strdup(params->user_checksum_type);
 
-    p->monitor_callbacks = g_sequence_new(g_free);
-    g_sequence_foreach(params->monitor_callbacks, gfalt_append_callback , p->monitor_callbacks);
-    p->event_callbacks = g_sequence_new(g_free);
-    g_sequence_foreach(params->event_callbacks, gfalt_append_callback, p->event_callbacks);
+    p->monitor_callbacks = gfalt_params_copy_callbacks(params->monitor_callbacks);
+    p->event_callbacks = gfalt_params_copy_callbacks(params->event_callbacks);
 
     return p;
 }
@@ -88,8 +89,10 @@ void gfalt_params_handle_delete(gfalt_params_t params, GError ** err)
         g_free(params->user_checksum);
         g_free(params->user_checksum_type);
         g_free(params);
-        g_sequence_free(params->monitor_callbacks);
-        g_sequence_free(params->event_callbacks);
+        g_slist_foreach(params->monitor_callbacks, (GFunc)g_free , NULL);
+        g_slist_free(params->monitor_callbacks);
+        g_slist_foreach(params->event_callbacks, (GFunc)g_free , NULL);
+        g_slist_free(params->event_callbacks);
     }
 }
 
@@ -171,18 +174,18 @@ gint gfalt_set_offset_from_source(gfalt_params_t params, off_t offset, GError** 
 }
 
 
-static gint gfalt_compare_callback_entry(gconstpointer a, gconstpointer b, gpointer user_data)
+static GSList* gfalt_search_callback(GSList* list, gpointer callback)
 {
-    struct _gfalt_callback_entry *ea, *eb;
-    ea = (struct _gfalt_callback_entry*)a;
-    eb = (struct _gfalt_callback_entry*)b;
+    struct _gfalt_callback_entry* entry;
+    GSList* p = list;
 
-    if (ea->func == eb->func)
-        return 0;
-    else if (ea->func < eb->func)
-        return -1;
-    else
-        return 1;
+    while (p) {
+        entry = (struct _gfalt_callback_entry*)p->data;
+        if (entry->func == callback)
+            return p;
+        p = g_slist_next(p);
+    }
+    return NULL;
 }
 
 
@@ -191,19 +194,18 @@ gint gfalt_add_monitor_callback(gfalt_params_t params, gfalt_monitor_func callba
 {
     g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
 
-    struct _gfalt_callback_entry* entry, search;
-    search.func = callback;
-    GSequenceIter* i = g_sequence_lookup(params->monitor_callbacks, &search, gfalt_compare_callback_entry, NULL);
+    struct _gfalt_callback_entry* entry;
+    GSList* i = gfalt_search_callback(params->monitor_callbacks, callback);
 
     if (i) {
-        entry = (struct _gfalt_callback_entry*)g_sequence_get(i);
+        entry = (struct _gfalt_callback_entry*)i->data;
         entry->udata = udata;
     }
     else {
         entry = g_new0(struct _gfalt_callback_entry, 1);
         entry->func = callback;
         entry->udata = udata;
-        g_sequence_append(params->monitor_callbacks, entry);
+        params->monitor_callbacks = g_slist_append(params->monitor_callbacks, entry);
     }
 
     return 0;
@@ -215,11 +217,10 @@ gint gfalt_remove_monitor_callback(gfalt_params_t params, gfalt_monitor_func cal
 {
     g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
 
-    struct _gfalt_callback_entry search;
-    search.func = callback;
-    GSequenceIter* i = g_sequence_lookup(params->monitor_callbacks, &search, gfalt_compare_callback_entry, NULL);
+    GSList* i = gfalt_search_callback(params->monitor_callbacks, callback);
     if (i) {
-        g_sequence_remove(i);
+        g_free(i->data);
+        params->monitor_callbacks = g_slist_delete_link(params->monitor_callbacks, i);
         return 0;
     }
 
@@ -233,19 +234,18 @@ gint gfalt_add_event_callback(gfalt_params_t params, gfalt_event_func callback,
 {
     g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
 
-    struct _gfalt_callback_entry* entry, search;
-    search.func = callback;
-    GSequenceIter* i = g_sequence_lookup(params->event_callbacks, &search, gfalt_compare_callback_entry, NULL);
+    struct _gfalt_callback_entry* entry;
+    GSList* i = gfalt_search_callback(params->event_callbacks, callback);
 
     if (i) {
-        entry = (struct _gfalt_callback_entry*)g_sequence_get(i);
+        entry = (struct _gfalt_callback_entry*)i->data;
         entry->udata = udata;
     }
     else {
         entry = g_new0(struct _gfalt_callback_entry, 1);
         entry->func = callback;
         entry->udata = udata;
-        g_sequence_append(params->event_callbacks, entry);
+        params->event_callbacks = g_slist_append(params->event_callbacks, entry);
     }
 
     return 0;
@@ -257,11 +257,10 @@ gint gfalt_remove_event_callback(gfalt_params_t params, gfalt_event_func callbac
 {
     g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
 
-    struct _gfalt_callback_entry search;
-    search.func = callback;
-    GSequenceIter* i = g_sequence_lookup(params->event_callbacks, &search, gfalt_compare_callback_entry, NULL);
+    GSList* i = gfalt_search_callback(params->event_callbacks, callback);
     if (i) {
-        g_sequence_remove(i);
+        g_free(i->data);
+        params->event_callbacks = g_slist_delete_link(params->event_callbacks, i);
         return 0;
     }
 

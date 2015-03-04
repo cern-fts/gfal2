@@ -49,8 +49,8 @@ struct _gfalt_params_t{
 	size_t buffer_size; // internal buffer size per flow for non-third party transfer
 
 	// callback lists
-	GSequence* monitor_callbacks;
-	GSequence* event_callbacks;
+	GSList* monitor_callbacks;
+	GSList* event_callbacks;
 };
 
 

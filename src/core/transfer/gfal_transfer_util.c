@@ -82,7 +82,7 @@ int plugin_trigger_event(gfalt_params_t params, GQuark domain, gfal_event_side_t
     event.timestamp = tmst.tv_sec * 1000 + tmst.tv_usec / 1000;
     event.description = buffer;
 
-    g_sequence_foreach(params->event_callbacks, plugin_trigger_event_callback, &event);
+    g_slist_foreach(params->event_callbacks, plugin_trigger_event_callback, &event);
 
     const char* side_str;
     switch (side) {
@@ -126,7 +126,7 @@ int plugin_trigger_monitor(gfalt_params_t params, gfalt_transfer_status_t status
     monitor.status = &status;
     monitor.src = src;
     monitor.dst = dst;
-    g_sequence_foreach(params->monitor_callbacks, plugin_trigger_monitor_callback, &monitor);
+    g_slist_foreach(params->monitor_callbacks, plugin_trigger_monitor_callback, &monitor);
     return 0;
 }
 
