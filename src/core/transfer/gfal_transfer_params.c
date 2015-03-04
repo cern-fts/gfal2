@@ -88,11 +88,12 @@ void gfalt_params_handle_delete(gfalt_params_t params, GError ** err)
         g_free(params->dst_space_token);
         g_free(params->user_checksum);
         g_free(params->user_checksum_type);
-        g_free(params);
         g_slist_foreach(params->monitor_callbacks, (GFunc)g_free , NULL);
         g_slist_free(params->monitor_callbacks);
         g_slist_foreach(params->event_callbacks, (GFunc)g_free , NULL);
         g_slist_free(params->event_callbacks);
+
+        g_free(params);
     }
 }
 
