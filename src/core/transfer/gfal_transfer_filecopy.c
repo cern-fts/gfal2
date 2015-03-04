@@ -28,58 +28,46 @@ static GQuark scope_copy_domain() {
 static void* find_copy_plugin(gfal2_context_t context, gfal_url2_check operation,
         const char* src, const char* dst, void** plugin_data, GError** error)
 {
-    GError * tmp_err = NULL;
-    plugin_pointer_handle start_list, p_list;
+    GList* item = g_list_first(context->plugin_opt.sorted_plugin);
     void* resu = NULL;
 
-    start_list = p_list = gfal_plugins_list_handler(context, &tmp_err);
-    if (tmp_err != NULL) {
-        gfal2_propagate_prefixed_error(error, tmp_err, __func__);
-        return NULL;
-    }
-
-    while (p_list->plugin_api != NULL) {
-        plugin_url_check2_call check_call = p_list->plugin_api->check_plugin_url_transfer;
+    while (item != NULL) {
+        gfal_plugin_interface* plugin_ifce = (gfal_plugin_interface*)item->data;
+        plugin_url_check2_call check_call = plugin_ifce->check_plugin_url_transfer;
         if (check_call != NULL) {
             gboolean compatible;
-            if ((compatible = check_call(p_list->plugin_data, context, src, dst,
+            if ((compatible = check_call(plugin_ifce->plugin_data, context, src, dst,
                     operation)) == TRUE) {
-                *plugin_data = p_list->plugin_data;
+                *plugin_data = plugin_ifce->plugin_data;
                 switch (operation) {
                     case GFAL_FILE_COPY:
-                        resu = p_list->plugin_api->copy_file;
+                        resu = plugin_ifce->copy_file;
                         break;
                     case GFAL_BULK_COPY:
-                        resu = p_list->plugin_api->copy_bulk;
+                        resu = plugin_ifce->copy_bulk;
                         break;
                 }
             }
         }
-        p_list++;
+        item = g_list_next(item);
     }
-    g_free(start_list);
+
     return resu;
 }
 
 
 static int trigger_listener_plugins(gfal2_context_t context, gfalt_params_t params, GError** error)
 {
-    GError * tmp_err = NULL;
-    plugin_pointer_handle start_list, p_list;
-    start_list = p_list = gfal_plugins_list_handler(context, &tmp_err);
+    GList *item = g_list_first(context->plugin_opt.sorted_plugin);
 
-    if (tmp_err != NULL) {
-        gfal2_propagate_prefixed_error(error, tmp_err, __func__);
-        return -1;
+    while (item != NULL) {
+        gfal_plugin_interface* plugin_ifce = (gfal_plugin_interface*)item->data;
+        if (plugin_ifce->copy_enter_hook) {
+            plugin_ifce->copy_enter_hook(plugin_ifce->plugin_data, context, params);
+        }
+        item = g_list_next(item);
     }
 
-    while (p_list->plugin_api != NULL) {
-        if (p_list->plugin_api->copy_enter_hook)
-            p_list->plugin_api->copy_enter_hook(p_list->plugin_api->plugin_data, context, params);
-        p_list++;
-    }
-
-    g_free(start_list);
     return 0;
 }
 

@@ -225,31 +225,6 @@ static int gfal_module_load(gfal2_context_t handle, char* module_name, GError** 
 }
 
 
-plugin_pointer_handle gfal_plugins_list_handler(gfal2_context_t handle, GError** err)
-{
-    GError* tmp_err = NULL;
-    plugin_pointer_handle resu = NULL;
-    int n = gfal_plugins_instance(handle, &tmp_err);
-    if (n > 0) {
-        resu = g_new0(struct _plugin_pointer_handle, n + 1);
-        int i;
-        GList * plugin_list = g_list_first(handle->plugin_opt.sorted_plugin);
-        i = 0;
-        while (plugin_list != NULL) {
-            gfal_plugin_interface* cata_list = plugin_list->data;
-            resu[i].dlhandle = cata_list->gfal_data;
-            resu[i].plugin_data = cata_list->plugin_data;
-            resu[i].plugin_api = cata_list;
-            g_strlcpy(resu[i].plugin_name, cata_list->getName(), GFAL_URL_MAX_LEN);
-            i++;
-            plugin_list = g_list_next(plugin_list);
-        }
-    }
-
-    G_RETURN_ERR(resu, tmp_err, err);
-}
-
-
 /*
  * Provide a list of the gfal2 plugins path
  * Return NULL terminated table of plugins
