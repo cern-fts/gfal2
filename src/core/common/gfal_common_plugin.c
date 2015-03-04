@@ -79,15 +79,8 @@ gboolean gfal_plugin_checker_safe(gfal_plugin_interface* cata_list,
 {
     if (cata_list->check_plugin_url)
         return cata_list->check_plugin_url(cata_list->plugin_data, path, call_type, terr);
-    else {
-        gfal2_set_error(terr, gfal2_get_plugins_quark(), EPROTONOSUPPORT,
-                __func__,
-                "unexpected NULL \
-				pointer for a call to the url checker in the \
-				plugin %s",
-                cata_list->getName());
+    else
         return FALSE;
-    }
 }
 
 //

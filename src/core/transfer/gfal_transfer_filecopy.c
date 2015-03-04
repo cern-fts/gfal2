@@ -38,7 +38,7 @@ static void* find_copy_plugin(gfal2_context_t context, gfal_url2_check operation
         return NULL;
     }
 
-    while (p_list->dlhandle != NULL) {
+    while (p_list->plugin_api != NULL) {
         plugin_url_check2_call check_call = p_list->plugin_api->check_plugin_url_transfer;
         if (check_call != NULL) {
             gboolean compatible;
@@ -62,12 +62,39 @@ static void* find_copy_plugin(gfal2_context_t context, gfal_url2_check operation
 }
 
 
+static int trigger_listener_plugins(gfal2_context_t context, gfalt_params_t params, GError** error)
+{
+    GError * tmp_err = NULL;
+    plugin_pointer_handle start_list, p_list;
+    start_list = p_list = gfal_plugins_list_handler(context, &tmp_err);
+
+    if (tmp_err != NULL) {
+        gfal2_propagate_prefixed_error(error, tmp_err, __func__);
+        return -1;
+    }
+
+    while (p_list->plugin_api != NULL) {
+        if (p_list->plugin_api->copy_enter_hook)
+            p_list->plugin_api->copy_enter_hook(p_list->plugin_api->plugin_data, context, params);
+        p_list++;
+    }
+
+    g_free(start_list);
+    return 0;
+}
+
+
 static int perform_copy(gfal2_context_t context, gfalt_params_t params, const char* src,
         const char* dst, GError** error)
 {
     gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::FileCopy");
     GError *tmp_err = NULL;
     int res = -1;
+
+    if (trigger_listener_plugins(context, params, &tmp_err) < 0) {
+        gfal2_propagate_prefixed_error(error, tmp_err, __func__);
+        return -1;
+    }
 
     void *plugin_data = NULL;
     plugin_filecopy_call p_copy = find_copy_plugin(context, GFAL_FILE_COPY, src, dst,
@@ -156,6 +183,12 @@ static int perform_bulk_copy(gfal2_context_t context, gfalt_params_t params,
     int res = -1;
 
     gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::BulkFileCopy");
+
+    if (trigger_listener_plugins(context, params, &tmp_err) < 0) {
+        gfal2_propagate_prefixed_error(op_error, tmp_err, __func__);
+        return -1;
+    }
+
 
     void *plugin_data = NULL;
     plugin_filecopy_bulk_call p_copy = find_copy_plugin(context, GFAL_BULK_COPY, srcs[0],

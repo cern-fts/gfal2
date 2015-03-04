@@ -92,3 +92,52 @@ TEST(gfalTransfer, test_event_callbacks)
     g_assert(counter1 == 11);
     g_assert(counter2 == 11);
 }
+
+
+static const char* test_plugin_name()
+{
+    return "TEST-PLUGIN";
+}
+
+
+static int test_plugin_enter_hook(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params)
+{
+    gfalt_add_event_callback(params, event_callback_1, plugin_data, NULL);
+    return 0;
+}
+
+static int test_plugin_heck_transfer(plugin_handle plugin_data, gfal2_context_t,
+        const char* src, const char* dst, gfal_url2_check check)
+{
+    return 1;
+}
+
+
+static int test_plugin_copy(plugin_handle plugin_data, gfal2_context_t context,
+        gfalt_params_t params, const char* src, const char* dst, GError**)
+{
+    plugin_trigger_event(params,  domain, GFAL_EVENT_NONE, domain, "TEST");
+    return 0;
+}
+
+
+TEST(gfalTransfer, test_inject_callback)
+{
+    int counter = 0;
+    gfal_plugin_interface test_plugin;
+    memset(&test_plugin, 0, sizeof(test_plugin));
+
+    test_plugin.getName = test_plugin_name;
+    test_plugin.copy_enter_hook = test_plugin_enter_hook;
+    test_plugin.plugin_data = &counter;
+    test_plugin.check_plugin_url_transfer = test_plugin_heck_transfer;
+    test_plugin.copy_file = test_plugin_copy;
+
+    gfal2_context_t context = gfal2_context_new(NULL);
+    gfal2_register_plugin(context, &test_plugin, NULL);
+
+    gfalt_params_t params = gfalt_params_handle_new(NULL);
+    gfalt_copy_file(context, params, "test://", "test://", NULL);
+
+    g_assert(counter == 1);
+}
