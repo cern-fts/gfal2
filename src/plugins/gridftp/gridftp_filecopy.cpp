@@ -246,16 +246,16 @@ struct CallbackHandler {
         timeout_value = gfal2_get_opt_integer_with_default(context,
                     GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_PERF_TIMEOUT, 180);
 
+        start_time = time(NULL);
+
         if (timeout_value > 0) {
-            start_time = time(NULL);
             timeout_time = start_time + timeout_value;
-
-            globus_gass_copy_register_performance_cb(
-                    req->handler->get_gass_copy_handle(), gsiftp_3rd_callback,
-                    (gpointer) this);
-
             pthread_create(&timer_pthread, NULL, CallbackHandler::func_timer, this);
         }
+
+        globus_gass_copy_register_performance_cb(
+                req->handler->get_gass_copy_handle(), gsiftp_3rd_callback,
+                (gpointer) this);
     }
 
     virtual ~CallbackHandler()
@@ -294,21 +294,23 @@ void gsiftp_3rd_callback(void* user_args, globus_gass_copy_handle_t* handle,
     plugin_trigger_monitor(args->params, state, args->src, args->dst);
     gfalt_transfer_status_delete(state);
 
-    // If throughput != 0, or the file has been already sent, reset timer callback
-    // [LCGUTIL-440] Some endpoints calculate the checksum before closing, so we will
-    //               get throughput = 0 for a while, and the transfer should not fail
-    if (throughput != 0.0 || (args->source_size > 0 && args->source_size <= total_bytes)) {
-        //GridFTPRequestState* req = args->req;
-        //Glib::RWLock::ReaderLock l(req->mux_req_state);
-        if (args->timeout_value > 0) {
-            gfal_log(GFAL_VERBOSE_TRACE, "Performance marker received, re-arm timer");
-            args->timeout_time = time(NULL) + args->timeout_value;
+    if (args->timeout_time > 0) {
+        // If throughput != 0, or the file has been already sent, reset timer callback
+        // [LCGUTIL-440] Some endpoints calculate the checksum before closing, so we will
+        //               get throughput = 0 for a while, and the transfer should not fail
+        if (throughput != 0.0 || (args->source_size > 0 && args->source_size <= total_bytes)) {
+            //GridFTPRequestState* req = args->req;
+            //Glib::RWLock::ReaderLock l(req->mux_req_state);
+            if (args->timeout_value > 0) {
+                gfal_log(GFAL_VERBOSE_TRACE, "Performance marker received, re-arm timer");
+                args->timeout_time = time(NULL) + args->timeout_value;
+            }
         }
-    }
-    // Otherwise, do not reset and notify
-    else {
-        gfal_log(GFAL_VERBOSE_NORMAL,
-                "Performance marker received, but throughput is 0. Not resetting timeout!");
+        // Otherwise, do not reset and notify
+        else {
+            gfal_log(GFAL_VERBOSE_NORMAL,
+                    "Performance marker received, but throughput is 0. Not resetting timeout!");
+        }
     }
 }
 
