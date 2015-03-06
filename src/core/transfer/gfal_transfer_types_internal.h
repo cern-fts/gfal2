@@ -60,6 +60,7 @@ struct _gfalt_transfer_status {
 
 struct _gfalt_callback_entry {
     gpointer func, udata;
+    GDestroyNotify udata_free;
 };
 
 #endif //_GFAL2_TRANSFER_TYPES_INTERNAL_

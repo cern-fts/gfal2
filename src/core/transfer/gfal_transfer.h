@@ -258,23 +258,31 @@ GFAL2_DEPRECATED(plugin_trigger_event) gfalt_event_func gfalt_get_event_callback
 
 /**
  * @brief Add a new callback for monitoring the current transfer
- * Adding the same callback with a different udata will just change the udata, but the callback will not be called twice.
+ * Adding the same callback with a different udata will just change the udata and the free method, but the callback will not be called twice.
+ * In this case, udata_free will be called with the old data.
+ * udata_free can be left to NULL
  */
-gint gfalt_add_monitor_callback(gfalt_params_t params, gfalt_monitor_func callback, gpointer udata, GError** err);
+gint gfalt_add_monitor_callback(gfalt_params_t params, gfalt_monitor_func callback,
+        gpointer udata, GDestroyNotify udata_free, GError** err);
 
 /**
  * @brief Remove an installed monitor callback
+ * It will call the method registered to free the user data
  */
 gint gfalt_remove_monitor_callback(gfalt_params_t params, gfalt_monitor_func callback, GError** err);
 
 /**
  * @brief Add a new callback for event monitoring
  * Adding the same callback with a different udata will just change the udata, but the callback will not be called twice.
+ * In this case, udata_free will be called with the old data.
+ * udata_free can be left to NULL
  */
-gint gfalt_add_event_callback(gfalt_params_t params, gfalt_event_func callback, gpointer udata, GError** err);
+gint gfalt_add_event_callback(gfalt_params_t params, gfalt_event_func callback,
+        gpointer udata, GDestroyNotify udata_free, GError** err);
 
 /**
  * @brief Remove an installed callback
+ * It will call the method registered to free the user data
  */
 gint gfalt_remove_event_callback(gfalt_params_t params, gfalt_event_func callback, GError** err);
 

@@ -52,24 +52,37 @@ static void event_callback_2(const gfalt_event_t e, gpointer user_data)
 }
 
 
+static void event_reset_counter(gpointer user_data)
+{
+    int *data = (int*)(user_data);
+    *data = 0;
+}
+
+
 TEST(gfalTransfer, test_monitor_callbacks)
 {
     int counter1 = 0, counter2 = 0;
 
     gfalt_params_t params = gfalt_params_handle_new(NULL);
-    gfalt_add_monitor_callback(params, monitor_callback_1, &counter1, NULL);
-    gfalt_add_monitor_callback(params, monitor_callback_2, &counter1, NULL);
+    gfalt_add_monitor_callback(params, monitor_callback_1, &counter1, event_reset_counter, NULL);
+    gfalt_add_monitor_callback(params, monitor_callback_2, &counter1, event_reset_counter, NULL);
 
     plugin_trigger_monitor(params, NULL, "source", "destination");
     g_assert(counter1 == 11);
     g_assert(counter2 == 0);
 
-    gfalt_add_monitor_callback(params, monitor_callback_1, &counter2, NULL);
-    gfalt_add_monitor_callback(params, monitor_callback_2, &counter2, NULL);
+    gfalt_add_monitor_callback(params, monitor_callback_1, &counter2, event_reset_counter,
+            NULL);
+    gfalt_add_monitor_callback(params, monitor_callback_2, &counter2, event_reset_counter,
+            NULL);
 
     plugin_trigger_monitor(params, NULL, "source", "destination");
-    g_assert(counter1 == 11);
+    g_assert(counter1 == 0); // Was reset on the second call to gfalt_add_monitor_callback
     g_assert(counter2 == 11);
+
+    gfalt_params_handle_delete(params, NULL);
+    g_assert(counter1 == 0);
+    g_assert(counter2 == 0);
 }
 
 
@@ -78,19 +91,23 @@ TEST(gfalTransfer, test_event_callbacks)
     int counter1 = 0, counter2 = 0;
 
     gfalt_params_t params = gfalt_params_handle_new(NULL);
-    gfalt_add_event_callback(params, event_callback_1, &counter1, NULL);
-    gfalt_add_event_callback(params, event_callback_2, &counter1, NULL);
+    gfalt_add_event_callback(params, event_callback_1, &counter1, event_reset_counter, NULL);
+    gfalt_add_event_callback(params, event_callback_2, &counter1, event_reset_counter, NULL);
 
     plugin_trigger_event(params,  domain, GFAL_EVENT_NONE, domain, "TEST");
     g_assert(counter1 == 11);
     g_assert(counter2 == 0);
 
-    gfalt_add_event_callback(params, event_callback_1, &counter2, NULL);
-    gfalt_add_event_callback(params, event_callback_2, &counter2, NULL);
+    gfalt_add_event_callback(params, event_callback_1, &counter2, event_reset_counter, NULL);
+    gfalt_add_event_callback(params, event_callback_2, &counter2, event_reset_counter, NULL);
 
     plugin_trigger_event(params,  domain, GFAL_EVENT_NONE, domain, "TEST");
-    g_assert(counter1 == 11);
+    g_assert(counter1 == 0); // Was reset on the second call to gfalt_add_event_callback
     g_assert(counter2 == 11);
+
+    gfalt_params_handle_delete(params, NULL);
+    g_assert(counter1 == 0);
+    g_assert(counter2 == 0);
 }
 
 
@@ -102,7 +119,7 @@ static const char* test_plugin_name()
 
 static int test_plugin_enter_hook(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params)
 {
-    gfalt_add_event_callback(params, event_callback_1, plugin_data, NULL);
+    gfalt_add_event_callback(params, event_callback_1, plugin_data, NULL, NULL);
     return 0;
 }
 
@@ -151,6 +168,8 @@ TEST(gfalTransfer, test_inject_callback)
     gfalt_copy_file(context, params, "test://", "test://", NULL);
 
     g_assert(counter == 1);
+
+    gfalt_params_handle_delete(params, NULL);
 }
 
 
@@ -179,4 +198,6 @@ TEST(gfalTransfer, test_inject_callback_bulk)
             sources, destinations, NULL, NULL, &file_errors);
 
     g_assert(counter == 2);
+
+    gfalt_params_handle_delete(params, NULL);
 }

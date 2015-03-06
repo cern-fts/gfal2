@@ -119,8 +119,8 @@ int main(int argc, char** argv)
     if (!transfer_params)
         goto unwind_context;
     gfalt_set_replace_existing_file(transfer_params, TRUE, NULL);
-    gfalt_add_monitor_callback(transfer_params, monitor_callback, NULL, NULL);
-    gfalt_add_event_callback(transfer_params, event_callback, NULL, NULL);
+    gfalt_add_monitor_callback(transfer_params, monitor_callback, NULL, NULL, NULL);
+    gfalt_add_event_callback(transfer_params, event_callback, NULL, NULL, NULL);
 
     // Spawn the thread that will do the copy
     printf("Spawning the copy '%s' => '%s'\n", source, destination);

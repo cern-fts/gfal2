@@ -35,7 +35,7 @@ public:
         Gfal::gerror_to_cpp(&error);
         params = gfalt_params_handle_new(NULL);
         gfalt_set_checksum_check(params, TRUE, NULL);
-        gfalt_add_event_callback(params, transfer_callback, this, NULL);
+        gfalt_add_event_callback(params, transfer_callback, this, NULL, NULL);
 
         for (size_t i = 0; i < NBPAIRS; ++i) {
             sources[i] = new char[2048];
