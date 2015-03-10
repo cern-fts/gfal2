@@ -29,111 +29,35 @@
 
 static const GQuark GFAL_GRIDFTP_SCOPE_GLOBUS_INIT = g_quark_from_static_string("GridFTPModule::init_globus");
 
-static globus_mutex_t mux_globus_init;
-
-
 // initialization
 __attribute__((constructor))
-void core_init()
+void gridftp_plugin_init()
 {
-    globus_mutex_init(&mux_globus_init, NULL);
 #if  (!GLIB_CHECK_VERSION (2, 32, 0))
     if (!g_thread_supported())
     g_thread_init(NULL);
 #endif
-}
+    globus_thread_set_model("pthread");
 
-// gfunction prototype : gonce
-static void* init_globus(gpointer data)
-{
-    globus_mutex_lock(&mux_globus_init);
+    globus_module_activate(GLOBUS_GSI_GSS_ASSIST_MODULE);
+    globus_module_activate(GLOBUS_GSI_GSSAPI_MODULE);
 
-    globus_result_t result = GLOBUS_SUCCESS;
-
-    try {
-        result = globus_module_activate(GLOBUS_GASS_COPY_MODULE);
-        if (result != GLOBUS_SUCCESS) {
-            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_GLOBUS_INIT, result,
-                    "Error globus init, globus gass");
-        }
-
-        result = globus_module_activate(GLOBUS_FTP_CLIENT_MODULE);
-        if (result != GLOBUS_SUCCESS) {
-            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_GLOBUS_INIT, result,
-                    "Error globus init, globus ftp");
-        }
-
-        result = globus_module_activate(GLOBUS_FTP_CLIENT_DEBUG_PLUGIN_MODULE);
-        if (result != GLOBUS_SUCCESS) {
-            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_GLOBUS_INIT, result,
-                    "Error globus init, globus ftp debug");
-        }
-
-        result = globus_module_activate(GLOBUS_FTP_CLIENT_THROUGHPUT_PLUGIN_MODULE);
-        if (result != GLOBUS_SUCCESS) {
-            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_GLOBUS_INIT, result,
-                    "Error globus init, globus ftp throughput plugin");
-        }
-    }
-    catch (...) {
-        globus_mutex_unlock(&mux_globus_init);
-        throw;
-    }
-    globus_mutex_unlock(&mux_globus_init);
-    return NULL;
-}
-
-
-static void* deinit_globus(gpointer data)
-{
-    globus_mutex_lock(&mux_globus_init);
-
-    try {
-        globus_result_t result = GLOBUS_SUCCESS;
-
-        result = globus_module_deactivate(GLOBUS_GASS_COPY_MODULE);
-        if (result != GLOBUS_SUCCESS) {
-            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_GLOBUS_INIT, result,
-                    "Error globus deinit, globus gass");
-        }
-
-        result = globus_module_deactivate(GLOBUS_FTP_CLIENT_MODULE);
-        if (result != GLOBUS_SUCCESS) {
-            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_GLOBUS_INIT, result,
-                    "Error globus deinit, globus ftp");
-        }
-
-        result = globus_module_deactivate(GLOBUS_FTP_CLIENT_DEBUG_PLUGIN_MODULE);
-        if (result != GLOBUS_SUCCESS) {
-            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_GLOBUS_INIT, result,
-                    "Error globus deinit, globus ftp debug");
-        }
-
-        result = globus_module_deactivate(GLOBUS_FTP_CLIENT_THROUGHPUT_PLUGIN_MODULE);
-        if (result != GLOBUS_SUCCESS) {
-            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_GLOBUS_INIT, result,
-                    "Error globus deinit, globus ftp throughput plugin");
-        }
-    }
-    catch (...) {
-        globus_mutex_unlock(&mux_globus_init);
-        throw;
-    }
-    globus_mutex_unlock(&mux_globus_init);
-    return NULL;
+    globus_module_activate(GLOBUS_GASS_COPY_MODULE);
+    globus_module_activate(GLOBUS_FTP_CLIENT_MODULE);
+    globus_module_activate(GLOBUS_FTP_CLIENT_DEBUG_PLUGIN_MODULE);
+    globus_module_activate(GLOBUS_FTP_CLIENT_THROUGHPUT_PLUGIN_MODULE);
 }
 
 
 GridFTPModule::GridFTPModule(GridFTPFactory* factory)
 {
-    init_globus(NULL);
     _handle_factory = factory;
 }
+
 
 GridFTPModule::~GridFTPModule()
 {
     delete _handle_factory;
-    deinit_globus(NULL);
 }
 
 
