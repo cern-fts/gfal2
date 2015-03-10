@@ -33,6 +33,9 @@ GQuark GFAL_EVENT_CHECKSUM_EXIT;
 GQuark GFAL_EVENT_CANCEL_ENTER;
 GQuark GFAL_EVENT_CANCEL_EXIT;
 GQuark GFAL_EVENT_OVERWRITE_DESTINATION;
+GQuark GFAL_EVENT_LIST_ENTER;
+GQuark GFAL_EVENT_LIST_ITEM;
+GQuark GFAL_EVENT_LIST_EXIT;
 
 
 __attribute__((constructor))
@@ -48,6 +51,9 @@ static void init_event_quarks() {
     GFAL_EVENT_CANCEL_ENTER = g_quark_from_static_string("CANCEL:ENTER");
     GFAL_EVENT_CANCEL_EXIT = g_quark_from_static_string("CANCEL:EXIT");
     GFAL_EVENT_OVERWRITE_DESTINATION = g_quark_from_static_string("OVERWRITE");
+    GFAL_EVENT_LIST_ENTER = g_quark_from_static_string("LIST:ENTER");
+    GFAL_EVENT_LIST_ITEM = g_quark_from_static_string("LIST:ITEM");
+    GFAL_EVENT_LIST_EXIT = g_quark_from_static_string("LIST:EXIT");
 }
 
 
