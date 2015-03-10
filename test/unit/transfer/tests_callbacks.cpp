@@ -117,7 +117,8 @@ static const char* test_plugin_name()
 }
 
 
-static int test_plugin_enter_hook(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params, GError** error)
+static int test_plugin_enter_hook(plugin_handle plugin_data, gfal2_context_t context,
+        gfalt_params_t params, GError** error)
 {
     gfalt_add_event_callback(params, event_callback_1, plugin_data, NULL, NULL);
     return 0;
@@ -167,7 +168,7 @@ TEST(gfalTransfer, test_inject_callback)
     gfalt_params_t params = gfalt_params_handle_new(NULL);
     gfalt_copy_file(context, params, "test://", "test://", NULL);
 
-    g_assert(counter == 1);
+    g_assert(counter == 4);
 
     gfalt_params_handle_delete(params, NULL);
 }
@@ -197,7 +198,7 @@ TEST(gfalTransfer, test_inject_callback_bulk)
     gfalt_copy_bulk(context, params, 2,
             sources, destinations, NULL, NULL, &file_errors);
 
-    g_assert(counter == 2);
+    g_assert(counter == 6);
 
     gfalt_params_handle_delete(params, NULL);
 }
