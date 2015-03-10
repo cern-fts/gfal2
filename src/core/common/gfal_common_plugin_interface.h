@@ -535,7 +535,7 @@ struct _gfal_plugin_interface {
       * OPTIONAL: executed by the core before entering a copy, so a plugin can install its own
       *           event listeners.
       */
-     int (*copy_enter_hook)(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params);
+     int (*copy_enter_hook)(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params, GError** error);
 
 	 // reserved for future usage
 	 //! @cond

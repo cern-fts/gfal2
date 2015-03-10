@@ -117,7 +117,7 @@ static const char* test_plugin_name()
 }
 
 
-static int test_plugin_enter_hook(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params)
+static int test_plugin_enter_hook(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params, GError** error)
 {
     gfalt_add_event_callback(params, event_callback_1, plugin_data, NULL, NULL);
     return 0;

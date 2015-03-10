@@ -63,7 +63,12 @@ static int trigger_listener_plugins(gfal2_context_t context, gfalt_params_t para
     while (item != NULL) {
         gfal_plugin_interface* plugin_ifce = (gfal_plugin_interface*)item->data;
         if (plugin_ifce->copy_enter_hook) {
-            plugin_ifce->copy_enter_hook(plugin_ifce->plugin_data, context, params);
+            GError* tmp_error = NULL;
+            plugin_ifce->copy_enter_hook(plugin_ifce->plugin_data, context, params, &tmp_error);
+            if (tmp_error) {
+                gfal_log(GFAL_VERBOSE_NORMAL, "Copy enter hook failed: %s", tmp_error->message);
+                g_error_free(tmp_error);
+            }
         }
         item = g_list_next(item);
     }
