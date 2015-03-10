@@ -41,7 +41,7 @@ static std::string gridftp_hostname_from_url(const std::string& url)
     GError * tmp_err = NULL;
     char buffer[GFAL_URL_MAX_LEN];
     buffer[0] = '\0';
-    const int res = gfal_hostname_from_uri(url.c_str(), buffer, GFAL_URL_MAX_LEN, &tmp_err);
+    const int res = gfal2_hostname_from_uri(url.c_str(), buffer, GFAL_URL_MAX_LEN, &tmp_err);
     if (res < 0) {
         throw Gfal::CoreException(tmp_err);
     }

@@ -5,10 +5,10 @@
 TEST(gfalURI, regular_parsing)
 {
     GError* tmp_err=NULL;
-    gfal_uri parsed;
+    gfal2_uri parsed;
     int ret;
 
-    ret = gfal_parse_uri(
+    ret = gfal2_parse_uri(
             "gsiftp://dcache-door-desy09.desy.de:2811/pnfs/desy.de/dteam/gfal2-tests/testread0011",
             &parsed,
             &tmp_err);
@@ -26,10 +26,10 @@ TEST(gfalURI, regular_parsing)
 TEST(gfalURI, malformed)
 {
     GError* tmp_err=NULL;
-    gfal_uri parsed;
+    gfal2_uri parsed;
     int ret;
 
-    ret = gfal_parse_uri(
+    ret = gfal2_parse_uri(
             "malformed",
             &parsed,
             &tmp_err);
@@ -41,10 +41,10 @@ TEST(gfalURI, malformed)
 TEST(gfalURI, no_port)
 {
     GError* tmp_err=NULL;
-    gfal_uri parsed;
+    gfal2_uri parsed;
     int ret;
 
-    ret = gfal_parse_uri(
+    ret = gfal2_parse_uri(
             "https://some.domain.com/path",
             &parsed,
             &tmp_err);

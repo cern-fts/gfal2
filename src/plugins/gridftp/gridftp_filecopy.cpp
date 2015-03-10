@@ -102,7 +102,7 @@ std::string return_hostname(const std::string &uri, gboolean use_ipv6)
 {
     GError* error = NULL;
     gfal_uri parsed;
-    gfal_parse_uri(uri.c_str(), &parsed, &error);
+    gfal2_parse_uri(uri.c_str(), &parsed, &error);
     if (error)
         throw Gfal::CoreException(error);
     std::ostringstream str;

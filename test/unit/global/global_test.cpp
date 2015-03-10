@@ -29,11 +29,11 @@ TEST(gfalGlobal, urlParsing){
     const char* url = "gsiftp://dcache-door-desy09.desy.de:2811/pnfs/desy.de/dteam/gfal2-tests/testread0011";
     const char* bad_url = "bob the sponge:";
     char buffer[GFAL_URL_MAX_LEN] = { 0 };
-    int ret = gfal_hostname_from_uri(url, buffer, GFAL_URL_MAX_LEN, &tmp_err);
+    int ret = gfal2_hostname_from_uri(url, buffer, GFAL_URL_MAX_LEN, &tmp_err);
     ASSERT_EQ(0, ret);
     ASSERT_STREQ("dcache-door-desy09.desy.de:2811", buffer);
 
-    ret = gfal_hostname_from_uri(bad_url, buffer, GFAL_URL_MAX_LEN, &tmp_err);
+    ret = gfal2_hostname_from_uri(bad_url, buffer, GFAL_URL_MAX_LEN, &tmp_err);
     ASSERT_GT(0, ret);
     ASSERT_NE((void*)NULL, tmp_err);
 }
