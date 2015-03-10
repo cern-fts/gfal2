@@ -1,3 +1,4 @@
+#include "global/gfal_global.h"
 #include "g_config_manager.h"
 #include "common/future/glib.h"
 
@@ -29,7 +30,7 @@ GConfigManager_t g_config_manager_new()
 
 GQuark g_config_manager_quark()
 {
-    return g_quark_from_static_string("g_config_manager::GKeyFileError");
+    return g_quark_from_static_string(GFAL2_QUARK_CONFIG);
 }
 
 

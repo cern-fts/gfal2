@@ -21,7 +21,7 @@
 #include <cancel/gfal_cancel.h>
 
 static GQuark scope_copy_domain() {
-    return g_quark_from_static_string("CORE:COPY");
+    return g_quark_from_static_string("GFAL2:CORE:COPY");
 }
 
 

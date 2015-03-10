@@ -11,7 +11,7 @@ const size_t DEFAULT_BUFFER_SIZE = 4000000;
 
 
 static GQuark local_copy_domain() {
-    return g_quark_from_static_string("FileCopy::local_copy");
+    return g_quark_from_static_string("GFAL2:CORE:COPY:LOCAL");
 }
 
 
