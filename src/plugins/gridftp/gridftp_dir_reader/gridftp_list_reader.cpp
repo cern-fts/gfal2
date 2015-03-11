@@ -15,7 +15,7 @@ GridFTPListReader::GridFTPListReader(GridFTPModule* gsiftp, const char* path)
     this->request_state = new GridFTPRequestState(this->handler);
     this->stream_state = new GridFTPStreamState(this->handler);
 
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpListReader::GridftpListReader]");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " -> [GridftpListReader::GridftpListReader]");
 
     globus_result_t res = globus_ftp_client_machine_list(
             this->handler->get_ftp_client_handle(), path,
@@ -26,7 +26,7 @@ GridFTPListReader::GridFTPListReader(GridFTPModule* gsiftp, const char* path)
 
     this->stream_buffer = new GridFTPStreamBuffer(this->stream_state, GridftpListReaderQuark);
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridftpListReader::GridftpListReader]");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- [GridftpListReader::GridftpListReader]");
 }
 
 

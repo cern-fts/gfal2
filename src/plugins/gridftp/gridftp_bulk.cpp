@@ -117,7 +117,7 @@ static void gridftp_pipeline_callback(globus_ftp_client_handle_t * handle, char 
 
     // Skip pairs marked as failed
     while (data->index < data->nbfiles && data->errn[data->index]) {
-        gfal_log(GFAL_VERBOSE_DEBUG,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                 "Skipping pair %d as marked failed with %d", data->index,
                 data->errn[data->index]);
         data->index++;
@@ -129,13 +129,13 @@ static void gridftp_pipeline_callback(globus_ftp_client_handle_t * handle, char 
         *dest_url = (char*)data->dsts[data->index];
         data->started[data->index] = true;
 
-        gfal_log(GFAL_VERBOSE_VERBOSE, "Providing pair %s => %s", *source_url, *dest_url);
+        gfal2_log(G_LOG_LEVEL_INFO, "Providing pair %s => %s", *source_url, *dest_url);
     }
     else {
         *source_url = NULL;
         *dest_url = NULL;
 
-        gfal_log(GFAL_VERBOSE_VERBOSE, "No more pairs to give");
+        gfal2_log(G_LOG_LEVEL_INFO, "No more pairs to give");
     }
 }
 
@@ -312,7 +312,7 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
             char *err_buffer;
             int err_code = gfal_globus_error_convert(pairs->error, &err_buffer);
             if (err_code) {
-                gfal_log(GFAL_VERBOSE_VERBOSE, "Bulk transfer failed with %s", err_buffer);
+                gfal2_log(G_LOG_LEVEL_INFO, "Bulk transfer failed with %s", err_buffer);
                 gfal2_set_error(op_error, GSIFTP_BULK_DOMAIN, err_code, __func__, "%s", err_buffer);
                 res = -1;
                 g_free(err_buffer);
@@ -324,7 +324,7 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
         }
     }
     catch (const Gfal::CoreException& e) {
-        gfal_log(GFAL_VERBOSE_NORMAL, "Bulk transfer failed with %s", e.what());
+        gfal2_log(G_LOG_LEVEL_MESSAGE, "Bulk transfer failed with %s", e.what());
         gfal2_set_error(op_error, e.domain(), e.code(), __func__, "%s", e.what());
         res = -1;
     }
@@ -437,7 +437,7 @@ int gridftp_bulk_prepare_destination(plugin_handle plugin_data,
 
                     if (slash &&
                         std::find(created_parents.begin(), created_parents.end(), parent) != created_parents.end()) {
-                        gfal_log(GFAL_VERBOSE_VERBOSE, "Skip mkdir of %s", parent.c_str());
+                        gfal2_log(G_LOG_LEVEL_INFO, "Skip mkdir of %s", parent.c_str());
                     }
                     else {
                         gridftp_create_parent_copy((GridFTPModule*) plugin_data,
@@ -556,7 +556,7 @@ int gridftp_bulk_copy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
         size_t nbfiles, const char* const * srcs, const char* const * dsts,
         const char* const * checksums, GError** op_error, GError*** file_errors)
 {
-    gfal_log(GFAL_VERBOSE_TRACE, "-> %s", __func__);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "-> %s", __func__);
 
     if (nbfiles == 0 || srcs == NULL || dsts == NULL) {
         gfal2_set_error(op_error, GSIFTP_BULK_DOMAIN, EINVAL, __func__, "Invalid parameters");
@@ -596,7 +596,7 @@ int gridftp_bulk_copy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
             g_error_free(*op_error);
             *op_error = NULL;
 
-            gfal_log(GFAL_VERBOSE_VERBOSE, "UDT transfer failed! Disabling and retrying...");
+            gfal2_log(G_LOG_LEVEL_INFO, "UDT transfer failed! Disabling and retrying...");
             transfer_ret = gridftp_pipeline_transfer(plugin_data, context, udt, &pairs, op_error);
         }
     }
@@ -608,7 +608,7 @@ int gridftp_bulk_copy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
         total_failed += gridftp_bulk_close(plugin_data, context, &pairs, *file_errors);
 
     // Done
-    gfal_log(GFAL_VERBOSE_TRACE, "<- %s", __func__);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "<- %s", __func__);
     gfal2_end_scope_cancel(context);
     return -total_failed;
 }

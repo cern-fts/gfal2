@@ -32,7 +32,7 @@ void GridFTPModule::stat(const char* path, struct stat * st)
                 "Invalid arguments path or stat ");
     }
 
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::stat] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " -> [GridFTPModule::stat] ");
     globus_gass_copy_glob_stat_t gl_stat;
     memset(&gl_stat, 0, sizeof(globus_gass_copy_glob_stat_t));
     internal_globus_gass_stat(path, &gl_stat);
@@ -49,7 +49,7 @@ void GridFTPModule::stat(const char* path, struct stat * st)
     globus_libc_free(gl_stat.unique_id);
     globus_libc_free(gl_stat.symlink_target);
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridFTPModule::stat] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- [GridFTPModule::stat] ");
 }
 
 
@@ -60,13 +60,13 @@ void GridFTPModule::access(const char* path, int mode)
                 "Invalid arguments path or stat ");
     }
 
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [Gridftp_stat_module::access] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " -> [Gridftp_stat_module::access] ");
     globus_gass_copy_glob_stat_t gl_stat;
     memset(&gl_stat, 0, sizeof(globus_gass_copy_glob_stat_t));
     internal_globus_gass_stat(path, &gl_stat);
 
     if (gl_stat.mode == -1) { // mode not managed by server
-        gfal_log(GFAL_VERBOSE_VERBOSE,
+        gfal2_log(G_LOG_LEVEL_INFO,
                 "Access request is not managed by this server %s , return access authorized by default",
                 path);
         return;
@@ -88,7 +88,7 @@ void GridFTPModule::access(const char* path, int mode)
                 "No execute access");
     }
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [Gridftp_stat_module::access] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- [Gridftp_stat_module::access] ");
 }
 
 // Adapted from http://cvs.globus.org/viewcvs.cgi/gass/copy/source/globus_gass_copy_glob.c
@@ -337,7 +337,7 @@ void GridFTPModule::internal_globus_gass_stat(const char* path,
         globus_gass_copy_glob_stat_t * gl_stat)
 {
 
-    gfal_log(GFAL_VERBOSE_TRACE,
+    gfal2_log(G_LOG_LEVEL_DEBUG,
             " -> [Gridftp_stat_module::globus_gass_stat] ");
 
     GridFTPSessionHandler handler(_handle_factory, path);
@@ -353,14 +353,14 @@ void GridFTPModule::internal_globus_gass_stat(const char* path,
     gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_STAT, res);
     req.wait(GFAL_GRIDFTP_SCOPE_STAT);
 
-    gfal_log(GFAL_VERBOSE_TRACE,
+    gfal2_log(G_LOG_LEVEL_DEBUG,
             "   <- [Gridftp_stat_module::internal_globus_gass_stat] Got '%s'",
             buffer);
 
     parse_mlst_line((char*) buffer, gl_stat, NULL, 0);
     globus_free(buffer);
 
-    gfal_log(GFAL_VERBOSE_TRACE,
+    gfal2_log(G_LOG_LEVEL_DEBUG,
             " <- [Gridftp_stat_module::internal_globus_gass_stat] ");
 }
 
@@ -373,12 +373,12 @@ extern "C" int gfal_gridftp_statG(plugin_handle handle, const char* name,
 
     GError * tmp_err = NULL;
     int ret = -1;
-    gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_statG]");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_statG]");
     CPP_GERROR_TRY
                 (static_cast<GridFTPModule*>(handle))->stat(name, buff);
                 ret = 0;
             CPP_GERROR_CATCH(&tmp_err);
-    gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_statG]<-");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  [gfal_gridftp_statG]<-");
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -391,11 +391,11 @@ extern "C" int gfal_gridftp_accessG(plugin_handle handle, const char* name,
 
     GError * tmp_err = NULL;
     int ret = -1;
-    gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_accessG]");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_accessG]");
     CPP_GERROR_TRY
         (static_cast<GridFTPModule*>(handle))->access(name, mode);
         ret = 0;
     CPP_GERROR_CATCH(&tmp_err);
-    gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_accessG]<-");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  [gfal_gridftp_accessG]<-");
     G_RETURN_ERR(ret, tmp_err, err);
 }

@@ -12,7 +12,7 @@ GridFTPSimpleListReader::GridFTPSimpleListReader(GridFTPModule* gsiftp, const ch
     this->request_state = new GridFTPRequestState(this->handler);
     this->stream_state = new GridFTPStreamState(this->handler);
 
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpSimpleListReader::GridftpSimpleListReader]");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " -> [GridftpSimpleListReader::GridftpSimpleListReader]");
     globus_result_t res = globus_ftp_client_list(
             // start req
             this->handler->get_ftp_client_handle(), path,
@@ -23,7 +23,7 @@ GridFTPSimpleListReader::GridFTPSimpleListReader(GridFTPModule* gsiftp, const ch
 
     stream_buffer = new GridFTPStreamBuffer(this->stream_state, GridFTPSimpleReaderQuark);
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridftpSimpleListReader::GridftpSimpleListReader]");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- [GridftpSimpleListReader::GridftpSimpleListReader]");
 }
 
 
@@ -50,7 +50,7 @@ static int gridftp_readdir_parser(const std::string& line, struct dirent* entry)
 
 struct dirent* GridFTPSimpleListReader::readdir()
 {
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridftpSimpleListReader::readdir]");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " -> [GridftpSimpleListReader::readdir]");
 
     std::string line;
     std::istream in(stream_buffer);
@@ -67,8 +67,8 @@ struct dirent* GridFTPSimpleListReader::readdir()
     if (dbuffer.d_name[0] == '/' || dbuffer.d_name[0] == '\0')
         return NULL;
 
-    gfal_log(GFAL_VERBOSE_VERBOSE, "  list file %s ", dbuffer.d_name);
-    gfal_log(GFAL_VERBOSE_TRACE, "  [GridftpSimpleListReader::readdir] <- ");
+    gfal2_log(G_LOG_LEVEL_INFO, "  list file %s ", dbuffer.d_name);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  [GridftpSimpleListReader::readdir] <- ");
     return &dbuffer;
 }
 

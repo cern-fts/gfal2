@@ -344,7 +344,7 @@ int main(int argc, char** argv)
 
     for (int i = 0; i < argc; ++i) {
         if (strcmp(argv[i], "-v") == 0)
-            gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE | GFAL_VERBOSE_DEBUG);
+            gfal2_log_set_level(G_LOG_LEVEL_DEBUG);
     }
 
     return RUN_ALL_TESTS();

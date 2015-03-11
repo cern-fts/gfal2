@@ -132,7 +132,7 @@ int url_converter(plugin_handle handle, const char * url, char** host,
     GError* tmp_err = NULL;
     int res = -1;
     if (strnlen(url, 5) != 5) { // bad string size, return empty string
-        gfal_log(GFAL_VERBOSE_VERBOSE, "lfc url converter -> bad url size");
+        gfal2_log(G_LOG_LEVEL_INFO, "lfc url converter -> bad url size");
         return res;
     }
     if (strncmp(url, "lfn", 3) == 0) {
@@ -350,9 +350,9 @@ static int lfc_lstatG(plugin_handle handle, const char* path, struct stat* st, G
             struct lfc_filestat statbuf;
 
             if( ( ret= gsimplecache_take_one_kstr(ops->cache_stat, url_path, st)) == 0){ // take the version of the buffer
-                gfal_log(GFAL_VERBOSE_TRACE, " lfc_lstatG -> value taken from cache");
+                gfal2_log(G_LOG_LEVEL_DEBUG, " lfc_lstatG -> value taken from cache");
             }else{
-                gfal_log(GFAL_VERBOSE_TRACE, " lfc_lstatG -> value not in cache, do normal call");
+                gfal2_log(G_LOG_LEVEL_DEBUG, " lfc_lstatG -> value not in cache, do normal call");
                 gfal_lfc_init_thread(ops);
                 gfal_auto_maintain_session(ops, &tmp_err);
                 if(!tmp_err){

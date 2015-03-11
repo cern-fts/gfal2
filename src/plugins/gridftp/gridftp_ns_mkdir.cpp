@@ -27,7 +27,7 @@ void GridFTPModule::mkdir(const char* path, mode_t mode)
         throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_MKDIR, EINVAL,
                 "Invalid arguments path or mode");
     }
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::mkdir] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " -> [GridFTPModule::mkdir] ");
 
     GridFTPSessionHandler handler(_handle_factory, path);
     GridFTPRequestState req(&handler);
@@ -39,7 +39,7 @@ void GridFTPModule::mkdir(const char* path, mode_t mode)
     // wait for answer
     req.wait(GFAL_GRIDFTP_SCOPE_MKDIR);
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridFTPModule::mkdir] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- [GridFTPModule::mkdir] ");
 
 }
 
@@ -52,11 +52,11 @@ extern "C" int gfal_gridftp_mkdirG(plugin_handle handle, const char* path,
 
     GError * tmp_err = NULL;
     int ret = -1;
-    gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_mkdirG]");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_mkdirG]");
     CPP_GERROR_TRY
             (static_cast<GridFTPModule*>(handle))->mkdir(path, mode);
             ret = 0;
     CPP_GERROR_CATCH(&tmp_err);
-    gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_mkdirG]<-");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  [gfal_gridftp_mkdirG]<-");
     G_RETURN_ERR(ret, tmp_err, err);
 }

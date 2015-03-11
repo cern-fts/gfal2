@@ -107,7 +107,7 @@ int lfc_configure_environment(struct lfc_ops * ops, const char* host, GError** e
                         value= v1 =gfal2_get_opt_string(ops->handle, plugin_group, tab_envar_name[i], &tmp_err);
                     }
                     if(!tmp_err){
-                        gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : setup env var value %s to %s", tab_envar_name[i],value);
+                        gfal2_log(G_LOG_LEVEL_DEBUG, "lfc plugin : setup env var value %s to %s", tab_envar_name[i],value);
                         lfc_plugin_set_lfc_env(ops, tab_envar_name[i],value);
                         g_free(v1);
                     }else{
@@ -121,7 +121,7 @@ int lfc_configure_environment(struct lfc_ops * ops, const char* host, GError** e
                     if(!tmp_err){
                         char v_str[20];
                         snprintf(v_str,20, "%d",v2);
-                        gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : setup env var value %s to %d",tab_envar_name[i],v2);
+                        gfal2_log(G_LOG_LEVEL_DEBUG, "lfc plugin : setup env var value %s to %d",tab_envar_name[i],v2);
                         lfc_plugin_set_lfc_env(ops, tab_envar_name[i],v_str);
                     }else{
                         ret = -1;
@@ -142,13 +142,13 @@ int lfc_configure_environment(struct lfc_ops * ops, const char* host, GError** e
     gchar* ucert = gfal2_get_opt_string(ops->handle, "X509", "CERT", NULL);
     gchar* ukey = gfal2_get_opt_string(ops->handle, "X509", "KEY", NULL);
     if (ucert && ukey) {
-        gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : using certificate %s", ucert);
-        gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : using private key %s", ukey);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "lfc plugin : using certificate %s", ucert);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "lfc plugin : using private key %s", ukey);
         lfc_plugin_set_lfc_env(ops, "X509_USER_CERT", ucert);
         lfc_plugin_set_lfc_env(ops, "X509_USER_KEY", ukey);
     }
     else if (ucert) {
-        gfal_log(GFAL_VERBOSE_TRACE, "lfc plugin : using proxy %s", ucert);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "lfc plugin : using proxy %s", ucert);
         lfc_plugin_set_lfc_env(ops, "X509_USER_PROXY", ucert);
     }
     g_free(ucert);

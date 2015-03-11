@@ -21,13 +21,11 @@ static const char* gfal_http_get_name(void)
 static int get_corresponding_davix_log_level()
 {
     int davix_log_level = DAVIX_LOG_CRITICAL;
-    int gfal2_log_level = gfal_get_verbose();
+    GLogLevelFlags gfal2_log_level = gfal2_log_get_level();
 
-    if (gfal2_log_level & GFAL_VERBOSE_TRACE_PLUGIN)
+    if (gfal2_log_level & G_LOG_LEVEL_DEBUG)
         davix_log_level = DAVIX_LOG_TRACE;
-    else if ((gfal2_log_level & GFAL_VERBOSE_DEBUG) || (gfal2_log_level & GFAL_VERBOSE_TRACE))
-        davix_log_level = DAVIX_LOG_DEBUG;
-    else if (gfal2_log_level & GFAL_VERBOSE_VERBOSE)
+    else if (gfal2_log_level & G_LOG_LEVEL_INFO)
         davix_log_level = DAVIX_LOG_VERBOSE;
 
     return davix_log_level;
@@ -49,7 +47,7 @@ static void gfal_http_get_ucert(RequestParams & params, gfal2_context_t handle)
 
         X509Credential cred;
         if(cred.loadFromFilePEM(ukey,ucert,"", &tmp_err) <0){
-            gfal_log(GFAL_VERBOSE_VERBOSE,
+            gfal2_log(G_LOG_LEVEL_INFO,
                     "Could not load the user credentials: %s", tmp_err->getErrMsg().c_str());
         }else{
             params.setClientCertX509(cred);
@@ -96,7 +94,7 @@ static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, co
     }
 
     if (secret_key && access_key) {
-        gfal_log(GFAL_VERBOSE_DEBUG, "Setting S3 key pair");
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Setting S3 key pair");
         params.setAwsAuthorizationKeys(secret_key, access_key);
     }
 
@@ -138,18 +136,16 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davi
 
 static void log_davix2gfal(void* userdata, int msg_level, const char* msg)
 {
-    int gfal_level = GFAL_VERBOSE_NORMAL;
+    GLogLevelFlags gfal_level = G_LOG_LEVEL_MESSAGE;
     switch (msg_level) {
         case DAVIX_LOG_TRACE:
-            gfal_level = GFAL_VERBOSE_TRACE_PLUGIN;
-            break;
         case DAVIX_LOG_DEBUG:
-            gfal_level = GFAL_VERBOSE_DEBUG;
+            gfal_level = G_LOG_LEVEL_DEBUG;
             break;
         default:
-            gfal_level = GFAL_VERBOSE_VERBOSE;
+            gfal_level = G_LOG_LEVEL_INFO;
     }
-    gfal_log(gfal_level, "Davix: %s", msg);
+    gfal2_log(gfal_level, "Davix: %s", msg);
 }
 
 

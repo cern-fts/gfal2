@@ -102,7 +102,7 @@ int plugin_trigger_event(gfalt_params_t params, GQuark domain, gfal_event_side_t
             side_str = "BOTH";
     }
 
-    gfal_log(GFAL_VERBOSE_VERBOSE, "Event triggered: %s %s %s %s", side_str,
+    gfal2_log(G_LOG_LEVEL_INFO, "Event triggered: %s %s %s %s", side_str,
             g_quark_to_string(domain), g_quark_to_string(stage), buffer);
     return 0;
 }

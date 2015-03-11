@@ -5,9 +5,9 @@
 
 
 TEST(gfalGlobal, testVerbose){
-    gfal_set_verbose(GFAL_VERBOSE_DEBUG);
-    int r = gfal_get_verbose();
-    ASSERT_EQ(GFAL_VERBOSE_DEBUG, r);
+    gfal2_log_set_level(G_LOG_LEVEL_INFO);
+    GLogLevelFlags r = gfal2_log_get_level();
+    ASSERT_EQ(G_LOG_LEVEL_INFO, r);
 }
 
 

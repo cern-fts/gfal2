@@ -59,7 +59,7 @@ int gfal2_open2(gfal2_context_t handle, const char * uri, int flag, mode_t mode,
     gfal_file_handle fhandle=NULL;
     int key = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
-    gfal_log(GFAL_VERBOSE_TRACE, "%s ->",__func__);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "%s ->",__func__);
 
     if(uri == NULL || handle == NULL){
         g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "name is empty");

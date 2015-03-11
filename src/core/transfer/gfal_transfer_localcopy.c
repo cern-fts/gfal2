@@ -81,7 +81,7 @@ static int unlink_if_exists(gfal2_context_t context, gfalt_params_t params,
     }
 
     if (S_ISFIFO(st.st_mode) || S_ISCHR(st.st_mode) || S_ISBLK(st.st_mode) || S_ISSOCK(st.st_mode)) {
-        gfal_log(GFAL_VERBOSE_VERBOSE, "%s is a special file (%o), so keep going", surl, S_IFMT & st.st_mode);
+        gfal2_log(G_LOG_LEVEL_INFO, "%s is a special file (%o), so keep going", surl, S_IFMT & st.st_mode);
         return 0;
     }
 
@@ -142,7 +142,7 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
             GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
             "%s => %s", src, dst);
 
-    gfal_log(GFAL_VERBOSE_TRACE, " open src file : %s ", src);
+    gfal2_log(G_LOG_LEVEL_DEBUG, " open src file : %s ", src);
     gfal_file_handle f_src = gfal_plugin_openG(context, src, O_RDONLY, 0, &nested_error);
     if (nested_error) {
         gfal2_propagate_prefixed_error_extended(error, nested_error, __func__, "Could not open source: ");
@@ -165,7 +165,7 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
 
     char* buffer = g_malloc0(DEFAULT_BUFFER_SIZE);
 
-    gfal_log(GFAL_VERBOSE_TRACE, "  begin local transfer %s ->  %s with buffer size %ld", src, dst, DEFAULT_BUFFER_SIZE);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  begin local transfer %s ->  %s with buffer size %ld", src, dst, DEFAULT_BUFFER_SIZE);
 
     while (s_file > 0 && !nested_error) {
         s_file = gfal_plugin_readG(context, f_src, buffer, DEFAULT_BUFFER_SIZE, &nested_error);
@@ -214,7 +214,7 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
         const char* src, const char* dst, GError** error)
 {
     GError* nested_error = NULL;
-    gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::start_local_copy ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " -> Gfal::Transfer::start_local_copy ");
 
     char checksum_type[1024];
     char user_checksum[1024];
@@ -293,6 +293,6 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
         plugin_trigger_event(params, local_copy_domain(), GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_EXIT, "");
     }
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::start_local_copy ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- Gfal::Transfer::start_local_copy ");
     return 0;
 }

@@ -99,13 +99,13 @@ static int gfal_http_copy_overwrite(plugin_handle plugin_data,
             return -1;
         }
 
-        gfal_log(GFAL_VERBOSE_DEBUG,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                  "File %s deleted with success (overwrite set)", dst);
         plugin_trigger_event(params, http_plugin_domain, GFAL_EVENT_DESTINATION,
                              GFAL_EVENT_OVERWRITE_DESTINATION, "Deleted %s", dst);
     }
     else if (exists == 0) {
-        gfal_log(GFAL_VERBOSE_DEBUG, "Destination does not exist");
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Destination does not exist");
     }
     else if (exists < 0) {
         gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_OVERWRITE);
@@ -164,7 +164,7 @@ static int gfal_http_copy_make_parent(plugin_handle plugin_data,
             gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_PARENT);
             return -1;
         }
-        gfal_log(GFAL_VERBOSE_TRACE,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                  "[%s] Created parent directory %s", __func__, parent);
         return 0;
     }
@@ -211,7 +211,7 @@ static int gfal_http_copy_checksum(gfal2_context_t context,
             return -1;
         }
         else if (checksum_value[0]) {
-            gfal_log(GFAL_VERBOSE_TRACE,
+            gfal2_log(G_LOG_LEVEL_DEBUG,
                      "[%s] Source and user-defined %s match: %s",
                      __func__, checksum_type, checksum_value);
         }
@@ -233,7 +233,7 @@ static int gfal_http_copy_checksum(gfal2_context_t context,
             return -1;
         }
 
-        gfal_log(GFAL_VERBOSE_TRACE,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                  "[%s] Source and destination %s match: %s",
                  __func__, checksum_type, src_checksum);
     }
@@ -268,17 +268,17 @@ static int gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GE
     if ((*err)->code != EEXIST) {
         if (gfal_http_unlinkG(plugin_data, dst, &unlink_err) != 0) {
             if (unlink_err->code != ENOENT) {
-                gfal_log(GFAL_VERBOSE_VERBOSE,
+                gfal2_log(G_LOG_LEVEL_INFO,
                          "When trying to clean the destination: %s", unlink_err->message);
             }
             g_error_free(unlink_err);
         }
         else {
-            gfal_log(GFAL_VERBOSE_DEBUG, "Destination file removed");
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Destination file removed");
         }
     }
     else {
-        gfal_log(GFAL_VERBOSE_DEBUG, "The transfer failed because the file exists. Do not clean!");
+        gfal2_log(G_LOG_LEVEL_DEBUG, "The transfer failed because the file exists. Do not clean!");
     }
     return -1;
 }
@@ -313,14 +313,14 @@ static void gfal_http_third_party_copy(GfalHttpPluginData* davix,
         gfalt_params_t params,
         GError** err)
 {
-    gfal_log(GFAL_VERBOSE_VERBOSE, "Performing a HTTP third party copy");
+    gfal2_log(G_LOG_LEVEL_INFO, "Performing a HTTP third party copy");
 
     PerfCallbackData perfCallbackData(
             params, src, dst
     );
 
     std::string canonical_dst = get_canonical_uri(dst);
-    gfal_log(GFAL_VERBOSE_VERBOSE, "Normalize destination to %s", canonical_dst.c_str());
+    gfal2_log(G_LOG_LEVEL_INFO, "Normalize destination to %s", canonical_dst.c_str());
 
     Davix::Uri src_uri(src);
     Davix::Uri dst_uri(canonical_dst);
@@ -415,7 +415,7 @@ static void gfal_http_streamed_copy(gfal2_context_t context,
         gfalt_params_t params,
         GError** err)
 {
-    gfal_log(GFAL_VERBOSE_VERBOSE, "Performing a HTTP streamed copy");
+    gfal2_log(G_LOG_LEVEL_INFO, "Performing a HTTP streamed copy");
     GError *nested_err = NULL;
 
     struct stat src_stat;
@@ -467,7 +467,7 @@ static void gfal_http_streamed_copy(gfal2_context_t context,
         http2gliberr(err, request.getRequestCode(), __func__, "Failed to PUT the file");
     }
 
-    gfal_log(GFAL_VERBOSE_VERBOSE, "HTTP code %d", request.getRequestCode());
+    gfal2_log(G_LOG_LEVEL_INFO, "HTTP code %d", request.getRequestCode());
 }
 
 
@@ -505,8 +505,8 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     strip_3rd_from_url(src_full, src, sizeof(src));
     strip_3rd_from_url(dst_full, dst, sizeof(dst));
 
-    gfal_log(GFAL_VERBOSE_VERBOSE, "Using source: %s", src);
-    gfal_log(GFAL_VERBOSE_VERBOSE, "Using destination: %s", dst);
+    gfal2_log(G_LOG_LEVEL_INFO, "Using source: %s", src);
+    gfal2_log(G_LOG_LEVEL_INFO, "Using destination: %s", dst);
 
     // When this flag is not set, the plugin should handle overwriting,
     // parent directory creation,...

@@ -458,7 +458,7 @@ static int gfal_srm_putdone_srmv2_internal(srm_context_t context, char** surls, 
 	putdone_input.reqtoken = (char*)token;
 	putdone_input.surls = surls;
 
-    gfal_log(GFAL_VERBOSE_TRACE, "    [gfal_srm_putdone_srmv2_internal] start srm put done on %s", surls[0]);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "    [gfal_srm_putdone_srmv2_internal] start srm put done on %s", surls[0]);
     ret = gfal_srm_external_call.srm_put_done(context,&putdone_input, &statuses);
     if(ret < 0){
         gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), errno, __func__,
@@ -477,7 +477,7 @@ int gfal_srm_putdone(gfal_srmv2_opt* opts , char** surls, const char* token,  GE
     GError* tmp_err = NULL;
     int ret = -1;
 
-    gfal_log(GFAL_VERBOSE_TRACE, "   -> [gfal_srm_putdone] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "   -> [gfal_srm_putdone] ");
 
     srm_context_t context = gfal_srm_ifce_easy_context(opts, surls[0], &tmp_err);
     if (context != NULL) {
@@ -522,7 +522,7 @@ int srm_abort_request_plugin(plugin_handle * handle , const char* surl,
     gfal_srmv2_opt* opts = (gfal_srmv2_opt*) handle;
     int ret = -1;
 
-    gfal_log(GFAL_VERBOSE_TRACE, "   -> [srm_abort_request] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "   -> [srm_abort_request] ");
 
     srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
     if (context != NULL) {
@@ -530,7 +530,7 @@ int srm_abort_request_plugin(plugin_handle * handle , const char* surl,
     }
     gfal_srm_ifce_easy_context_release(opts, context);
 
-    gfal_log(GFAL_VERBOSE_TRACE, " [srm_abort_request] <-");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " [srm_abort_request] <-");
 
     if (ret < 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);

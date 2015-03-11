@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     gfal_set_nobdiiG(context, 0);
 
     // Enable debug
-    gfal_set_verbose(GFAL_VERBOSE_VERBOSE);
+    gfal2_log_set_level(G_LOG_LEVEL_INFO);
 
     // Iterate through arguments
     const int MAX_ENDPOINTS = 3;

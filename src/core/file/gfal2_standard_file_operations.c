@@ -155,7 +155,7 @@ int gfal2_mkdir_rec(gfal2_context_t context, const char* url, mode_t mode,
                 res = 0;
             }
             else if (tmp_err->code == ENOENT) {
-                gfal_log(GFAL_VERBOSE_TRACE, "execute recusive directory creation for %s", url);
+                gfal2_log(G_LOG_LEVEL_DEBUG, "execute recusive directory creation for %s", url);
                 GList* stack_url = NULL;
                 char current_url[GFAL_URL_MAX_LEN];
                 g_strlcpy(current_url, url, GFAL_URL_MAX_LEN);
@@ -179,7 +179,7 @@ int gfal2_mkdir_rec(gfal2_context_t context, const char* url, mode_t mode,
                         res = gfal_plugin_mkdirp(context, current_url, mode,
                                 FALSE, &tmp_err);
                         if (res == 0) {
-                            gfal_log(GFAL_VERBOSE_TRACE, "create directory %s", current_url);
+                            gfal2_log(G_LOG_LEVEL_DEBUG, "create directory %s", current_url);
                         }
                     }
 
@@ -192,7 +192,7 @@ int gfal2_mkdir_rec(gfal2_context_t context, const char* url, mode_t mode,
                         res = gfal_plugin_mkdirp(context,
                                 (char*) tmp_list->data, mode, FALSE, &tmp_err);
                         if (res == 0) {
-                            gfal_log(GFAL_VERBOSE_TRACE, "create directory %s",
+                            gfal2_log(G_LOG_LEVEL_DEBUG, "create directory %s",
                                     current_url);
                         }
                         tmp_list = g_list_next(tmp_list);

@@ -27,7 +27,7 @@ void GridFTPModule::rename(const char* src, const char* dst)
                 "Invalid source and/or destination");
     }
 
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::rename] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " -> [GridFTPModule::rename] ");
 
     GridFTPSessionHandler handler(_handle_factory, src);
     GridFTPRequestState req(&handler);
@@ -39,7 +39,7 @@ void GridFTPModule::rename(const char* src, const char* dst)
     // wait for answer
     req.wait(GFAL_GRIDFTP_SCOPE_RENAME);
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridFTPModule::rename] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- [GridFTPModule::rename] ");
 
 }
 
@@ -52,11 +52,11 @@ int gfal_gridftp_renameG(plugin_handle handle, const char * oldurl,
 
     GError * tmp_err = NULL;
     int ret = -1;
-    gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_rename]");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_rename]");
     CPP_GERROR_TRY
                 (static_cast<GridFTPModule*>(handle))->rename(oldurl, newurl);
                 ret = 0;
     CPP_GERROR_CATCH(&tmp_err);
-    gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_rename]<-");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  [gfal_gridftp_rename]<-");
     G_RETURN_ERR(ret, tmp_err, err);
 }

@@ -66,7 +66,7 @@ static int trigger_listener_plugins(gfal2_context_t context, gfalt_params_t para
             GError* tmp_error = NULL;
             plugin_ifce->copy_enter_hook(plugin_ifce->plugin_data, context, params, &tmp_error);
             if (tmp_error) {
-                gfal_log(GFAL_VERBOSE_NORMAL, "Copy enter hook failed: %s", tmp_error->message);
+                gfal2_log(G_LOG_LEVEL_MESSAGE, "Copy enter hook failed: %s", tmp_error->message);
                 g_error_free(tmp_error);
             }
         }
@@ -105,7 +105,7 @@ static int notify_copy_list(gfal2_context_t context, gfalt_params_t params,
 static int perform_copy(gfal2_context_t context, gfalt_params_t params, const char* src,
         const char* dst, GError** error)
 {
-    gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::FileCopy");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " -> Gfal::Transfer::FileCopy");
     GError *tmp_err = NULL;
     int res = -1;
 
@@ -139,7 +139,7 @@ static int perform_copy(gfal2_context_t context, gfalt_params_t params, const ch
         }
     }
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::FileCopy");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- Gfal::Transfer::FileCopy");
 
     if (tmp_err != NULL)
         gfal2_propagate_prefixed_error(error, tmp_err, __func__);
@@ -204,7 +204,7 @@ static int perform_bulk_copy(gfal2_context_t context, gfalt_params_t params,
     GError* tmp_err = NULL;
     int res = -1;
 
-    gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::BulkFileCopy");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " -> Gfal::Transfer::BulkFileCopy");
 
     if (trigger_listener_plugins(context, params, &tmp_err) < 0) {
         gfal2_propagate_prefixed_error(op_error, tmp_err, __func__);
@@ -230,7 +230,7 @@ static int perform_bulk_copy(gfal2_context_t context, gfalt_params_t params,
         }
     }
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::BulkFileCopy");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- Gfal::Transfer::BulkFileCopy");
 
     if (tmp_err != NULL)
         gfal2_propagate_prefixed_error(op_error, tmp_err, __func__);

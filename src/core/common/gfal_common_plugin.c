@@ -109,7 +109,7 @@ static int gfal_module_init(gfal2_context_t handle, void* dlhandle,
         }
         else {
             *n += 1;
-            gfal_log(GFAL_VERBOSE_NORMAL, "[gfal_module_load] plugin %s loaded with success ", module_name);
+            gfal2_log(G_LOG_LEVEL_MESSAGE, "[gfal_module_load] plugin %s loaded with success ", module_name);
             res = 0;
         }
     }
@@ -251,7 +251,7 @@ char ** gfal_list_directory_plugins(const char * dir, GError ** err)
                     res = realloc(res, sizeof(char*) * (n + 1));
                     p_res = res + n - 1;
                 }
-                gfal_log(GFAL_VERBOSE_TRACE,
+                gfal2_log(G_LOG_LEVEL_DEBUG,
                         " [gfal_list_directory_plugins] add plugin to list to load %s%s%s ",
                         dir, G_DIR_SEPARATOR_S, d_name);
                 g_string_append(strbuff, G_DIR_SEPARATOR_S);
@@ -259,7 +259,7 @@ char ** gfal_list_directory_plugins(const char * dir, GError ** err)
                 *p_res = g_string_free(strbuff, FALSE);
             }
             else {
-                gfal_log(GFAL_VERBOSE_TRACE,
+                gfal2_log(G_LOG_LEVEL_DEBUG,
                         " [gfal_list_directory_plugins] WARNING : File that is not a plugin in the plugin directory %s%s%s ",
                         dir, G_DIR_SEPARATOR_S, d_name);
             }
@@ -285,14 +285,14 @@ char ** gfal_localize_plugins(GError** err)
     char** res = NULL;
     char * gfal_plugin_dir = (char*) g_getenv(GFAL_PLUGIN_DIR_ENV);
     if (gfal_plugin_dir != NULL) {
-        gfal_log(GFAL_VERBOSE_VERBOSE,
+        gfal2_log(G_LOG_LEVEL_INFO,
                 "... %s environment variable specified, try to load the plugins in given dir : %s",
                 GFAL_PLUGIN_DIR_ENV, gfal_plugin_dir);
     }
     else {
         /* GFAL_PLUGIN_DIR_DEFAULT defined at compilation time */
         gfal_plugin_dir = GFAL_PLUGIN_DIR_DEFAULT G_DIR_SEPARATOR_S;
-        gfal_log(GFAL_VERBOSE_VERBOSE,
+        gfal2_log(G_LOG_LEVEL_INFO,
                 "... no %s environment variable specified, try to load plugins in the default directory : %s",
                 GFAL_PLUGIN_DIR_ENV, gfal_plugin_dir);
 
@@ -317,7 +317,7 @@ int gfal_modules_resolve(gfal2_context_t handle, GError** err)
                 res = -1;
                 break;
             }
-            gfal_log(GFAL_VERBOSE_VERBOSE,
+            gfal2_log(G_LOG_LEVEL_INFO,
                     " gfal_plugin loaded succesfully : %s", *p);
             res = 0;
             p++;
@@ -359,7 +359,7 @@ int gfal_plugins_sort(gfal2_context_t handle, GError ** err)
     handle->plugin_opt.sorted_plugin = g_list_sort(
             handle->plugin_opt.sorted_plugin, &gfal_plugin_compare);
 
-    if (gfal_get_verbose() & GFAL_VERBOSE_TRACE) { // print plugin order
+    if (gfal2_log_get_level() >= G_LOG_LEVEL_DEBUG) { // print plugin order
         GString* strbuff = g_string_new(" plugin priority order: ");
         GList* l = handle->plugin_opt.sorted_plugin;
 
@@ -369,7 +369,7 @@ int gfal_plugins_sort(gfal2_context_t handle, GError ** err)
             strbuff = g_string_append(strbuff, " -> ");
             l = g_list_next(l);
         }
-        gfal_log(GFAL_VERBOSE_TRACE, "%s", strbuff->str);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "%s", strbuff->str);
         g_string_free(strbuff, TRUE);
     }
     return 0;
@@ -642,7 +642,7 @@ gfal_file_handle gfal_plugin_openG(gfal2_context_t handle, const char * path, in
 {
     GError* tmp_err = NULL;
     gfal_file_handle resu = NULL;
-    gfal_log(GFAL_VERBOSE_TRACE, " %s ->", __func__);
+    gfal2_log(G_LOG_LEVEL_DEBUG, " %s ->", __func__);
 
     gfal_plugin_interface* p = gfal_find_plugin(handle, path, GFAL_PLUGIN_OPEN, &tmp_err);
 
@@ -659,7 +659,7 @@ int gfal_plugin_closeG(gfal2_context_t handle, gfal_file_handle fh, GError** err
     GError* tmp_err = NULL;
     int res = -1;
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- %s", __func__);
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- %s", __func__);
 
     gfal_plugin_interface* if_cata = gfal_plugin_map_file_handle(handle, fh, &tmp_err);
     if (!tmp_err)

@@ -72,20 +72,20 @@ gfal_file_handle gfal_srm_openG(plugin_handle ch, const char* path, int flag, mo
 	char* reqtoken=NULL;
 	srm_req_type req_type;
 	int tmp_ret;
-	gfal_log(GFAL_VERBOSE_TRACE, "  %s ->",__func__);
+	gfal2_log(G_LOG_LEVEL_DEBUG, "  %s ->",__func__);
 
 	if(flag & O_CREAT){ // create turl if file is not existing else get one for this file
-		gfal_log(GFAL_VERBOSE_TRACE, "   SRM PUT mode",__func__);
+		gfal2_log(G_LOG_LEVEL_DEBUG, "   SRM PUT mode",__func__);
 		tmp_ret= gfal_srm_putTURLS_plugin(ch, p, turl, GFAL_URL_MAX_LEN, &reqtoken, &tmp_err);
 		req_type= SRM_PUT;
 	}else{
-		gfal_log(GFAL_VERBOSE_TRACE, "   SRM GET mode",__func__);
+		gfal2_log(G_LOG_LEVEL_DEBUG, "   SRM GET mode",__func__);
 		tmp_ret= gfal_srm_getTURLS_plugin(ch, p, turl, GFAL_URL_MAX_LEN, &reqtoken, &tmp_err);
 		req_type= SRM_GET;
 	}
 
 	if(tmp_ret == 0){
-		gfal_log(GFAL_VERBOSE_TRACE, "  SRM RESOLUTION : %s -> %s ", path, turl);
+		gfal2_log(G_LOG_LEVEL_DEBUG, "  SRM RESOLUTION : %s -> %s ", path, turl);
 		ret = gfal_plugin_openG(opts->handle, turl, flag, mode, &tmp_err);
 		ret = gfal_srm_file_handle_create(ret, p, g_strdup(reqtoken), req_type);
 	}
