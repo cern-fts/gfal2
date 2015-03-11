@@ -41,6 +41,12 @@ void gridftp_plugin_init()
 
     globus_module_activate(GLOBUS_GSI_GSS_ASSIST_MODULE);
     globus_module_activate(GLOBUS_GSI_GSSAPI_MODULE);
+}
+
+
+GridFTPModule::GridFTPModule(GridFTPFactory* factory)
+{
+    _handle_factory = factory;
 
     globus_module_activate(GLOBUS_GASS_COPY_MODULE);
     globus_module_activate(GLOBUS_FTP_CLIENT_MODULE);
@@ -49,15 +55,14 @@ void gridftp_plugin_init()
 }
 
 
-GridFTPModule::GridFTPModule(GridFTPFactory* factory)
-{
-    _handle_factory = factory;
-}
-
-
 GridFTPModule::~GridFTPModule()
 {
     delete _handle_factory;
+
+    globus_module_deactivate(GLOBUS_GASS_COPY_MODULE);
+    globus_module_deactivate(GLOBUS_FTP_CLIENT_MODULE);
+    globus_module_deactivate(GLOBUS_FTP_CLIENT_DEBUG_PLUGIN_MODULE);
+    globus_module_deactivate(GLOBUS_FTP_CLIENT_THROUGHPUT_PLUGIN_MODULE);
 }
 
 
