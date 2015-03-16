@@ -77,6 +77,8 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
     else
         token[0] = '\0';
 
+    gfal2_log(G_LOG_LEVEL_MESSAGE, "Got BRINGONLINE token %s", token);
+
     int nterminal = 0;
     for (i = 0; i < nbfiles; ++i) {
         switch (output.filestatuses[i].status) {

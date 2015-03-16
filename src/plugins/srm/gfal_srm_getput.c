@@ -106,6 +106,7 @@ int gfal_srmv2_get_global(gfal_srmv2_opt* opts, gfal_srm_params_t params, srm_co
 	if(ret < 0){
 		gfal_srm_report_error(context->errbuf, &tmp_err);
 	} else{
+	    gfal2_log(G_LOG_LEVEL_MESSAGE, "Got GET token for %s: %s", input->surls[0], preparetoget_output.token);
 		gfal_srm_convert_filestatuses_to_srm_result(preparetoget_output.filestatuses, preparetoget_output.token, ret, resu,  &tmp_err);
 	}
 
@@ -135,6 +136,7 @@ int gfal_srmv2_put_global(gfal_srmv2_opt* opts, gfal_srm_params_t params, srm_co
         gfal_srm_report_error(context->errbuf, &tmp_err);
     }
     else {
+        gfal2_log(G_LOG_LEVEL_MESSAGE, "Got PUT token for %s: %s", input->surls[0], preparetoput_output.token);
         gfal_srm_convert_filestatuses_to_srm_result(preparetoput_output.filestatuses, preparetoput_output.token, ret, resu, &tmp_err);
     }
 
