@@ -44,7 +44,7 @@ int gfal_posix_internal_open(const char* path, int flag, mode_t mode)
     gfal2_context_t handle;
     int key = -1;
 
-    gfal_log(GFAL_VERBOSE_TRACE, "%s ->", __func__);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "%s ->", __func__);
 
     if ((handle = gfal_posix_instance()) == NULL) {
         errno = EIO;

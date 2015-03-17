@@ -15,7 +15,7 @@ int main(int argc, char **argv)
 {
 	int err;
 
-    gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE);
+    gfal2_log_set_level(G_LOG_LEVEL_DEBUG);
 
     char buff[2048];
 

@@ -245,7 +245,7 @@ char* gfal_posix_strerror_r(char* buff_err, size_t s_err)
 {
     GError** last_error = gfal_posix_get_last_error();
     if (last_error == NULL || *last_error == NULL) {
-        gfal_log(GFAL_VERBOSE_DEBUG, "copy string NULL error");
+        gfal2_log(G_LOG_LEVEL_DEBUG, "copy string NULL error");
         g_strlcpy(buff_err, "[gfal] No Error reported", s_err);
     }
     else {

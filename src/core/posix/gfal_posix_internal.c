@@ -77,7 +77,7 @@ void gfal_posix_register_internal_error(gfal2_context_t mhandle,
 {
     GError** err = gfal_posix_get_last_error();
     if (*err != NULL) {
-        gfal_log(GFAL_VERBOSE_NORMAL,
+        gfal2_log(G_LOG_LEVEL_MESSAGE,
                 "%s Warning : existing registered error replaced ! old err : %s ",
                 prefix, (*err)->message);
         g_clear_error(err);

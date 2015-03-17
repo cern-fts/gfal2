@@ -72,7 +72,7 @@ int gfal_srm_rmdirG(plugin_handle ch, const char* surl, GError** err)
     srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
     if (context != NULL) {
         struct stat st;
-        gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_rmdirG] try to delete directory %s", surl);
+        gfal2_log(G_LOG_LEVEL_INFO, "   [gfal_srm_rmdirG] try to delete directory %s", surl);
         ret = gfal_statG_srmv2_internal(context, &st, NULL, surl, &tmp_err);
         if (ret == 0) {
             if (S_ISDIR(st.st_mode)) {

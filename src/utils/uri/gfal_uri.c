@@ -47,7 +47,7 @@ static int _cpmatch(char* out, const char* str, regmatch_t* match, size_t out_si
 }
 
 
-int gfal_parse_uri(const char* uri, gfal_uri* parsed, GError** err)
+int gfal2_parse_uri(const char* uri, gfal_uri* parsed, GError** err)
 {
     char buffer[128];
 
@@ -80,10 +80,16 @@ int gfal_parse_uri(const char* uri, gfal_uri* parsed, GError** err)
 }
 
 
-int gfal_hostname_from_uri(const char * uri, char* buff_hostname, size_t s_buff, GError ** err)
+int gfal_parse_uri(const char* uri, gfal_uri* parsed, GError** err)
+{
+    return gfal2_parse_uri(uri, parsed, err);
+}
+
+
+int gfal2_hostname_from_uri(const char * uri, char* buff_hostname, size_t s_buff, GError ** err)
 {
     gfal_uri parsed;
-    gfal_parse_uri(uri, &parsed, err);
+    gfal2_parse_uri(uri, &parsed, err);
     if (*err)
         return -1;
     if (parsed.domain[0] == '\0') {
@@ -95,4 +101,10 @@ int gfal_hostname_from_uri(const char * uri, char* buff_hostname, size_t s_buff,
     else
         snprintf(buff_hostname, s_buff, "%s", parsed.domain);
     return 0;
+}
+
+
+int gfal_hostname_from_uri(const char * uri, char* buff_hostname, size_t s_buff, GError ** err)
+{
+    return gfal2_hostname_from_uri(uri, buff_hostname, s_buff, err);
 }

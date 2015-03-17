@@ -49,6 +49,14 @@ int plugin_trigger_event(gfalt_params_t params, GQuark domain,
                          gfal_event_side_t side, GQuark stage,
                          const char* fmt, ...);
 
+/// Convenience method for monitoring callbacks
+/// @param params The transfer parameters.
+/// @param status The transfer status.
+/// @param src    Source surl.
+/// @param dst    Destination surl.
+int plugin_trigger_monitor(gfalt_params_t params, gfalt_transfer_status_t status,
+        const char* src, const char* dst);
+
 /// Convenience error methods for copy implementations
 void gfalt_propagate_prefixed_error(GError **dest, GError *src, const gchar *function, const gchar *side, const gchar *note);
 

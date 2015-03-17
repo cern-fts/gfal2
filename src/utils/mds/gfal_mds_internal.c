@@ -65,9 +65,9 @@ LDAP* gfal_mds_ldap_connect(gfal2_context_t context, const char* uri, GError** e
 	    gfal_mds_ldap.ldap_set_option(ld, LDAP_OPT_NETWORK_TIMEOUT, &timeout);
 	    gfal_mds_ldap.ldap_set_option(ld, LDAP_OPT_TIMEOUT, &timeout);
 
-	    gfal_log(GFAL_VERBOSE_TRACE, " use BDII TIMEOUT : %ld", timeout.tv_sec);
+	    gfal2_log(G_LOG_LEVEL_DEBUG, " use BDII TIMEOUT : %ld", timeout.tv_sec);
 
-		gfal_log(GFAL_VERBOSE_VERBOSE, "  Try to bind with the bdii %s", uri);
+		gfal2_log(G_LOG_LEVEL_INFO, "  Try to bind with the bdii %s", uri);
 		struct berval cred= { .bv_val = NULL, .bv_len = 0 };
 		if( (rc = gfal_mds_ldap.ldap_sasl_bind_s( ld,  NULL, LDAP_SASL_SIMPLE, &cred, NULL, NULL, NULL)) != LDAP_SUCCESS){
              g_set_error(&tmp_err, gfal2_get_core_quark(), ECOMM, "Error while bind to bdii with %s : %s", uri, ldap_err2string(rc));
@@ -238,7 +238,7 @@ int gfal_mds_get_ldapuri(gfal2_context_t context, char* buff, size_t s_buff, GEr
         return -1;
     }
 
-    gfal_log(GFAL_VERBOSE_TRACE, " use LCG_GFAL_INFOSYS : %s", bdii_var);
+    gfal2_log(G_LOG_LEVEL_DEBUG, " use LCG_GFAL_INFOSYS : %s", bdii_var);
 
     // Since strtok will modify, use a copy
     bdii_var = g_strdup(bdii_var);
@@ -282,7 +282,7 @@ int gfal_mds_bdii_get_srm_endpoint(gfal2_context_t context, const char* base_url
 	GError* tmp_err=NULL;
 	char uri[GFAL_URL_MAX_LEN];
 	LDAP* ld;
-	gfal_log(GFAL_VERBOSE_TRACE, " gfal_mds_bdii_get_srm_endpoint ->");
+	gfal2_log(G_LOG_LEVEL_DEBUG, " gfal_mds_bdii_get_srm_endpoint ->");
     if( gfal_mds_get_ldapuri(context, uri, GFAL_URL_MAX_LEN, &tmp_err) >= 0){
 		if( (ld = gfal_mds_ldap_connect(context, uri, &tmp_err)) != NULL){
 			LDAPMessage * res;
@@ -296,7 +296,7 @@ int gfal_mds_bdii_get_srm_endpoint(gfal2_context_t context, const char* base_url
 		}
 	}
 
-	gfal_log(GFAL_VERBOSE_TRACE, " gfal_mds_bdii_get_srm_endpoint <-");	
+	gfal2_log(G_LOG_LEVEL_DEBUG, " gfal_mds_bdii_get_srm_endpoint <-");	
 	if(tmp_err)
 		g_propagate_prefixed_error(err, tmp_err, "[%s]",__func__);
 	return ret;

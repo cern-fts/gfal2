@@ -46,7 +46,7 @@ static int gfal_checksumG_srmv2_internal(srm_context_t context, const char* surl
     input.offset = 0;
     input.count = 0;
 
-    ret = gfal_srm_external_call.srm_ls(context,&input,&output);					// execute ls
+    ret = gfal_srm_external_call.srm_ls(context,&input,&output);
 
     if(ret >=0){
         srmv2_mdstatuses = output.statuses;
@@ -108,8 +108,8 @@ int gfal_srm_checksumG_fallback(plugin_handle handle, const char* url, const cha
                        off_t start_offset, size_t data_length,
                        gboolean turl_fallback,
                        GError ** err){
-    gfal_log(GFAL_VERBOSE_TRACE, " [gfal_srm_checksumG] ->");
-    gfal_log(GFAL_VERBOSE_DEBUG, "[gfal_srm_checksumG] try to get checksum %s for %s", check_type, url);
+    gfal2_log(G_LOG_LEVEL_DEBUG, " [gfal_srm_checksumG] ->");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "[gfal_srm_checksumG] try to get checksum %s for %s", check_type, url);
 
     char buffer_type[GFAL_URL_MAX_LEN]={0};
     GError * tmp_err=NULL;
@@ -126,10 +126,10 @@ int gfal_srm_checksumG_fallback(plugin_handle handle, const char* url, const cha
 
     // Make sure the returned type matches the requested one
     if(res == 0) {
-        gfal_log(GFAL_VERBOSE_DEBUG, "registered checksum type %s", buffer_type);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "registered checksum type %s", buffer_type);
         if(strncasecmp(check_type, buffer_type,GFAL_URL_MAX_LEN) != 0){
             // does not match the correct type
-            // this can be because checksum is nto populated on DPM server, cause the first gsiftp checksum calculation
+            // this can be because checksum is populated on DPM server, cause the first gsiftp checksum calculation
             res = -1; // cancel result
         }
     }
@@ -139,7 +139,7 @@ int gfal_srm_checksumG_fallback(plugin_handle handle, const char* url, const cha
     // If we got no error, but neither a valid checksum,
     // fallback into the turl
     if(res != 0 && !tmp_err && turl_fallback){
-        gfal_log(GFAL_VERBOSE_TRACE, "\t\tNo valid SRM checksum, fallback to the TURL checksum");
+        gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tNo valid SRM checksum, fallback to the TURL checksum");
         char buff_turl[GFAL_URL_MAX_LEN];
         char *res_turl;
         if(srm_url){ // SRM URL do TURL resolution
@@ -153,7 +153,7 @@ int gfal_srm_checksumG_fallback(plugin_handle handle, const char* url, const cha
             res =0;
         }
         if(res == 0){
-          gfal_log(GFAL_VERBOSE_TRACE, "\t\t\tExecute checksum on turl %s", res_turl);
+          gfal2_log(G_LOG_LEVEL_DEBUG, "\t\t\tExecute checksum on turl %s", res_turl);
           res= gfal2_checksum(opts->handle, res_turl, check_type, 0,0, checksum_buffer, buffer_length, &tmp_err);
         }
 

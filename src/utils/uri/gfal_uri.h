@@ -17,6 +17,7 @@
  */
 
 #include <glib.h>
+#include <gfal_api.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -31,18 +32,22 @@ typedef struct gfal_uri {
    unsigned port;
    char     path [PATH_MAX];
    char     query[PATH_MAX];
-} gfal_uri;
+} gfal2_uri;
+
+typedef gfal2_uri gfal_uri;
 
 
 /*
  * Return only the hostname bit from the uri
  */
-int gfal_hostname_from_uri(const char * uri, char* buff_hostname, size_t s_buff, GError ** err);
+GFAL2_DEPRECATED(gfal2_hostname_from_uri) int gfal_hostname_from_uri(const char * uri, char* buff_hostname, size_t s_buff, GError ** err);
+int gfal2_hostname_from_uri(const char * uri, char* buff_hostname, size_t s_buff, GError ** err);
 
 /*
  * Parse an URI
  */
-int gfal_parse_uri(const char* uri, gfal_uri* parsed, GError** err);
+GFAL2_DEPRECATED(gfal2_parse_uri) int gfal_parse_uri(const char* uri, gfal_uri* parsed, GError** err);
+int gfal2_parse_uri(const char* uri, gfal2_uri* parsed, GError** err);
 
 
 #ifdef __cplusplus

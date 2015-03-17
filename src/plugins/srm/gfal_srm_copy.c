@@ -54,23 +54,23 @@ int srm_plugin_delete_existing_copy(plugin_handle handle, gfalt_params_t params,
     int res = 0;
     const gboolean replace = gfalt_get_replace_existing_file(params, NULL );
     if (replace) {
-        gfal_log(GFAL_VERBOSE_TRACE, "\tTrying to delete %s", surl);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "\tTrying to delete %s", surl);
         res = gfal_srm_unlinkG(handle, surl, &tmp_err);
         if (res == 0) {
-            gfal_log(GFAL_VERBOSE_TRACE, "\t%s deleted with success", surl);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "\t%s deleted with success", surl);
             plugin_trigger_event(params, srm_domain(), GFAL_EVENT_DESTINATION,
                                  GFAL_EVENT_OVERWRITE_DESTINATION,
                                  "Deleted %s", surl);
         }
         else if (tmp_err->code == ENOENT) {
-            gfal_log(GFAL_VERBOSE_TRACE, "\t%s doesn't exist, carry on", surl);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "\t%s doesn't exist, carry on", surl);
             g_clear_error(&tmp_err);
             tmp_err = NULL;
             res = 0;
         }
         // Workaround for BeStMan, which returns EINVAL instead of ENOENT
         else if (tmp_err->code == EINVAL) {
-            gfal_log(GFAL_VERBOSE_TRACE, "\tGot EINVAL removing %s. Assuming ENOENT (for BeStMan storages)", surl);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "\tGot EINVAL removing %s. Assuming ENOENT (for BeStMan storages)", surl);
             g_clear_error(&tmp_err);
             tmp_err = NULL;
             res = 0;
@@ -103,10 +103,10 @@ int srm_plugin_create_parent_copy(plugin_handle handle, gfalt_params_t params,
             p--;
         if ((path_dir + pref_len) < p) {
             *p = '\0';
-            gfal_log(GFAL_VERBOSE_TRACE, " try to create parent dir : %s for %s", path_dir, surl);
+            gfal2_log(G_LOG_LEVEL_DEBUG, " try to create parent dir : %s for %s", path_dir, surl);
             res = gfal_srm_mkdir_recG(handle, path_dir, 0755, &tmp_err);
             if (res == 0)
-                gfal_log(GFAL_VERBOSE_TRACE, "parent path %s created with success", path_dir);
+                gfal2_log(G_LOG_LEVEL_DEBUG, "parent path %s created with success", path_dir);
         }
         else {
             gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
@@ -154,10 +154,10 @@ static int srm_resolve_get_turl(plugin_handle handle, gfalt_params_t params,
 
     int res = 0;
     if (srm_check_url(surl)) {
-        gfal_log(GFAL_VERBOSE_TRACE, "\t\tGET surl -> turl resolution start");
+        gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tGET surl -> turl resolution start");
         res = gfal_srm_get_rd3_turl(handle, params, surl, turl, turl_size, token, token_size, &tmp_err);
         if (res >= 0) {
-            gfal_log(GFAL_VERBOSE_TRACE, "\t\tGET surl -> turl resolution finished: %s -> %s (%s)",
+            gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tGET surl -> turl resolution finished: %s -> %s (%s)",
                     surl, turl, token);
             plugin_trigger_event(params, gfal2_get_plugin_srm_quark(),
                         GFAL_EVENT_SOURCE, gfal2_get_srm_get_quark(),
@@ -166,7 +166,7 @@ static int srm_resolve_get_turl(plugin_handle handle, gfalt_params_t params,
     }
     else {
         g_strlcpy(turl, surl, turl_size);
-        gfal_log(GFAL_VERBOSE_TRACE, "\t\tNo SRM resolution needed on %s", surl);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tNo SRM resolution needed on %s", surl);
         token[0] = '\0';
     }
 
@@ -189,7 +189,7 @@ static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
 
     int res = 0;
     if (srm_check_url(surl)) {
-        gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl resolution start ");
+        gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tPUT surl -> turl resolution start ");
         res = srm_plugin_prepare_dest_put(handle, context, params, surl, &tmp_err);
         if (res == 0) {
             res = gfal_srm_put_rd3_turl(handle, params, surl, file_size_surl,
@@ -197,7 +197,7 @@ static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
                     token, token_size,
                     &tmp_err);
             if (res >= 0) {
-                gfal_log(GFAL_VERBOSE_TRACE, "\t\tPUT surl -> turl resolution ended : %s -> %s (%s)",
+                gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tPUT surl -> turl resolution ended : %s -> %s (%s)",
                         surl, turl, token);
                 plugin_trigger_event(params, gfal2_get_plugin_srm_quark(),
                             GFAL_EVENT_DESTINATION, gfal2_get_srm_put_quark(),
@@ -211,7 +211,7 @@ static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
     }
     else {
         g_strlcpy(turl, surl, turl_size);
-        gfal_log(GFAL_VERBOSE_TRACE, "\t\tNo SRM resolution needed on %s", surl);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tNo SRM resolution needed on %s", surl);
         token[0] = '\0';
         res = 1;
     }
@@ -243,11 +243,11 @@ static int srm_get_checksum_config(gfal2_context_t context, gfalt_params_t param
     }
 
     if (*err == NULL) {
-        gfal_log(GFAL_VERBOSE_VERBOSE, "\t\tChecksum check enabled: %d", *enabled);
+        gfal2_log(G_LOG_LEVEL_INFO, "\t\tChecksum check enabled: %d", *enabled);
         if (*enabled) {
-            gfal_log(GFAL_VERBOSE_VERBOSE, "\t\tAllow empty source checksum: %d", *allow_empty);
-            gfal_log(GFAL_VERBOSE_VERBOSE, "\t\tChecksum algorithm: %s", algorithm);
-            gfal_log(GFAL_VERBOSE_VERBOSE, "\t\tUser defined checksum: %s", user_checksum);
+            gfal2_log(G_LOG_LEVEL_INFO, "\t\tAllow empty source checksum: %d", *allow_empty);
+            gfal2_log(G_LOG_LEVEL_INFO, "\t\tChecksum algorithm: %s", algorithm);
+            gfal2_log(G_LOG_LEVEL_INFO, "\t\tUser defined checksum: %s", user_checksum);
         }
         return 0;
     }
@@ -289,7 +289,7 @@ static int srm_validate_source_checksum(plugin_handle handle, gfal2_context_t co
             ret = -1;
         }
         else {
-            gfal_log(GFAL_VERBOSE_VERBOSE, "Source checksum could not be retrieved. Ignoring.");
+            gfal2_log(G_LOG_LEVEL_INFO, "Source checksum could not be retrieved. Ignoring.");
         }
     }
     else {
@@ -362,17 +362,17 @@ static void srm_force_unlink(plugin_handle handle,
     gfal_srm_unlinkG(handle, surl, &unlink_err);
     if (unlink_err != NULL) {
         if (unlink_err->code != ENOENT) {
-            gfal_log(GFAL_VERBOSE_VERBOSE,
+            gfal2_log(G_LOG_LEVEL_INFO,
                      "Got an error when removing the destination surl: %s",
                      unlink_err->message);
         }
         else {
-            gfal_log(GFAL_VERBOSE_DEBUG, "Destination surl did not exist after abort");
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Destination surl did not exist after abort");
         }
         g_error_free(unlink_err);
     }
     else {
-        gfal_log(GFAL_VERBOSE_VERBOSE, "Successfully removed destination surl after abort: %s", surl);
+        gfal2_log(G_LOG_LEVEL_INFO, "Successfully removed destination surl after abort: %s", surl);
     }
 }
 
@@ -382,7 +382,7 @@ static void srm_rollback_put(plugin_handle handle,
         gboolean transfer_finished,
         GError** err)
 {
-    gfal_log(GFAL_VERBOSE_VERBOSE, "Rolling back PUT");
+    gfal2_log(G_LOG_LEVEL_INFO, "Rolling back PUT");
 
     GError* abort_error = NULL;
     // If the transfer finished, or the destination is not an SRM
@@ -401,7 +401,7 @@ static void srm_rollback_put(plugin_handle handle,
                 *err = abort_error;
             }
             else {
-                gfal_log(GFAL_VERBOSE_VERBOSE,
+                gfal2_log(G_LOG_LEVEL_INFO,
                         "Got an error when canceling the PUT request: %s",
                         abort_error->message);
                 g_error_free(abort_error);
@@ -417,15 +417,15 @@ static void srm_rollback_put(plugin_handle handle,
 static void srm_release_get(plugin_handle handle, const char* surl, const char* token,
         GError** err)
 {
-    gfal_log(GFAL_VERBOSE_VERBOSE, "Rolling back GET");
+    gfal2_log(G_LOG_LEVEL_INFO, "Rolling back GET");
 
     GError* release_error = NULL;
     gfal_srmv2_release_fileG(handle, surl, token, &release_error);
     if (release_error != NULL) {
-        gfal_log(GFAL_VERBOSE_VERBOSE,
+        gfal2_log(G_LOG_LEVEL_INFO,
                 "Got an error when releasing the source file: %s",
                 release_error->message);
-        gfal_log(GFAL_VERBOSE_VERBOSE,
+        gfal2_log(G_LOG_LEVEL_INFO,
                 "It will be ignored!");
     }
 }
@@ -443,7 +443,7 @@ static int srm_resolve_turls(plugin_handle handle, gfal2_context_t context,
     memset(&stat_source, 0, sizeof(stat_source));
     if (gfal2_stat(context, source, &stat_source, &tmp_err) != 0) {
         stat_source.st_size = 0;
-        gfal_log(GFAL_VERBOSE_DEBUG,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                 "Fail to stat src SRM url %s to determine file size, try with file_size=0, error %s",
                 source, tmp_err->message);
         g_clear_error(&tmp_err);
@@ -531,7 +531,7 @@ static int is_castor_endpoint(plugin_handle handle, const char* surl)
     gfal_srmv2_opt* opts = (gfal_srmv2_opt*)handle;
 
     if (!srm_check_url(surl)) {
-        gfal_log(GFAL_VERBOSE_VERBOSE, "Endpoint not SRM: %s", surl);
+        gfal2_log(G_LOG_LEVEL_INFO, "Endpoint not SRM: %s", surl);
         return 0;
     }
 
@@ -540,13 +540,13 @@ static int is_castor_endpoint(plugin_handle handle, const char* surl)
     if (tmp_err)
         g_error_free(tmp_err);
     if (!context) {
-        gfal_log(GFAL_VERBOSE_VERBOSE, "Could not get a context for %s", surl);
+        gfal2_log(G_LOG_LEVEL_INFO, "Could not get a context for %s", surl);
         return -1;
     }
 
     struct srm_xping_output output;
     if (gfal_srm_external_call.srm_xping(context, &output) < 0) {
-        gfal_log(GFAL_VERBOSE_VERBOSE, "Failed to ping %s", surl);
+        gfal2_log(G_LOG_LEVEL_INFO, "Failed to ping %s", surl);
         gfal_srm_ifce_easy_context_release(opts, context);
         return -1;
     }
@@ -554,7 +554,7 @@ static int is_castor_endpoint(plugin_handle handle, const char* surl)
     int i, is_castor = 0;
     for (i = 0; i < output.n_extra && !is_castor; ++i) {
         if (strcmp(output.extra[i].key, "backend_type") == 0) {
-            gfal_log(GFAL_VERBOSE_VERBOSE, "Endpoint of type %s: %s", output.extra[i].value, surl);
+            gfal2_log(G_LOG_LEVEL_INFO, "Endpoint of type %s: %s", output.extra[i].value, surl);
             is_castor = (strcasecmp(output.extra[i].value, "CASTOR") == 0);
         }
     }
@@ -571,13 +571,13 @@ static void castor_gridftp_session_hack(plugin_handle handle, gfal2_context_t co
     int dst_is_castor = is_castor_endpoint(handle, dst);
 
     if (src_is_castor || dst_is_castor) {
-        gfal_log(GFAL_VERBOSE_VERBOSE,
+        gfal2_log(G_LOG_LEVEL_INFO,
                 "Found a Castor endpoint, or could not determine version! Disabling GridFTP session reuse and stat on open");
         gfal2_set_opt_boolean(context, "GRIDFTP PLUGIN", "SESSION_REUSE", FALSE, NULL);
         gfal2_set_opt_boolean(context, "GRIDFTP PLUGIN", "STAT_ON_OPEN", FALSE, NULL);
     }
     else {
-        gfal_log(GFAL_VERBOSE_VERBOSE,
+        gfal2_log(G_LOG_LEVEL_INFO,
                 "No Castor endpoint. Honor configuration for SESSION_REUSE");
     }
 }

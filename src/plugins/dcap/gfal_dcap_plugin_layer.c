@@ -44,7 +44,7 @@ struct dcap_proto_ops * gfal_dcap_internal_loader_base(GError** err)
     struct dcap_proto_ops * pops = NULL;
     GError* tmp_err = NULL;
 
-    gfal_log(GFAL_VERBOSE_VERBOSE, "    -> load dcap library ");
+    gfal2_log(G_LOG_LEVEL_INFO, "    -> load dcap library ");
 
     pops = g_new0(struct dcap_proto_ops, 1);
     pops->geterror = &__dc_errno;
@@ -71,10 +71,10 @@ struct dcap_proto_ops * gfal_dcap_internal_loader_base(GError** err)
     pops->active_mode = &dc_setClientActive;
     //
     pops->active_mode(); // switch to active mode to avoid firewalls problems
-    if ((gfal_get_verbose() & GFAL_VERBOSE_TRACE))
+    if ((gfal2_log_get_level() >= G_LOG_LEVEL_DEBUG))
         pops->debug_level(8 | 6 | 32);
 
-    gfal_log(GFAL_VERBOSE_VERBOSE, "  end load dcap library <-");
+    gfal2_log(G_LOG_LEVEL_INFO, "  end load dcap library <-");
     G_RETURN_ERR(pops, tmp_err, err);
 }
 

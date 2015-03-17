@@ -26,7 +26,7 @@ int main(int argc, char** argv)
     gfalt_params_t params = gfalt_params_handle_new(NULL);
 
     // initialize gfal
-    gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE | GFAL_VERBOSE_DEBUG);
+    gfal2_log_set_level(G_LOG_LEVEL_DEBUG);
     if ((handle = gfal2_context_new(&tmp_err)) == NULL) {
         printf(" bad initialization %d : %s.\n", tmp_err->code,
                 tmp_err->message);

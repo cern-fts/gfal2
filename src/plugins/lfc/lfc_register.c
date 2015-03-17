@@ -32,25 +32,25 @@ static int _lfc_touch(struct lfc_ops* ops, const char* path, const char* guid,
     char *last_slash = NULL;
     int   ret_status = 0;
 
-    gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: trying to create %s", path);
+    gfal2_log(G_LOG_LEVEL_INFO, "lfc register: trying to create %s", path);
 
     last_slash = strrchr(path, '/');
     if (last_slash != NULL) {
-        size_t dir_len = last_slash - path;
+        size_t dir_len = last_slash - path + 1;
         char *dir = g_malloc0(dir_len);
         g_strlcpy(dir, path, dir_len);
 
-        gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: checking parent directory %s", dir);
+        gfal2_log(G_LOG_LEVEL_INFO, "lfc register: checking parent directory %s", dir);
 
         if (ops->access(dir, F_OK) != 0) {
-            gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: parent directory does not exist, creating", dir);
+            gfal2_log(G_LOG_LEVEL_INFO, "lfc register: parent directory does not exist, creating", dir);
             ret_status = gfal_lfc_ifce_mkdirpG(ops, dir, 0755, TRUE, error);
         }
         g_free(dir);
     }
 
     if (ret_status == 0) {
-        gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: creating the file");
+        gfal2_log(G_LOG_LEVEL_INFO, "lfc register: creating the file");
         ret_status = ops->creatg(path, guid, 0644);
         if (ret_status != 0) {
             gfal2_set_error(error, gfal2_get_plugins_quark(), errno, __func__,
@@ -134,7 +134,7 @@ int _get_replica_info(gfal2_context_t context, struct size_and_checksum* info,
                            0, 0, info->csumvalue, sizeof(info->csumvalue),
                            NULL) == 0) {
             memcpy(info->csumtype, lfc_checksums[i], sizeof(info->csumtype));
-            gfal_log(GFAL_VERBOSE_DEBUG, "found checksum %s:%s for the replica",
+            gfal2_log(G_LOG_LEVEL_DEBUG, "found checksum %s:%s for the replica",
                     info->csumtype, info->csumvalue);
             break;
         }
@@ -155,7 +155,7 @@ int _validate_new_replica(gfal2_context_t context, struct lfc_filestatg *statg,
         return -1;
     }
     else {
-        gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: file size match");
+        gfal2_log(G_LOG_LEVEL_INFO, "lfc register: file size match");
     }
 
     if (statg->csumvalue[0] != '\0' && replica_info->csumvalue[0] != '\0' &&
@@ -167,11 +167,11 @@ int _validate_new_replica(gfal2_context_t context, struct lfc_filestatg *statg,
             return -1;
         }
         else {
-            gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: checksum match");
+            gfal2_log(G_LOG_LEVEL_INFO, "lfc register: checksum match");
         }
     }
     else {
-        gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: no checksum available to do the validation");
+        gfal2_log(G_LOG_LEVEL_INFO, "lfc register: no checksum available to do the validation");
     }
 
     return 0;
@@ -202,7 +202,7 @@ int gfal_lfc_register(plugin_handle handle, gfal2_context_t context,
     if (ret_status != 0)
         goto register_end;
 
-    gfal_log(GFAL_VERBOSE_DEBUG, "lfc register: %s -> %s:%s", src_url, lfc_host, lfc_path);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "lfc register: %s -> %s:%s", src_url, lfc_host, lfc_path);
 
     // Information about the replica
     struct size_and_checksum replica_info;
@@ -224,7 +224,7 @@ int gfal_lfc_register(plugin_handle handle, gfal2_context_t context,
 
     // File exists, validate the incoming replica
     if (ret_status == 0) {
-        gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: lfc exists, validate");
+        gfal2_log(G_LOG_LEVEL_INFO, "lfc register: lfc exists, validate");
         file_existed = TRUE;
         ret_status = _validate_new_replica(context, &statg, &replica_info, &tmp_err);
     }
@@ -260,12 +260,12 @@ int gfal_lfc_register(plugin_handle handle, gfal2_context_t context,
                         "Could not register the replica : %s ", gfal_lfc_get_strerror(ops));
         }
         else {
-            gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: the replica is already registered, that is ok");
+            gfal2_log(G_LOG_LEVEL_INFO, "lfc register: the replica is already registered, that is ok");
             ret_status = 0;
         }
     }
     else {
-        gfal_log(GFAL_VERBOSE_VERBOSE, "lfc register: done");
+        gfal2_log(G_LOG_LEVEL_INFO, "lfc register: done");
     }
 
 register_end:
@@ -306,7 +306,7 @@ int gfal_lfc_unregister(plugin_handle handle, const char* url, const char* sfn, 
         goto unregister_end;
     }
 
-    gfal_log(GFAL_VERBOSE_VERBOSE, "lfc unregister: the replica is to be unregistered (file id %d)", statg.fileid);
+    gfal2_log(G_LOG_LEVEL_INFO, "lfc unregister: the replica is to be unregistered (file id %d)", statg.fileid);
 
     struct lfc_fileid file_id = {{0}, 0};
     file_id.fileid = statg.fileid;
@@ -317,7 +317,7 @@ int gfal_lfc_unregister(plugin_handle handle, const char* url, const char* sfn, 
                 "Could not register the replica : %s (%d) ", gfal_lfc_get_strerror(ops), lfc_errno);
     }
 
-    gfal_log(GFAL_VERBOSE_VERBOSE, "lfc unregister: replica %s unregistered", sfn);
+    gfal2_log(G_LOG_LEVEL_INFO, "lfc unregister: replica %s unregistered", sfn);
 
 unregister_end:
     g_free(lfc_host);

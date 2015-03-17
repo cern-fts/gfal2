@@ -50,13 +50,13 @@ static gchar* check_configuration_dir(GError ** err)
     gchar* dir_config = NULL;
     const gchar * env_str = g_getenv(config_env_var);
     if (env_str != NULL) {
-        gfal_log(GFAL_VERBOSE_TRACE,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                 " %s env var found, try to load configuration from %s",
                 config_env_var, env_str);
         dir_config = g_strdup(env_str);
     }
     else {
-        gfal_log(GFAL_VERBOSE_TRACE,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                 " no %s env var found, try to load configuration from default directory %s",
                 config_env_var, default_config_dir);
         dir_config = g_strdup(default_config_dir);
@@ -123,7 +123,7 @@ GConfigManager_t gfal_load_static_configuration(GError ** err)
                     strcat(buff,"/");
                     strcat(buff, dirinfo->d_name);
 
-                    gfal_log(GFAL_VERBOSE_TRACE, " try to load configuration file %s ...", buff);
+                    gfal2_log(G_LOG_LEVEL_DEBUG, " try to load configuration file %s ...", buff);
                     if(gfal_load_configuration_to_conf_manager(res, buff, &tmp_err) != 0)
                         break;
                 }
@@ -211,7 +211,7 @@ gchar* gfal2_get_opt_string_with_default(gfal2_context_t handle,
 
     gchar* value = gfal2_get_opt_string(handle, group_name, key, &tmp_err);
     if (tmp_err) {
-        gfal_log(GFAL_VERBOSE_DEBUG,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                 " impossible to get string parameter %s:%s, set to default value %s, err %s",
                 group_name, key, default_value, tmp_err->message);
         g_clear_error(&tmp_err);
@@ -257,7 +257,7 @@ gint gfal2_get_opt_integer_with_default(gfal2_context_t context,
 
     gint res = gfal2_get_opt_integer(context, group_name, key, &tmp_err);
     if (tmp_err) {
-        gfal_log(GFAL_VERBOSE_DEBUG,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                 " impossible to get integer parameter %s:%s, set to default value %d, err %s",
                 group_name, key, default_value, tmp_err->message);
         g_clear_error(&tmp_err);
@@ -302,7 +302,7 @@ gboolean gfal2_get_opt_boolean_with_default(gfal2_context_t handle,
 
     gboolean res = gfal2_get_opt_boolean(handle, group_name, key, &tmp_err);
     if (tmp_err) {
-        gfal_log(GFAL_VERBOSE_DEBUG,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                 " impossible to get boolean parameter %s:%s, set to default value %s, err %s",
                 group_name, key, ((default_value) ? "TRUE" : "FALSE"),
                 tmp_err->message);
@@ -365,11 +365,11 @@ gchar ** gfal2_get_opt_string_list_with_default(gfal2_context_t handle,
 
     gchar** res = gfal2_get_opt_string_list(handle, group_name, key, length,
             &tmp_err);
-    if (tmp_err) {
 
-        if (gfal_get_verbose() >= GFAL_VERBOSE_DEBUG) {
+    if (tmp_err) {
+        if (gfal2_log_get_level() >= G_LOG_LEVEL_DEBUG) {
             gchar* list_default = g_strjoinv(",", default_value);
-            gfal_log(GFAL_VERBOSE_DEBUG,
+            gfal2_log(G_LOG_LEVEL_DEBUG,
                     " impossible to get string_list parameter %s:%s, set to a default value %s, err %s",
                     group_name, key, list_default, tmp_err->message);
             g_free(list_default);

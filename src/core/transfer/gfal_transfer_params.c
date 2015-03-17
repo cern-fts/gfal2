@@ -23,7 +23,6 @@
 
 void gfalt_params_handle_init(gfalt_params_t p, GError ** err)
 {
-    p->callback = NULL;
     p->lock = FALSE;
     p->nb_data_streams = GFALT_DEFAULT_NB_STREAM;
     p->timeout = GFALT_DEFAULT_TRANSFERT_TIMEOUT;
@@ -34,7 +33,25 @@ void gfalt_params_handle_init(gfalt_params_t p, GError ** err)
     p->strict_mode = FALSE;
     p->parent_dir_create = FALSE;
     uuid_clear(p->uuid);
-    p->event_callback = NULL;
+
+    p->monitor_callbacks = NULL;
+    p->event_callbacks = NULL;
+}
+
+
+static GSList* gfalt_params_copy_callbacks(const GSList* original)
+{
+    GSList* copy = NULL;
+    const GSList* p = original;
+    while (p) {
+        struct _gfalt_callback_entry* original_entry = (struct _gfalt_callback_entry*)p->data;
+        struct _gfalt_callback_entry* new_entry = g_new0(struct _gfalt_callback_entry, 1);
+        new_entry->func = original_entry->func;
+        new_entry->udata = original_entry->udata;
+        copy = g_slist_append(copy, new_entry);
+        p = g_slist_next(p);
+    }
+    return copy;
 }
 
 
@@ -46,6 +63,10 @@ gfalt_params_t gfalt_params_handle_copy(gfalt_params_t params, GError ** err)
     p->dst_space_token = g_strdup(params->dst_space_token);
     p->user_checksum = g_strdup(params->user_checksum);
     p->user_checksum_type = g_strdup(params->user_checksum_type);
+
+    p->monitor_callbacks = gfalt_params_copy_callbacks(params->monitor_callbacks);
+    p->event_callbacks = gfalt_params_copy_callbacks(params->event_callbacks);
+
     return p;
 }
 
@@ -59,6 +80,15 @@ gfalt_params_t gfalt_params_handle_new(GError ** err)
 }
 
 
+static void gfalt_params_free_callback(gpointer data, gpointer user_data)
+{
+    struct _gfalt_callback_entry* entry = data;
+    if (entry->udata_free)
+        entry->udata_free(entry->udata);
+    g_free(entry);
+}
+
+
 void gfalt_params_handle_delete(gfalt_params_t params, GError ** err)
 {
     if (params) {
@@ -67,8 +97,12 @@ void gfalt_params_handle_delete(gfalt_params_t params, GError ** err)
         g_free(params->dst_space_token);
         g_free(params->user_checksum);
         g_free(params->user_checksum_type);
-        g_free(params);
+        g_slist_foreach(params->monitor_callbacks, gfalt_params_free_callback , NULL);
+        g_slist_free(params->monitor_callbacks);
+        g_slist_foreach(params->event_callbacks, gfalt_params_free_callback , NULL);
+        g_slist_free(params->event_callbacks);
 
+        g_free(params);
     }
 }
 
@@ -150,6 +184,115 @@ gint gfalt_set_offset_from_source(gfalt_params_t params, off_t offset, GError** 
 }
 
 
+static GSList* gfalt_search_callback(GSList* list, gpointer callback)
+{
+    struct _gfalt_callback_entry* entry;
+    GSList* p = list;
+
+    while (p) {
+        entry = (struct _gfalt_callback_entry*)p->data;
+        if (entry->func == callback)
+            return p;
+        p = g_slist_next(p);
+    }
+    return NULL;
+}
+
+
+gint gfalt_add_monitor_callback(gfalt_params_t params, gfalt_monitor_func callback,
+        gpointer udata, GDestroyNotify udata_free, GError** err)
+{
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+
+    struct _gfalt_callback_entry* entry;
+    GSList* i = gfalt_search_callback(params->monitor_callbacks, callback);
+
+    if (i) {
+        entry = (struct _gfalt_callback_entry*)i->data;
+        if (entry->udata_free)
+            entry->udata_free(entry->udata);
+        entry->udata = udata;
+        entry->udata_free = udata_free;
+    }
+    else {
+        entry = g_new0(struct _gfalt_callback_entry, 1);
+        entry->func = callback;
+        entry->udata = udata;
+        entry->udata_free = udata_free;
+        params->monitor_callbacks = g_slist_append(params->monitor_callbacks, entry);
+    }
+
+    return 0;
+}
+
+
+gint gfalt_remove_monitor_callback(gfalt_params_t params, gfalt_monitor_func callback,
+        GError** err)
+{
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+
+    GSList* i = gfalt_search_callback(params->monitor_callbacks, callback);
+    if (i) {
+        struct _gfalt_callback_entry* entry = i->data;
+        if (entry->udata_free)
+            entry->udata_free(entry->udata);
+        g_free(i->data);
+        params->monitor_callbacks = g_slist_delete_link(params->monitor_callbacks, i);
+        return 0;
+    }
+
+    gfal2_set_error(err, gfal2_get_core_quark(), ENOENT, __func__, "Could not find the callback");
+    return -1;
+}
+
+
+gint gfalt_add_event_callback(gfalt_params_t params, gfalt_event_func callback,
+        gpointer udata, GDestroyNotify udata_free, GError** err)
+{
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+
+    struct _gfalt_callback_entry* entry;
+    GSList* i = gfalt_search_callback(params->event_callbacks, callback);
+
+    if (i) {
+        entry = (struct _gfalt_callback_entry*)i->data;
+        if (entry->udata_free)
+            entry->udata_free(entry->udata);
+        entry->udata = udata;
+        entry->udata_free = udata_free;
+    }
+    else {
+        entry = g_new0(struct _gfalt_callback_entry, 1);
+        entry->func = callback;
+        entry->udata = udata;
+        entry->udata_free = udata_free;
+        params->event_callbacks = g_slist_append(params->event_callbacks, entry);
+    }
+
+    return 0;
+}
+
+
+gint gfalt_remove_event_callback(gfalt_params_t params, gfalt_event_func callback,
+        GError** err)
+{
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+
+    GSList* i = gfalt_search_callback(params->event_callbacks, callback);
+    if (i) {
+        struct _gfalt_callback_entry* entry = i->data;
+        if (entry->udata_free)
+            entry->udata_free(entry->udata);
+        g_free(i->data);
+        params->event_callbacks = g_slist_delete_link(params->event_callbacks, i);
+        return 0;
+    }
+
+    gfal2_set_error(err, gfal2_get_core_quark(), ENOENT, __func__, "Could not find the callback");
+    return -1;
+}
+
+
 gint gfalt_set_user_data(gfalt_params_t params, gpointer user_data, GError** err)
 {
     g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
@@ -168,32 +311,26 @@ gpointer gfalt_get_user_data(gfalt_params_t params, GError** err)
 gint gfalt_set_monitor_callback(gfalt_params_t params, gfalt_monitor_func callback,
         GError** err)
 {
-    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
-    params->callback = callback;
-    return 0;
+    return gfalt_add_monitor_callback(params, callback, params->user_data, NULL, err);
 }
 
 
 gfalt_monitor_func gfalt_get_monitor_callback(gfalt_params_t params, GError** err)
 {
-    g_return_val_err_if_fail(params != NULL, NULL, err, "[BUG] invalid params handle");
-    return params->callback;
+    return NULL;
 }
 
 
 gint gfalt_set_event_callback(gfalt_params_t params, gfalt_event_func callback,
         GError** err)
 {
-    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
-    params->event_callback = callback;
-    return 0;
+    return gfalt_add_event_callback(params, callback, params->user_data, NULL, err);
 }
 
 
 gfalt_event_func gfalt_get_event_callback(gfalt_params_t params, GError** err)
 {
-    g_return_val_err_if_fail(params != NULL, NULL, err, "[BUG] invalid params handle");
-    return params->event_callback;
+    return NULL;
 }
 
 

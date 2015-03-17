@@ -64,6 +64,8 @@ TEST_F(CopyTestChecksum, CopyChecksumEnabled)
 
     ret = gfalt_set_checksum_check(params, TRUE, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+    ret = gfalt_set_user_defined_checksum(params, "ADLER32", NULL, &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
 
     ret = gfalt_copy_file(handle, params, source, destination, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
@@ -79,6 +81,8 @@ TEST_F(CopyTestChecksum, CopyChecksumAndReplaceEnabled)
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
     ret = gfalt_set_replace_existing_file(params, TRUE, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+    ret = gfalt_set_user_defined_checksum(params, "ADLER32", NULL, &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
 
     ret = gfalt_copy_file(handle, params, source, destination, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
@@ -93,6 +97,8 @@ TEST_F(CopyTestChecksum, CopyChecksumAndReplaceEnabledENOENT)
     ret = gfalt_set_checksum_check(params, TRUE, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
     ret = gfalt_set_replace_existing_file(params, TRUE, &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+    ret = gfalt_set_user_defined_checksum(params, "ADLER32", NULL, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
 
     gfal2_unlink(handle, source, &error);
@@ -116,7 +122,7 @@ int main(int argc, char** argv)
     CopyTestChecksum::source_root = argv[1];
     CopyTestChecksum::destination_root = argv[2];
 
-//    gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE | GFAL_VERBOSE_DEBUG);
+    //gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE | GFAL_VERBOSE_DEBUG);
 
     return RUN_ALL_TESTS();
 }

@@ -37,13 +37,13 @@ gfal_file_handle lfc_openG(plugin_handle ch, const char* path, int flag, mode_t 
 	gfal2_context_t handle = ((struct lfc_ops*)ch)->handle;
 	GError* tmp_err=NULL;
 	gfal_file_handle res=NULL;
-	gfal_log(GFAL_VERBOSE_TRACE, "  %s ->",__func__);
+	gfal2_log(G_LOG_LEVEL_DEBUG, "  %s ->",__func__);
 
 	char** surls = lfc_getSURLG(ch, path, &tmp_err);
 	if(surls != 0 && tmp_err == NULL){
 		char** p = surls;
 		while( *p != NULL){
-			gfal_log(GFAL_VERBOSE_VERBOSE, " LFC resolution %s -> %s ", path, *p);
+			gfal2_log(G_LOG_LEVEL_INFO, " LFC resolution %s -> %s ", path, *p);
 			res = gfal_plugin_openG(handle, *p, flag, mode, &tmp_err);
 			if(res || ( tmp_err && tmp_err->code!=ECOMM))
 				break;

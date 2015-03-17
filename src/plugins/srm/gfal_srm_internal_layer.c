@@ -79,26 +79,27 @@ static srm_context_t gfal_srm_ifce_context_setup(gfal2_context_t handle,
 
     const gboolean keep_alive = gfal2_get_opt_boolean_with_default(handle,
             srm_config_group, srm_config_keep_alive, FALSE);
-    gfal_log(GFAL_VERBOSE_DEBUG, " SRM connection keep-alive %d", keep_alive);
+    gfal2_log(G_LOG_LEVEL_DEBUG, " SRM connection keep-alive %d", keep_alive);
 
-    context = srm_context_new2(endpoint, errbuff, s_errbuff, gfal_get_verbose(), keep_alive);
+    context = srm_context_new2(endpoint, errbuff, s_errbuff,
+            gfal2_log_get_level() >= G_LOG_LEVEL_DEBUG, keep_alive);
 
     if (context != NULL ) {
         timeout = gfal2_get_opt_integer_with_default(handle, srm_config_group,
                 srm_ops_timeout_key, 180);
-        gfal_log(GFAL_VERBOSE_DEBUG, " SRM operation timeout %d", timeout);
+        gfal2_log(G_LOG_LEVEL_DEBUG, " SRM operation timeout %d", timeout);
         context->timeout = timeout;
         context->timeout_ops = timeout;
 
         timeout = gfal2_get_opt_integer_with_default(handle, srm_config_group,
                 srm_conn_timeout_key, 60);
-        gfal_log(GFAL_VERBOSE_DEBUG, " SRM connection timeout %d", timeout);
+        gfal2_log(G_LOG_LEVEL_DEBUG, " SRM connection timeout %d", timeout);
         context->timeout_conn = timeout;
 
         if (ucert) {
-            gfal_log(GFAL_VERBOSE_DEBUG, " SRM using certificate %s", ucert);
+            gfal2_log(G_LOG_LEVEL_DEBUG, " SRM using certificate %s", ucert);
             if (ukey)
-                gfal_log(GFAL_VERBOSE_DEBUG, " SRM using private key %s", ukey);
+                gfal2_log(G_LOG_LEVEL_DEBUG, " SRM using private key %s", ukey);
             srm_set_credentials(context, ucert, ukey);
         }
     }
@@ -143,19 +144,19 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
     // Try with existing one
     if (opts->srm_context) {
         if (is_same_context(opts, full_endpoint, ucert, ukey)) {
-            gfal_log(GFAL_VERBOSE_VERBOSE, "SRM context recycled for %s", full_endpoint);
+            gfal2_log(G_LOG_LEVEL_INFO, "SRM context recycled for %s", full_endpoint);
             g_free(ucert);
             g_free(ukey);
             return opts->srm_context;
         }
         else {
-            gfal_log(GFAL_VERBOSE_VERBOSE, "SRM context invalidated for %s", full_endpoint);
+            gfal2_log(G_LOG_LEVEL_INFO, "SRM context invalidated for %s", full_endpoint);
             srm_context_free(opts->srm_context);
             opts->srm_context = NULL;
         }
     }
     else {
-        gfal_log(GFAL_VERBOSE_VERBOSE, "SRM context not available");
+        gfal2_log(G_LOG_LEVEL_INFO, "SRM context not available");
     }
 
     switch (srm_types) {

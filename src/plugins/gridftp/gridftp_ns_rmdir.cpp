@@ -28,7 +28,7 @@ void GridFTPModule::rmdir(const char* path)
                 "Invalid arguments path");
     }
 
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::rmdir] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " -> [GridFTPModule::rmdir] ");
 
     try {
         GridFTPSessionHandler handler(_handle_factory, path);
@@ -48,7 +48,7 @@ void GridFTPModule::rmdir(const char* path)
         throw e;
     }
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridFTPModule::rmdir] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- [GridFTPModule::rmdir] ");
 
 }
 
@@ -61,11 +61,11 @@ extern "C" int gfal_gridftp_rmdirG(plugin_handle handle, const char* url,
 
     GError * tmp_err = NULL;
     int ret = -1;
-    gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_rmdir]");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_rmdir]");
     CPP_GERROR_TRY
                 (static_cast<GridFTPModule*>(handle))->rmdir(url);
                 ret = 0;
             CPP_GERROR_CATCH(&tmp_err);
-    gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_rmdir]<-");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  [gfal_gridftp_rmdir]<-");
     G_RETURN_ERR(ret, tmp_err, err);
 }

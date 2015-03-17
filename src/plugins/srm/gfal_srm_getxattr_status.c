@@ -66,7 +66,7 @@ ssize_t gfal_srm_status_internal(gfal_srmv2_opt* opts, srm_context_t context, co
 
 	gfal_srm_construct_key(path, GFAL_SRM_LSTAT_PREFIX, key_buff, GFAL_URL_MAX_LEN);
     if (gsimplecache_take_one_kstr(opts->cache, key_buff, &buf) == 0) {
-        gfal_log(GFAL_VERBOSE_DEBUG, " gfal_srm_status_internal -> value taken from the cache");
+        gfal2_log(G_LOG_LEVEL_DEBUG, " gfal_srm_status_internal -> value taken from the cache");
         ret = 0;
     }
     else {

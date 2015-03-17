@@ -21,53 +21,102 @@
 #include <cancel/gfal_cancel.h>
 
 static GQuark scope_copy_domain() {
-    return g_quark_from_static_string("FileCopy::start_copy");
+    return g_quark_from_static_string("GFAL2:CORE:COPY");
 }
 
 
 static void* find_copy_plugin(gfal2_context_t context, gfal_url2_check operation,
         const char* src, const char* dst, void** plugin_data, GError** error)
 {
-    GError * tmp_err = NULL;
-    plugin_pointer_handle start_list, p_list;
+    GList* item = g_list_first(context->plugin_opt.sorted_plugin);
     void* resu = NULL;
 
-    start_list = p_list = gfal_plugins_list_handler(context, &tmp_err);
-    if (tmp_err != NULL) {
-        gfal2_propagate_prefixed_error(error, tmp_err, __func__);
-        return NULL;
-    }
-
-    while (p_list->dlhandle != NULL) {
-        plugin_url_check2_call check_call = p_list->plugin_api->check_plugin_url_transfer;
+    while (item != NULL) {
+        gfal_plugin_interface* plugin_ifce = (gfal_plugin_interface*)item->data;
+        plugin_url_check2_call check_call = plugin_ifce->check_plugin_url_transfer;
         if (check_call != NULL) {
             gboolean compatible;
-            if ((compatible = check_call(p_list->plugin_data, context, src, dst,
+            if ((compatible = check_call(plugin_ifce->plugin_data, context, src, dst,
                     operation)) == TRUE) {
-                *plugin_data = p_list->plugin_data;
+                *plugin_data = plugin_ifce->plugin_data;
                 switch (operation) {
                     case GFAL_FILE_COPY:
-                        resu = p_list->plugin_api->copy_file;
+                        resu = plugin_ifce->copy_file;
                         break;
                     case GFAL_BULK_COPY:
-                        resu = p_list->plugin_api->copy_bulk;
+                        resu = plugin_ifce->copy_bulk;
                         break;
                 }
             }
         }
-        p_list++;
+        item = g_list_next(item);
     }
-    g_free(start_list);
+
     return resu;
+}
+
+
+static int trigger_listener_plugins(gfal2_context_t context, gfalt_params_t params, GError** error)
+{
+    GList *item = g_list_first(context->plugin_opt.sorted_plugin);
+
+    while (item != NULL) {
+        gfal_plugin_interface* plugin_ifce = (gfal_plugin_interface*)item->data;
+        if (plugin_ifce->copy_enter_hook) {
+            GError* tmp_error = NULL;
+            plugin_ifce->copy_enter_hook(plugin_ifce->plugin_data, context, params, &tmp_error);
+            if (tmp_error) {
+                gfal2_log(G_LOG_LEVEL_MESSAGE, "Copy enter hook failed: %s", tmp_error->message);
+                g_error_free(tmp_error);
+            }
+        }
+        item = g_list_next(item);
+    }
+
+    return 0;
+}
+
+
+static int notify_copy_list(gfal2_context_t context, gfalt_params_t params,
+        size_t nbfiles, const char* const * srcs, const char* const * dsts,
+        GError** error)
+{
+    plugin_trigger_event(params, scope_copy_domain(),
+            GFAL_EVENT_NONE, GFAL_EVENT_LIST_ENTER, NULL);
+
+    size_t i;
+    for (i = 0; i < nbfiles; ++i) {
+        gchar* src = g_markup_escape_text(srcs[i], -1);
+        gchar* dst = g_markup_escape_text(dsts[i], -1);
+        plugin_trigger_event(params, scope_copy_domain(),
+                GFAL_EVENT_NONE, GFAL_EVENT_LIST_ITEM,
+                "%s => %s", src, dst);
+        g_free(src);
+        g_free(dst);
+    }
+
+    plugin_trigger_event(params, scope_copy_domain(),
+            GFAL_EVENT_NONE, GFAL_EVENT_LIST_EXIT, NULL);
+
+    return 0;
 }
 
 
 static int perform_copy(gfal2_context_t context, gfalt_params_t params, const char* src,
         const char* dst, GError** error)
 {
-    gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::FileCopy");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " -> Gfal::Transfer::FileCopy");
     GError *tmp_err = NULL;
     int res = -1;
+
+    if (trigger_listener_plugins(context, params, &tmp_err) < 0) {
+        gfal2_propagate_prefixed_error(error, tmp_err, __func__);
+        return -1;
+    }
+    if (notify_copy_list(context, params, 1, &src, &dst, &tmp_err)) {
+        gfal2_propagate_prefixed_error(error, tmp_err, __func__);
+        return -1;
+    }
 
     void *plugin_data = NULL;
     plugin_filecopy_call p_copy = find_copy_plugin(context, GFAL_FILE_COPY, src, dst,
@@ -90,7 +139,7 @@ static int perform_copy(gfal2_context_t context, gfalt_params_t params, const ch
         }
     }
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::FileCopy");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- Gfal::Transfer::FileCopy");
 
     if (tmp_err != NULL)
         gfal2_propagate_prefixed_error(error, tmp_err, __func__);
@@ -155,7 +204,16 @@ static int perform_bulk_copy(gfal2_context_t context, gfalt_params_t params,
     GError* tmp_err = NULL;
     int res = -1;
 
-    gfal_log(GFAL_VERBOSE_TRACE, " -> Gfal::Transfer::BulkFileCopy");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " -> Gfal::Transfer::BulkFileCopy");
+
+    if (trigger_listener_plugins(context, params, &tmp_err) < 0) {
+        gfal2_propagate_prefixed_error(op_error, tmp_err, __func__);
+        return -1;
+    }
+    if (notify_copy_list(context, params, nbfiles, srcs, dsts, &tmp_err)) {
+        gfal2_propagate_prefixed_error(op_error, tmp_err, __func__);
+        return -1;
+    }
 
     void *plugin_data = NULL;
     plugin_filecopy_bulk_call p_copy = find_copy_plugin(context, GFAL_BULK_COPY, srcs[0],
@@ -172,7 +230,7 @@ static int perform_bulk_copy(gfal2_context_t context, gfalt_params_t params,
         }
     }
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- Gfal::Transfer::BulkFileCopy");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- Gfal::Transfer::BulkFileCopy");
 
     if (tmp_err != NULL)
         gfal2_propagate_prefixed_error(op_error, tmp_err, __func__);

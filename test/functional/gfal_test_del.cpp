@@ -13,6 +13,7 @@
 class DeleteTest: public testing::Test {
 public:
     static const char* root;
+    char nested_file[2048];
 
     const static int N_FILES = 5;
     char* files[N_FILES];
@@ -38,33 +39,24 @@ public:
     }
 
     virtual void SetUp() {
-        char buf[BLKLEN];
+        nested_file[0] = '\0';
+
+        int ret;
+        GError* error = NULL;
 
         for (int i = 0; i < N_FILES; ++i) {
             generate_random_uri(root, "test_del", files[i], 2048);
-
-            int fd = gfal_open(files[i], O_WRONLY | O_CREAT, 0644);
-            if (fd < 0) {
-                gfal_posix_check_error();
-                return;
-            }
-
-            if (gfal_write(fd, buf, BLKLEN) != BLKLEN) {
-                gfal_posix_check_error();
-                (void) gfal_close(fd);
-                return;
-            }
-
-            if (gfal_close(fd) < 0) {
-                gfal_posix_check_error();
-                return;
-            }
+            ret = generate_file_if_not_exists(context, files[i], "file:///etc/hosts", &error);
+            EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
         }
     }
 
     virtual void TearDown() {
+        if (nested_file[0])
+            gfal_unlink(nested_file);
         for (int i = 0; i < N_FILES; ++i) {
-            gfal_unlink(files[i]);
+            if (gfal_unlink(files[i]) < 0)
+                gfal_rmdir(files[i]);
         }
     }
 };
@@ -139,6 +131,50 @@ TEST_F(DeleteTest, BulkDeletionOddFail)
         if (i % 2 == 0) {
             ret = gfal2_stat(context, files[i], &st, &err);
             EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, err, ENOENT);
+        }
+    }
+}
+
+TEST_F(DeleteTest, BulkDeletionIsDir)
+{
+    int ret;
+    GError* err = NULL;
+
+    // Remove the first file, create  dir instead, create a file instead
+    ret = gfal2_unlink(context, files[0], &err);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, err);
+    ret = gfal2_mkdir(context, files[0], 0775, &err);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, err);
+
+    generate_random_uri(files[0], "test_del_nested_files", nested_file, 2048);
+    ret = generate_file_if_not_exists(context, nested_file, "file:///etc/hosts", &err);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, err);
+
+    // Call unlink all
+    GError *errors[N_FILES] = {0};
+    ret = gfal2_unlink_list(context, N_FILES, files, errors);
+    EXPECT_LT(ret, 0);
+
+    // The first must fail
+    for (int i = 0; i < N_FILES; ++i) {
+        if (i == 0) {
+            EXPECT_NE((void*)NULL, errors[i]);
+        }
+        else {
+            EXPECT_EQ(NULL, errors[i]);
+        }
+    }
+
+    // Were they really removed? 0 should have not!
+    struct stat st;
+    for (int i = 0; i < N_FILES; ++i) {
+        GError *err = NULL;
+        ret = gfal2_stat(context, files[i], &st, &err);
+        if (i != 0) {
+            EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, err, ENOENT);
+        }
+        else {
+            EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, err);
         }
     }
 }

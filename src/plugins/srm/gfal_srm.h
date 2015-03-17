@@ -116,7 +116,7 @@ void gfal_srm_destroyG(plugin_handle ch);
 void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal2_context_t handle);
 
 
-inline char* gfal_srm_construct_key(const char* url, const char* prefix, char* buff, const size_t s_buff);
+char* gfal_srm_construct_key(const char* url, const char* prefix, char* buff, const size_t s_buff);
 
 void gfal_set_default_storageG(gfal_srmv2_opt* opts, enum gfal_srm_proto proto);
 
