@@ -43,7 +43,6 @@
 static const char *gfalversion = VERSION_STR(VERSION);
 
 
-
 // initialization
 __attribute__((constructor))
 void core_init()
@@ -105,6 +104,12 @@ void gfal_handle_freeG(gfal2_context_t handle)
 
 
 // return a string of the current gfal version
+const char *gfal2_version()
+{
+    return gfalversion;
+}
+
+
 char *gfal_version()
 {
     return (char*) gfalversion;
