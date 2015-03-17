@@ -200,7 +200,7 @@ gint gfal2_set_opt_string_list(gfal2_context_t handle, const gchar *group_name,
 
 /**
 * @brief get a list of string parameter in the current GFAL 2.0 configuration
-*  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+*  see gfal2.d configfal2_set_user_agent0 documentation to know group/key/values
 *
 * @param handle : context of gfal 2.0
 * @param group_name : group name of the parameter
@@ -220,6 +220,19 @@ gchar ** gfal2_get_opt_string_list_with_default(gfal2_context_t handle, const gc
  */
 gint gfal2_load_opts_from_file(gfal2_context_t handle, const char* path, GError** error);
 
+
+/**
+ * Set the user agent for those protocols that support this
+ */
+gint gfal2_set_user_agent(gfal2_context_t handle, const char* user_agent,
+        const char* version, GError** error);
+
+/**
+ * Returns the user agent and version specified before with gfal2_set_user_agent
+ * Leave user_agent and version to NULL if not found
+ */
+gint gfal2_get_user_agent(gfal2_context_t handle, const char** user_agent,
+        const char** version);
 
 /**
 	@}

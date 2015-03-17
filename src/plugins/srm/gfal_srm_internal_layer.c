@@ -84,7 +84,7 @@ static srm_context_t gfal_srm_ifce_context_setup(gfal2_context_t handle,
     context = srm_context_new2(endpoint, errbuff, s_errbuff,
             gfal2_log_get_level() >= G_LOG_LEVEL_DEBUG, keep_alive);
 
-    if (context != NULL ) {
+    if (context != NULL) {
         timeout = gfal2_get_opt_integer_with_default(handle, srm_config_group,
                 srm_ops_timeout_key, 180);
         gfal2_log(G_LOG_LEVEL_DEBUG, " SRM operation timeout %d", timeout);
@@ -101,6 +101,15 @@ static srm_context_t gfal_srm_ifce_context_setup(gfal2_context_t handle,
             if (ukey)
                 gfal2_log(G_LOG_LEVEL_DEBUG, " SRM using private key %s", ukey);
             srm_set_credentials(context, ucert, ukey);
+        }
+
+        const char *agent, *agent_version;
+        gfal2_get_user_agent(handle, &agent, &agent_version);
+        if (agent) {
+            srm_set_user_agent(context, "%s/%s gfal2/%s", agent, agent_version, gfal2_version());
+        }
+        else {
+            srm_set_user_agent(context, "gfal2/%s", gfal2_version());
         }
     }
     else {

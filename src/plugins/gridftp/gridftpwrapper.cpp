@@ -91,7 +91,7 @@ GridFTPSessionHandler::~GridFTPSessionHandler()
 }
 
 
-GridFTPSession::GridFTPSession(const std::string& hostname): hostname(hostname)
+GridFTPSession::GridFTPSession(gfal2_context_t context, const std::string& hostname): hostname(hostname)
 {
     globus_result_t res;
 
@@ -105,8 +105,11 @@ GridFTPSession::GridFTPSession(const std::string& hostname): hostname(hostname)
     gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
 
     globus_ftp_client_handleattr_set_cache_all(&attr_handle, GLOBUS_TRUE); // enable session re-use
-    //if (gfal2_log_get_level() >= G_LOG_LEVEL_DEBUG)
-    //    globus_ftp_client_handleattr_add_plugin(&attr_handle, &debug_ftp_plugin);
+    if (getenv("GFAL2_GRIDFTP_DEBUG")) {
+        globus_ftp_client_handleattr_add_plugin(&attr_handle, &debug_ftp_plugin);
+    }
+
+    this->set_user_agent(context);
 
     res = globus_gass_copy_handleattr_init(&gass_handle_attr);
     gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
@@ -190,6 +193,22 @@ void GridFTPSession::set_tcp_buffer_size(guint64 buffersize)
         tcp_buffer_size.fixed.size = buffersize;
     }
     globus_ftp_client_operationattr_set_tcp_buffer(&operation_attr_ftp, &tcp_buffer_size);
+}
+
+
+void GridFTPSession::set_user_agent(gfal2_context_t context)
+{
+    const char *agent, *version;
+    gfal2_get_user_agent(context, &agent, &version);
+
+    if (agent) {
+        std::ostringstream full_version;
+        full_version << version << " (gfal2 " << gfal2_version() << ")";
+        globus_ftp_client_handleattr_set_clientinfo(&attr_handle, agent, full_version.str().c_str(), NULL);
+    }
+    else {
+        globus_ftp_client_handleattr_set_clientinfo(&attr_handle, "gfal2", gfal2_version(), NULL);
+    }
 }
 
 
@@ -502,7 +521,7 @@ GridFTPSession* GridFTPFactory::get_new_handle(const std::string & hostname)
     bool dcau = gfal2_get_opt_boolean_with_default(gfal2_context, GRIDFTP_CONFIG_GROUP,
             GRIDFTP_CONFIG_DCAU, false);
 
-    std::auto_ptr<GridFTPSession> session(new GridFTPSession(hostname));
+    std::auto_ptr<GridFTPSession> session(new GridFTPSession(gfal2_context, hostname));
 
     session->set_gridftpv2(gridftp_v2);
     session->set_dcau(dcau);

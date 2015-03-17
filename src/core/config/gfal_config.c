@@ -391,3 +391,22 @@ gint gfal2_load_opts_from_file(gfal2_context_t handle, const char* path,
     gfal_config_propagate_error_external(error, &tmp_err);
     return res;
 }
+
+
+gint gfal2_set_user_agent(gfal2_context_t handle, const char* user_agent,
+        const char* version, GError** error)
+{
+    if (gfal2_set_opt_string(handle, "AGENT", "NAME", user_agent, error) < 0)
+        return -1;
+    if (gfal2_set_opt_string(handle, "AGENT", "VERSION", version, error) < 0)
+        return -1;
+    return 0;
+}
+
+
+gint gfal2_get_user_agent(gfal2_context_t handle, const char** user_agent, const char** version)
+{
+    *user_agent = gfal2_get_opt_string_with_default(handle, "AGENT", "NAME", NULL);
+    *version = gfal2_get_opt_string_with_default(handle, "AGENT", "VERSION", NULL);
+    return 0;
+}

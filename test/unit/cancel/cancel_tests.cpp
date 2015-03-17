@@ -15,7 +15,7 @@ TEST(gfalCancel, test_cancel_simple){
 void gfal_cancel_hook_cb_s(gfal2_context_t context, void* userdata){
     int* p = (int*)userdata;
     *p += 1;
-    (void) gfal_version();
+    (void) gfal2_version();
 
 }
 

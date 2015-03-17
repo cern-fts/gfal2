@@ -1,6 +1,7 @@
 #include "gfal_http_plugin.h"
 #include <cstdio>
 #include <cstring>
+#include <sstream>
 #include <davix.hpp>
 #include <errno.h>
 #include <common/gfal_common_err_helpers.h>
@@ -131,6 +132,19 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davi
 
     // Avoid retries
     req_params->setOperationRetry(0);
+
+    // User agent
+    const char *agent, *version;
+    gfal2_get_user_agent(handle, &agent, &version);
+
+    std::ostringstream user_agent;
+    if (agent) {
+        user_agent << agent << "/" << version << " " << "gfal2/" << gfal2_version();
+    }
+    else {
+        user_agent << "gfal2/" << gfal2_version();
+    }
+    req_params->setUserAgent(user_agent.str());
 }
 
 
