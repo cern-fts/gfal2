@@ -145,6 +145,13 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davi
         user_agent << "gfal2/" << gfal2_version();
     }
     req_params->setUserAgent(user_agent.str());
+
+    // Client information
+    char* client_info = gfal2_get_client_info_string(handle);
+    if (client_info) {
+        req_params->addHeader("ClientInfo", client_info);
+    }
+    g_free(client_info);
 }
 
 

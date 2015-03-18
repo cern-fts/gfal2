@@ -201,14 +201,19 @@ void GridFTPSession::set_user_agent(gfal2_context_t context)
     const char *agent, *version;
     gfal2_get_user_agent(context, &agent, &version);
 
+    // Client information
+    char* client_info = gfal2_get_client_info_string(context);
+
     if (agent) {
         std::ostringstream full_version;
         full_version << version << " (gfal2 " << gfal2_version() << ")";
-        globus_ftp_client_handleattr_set_clientinfo(&attr_handle, agent, full_version.str().c_str(), NULL);
+        globus_ftp_client_handleattr_set_clientinfo(&attr_handle, agent, full_version.str().c_str(), client_info);
     }
     else {
-        globus_ftp_client_handleattr_set_clientinfo(&attr_handle, "gfal2", gfal2_version(), NULL);
+        globus_ftp_client_handleattr_set_clientinfo(&attr_handle, "gfal2", gfal2_version(), client_info);
     }
+
+    g_free(client_info);
 }
 
 

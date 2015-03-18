@@ -59,11 +59,12 @@ gfal2_context_t gfal_initG (GError** err)
 {
 	GError* tmp_err=NULL;
 	gfal2_context_t handle = g_new0(struct gfal_handle_,1);// clear allocation of the struct and set defautl options
-	if(handle == NULL){
-		errno= ENOMEM;
-        g_set_error(err, gfal2_get_plugins_quark(), ENOMEM, "[gfal_initG] bad allocation, no more memory free");
-		return NULL;
-	}
+    if (handle == NULL) {
+        errno = ENOMEM;
+        g_set_error(err, gfal2_get_plugins_quark(), ENOMEM,
+                "[gfal_initG] bad allocation, no more memory free");
+        return NULL;
+    }
 	handle->plugin_opt.plugin_number= 0;
 
     if((handle->conf = gfal_conf_new(&tmp_err)) && !tmp_err){
@@ -83,6 +84,10 @@ gfal2_context_t gfal_initG (GError** err)
         g_free(handle);
         handle = NULL;
     }
+    else {
+        handle->client_info = g_ptr_array_new();
+    }
+
     G_RETURN_ERR(handle, tmp_err, err);
 }
 
@@ -98,6 +103,9 @@ void gfal_handle_freeG(gfal2_context_t handle)
     g_list_free(handle->plugin_opt.sorted_plugin);
     g_mutex_free(handle->mux_cancel);
     g_hook_list_clear(&handle->cancel_hooks);
+    g_free(handle->agent_name);
+    g_free(handle->agent_version);
+    g_ptr_array_foreach(handle->client_info, gfal_free_keyvalue, NULL);
     g_free(handle);
     handle = NULL;
 }

@@ -103,6 +103,7 @@ static srm_context_t gfal_srm_ifce_context_setup(gfal2_context_t handle,
             srm_set_credentials(context, ucert, ukey);
         }
 
+        // User agent
         const char *agent, *agent_version;
         gfal2_get_user_agent(handle, &agent, &agent_version);
         if (agent) {
@@ -111,6 +112,13 @@ static srm_context_t gfal_srm_ifce_context_setup(gfal2_context_t handle,
         else {
             srm_set_user_agent(context, "gfal2/%s", gfal2_version());
         }
+
+        // Client information
+        char* client_info = gfal2_get_client_info_string(handle);
+        if (client_info) {
+            srm_set_http_header(context, "ClientInfo", client_info);
+        }
+        g_free(client_info);
     }
     else {
         gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL,
