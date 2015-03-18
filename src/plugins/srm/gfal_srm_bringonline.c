@@ -266,9 +266,9 @@ static int gfal_srmv2_release_file_internal(srm_context_t context, gfal_srmv2_op
     int i;
 
     if (token)
-        gfal2_log(G_LOG_LEVEL_INFO, "Release file with token %s", token);
+        gfal2_log(G_LOG_LEVEL_INFO, "Released file with token %s", token);
     else
-        gfal2_log(G_LOG_LEVEL_INFO, "Release file without token");
+        gfal2_log(G_LOG_LEVEL_INFO, "Released file without token");
 
     // Perform
     input.nbfiles  = nbfiles;

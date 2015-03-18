@@ -179,7 +179,9 @@ int gfal_srm_closeG(plugin_handle ch, gfal_file_handle fh, GError ** err)
         gfal_srm_handle_open sh = (gfal_srm_handle_open) gfal_file_handle_get_fdesc(fh);
         char* surls[] = { sh->surl, NULL };
         if (sh->req_type == SRM_PUT)
-            ret = gfal_srm_putdone(opts, surls, sh->reqtoken, &tmp_err); // end the transaction on the srm server in case of pu
+            ret = gfal_srm_putdone(opts, surls, sh->reqtoken, &tmp_err);
+        else
+            ret = gfal_srmv2_release_fileG(ch, sh->surl, sh->reqtoken, &tmp_err);
         g_free(sh->reqtoken);
         gfal_srm_file_handle_delete(fh);
     }
