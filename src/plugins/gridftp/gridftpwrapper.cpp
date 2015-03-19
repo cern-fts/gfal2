@@ -105,8 +105,9 @@ GridFTPSession::GridFTPSession(const std::string& hostname): hostname(hostname)
     gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
 
     globus_ftp_client_handleattr_set_cache_all(&attr_handle, GLOBUS_TRUE); // enable session re-use
-    //if (gfal2_log_get_level() >= G_LOG_LEVEL_DEBUG)
-    //    globus_ftp_client_handleattr_add_plugin(&attr_handle, &debug_ftp_plugin);
+    if (getenv("GFAL2_GRIDFTP_DEBUG")) {
+        globus_ftp_client_handleattr_add_plugin(&attr_handle, &debug_ftp_plugin);
+    }
 
     res = globus_gass_copy_handleattr_init(&gass_handle_attr);
     gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
