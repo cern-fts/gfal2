@@ -168,6 +168,7 @@ int gfal_srm_getTURLS_srmv2_internal(srm_context_t context, gfal_srmv2_opt* opts
 	preparetoget_input.protocols = gfal_srm_params_get_protocols(params);
     preparetoget_input.spacetokendesc = gfal_srm_params_get_spacetoken(params);
 	preparetoget_input.surls = surls;
+
     ret = gfal_srmv2_get_global(opts, params, context, &preparetoget_input, resu, &tmp_err);
 	G_RETURN_ERR(ret, tmp_err, err);
 }

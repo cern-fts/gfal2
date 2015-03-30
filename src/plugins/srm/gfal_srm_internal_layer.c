@@ -27,6 +27,7 @@ const char * srm_config_group= "SRM PLUGIN";
 const char * srm_config_transfer_checksum= "COPY_CHECKSUM_TYPE";
 const char * srm_ops_timeout_key= "OPERATION_TIMEOUT";
 const char * srm_conn_timeout_key= "CONN_TIMEOUT";
+const char * srm_desired_request_lifetime = "REQUEST_LIFETIME";
 const char * srm_config_turl_protocols= "TURL_PROTOCOLS";
 const char * srm_config_3rd_party_turl_protocols= "TURL_3RD_PARTY_PROTOCOLS";
 const char * srm_config_keep_alive = "KEEP_ALIVE";
@@ -162,9 +163,6 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
     if (opts->srm_context) {
         if (is_same_context(opts, full_endpoint, ucert, ukey)) {
             gfal2_log(G_LOG_LEVEL_INFO, "SRM context recycled for %s", full_endpoint);
-            g_free(ucert);
-            g_free(ukey);
-            return opts->srm_context;
         }
         else {
             gfal2_log(G_LOG_LEVEL_INFO, "SRM context invalidated for %s", full_endpoint);
@@ -176,25 +174,29 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
         gfal2_log(G_LOG_LEVEL_INFO, "SRM context not available");
     }
 
-    switch (srm_types) {
-        case PROTO_SRMv2:
-            opts->srm_context = gfal_srm_ifce_context_setup(opts->handle, full_endpoint,
-                            ucert, ukey,
-                            opts->srm_ifce_error_buffer, sizeof(opts->srm_ifce_error_buffer),
-                            &nested_error);
-            if (nested_error)
-                gfal2_propagate_prefixed_error(err, nested_error, __func__);
-            break;
-        case PROTO_SRM:
-            gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT,
-                            __func__, "SRM v1 is not supported, failure");
-            break;
-        default:
-            gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT,
-                            __func__, "Unknow version of the protocol SRM, failure");
-            break;
+    // Instantiate if we haven't got any
+    if (opts->srm_context == NULL) {
+        switch (srm_types) {
+            case PROTO_SRMv2:
+                opts->srm_context = gfal_srm_ifce_context_setup(opts->handle, full_endpoint,
+                                ucert, ukey,
+                                opts->srm_ifce_error_buffer, sizeof(opts->srm_ifce_error_buffer),
+                                &nested_error);
+                if (nested_error)
+                    gfal2_propagate_prefixed_error(err, nested_error, __func__);
+                break;
+            case PROTO_SRM:
+                gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT,
+                                __func__, "SRM v1 is not supported, failure");
+                break;
+            default:
+                gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT,
+                                __func__, "Unknow version of the protocol SRM, failure");
+                break;
+        }
     }
 
+    // Configure
     if (opts->srm_context) {
         g_strlcpy(opts->endpoint, full_endpoint, GFAL_URL_MAX_LEN);
         if (ucert) {
@@ -203,6 +205,10 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
         if (ukey) {
             g_strlcpy(opts->x509_ukey, ukey, sizeof(opts->x509_ukey));
         }
+
+        time_t request_lifetime = gfal2_get_opt_integer_with_default(opts->handle,
+                srm_config_group, srm_desired_request_lifetime, 3600);
+        srm_set_desired_request_time(opts->srm_context, request_lifetime);
     }
     else {
         g_static_rec_mutex_unlock(&opts->srm_context_mutex);
