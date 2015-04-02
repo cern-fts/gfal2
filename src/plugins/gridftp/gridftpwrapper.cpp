@@ -571,7 +571,7 @@ void gfal_globus_done_callback(void* user_args,
     if (globus_error != GLOBUS_SUCCESS) {
         char *err_buffer;
         int err_code = gfal_globus_error_convert(globus_error, &err_buffer);
-        char err_static[128];
+        char err_static[2048];
         g_strlcpy(err_static, err_buffer, sizeof(err_static));
         g_free(err_buffer);
         state->error = new Gfal::CoreException(GFAL_GLOBUS_DONE_SCOPE, err_code, err_static);
@@ -717,7 +717,7 @@ void gfal_stream_done_callback_err_handling(GridFTPStreamState* state,
     if (globus_error != GLOBUS_SUCCESS) {
         char *err_buffer;
         int err_code = gfal_globus_error_convert(globus_error, &err_buffer);
-        char err_static[128];
+        char err_static[2048];
         g_strlcpy(err_static, err_buffer, sizeof(err_static));
         g_free(err_buffer);
         state->error = new Gfal::CoreException(GFAL_GLOBUS_DONE_SCOPE, err_code, err_static);
