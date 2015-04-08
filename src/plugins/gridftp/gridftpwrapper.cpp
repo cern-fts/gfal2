@@ -454,6 +454,8 @@ static int scan_errstring(const char *p) {
         ret = ECANCELED;
     else if (strstr(p, "s a directory"))
         ret = EISDIR;
+    else if (strstr(p, "isk quota exceeded"))
+        ret = ENOSPC;
     return ret;
 }
 
