@@ -438,23 +438,23 @@ static int scan_errstring(const char *p) {
     int ret = ECOMM;
     if (p == NULL) return ret;
 
-    if (strstr(p, "o such file") || strstr(p, "not found") || strstr(p, "error 3011"))
+    if (strcasestr(p, "No such file") || strcasestr(p, "not found") || strcasestr(p, "error 3011"))
         ret = ENOENT;
-    else if (strstr(p, "ermission denied") || strstr(p, "credential"))
+    else if (strstr(p, "Permission denied") || strcasestr(p, "credential"))
         ret = EACCES;
-    else if ( (strstr(p, "exists")) || strstr(p, "error 3006"))
+    else if ( (strcasestr(p, "exists")) || strcasestr(p, "error 3006"))
         ret = EEXIST;
-    else if (strstr(p, "ot a direct"))
+    else if (strcasestr(p, "Not a direct"))
 		ret = ENOTDIR;
-    else if (strstr(p, "ation not sup"))
+    else if (strcasestr(p, "Operation not supported"))
         ret = ENOTSUP;
-    else if (strstr(p, "Login incorrect") || strstr(p, "Could not get virtual id"))
+    else if (strcasestr(p, "Login incorrect") || strcasestr(p, "Could not get virtual id"))
         ret = EACCES;
-    else if (strstr(p, "the operation was aborted"))
+    else if (strcasestr(p, "the operation was aborted"))
         ret = ECANCELED;
-    else if (strstr(p, "s a directory"))
+    else if (strcasestr(p, "Is a directory"))
         ret = EISDIR;
-    else if (strstr(p, "isk quota exceeded"))
+    else if (strcasestr(p, "isk quota exceeded"))
         ret = ENOSPC;
     return ret;
 }
