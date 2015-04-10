@@ -1,5 +1,35 @@
 GFAL2 RELEASE-NOTES:
 
+* Fri Apr 10 2015  Alejandro Alvarez <aalvarez at cern.ch> - 2.9.1
+** Bug
+- [DMC-620] - HTTP Plugin: Normalize S3:host to S3:HOST on all cases
+- [DMC-622] - Core: gfal2 crash when aborting staging operation
+- [DMC-626] - LFC Plugin: Off by one bug when checking for parent directory
+- [DMC-627] - LFC Plugin: When lfn:// is used, lfc_host was being left to NULL
+- [DMC-632] - GridFTP Plugin: When the timeout expires, wait for the callback after cancellation
+- [DMC-638] - GridFTP Plugin: Performance marker timeout causes abort
+- [DMC-639] - SRM Plugin: Fix build in Rawhide
+- [DMC-645] - GridFTP Plugin: Always register performance marker callback
+- [DMC-647] - GridFTP Plugin: In some machines, the threading model is event, and writing to castor do not work
+- [DMC-653] - SRM Plugin: Closing when reading must issue a release
+- [DMC-661] - GridFTP Plugin: Error messages generated during transfer seem to be truncated
+- [DMC-662] - GridFTP Plugin: Map correctly "Disk quota" errors
+** Improvement
+- [DMC-613] - HTTP Plugin: Davix already stats before deletion, so remove the check
+- [DMC-617] - HTTP Plugin: Set Davix retrials to 0
+- [DMC-619] - HTTP Plugin: Add KEEP_ALIVE option
+- [DMC-640] - Conditionally enable C++11
+- [DMC-648] - Core: Provide gfal2_ prefixed methods for uri methods
+- [DMC-649] - Core: Improve logger system, deprecate old methods
+- [DMC-650] - SRM Plugin: Log the request tokens
+- [DMC-651] - Core and plugins: Allow to send custom key/value to the servers
+** New Feature
+- [DMC-641] - Core: Allow to register multiple event listeners
+- [DMC-642] - Core: Give plugins a chance to register their own event listeners
+- [DMC-643] - Core: Add an event for copies that is triggered at the beginning
+- [DMC-657] - SRM Plugin: On prepare to get and put, get the desired request lifetime from the configuration file
+- [DMC-663] - Add functionality to allow querying the versions of the plugins loaded
+
 * Fri Feb 27 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.8.4
 - [DMC-638] - GridFTP Plugin: Performance marker timeout causes abort
 
