@@ -91,7 +91,7 @@ struct GassCopyAttrHandler {
 
 class GridFTPSession {
 public:
-    GridFTPSession(const std::string& hostname);
+    GridFTPSession(gfal2_context_t context, const std::string& hostname);
     ~GridFTPSession();
 
     std::string hostname;
@@ -117,6 +117,8 @@ public:
     void set_delayed_pass(bool enable);
     void set_nb_streams(unsigned int nbstreams);
     void set_tcp_buffer_size(guint64 tcp_buffer_size);
+
+    void set_user_agent(gfal2_context_t context);
 };
 
 

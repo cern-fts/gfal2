@@ -30,6 +30,7 @@
 
 #include "gfal_srm_endpoint.h"
 #include "gfal_srm.h"
+#include "gfal_srm_bringonline.h"
 
 extern const char * srm_config_group;
 extern const char * srm_config_transfer_checksum;

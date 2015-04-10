@@ -200,7 +200,7 @@ gint gfal2_set_opt_string_list(gfal2_context_t handle, const gchar *group_name,
 
 /**
 * @brief get a list of string parameter in the current GFAL 2.0 configuration
-*  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+*  see gfal2.d configfal2_set_user_agent0 documentation to know group/key/values
 *
 * @param handle : context of gfal 2.0
 * @param group_name : group name of the parameter
@@ -220,6 +220,65 @@ gchar ** gfal2_get_opt_string_list_with_default(gfal2_context_t handle, const gc
  */
 gint gfal2_load_opts_from_file(gfal2_context_t handle, const char* path, GError** error);
 
+
+/**
+ * Set the user agent for those protocols that support this
+ */
+gint gfal2_set_user_agent(gfal2_context_t handle, const char* user_agent,
+        const char* version, GError** error);
+
+/**
+ * Returns the user agent and version specified before with gfal2_set_user_agent
+ * Leave user_agent and version to NULL if not found
+ */
+gint gfal2_get_user_agent(gfal2_context_t handle, const char** user_agent,
+        const char** version);
+
+/**
+ * Add a new key/value pair with additional information to be passed to the storage
+ * for protocols that support it.
+ * For instance, this will be passed via CLIENTINFO for GridFTP, or the ClientInfo header for SRM and HTTP
+ * Return < 0 on error
+ */
+gint gfal2_add_client_info(gfal2_context_t handle, const char* key, const char* value, GError** error);
+
+/**
+ * Removes a key/value pair set previously with gfal2_add_client_info
+ * Return < 0 on error
+ */
+gint gfal2_remove_client_info(gfal2_context_t handle, const char* key, GError** error);
+
+/**
+ * Clear the client information
+ * Return < 0 on error
+ */
+gint gfal2_clear_client_info(gfal2_context_t handle, GError** error);
+
+/**
+ * Return how many custom pairs have been set
+ * Return < 0 on error
+ */
+gint gfal2_get_client_info_count(gfal2_context_t handle, GError** error);
+
+/**
+ * Put into key and value the pair at position index, or NULL if it does not exist
+ * Return < 0 on error
+ */
+gint gfal2_get_client_info_pair(gfal2_context_t handle, int index, const char** key,
+        const char** value, GError** error);
+
+/**
+ * Put into value the value associated with the given key
+ * Return < 0 on error
+ */
+gint gfal2_get_client_info_value(gfal2_context_t handle, const char* key, const char** value, GError** error);
+
+/**
+ * For convenience, return all the key/value information in the form
+ * key1=value1;key2=value2
+ * The return value is NULL if there is no information. Otherwise, use g_free on it when done.
+ */
+char* gfal2_get_client_info_string(gfal2_context_t handle);
 
 /**
 	@}

@@ -1,6 +1,7 @@
 #include "gfal_http_plugin.h"
 #include <cstdio>
 #include <cstring>
+#include <sstream>
 #include <davix.hpp>
 #include <errno.h>
 #include <common/gfal_common_err_helpers.h>
@@ -9,14 +10,15 @@
 
 using namespace Davix;
 
-const char* http_module_name = "http_plugin";
+static const char* http_module_name = "http_plugin";
 GQuark http_plugin_domain = g_quark_from_static_string(http_module_name);
 
 
-static const char* gfal_http_get_name(void)
+const char* gfal_http_get_name(void)
 {
-    return http_module_name;
+    return GFAL2_PLUGIN_VERSIONED("http", VERSION);;
 }
+
 
 static int get_corresponding_davix_log_level()
 {
@@ -131,6 +133,26 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davi
 
     // Avoid retries
     req_params->setOperationRetry(0);
+
+    // User agent
+    const char *agent, *version;
+    gfal2_get_user_agent(handle, &agent, &version);
+
+    std::ostringstream user_agent;
+    if (agent) {
+        user_agent << agent << "/" << version << " " << "gfal2/" << gfal2_version();
+    }
+    else {
+        user_agent << "gfal2/" << gfal2_version();
+    }
+    req_params->setUserAgent(user_agent.str());
+
+    // Client information
+    char* client_info = gfal2_get_client_info_string(handle);
+    if (client_info) {
+        req_params->addHeader("ClientInfo", client_info);
+    }
+    g_free(client_info);
 }
 
 

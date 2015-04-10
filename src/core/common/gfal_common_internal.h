@@ -42,7 +42,6 @@ void gfal_handle_freeG(gfal2_context_t handle);
 
 GQuark gfal_cancel_quark();
 
-
 #ifdef __cplusplus
 }
 #endif // __cplusplus

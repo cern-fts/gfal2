@@ -1,0 +1,3 @@
+[submodule "cmake"]
+	path = cmake
+	url = https://gitlab.cern.ch/dmc/cmake-modules.git

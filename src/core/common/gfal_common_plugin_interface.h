@@ -42,6 +42,11 @@ extern "C"
 {
 #endif
 
+/*
+ * Helper for the versioned plugin names
+ */
+#define GFAL2_PLUGIN_VERSIONED(plugin, version) plugin"-"version
+
 /**
   classical data access plugin
 */

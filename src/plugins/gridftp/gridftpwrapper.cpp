@@ -91,7 +91,7 @@ GridFTPSessionHandler::~GridFTPSessionHandler()
 }
 
 
-GridFTPSession::GridFTPSession(const std::string& hostname): hostname(hostname)
+GridFTPSession::GridFTPSession(gfal2_context_t context, const std::string& hostname): hostname(hostname)
 {
     globus_result_t res;
 
@@ -108,6 +108,8 @@ GridFTPSession::GridFTPSession(const std::string& hostname): hostname(hostname)
     if (getenv("GFAL2_GRIDFTP_DEBUG")) {
         globus_ftp_client_handleattr_add_plugin(&attr_handle, &debug_ftp_plugin);
     }
+
+    this->set_user_agent(context);
 
     res = globus_gass_copy_handleattr_init(&gass_handle_attr);
     gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
@@ -191,6 +193,27 @@ void GridFTPSession::set_tcp_buffer_size(guint64 buffersize)
         tcp_buffer_size.fixed.size = buffersize;
     }
     globus_ftp_client_operationattr_set_tcp_buffer(&operation_attr_ftp, &tcp_buffer_size);
+}
+
+
+void GridFTPSession::set_user_agent(gfal2_context_t context)
+{
+    const char *agent, *version;
+    gfal2_get_user_agent(context, &agent, &version);
+
+    // Client information
+    char* client_info = gfal2_get_client_info_string(context);
+
+    if (agent) {
+        std::ostringstream full_version;
+        full_version << version << " (gfal2 " << gfal2_version() << ")";
+        globus_ftp_client_handleattr_set_clientinfo(&attr_handle, agent, full_version.str().c_str(), client_info);
+    }
+    else {
+        globus_ftp_client_handleattr_set_clientinfo(&attr_handle, "gfal2", gfal2_version(), client_info);
+    }
+
+    g_free(client_info);
 }
 
 
@@ -415,22 +438,24 @@ static int scan_errstring(const char *p) {
     int ret = ECOMM;
     if (p == NULL) return ret;
 
-    if (strstr(p, "o such file") || strstr(p, "not found") || strstr(p, "error 3011"))
+    if (strcasestr(p, "No such file") || strcasestr(p, "not found") || strcasestr(p, "error 3011"))
         ret = ENOENT;
-    else if (strstr(p, "ermission denied") || strstr(p, "credential"))
+    else if (strstr(p, "Permission denied") || strcasestr(p, "credential"))
         ret = EACCES;
-    else if ( (strstr(p, "exists")) || strstr(p, "error 3006"))
+    else if ( (strcasestr(p, "exists")) || strcasestr(p, "error 3006"))
         ret = EEXIST;
-    else if (strstr(p, "ot a direct"))
+    else if (strcasestr(p, "Not a direct"))
 		ret = ENOTDIR;
-    else if (strstr(p, "ation not sup"))
+    else if (strcasestr(p, "Operation not supported"))
         ret = ENOTSUP;
-    else if (strstr(p, "Login incorrect") || strstr(p, "Could not get virtual id"))
+    else if (strcasestr(p, "Login incorrect") || strcasestr(p, "Could not get virtual id"))
         ret = EACCES;
-    else if (strstr(p, "the operation was aborted"))
+    else if (strcasestr(p, "the operation was aborted"))
         ret = ECANCELED;
-    else if (strstr(p, "s a directory"))
+    else if (strcasestr(p, "Is a directory"))
         ret = EISDIR;
+    else if (strcasestr(p, "isk quota exceeded"))
+        ret = ENOSPC;
     return ret;
 }
 
@@ -503,7 +528,7 @@ GridFTPSession* GridFTPFactory::get_new_handle(const std::string & hostname)
     bool dcau = gfal2_get_opt_boolean_with_default(gfal2_context, GRIDFTP_CONFIG_GROUP,
             GRIDFTP_CONFIG_DCAU, false);
 
-    std::auto_ptr<GridFTPSession> session(new GridFTPSession(hostname));
+    std::auto_ptr<GridFTPSession> session(new GridFTPSession(gfal2_context, hostname));
 
     session->set_gridftpv2(gridftp_v2);
     session->set_dcau(dcau);
@@ -548,7 +573,7 @@ void gfal_globus_done_callback(void* user_args,
     if (globus_error != GLOBUS_SUCCESS) {
         char *err_buffer;
         int err_code = gfal_globus_error_convert(globus_error, &err_buffer);
-        char err_static[128];
+        char err_static[2048];
         g_strlcpy(err_static, err_buffer, sizeof(err_static));
         g_free(err_buffer);
         state->error = new Gfal::CoreException(GFAL_GLOBUS_DONE_SCOPE, err_code, err_static);
@@ -694,7 +719,7 @@ void gfal_stream_done_callback_err_handling(GridFTPStreamState* state,
     if (globus_error != GLOBUS_SUCCESS) {
         char *err_buffer;
         int err_code = gfal_globus_error_convert(globus_error, &err_buffer);
-        char err_static[128];
+        char err_static[2048];
         g_strlcpy(err_static, err_buffer, sizeof(err_static));
         g_free(err_buffer);
         state->error = new Gfal::CoreException(GFAL_GLOBUS_DONE_SCOPE, err_code, err_static);
