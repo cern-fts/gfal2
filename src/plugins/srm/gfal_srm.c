@@ -95,7 +95,7 @@ char** srm_get_3rdparty_turls_sup_protocol(gfal2_context_t context)
  */
 const char* gfal_srm_getName()
 {
-    return "srm_plugin";
+    return GFAL2_PLUGIN_VERSIONED("srm", VERSION);
 }
 
 

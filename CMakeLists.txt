@@ -46,6 +46,8 @@ set (VERSION_MINOR  9)
 set (VERSION_PATCH  1)
 set (VERSION_STRING ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
+add_definitions(-DVERSION="${VERSION_STRING}")
+
 # out of project test compilation
 set (ONLY_TESTS FALSE CACHE STRING "build only the tests")
 set (SKIP_TESTS FALSE CACHE STRING "skip the tests")

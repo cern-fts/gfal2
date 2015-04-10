@@ -10,14 +10,15 @@
 
 using namespace Davix;
 
-const char* http_module_name = "http_plugin";
+static const char* http_module_name = "http_plugin";
 GQuark http_plugin_domain = g_quark_from_static_string(http_module_name);
 
 
-static const char* gfal_http_get_name(void)
+const char* gfal_http_get_name(void)
 {
-    return http_module_name;
+    return GFAL2_PLUGIN_VERSIONED("http", VERSION);;
 }
+
 
 static int get_corresponding_davix_log_level()
 {

@@ -36,11 +36,8 @@
 #include <common/gfal_common_file_handle.h>
 #include <config/gfal_config_internal.h>
 
-#define XVERSION_STR(x) #x
-#define VERSION_STR(x) XVERSION_STR(x)
-
 /* the version should be set by a "define" at the makefile level */
-static const char *gfalversion = VERSION_STR(VERSION);
+static const char *gfalversion = VERSION;
 
 
 // initialization

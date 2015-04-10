@@ -113,7 +113,7 @@ void gridftp_plugin_unload(plugin_handle handle)
 
 const char *gridftp_plugin_name()
 {
-	return "plugin_gridftp";
+	return GFAL2_PLUGIN_VERSIONED("gridftp", VERSION);
 }
 
 

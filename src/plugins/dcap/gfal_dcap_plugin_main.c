@@ -58,6 +58,13 @@ static gfal_plugin_dcap_handle gfal_dcap_init_handle(gfal2_context_t handle,
     return ret;
 }
 
+
+const char* gfal_dcap_getName()
+{
+    return GFAL2_PLUGIN_VERSIONED("dcap", VERSION);
+}
+
+
 /*
  * Init function, called before all
  * */

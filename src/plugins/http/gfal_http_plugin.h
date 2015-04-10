@@ -21,12 +21,12 @@ private:
     gfal2_context_t      handle;
 };
 
+const char* gfal_http_get_name(void);
 
 GfalHttpPluginData* gfal_http_get_plugin_context(gpointer plugin_data);
 
 void gfal_http_context_delete(gpointer plugin_data);
 
-extern const char* http_module_name;
 extern GQuark http_plugin_domain;
 
 // Initializes a GError from a DavixError
