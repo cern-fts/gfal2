@@ -7,7 +7,7 @@
 Name:               gfal2
 Version:            2.9.1
 # https://fedoraproject.org/wiki/Packaging:NamingGuidelines#Release_Tag
-Release:            1%{?dist}
+Release:            2%{?dist}
 Summary:            Grid file access library 2.0
 Group:              Applications/Internet
 License:            ASL 2.0
@@ -44,7 +44,7 @@ BuildRequires:      lfc-devel
 #rfio plugin dependencies
 BuildRequires:      dpm-devel
 #srm plugin dependencies
-BuildRequires:      srm-ifce-devel >= 1.21.3
+BuildRequires:      srm-ifce-devel >= 1.23.1
 #dcap plugin dependencies
 BuildRequires:      dcap-devel
 #gridftp plugin dependencies
@@ -137,7 +137,7 @@ URLs, the dcap protocol is used on the DCACHE storage system
 Summary:            Provides the srm access for %{name}
 Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release} 
-Requires:           srm-ifce >= 1.21.3
+Requires:           srm-ifce >= 1.23.1
 
 %description plugin-srm
 Provides the srm support (srm://) for %{name}. 
