@@ -25,6 +25,9 @@
 #include "gridftpmodule.h"
 #include "gridftpwrapper.h"
 
+extern const GQuark GFAL_GRIDFTP_DOMAIN_GSIFTP;
+
+
 extern "C" int gridftp_plugin_filecopy(plugin_handle handle,
         gfal2_context_t context, gfalt_params_t params, const char* src,
         const char* dst, GError ** err);
@@ -39,6 +42,8 @@ int gridftp_filecopy_delete_existing(GridFTPModule* module,
 void gridftp_create_parent_copy(GridFTPModule* module, gfalt_params_t params,
         const char * gridftp_url);
 
-std::string return_hostname(const std::string &uri, gboolean use_ipv6);
+std::string lookup_host(const char *host, gboolean use_ipv6);
+
+std::string return_host_and_port(const std::string &uri, gboolean use_ipv6);
 
 #endif /* GRIFTP_IFCE_FILECOPY_H */

@@ -23,10 +23,10 @@
 #include <sstream>
 #include <uri/gfal_uri.h>
 #include <exceptions/gfalcoreexception.hpp>
+#include <globus_ftp_client_debug_plugin.h>
 #include "gridftp_plugin.h"
 #include "gridftpwrapper.h"
-
-#include <globus_ftp_client_debug_plugin.h>
+#include "gridftp_pasv_plugin.h"
 
 
 struct RwStatus
@@ -97,7 +97,8 @@ GridFTPSessionHandler::~GridFTPSessionHandler()
 }
 
 
-GridFTPSession::GridFTPSession(gfal2_context_t context, const std::string& hostname): hostname(hostname)
+GridFTPSession::GridFTPSession(gfal2_context_t context, const std::string& hostname):
+        hostname(hostname), context(context), params(NULL)
 {
     globus_result_t res;
 
@@ -113,6 +114,16 @@ GridFTPSession::GridFTPSession(gfal2_context_t context, const std::string& hostn
     globus_ftp_client_handleattr_set_cache_all(&attr_handle, GLOBUS_TRUE); // enable session re-use
     if (getenv("GFAL2_GRIDFTP_DEBUG")) {
         globus_ftp_client_handleattr_add_plugin(&attr_handle, &debug_ftp_plugin);
+    }
+
+    gboolean register_pasv_plugin = gfal2_get_opt_boolean_with_default(context,
+            GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_ENABLE_PASV_PLUGIN, FALSE);
+
+    if (register_pasv_plugin) {
+        res = gfal2_ftp_client_pasv_plugin_init(&pasv_plugin, this);
+        gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
+        res = globus_ftp_client_handleattr_add_plugin(&attr_handle, &pasv_plugin);
+        gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
     }
 
     this->set_user_agent(context);

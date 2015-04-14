@@ -42,11 +42,9 @@
 #include <exceptions/cpp_to_gerror.hpp>
 
 static const GQuark GFAL_GRIDFTP_SCOPE_FILECOPY = g_quark_from_string("GridFTPFileCopyModule::FileCopy");
-
-static const GQuark GFAL_GRIDFTP_DOMAIN_GSIFTP = g_quark_from_string("GSIFTP");
+const GQuark GFAL_GRIDFTP_DOMAIN_GSIFTP = g_quark_from_string("GSIFTP");
 
 /*IPv6 compatible lookup*/
-static
 std::string lookup_host(const char *host, gboolean use_ipv6)
 {
     struct addrinfo hints, *addresses = NULL;
@@ -101,7 +99,7 @@ std::string lookup_host(const char *host, gboolean use_ipv6)
 }
 
 
-std::string return_hostname(const std::string &uri, gboolean use_ipv6)
+std::string return_host_and_port(const std::string &uri, gboolean use_ipv6)
 {
     GError* error = NULL;
     gfal_uri parsed;
@@ -331,14 +329,23 @@ void gridftp_do_copy(GridFTPModule* module, GridFTPFactory* factory,
             "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s",
             src, dst);
 
-    globus_result_t res = globus_gass_copy_register_url_to_url(
-            req.handler->get_gass_copy_handle(),
-            (char*) src, &(gass_attr_src.attr_gass),
-            (char*) dst, &(gass_attr_dst.attr_gass),
-            globus_gass_client_done_callback, &req);
+    // Required for the PASV plugin to be able to trigger events
+    req.handler->session->params = params;
 
-    gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_FILECOPY, res);
-    req.wait(GFAL_GRIDFTP_SCOPE_FILECOPY, timeout);
+    try {
+        globus_result_t res = globus_gass_copy_register_url_to_url(
+                req.handler->get_gass_copy_handle(),
+                (char*) src, &(gass_attr_src.attr_gass),
+                (char*) dst, &(gass_attr_dst.attr_gass),
+                globus_gass_client_done_callback, &req);
+
+        gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_FILECOPY, res);
+        req.wait(GFAL_GRIDFTP_SCOPE_FILECOPY, timeout);
+        req.handler->session->params = NULL;
+    }
+    catch (...) {
+        req.handler->session->params = NULL;
+    }
 }
 
 
@@ -406,6 +413,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
         }
         // Else, rethrow
         else {
+            handler.session->params = NULL;
             throw;
         }
     }
@@ -482,8 +490,8 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
             GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_SKIP_CHECKSUM,
             NULL);
     gboolean use_ipv6 = gfal2_get_opt_boolean(_handle_factory->get_gfal2_context(),
-    GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_IPV6,
-    NULL);
+        GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_IPV6,
+        NULL);
 
     if (checksum_check) {
         gfalt_get_user_defined_checksum(params, checksum_type,
@@ -551,8 +559,8 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
     {
         plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP, GFAL_EVENT_NONE,
                 GFAL_EVENT_TRANSFER_ENTER, "(%s) %s => (%s) %s",
-                return_hostname(src, use_ipv6).c_str(), src,
-                return_hostname(dst, use_ipv6).c_str(), dst);
+                return_host_and_port(src, use_ipv6).c_str(), src,
+                return_host_and_port(dst, use_ipv6).c_str(), dst);
         try {
             gridftp_filecopy_copy_file_internal(this, _handle_factory, params, src, dst);
         }
@@ -576,8 +584,8 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
 
         plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP, GFAL_EVENT_NONE,
                 GFAL_EVENT_TRANSFER_EXIT, "(%s) %s => (%s) %s",
-                return_hostname(src, use_ipv6).c_str(), src,
-                return_hostname(dst, use_ipv6).c_str(), dst);
+                return_host_and_port(src, use_ipv6).c_str(), src,
+                return_host_and_port(dst, use_ipv6).c_str(), dst);
     }
 
     // Validate destination checksum

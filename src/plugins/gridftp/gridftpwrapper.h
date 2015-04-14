@@ -115,6 +115,13 @@ public:
     globus_ftp_control_mode_t mode;
     globus_ftp_control_tcpbuffer_t tcp_buffer_size;
 
+    // client plugins
+    globus_ftp_client_plugin_t pasv_plugin;
+
+    // pointers to the gfal2 context and transfer params, if relevant
+    gfal2_context_t context;
+    gfalt_params_t params;
+
     // Handy option setters
     void set_gridftpv2(bool v2);
     void set_ipv6(bool ipv6);
