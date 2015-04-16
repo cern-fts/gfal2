@@ -1,6 +1,7 @@
 #include "gfal_http_plugin.h"
 #include <cstdio>
 #include <cstring>
+#include <sstream>
 #include <davix.hpp>
 #include <errno.h>
 #include <common/gfal_common_err_helpers.h>
@@ -9,25 +10,24 @@
 
 using namespace Davix;
 
-const char* http_module_name = "http_plugin";
+static const char* http_module_name = "http_plugin";
 GQuark http_plugin_domain = g_quark_from_static_string(http_module_name);
 
 
-static const char* gfal_http_get_name(void)
+const char* gfal_http_get_name(void)
 {
-    return http_module_name;
+    return GFAL2_PLUGIN_VERSIONED("http", VERSION);;
 }
+
 
 static int get_corresponding_davix_log_level()
 {
     int davix_log_level = DAVIX_LOG_CRITICAL;
-    int gfal2_log_level = gfal_get_verbose();
+    GLogLevelFlags gfal2_log_level = gfal2_log_get_level();
 
-    if (gfal2_log_level & GFAL_VERBOSE_TRACE_PLUGIN)
+    if (gfal2_log_level & G_LOG_LEVEL_DEBUG)
         davix_log_level = DAVIX_LOG_TRACE;
-    else if ((gfal2_log_level & GFAL_VERBOSE_DEBUG) || (gfal2_log_level & GFAL_VERBOSE_TRACE))
-        davix_log_level = DAVIX_LOG_DEBUG;
-    else if (gfal2_log_level & GFAL_VERBOSE_VERBOSE)
+    else if (gfal2_log_level & G_LOG_LEVEL_INFO)
         davix_log_level = DAVIX_LOG_VERBOSE;
 
     return davix_log_level;
@@ -49,7 +49,7 @@ static void gfal_http_get_ucert(RequestParams & params, gfal2_context_t handle)
 
         X509Credential cred;
         if(cred.loadFromFilePEM(ukey,ucert,"", &tmp_err) <0){
-            gfal_log(GFAL_VERBOSE_VERBOSE,
+            gfal2_log(G_LOG_LEVEL_INFO,
                     "Could not load the user credentials: %s", tmp_err->getErrMsg().c_str());
         }else{
             params.setClientCertX509(cred);
@@ -79,6 +79,7 @@ static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, co
     if (!secret_key) {
         std::string group_label("S3:");
         group_label += uri.getHost();
+        std::transform(group_label.begin(), group_label.end(), group_label.begin(), ::toupper);
         gfal_http_get_aws_keys(handle, group_label, &secret_key, &access_key);
     }
 
@@ -95,7 +96,7 @@ static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, co
     }
 
     if (secret_key && access_key) {
-        gfal_log(GFAL_VERBOSE_DEBUG, "Setting S3 key pair");
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Setting S3 key pair");
         params.setAwsAuthorizationKeys(secret_key, access_key);
     }
 
@@ -106,7 +107,7 @@ static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, co
 void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davix::Uri& uri)
 {
     *req_params = reference_params;
-    gboolean insecure_mode = gfal2_get_opt_boolean(handle, "HTTP PLUGIN", "INSECURE", NULL);
+    gboolean insecure_mode = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "INSECURE", FALSE);
     if (insecure_mode) {
         req_params->setSSLCAcheck(false);
     }
@@ -123,25 +124,50 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davi
         req_params->setProtocol(Davix::RequestProtocol::Auto);
     }
 
+    // Keep alive
+    gboolean keep_alive = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "KEEP_ALIVE", TRUE);
+    req_params->setKeepAlive(keep_alive);
+
     // Reset here the verbosity level
     davix_set_log_level(get_corresponding_davix_log_level());
+
+    // Avoid retries
+    req_params->setOperationRetry(0);
+
+    // User agent
+    const char *agent, *version;
+    gfal2_get_user_agent(handle, &agent, &version);
+
+    std::ostringstream user_agent;
+    if (agent) {
+        user_agent << agent << "/" << version << " " << "gfal2/" << gfal2_version();
+    }
+    else {
+        user_agent << "gfal2/" << gfal2_version();
+    }
+    req_params->setUserAgent(user_agent.str());
+
+    // Client information
+    char* client_info = gfal2_get_client_info_string(handle);
+    if (client_info) {
+        req_params->addHeader("ClientInfo", client_info);
+    }
+    g_free(client_info);
 }
 
 
 static void log_davix2gfal(void* userdata, int msg_level, const char* msg)
 {
-    int gfal_level = GFAL_VERBOSE_NORMAL;
+    GLogLevelFlags gfal_level = G_LOG_LEVEL_MESSAGE;
     switch (msg_level) {
         case DAVIX_LOG_TRACE:
-            gfal_level = GFAL_VERBOSE_TRACE_PLUGIN;
-            break;
         case DAVIX_LOG_DEBUG:
-            gfal_level = GFAL_VERBOSE_DEBUG;
+            gfal_level = G_LOG_LEVEL_DEBUG;
             break;
         default:
-            gfal_level = GFAL_VERBOSE_VERBOSE;
+            gfal_level = G_LOG_LEVEL_INFO;
     }
-    gfal_log(gfal_level, "Davix: %s", msg);
+    gfal2_log(gfal_level, "Davix: %s", msg);
 }
 
 
@@ -241,6 +267,10 @@ static int davix2errno(StatusCode::Code code)
 
         case StatusCode::PermissionRefused:
             errcode = EPERM;
+            break;
+
+        case StatusCode::IsADirectory:
+            errcode = EISDIR;
             break;
 
         case StatusCode::IsNotADirectory:

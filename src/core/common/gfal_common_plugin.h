@@ -57,20 +57,11 @@ typedef struct _plugin_pointer_handle {
     char plugin_lib[GFAL_URL_MAX_LEN];                  // plugin library path
 }*plugin_pointer_handle;
 
+
 /*
- *
  *  This API is a plugin reserved API and should be used by GFAL2's plugins only
  *  Backward compatibility of this API is not guarantee
- *
- * */
-
-
-/*
- * plugins walker
- * provide a list of plugin handlers, each plugin handler is a reference to an usable plugin
- * give a NULL-ended table of plugin_pointer_handle, return NULL if error
- * */
-plugin_pointer_handle gfal_plugins_list_handler(gfal2_context_t, GError** err);
+ **/
 
 plugin_handle gfal_get_plugin_handle(gfal_plugin_interface* p_interface);
 

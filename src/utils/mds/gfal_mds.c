@@ -69,7 +69,7 @@ void gfal_mds_define_bdii_endpoint(gfal2_context_t handle,  GError** err){
         pthread_mutex_lock(&m_mds);
         gchar * bdii_host = gfal2_get_opt_string(handle,bdii_config_group, bdii_config_var,NULL);
         if(bdii_host ){
-            gfal_log(GFAL_VERBOSE_DEBUG, " define LCG_GFAL_INFOSYS : %s", bdii_host);
+            gfal2_log(G_LOG_LEVEL_DEBUG, " define LCG_GFAL_INFOSYS : %s", bdii_host);
             gfal_mds_set_infosys (handle, bdii_host, NULL);
         }
         g_free(bdii_host);
@@ -158,9 +158,9 @@ int gfal_mds_isifce_wrapper(const char* base_url, gfal_mds_endpoint* endpoints, 
      }
      else if (cached_result > 0) {
          int i;
-         gfal_log(GFAL_VERBOSE_VERBOSE, "%s found in the cache!", base_url);
+         gfal2_log(G_LOG_LEVEL_INFO, "%s found in the cache!", base_url);
          for (i = 0; i < cached_result; ++i) {
-             gfal_log(GFAL_VERBOSE_VERBOSE, "\tFound %s", endpoints[i].url);
+             gfal2_log(G_LOG_LEVEL_INFO, "\tFound %s", endpoints[i].url);
          }
          return cached_result;
      }

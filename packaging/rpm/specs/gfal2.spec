@@ -5,15 +5,16 @@
 
 
 Name:               gfal2
-Version:            2.8.4
+Version:            2.9.1
 # https://fedoraproject.org/wiki/Packaging:NamingGuidelines#Release_Tag
-Release:            1%{?dist}
+Release:            2%{?dist}
 Summary:            Grid file access library 2.0
 Group:              Applications/Internet
 License:            ASL 2.0
 URL:                http://dmc.web.cern.ch/projects/gfal-2/home
-# svn export http://svn.cern.ch/guest/lcgutil/gfal2/trunk gfal2
-Source0:            http://grid-deployment.web.cern.ch/grid-deployment/dms/lcgutil/tar/%{name}/%{name}-%{version}.tar.gz
+# svn export http://svn.cern.ch/guest/lcgutil/gfal2/tags/data-gfal2_R_2_8_1 gfal2-2.8.1
+# tar czf gfal2-2.8.1.tar.gz gfal2-2.8.1
+Source0:            %{name}-%{version}.tar.gz
 BuildRoot:          %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 #main lib dependencies
@@ -22,7 +23,7 @@ BuildRequires:      doxygen
 %if 0%{?el5}
 BuildRequires:      glib2-devel
 %else
-BuildRequires:      glib2-devel
+BuildRequires:      glib2-devel >= 2.28
 %endif
 BuildRequires:      libattr-devel
 BuildRequires:      openldap-devel
@@ -43,13 +44,13 @@ BuildRequires:      lfc-devel
 #rfio plugin dependencies
 BuildRequires:      dpm-devel
 #srm plugin dependencies
-BuildRequires:      srm-ifce-devel >= 1.21.3
+BuildRequires:      srm-ifce-devel >= 1.23.1
 #dcap plugin dependencies
 BuildRequires:      dcap-devel
 #gridftp plugin dependencies
 BuildRequires:      globus-gass-copy-devel
 #http plugin dependencies
-BuildRequires:      davix-devel >= 0.3.0
+BuildRequires:      davix-devel >= 0.4.0
 #tests dependencies
 BuildRequires:      gtest-devel
 
@@ -81,7 +82,6 @@ Group:              Documentation
 %if 0%{?fedora} > 10 || 0%{?rhel}>5
 BuildArch:          noarch
 %endif
-Requires:           gfal2%{?_isa} = %{version}-%{release}
 
 %description doc
 Documentation, Doxygen and examples of %{name}.
@@ -137,7 +137,7 @@ URLs, the dcap protocol is used on the DCACHE storage system
 Summary:            Provides the srm access for %{name}
 Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release} 
-Requires:           srm-ifce >= 1.21.3
+Requires:           srm-ifce >= 1.23.1
 
 %description plugin-srm
 Provides the srm support (srm://) for %{name}. 
@@ -302,11 +302,51 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
-* Mon Jul 28 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.6.8-1
-  - Release 2.6.8 of GFAL2
+* Mon Jan 12 2015 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.8.1-1
+- Upgraded to upstream release 2.8.1
+
+* Mon Dec 15 2014 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.7.8-3
+- Applied patch moving buffer to heap to avoid SIGSEGV when the stack size is limited
+
+* Mon Dec 02 2014 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.7.8-2
+- Patched a bug in a call to gfal2_set_error
+
+* Mon Nov 17 2014 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.7.8-1
+- Upstream backported fix for protocol honoring on SRM GET and PUT
+
+* Mon Nov 10 2014 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.7.7-1
+- Upgraded to upstream release 2.7.7
+
+* Fri Nov 07 2014 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.7.6-1
+- New upstream release
+
+* Mon Sep 08 2014 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.6.8-6
+- Patch to use lseek64 instead of lseek in the http plugin
+
+* Thu Sep 04 2014 Orion Poplawski <orion@cora.nwra.com> - 2.6.8-5
+- Rebuild for pugixml 1.4
+
+* Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.6.8-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
+* Mon Aug 11 2014 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.6.8-3
+- Disable GridFTP session reuse by default (see LCGUTIL-448)
+
+* Fri Aug 08 2014 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.6.8-2
+- Patch for symbol that dissapeared in Davix
+
+* Mon Jul 28 2014 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.6.8-1
+- Release 2.6.8 of GFAL2
+
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.5.5-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Thu Mar 13 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.5.5-2
+ - Backported patch that fixes segfault on the SRM plugin when
+   listing empty directories
 
 * Wed Feb 26 2014 Adrien Devresse <adevress at cern.ch> - 2.5.5-1
- - Release 2.5.5 of GFAL2 
+ - Release 2.5.5 of GFAL2
 
 * Thu Dec 05 2013 Alejandro Alvarez <aalvarez at cern.ch> - 2.4.8-1
  - Release 2.4.8 of GFAL2
@@ -398,8 +438,8 @@ make DESTDIR=%{buildroot} install
  - implement the parent folder creation logic with gridftp
  - add support for lfc://host/path URL style for the lfc plugin
  - switch off_t to 64bits size by default ( _FILE_OFFSET_BITS=64)
- - Provides a "nobdii" like option
- - Provides the choice of turl protocol resolution for srm plugin
+ - provide a "nobdii" like option
+ - provide the choice of turl protocol resolution for srm plugin
 
 * Fri Jul 20 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-1
  - Official initial release candidate of gfal 2.0

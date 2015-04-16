@@ -15,15 +15,10 @@
 * limitations under the License.
 */
 
-
-#include "tests_params.h"
+#include <gtest/gtest.h>
 #include <cstdlib>
 #include <gfal_api.h>
 
-
-int get_locked_errcode(){
-	return EBUSY;
-}
 
 TEST(gfalTransfer, testparam){
 	GError * tmp_err=NULL;
@@ -79,5 +74,3 @@ TEST(gfalTransfer, testlocaltransfer){
     ASSERT_TRUE( res == FALSE && ret == FALSE && tmp_err==NULL);
     gfalt_params_handle_delete(p,NULL);
 }
-
-

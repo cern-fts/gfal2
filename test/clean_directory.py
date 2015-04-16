@@ -20,8 +20,12 @@ class Cleaner(object):
     def _get_list(self, surl):
         files = []
         directories = []
-        dh = self.context.opendir(surl)
+	if surl.startswith('srm://') and False:
+            dh = self.context.opendir(surl + ";offset=0;count=100")
+        else:
+            dh = self.context.opendir(surl)
         d_entry, d_stat = dh.readpp()
+	i = 0
         while d_entry:
             full_path = surl + '/' + d_entry.d_name
             if stat.S_ISREG(d_stat.st_mode):
@@ -29,6 +33,9 @@ class Cleaner(object):
             elif stat.S_ISDIR(d_stat.st_mode):
                 directories.append((full_path, d_stat))
             d_entry, d_stat = dh.readpp()
+            print i, '\r',
+	    i += 1
+        print
         return files, directories
 
     def __call__(self, surl):

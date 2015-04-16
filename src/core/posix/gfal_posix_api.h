@@ -567,13 +567,14 @@ int gfal_posix_code_error();
  * see gfal_constant.h for details
  *
  * */
-int gfal_set_verbose (int);
+GFAL2_DEPRECATED(gfal2_log_set_level) int gfal_set_verbose (int);
 
 /**
  * get a string representation of the gfal version
  * @return string of the gfal_version
  * */
-char *gfal_version();
+GFAL2_DEPRECATED(gfal2_version) char *gfal_version();
+const char *gfal2_version();
 
 
 // set/get parameter & options interface

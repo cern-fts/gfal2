@@ -64,7 +64,7 @@ struct lfc_ops {
 #else
     int value_serrno;
 #endif
-    char    *(*sstrerror)(int);
+    char*(*sstrerror)(int);
     int (*addreplica)(const char *, struct lfc_fileid *, const char *, const char *, const char, const char, const char *, const char *);
     int (*creatg)(const char *, const char *, mode_t);
     int (*delreplica)(const char *, struct lfc_fileid *, const char *);
@@ -100,11 +100,13 @@ struct lfc_ops {
     int (*Cthread_init)();
     int (*_Cthread_addcid)(char *, int, char *, int, Cth_pid_t *, unsigned, void *(*)(void *), int);
     int (*set_env)(const char*, const char*, int);
+    const char* (*get_env)(const char*);
 };
 
 
 int lfc_configure_environment(struct lfc_ops * ops, const char* host, GError** err);
 
+const char* lfc_plugin_get_lfc_env(struct lfc_ops* ops, const char* var_name);
 
 int gfal_lfc_get_errno(struct lfc_ops* ops);
 

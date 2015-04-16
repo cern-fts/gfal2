@@ -25,6 +25,7 @@
 
 #include <config/gfal_config_internal.h>
 #include <common/gfal_common_err_helpers.h>
+#include <common/gfal_common_internal.h>
 #include <logger/gfal_logger.h>
 
 #ifndef GFAL_CONFIG_DIR_DEFAULT
@@ -36,6 +37,15 @@ const gchar* default_config_dir =  GFAL_CONFIG_DIR_DEFAULT
                                     "/"
                                     GFAL_CONFIG_DIR_SUFFIX
                                     "/";
+
+
+void gfal_free_keyvalue(gpointer data, gpointer user_data)
+{
+    gfal_key_value_t keyval = (gfal_key_value_t)data;
+    g_free(keyval->key);
+    g_free(keyval->value);
+    g_free(keyval);
+}
 
 
 gfal_conf_t gfal_handle_to_conf(gfal2_context_t h)
@@ -50,13 +60,13 @@ static gchar* check_configuration_dir(GError ** err)
     gchar* dir_config = NULL;
     const gchar * env_str = g_getenv(config_env_var);
     if (env_str != NULL) {
-        gfal_log(GFAL_VERBOSE_TRACE,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                 " %s env var found, try to load configuration from %s",
                 config_env_var, env_str);
         dir_config = g_strdup(env_str);
     }
     else {
-        gfal_log(GFAL_VERBOSE_TRACE,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                 " no %s env var found, try to load configuration from default directory %s",
                 config_env_var, default_config_dir);
         dir_config = g_strdup(default_config_dir);
@@ -123,7 +133,7 @@ GConfigManager_t gfal_load_static_configuration(GError ** err)
                     strcat(buff,"/");
                     strcat(buff, dirinfo->d_name);
 
-                    gfal_log(GFAL_VERBOSE_TRACE, " try to load configuration file %s ...", buff);
+                    gfal2_log(G_LOG_LEVEL_DEBUG, " try to load configuration file %s ...", buff);
                     if(gfal_load_configuration_to_conf_manager(res, buff, &tmp_err) != 0)
                         break;
                 }
@@ -211,7 +221,7 @@ gchar* gfal2_get_opt_string_with_default(gfal2_context_t handle,
 
     gchar* value = gfal2_get_opt_string(handle, group_name, key, &tmp_err);
     if (tmp_err) {
-        gfal_log(GFAL_VERBOSE_DEBUG,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                 " impossible to get string parameter %s:%s, set to default value %s, err %s",
                 group_name, key, default_value, tmp_err->message);
         g_clear_error(&tmp_err);
@@ -257,7 +267,7 @@ gint gfal2_get_opt_integer_with_default(gfal2_context_t context,
 
     gint res = gfal2_get_opt_integer(context, group_name, key, &tmp_err);
     if (tmp_err) {
-        gfal_log(GFAL_VERBOSE_DEBUG,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                 " impossible to get integer parameter %s:%s, set to default value %d, err %s",
                 group_name, key, default_value, tmp_err->message);
         g_clear_error(&tmp_err);
@@ -302,7 +312,7 @@ gboolean gfal2_get_opt_boolean_with_default(gfal2_context_t handle,
 
     gboolean res = gfal2_get_opt_boolean(handle, group_name, key, &tmp_err);
     if (tmp_err) {
-        gfal_log(GFAL_VERBOSE_DEBUG,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                 " impossible to get boolean parameter %s:%s, set to default value %s, err %s",
                 group_name, key, ((default_value) ? "TRUE" : "FALSE"),
                 tmp_err->message);
@@ -365,11 +375,11 @@ gchar ** gfal2_get_opt_string_list_with_default(gfal2_context_t handle,
 
     gchar** res = gfal2_get_opt_string_list(handle, group_name, key, length,
             &tmp_err);
-    if (tmp_err) {
 
-        if (gfal_get_verbose() >= GFAL_VERBOSE_DEBUG) {
+    if (tmp_err) {
+        if (gfal2_log_get_level() >= G_LOG_LEVEL_DEBUG) {
             gchar* list_default = g_strjoinv(",", default_value);
-            gfal_log(GFAL_VERBOSE_DEBUG,
+            gfal2_log(G_LOG_LEVEL_DEBUG,
                     " impossible to get string_list parameter %s:%s, set to a default value %s, err %s",
                     group_name, key, list_default, tmp_err->message);
             g_free(list_default);
@@ -390,4 +400,140 @@ gint gfal2_load_opts_from_file(gfal2_context_t handle, const char* path,
             &tmp_err);
     gfal_config_propagate_error_external(error, &tmp_err);
     return res;
+}
+
+
+gint gfal2_set_user_agent(gfal2_context_t handle, const char* user_agent,
+        const char* version, GError** error)
+{
+    g_free(handle->agent_name);
+    handle->agent_name = g_strdup(user_agent);
+    g_free(handle->agent_version);
+    handle->agent_version = g_strdup(version);
+    return 0;
+}
+
+
+gint gfal2_get_user_agent(gfal2_context_t handle, const char** user_agent, const char** version)
+{
+    *user_agent = handle->agent_name;
+    *version = handle->agent_version;
+    return 0;
+}
+
+
+gint gfal2_add_client_info(gfal2_context_t handle, const char* key, const char* value, GError** error)
+{
+    gfal_key_value_t keyval = g_new0(struct _gfal_key_value, 1);
+    keyval->key = g_strdup(key);
+    keyval->value = g_strdup(value);
+    g_ptr_array_add(handle->client_info, keyval);
+    return 0;
+}
+
+
+gint gfal2_remove_client_info(gfal2_context_t handle, const char* key, GError** error)
+{
+    const char* value;
+    int i = gfal2_get_client_info_value(handle, key, &value, error);
+    if (i < 0)
+        return i;
+
+    gfal_key_value_t keyval = (gfal_key_value_t)g_ptr_array_index(handle->client_info, i);
+    gfal_free_keyvalue(keyval, NULL);
+    g_ptr_array_remove_index_fast(handle->client_info, i);
+
+    return 0;
+}
+
+
+gint gfal2_clear_client_info(gfal2_context_t handle, GError** error)
+{
+    g_ptr_array_foreach(handle->client_info, gfal_free_keyvalue, NULL);
+    g_ptr_array_free(handle->client_info, FALSE);
+    handle->client_info = g_ptr_array_new();
+    return 0;
+}
+
+
+gint gfal2_get_client_info_count(gfal2_context_t handle, GError** error)
+{
+    return handle->client_info->len;
+}
+
+
+gint gfal2_get_client_info_pair(gfal2_context_t handle, int index, const char** key,
+        const char** value, GError** error)
+{
+    gfal_key_value_t keyval = (gfal_key_value_t)g_ptr_array_index(handle->client_info, index);
+    if (keyval) {
+        *key = keyval->key;
+        *value = keyval->value;
+    }
+    else {
+        *key = NULL;
+        *value = NULL;
+    }
+    return 0;
+}
+
+
+gint gfal2_get_client_info_value(gfal2_context_t handle, const char* key,
+        const char** value, GError** error)
+{
+    size_t i = 0;
+    for (i = 0; i < handle->client_info->len; ++i) {
+        gfal_key_value_t keyval = (gfal_key_value_t)g_ptr_array_index(handle->client_info, i);
+        if (strcmp(keyval->key, key) == 0) {
+            *value = keyval->value;
+            return i;
+        }
+    }
+    g_set_error(error, gfal2_get_config_quark(), EINVAL, "Key %s not found", key);
+    return -1;
+}
+
+
+static char* gfal2_urlencode(const char* original)
+{
+    size_t len = strlen(original);
+    char* encoded = g_malloc0(len * 3 + 1); // Worst case
+
+    const char*ip; // input pointer
+    char* op;      // output pointer
+    for (ip = original, op = encoded; *ip; ++ip) {
+        if (g_ascii_isalnum(*ip) || *ip == '.' || *ip == '-' || *ip == '_') {
+            *op = *ip;
+            ++op;
+        }
+        else {
+            g_snprintf(op, 4, "%%%02X", (int)*ip);
+            op += 3;
+        }
+    }
+
+    return encoded;
+}
+
+
+char* gfal2_get_client_info_string(gfal2_context_t handle)
+{
+    size_t i, nitems = handle->client_info->len;
+    if (nitems == 0)
+        return NULL;
+
+    char **entries = g_new0(char*, nitems + 1);
+
+    for (i = 0; i < nitems; ++i) {
+        gfal_key_value_t keyval = (gfal_key_value_t)g_ptr_array_index(handle->client_info, i);
+        char* encoded_key = gfal2_urlencode(keyval->key);
+        char* encoded_value = gfal2_urlencode(keyval->value);
+        entries[i] = g_strdup_printf("%s=%s", encoded_key, encoded_value);
+        g_free(encoded_key);
+        g_free(encoded_value);
+    }
+
+    char* joined = g_strjoinv(";", entries);
+    g_strfreev(entries);
+    return joined;
 }

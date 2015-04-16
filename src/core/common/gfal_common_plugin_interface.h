@@ -42,6 +42,11 @@ extern "C"
 {
 #endif
 
+/*
+ * Helper for the versioned plugin names
+ */
+#define GFAL2_PLUGIN_VERSIONED(plugin, version) plugin"-"version
+
 /**
   classical data access plugin
 */
@@ -103,11 +108,7 @@ struct _gfal_plugin_interface {
 
 
 	/**
-	 *  MANDATORY: Main critical function of the plugins, URL checker.
-	 *  check the availability of the given operation on this plugin for the given URL
-	 *
-	 *  This function is used by gfal 2.0 to determine which plugin need to be contacted for a given operation
-	 *
+	 *  OPTIONAL: Check the availability of the given operation on this plugin for the given URL
 	 *
 	 *  @warning This function is a key function of GFAL 2.0, It MUST be as fast as possible.
 	 *  @param plugin_data : internal plugin data
@@ -161,7 +162,7 @@ struct _gfal_plugin_interface {
 	int (*symlinkG)(plugin_handle plugin_data, const char* oldurl, const char* newold, GError** err);
 
 	/**
-	 *  MANDATORY : gfal_stat function  support
+	 *  OPTIONAL : gfal_stat function  support
 	 *  @param plugin_data : internal plugin data
 	 *  @param url : url to stat
 	 *  @param buf : informations of the file
@@ -535,9 +536,15 @@ struct _gfal_plugin_interface {
             size_t nbfiles, const char* const* srcs, const char* const* dsts, const char* const* checksums,
             GError** op_error, GError*** file_errors);
 
+     /**
+      * OPTIONAL: executed by the core before entering a copy, so a plugin can install its own
+      *           event listeners.
+      */
+     int (*copy_enter_hook)(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params, GError** error);
+
 	 // reserved for future usage
 	 //! @cond
-     void* future[15];
+     void* future[14];
 	 //! @endcond
 };
 

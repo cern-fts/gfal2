@@ -3,20 +3,17 @@ cmake_minimum_required (VERSION 2.6)
 if (PLUGIN_GRIDFTP)
     file (GLOB_RECURSE src_gridftp "*.c*")
 
-    pkg_check_modules(GLOBUS_GASS_COPY_PKG REQUIRED globus-gass-copy)
+    find_package (Globus_GASS_COPY REQUIRED)
 
-    add_definitions( ${GLOBUS_GASS_COPY_PKG_CFLAGS})
+    add_definitions( ${GLOBUS_GASS_COPY_CFLAGS})
     add_library (plugin_gridftp SHARED ${src_gridftp})
 
     target_link_libraries(plugin_gridftp gfal2 gfal2_transfer
-			              ${GLOBUS_GASS_COPY_PKG_LIBRARIES}
+			              ${GLOBUS_GASS_COPY_LIBRARIES}
                           gomp
                           globus_gssapi_gsi)
 
-    include_directories(${GLOBUS_GASS_COPY_PKG_INCLUDE_DIRS}
-	        			${GRIDFTP_IFCE_INCLUDE_DIRS} 	 
-        				${GLIBMM_PKG_INCLUDE_DIRS})
-
+    include_directories(${GLOBUS_GASS_COPY_INCLUDE_DIRS}) 
 
     set_target_properties(plugin_gridftp    PROPERTIES
 								LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/src

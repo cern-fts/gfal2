@@ -55,10 +55,10 @@ int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError*
 
     int ret = -1;
 
-    gfal_log(GFAL_VERBOSE_TRACE, "  ->  [gfal_srm_mkdir_recG] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  ->  [gfal_srm_mkdir_recG] ");
     srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
     if (context != NULL) {
-        gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_mkdir_recG] try to create directory %s", surl);
+        gfal2_log(G_LOG_LEVEL_INFO, "   [gfal_srm_mkdir_recG] try to create directory %s", surl);
         struct stat st;
 
         ret = gfal_statG_srmv2_internal(context, &st, NULL, surl, &tmp_err);
@@ -81,7 +81,7 @@ int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError*
         }
     }
     gfal_srm_ifce_easy_context_release(opts, context);
-    gfal_log(GFAL_VERBOSE_TRACE, "   [gfal_srm_mkdir_recG] <-");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "   [gfal_srm_mkdir_recG] <-");
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -98,10 +98,10 @@ int gfal_srm_mkdirG(plugin_handle ch, const char* surl, mode_t mode, gboolean pf
         ret = gfal_srm_mkdir_recG(ch, surl, mode, &tmp_err);
     }
     else {
-        gfal_log(GFAL_VERBOSE_TRACE, "  ->  [gfal_srm_mkdirG] ");
+        gfal2_log(G_LOG_LEVEL_DEBUG, "  ->  [gfal_srm_mkdirG] ");
         srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
         if (context != NULL) {
-            gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_mkdirG] try to create directory %s", surl);
+            gfal2_log(G_LOG_LEVEL_INFO, "   [gfal_srm_mkdirG] try to create directory %s", surl);
             struct stat st;
 
             ret = gfal_statG_srmv2_internal(context, &st, NULL, surl, &tmp_err);
@@ -115,7 +115,7 @@ int gfal_srm_mkdirG(plugin_handle ch, const char* surl, mode_t mode, gboolean pf
             }
         }
         gfal_srm_ifce_easy_context_release(opts, context);
-        gfal_log(GFAL_VERBOSE_TRACE, "   [gfal_srm_mkdirG] <-");
+        gfal2_log(G_LOG_LEVEL_DEBUG, "   [gfal_srm_mkdirG] <-");
     }
 
     G_RETURN_ERR(ret, tmp_err, err);

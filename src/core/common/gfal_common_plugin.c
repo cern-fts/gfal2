@@ -79,15 +79,8 @@ gboolean gfal_plugin_checker_safe(gfal_plugin_interface* cata_list,
 {
     if (cata_list->check_plugin_url)
         return cata_list->check_plugin_url(cata_list->plugin_data, path, call_type, terr);
-    else {
-        gfal2_set_error(terr, gfal2_get_plugins_quark(), EPROTONOSUPPORT,
-                __func__,
-                "unexpected NULL \
-				pointer for a call to the url checker in the \
-				plugin %s",
-                cata_list->getName());
+    else
         return FALSE;
-    }
 }
 
 //
@@ -116,7 +109,7 @@ static int gfal_module_init(gfal2_context_t handle, void* dlhandle,
         }
         else {
             *n += 1;
-            gfal_log(GFAL_VERBOSE_NORMAL, "[gfal_module_load] plugin %s loaded with success ", module_name);
+            gfal2_log(G_LOG_LEVEL_MESSAGE, "[gfal_module_load] plugin %s loaded with success ", module_name);
             res = 0;
         }
     }
@@ -232,31 +225,6 @@ static int gfal_module_load(gfal2_context_t handle, char* module_name, GError** 
 }
 
 
-plugin_pointer_handle gfal_plugins_list_handler(gfal2_context_t handle, GError** err)
-{
-    GError* tmp_err = NULL;
-    plugin_pointer_handle resu = NULL;
-    int n = gfal_plugins_instance(handle, &tmp_err);
-    if (n > 0) {
-        resu = g_new0(struct _plugin_pointer_handle, n + 1);
-        int i;
-        GList * plugin_list = g_list_first(handle->plugin_opt.sorted_plugin);
-        i = 0;
-        while (plugin_list != NULL) {
-            gfal_plugin_interface* cata_list = plugin_list->data;
-            resu[i].dlhandle = cata_list->gfal_data;
-            resu[i].plugin_data = cata_list->plugin_data;
-            resu[i].plugin_api = cata_list;
-            g_strlcpy(resu[i].plugin_name, cata_list->getName(), GFAL_URL_MAX_LEN);
-            i++;
-            plugin_list = g_list_next(plugin_list);
-        }
-    }
-
-    G_RETURN_ERR(resu, tmp_err, err);
-}
-
-
 /*
  * Provide a list of the gfal2 plugins path
  * Return NULL terminated table of plugins
@@ -283,7 +251,7 @@ char ** gfal_list_directory_plugins(const char * dir, GError ** err)
                     res = realloc(res, sizeof(char*) * (n + 1));
                     p_res = res + n - 1;
                 }
-                gfal_log(GFAL_VERBOSE_TRACE,
+                gfal2_log(G_LOG_LEVEL_DEBUG,
                         " [gfal_list_directory_plugins] add plugin to list to load %s%s%s ",
                         dir, G_DIR_SEPARATOR_S, d_name);
                 g_string_append(strbuff, G_DIR_SEPARATOR_S);
@@ -291,7 +259,7 @@ char ** gfal_list_directory_plugins(const char * dir, GError ** err)
                 *p_res = g_string_free(strbuff, FALSE);
             }
             else {
-                gfal_log(GFAL_VERBOSE_TRACE,
+                gfal2_log(G_LOG_LEVEL_DEBUG,
                         " [gfal_list_directory_plugins] WARNING : File that is not a plugin in the plugin directory %s%s%s ",
                         dir, G_DIR_SEPARATOR_S, d_name);
             }
@@ -317,15 +285,15 @@ char ** gfal_localize_plugins(GError** err)
     char** res = NULL;
     char * gfal_plugin_dir = (char*) g_getenv(GFAL_PLUGIN_DIR_ENV);
     if (gfal_plugin_dir != NULL) {
-        gfal_log(GFAL_VERBOSE_VERBOSE,
-                "... %s environnement variable specified, try to load the plugins in given dir : %s",
+        gfal2_log(G_LOG_LEVEL_INFO,
+                "... %s environment variable specified, try to load the plugins in given dir : %s",
                 GFAL_PLUGIN_DIR_ENV, gfal_plugin_dir);
     }
     else {
         /* GFAL_PLUGIN_DIR_DEFAULT defined at compilation time */
         gfal_plugin_dir = GFAL_PLUGIN_DIR_DEFAULT G_DIR_SEPARATOR_S;
-        gfal_log(GFAL_VERBOSE_VERBOSE,
-                "... no %s environnement variable specified, try to load plugins in the default directory : %s",
+        gfal2_log(G_LOG_LEVEL_INFO,
+                "... no %s environment variable specified, try to load plugins in the default directory : %s",
                 GFAL_PLUGIN_DIR_ENV, gfal_plugin_dir);
 
     }
@@ -349,7 +317,7 @@ int gfal_modules_resolve(gfal2_context_t handle, GError** err)
                 res = -1;
                 break;
             }
-            gfal_log(GFAL_VERBOSE_VERBOSE,
+            gfal2_log(G_LOG_LEVEL_INFO,
                     " gfal_plugin loaded succesfully : %s", *p);
             res = 0;
             p++;
@@ -391,7 +359,7 @@ int gfal_plugins_sort(gfal2_context_t handle, GError ** err)
     handle->plugin_opt.sorted_plugin = g_list_sort(
             handle->plugin_opt.sorted_plugin, &gfal_plugin_compare);
 
-    if (gfal_get_verbose() & GFAL_VERBOSE_TRACE) { // print plugin order
+    if (gfal2_log_get_level() >= G_LOG_LEVEL_DEBUG) { // print plugin order
         GString* strbuff = g_string_new(" plugin priority order: ");
         GList* l = handle->plugin_opt.sorted_plugin;
 
@@ -401,7 +369,7 @@ int gfal_plugins_sort(gfal2_context_t handle, GError ** err)
             strbuff = g_string_append(strbuff, " -> ");
             l = g_list_next(l);
         }
-        gfal_log(GFAL_VERBOSE_TRACE, "%s", strbuff->str);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "%s", strbuff->str);
         g_string_free(strbuff, TRUE);
     }
     return 0;
@@ -445,12 +413,12 @@ gfal_plugin_interface* gfal_find_plugin(gfal2_context_t handle, const char * url
     if (n_plugins > 0) {
         GList * plugin_list = g_list_first(handle->plugin_opt.sorted_plugin);
         while (plugin_list != NULL) {
-            gfal_plugin_interface* cata_list = plugin_list->data;
-            compatible = gfal_plugin_checker_safe(cata_list, url, acc_mode, &tmp_err);
+            gfal_plugin_interface* plugin_ifce = plugin_list->data;
+            compatible = gfal_plugin_checker_safe(plugin_ifce, url, acc_mode, &tmp_err);
             if (tmp_err)
                 break;
             if (compatible)
-                return cata_list;
+                return plugin_ifce;
             plugin_list = g_list_next(plugin_list);
         }
     }
@@ -674,7 +642,7 @@ gfal_file_handle gfal_plugin_openG(gfal2_context_t handle, const char * path, in
 {
     GError* tmp_err = NULL;
     gfal_file_handle resu = NULL;
-    gfal_log(GFAL_VERBOSE_TRACE, " %s ->", __func__);
+    gfal2_log(G_LOG_LEVEL_DEBUG, " %s ->", __func__);
 
     gfal_plugin_interface* p = gfal_find_plugin(handle, path, GFAL_PLUGIN_OPEN, &tmp_err);
 
@@ -691,7 +659,7 @@ int gfal_plugin_closeG(gfal2_context_t handle, gfal_file_handle fh, GError** err
     GError* tmp_err = NULL;
     int res = -1;
 
-    gfal_log(GFAL_VERBOSE_TRACE, " <- %s", __func__);
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- %s", __func__);
 
     gfal_plugin_interface* if_cata = gfal_plugin_map_file_handle(handle, fh, &tmp_err);
     if (!tmp_err)
@@ -800,7 +768,7 @@ int gfal_plugin_readG(gfal2_context_t handle, gfal_file_handle fh, void* buff, s
 
 // Simulate a pread operation in case of non-parallels read support
 // this is slower than a normal pread/pwrite operation
-inline ssize_t gfal_plugin_simulate_preadG(gfal2_context_t handle, gfal_plugin_interface* if_cata, gfal_file_handle fh, void* buff, size_t s_buff,
+static ssize_t gfal_plugin_simulate_preadG(gfal2_context_t handle, gfal_plugin_interface* if_cata, gfal_file_handle fh, void* buff, size_t s_buff,
         off_t offset, GError** err)
 {
     GError* tmp_err = NULL;
@@ -839,7 +807,7 @@ ssize_t gfal_plugin_preadG(gfal2_context_t handle, gfal_file_handle fh, void* bu
 
 // Simulate a pread operation in case of non-parallels write support
 // this is slower than a normal pread/pwrite operation
-inline ssize_t gfal_plugin_simulate_pwriteG(gfal2_context_t handle, gfal_plugin_interface* if_cata, gfal_file_handle fh, void* buff, size_t s_buff,
+static ssize_t gfal_plugin_simulate_pwriteG(gfal2_context_t handle, gfal_plugin_interface* if_cata, gfal_file_handle fh, void* buff, size_t s_buff,
         off_t offset, GError** err)
 {
     GError* tmp_err = NULL;

@@ -47,7 +47,7 @@ static void rfio_report_error(gfal_plugin_rfio_handle h,  const char * func_name
 gfal_file_handle gfal_rfio_openG(plugin_handle handle , const char* path, int flag, mode_t mode, GError** err){
 	gfal_plugin_rfio_handle h = (gfal_plugin_rfio_handle) handle;
 	gfal_file_handle ret = NULL;
-	gfal_log(GFAL_VERBOSE_TRACE, "  %s -> ",__func__);
+	gfal2_log(G_LOG_LEVEL_DEBUG, "  %s -> ",__func__);
 
 	int fd= h->rf->open(path, flag, mode);
 	if(fd <= 0)
@@ -152,6 +152,6 @@ int gfal_rfio_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err)
 
 
 const char* gfal_rfio_getName(){
-    return "rfio_plugin";
+    return GFAL2_PLUGIN_VERSIONED("rfio", VERSION);
 }
 

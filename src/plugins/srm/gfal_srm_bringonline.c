@@ -53,7 +53,7 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
     input.spacetokendesc = gfal_srm_params_get_spacetoken(params);
 
     if (input.spacetokendesc)
-        gfal_log(GFAL_VERBOSE_DEBUG, "Bringonline with spacetoken %s", input.spacetokendesc);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Bringonline with spacetoken %s", input.spacetokendesc);
 
     int ret;
     if (async)
@@ -76,6 +76,8 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
         g_strlcpy(token, output.token, tsize);
     else
         token[0] = '\0';
+
+    gfal2_log(G_LOG_LEVEL_MESSAGE, "Got BRINGONLINE token %s", token);
 
     int nterminal = 0;
     for (i = 0; i < nbfiles; ++i) {
@@ -264,9 +266,9 @@ static int gfal_srmv2_release_file_internal(srm_context_t context, gfal_srmv2_op
     int i;
 
     if (token)
-        gfal_log(GFAL_VERBOSE_VERBOSE, "Release file with token %s", token);
+        gfal2_log(G_LOG_LEVEL_INFO, "Released file with token %s", token);
     else
-        gfal_log(GFAL_VERBOSE_VERBOSE, "Release file without token");
+        gfal2_log(G_LOG_LEVEL_INFO, "Released file without token");
 
     // Perform
     input.nbfiles  = nbfiles;
@@ -355,9 +357,9 @@ static int gfal_srmv2_abort_files_internal(srm_context_t context, gfal_srmv2_opt
     int i;
 
     if (token)
-        gfal_log(GFAL_VERBOSE_VERBOSE, "Abort file with token %s", token);
+        gfal2_log(G_LOG_LEVEL_INFO, "Abort file with token %s", token);
     else
-        gfal_log(GFAL_VERBOSE_VERBOSE, "Abort file without token");
+        gfal2_log(G_LOG_LEVEL_INFO, "Abort file without token");
 
     // Perform
     input.nbfiles  = nbfiles;

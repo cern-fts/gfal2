@@ -87,11 +87,11 @@ plugin_handle gridftp_plugin_load(gfal2_context_t handle, GError ** err)
 	GError * tmp_err=NULL;
 	plugin_handle h = NULL;
 	CPP_GERROR_TRY
-		gfal_log(GFAL_VERBOSE_TRACE, " -> [gridftp_plugin] try to load ..");
+		gfal2_log(G_LOG_LEVEL_DEBUG, " -> [gridftp_plugin] try to load ..");
 		 h = static_cast<plugin_handle>(
 					new GridFTPModule( new GridFTPFactory(handle) )
 			);
-		gfal_log(GFAL_VERBOSE_TRACE, " -> [gridftp_plugin] loaded ..");
+		gfal2_log(G_LOG_LEVEL_DEBUG, " -> [gridftp_plugin] loaded ..");
 	CPP_GERROR_CATCH(&tmp_err);
 
 	G_RETURN_ERR(h, tmp_err, err);
@@ -104,7 +104,7 @@ void gridftp_plugin_unload(plugin_handle handle)
 		try{
 			delete (static_cast<GridFTPModule*>(handle));
 		}catch(...){
-			gfal_log(GFAL_VERBOSE_NORMAL, " bug found plugin gridFTP throws error while loading");
+			gfal2_log(G_LOG_LEVEL_MESSAGE, " bug found plugin gridFTP throws error while loading");
 		}
 	}
 }
@@ -113,7 +113,7 @@ void gridftp_plugin_unload(plugin_handle handle)
 
 const char *gridftp_plugin_name()
 {
-	return "plugin_gridftp";
+	return GFAL2_PLUGIN_VERSIONED("gridftp", VERSION);
 }
 
 

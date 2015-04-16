@@ -22,7 +22,7 @@ static const GQuark GFAL_GRIDFTP_SCOPE_UNLINK = g_quark_from_static_string("Grid
 
 void gridftp_unlink_internal(gfal2_context_t context, GridFTPSessionHandler* sess, const char * path)
 {
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::unlink] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " -> [GridFTPModule::unlink] ");
     GridFTPRequestState req(sess); // get connection session
 
     globus_result_t res = globus_ftp_client_delete(req.handler->get_ftp_client_handle(),
@@ -30,7 +30,7 @@ void gridftp_unlink_internal(gfal2_context_t context, GridFTPSessionHandler* ses
             globus_ftp_client_done_callback, &req);
     gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_UNLINK, res);
     req.wait(GFAL_GRIDFTP_SCOPE_UNLINK);
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridFTPModule::unlink] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- [GridFTPModule::unlink] ");
 }
 
 
@@ -55,11 +55,11 @@ extern "C" int gfal_gridftp_unlinkG(plugin_handle handle, const char* url,
 
     GError * tmp_err = NULL;
     int ret = -1;
-    gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_unlinkG]");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_unlinkG]");
     CPP_GERROR_TRY
                 (static_cast<GridFTPModule*>(handle))->unlink(url);
                 ret = 0;
             CPP_GERROR_CATCH(&tmp_err);
-    gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_unlinkG] <-");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  [gfal_gridftp_unlinkG] <-");
     G_RETURN_ERR(ret, tmp_err, err);
 }

@@ -35,8 +35,7 @@ public:
         Gfal::gerror_to_cpp(&error);
         params = gfalt_params_handle_new(NULL);
         gfalt_set_checksum_check(params, TRUE, NULL);
-        gfalt_set_event_callback(params, transfer_callback, NULL);
-        gfalt_set_user_data(params, this, NULL);
+        gfalt_add_event_callback(params, transfer_callback, this, NULL, NULL);
 
         for (size_t i = 0; i < NBPAIRS; ++i) {
             sources[i] = new char[2048];
@@ -60,8 +59,8 @@ public:
         int ret;
         GError* error = NULL;
 
-        generate_random_uri(source_root, "copyfile_bulk_user_source", source_base, 2048);
-        generate_random_uri(destination_root, "copyfile_bulk_user_destination", dest_base, 2048);
+        generate_random_uri(source_root, "copyfile_bulk_source", source_base, 2048);
+        generate_random_uri(destination_root, "copyfile_bulk_destination", dest_base, 2048);
 
         for (size_t i = 0; i < NBPAIRS; ++i) {
             snprintf(sources[i], 2048, "%s_%zu", source_base, i);
@@ -87,6 +86,7 @@ public:
         for (size_t i = 0; i < NBPAIRS; ++i) {
             gfal_unlink(sources[i]);
             gfal_unlink(destinations[i]);
+            gfal_rmdir(destinations[i]);
         }
     }
 };
@@ -344,7 +344,7 @@ int main(int argc, char** argv)
 
     for (int i = 0; i < argc; ++i) {
         if (strcmp(argv[i], "-v") == 0)
-            gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE | GFAL_VERBOSE_DEBUG);
+            gfal2_log_set_level(G_LOG_LEVEL_DEBUG);
     }
 
     return RUN_ALL_TESTS();

@@ -27,7 +27,7 @@ extern "C" gfal_file_handle gfal_gridftp_opendirG(plugin_handle handle,
     g_return_val_err_if_fail(handle != NULL && path != NULL, NULL, err,
             "[gfal_gridftp_opendirG][gridftp] Invalid parameters");
 
-    gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_opendirG]");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_opendirG]");
 
     // Since we are deferring the opening, at least check it is there and it is a directory,
     // and we have permissions
@@ -60,7 +60,7 @@ extern "C" struct dirent* gfal_gridftp_readdirG(plugin_handle handle,
 
     GError * tmp_err = NULL;
     struct dirent* ret = NULL;
-    gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_readdirG]");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_readdirG]");
     CPP_GERROR_TRY
         GridFTPDirReader* reader =
                 static_cast<GridFTPDirReader*>(gfal_file_handle_get_fdesc(fh));
@@ -72,7 +72,7 @@ extern "C" struct dirent* gfal_gridftp_readdirG(plugin_handle handle,
         }
         ret = reader->readdir();
     CPP_GERROR_CATCH(&tmp_err);
-    gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_readdirG] <-");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  [gfal_gridftp_readdirG] <-");
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -85,7 +85,7 @@ extern "C" struct dirent* gfal_gridftp_readdirppG(plugin_handle handle,
 
     GError * tmp_err = NULL;
     struct dirent* ret = NULL;
-    gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_readdirG]");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_readdirG]");
     CPP_GERROR_TRY
         GridFTPDirReader* reader = static_cast<GridFTPDirReader*>(gfal_file_handle_get_fdesc(fh));
         // Not open yet, so instantiate the simple reader
@@ -96,7 +96,7 @@ extern "C" struct dirent* gfal_gridftp_readdirppG(plugin_handle handle,
         }
         ret = reader->readdirpp(st);
     CPP_GERROR_CATCH(&tmp_err);
-    gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_readdirG] <-");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  [gfal_gridftp_readdirG] <-");
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -108,13 +108,13 @@ extern "C" int gfal_gridftp_closedirG(plugin_handle handle, gfal_file_handle fh,
             "[gfal_gridftp_readdirG][gridftp] Invalid parameters");
     GError * tmp_err = NULL;
     int ret = -1;
-    gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_closedirG]");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_closedirG]");
     CPP_GERROR_TRY
         GridFTPDirReader* reader = static_cast<GridFTPDirReader*>(gfal_file_handle_get_fdesc(fh));
         delete reader;
         gfal_file_handle_delete(fh);
         ret = 0;
     CPP_GERROR_CATCH(&tmp_err);
-    gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_closedirG] <-");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  [gfal_gridftp_closedirG] <-");
     G_RETURN_ERR(ret, tmp_err, err);
 }

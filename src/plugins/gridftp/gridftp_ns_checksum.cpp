@@ -37,14 +37,14 @@ extern "C" int gfal_gridftp_checksumG(plugin_handle handle, const char* url,
 
     GError * tmp_err = NULL;
     int ret = -1;
-    gfal_log(GFAL_VERBOSE_TRACE, "  -> [gfal_gridftp_checksumG]");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_checksumG]");
     CPP_GERROR_TRY
         (static_cast<GridFTPModule*>(handle))->checksum(url, check_type,
                 checksum_buffer, buffer_length, start_offset,
                 data_length);
         ret = 0;
     CPP_GERROR_CATCH(&tmp_err);
-    gfal_log(GFAL_VERBOSE_TRACE, "  [gfal_gridftp_checksumG] <-");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  [gfal_gridftp_checksumG] <-");
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -53,8 +53,8 @@ void GridFTPModule::checksum(const char* url, const char* check_type,
         char * checksum_buffer, size_t buffer_length, off_t start_offset,
         size_t data_length)
 {
-    gfal_log(GFAL_VERBOSE_TRACE, " -> [GridFTPModule::checksum] ");
-    gfal_log(GFAL_VERBOSE_DEBUG, " Checksum calculation %s for url %s",
+    gfal2_log(G_LOG_LEVEL_DEBUG, " -> [GridFTPModule::checksum] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " Checksum calculation %s for url %s",
             check_type, url);
 
     GridFTPSessionHandler handler(_handle_factory, url);
@@ -76,5 +76,5 @@ void GridFTPModule::checksum(const char* url, const char* check_type,
             _handle_factory->get_gfal2_context(),
             GRIDFTP_CONFIG_GROUP, gridftp_checksum_calc_timeout, 1800);
     req.wait(GFAL_GRIDFTP_SCOPE_CHECKSUM, timeout);
-    gfal_log(GFAL_VERBOSE_TRACE, " <- [GridFTPModule::checksum] ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- [GridFTPModule::checksum] ");
 }

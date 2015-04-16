@@ -191,7 +191,13 @@ TEST_F(BringonlineTest, InvalidRelease)
     int ret;
 
     ret = gfal2_release_file(handle, surl, "1234-5678-badabad", &error);
-    ASSERT_PRED_FORMAT3(AssertGfalErrno, ret, error, EBADR);
+    // Some storages return a success even if the token does not exist
+    if (ret) {
+        ASSERT_PRED_FORMAT3(AssertGfalErrno, ret, error, EBADR);
+    }
+    else {
+        ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+    }
 }
 
 

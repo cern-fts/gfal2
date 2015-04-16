@@ -33,7 +33,7 @@ gfal_file_handle gfal_http_fopen(plugin_handle plugin_data, const char* url, int
         delete fd;
         return NULL;
     }
-    return gfal_file_handle_new(http_module_name, fd);
+    return gfal_file_handle_new(gfal_http_get_name(), fd);
 }
 
 

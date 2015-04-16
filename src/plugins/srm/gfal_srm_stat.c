@@ -52,7 +52,7 @@ int gfal_srm_statG(plugin_handle ch, const char* surl, struct stat* buf, GError*
 	// Try cache first
 	gfal_srm_construct_key(surl, GFAL_SRM_LSTAT_PREFIX, key_buff, GFAL_URL_MAX_LEN);
 	if (gsimplecache_take_one_kstr(opts->cache, key_buff, &xstat) == 0) {
-        gfal_log(GFAL_VERBOSE_DEBUG,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                 " srm_statG -> value taken from the cache");
         ret = 0;
         *buf = xstat.stat;
@@ -61,10 +61,10 @@ int gfal_srm_statG(plugin_handle ch, const char* surl, struct stat* buf, GError*
     else {
         srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
         if (context != NULL) {
-            gfal_log(GFAL_VERBOSE_VERBOSE, "   [gfal_srm_statG] try to stat file %s", surl);
+            gfal2_log(G_LOG_LEVEL_INFO, "   [gfal_srm_statG] try to stat file %s", surl);
             ret = gfal_statG_srmv2_internal(context, buf, &loc, surl, &tmp_err);
             if (ret == 0) {
-                gfal_log(GFAL_VERBOSE_TRACE, "   [gfal_srm_statG] store %s stat info in cache", surl);
+                gfal2_log(G_LOG_LEVEL_DEBUG, "   [gfal_srm_statG] store %s stat info in cache", surl);
                 gfal_srm_cache_stat_add(ch, surl, buf, &loc);
             }
         }

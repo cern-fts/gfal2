@@ -39,18 +39,21 @@
 static gboolean init_thread = FALSE;
 pthread_mutex_t m_lfcinit=PTHREAD_MUTEX_INITIALIZER;
 
-typedef struct _lfc_opendir_handle{
-	char url[GFAL_URL_MAX_LEN];
-	struct dirent current_dir;
-} *lfc_opendir_handle;
+typedef struct _lfc_opendir_handle {
+    char url[GFAL_URL_MAX_LEN];
+    struct dirent current_dir;
+}*lfc_opendir_handle;
 
-static char* file_xattr[] = { GFAL_XATTR_GUID, GFAL_XATTR_REPLICA, GFAL_XATTR_COMMENT,  NULL }; //GFAL_XATTR_CHKSUM_TYPE, GFAL_XATTR_CHKSUM_VALUE removed attributes, no checksum is correctly set on LFC
+static char* file_xattr[] = {
+    GFAL_XATTR_GUID, GFAL_XATTR_REPLICA, GFAL_XATTR_COMMENT,
+    NULL
+};
 
 /*
  * just return the name of the layer
  */
 const char* lfc_getName(){
-	return "lfc_plugin";
+	return GFAL2_PLUGIN_VERSIONED("lfc", VERSION);
 }
 
 
@@ -129,12 +132,14 @@ int url_converter(plugin_handle handle, const char * url, char** host,
     GError* tmp_err = NULL;
     int res = -1;
     if (strnlen(url, 5) != 5) { // bad string size, return empty string
-        gfal_log(GFAL_VERBOSE_VERBOSE, "lfc url converter -> bad url size");
+        gfal2_log(G_LOG_LEVEL_INFO, "lfc url converter -> bad url size");
         return res;
     }
     if (strncmp(url, "lfn", 3) == 0) {
         if (path)
             *path = lfc_urlconverter(url, GFAL_LFC_PREFIX);
+        if (host)
+            *host = g_strdup(lfc_plugin_get_lfc_env((struct lfc_ops*)handle, "LFC_HOST"));
         res = 0;
     }
     else if (strncmp(url, "lfc", 3) == 0) {
@@ -345,9 +350,9 @@ static int lfc_lstatG(plugin_handle handle, const char* path, struct stat* st, G
             struct lfc_filestat statbuf;
 
             if( ( ret= gsimplecache_take_one_kstr(ops->cache_stat, url_path, st)) == 0){ // take the version of the buffer
-                gfal_log(GFAL_VERBOSE_TRACE, " lfc_lstatG -> value taken from cache");
+                gfal2_log(G_LOG_LEVEL_DEBUG, " lfc_lstatG -> value taken from cache");
             }else{
-                gfal_log(GFAL_VERBOSE_TRACE, " lfc_lstatG -> value not in cache, do normal call");
+                gfal2_log(G_LOG_LEVEL_DEBUG, " lfc_lstatG -> value not in cache, do normal call");
                 gfal_lfc_init_thread(ops);
                 gfal_auto_maintain_session(ops, &tmp_err);
                 if(!tmp_err){
@@ -891,7 +896,7 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err){
     ops->cache_stat = gsimplecache_new(5000,&internal_stat_copy, sizeof(struct stat) );
 	gfal_lfc_regex_compile(&(ops->rex), err);
 	lfc_plugin.plugin_data = (void*) ops;
-    lfc_plugin.priority =GFAL_PLUGIN_PRIORITY_CATALOG;
+    lfc_plugin.priority = GFAL_PLUGIN_PRIORITY_CATALOG;
 	lfc_plugin.check_plugin_url= &gfal_lfc_check_lfn_url;
 	lfc_plugin.plugin_delete = &lfc_destroyG;
 	lfc_plugin.accessG = &lfc_accessG;

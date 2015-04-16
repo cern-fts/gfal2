@@ -67,6 +67,10 @@ typedef struct _gfal_conf{
 } *gfal_conf_t;
 
 
+typedef struct _gfal_key_value {
+    char *key, *value;
+}* gfal_key_value_t;
+
 
 struct gfal_handle_ {		// define the protocol version of SRM choosen by default
 	gboolean initiated; 					// 1 if initiated, else error
@@ -80,6 +84,11 @@ struct gfal_handle_ {		// define the protocol version of SRM choosen by default
     gboolean cancel;
     GMutex* mux_cancel;
     GHookList cancel_hooks;
+
+    // client information
+    char* agent_name;
+    char* agent_version;
+    GPtrArray* client_info;
 };
 
 

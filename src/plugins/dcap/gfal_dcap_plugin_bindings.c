@@ -282,9 +282,3 @@ int gfal_dcap_unlinkG(plugin_handle handle, const char* url, GError** err)
     }
     return ret;
 }
-
-const char* gfal_dcap_getName()
-{
-    return "dcap_plugin";
-}
-

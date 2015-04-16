@@ -81,7 +81,7 @@ static gboolean is_mock_uri(const char* src){
  * srm plugin id
  */
 const char* gfal_mock_plugin_getName(){
-	return "mock_plugin";
+    return GFAL2_PLUGIN_VERSIONED("mock", VERSION);
 }
 
 
