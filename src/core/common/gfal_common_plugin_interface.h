@@ -45,7 +45,7 @@ extern "C"
 /*
  * Helper for the versioned plugin names
  */
-#define GFAL2_PLUGIN_VERSIONED(plugin, version) plugin"-"version
+#define GFAL2_PLUGIN_VERSIONED(plugin, version) plugin "-" version
 
 /**
   classical data access plugin
