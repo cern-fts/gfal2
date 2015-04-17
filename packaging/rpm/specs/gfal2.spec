@@ -6,14 +6,17 @@
 
 Name:               gfal2
 Version:            2.9.1
-# https://fedoraproject.org/wiki/Packaging:NamingGuidelines#Release_Tag
 Release:            2%{?dist}
 Summary:            Grid file access library 2.0
 Group:              Applications/Internet
 License:            ASL 2.0
 URL:                http://dmc.web.cern.ch/projects/gfal-2/home
-# svn export http://svn.cern.ch/guest/lcgutil/gfal2/tags/data-gfal2_R_2_8_1 gfal2-2.8.1
-# tar czf gfal2-2.8.1.tar.gz gfal2-2.8.1
+# git clone https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.9.1
+# pushd gfal2-2.9.1
+# git checkout v2.9.1
+# git submodule init && git submodule update
+# popd
+# tar czf gfal2-2.9.1.tar.gz gfal2-2.9.1
 Source0:            %{name}-%{version}.tar.gz
 BuildRoot:          %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
@@ -302,6 +305,12 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Thu Apr 16 2015 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.9.1-1
+- Upgraded to upstream release 2.9.1
+
+* Mon Mar 02 2015 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.8.4-1
+- Upgraded to upstream release 2.8.4
+
 * Mon Jan 12 2015 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.8.1-1
 - Upgraded to upstream release 2.8.1
 
@@ -474,3 +483,4 @@ make DESTDIR=%{buildroot} install
  
 * Mon Dec 12 2011 Adrien Devresse <adevress at cern.ch> - 2.0.0-0.6.2012041515snap
  - Initial gfal 2.0 preview release
+
