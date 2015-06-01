@@ -200,6 +200,47 @@ TEST_F(BringonlineTest, InvalidRelease)
     }
 }
 
+// Request with duplicated SURLs (see DMC-676)
+TEST_F(BringonlineTest, DuplicatedSURLs)
+{
+    const int nbfiles = 100;
+    GError* error[nbfiles];
+    char token[64] = {0};
+    int ret;
+
+    memset(error, 0x00, sizeof(error));
+
+    char *surls[nbfiles];
+    // 0 exists
+    surls[0] = surl;
+    // 1 does not
+    surls[1] = (char*)calloc(1, 2048);
+    generate_random_uri(root, "bringonline_duplicated", surls[1], 2048);
+    // all the rest are 0 or 1 duplicated
+    for (int i = 1; i < nbfiles; ++i) {
+        surls[i] = surls[i % 2];
+    }
+
+    ret = gfal2_bring_online_list(handle, nbfiles, surls,
+            10, 28800, token, sizeof(token), 1, error);
+    if (ret == 0) {
+        ASSERT_NE(0, token[0]);
+        printf("Poll\n");
+        ret = gfal2_bring_online_poll_list(handle, nbfiles,
+                surls, token, error);
+    }
+
+    // Only the first one and duplicated should be successful
+    for (int i = 0; i < nbfiles; ++i) {
+        if (i % 2 == 0)
+            ASSERT_PRED_FORMAT2(AssertGfalSuccess, 1, error[i]);
+        else
+            ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error[i], ENOENT);
+    }
+
+    free(surls[1]);
+}
+
 
 int main(int argc, char** argv)
 {
