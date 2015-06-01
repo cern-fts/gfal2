@@ -32,6 +32,23 @@
 #include "gfal_srm_request.h"
 
 
+// Sadly, this is quite inefficient, but has to be done since there might be duplicated
+// surls in the initial request (plus, the response order doesn't have to be the same
+// as when requested)
+static int gfal_srmv2_bring_online_internal_status_index(
+		int nresponses,
+		struct srm_bringonline_output* output,
+		const char *surl)
+{
+	int i;
+	for (i = 0; i < nresponses; ++i) {
+		if (strcmp(output->filestatuses[i].surl, surl) == 0) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 
 static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_opt* opts,
         int nbfiles, const char* const* surl, time_t pintime, time_t timeout,
@@ -55,14 +72,14 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
     if (input.spacetokendesc)
         gfal2_log(G_LOG_LEVEL_DEBUG, "Bringonline with spacetoken %s", input.spacetokendesc);
 
-    int ret;
+    int nresponses;
     if (async)
-        ret = gfal_srm_external_call.srm_bring_online_async(context, &input, &output);
+        nresponses = gfal_srm_external_call.srm_bring_online_async(context, &input, &output);
     else
-        ret = gfal_srm_external_call.srm_bring_online(context, &input, &output);
+        nresponses = gfal_srm_external_call.srm_bring_online(context, &input, &output);
 
 
-    if (ret < 0) {
+    if (nresponses < 0) {
         GError *tmp_err = NULL;
         gfal_srm_report_error(context->errbuf, &tmp_err);
         for (i = 0; i < nbfiles; ++i) {
@@ -70,6 +87,12 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
         }
         g_error_free(tmp_err);
         return -1;
+    }
+
+    if (nresponses != nbfiles) {
+        gfal2_log(G_LOG_LEVEL_DEBUG,
+                "%d files in the request, %d in the response", nbfiles,
+                nresponses);
     }
 
     if (output.token)
@@ -81,22 +104,29 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
 
     int nterminal = 0;
     for (i = 0; i < nbfiles; ++i) {
-        switch (output.filestatuses[i].status) {
-            case 0:
-                ++nterminal;
-                break;
-            case EAGAIN:
-                break;
-            default:
-                gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
-                            output.filestatuses[i].status, __func__,
+        int status_index = gfal_srmv2_bring_online_internal_status_index(nresponses, &output, surl[i]);
+        if (status_index >= 0) {
+            switch (output.filestatuses[status_index].status) {
+                case 0:
+                    ++nterminal;
+                    break;
+                case EAGAIN:
+                    break;
+                default:
+                    gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
+                            output.filestatuses[status_index].status, __func__,
                             "error on the bring online request: %s ",
-                            output.filestatuses[i].explanation);
-                ++nterminal;
-                break;
+                            output.filestatuses[status_index].explanation);
+                    ++nterminal;
+                    break;
+            }
+        } else {
+            gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
+                    EPROTO, __func__, "missing surl on the response: %s", surl[i]);
+            ++nterminal;
         }
     }
-    gfal_srm_external_call.srm_srmv2_pinfilestatus_delete(output.filestatuses, ret);
+    gfal_srm_external_call.srm_srmv2_pinfilestatus_delete(output.filestatuses, nresponses);
     gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
     free(output.token);
 
