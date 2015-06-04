@@ -192,10 +192,10 @@ Requires:           %{name}-plugin-rfio%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-gridftp%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-http%{?_isa} = %{version}-%{release}
 
-
 %description all
 Meta-package for complete install of GFAL 2.0 
 with all the protocol plugins.
+
 
 %clean
 rm -rf %{buildroot};
@@ -205,6 +205,16 @@ make clean
 %setup -q
 
 %build
+# Make sure the version in the spec file and the version used
+# for building matches
+gfal2_cmake_ver=`sed -n 's/^set *(VERSION_\(MAJOR\|MINOR\|PATCH\) \+\([0-9]\+\).*/\2/p' CMakeLists.txt | paste -sd '.'`
+gfal2_spec_ver=`expr "%{version}" : '\([0-9]*\\.[0-9]*\\.[0-9]*\)'`
+if [ "$gfal2_cmake_ver" != "$gfal2_spec_ver" ]; then
+    echo "The version in the spec file does not match the CMakeLists.txt version!"
+    echo "$gfal2_cmake_ver != %{version}"
+    exit 1
+fi
+
 %cmake \
 -DDOC_INSTALL_DIR=%{_pkgdocdir} \
 -DUNIT_TESTS=TRUE \
