@@ -17,6 +17,7 @@
 
 
 #include <string.h>
+#include <uri/gfal_uri.h>
 
 #include "gfal_srm_url_check.h"
 
@@ -49,4 +50,47 @@ gboolean plugin_url_check2(plugin_handle handle, gfal2_context_t context,
     gboolean dst_valid_url = dst_srm || srm_has_schema(dst);
 
     return (type == GFAL_FILE_COPY && ((src_srm && dst_valid_url) || (dst_srm && src_valid_url)));
+}
+
+
+static const char* gfal2_srm_surl_find_path(const gfal_uri* parsed)
+{
+    const char* SFN = strstr(parsed->query, "SFN=");
+    if (!SFN)
+        return parsed->path;
+    SFN += 4;
+    return SFN;
+}
+
+
+int gfal2_srm_surl_cmp(const char* surl1, const char* surl2)
+{
+    GError* error = NULL;
+    gfal_uri parsed1, parsed2;
+
+    // Parse urls
+    gfal2_parse_uri(surl1, &parsed1, &error);
+    if (error)
+        goto srm_surl_cmp_fallback;
+    gfal2_parse_uri(surl2, &parsed2, &error);
+    if (error)
+        goto srm_surl_cmp_fallback;
+
+    // If hosts are different, surls are different
+    if (strcmp(parsed1.domain, parsed2.domain) != 0 || parsed1.port != parsed2.port)
+        return -1;
+
+    // If no SFN is found, the path is as-is
+    // Otherwise, the path is whatever is found in the SFN
+    const char* sfn1 = gfal2_srm_surl_find_path(&parsed1);
+    const char* sfn2 = gfal2_srm_surl_find_path(&parsed2);
+
+    int cmp = strcmp(sfn1, sfn2);
+
+    return cmp;
+
+    // Fallback to raw strcmp
+srm_surl_cmp_fallback:
+    g_error_free(error);
+    return strcmp(surl1, surl2);
 }

@@ -1,5 +1,9 @@
 GFAL2 RELEASE-NOTES:
 
+* Tue Jun 08 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.9.3
+** Bug
+- [DMC-682] - SURLS in responses may not contain full endpoint
+
 * Mon Jun 01 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.9.2
 ** Bug
 - [DMC-676] - SRM Plugin: Response for bringonline may be shorter than the request

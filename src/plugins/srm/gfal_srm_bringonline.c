@@ -30,6 +30,7 @@
 #include "gfal_srm_endpoint.h"
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_request.h"
+#include "gfal_srm_url_check.h"
 
 
 // Sadly, this is quite inefficient, but has to be done since there might be duplicated
@@ -42,7 +43,7 @@ static int gfal_srmv2_bring_online_internal_status_index(
 {
 	int i;
 	for (i = 0; i < nresponses; ++i) {
-		if (strcmp(output->filestatuses[i].surl, surl) == 0) {
+		if (gfal2_srm_surl_cmp(output->filestatuses[i].surl, surl) == 0) {
 			return i;
 		}
 	}
