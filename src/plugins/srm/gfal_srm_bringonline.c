@@ -201,8 +201,8 @@ static int gfal_srmv2_bring_online_poll_internal(srm_context_t context,
     input.surls   = (char**)surls;
     output.token  = (char*)token;
 
-    int ret = gfal_srm_external_call.srm_bring_online_status(context, &input, &output);
-    if (ret < 0) {
+    int nresponses = gfal_srm_external_call.srm_bring_online_status(context, &input, &output);
+    if (nresponses < 0) {
         GError *tmp_err = NULL;
         gfal_srm_report_error(context->errbuf, &tmp_err);
         for (i = 0; i < nbfiles; ++i) {
@@ -214,25 +214,34 @@ static int gfal_srmv2_bring_online_poll_internal(srm_context_t context,
 
     int nterminal = 0;
     for (i = 0; i < nbfiles; ++i) {
-        switch(output.filestatuses[i].status) {
-            case 0:
-                ++nterminal;
-                break;
-            case EAGAIN:
-                gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
-                                EAGAIN, __func__,
-                                "still queued: %s ",
-                                output.filestatuses[i].explanation);
-                break;
-            default:
-                gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
-                        output.filestatuses[i].status, __func__,
-                        "error on the bring online request: %s ", output.filestatuses[i].explanation);
-                ++nterminal;
+        int status_index = gfal_srmv2_bring_online_internal_status_index(nresponses, &output, surls[i]);
+        if (status_index >= 0) {
+            switch (output.filestatuses[status_index].status) {
+                case 0:
+                    ++nterminal;
+                    break;
+                case EAGAIN:
+                    gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
+                                    EAGAIN, __func__,
+                                    "still queued: %s ",
+                                    output.filestatuses[i].explanation);
+                    break;
+                default:
+                    gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
+                                    output.filestatuses[status_index].status, __func__,
+                                    "error on the bring online request: %s ",
+                                    output.filestatuses[status_index].explanation);
+                    ++nterminal;
+                    break;
+            }
+        } else {
+            gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
+                            EPROTO, __func__, "missing surl on the response: %s", surls[i]);
+            ++nterminal;
         }
     }
 
-    gfal_srm_external_call.srm_srmv2_pinfilestatus_delete(output.filestatuses, ret);
+    gfal_srm_external_call.srm_srmv2_pinfilestatus_delete(output.filestatuses, nresponses);
     gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
 
     // Return will be 1 if all files are terminal
