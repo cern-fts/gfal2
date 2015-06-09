@@ -2,3 +2,5 @@
 .cproject
 .settings
 *.rpm
+*.tar.gz
+
