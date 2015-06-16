@@ -518,10 +518,12 @@ static int srm_cleanup_copy(plugin_handle handle, gfal2_context_t context,
         gboolean transfer_finished,
         GError** err)
 {
-    if (*err != NULL)
+    if (*err != NULL) {
         srm_rollback_put(handle, context, destination, token_destination, transfer_finished, err);
-    if (token_source[0] != '\0')
+    }
+    if (token_source[0] != '\0') {
         srm_release_get(handle, source, token_source, err);
+    }
     return 0;
 }
 
@@ -658,6 +660,9 @@ int srm_plugin_filecopy(plugin_handle handle, gfal2_context_t context,
 
 // Cleanup and propagate error if needed
 copy_finalize:
+    if (nested_error) {
+        gfal2_log(G_LOG_LEVEL_INFO, "Transfer failed with: %s", nested_error->message);
+    }
     srm_cleanup_copy(handle, context, source, dest,
             token_source, token_destination,
             transfer_finished, &nested_error);
