@@ -1,0 +1,43 @@
+# - Try to find XROOTD libraries
+#
+#  XROOTD_FOUND - System has XROOTD
+#  XROOTD_INCLUDE_DIR - The XROOTD include directory
+#  XROOTD_LIBRARIES - The libraries needed to use XROOTD
+#
+# XROOTD_LOCATION
+#   setting this enables search for xrootd libraries / headers in this location
+
+
+# -----------------------------------------------------
+# XROOTD Libraries
+# -----------------------------------------------------
+find_library(XROOTD_LIBRARIES
+    NAMES XrdClient
+    HINTS ${XROOTD_LOCATION}/lib ${XROOTD_LOCATION}/lib64 ${XROOTD_LOCATION}/lib32
+    DOC "xrootd libraries"
+)
+if(XROOTD_LIBRARIES)
+    message(STATUS "xrootd library found in ${XROOTD_LIBRARIES}")
+endif()
+
+# -----------------------------------------------------
+# XROOTD Include Directories
+# -----------------------------------------------------
+find_path(XROOTD_INCLUDE_DIR
+    NAMES XrdVersion.hh
+    HINTS ${XROOTD_LOCATION} ${XROOTD_LOCATION}/include ${XROOTD_LOCATION}/include/* 
+          ${XROOTD_LOCATION}/src/
+          /usr/include/xrootd /usr/local/include/xrootd
+    DOC "The xrootd include directory"
+)
+if(XROOTD_INCLUDE_DIR)
+    message(STATUS "xrootd includes found in ${XROOTD_INCLUDE_DIR}")
+endif()
+
+# -----------------------------------------------------
+# handle the QUIETLY and REQUIRED arguments and set XROOTD_FOUND to TRUE if
+# all listed variables are TRUE
+# -----------------------------------------------------
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(xrootd DEFAULT_MSG XROOTD_LIBRARIES XROOTD_INCLUDE_DIR)
+mark_as_advanced(XROOTD_INCLUDE_DIR XROOTD_LIBRARIES)
