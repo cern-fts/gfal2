@@ -1,0 +1,43 @@
+cmake_minimum_required (VERSION 2.6)
+
+if (PLUGIN_XROOTD)
+
+    # Find Boost 1.41
+    set (Boost_NO_BOOST_CMAKE ON)
+    set (BOOST_INCLUDEDIR "/usr/include/boost141") # EPEL5
+    set (BOOST_LIBRARYDIR "/usr/lib${LIB_SUFFIX}/boost141/") # EPEL5
+    set (Boost_ADDITIONAL_VERSIONS "1.41" "1.41.0")
+
+    find_package(Boost 1.41 COMPONENTS thread REQUIRED)
+    find_package(XROOTD REQUIRED)
+
+    include_directories(${Boost_INCLUDE_DIRS})
+    include_directories(${XROOTD_INCLUDE_DIR})
+
+    file (GLOB src_xrootd "*.cpp")
+
+    add_library (plugin_xrootd SHARED ${src_xrootd})
+    
+    target_link_libraries (plugin_xrootd ${Boost_LIBRARIES})
+    target_link_libraries (plugin_xrootd ${GFAL2_PKG_LIBRARIES})
+    target_link_libraries (plugin_xrootd gfal_transfer)
+    target_link_libraries (plugin_xrootd XrdClient XrdCl XrdPosix)
+    
+    set_target_properties(plugin_xrootd PROPERTIES
+                          CLEAN_DIRECT_OUTPUT 1
+                          OUTPUT_NAME "gfal_plugin_xrootd"
+                          LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins)
+
+    install(TARGETS plugin_xrootd
+            LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
+
+    # install xrootd configuration files
+    list (APPEND xrootd_conf_file "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/xrootd_plugin.conf")
+    install(FILES ${xrootd_conf_file}
+            DESTINATION ${SYSCONF_INSTALL_DIR}/gfal2.d/)
+            
+    # readme
+    install(FILES "README_PLUGIN_XROOTD"
+            DESTINATION ${DOC_INSTALL_DIR})
+
+endif ()

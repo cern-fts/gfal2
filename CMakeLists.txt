@@ -13,6 +13,7 @@ set (PLUGIN_DCAP    TRUE CACHE STRING "enable compilation of the DCAP plugin")
 set (PLUGIN_FILE    TRUE CACHE STRING "enable compilation of the local File plugin")
 set (PLUGIN_GRIDFTP TRUE CACHE STRING "enable compilation of the GRIDFTP plugin")
 set (PLUGIN_HTTP    TRUE CACHE STRING "enable compilation of the HTTP plugin")
+set (PLUGIN_XROOTD  TRUE CACHE STRING "enable compilation of the XROOTD plugin")
 set (PLUGIN_MOCK    FALSE CACHE STRING "enable compilation of the MOCK plugin")
 
 # build type

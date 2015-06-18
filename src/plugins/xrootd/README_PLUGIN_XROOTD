@@ -1,0 +1,3 @@
+Plugin for GFAL2 to access data through xrootd. URLs that begin with root://
+will use this plugin. All GFAL2 functions are supported in this plugin except
+pread/pwrite and readlink/symlink (symlinks are not supported in xrootd).

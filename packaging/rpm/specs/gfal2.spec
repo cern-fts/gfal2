@@ -54,6 +54,13 @@ BuildRequires:      dcap-devel
 BuildRequires:      globus-gass-copy-devel
 #http plugin dependencies
 BuildRequires:      davix-devel >= 0.4.0
+#xrootd plugin dependencies
+%if %{?fedora}%{!?fedora:0} >= 10 || %{?rhel}%{!?rhel:0} >= 6
+BuildRequires:  boost-devel >= 1.41.0
+%else
+BuildRequires:  boost141-devel
+%endif
+BuildRequires:  xrootd-client-devel >= 1:4.1.1
 #tests dependencies
 BuildRequires:      gtest-devel
 
@@ -168,6 +175,19 @@ Requires:           davix-libs >= 0.3.2
 %description plugin-http
 Provides the HTTP (http[s]://) and WevDAV (dav[s]://) support for %{name}.
 this plugin is able to do third-party copy with WebDAV if the storage supports it.
+
+
+%package plugin-xrootd
+Summary:            Provide xrootd support for GFAL2
+Group:              Applications/Internet
+Requires:           %{name}%{?_isa} = %{version}-%{release}
+
+%description plugin-xrootd
+The Grid File Access Library, GFAL2, provides a simple POSIX-like API for file
+operations in grid and cloud environments. Plug-ins are available to allow
+access via a variety of protocols. This package contains a plugin for the
+xrootd protocol (root://).
+
 
 %if %{?_with_mock_plugin:1}%{!?_with_mock_plugin:0}
 %package plugin-mock
@@ -302,6 +322,11 @@ make DESTDIR=%{buildroot} install
 %{_libdir}/%{name}-plugins/libgfal_plugin_http.so*
 %{_pkgdocdir}/README_PLUGIN_HTTP
 %config(noreplace) %{_sysconfdir}/%{name}.d/http_plugin.conf
+
+%files plugin-xrootd
+%{_libdir}/%{name}-plugins/libgfal_plugin_xrootd.so*
+%{_pkgdocdir}/README_PLUGIN_XROOTD
+%config(noreplace) %{_sysconfdir}/%{name}.d/xrootd_plugin.conf
 
 %if %{?_with_mock_plugin:1}%{!?_with_mock_plugin:0}
 %files plugin-mock
