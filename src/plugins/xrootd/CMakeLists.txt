@@ -20,7 +20,7 @@ if (PLUGIN_XROOTD)
     
     target_link_libraries (plugin_xrootd ${Boost_LIBRARIES})
     target_link_libraries (plugin_xrootd ${GFAL2_PKG_LIBRARIES})
-    target_link_libraries (plugin_xrootd gfal_transfer)
+    target_link_libraries (plugin_xrootd gfal2_transfer)
     target_link_libraries (plugin_xrootd XrdClient XrdCl XrdPosix)
     
     set_target_properties(plugin_xrootd PROPERTIES
