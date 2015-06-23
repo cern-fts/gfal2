@@ -1,3 +1,9 @@
+function (add_test_executable name source)
+    add_executable(${name} ${source})
+    install(TARGETS ${name}
+            DESTINATION ${SHARE_INSTALL_PREFIX}/gfal2/tests)
+endfunction(add_test_executable name)
+
 
 if(FUNCTIONAL_TESTS)
         find_package(GTEST)
@@ -11,7 +17,7 @@ if(FUNCTIONAL_TESTS)
         )
         
         # Bring online tests
-        add_executable(gfal_test_bringonline "gfal_test_bringonline.cpp")
+        add_test_executable(gfal_test_bringonline "gfal_test_bringonline.cpp")
         target_link_libraries(gfal_test_bringonline ${GFAL2_LIBRARIES} test_shared)
         
         function(test_bringonline name dir_path)
@@ -19,7 +25,7 @@ if(FUNCTIONAL_TESTS)
         endfunction(test_bringonline name valid_file)
 
         # Checksum tests
-        add_executable(gfal_test_checksum "gfal_test_checksum.cpp")
+        add_test_executable(gfal_test_checksum "gfal_test_checksum.cpp")
         target_link_libraries(gfal_test_checksum ${GFAL2_LIBRARIES} test_shared)
         
         function(checksum_test_simple name dir_path algo)
@@ -27,7 +33,7 @@ if(FUNCTIONAL_TESTS)
         endfunction(checksum_test_simple name valid_file algo)
         
         # Stat tests
-        add_executable(gfal_test_stat "gfal_test_stat.c")
+        add_test_executable(gfal_test_stat "gfal_test_stat.c")
         target_link_libraries(gfal_test_stat ${GFAL2_LIBRARIES} test_shared)
         
         function(stat_test_all name valid)
@@ -35,13 +41,13 @@ if(FUNCTIONAL_TESTS)
         endfunction(stat_test_all valid)
         
         # Deletion tests
-        add_executable(gfal_test_del_nonex "gfal_test_del_nonex.c")
+        add_test_executable(gfal_test_del_nonex "gfal_test_del_nonex.c")
         target_link_libraries(gfal_test_del_nonex ${GFAL2_LIBRARIES} test_shared)
         
-        add_executable(gfal_test_del "gfal_test_del.cpp") 
+        add_test_executable(gfal_test_del "gfal_test_del.cpp") 
         target_link_libraries(gfal_test_del ${GFAL2_LIBRARIES} test_shared)
         
-        add_executable(gfal_test_mkdir_unlink "gfal_test_mkdir_unlink.c")
+        add_test_executable(gfal_test_mkdir_unlink "gfal_test_mkdir_unlink.c")
         target_link_libraries(gfal_test_mkdir_unlink ${GFAL2_LIBRARIES} test_shared)
 
         function(test_gfal_test_del_nonex name dir_path)
@@ -57,7 +63,7 @@ if(FUNCTIONAL_TESTS)
         endfunction (test_gfal_test_mkdir_unlink name path)        
 
         # Chmod tests
-        add_executable(gfal_test_chmod "gfal_test_chmod.cpp")
+        add_test_executable(gfal_test_chmod "gfal_test_chmod.cpp")
         target_link_libraries(gfal_test_chmod ${GFAL2_LIBRARIES} test_shared)
         
         function(chmod_test_all name valid right1 right2 right3 right4)
@@ -65,7 +71,7 @@ if(FUNCTIONAL_TESTS)
         endfunction(chmod_test_all name valid right1 right2 right3 right4)        
         
         # Rmdir tests
-        add_executable(gfal_test_rmdir_full "gfal_test_rmdir_full.cpp")
+        add_test_executable(gfal_test_rmdir_full "gfal_test_rmdir_full.cpp")
         target_link_libraries(gfal_test_rmdir_full ${GFAL2_LIBRARIES} test_shared)
 
         function(rmdir_test_all name valid_dir)
@@ -73,7 +79,7 @@ if(FUNCTIONAL_TESTS)
         endfunction(rmdir_test_all name valid_dir)
         
         # Readdir tests
-        add_executable(gfal_test_readdir_full "gfal_test_readdir_full.cpp")
+        add_test_executable(gfal_test_readdir_full "gfal_test_readdir_full.cpp")
         target_link_libraries(gfal_test_readdir_full ${GFAL2_LIBRARIES} test_shared)
         
         function(test_readdir_full name valid)
@@ -81,13 +87,13 @@ if(FUNCTIONAL_TESTS)
         endfunction(test_readdir_full valid)        
 
         # IO tests
-        add_executable(gfal_test_rw_full "gfal_test_rw_full.cpp")
+        add_test_executable(gfal_test_rw_full "gfal_test_rw_full.cpp")
         target_link_libraries(gfal_test_rw_full ${GFAL2_LIBRARIES} test_shared)
             
-        add_executable(gfal_test_rw_seq "gfal_test_rw_seq.cpp")
+        add_test_executable(gfal_test_rw_seq "gfal_test_rw_seq.cpp")
         target_link_libraries(gfal_test_rw_seq ${GFAL2_LIBRARIES} test_shared)
         
-        add_executable(gfal_test_rw_seek "gfal_test_rw_seek.cpp")
+        add_test_executable(gfal_test_rw_seek "gfal_test_rw_seek.cpp")
         target_link_libraries(gfal_test_rw_seek ${GFAL2_LIBRARIES} test_shared) 
         
         function(rwt_test_all name path size)
@@ -103,7 +109,7 @@ if(FUNCTIONAL_TESTS)
         endfunction(rwt_test_seek name path size) 
 
         # Mkdir tests
-        add_executable(gfal_test_mkdir_full "gfal_test_mkdir_full.cpp")
+        add_test_executable(gfal_test_mkdir_full "gfal_test_mkdir_full.cpp")
         target_link_libraries(gfal_test_mkdir_full ${GFAL2_LIBRARIES} test_shared)
         
         function(mkdir_test_all name prefix)
@@ -111,7 +117,7 @@ if(FUNCTIONAL_TESTS)
         endfunction(mkdir_test_all name prefix)    
 
         # Set credentials test
-        add_executable(gfal_test_set_creds "gfal_test_set_creds.c")
+        add_test_executable(gfal_test_set_creds "gfal_test_set_creds.c")
         target_link_libraries(gfal_test_set_creds ${GFAL2_LIBRARIES})
 
         function(gfal_test_set_credentials name prefix)
@@ -121,31 +127,31 @@ if(FUNCTIONAL_TESTS)
         # Tests for file transfer
         if(MAIN_TRANSFER)
                 
-                add_executable(gfalt_test_copy_file_cancel "gfalt_test_copy_file_cancel.cpp")
+                add_test_executable(gfalt_test_copy_file_cancel "gfalt_test_copy_file_cancel.cpp")
                 target_link_libraries(gfalt_test_copy_file_cancel ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} pthread)
                 
-                add_executable(gfalt_test_copy_file "gfalt_test_copy_file.cpp")
+                add_test_executable(gfalt_test_copy_file "gfalt_test_copy_file.cpp")
                 target_link_libraries(gfalt_test_copy_file ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} test_shared)
 
-                add_executable(gfalt_test_copy_file_thead_safety "gfalt_test_copy_file_thead_safety.cpp")
+                add_test_executable(gfalt_test_copy_file_thead_safety "gfalt_test_copy_file_thead_safety.cpp")
                 target_link_libraries(gfalt_test_copy_file_thead_safety ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} test_shared)
 
-                add_executable(gfalt_test_copy_file_timeout "gfalt_test_copy_file_timeout.cpp")
+                add_test_executable(gfalt_test_copy_file_timeout "gfalt_test_copy_file_timeout.cpp")
                 target_link_libraries(gfalt_test_copy_file_timeout ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} test_shared)
                 
-                add_executable(gfalt_test_copy_file_mkdir "gfalt_test_copy_file_mkdir.cpp")
+                add_test_executable(gfalt_test_copy_file_mkdir "gfalt_test_copy_file_mkdir.cpp")
                 target_link_libraries(gfalt_test_copy_file_mkdir ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} test_shared)
                 
-                add_executable(gfalt_test_copy_file_replace "gfalt_test_copy_file_replace.cpp")
+                add_test_executable(gfalt_test_copy_file_replace "gfalt_test_copy_file_replace.cpp")
                 target_link_libraries(gfalt_test_copy_file_replace ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} test_shared)
 
-                add_executable(gfalt_test_copy_file_checksum "gfalt_test_copy_file_checksum.cpp")
+                add_test_executable(gfalt_test_copy_file_checksum "gfalt_test_copy_file_checksum.cpp")
                 target_link_libraries(gfalt_test_copy_file_checksum ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} test_shared)
 
-                add_executable(gfalt_test_copy_file_checksum_user "gfalt_test_copy_file_checksum_user.cpp")
+                add_test_executable(gfalt_test_copy_file_checksum_user "gfalt_test_copy_file_checksum_user.cpp")
                 target_link_libraries(gfalt_test_copy_file_checksum_user ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} test_shared)
                 
-                add_executable(gfalt_test_copy_bulk "gfalt_test_copy_bulk.cpp")
+                add_test_executable(gfalt_test_copy_bulk "gfalt_test_copy_bulk.cpp")
                 target_link_libraries(gfalt_test_copy_bulk ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} test_shared)
                 
                 function(copy_file_test_full name src_dir dst_dir)
@@ -171,5 +177,11 @@ if(FUNCTIONAL_TESTS)
         endif(MAIN_TRANSFER)
 
         include(functional-test-parameters.cmake)        
+
+        include(functional-test-parameters.cmake)
+
+        # Install ctest file
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CTestTestfile.cmake
+                DESTINATION ${SHARE_INSTALL_PREFIX}/gfal2/tests)
         
 endif(FUNCTIONAL_TESTS)

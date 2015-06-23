@@ -19,14 +19,16 @@ RPMDEFINES_SRC=--define='_topdir $(RPMBUILD)' \
 	--define='_builddir %{_topdir}/BUILD' \
 	--define='_srcrpmdir $(SRPMS)' \
 	--define='_rpmdir $(RPMS)' \
-    --define "_source_filedigest_algorithm md5"
+    --define "_source_filedigest_algorithm md5" \
+    $(RPMBUILD_SRC_EXTRA_FLAGS)
 
 RPMDEFINES_BIN=--define='_topdir $(RPMBUILD)' \
 	--define='_sourcedir %{_topdir}/SOURCES' \
 	--define='_builddir %{_topdir}/BUILD' \
 	--define='_srcrpmdir $(SRPMS).' \
 	--define='_rpmdir $(RPMS)' \
-    --define "_binary_filedigest_algorithm md5"
+    --define "_binary_filedigest_algorithm md5" \
+    $(RPMBUILD_BIN_EXTRA_FLAGS)
 
 all: srpm
 

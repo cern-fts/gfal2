@@ -1,8 +1,8 @@
 # unversionned doc dir F20 change https://fedoraproject.org/wiki/Changes/UnversionedDocdirs
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
-%{!?_with_mock_plugin: %{!?_without_mock_plugin: %define _with_mock_plugin -DPLUGIN_MOCK=TRUE}}
-
+%bcond_with mock_plugin
+%bcond_with tests
 
 Name:               gfal2
 Version:            2.10.0
@@ -216,6 +216,15 @@ Requires:           %{name}-plugin-http%{?_isa} = %{version}-%{release}
 Meta-package for complete install of GFAL 2.0 
 with all the protocol plugins.
 
+%if %{?_with_tests:1}%{!?_with_tests:0}
+%package tests
+Summary:            gfal2 tests
+Group:              Applications/Internet
+Requires:           gfal2-all%{?_isa} = %{version}-%{release}
+
+%description tests
+gfal2 tests
+%endif
 
 %clean
 rm -rf %{buildroot};
@@ -236,10 +245,11 @@ if [ "$gfal2_cmake_ver" != "$gfal2_spec_ver" ]; then
 fi
 
 %cmake \
--DDOC_INSTALL_DIR=%{_pkgdocdir} \
--DUNIT_TESTS=TRUE \
-%{_with_mock_plugin}\
-.
+    -DDOC_INSTALL_DIR=%{_pkgdocdir} \
+    -DUNIT_TESTS=TRUE \
+    -DMOCK_PLUGIN=%{?with_mock_plugin:ON}%{?!with_mock_plugin:OFF} \
+    -DFUNCTIONAL_TESTS=%{?with_tests:ON}%{?!with_tests:OFF} \
+    .
 make %{?_smp_mflags}
 make doc
 
@@ -248,6 +258,7 @@ export GFAL_PLUGIN_DIR=${PWD}/plugins/
 export GFAL_CONFIG_DIR=${PWD}/test/conf_test/
 export LD_LIBRARY_PATH=${PWD}/src/core:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH=${PWD}/plugins:${LD_LIBRARY_PATH}
+cd test/unit
 ctest -V
 
 %install
@@ -333,6 +344,12 @@ make DESTDIR=%{buildroot} install
 %{_libdir}/%{name}-plugins/libgfal_plugin_mock.so*
 %{_pkgdocdir}/README_PLUGIN_MOCK
 %config(noreplace) %{_sysconfdir}/%{name}.d/mock_plugin.conf
+%endif
+
+%if %{?_with_tests:1}%{!?_with_tests:0}
+%files tests
+%{_datadir}/gfal2/tests/*
+%{_libdir}/libgfal2_test_shared.so
 %endif
 
 %files all
