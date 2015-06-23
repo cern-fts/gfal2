@@ -6,7 +6,7 @@ IF (STRESS_TESTS)
                     ${GLIB2_PKG_INCLUDE_DIRS} ${NETTLE_PKG_INCLUDE_DIRS} )
 
         add_executable(fts_seq_copy_files	${src_loadtest})
-        target_link_libraries(fts_seq_copy_files ${GFAL2_TRANSFER_LINK} ${GFAL2_LINK} test_shared)
+        target_link_libraries(fts_seq_copy_files ${GFAL2_TRANSFER_LINK} ${GFAL2_LINK} gfal2_test_shared)
 	
 ENDIF  (STRESS_TESTS)
 
