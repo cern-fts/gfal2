@@ -247,7 +247,7 @@ fi
 %cmake \
     -DDOC_INSTALL_DIR=%{_pkgdocdir} \
     -DUNIT_TESTS=TRUE \
-    -DMOCK_PLUGIN=%{?with_mock_plugin:ON}%{?!with_mock_plugin:OFF} \
+    -DPLUGIN_MOCK=%{?with_mock_plugin:ON}%{?!with_mock_plugin:OFF} \
     -DFUNCTIONAL_TESTS=%{?with_tests:ON}%{?!with_tests:OFF} \
     .
 make %{?_smp_mflags}
