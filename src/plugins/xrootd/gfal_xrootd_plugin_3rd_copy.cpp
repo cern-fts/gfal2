@@ -41,6 +41,7 @@ public:
             context(context), params(p), startTime(0)
     {
         monitorCallbackData = gfalt_transfer_status_create(&this->status);
+        memset(&status, 0x00, sizeof(status));
     }
 
     virtual ~CopyFeedback()
@@ -210,7 +211,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
                     return -1;
                 }
 
-                strncpy(checksumType, defaultChecksumType, sizeof(checksumType));
+                g_strlcpy(checksumType, defaultChecksumType, sizeof(checksumType));
                 g_free(defaultChecksumType);
             }
 
