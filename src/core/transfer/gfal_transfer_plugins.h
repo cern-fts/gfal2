@@ -71,6 +71,12 @@ void gfalt_set_error(GError **err, GQuark domain, gint code, const gchar *functi
 #define GFALT_ERROR_OVERWRITE   "OVERWRITE"
 #define GFALT_ERROR_PARENT      "MAKE_PARENT"
 
+// GFALT_ERROR_CHECKSUM occurs during the retrieval of the checksum
+// GFALT_ERROR_CHECKSUM_MISMATCH means the checksum was successfully retrieved,
+// but the comparison failed
+#define GFALT_ERROR_CHECKSUM_MISMATCH "CHECKSUM MISMATCH"
+#define GFALT_ERROR_SIZE_MISMATCH     "SIZE MISMATCH"
+
 //
 // full list of functions that are re-searched by GFAL 2.0 in the plugins
 //

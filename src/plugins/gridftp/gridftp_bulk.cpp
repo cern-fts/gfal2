@@ -381,7 +381,8 @@ int gridftp_bulk_check_sources(plugin_handle plugin_data, gfal2_context_t contex
                 if (ret == 0) {
                     if (!pairs->checksums[i].empty()) {
                         if (gfal_compare_checksums(pairs->checksums[i].c_str(), chk_value, sizeof(chk_value)) != 0) {
-                            gfal2_set_error(&(file_errors[i]), GSIFTP_BULK_DOMAIN, EIO,
+                            gfalt_set_error(&(file_errors[i]), GSIFTP_BULK_DOMAIN, EIO,
+                                    GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM_MISMATCH,
                                     __func__, "User checksum and source checksum do not match: %s != %s",
                                     pairs->checksums[i].c_str(), chk_value);
                             pairs->errn[i] = EIO;
@@ -504,7 +505,8 @@ int gridftp_bulk_close(plugin_handle plugin_data,
             }
             else {
                 if (pairs->fsize[i] != st.st_size) {
-                    gfal2_set_error(&(file_errors[i]), GSIFTP_BULK_DOMAIN, EIO,
+                    gfalt_set_error(&(file_errors[i]), GSIFTP_BULK_DOMAIN, EIO,
+                            GFALT_ERROR_DESTINATION, GFALT_ERROR_SIZE_MISMATCH,
                             __func__, "Source and destination file sizes do not match: %lld != %lld",
                             (long long)pairs->fsize, (long long)st.st_size);
                     pairs->errn[i] = EIO;
@@ -521,7 +523,8 @@ int gridftp_bulk_close(plugin_handle plugin_data,
                             if (gfal_compare_checksums(
                                     pairs->checksums[i].c_str(), chk_value,
                                     sizeof(chk_value)) != 0) {
-                                gfal2_set_error(&(file_errors[i]), GSIFTP_BULK_DOMAIN, EIO, __func__,
+                                gfalt_set_error(&(file_errors[i]), GSIFTP_BULK_DOMAIN, EIO, __func__,
+                                        GFALT_ERROR_DESTINATION, GFALT_ERROR_CHECKSUM_MISMATCH,
                                         "Destination checksum do not match: %s != %s",
                                         pairs->checksums[i].c_str(), chk_value);
                                 pairs->errn[i] = EIO;

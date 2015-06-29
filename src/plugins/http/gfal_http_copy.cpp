@@ -205,7 +205,8 @@ static int gfal_http_copy_checksum(gfal2_context_t context,
 
     if (!dst) {
         if (checksum_value[0] && gfal_compare_checksums(src_checksum, checksum_value, sizeof(checksum_value)) != 0) {
-            gfalt_set_error(err, http_plugin_domain, EIO, __func__, GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM,
+            gfalt_set_error(err, http_plugin_domain, EIO, __func__,
+                            GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM_MISMATCH,
                             "Source and user-defined %s do not match (%s != %s)",
                             checksum_type, src_checksum, checksum_value);
             return -1;
@@ -227,7 +228,8 @@ static int gfal_http_copy_checksum(gfal2_context_t context,
         }
 
         if (gfal_compare_checksums(src_checksum, dst_checksum, sizeof(dst_checksum)) != 0) {
-            gfalt_set_error(err, http_plugin_domain, EIO, __func__, GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM,
+            gfalt_set_error(err, http_plugin_domain, EIO, __func__,
+                            GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM_MISMATCH,
                             "Source and destination %s do not match (%s != %s)",
                             checksum_type, src_checksum, dst_checksum);
             return -1;

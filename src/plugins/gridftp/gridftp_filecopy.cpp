@@ -422,7 +422,8 @@ void gridftp_checksum_transfer_verify(const char * src_chk, const char* dst_chk,
         if (gfal_compare_checksums(src_chk, dst_chk, GFAL_URL_MAX_LEN) != 0) {
             ss << "SRC and DST checksum are different. Source: " << src_chk
                     << " Destination: " << dst_chk;
-            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_FILECOPY, EIO, ss.str());
+            throw Gfal::TransferException(GFAL_GRIDFTP_SCOPE_FILECOPY, EIO, ss.str(),
+                    GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM_MISMATCH);
         }
     }
     else {
@@ -431,14 +432,16 @@ void gridftp_checksum_transfer_verify(const char * src_chk, const char* dst_chk,
                         GFAL_URL_MAX_LEN) != 0) {
             ss << "USER_DEFINE and SRC checksums are different. "
                     << user_defined_chk << " != " << src_chk;
-            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_FILECOPY, EIO, ss.str());
+            throw Gfal::TransferException(GFAL_GRIDFTP_SCOPE_FILECOPY, EIO, ss.str(),
+                    GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM_MISMATCH);
         }
 
         if (gfal_compare_checksums(dst_chk, user_defined_chk, GFAL_URL_MAX_LEN)
                 != 0) {
             ss << "USER_DEFINE and DST checksums are different. "
                     << user_defined_chk << " != " << dst_chk;
-            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_FILECOPY, EIO, ss.str());
+            throw Gfal::TransferException(GFAL_GRIDFTP_SCOPE_FILECOPY, EIO, ss.str(),
+                    GFALT_ERROR_DESTINATION, GFALT_ERROR_CHECKSUM_MISMATCH);
         }
     }
 }
@@ -531,12 +534,12 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
         }
         catch (const Gfal::CoreException &e) {
             throw Gfal::TransferException(e.domain(), e.code(), e.what(),
-                    GFALT_ERROR_SOURCE);
+                    GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM);
         }
         catch (...) {
             throw Gfal::TransferException(GFAL_GRIDFTP_DOMAIN_GSIFTP, EIO,
                     "Undefined Exception caught while getting the source checksum!!",
-                    GFALT_ERROR_SOURCE);
+                    GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM);
         }
     }
 
@@ -585,6 +588,9 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
                     0);
             gridftp_checksum_transfer_verify(checksum_src, checksum_dst,
                     checksum_user_defined);
+        }
+        catch (const Gfal::TransferException &e) {
+            throw;
         }
         catch (const Gfal::CoreException& e) {
             throw Gfal::TransferException(e.domain(), e.code(), e.what(),

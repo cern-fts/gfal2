@@ -239,7 +239,8 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
         }
 
         if (user_checksum[0] && gfal_compare_checksums(user_checksum, source_checksum, 1024) != 0) {
-            gfal2_set_error(error, local_copy_domain(), EIO, __func__,
+            gfalt_set_error(error, local_copy_domain(), EIO, __func__,
+                    GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM_MISMATCH,
                     "Source checksum and user-specified checksum do not match: %s != %s", source_checksum, user_checksum);
             return -1;
         }
@@ -285,7 +286,8 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
         }
 
         if (gfal_compare_checksums(source_checksum, destination_checksum, 1204) != 0) {
-            gfal2_set_error(error, local_copy_domain(), EIO, __func__,
+            gfalt_set_error(error, local_copy_domain(), EIO, __func__,
+                    GFALT_ERROR_DESTINATION, GFALT_ERROR_CHECKSUM_MISMATCH,
                     "Source checksum and destination checksum do not match: %s != %s", source_checksum, destination_checksum);
             return -1;
         }

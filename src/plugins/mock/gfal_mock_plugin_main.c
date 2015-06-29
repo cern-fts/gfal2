@@ -267,7 +267,9 @@ gboolean gfal_plugin_mock_checksum_verify(const char* src_chk, const char* dst_c
     {
     	if (strcmp(src_chk, dst_chk) != 0)
     	{
-			gfal_plugin_mock_report_error("SRC and DST checksum are different", EIO, err);
+			gfalt_set_error(err, gfal2_get_plugin_mock_quark(), EIO, __func__,
+			        GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM_MISMATCH,
+			        "SRC and DST checksum are different");
 			return FALSE;
     	}
     	// source and destination checksums match
@@ -276,13 +278,17 @@ gboolean gfal_plugin_mock_checksum_verify(const char* src_chk, const char* dst_c
     // if user and source were defined ...
 	if (*src_chk != '\0' && strcmp(src_chk, user_defined_chk) != 0)
 	{
-		gfal_plugin_mock_report_error("USER_DEFINE and SRC checksums are different", EIO, err);
+        gfalt_set_error(err, gfal2_get_plugin_mock_quark(), EIO, __func__,
+                GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM_MISMATCH,
+                "USER_DEFINE and SRC checksums are different");
 		return FALSE;
 	}
 	// compare user and destination
 	if (strcmp(dst_chk, user_defined_chk) != 0)
 	{
-		gfal_plugin_mock_report_error("USER_DEFINE and DST checksums are different", EIO, err);
+        gfalt_set_error(err, gfal2_get_plugin_mock_quark(), EIO, __func__,
+                GFALT_ERROR_DESTINATION, GFALT_ERROR_CHECKSUM_MISMATCH,
+                "USER_DEFINE and DST checksums are different");
 		return FALSE;
 	}
 
