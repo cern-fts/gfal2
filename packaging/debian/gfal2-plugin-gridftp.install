@@ -1,0 +1,2 @@
+usr/lib/gfal2-plugins/libgfal_plugin_gridftp.so*
+etc/gfal2.d/gsiftp_plugin.conf

@@ -1,0 +1,2 @@
+usr/lib/gfal2-plugins/libgfal_plugin_srm.so*
+etc/gfal2.d/srm_plugin.conf

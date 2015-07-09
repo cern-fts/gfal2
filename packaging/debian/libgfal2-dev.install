@@ -1,0 +1,7 @@
+usr/include/gfal2
+usr/include/gfal2/*.h
+usr/include/gfal2/*/*.h
+usr/lib/pkgconfig/gfal2.pc
+usr/lib/pkgconfig/gfal_transfer.pc
+usr/lib/libgfal2.so
+usr/lib/libgfal_transfer.so

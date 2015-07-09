@@ -1,0 +1,93 @@
+Source: gfal2
+Priority: optional
+Maintainer: DMC Devel <dmc-devel@cern.ch>
+Build-Depends: debhelper (>= 8.0.0), cmake, doxygen, libglib2.0-dev, libglibmm-2.4-dev, libattr1-dev, libldap2-dev, uuid-dev, liblfc-dev, libdpm-dev, srm-ifce-dev (>= 1.16.0), dcap-dev, libglobus-gass-copy-dev, davix-dev (>= 0.2.7), libgridsite-dev, gsoap, pkg-config
+Standards-Version: 3.9.5
+Section: net
+Homepage: http://dmc.web.cern.ch/
+
+Package: gfal2
+Architecture: any
+Depends:  libgfal2-2 (= ${binary:Version}), libgfal-transfer2 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Recommends: gfal2-plugin-lfc (= ${binary:Version}), gfal2-plugin-rfio (= ${binary:Version}), gfal2-plugin-dcap (= ${binary:Version}), gfal2-plugin-srm (= ${binary:Version}), gfal2-plugin-gridftp (= ${binary:Version}), gfal2-plugin-http (= ${binary:Version})
+Description: Grid file access library 2.0
+ GFAL 2.0 offers an a single and simple POSIX-like API for the file
+ operations in grids and cloud environments. The set of supported
+ protocols depends on the gfal2 installed plugins.
+
+Package: libgfal2-2
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Core of the Grid File access Library 2.0
+ The main library of gfal2. The gfal protocol support relies on a
+ plugin system.
+
+Package: libgfal-transfer2
+Section: libs
+Architecture: any
+Depends: libgfal2-2 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: File Transfer logic of gfal2
+ gfal-transfer is the high level API for file transfer operations in
+ gfal2. It supports third-party copy.
+
+Package: libgfal2-dev
+Section: libdevel
+Architecture: any
+Depends: libgfal2-2 (= ${binary:Version}), libgfal-transfer2 (= ${binary:Version}), libglib2.0-dev, libattr1-dev, ${misc:Depends}
+Description: Development files of gfal2
+ Development files for gfal2
+
+Package: gfal2-doc
+Section: doc
+Architecture: all
+Depends: ${misc:Depends}
+Description: Documentation for gfal2
+ Documentation, doxygen and examples of gfal2.
+
+Package: gfal2-plugin-lfc
+Architecture: any
+Depends: libgfal2-2 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Provide the lfc access for gfal2
+ Provide the lfc support (LFN://) for gfal2. The LFC plugin allows
+ read-only POSIX operations for the LFC catalog.
+
+Package: gfal2-plugin-rfio
+Architecture: any
+Depends: libgfal2-2 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Provide the rfio access for gfal2
+ Provide the rfio support (RFIO://) for gfal2. The rfio plugin
+ provides the POSIX operations for the rfio URLs, the rfio protocol is
+ used on the DPM and on the Castor storage systems.
+
+Package: gfal2-plugin-dcap
+Architecture: any
+Depends: libgfal2-2 (= ${binary:Version}), dcap-tunnel-gsi, ${shlibs:Depends}, ${misc:Depends}
+Description: Provide the dcap access for gfal2
+ Provide the dcap support (GSIDCAP://, DCAP://) for gfal2. The dcap
+ plugin provides the POSIX operations for the dcap URLs, the dcap
+ protocol is used on the DCACHE storage system
+
+Package: gfal2-plugin-srm
+Architecture: any
+Depends: libgfal2-2 (= ${binary:Version}), libgfal-srm-ifce1 (>= 1.16.0), ${shlibs:Depends}, ${misc:Depends}
+Description: Provide the srm access for gfal2
+ Provide the srm support (SRM://) for gfal2. The srm plugin provides
+ the POSIX operations and the third party transfer support on the SRM
+ URLs.
+
+Package: gfal2-plugin-gridftp
+Architecture: any
+Depends: libgfal2-2 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Provide the gridftp access for gfal2
+ Provide the gridftp support (GSIFTP://) for gfal2. The gridftp plugin
+ provides the POSIX operations and the third party transfer support on
+ the GSIFTP URLs.
+
+Package: gfal2-plugin-http
+Architecture: any
+Depends: libgfal2-2 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Provide the http access for gfal2
+ Provide the HTTP and WebDAV support for gfal2. The http plugin
+ provides the POSIX operations and the third party transfer support on
+ the HTTP URLs. This plugin is able to do third-party copy with WebDAV.

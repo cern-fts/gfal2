@@ -3,4 +3,5 @@
 .settings
 *.rpm
 *.tar.gz
-
+*.gz
+*.dsc
