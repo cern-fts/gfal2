@@ -74,7 +74,7 @@ TEST_F(RwSeqTest, WriteReadSeq)
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, fd, error);
 
     i = j = n = 0;
-    while (i < file_size) {
+    while (i < file_size && i >= 0) {
         j = ((i + block_size) < file_size) ? block_size : file_size - i;
 
         ret = gfal2_read(context, fd, read_buffer + i, j, &error);
