@@ -90,7 +90,7 @@ std::string lookup_host(const char *host, gboolean use_ipv6)
         freeaddrinfo(addresses);
 
     if (use_ipv6 && ip6str[0])
-        return std::string(ip6str);
+        return std::string("[").append(ip6str).append("]");
     else if (ip4str[0])
         return std::string(ip4str);
     else
