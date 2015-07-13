@@ -203,7 +203,7 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
 
 	static int order = 0;
 
-	int size = 0;
+	int size = -1;
 	char buff[GFAL_URL_MAX_LEN] = { 0 };
 
 	// Try FILE_SIZE by default, if not set, use 10
@@ -295,6 +295,13 @@ gboolean gfal_plugin_mock_checksum_verify(const char* src_chk, const char* dst_c
 	return TRUE;
 }
 
+static void gfal_mock_cancel_transfer(gfal2_context_t context, void* userdata)
+{
+    int *seconds = (int*)userdata;
+    *seconds = 0;
+}
+
+
 int gfal_plugin_mock_filecopy(plugin_handle handle, gfal2_context_t context, gfalt_params_t params, const char* src, const char* dst, GError** err){
 
 	// do use checksum
@@ -349,13 +356,27 @@ int gfal_plugin_mock_filecopy(plugin_handle handle, gfal2_context_t context, gfa
 		// get the range from configuration file
 		int max = gfal2_get_opt_integer_with_default(context, mock_config_group, MAX_TRANSFER_TIME, 100);
 		int min = gfal2_get_opt_integer_with_default(context, mock_config_group, MIN_TRANSFER_TIME, 10);
-		// determin the duration
+		// determine the duration
 		if (max == min) seconds = max;
 		else seconds = rand() % (max - min) + min;
 	}
 
 	// mock transfer duration
-	sleep(seconds);
+	gfal_cancel_token_t cancel_token;
+	cancel_token = gfal2_register_cancel_callback(context,
+	        gfal_mock_cancel_transfer, &seconds);
+
+
+    plugin_trigger_event(params, gfal2_get_plugin_mock_quark(), GFAL_EVENT_NONE,
+            GFAL_EVENT_TRANSFER_ENTER, "Mock copy start, sleep %d", seconds);
+    while (seconds > 0) {
+        sleep(1);
+        --seconds;
+    }
+    plugin_trigger_event(params, gfal2_get_plugin_mock_quark(), GFAL_EVENT_NONE,
+            GFAL_EVENT_TRANSFER_EXIT, "Mock copy start, sleep %d", seconds);
+
+    gfal2_remove_cancel_callback(context, cancel_token);
 
 	return 0;
 }
