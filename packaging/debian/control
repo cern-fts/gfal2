@@ -45,6 +45,16 @@ Depends: ${misc:Depends}
 Description: Documentation for gfal2
  Documentation, doxygen and examples of gfal2.
 
+Package: gfal2-plugin-file
+Architecture: any
+Depends: libgfal2-2 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Replaces: libgfal2-2 (<< 2.8.4)
+Breaks: libgfal2-2 (<< 2.8.4)
+Description: Provides file support for gfal2
+ Provides the file support (file://) for gfal2. The file plugin
+ provides local file operations, as copying from local to remote or
+ the other way around.
+
 Package: gfal2-plugin-lfc
 Architecture: any
 Depends: libgfal2-2 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
@@ -91,3 +101,10 @@ Description: Provide the http access for gfal2
  Provide the HTTP and WebDAV support for gfal2. The http plugin
  provides the POSIX operations and the third party transfer support on
  the HTTP URLs. This plugin is able to do third-party copy with WebDAV.
+
+Package: gfal2-plugin-mock
+Architecture: any
+Depends: libgfal2-2 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Provides a mock dummy protocol for gfal2
+ Provides a dummy mock:// protocol for gfal2.
+

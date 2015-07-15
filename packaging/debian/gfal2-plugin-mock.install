@@ -1,0 +1,2 @@
+usr/lib/gfal2-plugins/libgfal_plugin_mock.so*
+etc/gfal2.d/mock_plugin.conf

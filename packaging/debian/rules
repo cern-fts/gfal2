@@ -12,7 +12,7 @@ export CFLAGS CXXFLAGS LDFLAGS
 	dh $@
 
 override_dh_auto_configure:
-	dh_auto_configure -- -DLIB_SUFFIX="" -DSKIP_TESTS=TRUE -DPLUGIN_XROOTD=FALSE -DSYSCONF_INSTALL_DIR=/etc/
+	dh_auto_configure -- -DLIB_SUFFIX="" -DSKIP_TESTS=TRUE -DPLUGIN_XROOTD=FALSE -DSYSCONF_INSTALL_DIR=/etc/ -DPLUGIN_MOCK=TRUE
 
 override_dh_auto_build:
 	dh_auto_build -- all doc
