@@ -53,7 +53,7 @@ BuildRequires:      dcap-devel
 #gridftp plugin dependencies
 BuildRequires:      globus-gass-copy-devel
 #http plugin dependencies
-BuildRequires:      davix-devel >= 0.4.0
+BuildRequires:      davix-devel >= 0.4.2
 #xrootd plugin dependencies
 %if %{?fedora}%{!?fedora:0} >= 10 || %{?rhel}%{!?rhel:0} >= 6
 BuildRequires:  boost-devel >= 1.41.0
@@ -171,7 +171,7 @@ the third party transfer support on the GSIFTP URLs.
 Summary:            Provides the HTTP/DAV support for %{name}
 Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
-Requires:           davix-libs >= 0.3.2
+Requires:           davix-libs >= 0.4.2
 
 %description plugin-http
 Provides the HTTP (http[s]://) and WevDAV (dav[s]://) support for %{name}.

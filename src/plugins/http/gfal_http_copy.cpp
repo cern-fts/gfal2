@@ -7,6 +7,12 @@
 #include "gfal_http_plugin.h"
 
 
+typedef enum {HTTP_COPY_PUSH, HTTP_COPY_PULL, HTTP_COPY_STREAM, HTTP_COPY_END} CopyMode;
+const char* CopyModeStr[] = {
+    "Push", "Pull", "Stream", NULL
+};
+
+
 struct PerfCallbackData {
     gfalt_params_t     params;
 
@@ -46,6 +52,12 @@ static bool is_3rd_scheme(const char* url)
             return true;
     }
     return false;
+}
+
+
+static bool is_supported_scheme(const char* url)
+{
+    return is_streamed_scheme(url) || is_3rd_scheme(url);
 }
 
 
@@ -310,8 +322,9 @@ static std::string get_canonical_uri(const std::string& original)
 }
 
 
-static void gfal_http_third_party_copy(GfalHttpPluginData* davix,
+static int gfal_http_third_party_copy(GfalHttpPluginData* davix,
         const char* src, const char* dst,
+        CopyMode mode,
         gfalt_params_t params,
         GError** err)
 {
@@ -329,6 +342,17 @@ static void gfal_http_third_party_copy(GfalHttpPluginData* davix,
 
     Davix::RequestParams req_params;
     davix->get_params(&req_params, src_uri);
+    if (mode == HTTP_COPY_PUSH) {
+        req_params.setCopyMode(Davix::CopyMode::Push);
+    }
+    else if (mode == HTTP_COPY_PULL) {
+        req_params.setCopyMode(Davix::CopyMode::Pull);
+    }
+    else {
+        gfal2_set_error(err, http_plugin_domain, EIO, __func__,
+                    "gfal_http_third_party_copy invalid copy mode");
+        return -1;
+    }
     Davix::DavixCopy copy(davix->context, &req_params);
 
     copy.setPerformanceCallback(gfal_http_3rdcopy_perfcallback, &perfCallbackData);
@@ -342,6 +366,8 @@ static void gfal_http_third_party_copy(GfalHttpPluginData* davix,
         davix2gliberr(davError, err);
         Davix::DavixError::clearError(&davError);
     }
+
+    return *err == NULL ? 0 : -1;
 }
 
 
@@ -411,7 +437,7 @@ static dav_ssize_t gfal_http_streamed_provider(void *userdata,
 }
 
 
-static void gfal_http_streamed_copy(gfal2_context_t context,
+static int gfal_http_streamed_copy(gfal2_context_t context,
         GfalHttpPluginData* davix,
         const char* src, const char* dst,
         gfalt_params_t params,
@@ -423,13 +449,13 @@ static void gfal_http_streamed_copy(gfal2_context_t context,
     struct stat src_stat;
     if (gfal2_stat(context, src, &src_stat, &nested_err) != 0) {
         gfal2_propagate_prefixed_error(err, nested_err, __func__);
-        return;
+        return -1;
     }
 
     int source_fd = gfal2_open(context, src, O_RDONLY, &nested_err);
     if (source_fd < 0) {
         gfal2_propagate_prefixed_error(err, nested_err, __func__);
-        return;
+        return -1;
     }
 
     Davix::Uri dst_uri(dst);
@@ -439,7 +465,7 @@ static void gfal_http_streamed_copy(gfal2_context_t context,
     if (dav_error != NULL) {
         davix2gliberr(dav_error, err);
         Davix::DavixError::clearError(&dav_error);
-        return;
+        return -1;
     }
 
     Davix::RequestParams req_params;
@@ -461,7 +487,7 @@ static void gfal_http_streamed_copy(gfal2_context_t context,
     if (dav_error != NULL) {
         davix2gliberr(dav_error, err);
         Davix::DavixError::clearError(&dav_error);
-        return;
+        return -1;
     }
 
     // Double check the HTTP code
@@ -470,6 +496,7 @@ static void gfal_http_streamed_copy(gfal2_context_t context,
     }
 
     gfal2_log(G_LOG_LEVEL_INFO, "HTTP code %d", request.getRequestCode());
+    return *err == NULL ? 0 : -1;
 }
 
 
@@ -540,23 +567,58 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
                          "%s => %s", src_full, dst_full);
 
-    if (!src_is_3rd && !dst_is_3rd) {
-        gfal_http_streamed_copy(context, davix, src, dst, params, &nested_error);
+    // Initial copy mode
+    CopyMode copy_mode = HTTP_COPY_PUSH;
+
+    // If source is not 3rd, but dst is explicily 3rd, skip PUSH
+    if (!src_is_3rd && dst_is_3rd) {
+        copy_mode = HTTP_COPY_PULL;
     }
-    else if (src_is_3rd && dst_is_3rd) {
-        if (is_http_3rdcopy_enabled(context)) {
-            gfal_http_third_party_copy(davix, src, dst, params, &nested_error);
+
+    // If third party copy is disabled, go straight to streamed
+    if (!is_http_3rdcopy_enabled(context)) {
+        copy_mode = HTTP_COPY_STREAM;
+    }
+
+    // Re-try different approaches
+    int ret = 0;
+    while (copy_mode < HTTP_COPY_END) {
+        gfal2_log(G_LOG_LEVEL_MESSAGE,
+            "Trying copying with mode %s",
+            CopyModeStr[copy_mode]);
+
+        if (copy_mode == HTTP_COPY_STREAM) {
+            ret = gfal_http_streamed_copy(context, davix, src, dst, params, &nested_error);
         }
         else {
-            gfal2_set_error(err, http_plugin_domain, ENOENT, __func__,
-                    "3rd party copy requested, but disabled in the configuration");
+            ret = gfal_http_third_party_copy(davix, src, dst, copy_mode, params, &nested_error);
         }
+
+        if (ret == 0) {
+            // Success! Break the loop
+            gfal2_log(G_LOG_LEVEL_INFO, "Copy succeeded using mode %s", CopyModeStr[copy_mode]);
+            break;
+        }
+        else if (ret < 0) {
+            // Recoverable error, try next mode
+            if (nested_error->code == EINVAL or nested_error->code == ENOSYS) {
+                gfal2_log(G_LOG_LEVEL_WARNING,
+                        "Copy failed with mode %s, will retry with the next available mode: %s",
+                        CopyModeStr[copy_mode], nested_error->message);
+                g_clear_error(&nested_error);
+            }
+            // Non-recoverable error, break the loop
+            else {
+                gfal2_log(G_LOG_LEVEL_CRITICAL,
+                        "Copy failed with mode %s, skip other attempts: %s",
+                        CopyModeStr[copy_mode], nested_error->message);
+                break;
+            }
+        }
+
+        copy_mode = (CopyMode)((int)copy_mode + 1);
     }
-    else {
-        gfal2_set_error(err, http_plugin_domain, ENOENT, __func__,
-                    "Invalid combination of 3rd party and non 3rd party urls");
-        return -1;
-    }
+
 
     plugin_trigger_event(params, http_plugin_domain,
                          GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
@@ -589,6 +651,7 @@ int gfal_http_copy_check(plugin_handle plugin_data, gfal2_context_t context, con
     if (check != GFAL_FILE_COPY)
         return 0;
     // This plugin handles everything that writes into an http endpoint
-    return (is_streamed_scheme(dst) && !is_3rd_scheme(src)) || (is_3rd_scheme(src) && is_3rd_scheme(dst));
+    // It will try to decide if it is better to do a third party copy, or a streamed copy later on
+    return is_supported_scheme(dst);
 }
 
