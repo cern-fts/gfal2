@@ -55,7 +55,7 @@ static bool is_3rd_scheme(const char* url)
 }
 
 
-static bool is_supported_scheme(const char* url)
+static bool is_http_scheme(const char* url)
 {
     return is_streamed_scheme(url) || is_3rd_scheme(url);
 }
@@ -575,6 +575,11 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         copy_mode = HTTP_COPY_PULL;
     }
 
+    // If source is not even http, go straight to streamed
+    if (!is_http_scheme(src)) {
+        copy_mode = HTTP_COPY_STREAM;
+    }
+
     // If third party copy is disabled, go straight to streamed
     if (!is_http_3rdcopy_enabled(context)) {
         copy_mode = HTTP_COPY_STREAM;
@@ -652,6 +657,6 @@ int gfal_http_copy_check(plugin_handle plugin_data, gfal2_context_t context, con
         return 0;
     // This plugin handles everything that writes into an http endpoint
     // It will try to decide if it is better to do a third party copy, or a streamed copy later on
-    return is_supported_scheme(dst);
+    return is_http_scheme(dst);
 }
 
