@@ -21,7 +21,6 @@
  * @author Devresse Adrien
  * */
 
-#include <malloc.h>
 #include <glib.h>
 #include "glib.h"
 

@@ -24,6 +24,10 @@ extern "C"
 {
 #endif
 
+#ifndef HOST_NAME_MAX
+#define HOST_NAME_MAX 512
+#endif
+
 #define SCHEME_MAX 16
 
 typedef struct gfal_uri {

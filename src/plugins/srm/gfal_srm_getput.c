@@ -18,7 +18,6 @@
 #include <regex.h>
 #include <time.h>
 #include <stdio.h>
-#include <malloc.h>
 
 #include "gfal_srm.h"
 #include "gfal_srm_request.h"

@@ -36,6 +36,10 @@
 #include "gfal_mds_ldap_internal_layer.h"
 
 
+#ifndef ECOMM
+#define ECOMM ENOTCONN
+#endif
+
 
 static char* tabattr[] = {"GlueServiceVersion",  "GlueServiceEndpoint", "GlueServiceType", NULL};
 static const char *sbasedn = "o=grid";
@@ -55,7 +59,6 @@ LDAP* gfal_mds_ldap_connect(gfal2_context_t context, const char* uri, GError** e
 
     pthread_mutex_lock(&mux_init_lap); // libldap suffers of a thread-safety bug inside initialize function
 	if ( (rc = gfal_mds_ldap.ldap_initialize(&ld, uri)) != LDAP_SUCCESS ) {
-
          g_set_error(&tmp_err, gfal2_get_core_quark(), ECOMM, "Error with contacting ldap %s : %s", uri, ldap_err2string(rc));
 	}else{
 	    struct timeval timeout = {0};
@@ -151,13 +154,13 @@ static int gfal_mds_convert_entry_to_srm_information(LDAP* ld,LDAPMessage * entr
 	 
 		if ((vals = gfal_mds_ldap.ldap_get_values_len( ld, entry, a)) != NULL ) { 
 			if(strncmp(a, "GlueServiceVersion", GFAL_URL_MAX_LEN) == 0){
-				*((char*) mempcpy(srm_version,vals[0]->bv_val, MIN(GFAL_URL_MAX_LEN,vals[0]->bv_len) )) = '\0';
+				g_strlcpy(srm_version,vals[0]->bv_val, MIN(GFAL_URL_MAX_LEN,vals[0]->bv_len) );
 				ret+=1;
 			}else if (strncmp(a, "GlueServiceEndpoint", GFAL_URL_MAX_LEN) == 0){
-				*((char*) mempcpy(srm_endpoint,vals[0]->bv_val, MIN(GFAL_URL_MAX_LEN,vals[0]->bv_len) )) = '\0';
+				g_strlcpy(srm_endpoint,vals[0]->bv_val, MIN(GFAL_URL_MAX_LEN,vals[0]->bv_len) );
 				ret+=1;
 			}else if (strncmp(a, "GlueServiceType", GFAL_URL_MAX_LEN) == 0){
-				*((char*) mempcpy(srm_name,vals[0]->bv_val, MIN(GFAL_URL_MAX_LEN,vals[0]->bv_len) )) = '\0';
+				g_strlcpy(srm_name,vals[0]->bv_val, MIN(GFAL_URL_MAX_LEN,vals[0]->bv_len) );
 				ret+=1;
 			}else{
                 g_set_error(&tmp_err, gfal2_get_core_quark(), EINVAL, " Bad attribute retrived from bdii ");

@@ -88,7 +88,7 @@ static int gfal_get_fullendpointG(const char* surl, char* buff_endpoint, size_t 
 	size_t need_size = p- surl-len_prefix +len_endpoint_prefix;
 	if(s_buff > need_size){
 		memcpy(buff_endpoint, GFAL_ENDPOINT_DEFAULT_PREFIX, len_endpoint_prefix);	// copy prefix
-		*((char*)mempcpy(buff_endpoint + len_endpoint_prefix, surl+len_prefix, p- surl-len_prefix))= '\0';		// copy endpoint
+		g_strlcpy(buff_endpoint + len_endpoint_prefix, surl+len_prefix, p- surl-len_prefix);
 		return 0;
 	}
     gfal2_set_error(err, gfal2_get_plugin_srm_quark(), ENOBUFS, __func__, "buffer too small");

@@ -65,7 +65,6 @@ include_directories (${CMAKE_SOURCE_DIR}/src/utils)
 
 # Core and plugins
 if (NOT ONLY_TESTS)
-    find_package (UUID REQUIRED)
     
     # general parameters for configuration
     add_definitions ( -DGFAL_PLUGIN_DIR_DEFAULT="${PLUGIN_INSTALL_DIR}" )

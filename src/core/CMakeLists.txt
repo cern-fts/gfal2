@@ -25,7 +25,7 @@ add_library (gfal2 SHARED ${src_cancel}
                           ${src_exceptions}
                           ${gfal2_utils_c_src})
 
-target_link_libraries (gfal2 ${UUID_PKG_LIBRARIES} "stdc++" ) # hotfix for libc TLS init bug in EPEL 5
+target_link_libraries (gfal2 "stdc++" ) # hotfix for libc TLS init bug in EPEL 5
 target_link_libraries (gfal2 ${GLIB2_PKG_LIBRARIES} ${GTHREAD2_PKG_LIBRARIES})
 target_link_libraries (gfal2 "dl")
 

@@ -5,7 +5,9 @@ if (PLUGIN_SRM)
     file (GLOB src_srm "*.c*")
 
     find_package (SRM_IFCE REQUIRED)
+    find_package (Globus_COMMON)
     find_package (Globus_GSSAPI_GSI REQUIRED)
+    find_package (Globus_GSS_ASSIST REQUIRED)
 
     add_definitions (${SRM_IFCE_CFLAGS} ${GLOBUS_GSSAPI_GSI_CFLAGS})
     add_definitions (${gfal2_mds_def})
@@ -18,7 +20,9 @@ if (PLUGIN_SRM)
         ${mds_cache_link}
         ${SRM_IFCE_LIBRARIES}
         ${is_ifce_link}
-        gomp
+        ${GLOBUS_COMMON_LIBRARIES}
+        ${GLOBUS_GSSAPI_GSI_LIBRARIES}
+        ${GLOBUS_GSS_ASSIST_LIBRARIES}
     )
 
     set_target_properties(plugin_srm PROPERTIES

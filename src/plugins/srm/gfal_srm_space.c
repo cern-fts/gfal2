@@ -2,7 +2,6 @@
 #include <errno.h>
 #include <stdio.h>
 #include <sys/types.h>
-#include <attr/xattr.h>
 #include "gfal_srm_space.h"
 
 static void json_putc(char* buff, size_t s_buff, char c, size_t* offset)

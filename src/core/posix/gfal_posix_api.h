@@ -38,7 +38,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#ifdef __APPLE__
+#include <sys/xattr.h>
+#else
 #include <attr/xattr.h>
+#endif
 
 #include <global/gfal_global.h>
 #include <common/gfal_constants.h>

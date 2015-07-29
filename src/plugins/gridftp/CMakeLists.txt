@@ -3,15 +3,22 @@ cmake_minimum_required (VERSION 2.6)
 if (PLUGIN_GRIDFTP)
     file (GLOB_RECURSE src_gridftp "*.c*")
 
+    find_package (Globus_FTP_CLIENT REQUIRED)
     find_package (Globus_GASS_COPY REQUIRED)
+    find_package (Globus_COMMON REQUIRED)
+    find_package (Globus_GSS_ASSIST REQUIRED)
+    find_package (Globus_GSSAPI_GSI REQUIRED)
 
     add_definitions( ${GLOBUS_GASS_COPY_CFLAGS})
     add_library (plugin_gridftp SHARED ${src_gridftp})
 
     target_link_libraries(plugin_gridftp gfal2 gfal2_transfer
+                          ${GLOBUS_FTP_CLIENT_LIBRARIES}
 			              ${GLOBUS_GASS_COPY_LIBRARIES}
-                          gomp
-                          globus_gssapi_gsi)
+                          ${GLOBUS_GSSAPI_GSI}
+                          ${GLOBUS_COMMON_LIBRARIES}
+                          ${GLOBUS_GSS_ASSIST_LIBRARIES}
+                          ${GLOBUS_GSSAPI_GSI_LIBRARIES})
 
     include_directories(${GLOBUS_GASS_COPY_INCLUDE_DIRS}) 
 

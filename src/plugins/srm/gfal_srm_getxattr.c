@@ -127,8 +127,10 @@ ssize_t gfal_srm_listxattrG(plugin_handle handle, const char* path, char* list, 
 	char* plist= list;
 	while(*p != NULL){
 		const int size_str = strlen(*p)+1;
-		if( size > res && size - res >= size_str)
-			plist = mempcpy(plist, *p, size_str* sizeof(char) );
+		if( size > res && size - res >= size_str) {
+			memcpy(plist, *p, size_str);
+            plist += size_str;
+        }
 		res += size_str;
 		p++;
 	}

@@ -27,7 +27,6 @@
 
 struct _gfalt_params_t{
 	gboolean lock; 				// lock enabled after the start of the transfer
-	uuid_t uuid;				// unique id of the transfer
 	guint64 timeout; 			// connexion timeout
     guint64 tcp_buffer_size;
 	gboolean replace_existing;  // replace destination or not

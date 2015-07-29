@@ -33,7 +33,11 @@
 #include <glib.h>
 #include <sys/stat.h>
 #include <errno.h>
+#ifdef __APPLE__
+#include <sys/xattr.h>
+#else
 #include <attr/xattr.h>
+#endif
 #include <zlib.h>
 
 #include <gfal_plugins_api.h>
@@ -135,7 +139,11 @@ int gfal_plugin_file_chmod(plugin_handle plugin_data, const char* path, mode_t m
 }
 
 ssize_t gfal_plugin_file_getxattr(plugin_handle plugin_data, const char* path, const char* name, void* buff, size_t s_buff, GError** err){
+#ifdef __APPLE__
+    const ssize_t res = getxattr(path + file_prefix_len(), name, buff, s_buff, 0, XATTR_NOFOLLOW);
+#else
     const ssize_t res = getxattr(path + file_prefix_len(), name, buff, s_buff);
+#endif
     if(res <0){
         gfal_plugin_file_report_error(__func__, err);
     }else
@@ -144,7 +152,11 @@ ssize_t gfal_plugin_file_getxattr(plugin_handle plugin_data, const char* path, c
 }
 
 ssize_t gfal_plugin_file_listxattr(plugin_handle plugin_data, const char* path, char* list, size_t s_list, GError** err){
+#ifdef __APPLE__
+    const ssize_t res = listxattr(path + file_prefix_len(), list, s_list, XATTR_NOFOLLOW);
+#else
     const ssize_t res = listxattr(path + file_prefix_len(), list, s_list);
+#endif
     if(res <0){
         gfal_plugin_file_report_error(__func__, err);
     }else
@@ -153,7 +165,11 @@ ssize_t gfal_plugin_file_listxattr(plugin_handle plugin_data, const char* path, 
 }
 
 int gfal_plugin_file_setxattr(plugin_handle plugin_data, const char* path, const char* name, const void* value, size_t size, int flags, GError** err){
+#ifdef __APPLE__
+    const int res = setxattr(path + file_prefix_len(), name, value, size, 0, flags);
+#else
     const int res = setxattr(path + file_prefix_len(), name, value, size, flags);
+#endif
     if(res <0){
         gfal_plugin_file_report_error(__func__, err);
     }else

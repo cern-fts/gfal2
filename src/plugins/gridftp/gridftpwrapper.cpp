@@ -433,8 +433,10 @@ gfal2_context_t GridFTPFactory::get_gfal2_context()
  *  dirty function to convert error code from globus
  *  In the current state, globus provides no way to convert gridftp error code to errno properly....
  * */
+#ifndef ECOMM
+#define ECOMM EIO
+#endif
 static int scan_errstring(const char *p) {
-
     int ret = ECOMM;
     if (p == NULL) return ret;
 

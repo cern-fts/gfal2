@@ -531,8 +531,8 @@ ssize_t gfal_xrootd_listxattrG(plugin_handle plugin_data, const char* url,
     static const char props[] = "xroot.cksum\0xroot.space\0xroot.xattr";
     static const size_t proplen = sizeof(props);
     size_t len = proplen > s_list ? s_list : proplen;
-    char *end = (char*)mempcpy(list, props, len);
-    return end - list;
+    g_strlcpy(list, props, len);
+    return len;
 }
 
 

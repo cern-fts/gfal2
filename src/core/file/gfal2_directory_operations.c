@@ -35,6 +35,15 @@
 //
 // @author : Devresse Adrien
 
+#ifdef __APPLE__ 
+static char* mempcpy(char* dst, const char* src, size_t len)
+{
+    memcpy(src, dst, len);
+    return dst + len;
+}
+#endif
+
+
 inline static int gfal_rw_dir_handle_store(gfal2_context_t handle,
         gfal_file_handle fhandle, GError** err)
 {
@@ -113,7 +122,6 @@ static size_t gfal_rw_get_root_length(const char* surl)
     regexec(&rx, surl, 1, matches, 0);
     return matches[0].rm_eo - matches[0].rm_so;
 }
-
 
 inline static struct dirent* gfal_rw_gfalfilehandle_readdirpp(gfal2_context_t context, gfal_file_handle fh, struct stat* st, GError** err)
 {

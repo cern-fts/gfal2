@@ -332,10 +332,15 @@ static int http2errno(int http)
         case 501:
             return ENOSYS;
         default:
-            if (http >= 400 && http < 500)
+            if (http >= 400 && http < 500) {
                 return EINVAL;
-            else
+            } else {
+#ifdef ECOMM
                 return ECOMM;
+#else
+                return EIO;
+#endif
+            }
     }
 }
 

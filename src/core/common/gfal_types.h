@@ -34,7 +34,11 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#ifdef __APPLE__
+#include <sys/xattr.h>
+#else
 #include <attr/xattr.h>
+#endif
 
 #include <common/gfal_prototypes.h>
 #include <common/gfal_constants.h>

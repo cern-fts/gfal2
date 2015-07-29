@@ -32,7 +32,6 @@ void gfalt_params_handle_init(gfalt_params_t p, GError ** err)
     p->local_transfers = TRUE;
     p->strict_mode = FALSE;
     p->parent_dir_create = FALSE;
-    uuid_clear(p->uuid);
 
     p->monitor_callbacks = NULL;
     p->event_callbacks = NULL;

@@ -8,7 +8,7 @@ if (PLUGIN_XROOTD)
     set (BOOST_LIBRARYDIR "/usr/lib${LIB_SUFFIX}/boost141/") # EPEL5
     set (Boost_ADDITIONAL_VERSIONS "1.41" "1.41.0")
 
-    find_package(Boost 1.41 COMPONENTS thread REQUIRED)
+    find_package(Boost 1.41 COMPONENTS thread system REQUIRED)
     find_package(XROOTD REQUIRED)
 
     include_directories(${Boost_INCLUDE_DIRS})
@@ -21,7 +21,7 @@ if (PLUGIN_XROOTD)
     target_link_libraries (plugin_xrootd ${Boost_LIBRARIES})
     target_link_libraries (plugin_xrootd ${GFAL2_PKG_LIBRARIES})
     target_link_libraries (plugin_xrootd gfal2_transfer)
-    target_link_libraries (plugin_xrootd XrdClient XrdCl XrdPosix)
+    target_link_libraries (plugin_xrootd ${XROOTD_LIBRARIES})
     
     set_target_properties(plugin_xrootd PROPERTIES
                           CLEAN_DIRECT_OUTPUT 1

@@ -56,13 +56,10 @@ void file_mode_to_xrootd_ints(mode_t mode, int& user, int& group, int& other)
 
 void reset_stat(struct stat& st)
 {
-    timespec t;
-    t.tv_sec = 0;
-    t.tv_nsec = 0;
     st.st_mode = 0;
-    st.st_atim = t;
-    st.st_ctim = t;
-    st.st_mtim = t;
+    st.st_atime = 0;
+    st.st_ctime = 0;
+    st.st_mtime = 0;
     st.st_blksize = 0;
     st.st_blocks = 0;
     st.st_dev = 0;
