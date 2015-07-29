@@ -5,7 +5,11 @@ if (PLUGIN_SRM)
     add_executable(unit_test_srm_plugin ${src_test_srm})
 	
     target_link_libraries(unit_test_srm_plugin
-        ${GFAL2_LIBRARIES} plugin_srm ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} m
+        ${GFAL2_LIBRARIES}
+        plugin_srm_static
+        ${GTEST_LIBRARIES}
+        ${GTEST_MAIN_LIBRARIES}
+        m
     )
 
 	add_dependencies(unit_test_srm_plugin plugin_srm)	

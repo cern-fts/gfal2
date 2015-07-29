@@ -9,7 +9,7 @@ if (PLUGIN_FILE)
     include_directories(${ZLIB_INCLUDE_DIRS})
 
 
-    add_library (plugin_file SHARED ${src_file} ${gfal2_src_checksum})
+    add_library (plugin_file MODULE ${src_file} ${gfal2_src_checksum})
     target_link_libraries (plugin_file gfal2 ${ZLIB_LIBRARIES})
 
 

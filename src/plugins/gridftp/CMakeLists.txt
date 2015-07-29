@@ -10,7 +10,7 @@ if (PLUGIN_GRIDFTP)
     find_package (Globus_GSSAPI_GSI REQUIRED)
 
     add_definitions( ${GLOBUS_GASS_COPY_CFLAGS})
-    add_library (plugin_gridftp SHARED ${src_gridftp})
+    add_library (plugin_gridftp MODULE ${src_gridftp})
 
     target_link_libraries(plugin_gridftp gfal2 gfal2_transfer
                           ${GLOBUS_FTP_CLIENT_LIBRARIES}

@@ -8,7 +8,7 @@ if (PLUGIN_LFC)
     include_directories(${LFC_INCLUDE_DIR} ${LCGDM_INCLUDE_DIR} ${UUID_PKG_INCLUDE_DIR})
 
     file (GLOB src_lfc "*.c*")
-    add_library (plugin_lfc SHARED ${src_lfc})
+    add_library (plugin_lfc MODULE ${src_lfc})
 
     target_link_libraries(plugin_lfc gfal2 gfal2_transfer ${LFC_LIBRARIES} ${UUID_PKG_LIBRARIES})
 

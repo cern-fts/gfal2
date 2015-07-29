@@ -16,12 +16,21 @@ if (PLUGIN_XROOTD)
 
     file (GLOB src_xrootd "*.cpp")
 
-    add_library (plugin_xrootd SHARED ${src_xrootd})
+    add_library (plugin_xrootd MODULE ${src_xrootd})
+    add_library (plugin_xrootd_static STATIC ${src_xrootd})
     
-    target_link_libraries (plugin_xrootd ${Boost_LIBRARIES})
-    target_link_libraries (plugin_xrootd ${GFAL2_PKG_LIBRARIES})
-    target_link_libraries (plugin_xrootd gfal2_transfer)
-    target_link_libraries (plugin_xrootd ${XROOTD_LIBRARIES})
+    target_link_libraries (plugin_xrootd
+        ${Boost_LIBRARIES}
+        ${GFAL2_PKG_LIBRARIES}
+        gfal2_transfer
+        ${XROOTD_LIBRARIES}
+    )
+    target_link_libraries(plugin_xrootd_static
+        ${Boost_LIBRARIES}
+        ${GFAL2_PKG_LIBRARIES}
+        gfal2_transfer
+        ${XROOTD_LIBRARIES}
+    )
     
     set_target_properties(plugin_xrootd PROPERTIES
                           CLEAN_DIRECT_OUTPUT 1

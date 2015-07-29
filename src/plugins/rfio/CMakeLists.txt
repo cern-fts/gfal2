@@ -8,7 +8,7 @@ if (PLUGIN_RFIO)
     include_directories (${DPM_INCLUDE_DIR})
     add_definitions(${DPM_CFLAGS})
 
-    add_library (plugin_rfio SHARED ${src_rfio})
+    add_library (plugin_rfio MODULE ${src_rfio})
 
     target_link_libraries (plugin_rfio gfal2 ${DPM_LIBRARIES})
 

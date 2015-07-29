@@ -10,7 +10,7 @@ if (PLUGIN_DCAP)
     add_definitions(-D_REENTRANT)
     add_definitions(${DCAP_CFLAGS})
 
-    add_library(plugin_dcap SHARED ${src_dcap})
+    add_library(plugin_dcap MODULE ${src_dcap})
 
     target_link_libraries(plugin_dcap gfal2 ${DCAP_LIBRARIES})
 

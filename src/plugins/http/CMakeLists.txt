@@ -15,7 +15,7 @@ if (PLUGIN_HTTP)
 
     # Build plugin
     file (GLOB src_http "gfal_http_*.cpp")
-    add_library (plugin_http SHARED ${src_http})
+    add_library (plugin_http MODULE ${src_http})
 
     target_link_libraries(plugin_http gfal2
           gfal2_transfer

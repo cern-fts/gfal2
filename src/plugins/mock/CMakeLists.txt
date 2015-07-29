@@ -4,7 +4,7 @@ cmake_minimum_required (VERSION 2.6)
 if (PLUGIN_MOCK)
     file (GLOB src_file "*.c*")
 
-    add_library (plugin_mock SHARED ${src_file})
+    add_library (plugin_mock MODULE ${src_file})
     target_link_libraries (plugin_mock gfal2 gfal2_transfer)
 
 
