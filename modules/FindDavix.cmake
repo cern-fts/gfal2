@@ -31,6 +31,7 @@ else ()
             ${STAGE_DIR}/lib ${STAGE_DIR}/lib64
             ${CMAKE_INSTALL_PREFIX}/Davix/*/${PLATFORM}/lib
             ${CMAKE_INSTALL_PREFIX}/Davix/*/${PLATFORM}/lib64
+            /usr/local/lib
         DOC "The main davix library"
     )
     
@@ -41,10 +42,11 @@ else ()
             ${STAGE_DIR}/lib ${STAGE_DIR}/lib64
             ${CMAKE_INSTALL_PREFIX}/Davix/*/${PLATFORM}/lib
             ${CMAKE_INSTALL_PREFIX}/Davix/*/${PLATFORM}/lib64
+            /usr/local/lib
         DOC "The davix copy library"
     )
     
-    set (DAVIX_LIBRARIES ${DAVIX_MAIN_LIBRARY})
+    set (DAVIX_LIBRARIES ${DAVIX_MAIN_LIBRARY} ${DAVIX_COPY_LIBRARY})
     
     # Davix Include Directories
     find_path(DAVIX_INCLUDE_DIR 
@@ -53,6 +55,7 @@ else ()
             ${DAVIX_LOCATION} ${DAVIX_LOCATION}/include ${DAVIX_LOCATION}/include/*
             ${STAGE_DIR}/include ${STAGE_DIR}/include
             ${CMAKE_INSTALL_PREFIX}/Davix/*/${PLATFORM}/include/*
+            /usr/local/include/davix
         DOC "Davix include directory"
     )
     

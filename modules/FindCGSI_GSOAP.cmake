@@ -16,20 +16,17 @@ include(CMakeStringHelpers)
 # -----------------------------------------------------
 # CGSI_GSOAP Libraries
 # -----------------------------------------------------
-find_library(CGSI_GSOAP_PATH
+find_library(CGSI_GSOAP_LIBRARIES
     NAMES cgsi_plugin
     HINTS
         ${CGSI_GSOAP_LOCATION}
         ${STAGE_DIR}
         ${CMAKE_INSTALL_PREFIX}/cgsigsoap/*/${PLATFORM}/lib
         ${CMAKE_INSTALL_PREFIX}/cgsigsoap/*/${PLATFORM}/lib64
+        /usr/local/opt/cgsi-gsoap/lib
+        /usr/local/opt/cgsi-gsoap/lib64
     DOC "The main CGSI_GSOAP library"
 )
-
-if(CGSI_GSOAP_PATH)
-	parse_lib_path("CGSI_GSOAP_LIBRARIES" "CGSI_GSOAP_LIBRARY_DIRS" ${CGSI_GSOAP_PATH})
-        #message( " link ${CGSI_GSOAP_LIBRARIES}  path ${CGSI_GSOAP_LIBRARY_DIRS}")
-endif(CGSI_GSOAP_PATH)
 
 
 # -----------------------------------------------------
@@ -46,7 +43,9 @@ find_path(CGSI_GSOAP_INCLUDE_DIRS
 if(CGSI_GSOAP_INCLUDE_DIRS)
     message(STATUS "CGSI_GSOAP includes found in ${CGSI_GSOAP_INCLUDE_DIRS}")
 endif()
-
+if(CGSI_GSOAP_LIBRARIES)
+    message(STATUS "CGSI_GSOAP libraries found in ${CGSI_GSOAP_LIBRARIES}")
+endif()
 
 
 # -----------------------------------------------------
@@ -54,5 +53,5 @@ endif()
 # all listed variables are TRUE
 # -----------------------------------------------------
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(CGSI_GSOAP DEFAULT_MSG CGSI_GSOAP_PATH)
-mark_as_advanced(CGSI_GSOAP_INCLUDE_DIRS CGSI_GSOAP_LIBRARIES CGSI_GSOAP_LIBRARY_DIRS)
+find_package_handle_standard_args(CGSI_GSOAP DEFAULT_MSG CGSI_GSOAP_LIBRARIES)
+mark_as_advanced(CGSI_GSOAP_INCLUDE_DIRS CGSI_GSOAP_LIBRARIES)

@@ -5,15 +5,20 @@ if (UNIX)
   ENDIF (NOT APPLICATION_NAME)
 
 # Suffix for Linux
-	IF (CMAKE_SIZEOF_VOID_P EQUAL 4)
-		SET(LIB_SUFFIX ""
-		CACHE STRING "Suffix of the lib")
-		SET (PKG_ARCH "i386")
-	ELSE (CMAKE_SIZEOF_VOID_P EQUAL 4)
-		SET(LIB_SUFFIX "64"
-		CACHE STRING "Suffix of the lib")
-		SET (PKG_ARCH "x86_64")
-	ENDIF (CMAKE_SIZEOF_VOID_P EQUAL 4)
+    IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        SET(LIB_SUFFIX ""
+            CACHE STRING "Suffix of the lib")
+    ELSE ()
+        IF (CMAKE_SIZEOF_VOID_P EQUAL 4)
+            SET(LIB_SUFFIX ""
+                CACHE STRING "Suffix of the lib")
+            SET (PKG_ARCH "i386")
+        ELSE (CMAKE_SIZEOF_VOID_P EQUAL 4)
+            SET(LIB_SUFFIX "64"
+                CACHE STRING "Suffix of the lib")
+            SET (PKG_ARCH "x86_64")
+        ENDIF (CMAKE_SIZEOF_VOID_P EQUAL 4)
+    ENDIF ()
 
   SET(EXEC_INSTALL_PREFIX
     "${CMAKE_INSTALL_PREFIX}"

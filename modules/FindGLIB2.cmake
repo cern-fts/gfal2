@@ -18,6 +18,7 @@ if (GLIB2_PKG_FOUND)
     set (GLIB2_LIBRARIES ${GLIB2_PKG_LIBRARIES})
     set (GLIB2_INCLUDE_DIRS ${GLIB2_PKG_INCLUDE_DIRS})
     set (GLIB2_DEFINITIONS "${GLIB2_PKG_CFLAGS} ${GLIB2_PKG_CFLAGS_OTHER}")
+    set (GLIB2_LIBRARY_DIRS ${GLIB2_PKG_LIBRARY_DIRS})
 else (GLIB2_PKG_FOUND)
 
     find_library(GLIB2_LIBRARIES
@@ -44,6 +45,10 @@ if (GLIB2_INCLUDE_DIRS)
     message (STATUS "GLIB2 include dir: ${GLIB2_INCLUDE_DIRS}")
 endif (GLIB2_INCLUDE_DIRS)
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    link_directories ("/usr/local/opt/gettext/lib")
+endif ()
+
 # -----------------------------------------------------
 # handle the QUIETLY and REQUIRED arguments and set GLIB2_FOUND to TRUE if 
 # all listed variables are TRUE
@@ -52,4 +57,5 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args (GLIB2 DEFAULT_MSG
     GLIB2_LIBRARIES  GLIB2_INCLUDE_DIRS
 )
-mark_as_advanced(GLIB2_INCLUDE_DIRS GLIB2_LIBRARIES)
+mark_as_advanced(GLIB2_INCLUDE_DIRS GLIB2_LIBRARIES GLIB2_LIBRARY_DIRS)
+

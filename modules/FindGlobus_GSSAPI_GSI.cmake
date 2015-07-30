@@ -20,12 +20,15 @@ if (GLOBUS_GSSAPI_GSI_PKG_FOUND)
     set (GLOBUS_GSSAPI_GSI_DEFINITIONS "${GLOBUS_GSSAPI_GSI_PKG_CFLAGS}")
 else (GLOBUS_GSSAPI_GSI_PKG_FOUND)
 
+    set (CMAKE_FIND_FRAMEWORK NEVER)
+
     find_library(GLOBUS_GSSAPI_GSI_LIBRARIES
         NAMES globus_gssapi_gsi
         HINTS ${GLOBUS_GSSAPI_GSI_LOCATION} 
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib64
+              /usr/local/opt/globus-toolkit/libexec/lib
         DOC "The main globus-gssapi-gsi library"
     )
 
@@ -34,6 +37,7 @@ else (GLOBUS_GSSAPI_GSI_PKG_FOUND)
         HINTS ${GLOBUS_GSSAPI_GSI_LOCATION}/include/*
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/include
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/include
+              /usr/local/opt/globus-toolkit/libexec/include
         DOC "The globus-gssapi-gsi include directory"
     )
 
