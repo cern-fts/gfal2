@@ -79,18 +79,23 @@ static gboolean gfal_check_fullendpoint_in_surlG(gfal_srmv2_opt* opts,const char
 /*
  *  @brief create a full endpoint from a "full-surl"
  * */
-static int gfal_get_fullendpointG(const char* surl, char* buff_endpoint, size_t s_buff, GError** err){
-	char* p = strstr(surl,"?SFN=");
-	const int len_prefix = strlen(GFAL_PREFIX_SRM);						// get the srm prefix length
-	const int len_endpoint_prefix = strlen(GFAL_ENDPOINT_DEFAULT_PREFIX); // get the endpoint protocol prefix len
-	g_return_val_err_if_fail(p && len_prefix && (p>(surl+len_prefix)) && len_endpoint_prefix, -1,err,"[gfal_get_fullendpoint] full surl must contain ?SFN= and a valid prefix, fatal error");	// assertion on params
+static int gfal_get_fullendpointG(const char* surl, char* buff_endpoint, size_t s_buff, GError** err)
+{
+	char* sfn = strstr(surl,"?SFN=");
+    g_return_val_err_if_fail(sfn, -1, err,
+            "[gfal_get_fullendpoint] full surl must contain ?SFN= and a valid prefix, fatal error");
 
-	size_t need_size = p- surl-len_prefix +len_endpoint_prefix;
-	if(s_buff > need_size){
-		memcpy(buff_endpoint, GFAL_ENDPOINT_DEFAULT_PREFIX, len_endpoint_prefix);	// copy prefix
-		g_strlcpy(buff_endpoint + len_endpoint_prefix, surl+len_prefix, p- surl-len_prefix);
-		return 0;
-	}
+    // Endpoint length not counting the scheme
+    size_t endpoint_len = (sfn - surl) - GFAL_PREFIX_SRM_LEN;
+    // Endpoint length counting the httpg scheme
+    size_t full_endpoint_len = endpoint_len + GFAL_ENDPOINT_DEFAULT_PREFIX_LEN;
+
+    // buff_endpoint must have enough space to allocate the full_endpoint_len + '\0'
+    if (s_buff > full_endpoint_len) {
+        memcpy(buff_endpoint, GFAL_ENDPOINT_DEFAULT_PREFIX, GFAL_ENDPOINT_DEFAULT_PREFIX_LEN);
+        g_strlcpy(buff_endpoint + GFAL_ENDPOINT_DEFAULT_PREFIX_LEN, surl + GFAL_PREFIX_SRM_LEN, endpoint_len + 1);
+        return 0;
+    }
     gfal2_set_error(err, gfal2_get_plugin_srm_quark(), ENOBUFS, __func__, "buffer too small");
 	return -1;
 }
