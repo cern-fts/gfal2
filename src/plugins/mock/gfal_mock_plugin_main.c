@@ -182,6 +182,7 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
             // If this size were <= 0, consider it a ENOENT
             if (size <= 0) {
                 gfal_plugin_mock_report_error(strerror(ENOENT), ENOENT, err);
+                stage++;
                 return -1;
             }
             break;
@@ -192,6 +193,7 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
         default:
             break;
     }
+    stage++;
 
     // Set the struct
     memset(buf, 0x00, sizeof(*buf));
