@@ -179,6 +179,11 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
         case STAT_DESTINATION_BEFORE_TRANSFER:
             gfal_plugin_mock_get_value(path, FILE_SIZE_PRE, arg_buffer, sizeof(arg_buffer));
             size = gfal_plugin_mock_get_int_from_str(arg_buffer);
+            // If this size were <= 0, consider it a ENOENT
+            if (size <= 0) {
+                gfal_plugin_mock_report_error(strerror(ENOENT), ENOENT, err);
+                return -1;
+            }
             break;
         case STAT_DESTINATION_AFTER_TRANSFER:
             gfal_plugin_mock_get_value(path, FILE_SIZE_POST, arg_buffer, sizeof(arg_buffer));
