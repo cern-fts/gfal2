@@ -51,6 +51,9 @@ const char* CHECKSUM = "checksum";
 const char* TIME = "time";
 const char* ERRNO = "errno";
 const char* TRANSFER_ERRNO = "transfer_errno";
+const char* STAGING_TIME = "staging_time";
+const char* STAGING_ERRNO = "staging_errno";
+const char* RELEASE_ERRNO = "release_errno";
 
 // This is the order FTS3 performs its stats
 typedef enum {
@@ -62,6 +65,9 @@ typedef enum {
 
 typedef struct {
     StatStage stat_stage;
+    time_t staging_end;
+    int staging_errno;
+    int release_errno;
 } MockPluginData;
 
 
@@ -103,6 +109,7 @@ static gboolean gfal_mock_check_url(plugin_handle handle, const char* url, plugi
         //case GFAL_PLUGIN_RENAME:
         //case GFAL_PLUGIN_SYMLINK:
         //case GFAL_PLUGIN_CHECKSUM:
+		case GFAL_PLUGIN_BRING_ONLINE:
             return is_mock_uri(url);
 		default:
 			return FALSE;
@@ -356,6 +363,76 @@ int gfal_plugin_mock_filecopy(plugin_handle plugin_data,
 }
 
 
+int gfal_plugin_mock_bring_online(plugin_handle plugin_data, const char* url,
+    time_t pintime, time_t timeout, char* token, size_t tsize, int async,
+    GError** err)
+{
+    struct stat buf;
+    if (gfal_plugin_mock_stat(plugin_data, url, &buf, err)) {
+        return -1;
+    }
+
+    MockPluginData *mdata = plugin_data;
+    char arg_buffer[64];
+
+    // Bring online errno
+    gfal_plugin_mock_get_value(url, STAGING_ERRNO, arg_buffer, sizeof(arg_buffer));
+    mdata->staging_errno = gfal_plugin_mock_get_int_from_str(arg_buffer);
+
+    // Release errno
+    gfal_plugin_mock_get_value(url, RELEASE_ERRNO, arg_buffer, sizeof(arg_buffer));
+    mdata->release_errno = gfal_plugin_mock_get_int_from_str(arg_buffer);
+
+    // Polling time
+    gfal_plugin_mock_get_value(url, STAGING_TIME, arg_buffer, sizeof(arg_buffer));
+    mdata->staging_end = time(NULL) + gfal_plugin_mock_get_int_from_str(arg_buffer);
+
+    // Fake token
+    g_strlcpy(token, "mock-token", tsize);
+
+    // Now, if remaining is <= 0, or blocking call, we are done
+    if (mdata->staging_end <= time(NULL) || !async) {
+        if (mdata->staging_errno) {
+            gfal_plugin_mock_report_error(strerror(mdata->staging_errno), mdata->staging_errno, err);
+            return -1;
+        }
+        return 1;
+    }
+
+    return 0;
+}
+
+
+int gfal_plugin_mock_bring_online_poll(plugin_handle plugin_data,
+    const char* url, const char* token, GError** err)
+{
+    MockPluginData *mdata = plugin_data;
+
+    if (mdata->staging_end <= time(NULL)) {
+        if (mdata->staging_errno) {
+            gfal_plugin_mock_report_error(strerror(mdata->staging_errno), mdata->staging_errno, err);
+            return -1;
+        }
+        return 1;
+    }
+
+    return 0;
+}
+
+
+
+int gfal_plugin_mock_release_file(plugin_handle plugin_data, const char* url,
+    const char* token, GError** err)
+{
+    MockPluginData *mdata = plugin_data;
+    if (mdata->release_errno) {
+        gfal_plugin_mock_report_error(strerror(mdata->release_errno), mdata->release_errno, err);
+        return -1;
+    }
+    return 0;
+}
+
+
 void gfal_plugin_mock_delete(plugin_handle plugin_data)
 {
     free(plugin_data);
@@ -378,6 +455,10 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)
     mock_plugin.statG = &gfal_plugin_mock_stat;
     mock_plugin.lstatG = &gfal_plugin_mock_stat;
     mock_plugin.unlinkG = &gfal_plugin_mock_unlink;
+
+    mock_plugin.bring_online = gfal_plugin_mock_bring_online;
+    mock_plugin.bring_online_poll = gfal_plugin_mock_bring_online_poll;
+    mock_plugin.release_file = gfal_plugin_mock_release_file;
 
     mock_plugin.check_plugin_url_transfer = &gfal_plugin_mock_check_url_transfer;
     mock_plugin.copy_file = &gfal_plugin_mock_filecopy;
