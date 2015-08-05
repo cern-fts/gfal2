@@ -38,8 +38,6 @@
 #include <common/gfal_common_err_helpers.h>
 #include <checksums/checksums.h>
 
-
-const char* mock_prefix = "mock:";
 const char* mock_config_group = "MOCK PLUGIN";
 const char* mock_skip_transfer_config = "SKIP_SOURCE_CHECKSUM";
 
@@ -61,7 +59,10 @@ typedef enum {
 	STAT_DESTINATION_AFTER_TRANSFER
 } StatStage;
 
-unsigned int s_prefix = 0;
+
+typedef struct {
+    StatStage stat_stage;
+} MockPluginData;
 
 
 GQuark gfal2_get_plugin_mock_quark()
@@ -174,15 +175,15 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
     size = gfal_plugin_mock_get_int_from_str(arg_buffer);
 
     // Try specific stage then
-    static StatStage stage = STAT_SOURCE;
-    switch (stage) {
+    MockPluginData* mdata = plugin_data;
+    switch (mdata->stat_stage) {
         case STAT_DESTINATION_BEFORE_TRANSFER:
             gfal_plugin_mock_get_value(path, FILE_SIZE_PRE, arg_buffer, sizeof(arg_buffer));
             size = gfal_plugin_mock_get_int_from_str(arg_buffer);
             // If this size were <= 0, consider it a ENOENT
             if (size <= 0) {
                 gfal_plugin_mock_report_error(strerror(ENOENT), ENOENT, err);
-                stage++;
+                mdata->stat_stage++;
                 return -1;
             }
             break;
@@ -193,7 +194,7 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
         default:
             break;
     }
-    stage++;
+    mdata->stat_stage++;
 
     // Set the struct
     memset(buf, 0x00, sizeof(*buf));
@@ -242,7 +243,9 @@ static void gfal_mock_cancel_transfer(gfal2_context_t context, void* userdata)
 }
 
 
-int gfal_plugin_mock_filecopy(plugin_handle handle, gfal2_context_t context, gfalt_params_t params, const char* src, const char* dst, GError** err)
+int gfal_plugin_mock_filecopy(plugin_handle plugin_data,
+    gfal2_context_t context, gfalt_params_t params, const char* src,
+    const char* dst, GError** err)
 {
 	// do we use checksum
 	gboolean checksum_check = gfalt_get_checksum_check(params, NULL);
@@ -325,6 +328,10 @@ int gfal_plugin_mock_filecopy(plugin_handle handle, gfal2_context_t context, gfa
 
     gfal2_remove_cancel_callback(context, cancel_token);
 
+    // Jump over to the destination stat
+    MockPluginData* mdata = plugin_data;
+    mdata->stat_stage = STAT_DESTINATION_AFTER_TRANSFER;
+
     // validate destination checksum
     if (!*err && checksum_check)
     {
@@ -348,15 +355,23 @@ int gfal_plugin_mock_filecopy(plugin_handle handle, gfal2_context_t context, gfa
     return 0;
 }
 
+
+void gfal_plugin_mock_delete(plugin_handle plugin_data)
+{
+    free(plugin_data);
+}
+
+
 /*
  * Init function, called before all
  * */
-gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err){
-
+gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)
+{
 	gfal_plugin_interface mock_plugin;
     memset(&mock_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin
 
-    mock_plugin.plugin_data = NULL;
+    mock_plugin.plugin_data = calloc(1, sizeof(MockPluginData));
+    mock_plugin.plugin_delete = gfal_plugin_mock_delete;
     mock_plugin.check_plugin_url = &gfal_mock_check_url;
     mock_plugin.getName= &gfal_mock_plugin_getName;
 
