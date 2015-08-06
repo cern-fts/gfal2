@@ -930,11 +930,15 @@ int gfal_plugin_bring_online_listG(gfal2_context_t handle, int nbfiles, const ch
     int resu = -1;
     gfal_plugin_interface* p = gfal_find_plugin(handle, *uris, GFAL_PLUGIN_BRING_ONLINE, &tmp_err);
 
-    if (p) {
+    if (p && p->bring_online_list) {
         resu = p->bring_online_list(gfal_get_plugin_handle(p), nbfiles, uris, pintime, timeout,
                 token, tsize, async, errors);
     }
     else {
+        if (p && !p->bring_online_list) {
+            gfal2_set_error(&tmp_err, gfal2_get_plugins_quark(), EPROTONOSUPPORT,
+                    __func__, "The plugin does not implement bulk bring online");
+        }
         int i;
         for (i = 0; i < nbfiles; ++i) {
             errors[i] = g_error_copy(tmp_err);
@@ -952,10 +956,14 @@ int gfal_plugin_bring_online_poll_listG(gfal2_context_t handle, int nbfiles, con
     int resu = -1;
     gfal_plugin_interface* p = gfal_find_plugin(handle, *uris, GFAL_PLUGIN_BRING_ONLINE, &tmp_err);
 
-    if (p) {
+    if (p && p->bring_online_poll_list) {
         resu = p->bring_online_poll_list(gfal_get_plugin_handle(p), nbfiles, uris, token, errors);
     }
     else {
+        if (p && !p->bring_online_poll_list) {
+            gfal2_set_error(&tmp_err, gfal2_get_plugins_quark(), EPROTONOSUPPORT,
+                    __func__, "The plugin does not implement bulk bring online polling");
+        }
         int i;
         for (i = 0; i < nbfiles; ++i) {
             errors[i] = g_error_copy(tmp_err);
@@ -973,10 +981,14 @@ int gfal_plugin_release_file_listG(gfal2_context_t handle, int nbfiles, const ch
     int resu = -1;
     gfal_plugin_interface* p = gfal_find_plugin(handle, *uris, GFAL_PLUGIN_BRING_ONLINE, &tmp_err);
 
-    if (p) {
+    if (p && p->release_file_list) {
         resu = p->release_file_list(gfal_get_plugin_handle(p), nbfiles, uris, token, errors);
     }
     else {
+        if (p && !p->release_file_list) {
+            gfal2_set_error(&tmp_err, gfal2_get_plugins_quark(), EPROTONOSUPPORT,
+                    __func__, "The plugin does not implement bulk releases");
+        }
         int i;
         for (i = 0; i < nbfiles; ++i) {
             errors[i] = g_error_copy(tmp_err);
