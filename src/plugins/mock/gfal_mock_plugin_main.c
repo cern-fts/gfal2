@@ -365,11 +365,6 @@ int gfal_plugin_mock_bring_online(plugin_handle plugin_data, const char* url,
     time_t pintime, time_t timeout, char* token, size_t tsize, int async,
     GError** err)
 {
-    struct stat buf;
-    if (gfal_plugin_mock_stat(plugin_data, url, &buf, err)) {
-        return -1;
-    }
-
     MockPluginData *mdata = plugin_data;
     char arg_buffer[64];
 
@@ -454,14 +449,21 @@ int gfal_plugin_mock_bring_online_list(plugin_handle plugin_data, int nbfiles,
 int gfal_plugin_mock_bring_online_poll_list(plugin_handle plugin_data,
     int nbfiles, const char* const * urls, const char* token, GError** err)
 {
-    int terminal_count = 0, r, i;
+    int terminal_count = 0, r, i, error_count = 0;
 
     for (i = 0; i < nbfiles; ++i) {
         r = gfal_plugin_mock_bring_online_poll(plugin_data, urls[i], token, &(err[i]));
-        if (r > 0)
+        if (r > 0) {
             ++terminal_count;
+        }
+        else if (r < 0) {
+            ++terminal_count;
+            ++error_count;
+        }
     }
 
+    if (error_count)
+        return -1;
     if (terminal_count == nbfiles)
         return 1;
     return 0;
