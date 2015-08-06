@@ -408,6 +408,9 @@ int gfal_plugin_mock_bring_online_poll(plugin_handle plugin_data,
         }
         return 1;
     }
+    else {
+        gfal_plugin_mock_report_error("Not ready", EAGAIN, err);
+    }
 
     return 0;
 }
@@ -462,8 +465,6 @@ int gfal_plugin_mock_bring_online_poll_list(plugin_handle plugin_data,
         }
     }
 
-    if (error_count)
-        return -1;
     if (terminal_count == nbfiles)
         return 1;
     return 0;
