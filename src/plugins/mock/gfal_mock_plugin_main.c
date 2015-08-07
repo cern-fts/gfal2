@@ -64,6 +64,7 @@ typedef enum {
 
 
 typedef struct {
+    gfal2_context_t handle;
     StatStage stat_stage;
     time_t staging_end;
 } MockPluginData;
@@ -164,8 +165,15 @@ static int gfal_plugin_mock_get_int_from_str(const char* buff)
 
 int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct stat* buf, GError** err)
 {
+    MockPluginData* mdata = plugin_data;
+
     char arg_buffer[64] = {0};
     int size = 0, errcode = 0;
+
+    // Is fts_url_copy calling us?
+    const char* agent, *version;
+    gfal2_get_user_agent(mdata->handle, &agent, &version);
+    int is_url_copy = (agent && strncmp(agent, "fts_url_copy", 12) == 0);
 
     // Check errno first
     gfal_plugin_mock_get_value(path, ERRNO, arg_buffer, sizeof(arg_buffer));
@@ -180,28 +188,29 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
     size = gfal_plugin_mock_get_int_from_str(arg_buffer);
 
     // Try specific stage then
-    MockPluginData* mdata = plugin_data;
-    switch (mdata->stat_stage) {
-        case STAT_DESTINATION_BEFORE_TRANSFER:
-            mdata->stat_stage = STAT_DESTINATION_AFTER_TRANSFER;
+    if (is_url_copy) {
+        switch (mdata->stat_stage) {
+            case STAT_DESTINATION_BEFORE_TRANSFER:
+                mdata->stat_stage = STAT_DESTINATION_AFTER_TRANSFER;
 
-            gfal_plugin_mock_get_value(path, FILE_SIZE_PRE, arg_buffer, sizeof(arg_buffer));
-            size = gfal_plugin_mock_get_int_from_str(arg_buffer);
-            // If this size were <= 0, consider it a ENOENT
-            if (size <= 0) {
-                gfal_plugin_mock_report_error(strerror(ENOENT), ENOENT, err);
-                return -1;
-            }
-            break;
-        case STAT_DESTINATION_AFTER_TRANSFER:
-            mdata->stat_stage = STAT_SOURCE;
+                gfal_plugin_mock_get_value(path, FILE_SIZE_PRE, arg_buffer, sizeof(arg_buffer));
+                size = gfal_plugin_mock_get_int_from_str(arg_buffer);
+                // If this size were <= 0, consider it a ENOENT
+                if (size <= 0) {
+                    gfal_plugin_mock_report_error(strerror(ENOENT), ENOENT, err);
+                    return -1;
+                }
+                break;
+            case STAT_DESTINATION_AFTER_TRANSFER:
+                mdata->stat_stage = STAT_SOURCE;
 
-            gfal_plugin_mock_get_value(path, FILE_SIZE_POST, arg_buffer, sizeof(arg_buffer));
-            size = gfal_plugin_mock_get_int_from_str(arg_buffer);
-            break;
-        case STAT_SOURCE:
-            mdata->stat_stage = STAT_DESTINATION_BEFORE_TRANSFER;
-            break;
+                gfal_plugin_mock_get_value(path, FILE_SIZE_POST, arg_buffer, sizeof(arg_buffer));
+                size = gfal_plugin_mock_get_int_from_str(arg_buffer);
+                break;
+            case STAT_SOURCE:
+                mdata->stat_stage = STAT_DESTINATION_BEFORE_TRANSFER;
+                break;
+        }
     }
 
     // Set the struct
@@ -499,7 +508,10 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)
 	gfal_plugin_interface mock_plugin;
     memset(&mock_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin
 
-    mock_plugin.plugin_data = calloc(1, sizeof(MockPluginData));
+    MockPluginData* mdata = calloc(1, sizeof(MockPluginData));
+    mdata->handle = handle;
+
+    mock_plugin.plugin_data = mdata;
     mock_plugin.plugin_delete = gfal_plugin_mock_delete;
     mock_plugin.check_plugin_url = &gfal_mock_check_url;
     mock_plugin.getName= &gfal_mock_plugin_getName;
