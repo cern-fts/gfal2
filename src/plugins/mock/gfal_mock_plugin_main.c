@@ -183,23 +183,26 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
     MockPluginData* mdata = plugin_data;
     switch (mdata->stat_stage) {
         case STAT_DESTINATION_BEFORE_TRANSFER:
+            mdata->stat_stage = STAT_DESTINATION_AFTER_TRANSFER;
+
             gfal_plugin_mock_get_value(path, FILE_SIZE_PRE, arg_buffer, sizeof(arg_buffer));
             size = gfal_plugin_mock_get_int_from_str(arg_buffer);
             // If this size were <= 0, consider it a ENOENT
             if (size <= 0) {
                 gfal_plugin_mock_report_error(strerror(ENOENT), ENOENT, err);
-                mdata->stat_stage++;
                 return -1;
             }
             break;
         case STAT_DESTINATION_AFTER_TRANSFER:
+            mdata->stat_stage = STAT_SOURCE;
+
             gfal_plugin_mock_get_value(path, FILE_SIZE_POST, arg_buffer, sizeof(arg_buffer));
             size = gfal_plugin_mock_get_int_from_str(arg_buffer);
             break;
-        default:
+        case STAT_SOURCE:
+            mdata->stat_stage = STAT_DESTINATION_BEFORE_TRANSFER;
             break;
     }
-    mdata->stat_stage++;
 
     // Set the struct
     memset(buf, 0x00, sizeof(*buf));
