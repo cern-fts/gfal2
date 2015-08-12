@@ -6,7 +6,7 @@
 
 Name:               gfal2
 Version:            2.10.0
-Release:            1%{?dist}
+Release: r1234%{?dist}
 Summary:            Grid file access library 2
 Group:              Applications/Internet
 License:            ASL 2.0
@@ -25,6 +25,7 @@ BuildRequires:      cmake
 BuildRequires:      doxygen
 %if 0%{?el5}
 BuildRequires:      glib2-devel
+BuildRequires:      gcc44-c++
 %else
 BuildRequires:      glib2-devel >= 2.28
 %endif
@@ -55,12 +56,7 @@ BuildRequires:      globus-gass-copy-devel
 #http plugin dependencies
 BuildRequires:      davix-devel >= 0.4.2
 #xrootd plugin dependencies
-%if %{?fedora}%{!?fedora:0} >= 10 || %{?rhel}%{!?rhel:0} >= 6
-BuildRequires:  boost-devel >= 1.41.0
-%else
-BuildRequires:  boost141-devel
-%endif
-BuildRequires:  xrootd-client-devel >= 1:4.1.1
+BuildRequires:      xrootd-client-devel >= 1:4.1.1
 #tests dependencies
 BuildRequires:      gtest-devel
 
@@ -244,6 +240,11 @@ if [ "$gfal2_cmake_ver" != "$gfal2_spec_ver" ]; then
     echo "$gfal2_cmake_ver != %{version}"
     exit 1
 fi
+
+%if 0%{?el5}
+export CC=/usr/bin/gcc44
+export CXX=/usr/bin/g++44
+%endif
 
 %cmake \
     -DDOC_INSTALL_DIR=%{_pkgdocdir} \

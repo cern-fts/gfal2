@@ -2,16 +2,8 @@ cmake_minimum_required (VERSION 2.6)
 
 if (PLUGIN_XROOTD)
 
-    # Find Boost 1.41
-    set (Boost_NO_BOOST_CMAKE ON)
-    set (BOOST_INCLUDEDIR "/usr/include/boost141") # EPEL5
-    set (BOOST_LIBRARYDIR "/usr/lib${LIB_SUFFIX}/boost141/") # EPEL5
-    set (Boost_ADDITIONAL_VERSIONS "1.41" "1.41.0")
-
-    find_package(Boost 1.41 COMPONENTS thread system REQUIRED)
     find_package(XROOTD REQUIRED)
 
-    include_directories(${Boost_INCLUDE_DIRS})
     include_directories(${XROOTD_INCLUDE_DIR})
 
     file (GLOB src_xrootd "*.cpp")
@@ -20,13 +12,11 @@ if (PLUGIN_XROOTD)
     add_library (plugin_xrootd_static STATIC ${src_xrootd})
     
     target_link_libraries (plugin_xrootd
-        ${Boost_LIBRARIES}
         ${GFAL2_PKG_LIBRARIES}
         gfal2_transfer
         ${XROOTD_LIBRARIES}
     )
     target_link_libraries(plugin_xrootd_static
-        ${Boost_LIBRARIES}
         ${GFAL2_PKG_LIBRARIES}
         gfal2_transfer
         ${XROOTD_LIBRARIES}

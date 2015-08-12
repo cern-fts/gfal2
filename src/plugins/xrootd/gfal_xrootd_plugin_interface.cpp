@@ -18,9 +18,9 @@
  *
  */
 
-#include <boost/thread.hpp>
-#include <boost/thread/condition_variable.hpp>
+#include <condition_variable>
 #include <iostream>
+#include <mutex>
 #include <sys/stat.h>
 
 // This header provides all the required functions except chmod
@@ -276,8 +276,8 @@ private:
 
     struct dirent dbuffer;
 
-    boost::mutex mutex;
-    boost::condition_variable cv;
+    std::mutex mutex;
+    std::condition_variable cv;
     bool done;
 
 public:
@@ -303,7 +303,7 @@ public:
     // AFAIK, this is called only once
     void HandleResponse(XrdCl::XRootDStatus* status, XrdCl::AnyObject* response)
     {
-        boost::mutex::scoped_lock lock(mutex);
+        std::lock_guard<std::mutex> lock(mutex);
         if (status->IsOK()) {
             XrdCl::DirectoryList* list;
             response->Get<XrdCl::DirectoryList*>(list);
@@ -340,8 +340,8 @@ public:
     struct dirent* Get(struct stat* st = NULL)
     {
         if (!done) {
-            boost::unique_lock<boost::mutex> lock(mutex);
-            cv.timed_wait(lock, boost::get_system_time()+ boost::posix_time::seconds(60));
+            std::unique_lock<std::mutex> lock(mutex);
+            cv.wait_for(lock, std::chrono::seconds(60));
             if (!done) {
                 return NULL;
             }
