@@ -209,6 +209,7 @@ struct dirent* gfal2_readdir(gfal2_context_t context, DIR* d, GError ** err);
 ///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
 ///  @param d : directory handle created by \ref gfal2_opendir
+///  @param st : the file stats will be stored here
 ///  @param err : GError error report
 ///  @return pointer to a dirent struct and configure st with the meta-data information if success, NULL if end of listing or error, set err properly in case of error
 ///
@@ -237,7 +238,7 @@ int gfal2_closedir(gfal2_context_t context, DIR* d, GError ** err);
 ///  @param err : GError error report
 ///  @return 0 if success, negative value if error, set err properly in case of error
 ///
-int gfal2_symlink(gfal2_context_t context, const char* odlurl, const char* newurl, GError ** err);
+int gfal2_symlink(gfal2_context_t context, const char* oldurl, const char* newurl, GError ** err);
 
 ///  @brief read a symbolic link value, provide the linked file path
 ///
@@ -318,6 +319,7 @@ int gfal2_setxattr (gfal2_context_t context, const char *url, const char *name,
 ///  @param pintime : pin time
 ///  @param timeout : timeout
 ///  @param token : The token will be put in the buffer pointed by this
+///  @param tsize:  The size of the buffer pointed by token
 ///  @param async: Asynchronous request (does not block if != 0)
 ///  @param err : GError error report
 ///  @return 0 if the request has been queued, > 0 if the file is pinned, < 0 on error
@@ -351,6 +353,7 @@ int gfal2_release_file(gfal2_context_t context, const char* url,
 ///  @param pintime : pin time
 ///  @param timeout : timeout
 ///  @param token : The token will be put in the buffer pointed by this
+///  @param tsize : The size of the buffer pointed by token
 ///  @param async: Asynchronous request (does not block if != 0)
 ///  @param errors : Preallocated array of nbfiles pointers to GError. User must allocate and free.
 ///  @return 0 if the request has been queued, > 0 if the file is pinned, < 0 on error
@@ -376,6 +379,10 @@ int gfal2_bring_online_poll_list(gfal2_context_t context, int nbfiles, const cha
                             const char* token, GError ** errors);
 
 ///  @brief Release a file
+///  @param context : gfal2 handle, see \ref gfal2_context_new
+///  @param nbfiles : number of files
+///  @param urls   : paths of the files to delete
+///  @param token  : the token from the bring online request
 ///  @param errors : Preallocated array of nbfiles pointers to GError. User must allocate and free.
 ///  @note  Even if the result is > 0, you need to check each individual file status
 int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char* const* urls,
@@ -387,17 +394,21 @@ int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char* co
 ///
 ///  @param context : gfal2 handle, see \ref gfal2_context_new
 ///  @param nbfiles : number of files
-///  @param paths   : paths of the files to delete
+///  @param urls    : paths of the files to delete
 ///  @param errors  : Pre-allocated array with nbfiles pointers to errors.
 ///                   It is the user's responsability to allocate and free.
 ///  @return 0 if success, -1 if error. set err properly in case of error
 ///  @note The plugin tried will be the one that matches the first url
 ///  @note If bulk deletion is not supported, gfal2_unlink will be called nbfiles times
 ///
-int gfal2_unlink_list(gfal2_context_t context, int nbfiles, const char* const* uris, GError ** errors);
+int gfal2_unlink_list(gfal2_context_t context, int nbfiles, const char* const* urls, GError ** errors);
 
-/// @brief abort a list of files
-///  @param err : Preallocated array of nbfiles pointers to GError. User must allocate and free.
+///  @brief abort a list of files
+///  @param context : gfal2 handle, see \ref gfal2_context_new
+///  @param nbfiles : number of files
+///  @param urls   : paths of the files to delete
+///  @param token  : the token from the bring online request
+///  @param errors : Preallocated array of nbfiles pointers to GError. User must allocate and free.
 ///  @note  Even if the result is > 0, you need to check each individual file status
 int gfal2_abort_files(gfal2_context_t context, int nbfiles, const char* const* urls, const char* token, GError ** errors);
 
@@ -447,7 +458,7 @@ int gfal2_abort_files(gfal2_context_t context, int nbfiles, const char* const* u
  * @return This routine return a valid file descriptor if the operation is a success
  *  or -1 if error occured. In case of Error, err is set properly
  */
-int gfal2_open(gfal2_context_t context, const char * url, int flag, GError ** err);
+int gfal2_open(gfal2_context_t context, const char * url, int flags, GError ** err);
 
 ///
 /// Same than \ref gfal2_open but allow to specify the default right of the file
@@ -467,7 +478,7 @@ int gfal2_creat (gfal2_context_t context, const char *filename, mode_t mode, GEr
  * @param context : gfal2 handle, see \ref gfal2_context_new
  * @param fd : GFAL2 file descriptor of the file
  * @param buff : buffer for read data
- * @param size : maximum size to read
+ * @param s_buff : maximum size to read
  * @param err : GError error report*
  * @return On  success,  the  number  of  bytes read is returned
  *   (zero indicates end of file), and the file position is advanced
@@ -526,9 +537,28 @@ int gfal2_close(gfal2_context_t context, int fd, GError ** err);
 ///
 int gfal2_flush(gfal2_context_t context, int fd, GError ** err);
 
-
+/// @brief read from file descriptor at a given offset
+///
+///  @param context : gfal2 handle, see \ref gfal2_context_new
+///  @param fd : file descriptor
+///  @param buffer:  buffer for read data
+///  @param count : maximum size to read
+///  @param offset : operation offset
+///  @param err : GError error report
+///  @return number of read bytes, -1 on failure, set err properly in case of error.
+///
 ssize_t gfal2_pread(gfal2_context_t context, int fd, void * buffer, size_t count, off_t offset, GError ** err);
 
+/// @brief write to file descriptor at a given offset
+///
+///  @param context : gfal2 handle, see \ref gfal2_context_new
+///  @param fd : file descriptor
+///  @param buffer:  buffer for read data
+///  @param count : maximum size to write
+///  @param offset : operation offset
+///  @param err : GError error report
+///  @return number of written bytes, -1 on failure, set err properly in case of error.
+///
 ssize_t gfal2_pwrite(gfal2_context_t context, int fd, const void * buffer, size_t count, off_t offset, GError ** err);
 
 

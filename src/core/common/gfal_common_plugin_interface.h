@@ -42,17 +42,17 @@ extern "C"
 {
 #endif
 
-/*
+/**
  * Helper for the versioned plugin names
  */
 #define GFAL2_PLUGIN_VERSIONED(plugin, version) plugin "-" version
 
 /**
-  classical data access plugin
-*/
-#define GFAL_PLUGIN_PRIORITY_DATA 0;
-#define GFAL_PLUGIN_PRIORITY_CATALOG 100;
-#define GFAL_PLUGIN_PRIORITY_CACHE 200;
+ * classical data access plugin
+ */
+#define GFAL_PLUGIN_PRIORITY_DATA 0;      /**< The plugin provides IO */
+#define GFAL_PLUGIN_PRIORITY_CATALOG 100; /**< The plugin provides namespace operations */
+#define GFAL_PLUGIN_PRIORITY_CACHE 200;   /**< The plugin provides a cache */
 
 /**
  * Prototype of the plugins entry point

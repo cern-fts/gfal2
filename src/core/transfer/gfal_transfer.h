@@ -56,8 +56,6 @@ extern "C"
 
 
 
-
-
 /**
 	initiate a new parameter handle
 */
@@ -287,18 +285,15 @@ gint gfalt_add_event_callback(gfalt_params_t params, gfalt_event_func callback,
 gint gfalt_remove_event_callback(gfalt_params_t params, gfalt_event_func callback, GError** err);
 
 
-//
-// Main function for transfer launch
-//
-
 /**
  *	@brief copy function
  *  start a synchronous copy of the file
- *  @param context : gfal context
+ *  @param context : gfal2 context
  *  @param params parameter handle ( \ref gfalt_parameters_new )
  *  @param src source URL supported by GFAL
  *  @param dst destination URL supported by GFAL
-*/
+ *  @param err the error is put here
+ */
 int gfalt_copy_file(gfal2_context_t context, gfalt_params_t params, const char* src,
         const char* dst, GError** err);
 
@@ -329,6 +324,7 @@ gint gfalt_copy_cancel(gfalt_transfer_status_t, GError** err);
  *
  * */
 gint gfalt_copy_get_status(gfalt_transfer_status_t, GError ** err);
+
 /**
  * get an estimation of the average baudrate in bytes/s
  * */

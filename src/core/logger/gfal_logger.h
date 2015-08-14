@@ -78,33 +78,34 @@ int gfal2_log_set_handler(GLogFunc func, gpointer user_data);
  ****************************************/
 
 
-//! \def GFAL_VERBOSE_NORMAL only errors are printed
+/// GFAL_VERBOSE_NORMAL only errors are printed
 #define GFAL_VERBOSE_NORMAL     0x00    // G_LOG_LEVEL_MESSAGE
-//! \def GFAL_VERBOSE_VERBOSE a bit more verbose information is printed
+/// GFAL_VERBOSE_VERBOSE a bit more verbose information is printed
 #define GFAL_VERBOSE_VERBOSE    0x01    // G_LOG_LEVEL_INFO
-//! \def GFAL_VERBOSE_DEBUG  extra information is printed
+/// GFAL_VERBOSE_DEBUG  extra information is printed
 #define GFAL_VERBOSE_DEBUG      0x02    // G_LOG_LEVEL_DEBUG
-//! \def GFAL_VERBOSE_TRACE execution trace internal to GFAL 2.0
+/// GFAL_VERBOSE_TRACE execution trace internal to GFAL 2.0
 #define GFAL_VERBOSE_TRACE		0x08    // G_LOG_LEVEL_DEBUG
-//! \def GFAL_VERBOSE_TRACE_PLUGIN log all the plugin related debug information
+/// GFAL_VERBOSE_TRACE_PLUGIN log all the plugin related debug information
 #define GFAL_VERBOSE_TRACE_PLUGIN 0x04  // G_LOG_LEVEL_DEBUG
 
 /**
- * \brief print error message with the gfal2 logger
+ * @brief print error message with the gfal2 logger
+ * @param verbose_lvl Verbosity level
+ * @param msg The message format string
  */
 GFAL2_DEPRECATED(gfal2_log) void gfal_log(int verbose_lvl, const char* msg, ...);
 
 /**
  * \brief set the current log level
- *  log level can be a combinaison of GFAL_VERBOSE_* flags
+ *  log level can be a combination of GFAL_VERBOSE_* flags
  */
 GFAL2_DEPRECATED(gfal2_log_set_level) int gfal_set_verbose (int value);
 
 
-
 /**
  * \brief get the current log level
- *  log level can be a combinaison of GFAL_VERBOSE_* flags
+ *  log level can be a combination of GFAL_VERBOSE_* flags
  */
 GFAL2_DEPRECATED(gfal2_log_get_level) int gfal_get_verbose();
 

@@ -22,8 +22,8 @@
  **/
 
 #pragma once
-#ifndef GFAL_GLOBAL_HPP
-#define GFAL_GLOBAL_HPP
+#ifndef GFAL_GLOBAL_H
+#define GFAL_GLOBAL_H
 
 #if !defined(__GFAL2_H_INSIDE__) && !defined(__GFAL2_BUILD__)
 #   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
@@ -45,7 +45,7 @@ extern "C"
  * providing an advanced interface to  GFAL
  */
 typedef struct gfal_handle_* gfal2_context_t;
-// backward compatibility
+/** backward compatibility */
 typedef GFAL2_DEPRECATED(gfal2_context_t) gfal2_context_t gfal_context_t;
 
 ///
@@ -82,9 +82,11 @@ GFAL2_DEPRECATED(gfal2_context_new) gfal2_context_t gfal_context_new(GError ** e
 ///
 GFAL2_DEPRECATED(gfal2_context_free) void gfal_context_free(gfal2_context_t context);
 
-
+/** For errors, gfal2 core quark */
 #define GFAL2_QUARK_CORE "GFAL2::CORE"
+/** For errors, gfal2 configuration quark */
 #define GFAL2_QUARK_CONFIG "GFAL2::CONFIG"
+/** For errors, gfal2 plugins quark */
 #define GFAL2_QUARK_PLUGINS "GFAL2::PLUGINS"
 
 ///
@@ -113,4 +115,4 @@ GQuark gfal2_get_plugins_quark();
 #endif  // __cplusplus
 
 
-#endif /* GFAL_GLOBAL_HPP */
+#endif /* GFAL_GLOBAL_H */

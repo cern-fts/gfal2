@@ -578,6 +578,10 @@ GFAL2_DEPRECATED(gfal2_log_set_level) int gfal_set_verbose (int);
  * @return string of the gfal_version
  * */
 GFAL2_DEPRECATED(gfal2_version) char *gfal_version();
+
+/**
+ * get a string representation of the gfal2 version
+ */
 const char *gfal2_version();
 
 

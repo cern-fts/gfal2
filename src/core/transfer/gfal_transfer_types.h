@@ -31,7 +31,10 @@
 #include <glib.h>
 #include <sys/time.h>
 
+/** Default transfer timeout in seconds */
 #define GFALT_DEFAULT_TRANSFERT_TIMEOUT 3600
+
+/** Default number of streams */
 #define GFALT_DEFAULT_NB_STREAM			0
 
 
@@ -39,6 +42,11 @@
 extern "C"
 {
 #endif  // __cplusplus
+
+/*!
+    \addtogroup transfer_group
+    @{
+*/
 
 
 /**
@@ -64,34 +72,41 @@ typedef void (*gfalt_monitor_func)(gfalt_transfer_status_t h, const char* src, c
 /**
  * @brief Predefined stages.
  */
-extern GQuark GFAL_EVENT_PREPARE_ENTER;
-extern GQuark GFAL_EVENT_PREPARE_EXIT;
-extern GQuark GFAL_EVENT_TRANSFER_ENTER;
-extern GQuark GFAL_EVENT_TRANSFER_EXIT;
-extern GQuark GFAL_EVENT_CLOSE_ENTER;
-extern GQuark GFAL_EVENT_CLOSE_EXIT;
-extern GQuark GFAL_EVENT_CHECKSUM_ENTER;
-extern GQuark GFAL_EVENT_CHECKSUM_EXIT;
-extern GQuark GFAL_EVENT_CANCEL_ENTER;
-extern GQuark GFAL_EVENT_CANCEL_EXIT;
-extern GQuark GFAL_EVENT_OVERWRITE_DESTINATION;
-extern GQuark GFAL_EVENT_LIST_ENTER;
-extern GQuark GFAL_EVENT_LIST_ITEM;
-extern GQuark GFAL_EVENT_LIST_EXIT;
+extern GQuark GFAL_EVENT_PREPARE_ENTER;   /**< Triggered before entering preparation */
+extern GQuark GFAL_EVENT_PREPARE_EXIT;    /**< Triggered after exiting the preparation */
+extern GQuark GFAL_EVENT_TRANSFER_ENTER;  /**< Triggered before entering the transfer */
+extern GQuark GFAL_EVENT_TRANSFER_EXIT;   /**< Triggered after exiting the transfer */
+extern GQuark GFAL_EVENT_CLOSE_ENTER;     /**< Triggered before entering the closing (putdone) */
+extern GQuark GFAL_EVENT_CLOSE_EXIT;      /**< Triggered after exiting the closing (putdone) */
+extern GQuark GFAL_EVENT_CHECKSUM_ENTER;  /**< Triggered before entering checksum validation */
+extern GQuark GFAL_EVENT_CHECKSUM_EXIT;   /**< Triggered after exiting checksum validation */
+extern GQuark GFAL_EVENT_CANCEL_ENTER;    /**< Triggered before the cancellation logic */
+extern GQuark GFAL_EVENT_CANCEL_EXIT;     /**< Triggered after the cancellation logic */
+extern GQuark GFAL_EVENT_OVERWRITE_DESTINATION; /**< Triggered before overwriting */
+extern GQuark GFAL_EVENT_LIST_ENTER;      /**< Triggered before listing the urls to be transferred */
+extern GQuark GFAL_EVENT_LIST_ITEM;       /**< Triggered once per url pair to be transferred */
+extern GQuark GFAL_EVENT_LIST_EXIT;       /**< Triggered after listing the urls to be transferred */
 
-typedef enum {GFAL_EVENT_SOURCE = 0,
-              GFAL_EVENT_DESTINATION,
-              GFAL_EVENT_NONE} gfal_event_side_t;
+/** Trigger of the event */
+typedef enum {
+    GFAL_EVENT_SOURCE = 0,  /**< Event triggered by the source */
+    GFAL_EVENT_DESTINATION, /**< Event triggered by the destination */
+    GFAL_EVENT_NONE         /**< Event triggered by the transfer */
+} gfal_event_side_t;
+
 /**
  * @brief Event message.
  */
 struct _gfalt_event {
-  gfal_event_side_t side;         /*< Which side triggered the stage change */
-  gint64            timestamp;    /*< Timestamp in milliseconds */
-  GQuark            stage;        /*< Stage. You can check the predefined ones. */
-  GQuark            domain;       /*< Domain/protocol of this stage. i.e. SRM*/
-  const char       *description;  /*< Additional description */
+  gfal_event_side_t side;         /**< Which side triggered the stage change */
+  gint64            timestamp;    /**< Timestamp in milliseconds */
+  GQuark            stage;        /**< Stage. You can check the predefined ones. */
+  GQuark            domain;       /**< Domain/protocol of this stage. i.e. SRM*/
+  const char       *description;  /**< Additional description */
 };
+/**
+ * Event message
+ */
 typedef struct _gfalt_event* gfalt_event_t;
 
 /**
@@ -115,6 +130,10 @@ typedef struct _gfalt_hook_transfer_plugin {
     void* futur_usage[25];
 } gfalt_hook_transfer_plugin_t;
 //! @endcond
+
+/**
+    @}
+*/
 
 #ifdef __cplusplus
 }

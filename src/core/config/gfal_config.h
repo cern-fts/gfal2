@@ -122,7 +122,7 @@ gint gfal2_get_opt_integer(gfal2_context_t handle, const gchar *group_name,
 * @param default_value : default value returned if not present
 * @return parameter value
 **/
-gint gfal2_get_opt_integer_with_default(gfal2_context_t context, const gchar *group_name,
+gint gfal2_get_opt_integer_with_default(gfal2_context_t handle, const gchar *group_name,
                                         const gchar *key, gint default_value);
 
 /**
@@ -174,7 +174,7 @@ gboolean gfal2_get_opt_boolean(gfal2_context_t handle, const gchar *group_name,
 * @param handle : context of gfal 2.0
 * @param group_name : group name of the parameter
 * @param key : key of the parameter
-* @param bool : default value returned if not present
+* @param default_value : default value returned if not present
 * @return parameter value
 **/
 gboolean gfal2_get_opt_boolean_with_default(gfal2_context_t handle, const gchar *group_name,
@@ -188,7 +188,8 @@ gboolean gfal2_get_opt_boolean_with_default(gfal2_context_t handle, const gchar 
  * @param handle : context of gfal 2.0
  * @param group_name : group name of the parameter
  * @param key : key of the parameter
- * @param value : value to set
+ * @param list : list of strings
+ * @param length : length of the list
  * @param error : GError error report system
  * @return parameter value
  **/
@@ -200,17 +201,29 @@ gint gfal2_set_opt_string_list(gfal2_context_t handle, const gchar *group_name,
 
 /**
 * @brief get a list of string parameter in the current GFAL 2.0 configuration
-*  see gfal2.d configfal2_set_user_agent0 documentation to know group/key/values
+*  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
 *
 * @param handle : context of gfal 2.0
 * @param group_name : group name of the parameter
 * @param key : key of the parameter
+* @param length : the length of the string is stored here
 * @param error : GError error report system
 * @return parameter value
 **/
 gchar ** gfal2_get_opt_string_list(gfal2_context_t handle, const gchar *group_name,
                                           const gchar *key, gsize *length, GError **error);
 
+/**
+* @brief get a list of string parameter in the current GFAL 2.0 configuration
+*  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+*
+* @param handle : context of gfal 2.0
+* @param group_name : group name of the parameter
+* @param key : key of the parameter
+* @param length : the length of the string is stored here
+* @param default_value : Default array of not found
+* @return parameter value
+**/
 gchar ** gfal2_get_opt_string_list_with_default(gfal2_context_t handle, const gchar *group_name,
                                           const gchar *key, gsize *length, char** default_value);
 
