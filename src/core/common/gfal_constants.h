@@ -36,34 +36,18 @@ extern "C"
 
 #define MAX_PLUGIN_LIST 15
 #define GFAL_MODULE_NAME_SIZE 	1024
-#define GFAL_NEWFILE_SIZE         1024
-
-
 
 /* GFAL error level for gfal_errmsg */
 //! maximum error string length
 #define GFAL_ERRMSG_LEN			  2048
 
-//! maximum error string length
-#define GFAL_ERRLEVEL_ERROR       0
-#define GFAL_ERRLEVEL_WARN        1
-#define GFAL_ERRLEVEL_INFO        2
-
-//! guid prefix url
-#define GFAL_GUID_PREFIX "guid:"
-
 // default buffer size for address
 #define GFAL_URL_MAX_LEN 2048
-
-#define GFAL_MODULEID_LOCAL "local_file_module"
-#define GFAL_MODULEID_SRM 2
-#define GFAL_EXTERNAL_MODULE_OFFSET 10
 
 // plugin related
 #define GFAL_PLUGIN_DIR_ENV "GFAL_PLUGIN_DIR" /**<  environment variable for personnalized plugin directory  */
 #define GFAL_PLUGIN_DIR_SUFFIX "gfal2-plugins" /**< default directory name for gfal 2 plugin search */
 #define GFAL_PLUGIN_INIT_SYM "gfal_plugin_init"
-#define GFAL_MAX_PLUGIN_LIST 2048
 
 // configuration loader related
 #define GFAL_CONFIG_DIR_ENV "GFAL_CONFIG_DIR" /**<  environment variable for personnalized configuration directory */
@@ -100,18 +84,6 @@ extern "C"
 #define GFAL_XATTR_STATUS_UNKNOW "UNKNOW"
 #define GFAL_XATTR_STATUS_LOST "LOST"
 #define GFAL_XATTR_STATUS_UNAVAILABLE "UNAVAILABLE"
-
-
-
-// plugins entry points for the new system of plugins
-#define GFAL_PLUGIN_URL_TRANSFER_CHECK "plugin_url_transfer_check"
-
-//! gfal checksum type key
-//! note : checksum type support depends of the plugin implementation
-#define GFAL_CHKSUM_MD5 "MD5"
-#define GFAL_CHKSUM_SHA1 "SHA1"
-#define GFAL_CHKSUM_ADLER32 "ADLER32"
-#define GFAL_CHKSUM_CRC32 "CRC32"
 
 
 #ifdef __cplusplus
