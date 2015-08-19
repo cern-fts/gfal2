@@ -280,12 +280,6 @@ int gfalt_copy_bulk(gfal2_context_t context, gfalt_params_t params, size_t nbfil
         GError** op_error, GError*** file_erros);
 
 /**
- * cancel the current file copy
- * NOT YET implemented
- */
-gint gfalt_copy_cancel(gfalt_transfer_status_t, GError** err);
-
-/**
  * Get a transfer status indicator
  */
 gint gfalt_copy_get_status(gfalt_transfer_status_t, GError ** err);
