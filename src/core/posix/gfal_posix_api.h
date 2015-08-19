@@ -1,31 +1,26 @@
 /*
-* Copyright @ Members of the EMI Collaboration, 2010.
-* See www.eu-emi.eu for details on the copyright holders.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
-/**
- * @file gfal_posix_api.h
- * @brief main header file for API of the posix lib
- * @author Devresse Adrien
- * @version 2.0.1
- * @date 30/09/2011
+ * Copyright (c) CERN 2013-2015
  *
- * */
+ * Copyright (c) Members of the EMI Collaboration. 2010-2013
+ *  See  http://www.eu-emi.eu/partners for details on the copyright
+ *  holders.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #pragma once
-#ifndef _GFAL2_POSIX_API_
-#define _GFAL2_POSIX_API_
+#ifndef GFAL_POSIX_API_H_
+#define GFAL_POSIX_API_H_
 
 #if !defined(__GFAL2_H_INSIDE__) && !defined(__GFAL2_BUILD__)
 #   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
@@ -62,14 +57,14 @@ extern "C"
 	@{
 */
 
-/*!
+/**
  * Warnings about POSIX functions : some protocols do not permit a full POSIX support ( ex : no symlinks in srm:// URLs )
  * In case of a call to a unsupported function, -1 code is return and an error is set to EPROTONOSUPPORT
-*/
+ */
 
 
 
-/*!
+/**
  * @brief change file access permissions
  *
  *  gfal_chmod changes the permissions of each given file according to mode,
@@ -82,7 +77,7 @@ extern "C"
  */
 int gfal_chmod(const char* url, mode_t mode);
 
-/*!
+/**
  * @brief  change the name or location of a file
  *
  *  gfal_rename will rename the specified files by replacing the first occurrence of from in their name by to.
@@ -182,9 +177,6 @@ int gfal_symlink(const char* oldurl, const char * newurl);
  */
 int gfal_unlink (const char * url);
 
-
-// directory management purpose
-
 /**
  * @brief create a directory
  *
@@ -233,8 +225,6 @@ struct dirent *gfal_readdir (DIR * d);
  */
 int gfal_closedir (DIR * d);
 
-
-
 /**
  * @brief delete a directory
  *
@@ -246,7 +236,6 @@ int gfal_closedir (DIR * d);
  */
 int gfal_rmdir (const char * url);
 
-//classical read/write operations
 /**
  *  @brief creat a file
  *
@@ -365,7 +354,6 @@ ssize_t gfal_read (int fd , void * buff , size_t size);
  */
 ssize_t gfal_write (int fd , const void * buff , size_t size);
 
-// sync
 /**
  * @brief flush the given file descriptor
  *
@@ -380,7 +368,6 @@ ssize_t gfal_write (int fd , const void * buff , size_t size);
  */
 int gfal_flush(int fd);
 
-// parallels calls, for  read/write
 /**
  * @brief parallel read from a gfal file descriptor
  *
@@ -433,8 +420,6 @@ ssize_t gfal_pread(int fd, void * buff, size_t size, off_t offset);
  */
 ssize_t gfal_pwrite(int fd, const void * buff, size_t size, off_t offset);
 
-// advanced use purpose ( set properties, guid, replicas )
-
 /**
  * @brief retrieve an extended attribute value
  *
@@ -471,7 +456,6 @@ ssize_t gfal_getxattr (const char *url, const char *name,
  *   see @ref gfal_posix_check_error() for error management
  */
 ssize_t gfal_listxattr (const char *url, char *list, size_t size);
-
 
 /**
  * @brief define an extended attribute value
@@ -512,34 +496,25 @@ int gfal_setxattr (const char *url, const char *name,
  */
 int gfal_removexattr(const char *url, const char *name);
 
-
-
-
-
-
-
-
-
 /**
- *  safe and easy error management :
- *  -> if last error
- *      -> print on stderr, return 1
- *  -> else do nothing
- *  @return 0 if no error, 1 else
+ * safe and easy error management :
+ * -> if last error
+ *     -> print on stderr, return 1
+ * -> else do nothing
+ * @return 0 if no error, 1 else
  */
 int gfal_posix_check_error();
 
 /**
- *  clear the last error  \
- *  provided for convenience.
+ * clear the last error  \
+ * provided for convenience.
  */
-
 void gfal_posix_clear_error();
 
 /**
- *  display the last error  to the standard output \
- *  and clear it.
- *  provided for convenience.
+ * display the last error  to the standard output \
+ * and clear it.
+ * provided for convenience.
  */
 void gfal_posix_release_error();
 
@@ -548,7 +523,7 @@ void gfal_posix_release_error();
  * @param buff_err : buffer where string representation will be stored.
  * @param s_err : maximum message size
  * @return return pointer to buff_err for convenience
- * */
+ */
 char* gfal_posix_strerror_r(char* buff_err, size_t s_err);
 
 /**
@@ -564,19 +539,18 @@ void gfal_posix_print_error();
  */
 int gfal_posix_code_error();
 
-
 /**
- * set the gfal verbose mode
+ * set the gfal verbose level
  *
  * see gfal_constant.h for details
  *
- * */
+ */
 GFAL2_DEPRECATED(gfal2_log_set_level) int gfal_set_verbose (int);
 
 /**
  * get a string representation of the gfal version
  * @return string of the gfal_version
- * */
+ */
 GFAL2_DEPRECATED(gfal2_version) char *gfal_version();
 
 /**
@@ -584,18 +558,12 @@ GFAL2_DEPRECATED(gfal2_version) char *gfal_version();
  */
 const char *gfal2_version();
 
-
-// set/get parameter & options interface
-// Simple interface for option management
-
-
-
 /**
-  @brief get context for advanced operation
-   return the gfal2 context used for POSIX operations
-   allow to do advanced operation ( config, checksum, transfer ) on this context
-   @warning Delete this context leads to undefined behavior.
-*/
+ * @brief get context for advanced operation
+ * Return the gfal2 context used for POSIX operations
+ * Allow to do advanced operation ( config, checksum, transfer ) on this context
+ * @warning Delete this context leads to undefined behavior.
+ */
 gfal2_context_t gfal_posix_get_context();
 
 /**
@@ -607,4 +575,4 @@ gfal2_context_t gfal_posix_get_context();
 #endif
 
 
-#endif // _GFAL2_POSIX_API_
+#endif /* GFAL_POSIX_API_H_ */
