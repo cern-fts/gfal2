@@ -1,6 +1,9 @@
 /*
- * Copyright @ Members of the EMI Collaboration, 2010.
- * See www.eu-emi.eu for details on the copyright holders.
+ * Copyright (c) CERN 2013-2015
+ *
+ * Copyright (c) Members of the EMI Collaboration. 2010-2013
+ *  See  http://www.eu-emi.eu/partners for details on the copyright
+ *  holders.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +17,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "gfalcoreexception.hpp"
 
 Gfal::CoreException::CoreException(GQuark scope, int code, const std::string& msg):
