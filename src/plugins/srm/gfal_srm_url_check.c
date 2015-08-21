@@ -38,7 +38,7 @@ gboolean srm_check_url(const char * surl){
 }
 
 static gboolean srm_has_schema(const char * surl){
-    return strstr(surl, "://") != NULL;
+    return strstr(surl, ":/") != NULL;
 }
 
 

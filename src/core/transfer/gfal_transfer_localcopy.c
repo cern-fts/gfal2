@@ -185,7 +185,7 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
 
     char* buffer = g_malloc0(DEFAULT_BUFFER_SIZE);
 
-    gfal2_log(G_LOG_LEVEL_DEBUG, "  begin local transfer %s ->  %s with buffer size %ld", src, dst, DEFAULT_BUFFER_SIZE);
+    gfal2_log(G_LOG_LEVEL_INFO, "  begin local transfer %s ->  %s with buffer size %ld", src, dst, DEFAULT_BUFFER_SIZE);
 
     while (s_file > 0 && !nested_error) {
         s_file = gfal_plugin_readG(context, f_src, buffer, DEFAULT_BUFFER_SIZE, &nested_error);
