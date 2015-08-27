@@ -498,7 +498,7 @@ int gfal_xrootd_checksumG(plugin_handle plugin_data, const char* url,
     }
     *space = '\0';
 
-    if (strncmp(checksum_buffer, lowerChecksumType.c_str(),
+    if (strncasecmp(checksum_buffer, lowerChecksumType.c_str(),
             lowerChecksumType.length()) != 0) {
         gfal2_set_error(err, xrootd_domain, errno, __func__, "Got '%s' while expecting '%s'",
                 checksum_buffer, lowerChecksumType.c_str());
