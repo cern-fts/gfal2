@@ -208,16 +208,16 @@ int gfal_srm_determine_endpoint(gfal_srmv2_opt* opts, const char* surl,
             if (gfal_get_nobdiiG(opts->handle) == TRUE ||
                 ((ret = gfal_get_endpoint_and_setype_from_bdiiG(opts, surl, buff_endpoint, s_buff, srm_type, &tmp_err)) != 0)) {
                 if (tmp_err) {
-                    gfal2_log(G_LOG_LEVEL_INFO,
-                            "WARNING : Error while bdii SRM service resolution : %s, fallback on the default service path."
-                                    "This can lead to wrong service path, you should use FULL SURL format or register your endpoint into the BDII",
+                    gfal2_log(G_LOG_LEVEL_WARNING,
+                            "Error while bdii SRM service resolution : %s, fallback on the default service path."
+                            "This can lead to wrong service path, you should use FULL SURL format or register your endpoint into the BDII",
                             tmp_err->message);
                     g_clear_error(&tmp_err);
                 }
                 else {
-                    gfal2_log(G_LOG_LEVEL_INFO,
-                            "WARNING : BDII usage disabled, fallback on the default service path."
-                                    "This can lead to wrong service path, you should use FULL SURL format or register your endpoint into the BDII");
+                    gfal2_log(G_LOG_LEVEL_WARNING,
+                            "BDII usage disabled, fallback on the default service path."
+                            "This can lead to wrong service path, you should use FULL SURL format or register your endpoint into the BDII");
 
                 }
                 ret = gfal_srm_guess_service_endpoint(opts, surl, buff_endpoint, s_buff, srm_type, &tmp_err);

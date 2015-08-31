@@ -51,10 +51,10 @@ int srm_plugin_delete_existing_copy(plugin_handle handle, gfalt_params_t params,
     int res = 0;
     const gboolean replace = gfalt_get_replace_existing_file(params, NULL );
     if (replace) {
-        gfal2_log(G_LOG_LEVEL_MESSAGE, "\tTrying to delete %s", surl);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Trying to delete %s", surl);
         res = gfal_srm_unlinkG(handle, surl, &tmp_err);
         if (res == 0) {
-            gfal2_log(G_LOG_LEVEL_MESSAGE, "%s deleted with success", surl);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "%s deleted with success", surl);
             plugin_trigger_event(params, srm_domain(), GFAL_EVENT_DESTINATION,
                                  GFAL_EVENT_OVERWRITE_DESTINATION,
                                  "Deleted %s", surl);

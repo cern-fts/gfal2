@@ -41,8 +41,6 @@ struct dcap_proto_ops * gfal_dcap_internal_loader_base(GError** err)
     struct dcap_proto_ops * pops = NULL;
     GError* tmp_err = NULL;
 
-    gfal2_log(G_LOG_LEVEL_INFO, "    -> load dcap library ");
-
     pops = g_new0(struct dcap_proto_ops, 1);
     pops->geterror = &__dc_errno;
     pops->strerror = &dc_strerror;
@@ -71,7 +69,6 @@ struct dcap_proto_ops * gfal_dcap_internal_loader_base(GError** err)
     if ((gfal2_log_get_level() >= G_LOG_LEVEL_DEBUG))
         pops->debug_level(8 | 6 | 32);
 
-    gfal2_log(G_LOG_LEVEL_INFO, "  end load dcap library <-");
     G_RETURN_ERR(pops, tmp_err, err);
 }
 

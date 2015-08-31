@@ -56,7 +56,7 @@ int gfal_srm_statG(plugin_handle ch, const char* surl, struct stat* buf, GError*
     else {
         srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
         if (context != NULL) {
-            gfal2_log(G_LOG_LEVEL_INFO, "   [gfal_srm_statG] try to stat file %s", surl);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "   [gfal_srm_statG] try to stat file %s", surl);
             ret = gfal_statG_srmv2_internal(context, buf, &loc, surl, &tmp_err);
             if (ret == 0) {
                 gfal2_log(G_LOG_LEVEL_DEBUG, "   [gfal_srm_statG] store %s stat info in cache", surl);

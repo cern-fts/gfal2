@@ -156,16 +156,16 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
     // Try with existing one
     if (opts->srm_context) {
         if (is_same_context(opts, full_endpoint, ucert, ukey)) {
-            gfal2_log(G_LOG_LEVEL_INFO, "SRM context recycled for %s", full_endpoint);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "SRM context recycled for %s", full_endpoint);
         }
         else {
-            gfal2_log(G_LOG_LEVEL_INFO, "SRM context invalidated for %s", full_endpoint);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "SRM context invalidated for %s", full_endpoint);
             srm_context_free(opts->srm_context);
             opts->srm_context = NULL;
         }
     }
     else {
-        gfal2_log(G_LOG_LEVEL_INFO, "SRM context not available");
+        gfal2_log(G_LOG_LEVEL_DEBUG, "SRM context not available");
     }
 
     // Instantiate if we haven't got any
