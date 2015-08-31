@@ -37,7 +37,7 @@ static void* find_copy_plugin(gfal2_context_t context, gfal_url2_check operation
     GList* item = g_list_first(context->plugin_opt.sorted_plugin);
     void* resu = NULL;
 
-    while (item != NULL) {
+    while (item != NULL && resu == NULL) {
         gfal_plugin_interface* plugin_ifce = (gfal_plugin_interface*)item->data;
         plugin_url_check2_call check_call = plugin_ifce->check_plugin_url_transfer;
         if (check_call != NULL) {
