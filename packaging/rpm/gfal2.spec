@@ -210,7 +210,7 @@ Requires:           %{name}-plugin-gridftp%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-http%{?_isa} = %{version}-%{release}
 
 %description all
-Meta-package for complete install of GFAL 2.0 
+Meta-package for complete install of GFAL2 
 with all the protocol plugins.
 
 %if %{?_with_tests:1}%{!?_with_tests:0}
@@ -284,11 +284,9 @@ make DESTDIR=%{buildroot} install
 %{_mandir}/man1/gfal2_version.1*
 %dir %{_pkgdocdir}
 %{_pkgdocdir}/DESCRIPTION
-%{_pkgdocdir}/README
+%{_pkgdocdir}/README.md
 %{_pkgdocdir}/LICENSE
 %{_pkgdocdir}/RELEASE-NOTES
-%{_pkgdocdir}/README_TRANSFER
-
 
 %files devel
 %{_includedir}/%{name}/
@@ -355,7 +353,6 @@ make DESTDIR=%{buildroot} install
 %endif
 
 %files all
-%{_pkgdocdir}/README
 
 
 %changelog

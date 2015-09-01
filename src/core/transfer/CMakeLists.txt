@@ -26,7 +26,5 @@ if (MAIN_TRANSFER)
             
         install(FILES ${CMAKE_CURRENT_BINARY_DIR}/gfal_transfer.pc DESTINATION ${PKGCONFIG_FILES_DIR})
         install(FILES ${header_transfer} DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/transfer)
-        install(FILES "README_TRANSFER"
-                DESTINATION ${DOC_INSTALL_DIR})
 
 endif (MAIN_TRANSFER)
