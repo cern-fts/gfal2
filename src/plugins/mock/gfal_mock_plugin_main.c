@@ -152,11 +152,11 @@ void gfal_plugin_mock_get_value(const char* url, const char* key, char* value, s
 }
 
 
-static int gfal_plugin_mock_get_int_from_str(const char* buff)
+static long long gfal_plugin_mock_get_int_from_str(const char* buff)
 {
 	if (buff == 0 || buff[0] == '\0')
 	    return 0;
-	return atoi(buff);
+	return atoll(buff);
 }
 
 
@@ -165,7 +165,8 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
     MockPluginData* mdata = plugin_data;
 
     char arg_buffer[64] = {0};
-    int size = 0, errcode = 0;
+    int errcode = 0;
+    long long size = 0;
 
     // Is fts_url_copy calling us?
     const char* agent, *version;
