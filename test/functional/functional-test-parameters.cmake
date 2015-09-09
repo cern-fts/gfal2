@@ -47,12 +47,12 @@ SET(dcap_prefix "gsidcap://dcache-door-desy09.desy.de:22128/pnfs/desy.de/${MY_VO
 SET(srm_prefix_dcache "srm://grid002.ft.uam.es:8443/srm/managerv2?SFN=/pnfs/ft.uam.es/data/${MY_VO}/gfal2-tests/")
 SET(lfc_prefix "lfn:/grid/${MY_VO}")
 SET(lfc_host_name "prod-lfc-shared-central.cern.ch")
-SET(gsiftp_prefix_dpm "gsiftp://hepgrid11.ph.liv.ac.uk/dpm/ph.liv.ac.uk/home/${MY_VO}/gfal2-tests/")
-SET(srm_prefix_dpm "srm://hepgrid11.ph.liv.ac.uk:8446/srm/managerv2?SFN=/dpm/ph.liv.ac.uk/home/${MY_VO}/gfal2-tests/")
+SET(gsiftp_prefix_dpm "gsiftp://lapp-se01.in2p3.fr/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
+SET(srm_prefix_dpm "srm://lapp-se01.in2p3.fr:8446/srm/managerv2?SFN=/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
 
 # Need to find something better!
 SET(davs_prefix_dpm "davs+3rd://dpmhead-rc.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
-SET(root_prefix_dpm "root://hepgrid11.ph.liv.ac.uk/dpm/ph.liv.ac.uk/home/${MY_VO}/gfal2-tests")
+SET(root_prefix_dpm "root://lapp-se01.in2p3.fr/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests")
 
 ENDIF(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
