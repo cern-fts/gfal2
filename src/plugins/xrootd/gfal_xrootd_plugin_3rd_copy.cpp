@@ -165,7 +165,9 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
     XrdCl::CopyProcess copy_process;
 #if XrdMajorVNUM(XrdVNUMBER) == 4
     std::vector<XrdCl::PropertyList> results;
-    results.reserve(nbfiles);
+    for (size_t i = 0; i < nbfiles; ++i) {
+        results.push_back(XrdCl::PropertyList());
+    }
 #endif
 
     const char* src_spacetoken =  gfalt_get_src_spacetoken(params, NULL);
