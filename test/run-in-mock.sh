@@ -61,7 +61,7 @@ echo "# User key:         ${UKEY}"
 # Run inside mock
 function mock_cmd()
 {
-    /usr/bin/mock --configdir "${MOCK_CONFIG_DIR}" -r "${MOCK_ROOT}" --disable-plugin=tmpfs "$@"
+    /usr/bin/mock -v --configdir "${MOCK_CONFIG_DIR}" -r "${MOCK_ROOT}" --disable-plugin=tmpfs "$@"
 }
 
 
