@@ -446,9 +446,8 @@ static int gfal_plugin_file_chk_compute(plugin_handle data, const char* url, con
     }
 
     void* c_handle= i_chk->init();
+    char *buffer = malloc(chunk_size);
     do{
-        char buffer[chunk_size+1];
-
         ret = gfal2_read(handle, fd, buffer, MIN(chunk_size, remain_bytes),  &tmp_err);
         if (data_length > 0 ){
             remain_bytes -= ret;
@@ -457,6 +456,7 @@ static int gfal_plugin_file_chk_compute(plugin_handle data, const char* url, con
             i_chk->update(c_handle, buffer, ret);
         }
     }while(ret > 0 && remain_bytes > 0);
+    free(buffer);
     gfal2_close(handle, fd, NULL);
 
     if( i_chk->getResult(c_handle, checksum_buffer, buffer_length) < 0){
