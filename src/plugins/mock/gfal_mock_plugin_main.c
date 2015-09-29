@@ -254,7 +254,7 @@ gboolean gfal_plugin_mock_checksum_verify(const char* chk1, const char* chk2)
 static void gfal_mock_cancel_transfer(gfal2_context_t context, void* userdata)
 {
     int *seconds = (int*)userdata;
-    *seconds = 0;
+    *seconds = -10;
 }
 
 
@@ -342,6 +342,12 @@ int gfal_plugin_mock_filecopy(plugin_handle plugin_data,
             GFAL_EVENT_TRANSFER_EXIT, "Mock copy start, sleep %d", seconds);
 
     gfal2_remove_cancel_callback(context, cancel_token);
+
+    // Canceled?
+    if (seconds < 0) {
+        gfal_plugin_mock_report_error("Transfer canceled", ECANCELED, err);
+        return -1;
+    }
 
     // Jump over to the destination stat
     MockPluginData* mdata = plugin_data;
