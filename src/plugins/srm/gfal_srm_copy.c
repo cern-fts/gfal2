@@ -240,11 +240,11 @@ static int srm_get_checksum_config(gfal2_context_t context, gfalt_params_t param
     }
 
     if (*err == NULL) {
-        gfal2_log(G_LOG_LEVEL_INFO, "\t\tChecksum check enabled: %d", *enabled);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tChecksum check enabled: %d", *enabled);
         if (*enabled) {
-            gfal2_log(G_LOG_LEVEL_INFO, "\t\tAllow empty source checksum: %d", *allow_empty);
-            gfal2_log(G_LOG_LEVEL_INFO, "\t\tChecksum algorithm: %s", algorithm);
-            gfal2_log(G_LOG_LEVEL_INFO, "\t\tUser defined checksum: %s", user_checksum);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tAllow empty source checksum: %d", *allow_empty);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tChecksum algorithm: %s", algorithm);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tUser defined checksum: %s", user_checksum);
         }
         return 0;
     }
@@ -288,7 +288,7 @@ static int srm_validate_source_checksum(plugin_handle handle, gfal2_context_t co
             ret = -1;
         }
         else {
-            gfal2_log(G_LOG_LEVEL_INFO, "Source checksum could not be retrieved. Ignoring.");
+            gfal2_log(G_LOG_LEVEL_WARNING, "Source checksum could not be retrieved. Ignoring.");
         }
     }
     else {
@@ -364,7 +364,7 @@ static void srm_force_unlink(plugin_handle handle,
     gfal_srm_unlinkG(handle, surl, &unlink_err);
     if (unlink_err != NULL) {
         if (unlink_err->code != ENOENT) {
-            gfal2_log(G_LOG_LEVEL_INFO,
+            gfal2_log(G_LOG_LEVEL_WARNING,
                      "Got an error when removing the destination surl: %s",
                      unlink_err->message);
         }
@@ -374,7 +374,7 @@ static void srm_force_unlink(plugin_handle handle,
         g_error_free(unlink_err);
     }
     else {
-        gfal2_log(G_LOG_LEVEL_INFO, "Successfully removed destination surl after abort: %s", surl);
+        gfal2_log(G_LOG_LEVEL_MESSAGE, "Successfully removed destination surl after abort: %s", surl);
     }
 }
 
@@ -384,7 +384,7 @@ static void srm_rollback_put(plugin_handle handle,
         gboolean transfer_finished,
         GError** err)
 {
-    gfal2_log(G_LOG_LEVEL_INFO, "Rolling back PUT");
+    gfal2_log(G_LOG_LEVEL_MESSAGE, "Rolling back PUT");
 
     GError* abort_error = NULL;
     // If the transfer finished, or the destination is not an SRM
@@ -403,7 +403,7 @@ static void srm_rollback_put(plugin_handle handle,
                 *err = abort_error;
             }
             else {
-                gfal2_log(G_LOG_LEVEL_INFO,
+                gfal2_log(G_LOG_LEVEL_WARNING,
                         "Got an error when canceling the PUT request: %s",
                         abort_error->message);
                 g_error_free(abort_error);
@@ -419,15 +419,15 @@ static void srm_rollback_put(plugin_handle handle,
 static void srm_release_get(plugin_handle handle, const char* surl, const char* token,
         GError** err)
 {
-    gfal2_log(G_LOG_LEVEL_INFO, "Rolling back GET");
+    gfal2_log(G_LOG_LEVEL_MESSAGE, "Rolling back GET");
 
     GError* release_error = NULL;
     gfal_srmv2_release_fileG(handle, surl, token, &release_error);
     if (release_error != NULL) {
-        gfal2_log(G_LOG_LEVEL_INFO,
+        gfal2_log(G_LOG_LEVEL_WARNING,
                 "Got an error when releasing the source file: %s",
                 release_error->message);
-        gfal2_log(G_LOG_LEVEL_INFO,
+        gfal2_log(G_LOG_LEVEL_WARNING,
                 "It will be ignored!");
     }
 }
@@ -535,7 +535,7 @@ static int is_castor_endpoint(plugin_handle handle, const char* surl)
     gfal_srmv2_opt* opts = (gfal_srmv2_opt*)handle;
 
     if (!srm_check_url(surl)) {
-        gfal2_log(G_LOG_LEVEL_INFO, "Endpoint not SRM: %s", surl);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Endpoint not SRM: %s", surl);
         return 0;
     }
 
@@ -544,13 +544,13 @@ static int is_castor_endpoint(plugin_handle handle, const char* surl)
     if (tmp_err)
         g_error_free(tmp_err);
     if (!context) {
-        gfal2_log(G_LOG_LEVEL_INFO, "Could not get a context for %s", surl);
+        gfal2_log(G_LOG_LEVEL_ERROR, "Could not get a context for %s", surl);
         return -1;
     }
 
     struct srm_xping_output output;
     if (gfal_srm_external_call.srm_xping(context, &output) < 0) {
-        gfal2_log(G_LOG_LEVEL_INFO, "Failed to ping %s", surl);
+        gfal2_log(G_LOG_LEVEL_ERROR, "Failed to ping %s", surl);
         gfal_srm_ifce_easy_context_release(opts, context);
         return -1;
     }
@@ -558,7 +558,7 @@ static int is_castor_endpoint(plugin_handle handle, const char* surl)
     int i, is_castor = 0;
     for (i = 0; i < output.n_extra && !is_castor; ++i) {
         if (strcmp(output.extra[i].key, "backend_type") == 0) {
-            gfal2_log(G_LOG_LEVEL_INFO, "Endpoint of type %s: %s", output.extra[i].value, surl);
+            gfal2_log(G_LOG_LEVEL_MESSAGE, "Endpoint of type %s: %s", output.extra[i].value, surl);
             is_castor = (strcasecmp(output.extra[i].value, "CASTOR") == 0);
         }
     }
@@ -575,13 +575,13 @@ static void castor_gridftp_session_hack(plugin_handle handle, gfal2_context_t co
     int dst_is_castor = is_castor_endpoint(handle, dst);
 
     if (src_is_castor || dst_is_castor) {
-        gfal2_log(G_LOG_LEVEL_INFO,
+        gfal2_log(G_LOG_LEVEL_MESSAGE,
                 "Found a Castor endpoint, or could not determine version! Disabling GridFTP session reuse and stat on open");
         gfal2_set_opt_boolean(context, "GRIDFTP PLUGIN", "SESSION_REUSE", FALSE, NULL);
         gfal2_set_opt_boolean(context, "GRIDFTP PLUGIN", "STAT_ON_OPEN", FALSE, NULL);
     }
     else {
-        gfal2_log(G_LOG_LEVEL_INFO,
+        gfal2_log(G_LOG_LEVEL_DEBUG,
                 "No Castor endpoint. Honor configuration for SESSION_REUSE");
     }
 }
@@ -663,7 +663,7 @@ int srm_plugin_filecopy(plugin_handle handle, gfal2_context_t context,
 // Cleanup and propagate error if needed
 copy_finalize:
     if (nested_error) {
-        gfal2_log(G_LOG_LEVEL_INFO, "Transfer failed with: %s", nested_error->message);
+        gfal2_log(G_LOG_LEVEL_ERROR, "Transfer failed with: %s", nested_error->message);
     }
     srm_cleanup_copy(handle, context, source, dest,
             token_source, token_destination,

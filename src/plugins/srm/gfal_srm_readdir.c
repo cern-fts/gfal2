@@ -243,7 +243,7 @@ struct dirent* gfal_srm_readdirppG(plugin_handle ch,
         oh->chunk_size = 1000;
         oh->response_index = 0;
 
-        gfal2_log(G_LOG_LEVEL_INFO,
+        gfal2_log(G_LOG_LEVEL_WARNING,
                 "EFBIG while listing SRM directory, trying with chunk listing of size %d",
                 oh->chunk_size);
 

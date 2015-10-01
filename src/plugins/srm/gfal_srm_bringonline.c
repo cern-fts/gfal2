@@ -302,9 +302,9 @@ static int gfal_srmv2_release_file_internal(srm_context_t context, gfal_srmv2_op
     int i;
 
     if (token)
-        gfal2_log(G_LOG_LEVEL_INFO, "Released file with token %s", token);
+        gfal2_log(G_LOG_LEVEL_MESSAGE, "Released file with token %s", token);
     else
-        gfal2_log(G_LOG_LEVEL_INFO, "Released file without token");
+        gfal2_log(G_LOG_LEVEL_MESSAGE, "Released file without token");
 
     // Perform
     input.nbfiles  = nbfiles;
@@ -393,9 +393,9 @@ static int gfal_srmv2_abort_files_internal(srm_context_t context, gfal_srmv2_opt
     int i;
 
     if (token)
-        gfal2_log(G_LOG_LEVEL_INFO, "Abort file with token %s", token);
+        gfal2_log(G_LOG_LEVEL_MESSAGE, "Abort file with token %s", token);
     else
-        gfal2_log(G_LOG_LEVEL_INFO, "Abort file without token");
+        gfal2_log(G_LOG_LEVEL_MESSAGE, "Abort file without token");
 
     // Perform
     input.nbfiles  = nbfiles;

@@ -134,13 +134,13 @@ static void gridftp_pipeline_callback(globus_ftp_client_handle_t * handle, char 
         *dest_url = (char*)data->dsts[data->index];
         data->started[data->index] = true;
 
-        gfal2_log(G_LOG_LEVEL_INFO, "Providing pair %s => %s", *source_url, *dest_url);
+        gfal2_log(G_LOG_LEVEL_MESSAGE, "Providing pair %s => %s", *source_url, *dest_url);
     }
     else {
         *source_url = NULL;
         *dest_url = NULL;
 
-        gfal2_log(G_LOG_LEVEL_INFO, "No more pairs to give");
+        gfal2_log(G_LOG_LEVEL_MESSAGE, "No more pairs to give");
     }
 }
 
@@ -317,7 +317,7 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
             char *err_buffer;
             int err_code = gfal_globus_error_convert(pairs->error, &err_buffer);
             if (err_code) {
-                gfal2_log(G_LOG_LEVEL_INFO, "Bulk transfer failed with %s", err_buffer);
+                gfal2_log(G_LOG_LEVEL_ERROR, "Bulk transfer failed with %s", err_buffer);
                 gfal2_set_error(op_error, GSIFTP_BULK_DOMAIN, err_code, __func__, "%s", err_buffer);
                 res = -1;
                 g_free(err_buffer);
@@ -443,7 +443,7 @@ int gridftp_bulk_prepare_destination(plugin_handle plugin_data,
 
                     if (slash &&
                         std::find(created_parents.begin(), created_parents.end(), parent) != created_parents.end()) {
-                        gfal2_log(G_LOG_LEVEL_INFO, "Skip mkdir of %s", parent.c_str());
+                        gfal2_log(G_LOG_LEVEL_DEBUG, "Skip mkdir of %s", parent.c_str());
                     }
                     else {
                         gridftp_create_parent_copy((GridFTPModule*) plugin_data,
@@ -604,7 +604,7 @@ int gridftp_bulk_copy(plugin_handle plugin_data, gfal2_context_t context, gfalt_
             g_error_free(*op_error);
             *op_error = NULL;
 
-            gfal2_log(G_LOG_LEVEL_INFO, "UDT transfer failed! Disabling and retrying...");
+            gfal2_log(G_LOG_LEVEL_WARNING, "UDT transfer failed! Disabling and retrying...");
             transfer_ret = gridftp_pipeline_transfer(plugin_data, context, udt, &pairs, op_error);
         }
     }

@@ -66,7 +66,7 @@ void GridFTPModule::access(const char* path, int mode)
     internal_globus_gass_stat(path, &gl_stat);
 
     if (gl_stat.mode == -1) { // mode not managed by server
-        gfal2_log(G_LOG_LEVEL_INFO,
+        gfal2_log(G_LOG_LEVEL_MESSAGE,
                 "Access request is not managed by this server %s , return access authorized by default",
                 path);
         return;

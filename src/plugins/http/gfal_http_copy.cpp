@@ -302,7 +302,7 @@ static int gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GE
     if ((*err)->code != EEXIST) {
         if (gfal_http_unlinkG(plugin_data, dst, &unlink_err) != 0) {
             if (unlink_err->code != ENOENT) {
-                gfal2_log(G_LOG_LEVEL_INFO,
+                gfal2_log(G_LOG_LEVEL_WARNING,
                          "When trying to clean the destination: %s", unlink_err->message);
             }
             g_error_free(unlink_err);
@@ -348,14 +348,14 @@ static int gfal_http_third_party_copy(GfalHttpPluginData* davix,
         gfalt_params_t params,
         GError** err)
 {
-    gfal2_log(G_LOG_LEVEL_INFO, "Performing a HTTP third party copy");
+    gfal2_log(G_LOG_LEVEL_MESSAGE, "Performing a HTTP third party copy");
 
     PerfCallbackData perfCallbackData(
             params, src, dst
     );
 
     std::string canonical_dst = get_canonical_uri(dst);
-    gfal2_log(G_LOG_LEVEL_INFO, "Normalize destination to %s", canonical_dst.c_str());
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Normalize destination to %s", canonical_dst.c_str());
 
     Davix::Uri src_uri(src);
     Davix::Uri dst_uri(canonical_dst);
@@ -463,7 +463,7 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
         gfalt_params_t params,
         GError** err)
 {
-    gfal2_log(G_LOG_LEVEL_INFO, "Performing a HTTP streamed copy");
+    gfal2_log(G_LOG_LEVEL_MESSAGE, "Performing a HTTP streamed copy");
     GError *nested_err = NULL;
 
     struct stat src_stat;
@@ -515,7 +515,7 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
         http2gliberr(err, request.getRequestCode(), __func__, "Failed to PUT the file");
     }
 
-    gfal2_log(G_LOG_LEVEL_INFO, "HTTP code %d", request.getRequestCode());
+    gfal2_log(G_LOG_LEVEL_DEBUG, "HTTP code %d", request.getRequestCode());
     return *err == NULL ? 0 : -1;
 }
 
@@ -554,8 +554,8 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     strip_3rd_from_url(src_full, src, sizeof(src));
     strip_3rd_from_url(dst_full, dst, sizeof(dst));
 
-    gfal2_log(G_LOG_LEVEL_INFO, "Using source: %s", src);
-    gfal2_log(G_LOG_LEVEL_INFO, "Using destination: %s", dst);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Using source: %s", src);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Using destination: %s", dst);
 
     // When this flag is not set, the plugin should handle overwriting,
     // parent directory creation,...
@@ -621,7 +621,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
 
         if (ret == 0) {
             // Success! Break the loop
-            gfal2_log(G_LOG_LEVEL_INFO, "Copy succeeded using mode %s", CopyModeStr[copy_mode]);
+            gfal2_log(G_LOG_LEVEL_MESSAGE, "Copy succeeded using mode %s", CopyModeStr[copy_mode]);
             break;
         }
         else if (ret < 0) {

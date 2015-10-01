@@ -64,7 +64,7 @@ LDAP* gfal_mds_ldap_connect(gfal2_context_t context, const char* uri, GError** e
 
 	    gfal2_log(G_LOG_LEVEL_DEBUG, " use BDII TIMEOUT : %ld", timeout.tv_sec);
 
-		gfal2_log(G_LOG_LEVEL_INFO, "  Try to bind with the bdii %s", uri);
+		gfal2_log(G_LOG_LEVEL_DEBUG, "  Try to bind with the bdii %s", uri);
 		struct berval cred= { .bv_val = NULL, .bv_len = 0 };
 		if( (rc = gfal_mds_ldap.ldap_sasl_bind_s( ld,  NULL, LDAP_SASL_SIMPLE, &cred, NULL, NULL, NULL)) != LDAP_SUCCESS){
              g_set_error(&tmp_err, gfal2_get_core_quark(), ECOMM, "Error while bind to bdii with %s : %s", uri, ldap_err2string(rc));

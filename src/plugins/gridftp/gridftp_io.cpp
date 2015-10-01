@@ -312,18 +312,18 @@ off_t GridFTPModule::lseek(gfal_file_handle handle, off_t offset, int whence)
         // This happens, for instance, with gfalFS, which will do parallel writes and reads, but
         // in order
         if (new_offset == desc->current_offset) {
-            gfal2_log(G_LOG_LEVEL_INFO, "New and current offsets are the same (%lld), so do not seek",
+            gfal2_log(G_LOG_LEVEL_DEBUG, "New and current offsets are the same (%lld), so do not seek",
                     (long long)(new_offset));
             globus_mutex_unlock(&desc->mutex);
             return desc->current_offset;
         }
 
-        gfal2_log(G_LOG_LEVEL_INFO, "New offset set to %lld", (long long)(new_offset));
+        gfal2_log(G_LOG_LEVEL_DEBUG, "New offset set to %lld", (long long)(new_offset));
 
         // If the new offset does not correspond with the current offset,
         // abort initial GET/PUT operation if running
         if (!desc->request->done) {
-            gfal2_log(G_LOG_LEVEL_INFO, "Abort GridFTP request done at open(...)");
+            gfal2_log(G_LOG_LEVEL_WARNING, "Abort GridFTP request done at open(...)");
             globus_ftp_client_abort(desc->handler->get_ftp_client_handle());
             try {
                 desc->request->wait(GFAL_GRIDFTP_SCOPE_LSEEK);

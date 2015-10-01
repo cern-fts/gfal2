@@ -53,7 +53,7 @@ int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError*
     gfal2_log(G_LOG_LEVEL_DEBUG, "  ->  [gfal_srm_mkdir_recG] ");
     srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
     if (context != NULL) {
-        gfal2_log(G_LOG_LEVEL_INFO, "   [gfal_srm_mkdir_recG] try to create directory %s", surl);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "   [gfal_srm_mkdir_recG] try to create directory %s", surl);
         struct stat st;
 
         ret = gfal_statG_srmv2_internal(context, &st, NULL, surl, &tmp_err);
@@ -96,7 +96,7 @@ int gfal_srm_mkdirG(plugin_handle ch, const char* surl, mode_t mode, gboolean pf
         gfal2_log(G_LOG_LEVEL_DEBUG, "  ->  [gfal_srm_mkdirG] ");
         srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
         if (context != NULL) {
-            gfal2_log(G_LOG_LEVEL_INFO, "   [gfal_srm_mkdirG] try to create directory %s", surl);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "   [gfal_srm_mkdirG] try to create directory %s", surl);
             struct stat st;
 
             ret = gfal_statG_srmv2_internal(context, &st, NULL, surl, &tmp_err);

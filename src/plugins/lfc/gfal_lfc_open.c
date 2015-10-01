@@ -37,7 +37,7 @@ gfal_file_handle lfc_openG(plugin_handle ch, const char* path, int flag, mode_t 
 	if(surls != 0 && tmp_err == NULL){
 		char** p = surls;
 		while( *p != NULL){
-			gfal2_log(G_LOG_LEVEL_INFO, " LFC resolution %s -> %s ", path, *p);
+			gfal2_log(G_LOG_LEVEL_MESSAGE, " LFC resolution %s -> %s ", path, *p);
 			res = gfal_plugin_openG(handle, *p, flag, mode, &tmp_err);
 			if(res || ( tmp_err && tmp_err->code!=ECOMM))
 				break;

@@ -75,14 +75,14 @@ int gfal_mds_cache_resolve_endpoint(gfal2_context_t handle, const char* host,
     if (!cache_file)
         return 0;
 
-    gfal2_log(G_LOG_LEVEL_INFO, "BDII CACHE_FILE set to %s", cache_file);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "BDII CACHE_FILE set to %s", cache_file);
 
     // Open the file, but do not fail if it can not be open
     // (A cache may not be present!)
     pugi::xml_document cache;
     pugi::xml_parse_result loadResult = cache.load_file(cache_file);
     if (loadResult.status != pugi::status_ok) {
-        gfal2_log(G_LOG_LEVEL_INFO, "Could not load BDII CACHE_FILE: %s",
+        gfal2_log(G_LOG_LEVEL_WARNING, "Could not load BDII CACHE_FILE: %s",
                 loadResult.description());
         return 0;
     }

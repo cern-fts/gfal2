@@ -69,7 +69,7 @@ static void gfal_http_get_ucert(RequestParams & params, gfal2_context_t handle)
 
         X509Credential cred;
         if(cred.loadFromFilePEM(ukey,ucert,"", &tmp_err) <0){
-            gfal2_log(G_LOG_LEVEL_INFO,
+            gfal2_log(G_LOG_LEVEL_WARNING,
                     "Could not load the user credentials: %s", tmp_err->getErrMsg().c_str());
         }else{
             params.setClientCertX509(cred);

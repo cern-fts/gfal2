@@ -226,12 +226,12 @@ struct CallbackHandler {
             fprintf(stderr, "ALL COOL\n");
         }
         catch (Gfal::CoreException& e) {
-            gfal2_log(G_LOG_LEVEL_INFO,
+            gfal2_log(G_LOG_LEVEL_WARNING,
                     "Exception while cancelling on performance marker timeout: %s",
                     e.what());
         }
         catch (...) {
-            gfal2_log(G_LOG_LEVEL_INFO,
+            gfal2_log(G_LOG_LEVEL_WARNING,
                     "Unknown exception while cancelling on performance marker timeout");
         }
 
@@ -388,7 +388,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
             GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_UDT, NULL);
 
     if (enable_udt_transfers) {
-        gfal2_log(G_LOG_LEVEL_INFO, "Trying UDT transfer");
+        gfal2_log(G_LOG_LEVEL_MESSAGE, "Trying UDT transfer");
         plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP, GFAL_EVENT_NONE,
                 g_quark_from_static_string("UDT:ENABLE"), "Trying UDT");
         handler.session->set_udt(true);
@@ -400,7 +400,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
     catch (Gfal::CoreException& e) {
         // Try again if the failure was related to udt
         if (e.what_str().find("udt driver not whitelisted") != std::string::npos) {
-            gfal2_log(G_LOG_LEVEL_INFO,
+            gfal2_log(G_LOG_LEVEL_WARNING,
                     "UDT transfer failed! Disabling and retrying...");
 
             plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP, GFAL_EVENT_NONE,

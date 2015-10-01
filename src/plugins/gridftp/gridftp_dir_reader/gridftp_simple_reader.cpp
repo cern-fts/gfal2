@@ -87,7 +87,7 @@ struct dirent* GridFTPSimpleListReader::readdir()
     if (dbuffer.d_name[0] == '/' || dbuffer.d_name[0] == '\0')
         return NULL;
 
-    gfal2_log(G_LOG_LEVEL_INFO, "  list file %s ", dbuffer.d_name);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  list file %s ", dbuffer.d_name);
     gfal2_log(G_LOG_LEVEL_DEBUG, "  [GridftpSimpleListReader::readdir] <- ");
     return &dbuffer;
 }
