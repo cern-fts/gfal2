@@ -92,7 +92,7 @@ public:
             const char* dst);
 
     void internal_globus_gass_stat(const char* path,
-            globus_gass_copy_glob_stat_t * gl_stat);
+            struct stat* fstat);
 
     GridFTPFactory* get_session_factory()
     {

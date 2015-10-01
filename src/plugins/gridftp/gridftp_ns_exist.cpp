@@ -25,9 +25,9 @@
 bool GridFTPModule::exists(const char* path)
 {
     try {
-        globus_gass_copy_glob_stat_t gl_stat;
-        memset(&gl_stat, 0, sizeof(globus_gass_copy_glob_stat_t));
-        internal_globus_gass_stat(path, &gl_stat);
+        struct stat fstat;
+        memset(&fstat, 0, sizeof(fstat));
+        internal_globus_gass_stat(path, &fstat);
     }
     catch (Gfal::CoreException& e) {
         if (e.code() != ENOENT)

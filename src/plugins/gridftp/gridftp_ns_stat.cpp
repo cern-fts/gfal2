@@ -33,22 +33,7 @@ void GridFTPModule::stat(const char* path, struct stat * st)
     }
 
     gfal2_log(G_LOG_LEVEL_DEBUG, " -> [GridFTPModule::stat] ");
-    globus_gass_copy_glob_stat_t gl_stat;
-    memset(&gl_stat, 0, sizeof(globus_gass_copy_glob_stat_t));
-    internal_globus_gass_stat(path, &gl_stat);
-
-    memset(st, 0, sizeof(struct stat));
-    st->st_mode = (mode_t) ((gl_stat.mode != -1) ? gl_stat.mode : 0);
-//	st->st_mode |= (gl_stat.symlink_target != NULL)?(S_IFLNK):0;
-    st->st_mode |=
-            (gl_stat.type == GLOBUS_GASS_COPY_GLOB_ENTRY_DIR) ?
-                    (S_IFDIR) : (S_IFREG);
-    st->st_size = (off_t) gl_stat.size;
-    st->st_mtime = (time_t) (gl_stat.mdtm != -1) ? (gl_stat.mdtm) : 0;
-
-    globus_libc_free(gl_stat.unique_id);
-    globus_libc_free(gl_stat.symlink_target);
-
+    internal_globus_gass_stat(path, st);
     gfal2_log(G_LOG_LEVEL_DEBUG, " <- [GridFTPModule::stat] ");
 }
 
@@ -61,18 +46,17 @@ void GridFTPModule::access(const char* path, int mode)
     }
 
     gfal2_log(G_LOG_LEVEL_DEBUG, " -> [Gridftp_stat_module::access] ");
-    globus_gass_copy_glob_stat_t gl_stat;
-    memset(&gl_stat, 0, sizeof(globus_gass_copy_glob_stat_t));
-    internal_globus_gass_stat(path, &gl_stat);
+    struct stat st;
+    internal_globus_gass_stat(path, &st);
 
-    if (gl_stat.mode == -1) { // mode not managed by server
+    if (st.st_mode == (mode_t)-1) { // mode not managed by server
         gfal2_log(G_LOG_LEVEL_MESSAGE,
                 "Access request is not managed by this server %s , return access authorized by default",
                 path);
         return;
     }
 
-    const mode_t file_mode = (mode_t) gl_stat.mode;
+    const mode_t file_mode = (mode_t) st.st_mode;
     if (((file_mode & ( S_IRUSR | S_IRGRP | S_IROTH)) == FALSE) && (mode & R_OK)) {
         throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_ACCESS, EACCES,
                 "No read access");
@@ -186,7 +170,7 @@ int copy_mdtm_to_timet(char * mdtm_str, int * time_out)
 
 
 globus_result_t parse_mlst_line(char *line,
-        globus_gass_copy_glob_stat_t *stat_info,
+        struct stat *stat_info,
         char *filename_buf, size_t filename_size)
 {
     globus_result_t result;
@@ -292,19 +276,30 @@ globus_result_t parse_mlst_line(char *line,
         if (strcmp(startfact, "unix.slink") == 0) {
             symlink_target = factval;
         }
+        if (strcmp(startfact, "unix.uid") == 0) {
+            stat_info->st_uid = atoi(factval);
+        }
+        if (strcmp(startfact, "unix.gid") == 0) {
+            stat_info->st_gid = atoi(factval);
+        }
+
 
         startfact = endfact + 1;
     }
 
-    stat_info->type = type;
-    stat_info->unique_id = globus_libc_strdup(unique_id);
-    stat_info->symlink_target = globus_libc_strdup(symlink_target);
-    stat_info->mode = -1;
-    stat_info->size = -1;
-    stat_info->mdtm = -1;
+    stat_info->st_nlink = 1;
+    stat_info->st_mode = -1;
+    stat_info->st_size = -1;
+    stat_info->st_mtime = -1;
 
     if (mode_s) {
-        stat_info->mode = strtoul(mode_s, NULL, 0);
+        stat_info->st_mode = strtoul(mode_s, NULL, 0);
+        if (type == GLOBUS_GASS_COPY_GLOB_ENTRY_DIR) {
+            stat_info->st_mode |= S_IFDIR;
+        }
+        else {
+            stat_info->st_mode |= S_IFREG;
+        }
     }
 
     if (size_s) {
@@ -313,7 +308,7 @@ globus_result_t parse_mlst_line(char *line,
 
         rc = sscanf(size_s, "%ld", &size);
         if (rc == 1) {
-            stat_info->size = size;
+            stat_info->st_size = size;
         }
     }
 
@@ -321,20 +316,20 @@ globus_result_t parse_mlst_line(char *line,
         int mdtm;
 
         if (copy_mdtm_to_timet(modify_s, &mdtm) == GLOBUS_SUCCESS) {
-            stat_info->mdtm = mdtm;
+            stat_info->st_mtime = mdtm;
         }
     }
 
     return GLOBUS_SUCCESS;
 
-    error_invalid_mlsd:
+error_invalid_mlsd:
 
     return result;
 }
 
 
 void GridFTPModule::internal_globus_gass_stat(const char* path,
-        globus_gass_copy_glob_stat_t * gl_stat)
+        struct stat* fstat)
 {
 
     gfal2_log(G_LOG_LEVEL_DEBUG,
@@ -357,7 +352,7 @@ void GridFTPModule::internal_globus_gass_stat(const char* path,
             "   <- [Gridftp_stat_module::internal_globus_gass_stat] Got '%s'",
             buffer);
 
-    parse_mlst_line((char*) buffer, gl_stat, NULL, 0);
+    parse_mlst_line((char*) buffer, fstat, NULL, 0);
     globus_free(buffer);
 
     gfal2_log(G_LOG_LEVEL_DEBUG,

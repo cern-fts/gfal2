@@ -23,7 +23,7 @@
 static const GQuark GridftpListReaderQuark = g_quark_from_static_string("GridftpSimpleListReader::readdir");
 
 // From gridftp_ns_stat.cpp
-extern globus_result_t parse_mlst_line(char *line, globus_gass_copy_glob_stat_t *stat_info,
+extern globus_result_t parse_mlst_line(char *line, struct stat *stat_info,
         char *filename_buf, size_t filename_size);
 
 
@@ -98,9 +98,8 @@ struct dirent* GridFTPListReader::readdirpp(struct stat* st)
     if (trim(line).empty())
         return NULL;
 
-    globus_gass_copy_glob_stat_t gl_stat;
     char* unparsed = strdup(line.c_str());
-    if (parse_mlst_line(unparsed, &gl_stat, dbuffer.d_name, sizeof(dbuffer.d_name)) != GLOBUS_SUCCESS) {
+    if (parse_mlst_line(unparsed, st, dbuffer.d_name, sizeof(dbuffer.d_name)) != GLOBUS_SUCCESS) {
         free(unparsed);
         throw Gfal::CoreException(GridftpListReaderQuark, EINVAL,
                 std::string("Error parsing GridFTP line: '").append(line).append("\'"));
@@ -112,21 +111,12 @@ struct dirent* GridFTPListReader::readdirpp(struct stat* st)
     if (dbuffer.d_name[0] == '/')
         return NULL;
 
-    memset(st, 0, sizeof(*st));
-    st->st_mode  = (mode_t) ((gl_stat.mode != -1)?gl_stat.mode:0);
-    st->st_mode |= (gl_stat.type == GLOBUS_GASS_COPY_GLOB_ENTRY_DIR)?(S_IFDIR):(S_IFREG);
-    st->st_size  = (off_t) gl_stat.size;
-    st->st_mtime = (time_t) (gl_stat.mdtm != -1)?(gl_stat.mdtm):0;
-
     if (S_ISDIR(st->st_mode))
         dbuffer.d_type = DT_DIR;
     else if (S_ISLNK(st->st_mode))
         dbuffer.d_type = DT_LNK;
     else
         dbuffer.d_type = DT_REG;
-
-    globus_libc_free(gl_stat.unique_id);
-    globus_libc_free(gl_stat.symlink_target);
 
     return &dbuffer;
 }
