@@ -57,6 +57,28 @@ static int gfal_srm_ls_internal(srm_context_t context,
 }
 
 
+static time_t gfal_srm_local_timezone_offset(void)
+{
+    time_t epoch = 0;
+    return -mktime(gmtime(&epoch));
+}
+
+
+static void gfal_srm_adjust_time(struct stat* buf)
+{
+    tzset();
+    time_t tz_offset = gfal_srm_local_timezone_offset();
+
+    // Do not apply offset if the value is 0
+    if (buf->st_ctime != 0)
+        buf->st_ctime += tz_offset;
+    if (buf->st_atime != 0)
+        buf->st_atime += tz_offset;
+    if (buf->st_mtime != 0)
+        buf->st_mtime += tz_offset;
+}
+
+
 int gfal_statG_srmv2__generic_internal(srm_context_t context, struct stat* buf, TFileLocality* loc,
         const char* surl,  GError** err)
 {
@@ -92,6 +114,8 @@ int gfal_statG_srmv2__generic_internal(srm_context_t context, struct stat* buf, 
 			    *loc = srmv2_mdstatuses->locality;
 			errno = 0;
 			ret = 0;
+			// SRM returns the time in UTC
+			gfal_srm_adjust_time(buf);
 		}
 	}
 	gfal_srm_ls_memory_management(&input, &output);
