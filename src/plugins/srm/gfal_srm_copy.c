@@ -544,13 +544,13 @@ static int is_castor_endpoint(plugin_handle handle, const char* surl)
     if (tmp_err)
         g_error_free(tmp_err);
     if (!context) {
-        gfal2_log(G_LOG_LEVEL_ERROR, "Could not get a context for %s", surl);
+        gfal2_log(G_LOG_LEVEL_WARNING, "Could not get a context for %s", surl);
         return -1;
     }
 
     struct srm_xping_output output;
     if (gfal_srm_external_call.srm_xping(context, &output) < 0) {
-        gfal2_log(G_LOG_LEVEL_ERROR, "Failed to ping %s", surl);
+        gfal2_log(G_LOG_LEVEL_WARNING, "Failed to ping %s", surl);
         gfal_srm_ifce_easy_context_release(opts, context);
         return -1;
     }
@@ -663,7 +663,7 @@ int srm_plugin_filecopy(plugin_handle handle, gfal2_context_t context,
 // Cleanup and propagate error if needed
 copy_finalize:
     if (nested_error) {
-        gfal2_log(G_LOG_LEVEL_ERROR, "Transfer failed with: %s", nested_error->message);
+        gfal2_log(G_LOG_LEVEL_WARNING, "Transfer failed with: %s", nested_error->message);
     }
     srm_cleanup_copy(handle, context, source, dest,
             token_source, token_destination,

@@ -126,7 +126,7 @@ int url_converter(plugin_handle handle, const char * url, char** host,
     GError* tmp_err = NULL;
     int res = -1;
     if (strnlen(url, 5) != 5) { // bad string size, return empty string
-        gfal2_log(G_LOG_LEVEL_ERROR, "lfc url converter -> bad url size");
+        gfal2_log(G_LOG_LEVEL_WARNING, "lfc url converter -> bad url size");
         return res;
     }
     if (strncmp(url, "lfn", 3) == 0) {

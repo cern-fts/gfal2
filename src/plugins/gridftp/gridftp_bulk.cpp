@@ -317,7 +317,7 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
             char *err_buffer;
             int err_code = gfal_globus_error_convert(pairs->error, &err_buffer);
             if (err_code) {
-                gfal2_log(G_LOG_LEVEL_ERROR, "Bulk transfer failed with %s", err_buffer);
+                gfal2_log(G_LOG_LEVEL_WARNING, "Bulk transfer failed with %s", err_buffer);
                 gfal2_set_error(op_error, GSIFTP_BULK_DOMAIN, err_code, __func__, "%s", err_buffer);
                 res = -1;
                 g_free(err_buffer);

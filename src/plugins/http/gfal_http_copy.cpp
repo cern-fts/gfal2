@@ -634,7 +634,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
             }
             // Non-recoverable error, break the loop
             else {
-                gfal2_log(G_LOG_LEVEL_CRITICAL,
+                gfal2_log(G_LOG_LEVEL_WARNING,
                         "Copy failed with mode %s, skip other attempts: %s",
                         CopyModeStr[copy_mode], nested_error->message);
                 break;
