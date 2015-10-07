@@ -46,7 +46,7 @@ if (GLIB2_INCLUDE_DIRS)
 endif (GLIB2_INCLUDE_DIRS)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    link_directories ("/usr/local/opt/gettext/lib")
+    link_directories ("${CMAKE_INSTALL_PREFIX}/opt/gettext/lib")
 endif ()
 
 # -----------------------------------------------------

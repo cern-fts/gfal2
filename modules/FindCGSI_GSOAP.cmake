@@ -23,8 +23,8 @@ find_library(CGSI_GSOAP_LIBRARIES
         ${STAGE_DIR}
         ${CMAKE_INSTALL_PREFIX}/cgsigsoap/*/${PLATFORM}/lib
         ${CMAKE_INSTALL_PREFIX}/cgsigsoap/*/${PLATFORM}/lib64
-        /usr/local/opt/cgsi-gsoap/lib
-        /usr/local/opt/cgsi-gsoap/lib64
+        ${CMAKE_INSTALL_PREFIX}/opt/cgsi-gsoap/lib
+        ${CMAKE_INSTALL_PREFIX}/opt/cgsi-gsoap/lib64
     DOC "The main CGSI_GSOAP library"
 )
 

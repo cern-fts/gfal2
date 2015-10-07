@@ -49,7 +49,7 @@ find_path(XROOTD_INCLUDE_DIR
     NAMES XrdVersion.hh
     HINTS ${XROOTD_LOCATION} ${XROOTD_LOCATION}/include ${XROOTD_LOCATION}/include/* 
           ${XROOTD_LOCATION}/src/
-          /usr/include/xrootd /usr/local/include/xrootd
+          /usr/include/xrootd ${CMAKE_INSTALL_PREFIX}/include/xrootd
     DOC "The xrootd include directory"
 )
 if(XROOTD_INCLUDE_DIR)

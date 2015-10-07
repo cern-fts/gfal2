@@ -26,7 +26,7 @@ else (GLOBUS_GSS_ASSIST_PKG_FOUND)
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib64
-              /usr/local/opt/globus-toolkit/libexec/lib
+              ${CMAKE_INSTALL_PREFIX}/opt/globus-toolkit/libexec/lib
         DOC "The main globus-gssapi-gsi library"
     )
 
@@ -35,7 +35,7 @@ else (GLOBUS_GSS_ASSIST_PKG_FOUND)
         HINTS ${GLOBUS_GSS_ASSIST_LOCATION}/include/*
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/include
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/include
-              /usr/local/opt/globus-toolkit/libexec/include
+              ${CMAKE_INSTALL_PREFIX}/opt/globus-toolkit/libexec/include
         DOC "The globus-gss-assist include directory"
     )
 

@@ -31,7 +31,7 @@ else ()
             ${STAGE_DIR}/lib ${STAGE_DIR}/lib64
             ${CMAKE_INSTALL_PREFIX}/Davix/*/${PLATFORM}/lib
             ${CMAKE_INSTALL_PREFIX}/Davix/*/${PLATFORM}/lib64
-            /usr/local/lib
+            ${CMAKE_INSTALL_PREFIX}/lib
         DOC "The main davix library"
     )
     
@@ -42,7 +42,7 @@ else ()
             ${STAGE_DIR}/lib ${STAGE_DIR}/lib64
             ${CMAKE_INSTALL_PREFIX}/Davix/*/${PLATFORM}/lib
             ${CMAKE_INSTALL_PREFIX}/Davix/*/${PLATFORM}/lib64
-            /usr/local/lib
+            ${CMAKE_INSTALL_PREFIX}/lib
         DOC "The davix copy library"
     )
     
@@ -55,7 +55,7 @@ else ()
             ${DAVIX_LOCATION} ${DAVIX_LOCATION}/include ${DAVIX_LOCATION}/include/*
             ${STAGE_DIR}/include ${STAGE_DIR}/include
             ${CMAKE_INSTALL_PREFIX}/Davix/*/${PLATFORM}/include/*
-            /usr/local/include/davix
+            ${CMAKE_INSTALL_PREFIX}/include/davix
         DOC "Davix include directory"
     )
     
