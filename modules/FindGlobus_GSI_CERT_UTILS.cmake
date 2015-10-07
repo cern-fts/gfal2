@@ -29,6 +29,7 @@ else (GLOBUS_GSI_CERT_UTILS_PKG_FOUND)
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib64
               ${CMAKE_INSTALL_PREFIX}/opt/globus-toolkit/libexec/lib
+              ${GLOBUS_PREFIX}/libexec/lib
         DOC "The main globus-gsi-cert-utils library"
     )
 
@@ -38,6 +39,7 @@ else (GLOBUS_GSI_CERT_UTILS_PKG_FOUND)
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/include
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/include
               ${CMAKE_INSTALL_PREFIX}/opt/globus-toolkit/libexec/include
+              ${GLOBUS_PREFIX}/libexec/include
         DOC "The globus-gsi-cert-utils include directory"
     )
 

@@ -27,6 +27,7 @@ else (GLOBUS_GASS_COPY_PKG_FOUND)
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib64
               ${CMAKE_INSTALL_PREFIX}/opt/globus-toolkit/libexec/lib
+              ${GLOBUS_PREFIX}/libexec/lib
         DOC "The main globus-gass-copy library"
     )
 
@@ -36,6 +37,7 @@ else (GLOBUS_GASS_COPY_PKG_FOUND)
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/
               ${CMAKE_INSTALL_PREFIX}/opt/globus-toolkit/libexec/include
+              ${GLOBUS_PREFIX}/libexec/include
         DOC "The globus-gass-copy include directory"
     )
 
