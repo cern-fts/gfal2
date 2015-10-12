@@ -1,5 +1,33 @@
 GFAL2 RELEASE-NOTES:
 
+* Mon Oct 12 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.10.0
+** Bug
+- [DMC-676] - SRM Plugin: Response for bringonline may be shorter than the request
+- [DMC-682] - SURLS in responses may not contain full endpoint
+- [DMC-692] - gfal_rw_seq_SRM_DPM hangs somewhere when the proxy is not initialized
+- [DMC-694] - GridFTP Plugin: Malformed IPv6 printed on the logs
+- [DMC-717] - Remove Boost dependency from gfal2
+- [DMC-720] - SRM Plugin should handle transfers also for file:/path
+- [DMC-722] - LFC Plugin registers the TURL rather than the SURL into the catalog
+- [DMC-724] - XROOTD plugin: Case-insensitive checksum type comparison 
+- [DMC-731] - Segfault on xrootd 3rd party copies
+- [DMC-741] - Replace G_LOG_LEVEL_INFO with other levels
+- [DMC-742] - SRM Plugin: Convert UTC to local timestamp
+** Improvement
+- [DMC-674] - Validate version as part of the packaging
+- [DMC-679] - SRM Plugin: Reduce log level for the unlinking messages
+- [DMC-685] - All: Mark in a common way when a checksum comparison fails
+- [DMC-698] - Port DMC clients to MacOSX
+- [DMC-737] - File plugin: Avoid large allocation on the stack
+- [DMC-744] - GridFTP Plugin: Parse uid and gid if available
+** New Feature
+- [DMC-669] - GridFTP Plugin: Hook a plugin to capture final endpoints on transfer
+- [DMC-673] - SRM Plugin: Add srm.type extended attribute
+- [DMC-697] - HTTP Plugin: Add support for pull copies
+** Task
+- [DMC-680] - Integrate gfal2-plugin-xrootd into mainline gfal2
+- [DMC-712] - Improve mock plugin
+
 * Tue Jun 08 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.9.3
 ** Bug
 - [DMC-682] - SRM Plugin: SURLS in responses may not contain full endpoint
