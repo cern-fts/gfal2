@@ -40,7 +40,9 @@ void gridftp_plugin_init()
     if (!g_thread_supported())
     g_thread_init(NULL);
 #endif
-    globus_thread_set_model("pthread");
+
+    if (!getenv("GLOBUS_THREAD_MODEL"))
+        globus_thread_set_model("pthread");
 
     globus_module_activate(GLOBUS_GSI_GSS_ASSIST_MODULE);
     globus_module_activate(GLOBUS_GSI_GSSAPI_MODULE);
