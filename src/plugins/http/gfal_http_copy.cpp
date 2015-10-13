@@ -202,78 +202,6 @@ static int gfal_http_copy_make_parent(plugin_handle plugin_data,
     }
 }
 
-// dst may be NULL. In that case, the user-defined checksum
-// is compared with the source checksum.
-// If dst != NULL, then user-defined is ignored
-static int gfal_http_copy_checksum(gfal2_context_t context,
-        plugin_handle plugin_data,
-        gfalt_params_t params,
-        const char *src, const char *dst,
-        GError** err)
-{
-    if (!gfalt_get_checksum_check(params, NULL))
-        return 0;
-
-    char checksum_type[1024];
-    char checksum_value[1024];
-    gfalt_get_user_defined_checksum(params,
-                                    checksum_type, sizeof(checksum_type),
-                                    checksum_value, sizeof(checksum_value),
-                                    NULL);
-    if (!checksum_type[0])
-        g_strlcpy(checksum_type, "MD5", sizeof(checksum_type));
-
-    GError *nestedError = NULL;
-    char src_checksum[1024];
-    // src may not be http!
-    gfal2_checksum(context, src, checksum_type,
-                   0, 0, src_checksum, sizeof(src_checksum),
-                   &nestedError);
-
-    if (nestedError) {
-        gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM);
-        return -1;
-    }
-
-    if (!dst) {
-        if (checksum_value[0] && gfal_compare_checksums(src_checksum, checksum_value, sizeof(checksum_value)) != 0) {
-            gfalt_set_error(err, http_plugin_domain, EIO, __func__,
-                            GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM_MISMATCH,
-                            "Source and user-defined %s do not match (%s != %s)",
-                            checksum_type, src_checksum, checksum_value);
-            return -1;
-        }
-        else if (checksum_value[0]) {
-            gfal2_log(G_LOG_LEVEL_DEBUG,
-                     "[%s] Source and user-defined %s match: %s",
-                     __func__, checksum_type, checksum_value);
-        }
-    }
-    else {
-        char dst_checksum[1024];
-        gfal_http_checksum(plugin_data, dst, checksum_type,
-                           dst_checksum, sizeof(dst_checksum),
-                           0, 0, &nestedError);
-        if (nestedError) {
-            gfalt_propagate_prefixed_error(err, nestedError, __func__, GFALT_ERROR_DESTINATION, GFALT_ERROR_CHECKSUM);
-            return -1;
-        }
-
-        if (gfal_compare_checksums(src_checksum, dst_checksum, sizeof(dst_checksum)) != 0) {
-            gfalt_set_error(err, http_plugin_domain, EIO, __func__,
-                            GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM_MISMATCH,
-                            "Source and destination %s do not match (%s != %s)",
-                            checksum_type, src_checksum, dst_checksum);
-            return -1;
-        }
-
-        gfal2_log(G_LOG_LEVEL_DEBUG,
-                 "[%s] Source and destination %s match: %s",
-                 __func__, checksum_type, src_checksum);
-    }
-    return 0;
-}
-
 
 static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfData, void* data)
 {
@@ -557,20 +485,62 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     gfal2_log(G_LOG_LEVEL_DEBUG, "Using source: %s", src);
     gfal2_log(G_LOG_LEVEL_DEBUG, "Using destination: %s", dst);
 
+    // Get user defined checksum
+    bool do_checksum = false;
+    char checksum_type[1024];
+    char user_checksum[1024];
+    char src_checksum[1024];
+
+    do_checksum = !gfalt_get_strict_copy_mode(params, NULL)
+            && gfalt_get_checksum_check(params, NULL);
+
+    if (do_checksum) {
+        gfalt_get_user_defined_checksum(params, checksum_type,
+                sizeof(checksum_type), user_checksum, sizeof(user_checksum),
+                NULL);
+        if (!checksum_type[0])
+            g_strlcpy(checksum_type, "MD5", sizeof(checksum_type));
+    }
+
+    // Source checksum
+    if (do_checksum) {
+        plugin_trigger_event(params, http_plugin_domain, GFAL_EVENT_SOURCE,
+                GFAL_EVENT_CHECKSUM_ENTER, "");
+
+        gfal2_checksum(context, src, checksum_type,
+                       0, 0, src_checksum, sizeof(src_checksum),
+                       &nested_error);
+
+        if (nested_error) {
+            if (nested_error->code == ENOSYS || nested_error->code == ENOTSUP) {
+                gfal2_log(G_LOG_LEVEL_WARNING,
+                        "Checksum type %s not supported by source. Skip source check.",
+                        checksum_type);
+                g_clear_error (&nested_error);
+                src_checksum[0] = '\0';
+            } else {
+                gfalt_propagate_prefixed_error(err, nested_error, __func__,
+                        GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM);
+                return -1;
+            }
+        }
+        else if (user_checksum[0]) {
+            if (gfal_compare_checksums(src_checksum, user_checksum, sizeof(src_checksum)) != 0) {
+                gfalt_set_error(err, http_plugin_domain, EIO, __func__,
+                        GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM_MISMATCH,
+                        "Source and user-defined %s do not match (%s != %s)",
+                        checksum_type, src_checksum, user_checksum);
+                return -1;
+            }
+        }
+
+        plugin_trigger_event(params, http_plugin_domain, GFAL_EVENT_SOURCE,
+                GFAL_EVENT_CHECKSUM_EXIT, "");
+    }
+
     // When this flag is not set, the plugin should handle overwriting,
     // parent directory creation,...
     if (!gfalt_get_strict_copy_mode(params, NULL)) {
-        plugin_trigger_event(params, http_plugin_domain,
-                             GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER,
-                             "");
-        if (gfal_http_copy_checksum(context, plugin_data, params, src, NULL, &nested_error) != 0) {
-            gfal2_propagate_prefixed_error(err, nested_error, __func__);
-            return -1;
-        }
-        plugin_trigger_event(params, http_plugin_domain,
-                             GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT,
-                             "");
-
         if (gfal_http_copy_overwrite(plugin_data, params, dst, &nested_error) != 0 ||
             gfal_http_copy_make_parent(plugin_data, params, context, dst, &nested_error) != 0) {
             gfal2_propagate_prefixed_error(err, nested_error, __func__);
@@ -590,13 +560,18 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     // Initial copy mode
     CopyMode copy_mode = HTTP_COPY_PUSH;
 
-    // If source is not 3rd, but dst is explicily 3rd, skip PUSH
+    // If source is not 3rd, but dst is explicitly 3rd, skip PUSH
     if (!src_is_3rd && dst_is_3rd) {
         copy_mode = HTTP_COPY_PULL;
     }
 
     // If source is not even http, go straight to streamed
     if (!is_http_scheme(src)) {
+        copy_mode = HTTP_COPY_STREAM;
+    }
+
+    // If none is third, go to streamed
+    if (!src_is_3rd && !dst_is_3rd) {
         copy_mode = HTTP_COPY_STREAM;
     }
 
@@ -655,15 +630,42 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     }
 
     // Checksum check
-    if (!gfalt_get_strict_copy_mode(params, NULL)) {
-        plugin_trigger_event(params, http_plugin_domain,
-                             GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER,
-                             "");
-        if (gfal_http_copy_checksum(context, plugin_data, params, src, dst, err) != 0)
-            return gfal_http_copy_cleanup(plugin_data, dst, err);
-        plugin_trigger_event(params, http_plugin_domain,
-                             GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_EXIT,
-                             "");
+    if (do_checksum) {
+        char dst_checksum[1024];
+        plugin_trigger_event(params, http_plugin_domain, GFAL_EVENT_DESTINATION,
+                GFAL_EVENT_CHECKSUM_ENTER, "");
+
+        gfal2_checksum(context, dst, checksum_type,
+                       0, 0, dst_checksum, sizeof(dst_checksum),
+                       &nested_error);
+
+        if (nested_error) {
+            gfalt_propagate_prefixed_error(err, nested_error, __func__,
+                    GFALT_ERROR_DESTINATION, GFALT_ERROR_CHECKSUM);
+            return -1;
+        }
+
+        if (src_checksum[0]) {
+            if (gfal_compare_checksums(src_checksum, dst_checksum, sizeof(src_checksum)) != 0) {
+                gfalt_set_error(err, http_plugin_domain, EIO, __func__,
+                        GFALT_ERROR_DESTINATION, GFALT_ERROR_CHECKSUM_MISMATCH,
+                        "Source and destination %s do not match (%s != %s)",
+                        checksum_type, src_checksum, dst_checksum);
+                return -1;
+            }
+        }
+        else if (user_checksum[0]) {
+            if (gfal_compare_checksums(user_checksum, dst_checksum, sizeof(user_checksum)) != 0) {
+                gfalt_set_error(err, http_plugin_domain, EIO, __func__,
+                        GFALT_ERROR_DESTINATION, GFALT_ERROR_CHECKSUM_MISMATCH,
+                        "User-defined and destination %s do not match (%s != %s)",
+                        checksum_type, user_checksum, dst_checksum);
+                return -1;
+            }
+        }
+
+        plugin_trigger_event(params, http_plugin_domain, GFAL_EVENT_DESTINATION,
+                GFAL_EVENT_CHECKSUM_EXIT, "");
     }
 
     return 0;
