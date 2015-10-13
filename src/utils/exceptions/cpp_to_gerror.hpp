@@ -35,15 +35,15 @@ namespace Gfal{
 #define CPP_GERROR_TRY do{ \
 							try{
 
-#define CPP_GERROR_CATCH(my_err_catched)  } \
+#define CPP_GERROR_CATCH(my_err_caught)  } \
         catch (Gfal::TransferException & e) {\
-            gfalt_set_error(my_err_catched, e.domain(), e.code(), __func__, e.side.c_str(), e.note.c_str(), "%s", e.what()); \
+            gfalt_set_error(my_err_caught, e.domain(), e.code(), __func__, e.side.c_str(), e.note.c_str(), "%s", e.what()); \
         }catch(const Gfal::CoreException& e){ \
-            gfal2_set_error(my_err_catched, e.domain(), e.code(), __func__, "%s", e.what()); \
+            gfal2_set_error(my_err_caught, e.domain(), e.code(), __func__, "%s", e.what()); \
         }catch(std::exception & e){ \
-            gfal2_set_error(my_err_catched, gfal2_get_core_quark(), EPROTONOSUPPORT, __func__, "%s", e.what()); \
+            gfal2_set_error(my_err_caught, gfal2_get_core_quark(), EPROTONOSUPPORT, __func__, "%s", e.what()); \
         }catch(...){ \
-            gfal2_set_error(my_err_catched, gfal2_get_core_quark(), EIO, __func__, "Undefined Exception catched: Bug found !! "); \
+            gfal2_set_error(my_err_caught, gfal2_get_core_quark(), EIO, __func__, "Undefined Exception caught: Bug found !! "); \
         } \
         }while(0)
 }
