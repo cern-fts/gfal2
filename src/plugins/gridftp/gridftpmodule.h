@@ -35,60 +35,60 @@ class GridFTPFactory;
 class GridFTPModule {
 public:
     GridFTPModule(GridFTPFactory *);
-    virtual ~GridFTPModule();
+    ~GridFTPModule();
 
-    virtual bool exists(const char* path);
+    bool exists(const char* path);
 
     // Execute an access call, map on stat due to protocol restrictions
-    virtual void access(const char* path, int mode);
+    void access(const char* path, int mode);
 
     // Execute a chmod query on path
-    virtual void chmod(const char* path, mode_t mode);
+    void chmod(const char* path, mode_t mode);
 
     // Execute a open query on path
-    virtual gfal_file_handle open(const char* url, int flag, mode_t mode);
+    gfal_file_handle open(const char* url, int flag, mode_t mode);
 
     // Execute a read/pread query
-    virtual ssize_t read(gfal_file_handle handle, void* buffer, size_t count);
-    virtual ssize_t pread(gfal_file_handle handle, void* buffer, size_t count,
+    ssize_t read(gfal_file_handle handle, void* buffer, size_t count);
+    ssize_t pread(gfal_file_handle handle, void* buffer, size_t count,
             off_t offset);
 
     // Execute a read/pread query
-    virtual ssize_t write(gfal_file_handle handle, const void* buffer,
+    ssize_t write(gfal_file_handle handle, const void* buffer,
             size_t count);
-    virtual ssize_t pwrite(gfal_file_handle handle, const void* buffer,
+    ssize_t pwrite(gfal_file_handle handle, const void* buffer,
             size_t count, off_t offset);
 
     // seek a file
-    virtual off_t lseek(gfal_file_handle handle, off_t offset, int whence);
+    off_t lseek(gfal_file_handle handle, off_t offset, int whence);
 
     // close a file
-    virtual int close(gfal_file_handle handle);
+    int close(gfal_file_handle handle);
 
     //Execute a stat call on a gridftp URL
-    virtual void stat(const char* path, struct stat * st);
+    void stat(const char* path, struct stat * st);
 
     // remove a file entry
-    virtual void unlink(const char* path);
+    void unlink(const char* path);
 
     // Execute a mkdir query on path
-    virtual void mkdir(const char* path, mode_t mode);
+    void mkdir(const char* path, mode_t mode);
 
-    virtual void checksum(const char* url, const char* check_type,
+    void checksum(const char* url, const char* check_type,
             char * checksum_buffer, size_t buffer_length, off_t start_offset,
             size_t data_length);
 
     // Rename
-    virtual void rename(const char* src, const char* dst);
+    void rename(const char* src, const char* dst);
 
     // rmdir query on path
-    virtual void rmdir(const char* path);
+    void rmdir(const char* path);
 
     void autoCleanFileCopy(gfalt_params_t params, GError* checked_error,
             const char* dst);
 
     // Execute a file transfer operation for gridftp URLs
-    virtual void filecopy(gfalt_params_t params, const char* src,
+    void filecopy(gfalt_params_t params, const char* src,
             const char* dst);
 
     void internal_globus_gass_stat(const char* path,
