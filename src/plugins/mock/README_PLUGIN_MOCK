@@ -1,5 +1,48 @@
-File plugin :
+Mock plugin
+===========
 
-- provide the map to the local POSIX calls for the gfal 2.0  system 
+Provides a fake protocol that can be customized by the caller via query
+arguments.
+It can be used for testing.
+Supported arguments:
 
+- list
+    For directories, a comma separated list of items as
+    name:mode(octal):size(decimal)
+- size
+    File size, in bytes
+- size_pre
+    File size, in bytes, for stats previous to a copy
+- size_post
+    File size, in bytes, for stats following a copy
+- checksum
+    Checksum value
+- time
+    Time that a copy will take. To be specified on the destination URL. 
+- errno
+    Trigger an error with this errno number
+- transfer_errno
+    Trigger an error with this errno number *during the transfer*
+- staging_time
+    Staging total time
+- staging_errno
+    Fail the staging with this error number
+- release_errno
+    Fail the release with this error number
+- signal
+    Raise the signal specified as an integer
+    
+Examples
+--------
 
+Fail with a ENOENT
+    gfal-stat mock://host/path?errno=2
+
+Stat a regular file with a size of 1000 bytes
+    gfal-stat mock://host/path?size=1000
+    
+Trigger a copy that will take 5 seconds
+    gfal-copy "mock://host/path?size=1000" "mock://host/path2?errno=2&size_pre=0&size_post=1000&time=5"
+    
+Trigger a segfault
+    gfal-ls "mock://host/path?signal=11"
