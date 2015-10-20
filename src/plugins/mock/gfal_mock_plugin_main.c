@@ -51,6 +51,7 @@ const char* TRANSFER_ERRNO = "transfer_errno";
 const char* STAGING_TIME = "staging_time";
 const char* STAGING_ERRNO = "staging_errno";
 const char* RELEASE_ERRNO = "release_errno";
+const char* SIGNAL = "signal";
 
 // This is the order FTS3 performs its stats
 typedef enum {
@@ -166,12 +167,20 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
 
     char arg_buffer[64] = {0};
     int errcode = 0;
+    int signum = 0;
     long long size = 0;
 
     // Is fts_url_copy calling us?
     const char* agent, *version;
     gfal2_get_user_agent(mdata->handle, &agent, &version);
     int is_url_copy = (agent && strncmp(agent, "fts_url_copy", 12) == 0);
+
+    // Trigger signal
+    gfal_plugin_mock_get_value(path, SIGNAL, arg_buffer, sizeof(arg_buffer));
+    signum = gfal_plugin_mock_get_int_from_str(arg_buffer);
+    if (signum > 0) {
+        raise(signum);
+    }
 
     // Check errno first
     gfal_plugin_mock_get_value(path, ERRNO, arg_buffer, sizeof(arg_buffer));
