@@ -6,7 +6,7 @@
 
 Name:               gfal2
 Version:            2.11.0
-Release: r1234%{?dist}
+Release:            1%{?dist}
 Summary:            Grid file access library 2
 Group:              Applications/Internet
 License:            ASL 2.0
