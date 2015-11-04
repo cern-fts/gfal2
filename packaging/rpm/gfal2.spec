@@ -23,11 +23,12 @@ BuildRoot:          %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXX
 #main lib dependencies
 BuildRequires:      cmake
 BuildRequires:      doxygen
-%if 0%{?el5}
+%if %{?fedora}%{!?fedora:0} >= 13 || %{?rhel}%{!?rhel:0} >= 6
+BuildRequires:      glib2-devel >= 2.28
+Requires:           glib2 >= 2.28
+%else
 BuildRequires:      glib2-devel
 BuildRequires:      gcc44-c++
-%else
-BuildRequires:      glib2-devel >= 2.28
 %endif
 BuildRequires:      libattr-devel
 BuildRequires:      openldap-devel
