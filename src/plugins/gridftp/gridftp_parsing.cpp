@@ -343,6 +343,13 @@ globus_result_t parse_stat_line(char* buffer, struct stat* fstat, char *filename
     };
     int field = FTP_FIELD_MODE;
 
+    struct tm timedef;
+    memset(&timedef, 0, sizeof(timedef));
+    time_t now = time(NULL);
+    struct tm today;
+    localtime_r(&now, &today);
+    char *colon;
+
     char *start = buffer;
     while (*start && field < FTP_FIELD_LINK) {
         while (isspace(*start) && *start)
@@ -398,6 +405,22 @@ globus_result_t parse_stat_line(char* buffer, struct stat* fstat, char *filename
             case FTP_FIELD_SIZE:
                 fstat->st_size = atol(start);
                 break;
+            case FTP_FIELD_MONTH:
+                strptime(start, "%b", &timedef);
+                break;
+            case FTP_FIELD_DAY:
+                timedef.tm_mday = atoi(start);
+                break;
+            case FTP_FIELD_YEAR_OR_TIME:
+                if ((colon = strchr(start, ':'))) {
+                    timedef.tm_year = today.tm_year;
+                    timedef.tm_hour = atoi(start);
+                    timedef.tm_min = atoi(colon + 1);
+                }
+                else {
+                    timedef.tm_year = atoi(start) - 1900;
+                }
+                break;
             case FTP_FIELD_NAME:
                 if (filename_buf && filename_size) {
                     g_strlcpy(filename_buf, start, filename_size);
@@ -413,6 +436,15 @@ globus_result_t parse_stat_line(char* buffer, struct stat* fstat, char *filename
         start = end + 1;
         field++;
     }
+
+    struct tm gmt_now_tm;
+    memset(&gmt_now_tm, '\0', sizeof(struct tm));
+    globus_libc_gmtime_r(&now, &gmt_now_tm);
+
+    time_t gmt_now = mktime(&gmt_now_tm);
+    time_t offset = now - gmt_now;
+
+    fstat->st_atime = fstat->st_mtime = fstat->st_ctime = mktime(&timedef) - offset;
 
     return GLOBUS_SUCCESS;
 }
