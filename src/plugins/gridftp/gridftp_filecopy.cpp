@@ -345,6 +345,7 @@ void gridftp_do_copy(GridFTPModule* module, GridFTPFactory* factory,
     }
     catch (...) {
         req.handler->session->params = NULL;
+        throw;
     }
 }
 
