@@ -78,6 +78,11 @@ GridFTPSessionHandler::GridFTPSessionHandler(GridFTPFactory* f, const std::strin
         factory(f), hostname(gridftp_hostname_from_url(uri))
 {
     this->session = f->get_session(this->hostname);
+
+    GridFTPRequestState req(this);
+    globus_ftp_client_feat(&this->session->handle_ftp, (char*)uri.c_str(), &this->session->operation_attr_ftp,
+                           &this->session->ftp_features, globus_ftp_client_done_callback, &req);
+    req.wait(GFAL_GLOBUS_DONE_SCOPE);
 }
 
 
@@ -141,6 +146,8 @@ GridFTPSession::GridFTPSession(gfal2_context_t context, const std::string& hostn
     gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
 
     this->set_nb_streams(0);
+
+    globus_ftp_client_features_init(&this->ftp_features);
 }
 
 
@@ -151,6 +158,7 @@ GridFTPSession::~GridFTPSession()
     globus_ftp_client_operationattr_destroy(&operation_attr_ftp);
     globus_gass_copy_handleattr_destroy(&gass_handle_attr);
     globus_ftp_client_handleattr_destroy(&attr_handle);
+    globus_ftp_client_features_destroy(&this->ftp_features);
 }
 
 
@@ -342,6 +350,12 @@ globus_gass_copy_handleattr_t* GridFTPSessionHandler::get_gass_copy_handleattr()
 globus_ftp_client_handleattr_t* GridFTPSessionHandler::get_ftp_client_handleattr()
 {
     return &(session->attr_handle);
+}
+
+
+globus_ftp_client_features_t* GridFTPSessionHandler::get_ftp_features()
+{
+    return (&session->ftp_features);
 }
 
 

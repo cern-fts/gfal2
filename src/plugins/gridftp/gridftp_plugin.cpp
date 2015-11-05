@@ -32,7 +32,11 @@ extern "C"{
 static bool is_gridftp_uri(const char* src)
 {
     static const char gridftp_prefix[] = "gsiftp://";
-    return (strncmp(src, gridftp_prefix, sizeof(gridftp_prefix) - 1) == 0);
+    static const char ftp_prefix[] = "ftp://";
+    return (
+        strncmp(src, gridftp_prefix, sizeof(gridftp_prefix) - 1) == 0 ||
+        strncmp(src, ftp_prefix, sizeof(ftp_prefix) - 1) == 0
+    );
 }
 
 

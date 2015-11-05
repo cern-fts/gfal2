@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 
+#include <grp.h>
 #include <exceptions/cpp_to_gerror.hpp>
 #include <globus_ftp_client.h>
 #include "gridftp_namespace.h"
-#include "gridftpwrapper.h"
 
 
 static const GQuark GFAL_GRIDFTP_SCOPE_STAT = g_quark_from_static_string("Gridftp_stat_module::stat");
@@ -328,35 +328,224 @@ error_invalid_mlsd:
 }
 
 
-void GridFTPModule::internal_globus_gass_stat(const char* path,
-        struct stat* fstat)
+static mode_t parse_ls_submode(const char* substr)
 {
+    return ((substr[0] == 'r') * S_IRUSR) |
+           ((substr[1] == 'w') * S_IWUSR) |
+           ((substr[2] == 'x') * S_IXUSR);
+}
 
-    gfal2_log(G_LOG_LEVEL_DEBUG,
-            " -> [Gridftp_stat_module::globus_gass_stat] ");
 
-    GridFTPSessionHandler handler(_handle_factory, path);
+static mode_t parse_ls_mode(const char* mode_str)
+{
+    mode_t mode = 0;
+    if (strlen(mode_str) != 10)
+        return mode;
+
+    switch (mode_str[0]) {
+        case 'd':
+            mode = S_IFDIR;
+            break;
+        case '-':
+            mode = S_IFREG;
+            break;
+        case 'l':
+            mode = S_IFLNK;
+            break;
+        case 'b':
+            mode = S_IFBLK;
+            break;
+        case 'c':
+            mode = S_IFCHR;
+            break;
+        case 's':
+            mode = S_IFSOCK;
+            break;
+        default:
+            // Unknown
+            break;
+    }
+
+    mode |= parse_ls_submode(mode_str + 1);
+    mode |= (parse_ls_submode(mode_str + 4) >> 3);
+    mode |= (parse_ls_submode(mode_str + 7) >> 6);
+
+    return mode;
+}
+
+
+globus_result_t parse_stat_line(char* buffer, struct stat* fstat, char *filename_buf, size_t filename_size)
+{
+    if (!buffer || !fstat)
+        return GLOBUS_FAILURE;
+
+    if (filename_buf && filename_size > 0)
+        filename_buf[0] = '\0';
+
+    // Lines are like
+    // -rw-rw-r--   1 ftp      ftp            49 Oct 29  2009 /pub/ubuntu-releases/robots.txt
+
+    enum FtpField {
+        FTP_FIELD_MODE, FTP_FIELD_NLINKS,
+        FTP_FIELD_OWNER, FTP_FIELD_GROUP,
+        FTP_FIELD_SIZE, FTP_FIELD_MONTH,
+        FTP_FIELD_DAY, FTP_FIELD_YEAR_OR_TIME,
+        FTP_FIELD_NAME, FTP_FIELD_LINK
+    };
+    int field = FTP_FIELD_MODE;
+
+    char *start = buffer;
+    while (*start && field < FTP_FIELD_LINK) {
+        while (isspace(*start) && *start)
+            ++start;
+        if (!*start)
+            break;
+
+        bool eol = false;
+        char* end = start;
+        while (!isspace(*end) && *end)
+            ++end;
+        if (!*end)
+            eol = true;
+        *end = '\0';
+
+        switch (field) {
+            case FTP_FIELD_MODE:
+                fstat->st_mode = parse_ls_mode(start);
+                break;
+            case FTP_FIELD_NLINKS:
+                fstat->st_nlink = atoi(start);
+                break;
+            case FTP_FIELD_OWNER:
+                if (isdigit(*start)) {
+                    fstat->st_uid = atoi(start);
+                }
+                else {
+                    char usrbuf[128];
+                    struct passwd usr, *usr_ptr;
+                    if (getpwnam_r(start, &usr, usrbuf, sizeof(usrbuf), &usr_ptr) == 0) {
+                        fstat->st_uid = usr.pw_uid;
+                    }
+                    else {
+                        gfal2_log(G_LOG_LEVEL_WARNING, "Could not get uid for %s (%d)", start, errno);
+                    }
+                }
+                break;
+            case FTP_FIELD_GROUP:
+                if (isdigit(*start)) {
+                    fstat->st_gid = atoi(start);
+                }
+                else {
+                    char grbuf[128];
+                    struct group grp, *grp_ptr;
+                    if (getgrnam_r(start, &grp, grbuf, sizeof(grbuf), &grp_ptr) == 0) {
+                        fstat->st_gid = grp.gr_gid;
+                    }
+                    else {
+                        gfal2_log(G_LOG_LEVEL_WARNING, "Could not get gid for %s (%d)", start, errno);
+                    }
+                }
+                break;
+            case FTP_FIELD_SIZE:
+                fstat->st_size = atol(start);
+                break;
+            case FTP_FIELD_NAME:
+                if (filename_buf && filename_size) {
+                    g_strlcpy(filename_buf, start, filename_size);
+                }
+            default:
+                break;
+        }
+
+        if (eol)
+            break;
+
+        // Next field
+        start = end + 1;
+        field++;
+    }
+
+    return GLOBUS_SUCCESS;
+}
+
+
+static void gridftp_stat_mlst(GridFTPSessionHandler *handler, const char* path, struct stat* fstat)
+{
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Stat via MLST");
 
     globus_byte_t *buffer = NULL;
     globus_size_t buflen = 0;
-    GridFTPRequestState req(&handler);
 
-    globus_result_t res = globus_ftp_client_mlst(handler.get_ftp_client_handle(), path,
-            handler.get_ftp_client_operationattr(), &buffer, &buflen,
-            globus_ftp_client_done_callback, &req);
+    GridFTPRequestState req(handler);
+
+    globus_result_t res = globus_ftp_client_mlst(handler->get_ftp_client_handle(), path,
+                                                 handler->get_ftp_client_operationattr(), &buffer, &buflen,
+                                                 globus_ftp_client_done_callback, &req);
 
     gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_STAT, res);
     req.wait(GFAL_GRIDFTP_SCOPE_STAT);
 
-    gfal2_log(G_LOG_LEVEL_DEBUG,
-            "   <- [Gridftp_stat_module::internal_globus_gass_stat] Got '%s'",
-            buffer);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "   <- [%s]] Got '%s'", __func__, buffer);
 
-    parse_mlst_line((char*) buffer, fstat, NULL, 0);
+    parse_mlst_line((char *) buffer, fstat, NULL, 0);
     globus_free(buffer);
+}
+
+
+static void gridftp_stat_stat(GridFTPSessionHandler *handler, const char* path, struct stat* fstat)
+{
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Stat via STAT");
+
+    globus_byte_t *buffer = NULL;
+    globus_size_t buflen = 0;
+
+    GridFTPRequestState req(handler);
+
+    globus_result_t res = globus_ftp_client_stat(handler->get_ftp_client_handle(), path,
+                                                 handler->get_ftp_client_operationattr(), &buffer, &buflen,
+                                                 globus_ftp_client_done_callback, &req);
+
+    gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_STAT, res);
+    req.wait(GFAL_GRIDFTP_SCOPE_STAT);
+
+    gfal2_log(G_LOG_LEVEL_DEBUG, "   <- [%s]] Got '%s'", __func__, buffer);
+
+    char* p = (char*)buffer;
+    if (strncmp(p, "211", 3) == 0) {
+        p += 4;
+    }
+    else if (strncmp(p, "213", 3) == 0) {
+        p = strchr(p, '\n');
+        if (p)
+            ++p;
+    }
+
+    parse_stat_line(p, fstat, NULL, 0);
+    globus_free(buffer);
+}
+
+
+void GridFTPModule::internal_globus_gass_stat(const char* path,
+        struct stat* fstat)
+{
+    gfal2_log(G_LOG_LEVEL_DEBUG,
+              " -> [Gridftp_stat_module::globus_gass_stat] ");
+
+    GridFTPSessionHandler handler(get_session_factory(), path);
+
+    globus_ftp_client_tristate_t supported;
+    globus_ftp_client_is_feature_supported(handler.get_ftp_features(),
+        &supported, GLOBUS_FTP_CLIENT_FEATURE_MLST);
+
+    if (supported != GLOBUS_FTP_CLIENT_FALSE) {
+        gridftp_stat_mlst(&handler, path, fstat);
+    }
+    else {
+        gridftp_stat_stat(&handler, path, fstat);
+    }
 
     gfal2_log(G_LOG_LEVEL_DEBUG,
-            " <- [Gridftp_stat_module::internal_globus_gass_stat] ");
+              " <- [Gridftp_stat_module::internal_globus_gass_stat] ");
 }
 
 
@@ -372,7 +561,7 @@ extern "C" int gfal_gridftp_statG(plugin_handle handle, const char* name,
     CPP_GERROR_TRY
                 (static_cast<GridFTPModule*>(handle))->stat(name, buff);
                 ret = 0;
-            CPP_GERROR_CATCH(&tmp_err);
+    CPP_GERROR_CATCH(&tmp_err);
     gfal2_log(G_LOG_LEVEL_DEBUG, "  [gfal_gridftp_statG]<-");
     G_RETURN_ERR(ret, tmp_err, err);
 }

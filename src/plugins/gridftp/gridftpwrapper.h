@@ -109,6 +109,7 @@ public:
     globus_gass_copy_handle_t gass_handle;
     globus_gass_copy_handleattr_t gass_handle_attr;
     globus_ftp_control_dcau_t dcau_control;
+    globus_ftp_client_features_t ftp_features;
 
     // options
     globus_ftp_control_parallelism_t parallelism;
@@ -145,6 +146,7 @@ public:
     globus_ftp_client_operationattr_t* get_ftp_client_operationattr();
     globus_gass_copy_handleattr_t* get_gass_copy_handleattr();
     globus_ftp_client_handleattr_t* get_ftp_client_handleattr();
+    globus_ftp_client_features_t* get_ftp_features();
 
     GridFTPFactory* get_factory();
 

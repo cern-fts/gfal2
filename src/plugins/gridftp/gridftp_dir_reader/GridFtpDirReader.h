@@ -25,11 +25,11 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
-#include "gridftp_streambuf.h"
+#include "GridFTPStreamBuffer.h"
 #include "../gridftpmodule.h"
 
 // Directory reader interface
-class GridFTPDirReader {
+class GridFtpDirReader {
 protected:
     struct dirent dbuffer;
 
@@ -39,13 +39,13 @@ protected:
     GridFTPStreamBuffer  *stream_buffer;
 
 public:
-    GridFTPDirReader():
+    GridFtpDirReader():
         handler(NULL), request_state(NULL), stream_state(NULL), stream_buffer(NULL)
     {
         memset(&dbuffer, 0, sizeof(dbuffer));
     };
 
-    virtual ~GridFTPDirReader() {
+    virtual ~GridFtpDirReader() {
         delete this->stream_buffer;
         delete this->stream_state;
         delete this->request_state;
@@ -56,19 +56,28 @@ public:
 };
 
 // Implementation for simple list
-class GridFTPSimpleListReader: public GridFTPDirReader {
+class GridFtpSimpleListReader: public GridFtpDirReader {
 public:
-    GridFTPSimpleListReader(GridFTPModule* gsiftp, const char* path);
-    ~GridFTPSimpleListReader();
+    GridFtpSimpleListReader(GridFTPModule* gsiftp, const char* path);
+    ~GridFtpSimpleListReader();
     struct dirent* readdir();
     struct dirent* readdirpp(struct stat* st);
 };
 
 // Implementation for MLSD
-class GridFTPListReader: public GridFTPDirReader {
+class GridFtpMlsdReader: public GridFtpDirReader {
 public:
-    GridFTPListReader(GridFTPModule* gsiftp, const char* path);
-    ~GridFTPListReader();
+    GridFtpMlsdReader(GridFTPModule* gsiftp, const char* path);
+    ~GridFtpMlsdReader();
+    struct dirent* readdir();
+    struct dirent* readdirpp(struct stat* st);
+};
+
+// Implementation for STAT
+class GridFtpListReader: public GridFtpDirReader {
+public:
+    GridFtpListReader(GridFTPModule* gsiftp, const char* path);
+    ~GridFtpListReader();
     struct dirent* readdir();
     struct dirent* readdirpp(struct stat* st);
 };

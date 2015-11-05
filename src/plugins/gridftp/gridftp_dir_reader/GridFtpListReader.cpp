@@ -18,16 +18,15 @@
  * limitations under the License.
  */
 
-#include "gridftp_dir_reader.h"
+#include "GridFtpDirReader.h"
 
-static const GQuark GridftpListReaderQuark = g_quark_from_static_string("GridftpSimpleListReader::readdir");
+static const GQuark GridFtpListReaderQuark = g_quark_from_static_string("GridFtpListReader::readdir");
 
 // From gridftp_ns_stat.cpp
-extern globus_result_t parse_mlst_line(char *line, struct stat *stat_info,
-        char *filename_buf, size_t filename_size);
+extern globus_result_t parse_stat_line(char* buffer, struct stat* fstat, char *filename_buf, size_t filename_size);
 
 
-GridFTPListReader::GridFTPListReader(GridFTPModule* gsiftp, const char* path)
+GridFtpListReader::GridFtpListReader(GridFTPModule* gsiftp, const char* path)
 {
     GridFTPFactory* factory = gsiftp->get_session_factory();
 
@@ -37,26 +36,26 @@ GridFTPListReader::GridFTPListReader(GridFTPModule* gsiftp, const char* path)
 
     gfal2_log(G_LOG_LEVEL_DEBUG, " -> [GridftpListReader::GridftpListReader]");
 
-    globus_result_t res = globus_ftp_client_machine_list(
+    globus_result_t res = globus_ftp_client_verbose_list(
             this->handler->get_ftp_client_handle(), path,
             this->handler->get_ftp_client_operationattr(),
             globus_ftp_client_done_callback,
             this->request_state);
-    gfal_globus_check_result(GridftpListReaderQuark, res);
+    gfal_globus_check_result(GridFtpListReaderQuark, res);
 
-    this->stream_buffer = new GridFTPStreamBuffer(this->stream_state, GridftpListReaderQuark);
+    this->stream_buffer = new GridFTPStreamBuffer(this->stream_state, GridFtpListReaderQuark);
 
     gfal2_log(G_LOG_LEVEL_DEBUG, " <- [GridftpListReader::GridftpListReader]");
 }
 
 
-GridFTPListReader::~GridFTPListReader()
+GridFtpListReader::~GridFtpListReader()
 {
-    this->request_state->wait(GridftpListReaderQuark);
+    this->request_state->wait(GridFtpListReaderQuark);
 }
 
 
-struct dirent* GridFTPListReader::readdir()
+struct dirent* GridFtpListReader::readdir()
 {
     struct stat _;
     return readdirpp(&_);
@@ -88,7 +87,7 @@ static std::string& trim(std::string& str)
 }
 
 
-struct dirent* GridFTPListReader::readdirpp(struct stat* st)
+struct dirent* GridFtpListReader::readdirpp(struct stat* st)
 {
     std::string line;
     std::istream in(stream_buffer);
@@ -99,16 +98,16 @@ struct dirent* GridFTPListReader::readdirpp(struct stat* st)
         return NULL;
 
     char* unparsed = strdup(line.c_str());
-    if (parse_mlst_line(unparsed, st, dbuffer.d_name, sizeof(dbuffer.d_name)) != GLOBUS_SUCCESS) {
+    if (parse_stat_line(unparsed, st, dbuffer.d_name, sizeof(dbuffer.d_name)) != GLOBUS_SUCCESS) {
         free(unparsed);
-        throw Gfal::CoreException(GridftpListReaderQuark, EINVAL,
+        throw Gfal::CoreException(GridFtpListReaderQuark, EINVAL,
                 std::string("Error parsing GridFTP line: '").append(line).append("\'"));
     }
     free(unparsed);
 
     // Workaround for LCGUTIL-295
     // Some endpoints return the absolute path when listing an empty directory
-    if (dbuffer.d_name[0] == '/')
+    if (dbuffer.d_name[0] == '\0')
         return NULL;
 
     if (S_ISDIR(st->st_mode))

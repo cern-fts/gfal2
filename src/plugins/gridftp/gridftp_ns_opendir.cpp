@@ -19,7 +19,7 @@
  */
 
 #include <exceptions/cpp_to_gerror.hpp>
-#include "gridftp_dir_reader/gridftp_dir_reader.h"
+#include "gridftp_dir_reader/GridFtpDirReader.h"
 #include "gridftp_namespace.h"
 #include "gridftp_plugin.h"
 
@@ -67,18 +67,34 @@ extern "C" struct dirent* gfal_gridftp_readdirG(plugin_handle handle,
     struct dirent* ret = NULL;
     gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_readdirG]");
     CPP_GERROR_TRY
-        GridFTPDirReader* reader =
-                static_cast<GridFTPDirReader*>(gfal_file_handle_get_fdesc(fh));
+        GridFtpDirReader* reader =
+                static_cast<GridFtpDirReader*>(gfal_file_handle_get_fdesc(fh));
         // Not open yet, so instantiate the simple reader
         if (reader == NULL) {
             GridFTPModule* gsiftp = static_cast<GridFTPModule*>(handle);
-            reader = new GridFTPSimpleListReader(gsiftp, gfal_file_handle_get_path(fh));
+            reader = new GridFtpSimpleListReader(gsiftp, gfal_file_handle_get_path(fh));
             gfal_file_handle_set_fdesc(fh, reader);
         }
         ret = reader->readdir();
     CPP_GERROR_CATCH(&tmp_err);
     gfal2_log(G_LOG_LEVEL_DEBUG, "  [gfal_gridftp_readdirG] <-");
     G_RETURN_ERR(ret, tmp_err, err);
+}
+
+
+static GridFtpDirReader* gfal_gridftp_readdirpp_instantiate(GridFTPModule* gsiftp, const char* path)
+{
+    GridFTPSessionHandler handler(gsiftp->get_session_factory(), path);
+    globus_ftp_client_tristate_t supported;
+    globus_ftp_client_is_feature_supported(handler.get_ftp_features(),
+                                           &supported, GLOBUS_FTP_CLIENT_FEATURE_MLST);
+
+    if (supported != GLOBUS_FTP_CLIENT_FALSE) {
+        return new GridFtpMlsdReader(gsiftp, path);
+    }
+    else {
+        return new GridFtpListReader(gsiftp, path);
+    }
 }
 
 
@@ -92,11 +108,11 @@ extern "C" struct dirent* gfal_gridftp_readdirppG(plugin_handle handle,
     struct dirent* ret = NULL;
     gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_readdirG]");
     CPP_GERROR_TRY
-        GridFTPDirReader* reader = static_cast<GridFTPDirReader*>(gfal_file_handle_get_fdesc(fh));
-        // Not open yet, so instantiate the simple reader
+        GridFtpDirReader* reader = static_cast<GridFtpDirReader*>(gfal_file_handle_get_fdesc(fh));
+        // Not open yet, so instantiate the reader
         if (reader == NULL) {
             GridFTPModule* gsiftp = static_cast<GridFTPModule*>(handle);
-            reader = new GridFTPListReader(gsiftp, gfal_file_handle_get_path(fh));
+            reader = gfal_gridftp_readdirpp_instantiate(gsiftp, gfal_file_handle_get_path(fh));
             gfal_file_handle_set_fdesc(fh, reader);
         }
         ret = reader->readdirpp(st);
@@ -115,7 +131,7 @@ extern "C" int gfal_gridftp_closedirG(plugin_handle handle, gfal_file_handle fh,
     int ret = -1;
     gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_closedirG]");
     CPP_GERROR_TRY
-        GridFTPDirReader* reader = static_cast<GridFTPDirReader*>(gfal_file_handle_get_fdesc(fh));
+        GridFtpDirReader* reader = static_cast<GridFtpDirReader*>(gfal_file_handle_get_fdesc(fh));
         delete reader;
         gfal_file_handle_delete(fh);
         ret = 0;

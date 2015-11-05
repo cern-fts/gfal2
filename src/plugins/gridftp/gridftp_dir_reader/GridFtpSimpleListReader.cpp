@@ -20,12 +20,12 @@
 
 #include <errno.h>
 #include <glib.h>
-#include "gridftp_dir_reader.h"
+#include "GridFtpDirReader.h"
 
 static const GQuark GridFTPSimpleReaderQuark = g_quark_from_static_string("GridftpSimpleListReader::readdir");
 
 
-GridFTPSimpleListReader::GridFTPSimpleListReader(GridFTPModule* gsiftp, const char* path)
+GridFtpSimpleListReader::GridFtpSimpleListReader(GridFTPModule* gsiftp, const char* path)
 {
     GridFTPFactory* factory = gsiftp->get_session_factory();
     this->handler = new GridFTPSessionHandler(factory, path);
@@ -47,7 +47,7 @@ GridFTPSimpleListReader::GridFTPSimpleListReader(GridFTPModule* gsiftp, const ch
 }
 
 
-GridFTPSimpleListReader::~GridFTPSimpleListReader()
+GridFtpSimpleListReader::~GridFtpSimpleListReader()
 {
     this->request_state->wait(GridFTPSimpleReaderQuark);
 }
@@ -68,7 +68,7 @@ static int gridftp_readdir_parser(const std::string& line, struct dirent* entry)
 }
 
 
-struct dirent* GridFTPSimpleListReader::readdir()
+struct dirent* GridFtpSimpleListReader::readdir()
 {
     gfal2_log(G_LOG_LEVEL_DEBUG, " -> [GridftpSimpleListReader::readdir]");
 
@@ -82,9 +82,7 @@ struct dirent* GridFTPSimpleListReader::readdir()
                 std::string("Error parsing GridFTP line: ").append(line));
     }
 
-    // Workaround for LCGUTIL-295
-    // Some endpoints return the absolute path when listing an empty directory
-    if (dbuffer.d_name[0] == '/' || dbuffer.d_name[0] == '\0')
+    if (dbuffer.d_name[0] == '\0')
         return NULL;
 
     gfal2_log(G_LOG_LEVEL_DEBUG, "  list file %s ", dbuffer.d_name);
@@ -93,7 +91,7 @@ struct dirent* GridFTPSimpleListReader::readdir()
 }
 
 
-struct dirent* GridFTPSimpleListReader::readdirpp(struct stat* st)
+struct dirent* GridFtpSimpleListReader::readdirpp(struct stat* st)
 {
     throw Gfal::CoreException(GridFTPSimpleReaderQuark, EBADF,
             "Can not call readdirpp after simple readdir");
