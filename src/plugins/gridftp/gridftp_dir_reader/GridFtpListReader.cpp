@@ -22,9 +22,6 @@
 
 static const GQuark GridFtpListReaderQuark = g_quark_from_static_string("GridFtpListReader::readdir");
 
-// From gridftp_ns_stat.cpp
-extern globus_result_t parse_stat_line(char* buffer, struct stat* fstat, char *filename_buf, size_t filename_size);
-
 
 GridFtpListReader::GridFtpListReader(GridFTPModule* gsiftp, const char* path)
 {

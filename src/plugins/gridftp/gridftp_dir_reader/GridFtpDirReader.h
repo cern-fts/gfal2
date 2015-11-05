@@ -27,6 +27,7 @@
 
 #include "GridFTPStreamBuffer.h"
 #include "../gridftpmodule.h"
+#include "../gridftp_parsing.h"
 
 // Directory reader interface
 class GridFtpDirReader {
