@@ -9,6 +9,7 @@ SET(TEST_ENVIRONMENT "PRODUCTION"
         CACHE STRING "Define the target for functional test")
 
 ## Global environment
+SET(ftp_prefix "ftp://root.cern.ch/root/")
 
 IF(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
@@ -224,6 +225,8 @@ IF(PLUGIN_GRIDFTP)
         rwt_test_seq("GRIDFTP" ${gsiftp_valid_dir_root} 100 4560)
         rwt_test_seq("GRIDFTP_unit" ${gsiftp_valid_dir_root} 1 10)
         rwt_test_seek("GRIDFTP" ${gsiftp_valid_dir_root} 100 4560)
+
+        stat_test_all("FTP" ${ftp_prefix})
 ENDIF(PLUGIN_GRIDFTP)
 
 IF(PLUGIN_HTTP)
