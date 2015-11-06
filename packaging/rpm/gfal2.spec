@@ -11,12 +11,11 @@ Summary:            Grid file access library 2
 Group:              Applications/Internet
 License:            ASL 2.0
 URL:                http://dmc.web.cern.ch/projects/gfal-2/home
-# git clone https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.11.0
-# pushd gfal2-2.11.0
-# git checkout v2.11.0
-# git submodule init && git submodule update
+# git clone --depth=1 --branch master https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.10.1
+# pushd gfal2-2.10.1
+# git checkout v2.10.1
 # popd
-# tar czf gfal2-2.11.0.tar.gz gfal2-2.11.0
+# tar czf gfal2-2.10.1.tar.gz --exclude-vcs gfal2-2.10.1
 Source0:            %{name}-%{version}.tar.gz
 BuildRoot:          %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
@@ -357,6 +356,15 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Fri Nov 06 2015 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.10.1-1
+- Upgraded to upstream release 2.10.1
+
+* Fri Jul 03 2015 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.9.3-1
+- Upgraded to upstream release 2.9.3
+
+* Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.9.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
+
 * Thu Apr 16 2015 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.9.1-1
 - Upgraded to upstream release 2.9.1
 
@@ -398,9 +406,6 @@ make DESTDIR=%{buildroot} install
 
 * Mon Jul 28 2014 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.6.8-1
 - Release 2.6.8 of GFAL2
-
-* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.5.5-3
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
 
 * Thu Mar 13 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.5.5-2
  - Backported patch that fixes segfault on the SRM plugin when
