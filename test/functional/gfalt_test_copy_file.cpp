@@ -57,7 +57,18 @@ TEST_F(CopyTest, SimpleFileCopy)
 {
     GError* error = NULL;
     int ret = gfalt_copy_file(handle, NULL, source, destination, &error);
-    ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+}
+
+
+TEST_F(CopyTest, SimpleFileCopyENOENT)
+{
+    GError* error = NULL;
+    int ret = gfal2_unlink(handle, source, &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    ret = gfalt_copy_file(handle, NULL, source, destination, &error);
+    EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, error, ENOENT);
 }
 
 
