@@ -4,6 +4,11 @@ gfal2 (2.11.0-1) unstable; urgency=low
 
  -- DMC Devel <dmc-devel@cern.ch>  Tue, 20 Oct 2015 10:39:00 +0200
 
+gfal2 (2.10.1-1) unstable; urgency=low
+
+  * New patch
+
+ -- DMC Devel <dmc-devel@cern.ch>  Tue, 20 Oct 2015 10:44:00 +0200
 
 gfal2 (2.10.0-1) unstable; urgency=low
 
