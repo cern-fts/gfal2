@@ -85,7 +85,7 @@ mock_cmd chroot "chmod 0400 ${MOCK_HOME}/.globus/*.pem"
 mock_cmd chroot "chown root.root ${MOCK_HOME}/.globus/*.pem"
 
 # Create proxy
-mock_cmd chroot "echo ${PASSWD} | voms-proxy-init --cert ${MOCK_HOME}/.globus/usercert.pem --key ${MOCK_HOME}/.globus/userkey.pem --voms ${VOMS} --pwstdin"
+mock_cmd chroot "echo ${PASSWD} | voms-proxy-init --rfc --cert ${MOCK_HOME}/.globus/usercert.pem --key ${MOCK_HOME}/.globus/userkey.pem --voms ${VOMS} --pwstdin"
 
 # Run tests
 mock_cmd chroot "cd /usr/share/gfal2/tests/; ctest -T test"
