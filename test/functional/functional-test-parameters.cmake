@@ -243,8 +243,7 @@ IF(PLUGIN_HTTP)
         # sequencial writes not supported
 ENDIF(PLUGIN_HTTP)
 
-IF(EXISTS "/usr/lib64/gfal2-plugins/libgfal_plugin_xrootd.so" OR
-  EXISTS "/usr/lib/gfal2-plugins/libgfal_plugin_xrootd.so") 
+IF(PLUGIN_XROOTD)
     test_gfal_test_del_nonex("XROOTD_DPM" ${root_valid_dir_root})
     test_gfal_test_del("XROOTD_DPM" ${root_valid_dir_root})
     test_gfal_test_mkdir_unlink("XROOTD_DPM" ${root_valid_dir_root})
