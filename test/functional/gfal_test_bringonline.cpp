@@ -63,12 +63,15 @@ TEST_F(BringonlineTest, SingleBringOnlineAsync)
     GError* error = NULL;
     char token[64] = {0};
     int ret;
-    ret = gfal2_bring_online(handle, surl, 10, 28800, token, sizeof(token), 1, &error);
+    ret = gfal2_bring_online(handle, surl, 10, 28800, token, sizeof(token), TRUE, &error);
     ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
     if (ret == 0) {
         ASSERT_NE(0, token[0]);
-        printf("Poll\n");
-        ret = gfal2_bring_online_poll(handle, surl, token, &error);
+        while (ret == 0) {
+            sleep(1);
+            printf("Poll\n");
+            ret = gfal2_bring_online_poll(handle, surl, token, &error);
+        }
     }
 }
 
@@ -87,7 +90,7 @@ TEST_F(BringonlineTest, TwoBringOnlineSync)
             surl
     };
 
-    ret = gfal2_bring_online_list(handle, 2, surls, 10, 28800, token, sizeof(token), 0, error);
+    ret = gfal2_bring_online_list(handle, 2, surls, 10, 28800, token, sizeof(token), FALSE, error);
     ASSERT_EQ(1, ret);
 
     ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error[0], ENOENT);
@@ -109,11 +112,14 @@ TEST_F(BringonlineTest, TwoBringOnlineAsync)
             surl
     };
 
-    ret = gfal2_bring_online_list(handle, 2, surls, 10, 28800, token, sizeof(token), 1, error);
+    ret = gfal2_bring_online_list(handle, 2, surls, 10, 28800, token, sizeof(token), TRUE, error);
     if (ret == 0) {
         ASSERT_NE(0, token[0]);
-        printf("Poll\n");
-        ret = gfal2_bring_online_poll_list(handle, 2, surls, token, error);
+        while (ret == 0) {
+            sleep(1);
+            printf("Poll\n");
+            ret = gfal2_bring_online_poll_list(handle, 2, surls, token, error);
+        }
     }
 
     ASSERT_EQ(1, ret);
@@ -128,7 +134,7 @@ TEST_F(BringonlineTest, SingleReleaseSync)
     GError* error = NULL;
     char token[64];
     int ret;
-    ret = gfal2_bring_online(handle, surl, 10, 28800, token, sizeof(token), 0, &error);
+    ret = gfal2_bring_online(handle, surl, 10, 28800, token, sizeof(token), FALSE, &error);
     ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
     ASSERT_EQ(1, ret);
 
@@ -154,13 +160,18 @@ TEST_F(BringonlineTest, TwoAbort)
             surl
     };
 
-    ret = gfal2_bring_online_list(handle, 2, surls, 10, 28800, token, sizeof(token), 1, error);
+    ret = gfal2_bring_online_list(handle, 2, surls, 10, 28800, token, sizeof(token), TRUE, error);
     if (ret == 0 && token[0]) {
         ret = gfal2_abort_files(handle, 2, surls, token, error);
         ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error[0]);
         ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error[1]);
 
-        ret = gfal2_bring_online_poll_list(handle, 2, surls, token, error);
+        while (ret == 0) {
+            sleep(1);
+            printf("Poll\n");
+            ret = gfal2_bring_online_poll_list(handle, 2, surls, token, error);
+        }
+
         ASSERT_EQ(1, ret);
         ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error[0], ECANCELED);
         ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error[1], ECANCELED);
@@ -222,12 +233,14 @@ TEST_F(BringonlineTest, DuplicatedSURLs)
     }
 
     ret = gfal2_bring_online_list(handle, nbfiles, surls,
-            10, 28800, token, sizeof(token), 1, error);
+            10, 28800, token, sizeof(token), TRUE, error);
     if (ret == 0) {
         ASSERT_NE(0, token[0]);
-        printf("Poll\n");
-        ret = gfal2_bring_online_poll_list(handle, nbfiles,
-                surls, token, error);
+        while (ret == 0) {
+            sleep(1);
+            printf("Poll\n");
+            ret = gfal2_bring_online_poll_list(handle, nbfiles, surls, token, error);
+        }
     }
 
     // Only the first one and duplicated should be successful
