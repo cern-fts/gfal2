@@ -317,16 +317,15 @@ void gsiftp_3rd_callback(void* user_args, globus_gass_copy_handle_t* handle,
 
 
 static
-void gridftp_do_copy(GridFTPModule* module, GridFTPFactory* factory,
+void gridftp_do_copy_inner(GridFTPModule* module, GridFTPFactory* factory,
         gfalt_params_t params, const char* src, const char* dst,
         GridFTPRequestState& req, time_t timeout)
 {
     GassCopyAttrHandler gass_attr_src(req.handler->get_ftp_client_operationattr());
     GassCopyAttrHandler gass_attr_dst(req.handler->get_ftp_client_operationattr());
-    CallbackHandler callback_handler(factory->get_gfal2_context(), params, &req, src, dst, 0);
 
     gfal2_log(G_LOG_LEVEL_DEBUG,
-            "   [GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s",
+            "[GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s",
             src, dst);
 
     // Required for the PASV plugin to be able to trigger events
@@ -346,6 +345,27 @@ void gridftp_do_copy(GridFTPModule* module, GridFTPFactory* factory,
     catch (...) {
         req.handler->session->params = NULL;
         throw;
+    }
+}
+
+
+static
+void gridftp_do_copy(GridFTPModule* module, GridFTPFactory* factory,
+    gfalt_params_t params, const char* src, const char* dst,
+    GridFTPRequestState& req, time_t timeout)
+{
+    if (strncmp(src, "ftp:", 4) == 0 || strncmp(dst, "ftp:", 4) == 0) {
+        gfal2_log(G_LOG_LEVEL_DEBUG,
+                  "[GridFTPFileCopyModule::filecopy] start gridftp transfer without performance markers");
+        gridftp_do_copy_inner(module, factory, params, src, dst, req, timeout);
+    }
+    else {
+        CallbackHandler callback_handler(factory->get_gfal2_context(), params, &req, src, dst, 0);
+        gfal2_log(G_LOG_LEVEL_DEBUG,
+                  "[GridFTPFileCopyModule::filecopy] start gridftp transfer with performance markers enabled (timeout %d)",
+                  callback_handler.timeout_value);
+
+        gridftp_do_copy_inner(module, factory, params, src, dst, req, timeout);
     }
 }
 
