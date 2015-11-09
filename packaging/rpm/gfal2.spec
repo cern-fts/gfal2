@@ -208,6 +208,7 @@ Requires:           %{name}-plugin-srm%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-rfio%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-gridftp%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-http%{?_isa} = %{version}-%{release}
+Requires:           %{name}-plugin-xrootd%{?_isa} = %{version}-%{release}
 
 %description all
 Meta-package for complete install of GFAL2 
