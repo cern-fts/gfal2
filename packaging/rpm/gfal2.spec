@@ -5,7 +5,7 @@
 %bcond_with tests
 
 Name:               gfal2
-Version:            2.10.2
+Version:            2.10.3
 Release:            1
 Summary:            Grid file access library 2
 Group:              Applications/Internet

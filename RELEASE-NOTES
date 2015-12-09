@@ -1,5 +1,9 @@
 GFAL2 RELEASE-NOTES:
 
+* Wed Dec 09 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.10.3
+** Bug
+- [DMC-783] - SRM endpoint resolution fails due to an off-by-one introduced when switched to g_strlcpy
+
 * Fri Nov 06 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.10.2
 ** Bug
 - [DMC-769] - GridFTP Plugin: Missing throw inside copy
