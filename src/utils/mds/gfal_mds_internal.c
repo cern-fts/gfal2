@@ -161,13 +161,13 @@ static int gfal_mds_convert_entry_to_srm_information(LDAP *ld, LDAPMessage *entr
 
 		if ((vals = gfal_mds_ldap.ldap_get_values_len(ld, entry, a)) != NULL) {
 			if (strncmp(a, "GlueServiceVersion", GFAL_URL_MAX_LEN) == 0) {
-				g_strlcpy(srm_version, vals[0]->bv_val, MIN(GFAL_URL_MAX_LEN, vals[0]->bv_len));
+				g_strlcpy(srm_version, vals[0]->bv_val, sizeof(srm_version));
 				ret += 1;
 			} else if (strncmp(a, "GlueServiceEndpoint", GFAL_URL_MAX_LEN) == 0) {
-				g_strlcpy(srm_endpoint, vals[0]->bv_val, MIN(GFAL_URL_MAX_LEN, vals[0]->bv_len));
+				g_strlcpy(srm_endpoint, vals[0]->bv_val, sizeof(srm_endpoint));
 				ret += 1;
 			} else if (strncmp(a, "GlueServiceType", GFAL_URL_MAX_LEN) == 0) {
-				g_strlcpy(srm_name, vals[0]->bv_val, MIN(GFAL_URL_MAX_LEN, vals[0]->bv_len));
+				g_strlcpy(srm_name, vals[0]->bv_val, sizeof(srm_name));
 				ret += 1;
 			} else {
 				g_set_error(&tmp_err, gfal2_get_core_quark(), EINVAL, " Bad attribute retrived from bdii ");
