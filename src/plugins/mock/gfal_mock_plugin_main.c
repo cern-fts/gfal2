@@ -41,6 +41,7 @@ const char* mock_skip_transfer_config = "SKIP_SOURCE_CHECKSUM";
 const char* MAX_TRANSFER_TIME = "MAX_TRANSFER_TIME";
 const char* MIN_TRANSFER_TIME = "MIN_TRANSFER_TIME";
 
+const char* FILE_LIST = "list";
 const char* FILE_SIZE = "size";
 const char* FILE_SIZE_PRE = "size_pre";
 const char* FILE_SIZE_POST = "size_post";
@@ -51,6 +52,7 @@ const char* TRANSFER_ERRNO = "transfer_errno";
 const char* STAGING_TIME = "staging_time";
 const char* STAGING_ERRNO = "staging_errno";
 const char* RELEASE_ERRNO = "release_errno";
+const char* SIGNAL = "signal";
 
 // This is the order FTS3 performs its stats
 typedef enum {
@@ -65,6 +67,17 @@ typedef struct {
     StatStage stat_stage;
     time_t staging_end;
 } MockPluginData;
+
+
+typedef struct {
+    struct stat st;
+    struct dirent de;
+} MockPluginDirEntry;
+
+typedef struct {
+    GSList* list;
+    GSList* item;
+} MockPluginDirectory;
 
 
 GQuark gfal2_get_plugin_mock_quark()
@@ -95,7 +108,7 @@ static gboolean gfal_mock_check_url(plugin_handle handle, const char* url, plugi
 		case GFAL_PLUGIN_STAT:
 		case GFAL_PLUGIN_LSTAT:
 		//case GFAL_PLUGIN_RMDIR:
-		//case GFAL_PLUGIN_OPENDIR:
+		case GFAL_PLUGIN_OPENDIR:
 		//case GFAL_PLUGIN_OPEN:
 		//case GFAL_PLUGIN_CHMOD:
 		case GFAL_PLUGIN_UNLINK:
@@ -166,12 +179,20 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
 
     char arg_buffer[64] = {0};
     int errcode = 0;
+    int signum = 0;
     long long size = 0;
 
     // Is fts_url_copy calling us?
     const char* agent, *version;
     gfal2_get_user_agent(mdata->handle, &agent, &version);
     int is_url_copy = (agent && strncmp(agent, "fts_url_copy", 12) == 0);
+
+    // Trigger signal
+    gfal_plugin_mock_get_value(path, SIGNAL, arg_buffer, sizeof(arg_buffer));
+    signum = gfal_plugin_mock_get_int_from_str(arg_buffer);
+    if (signum > 0) {
+        raise(signum);
+    }
 
     // Check errno first
     gfal_plugin_mock_get_value(path, ERRNO, arg_buffer, sizeof(arg_buffer));
@@ -215,6 +236,15 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char* path, struct st
     memset(buf, 0x00, sizeof(*buf));
     buf->st_size = size;
     buf->st_mode = 0755;
+
+    arg_buffer[0] = '\0';
+    gfal_plugin_mock_get_value(path, FILE_LIST, arg_buffer, sizeof(arg_buffer));
+    if (arg_buffer[0]) {
+        buf->st_mode |= S_IFDIR;
+    }
+    else {
+        buf->st_mode |= S_IFREG;
+    }
 
     return 0;
 }
@@ -498,6 +528,92 @@ int gfal_plugin_mock_release_file_list(plugin_handle plugin_data, int nbfiles,
 }
 
 
+gfal_file_handle gfal_plugin_mock_opendir(plugin_handle plugin_data,
+    const char* url, GError** err)
+{
+    struct stat st;
+    gfal_plugin_mock_stat(plugin_data, url, &st, err);
+    if (*err) {
+        return NULL;
+    }
+    if (!S_ISDIR(st.st_mode)) {
+        gfal_plugin_mock_report_error(strerror(ENOTDIR), ENOTDIR, err);
+        return NULL;
+    }
+
+    char file_list[1024];
+    gfal_plugin_mock_get_value(url, FILE_LIST, file_list, sizeof(file_list));
+
+    MockPluginDirectory* dir = g_malloc0(sizeof(MockPluginDirectory));
+    dir->list = NULL;
+
+    // Populate list
+    char *saveptr = NULL, *p;
+    p = strtok_r(file_list, ",", &saveptr);
+    while (p) {
+        MockPluginDirEntry* entry = g_malloc0(sizeof(MockPluginDirEntry));
+
+        char *sep = strchr(p, ':');
+        if (!sep) {
+            g_strlcpy(entry->de.d_name, p, sizeof(entry->de.d_name));
+        }
+        else {
+            g_strlcpy(entry->de.d_name, p, sep - p + 1);
+            entry->st.st_mode = strtol(sep + 1, &sep, 8);
+            if (!(entry->st.st_mode & S_IFMT)) {
+                entry->st.st_mode |= S_IFREG;
+            }
+            if (sep) {
+                entry->st.st_size = strtol(sep + 1, &sep, 10);
+            }
+        }
+        entry->de.d_reclen = strlen(entry->de.d_name);
+
+        dir->list = g_slist_append(dir->list, entry);
+        p = strtok_r(NULL, ",", &saveptr);
+    }
+
+    dir->item = dir->list;
+    return gfal_file_handle_new2(gfal_mock_plugin_getName(), dir, NULL, url);
+}
+
+
+int gfal_plugin_mock_closedir(plugin_handle plugin_data,
+    gfal_file_handle dir_desc, GError** err)
+{
+    MockPluginDirectory* dir = gfal_file_handle_get_fdesc(dir_desc);
+    g_slist_foreach(dir->list, (GFunc)g_free, NULL);
+    g_slist_free(dir->list);
+    g_free(dir);
+    gfal_file_handle_delete(dir_desc);
+    return 0;
+}
+
+
+struct dirent* gfal_plugin_mock_readdirpp(plugin_handle plugin_data,
+    gfal_file_handle dir_desc, struct stat* st, GError** err)
+{
+    MockPluginDirectory* dir = gfal_file_handle_get_fdesc(dir_desc);
+    if (!dir->item) {
+        return NULL;
+    }
+
+    MockPluginDirEntry* entry = (MockPluginDirEntry*)(dir->item->data);
+    dir->item = g_slist_next(dir->item);
+
+    memcpy(st, &entry->st, sizeof(struct stat));
+    return &entry->de;
+}
+
+
+struct dirent* gfal_plugin_mock_readdir(plugin_handle plugin_data,
+    gfal_file_handle dir_desc, GError** err)
+{
+    struct stat st;
+    return gfal_plugin_mock_readdirpp(plugin_data, dir_desc, &st, err);
+}
+
+
 void gfal_plugin_mock_delete(plugin_handle plugin_data)
 {
     free(plugin_data);
@@ -534,6 +650,11 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)
 
     mock_plugin.check_plugin_url_transfer = &gfal_plugin_mock_check_url_transfer;
     mock_plugin.copy_file = &gfal_plugin_mock_filecopy;
+
+    mock_plugin.opendirG = gfal_plugin_mock_opendir;
+    mock_plugin.readdirG = gfal_plugin_mock_readdir;
+    mock_plugin.readdirppG = gfal_plugin_mock_readdirpp;
+    mock_plugin.closedirG = gfal_plugin_mock_closedir;
 
 	return mock_plugin;
 }
