@@ -2,9 +2,9 @@
 # Build source for coverage tests
 
 if [ "$#" -eq 1 ]; then
-    BUILD_DIR="$1"
+    BUILD_DIR=`readlink -f $1`
 else
-    BUILD_DIR="build"
+    BUILD_DIR=~+/build
 fi
 
 SOURCE_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
