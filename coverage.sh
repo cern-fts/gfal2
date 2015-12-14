@@ -1,12 +1,14 @@
 #!/bin/bash
 # Build source for coverage tests
-if [ "$#" -ne 2 ]; then
-    echo "Wrong number of arguments, required source and build dir"
-    exit 1;
+
+if [ "$#" -eq 1 ]; then
+    BUILD_DIR="$1"
+else
+    BUILD_DIR="build"
 fi
 
-SOURCE_DIR=`readlink -f $1`
-BUILD_DIR=`readlink -f $2`
+SOURCE_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+RUNNING_DIR=`pwd`
 
 set -x
 
@@ -24,13 +26,13 @@ export GFAL_CONFIG_DIR="${SOURCE_DIR}/test/conf_test"
 ctest -T test
 
 # Extract coverage
-lcov --directory . --capture --output-file="${BUILD_DIR}/coverage.info"
+lcov --directory . --capture --output-file="${RUNNING_DIR}/coverage.info"
 
 if [ ! -f "/tmp/lcov_cobertura.py" ]; then
     wget "https://raw.github.com/eriwen/lcov-to-cobertura-xml/master/lcov_cobertura/lcov_cobertura.py" -O "/tmp/lcov_cobertura.py"
 fi
 
-python /tmp/lcov_cobertura.py "${BUILD_DIR}/coverage.info" -b "${SOURCE_DIR}" -e ".+usr.include." -o "${BUILD_DIR}/coverage.xml"
+python /tmp/lcov_cobertura.py "${RUNNING_DIR}/coverage.info" -b "${SOURCE_DIR}" -e ".+usr.include." -o "${RUNNING_DIR}/coverage.xml"
 
 # Done
 popd
