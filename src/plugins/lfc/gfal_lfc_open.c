@@ -23,6 +23,9 @@
 #include "gfal_lfc.h"
 #include "lfc_ifce_ng.h"
 
+#ifndef ECOMM
+#define ECOMM EIO
+#endif
 
 /*
  * open function for the srm  plugin

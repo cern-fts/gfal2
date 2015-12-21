@@ -26,6 +26,9 @@
 #include "gfal_rfio_plugin_main.h"
 #include "gfal_rfio_plugin_layer.h"
 
+#ifndef ECOMM
+#define ECOMM EIO
+#endif
 
 static void rfio_report_error(gfal_plugin_rfio_handle h,  const char * func_name, GError** err){
 	char buff_error[2048]= {0};

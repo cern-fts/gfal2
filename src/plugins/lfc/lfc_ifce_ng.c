@@ -21,6 +21,9 @@
 #define GFAL_LFN_MAX_LEN	2048
 
 #include <errno.h>
+#ifndef ECOMM
+#define ECOMM EIO
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
