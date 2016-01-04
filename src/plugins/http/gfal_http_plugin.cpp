@@ -82,25 +82,34 @@ static void gfal_http_get_ucert(RequestParams & params, gfal2_context_t handle)
 
 /// AWS implementation
 static void gfal_http_get_aws_keys(gfal2_context_t handle, const std::string& group,
-        gchar** secret_key, gchar** access_key)
+        gchar** secret_key, gchar** access_key, gchar** token, gchar** region)
 {
-    *secret_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_TOKEN_SECRET", NULL);
-    *access_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_TOKEN", NULL);
+    *secret_key = gfal2_get_opt_string(handle, group.c_str(), "SECRET_KEY", NULL);
+    *access_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_KEY", NULL);
+    *token = gfal2_get_opt_string(handle, group.c_str(), "TOKEN", NULL);
+    *region = gfal2_get_opt_string(handle, group.c_str(), "REGION", NULL);
+
+    // For retrocompatibility
+    if (!*secret_key) {
+        *secret_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_TOKEN_SECRET", NULL);
+    }
+    if (!*access_key) {
+        *access_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_TOKEN", NULL);
+    }
 }
 
 static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, const Davix::Uri& uri)
 {
     // Try generic configuration
-    gchar *secret_key;
-    gchar *access_key;
-    gfal_http_get_aws_keys(handle, "S3", &secret_key, &access_key);
+    gchar *secret_key, *access_key, *token, *region;
+    gfal_http_get_aws_keys(handle, "S3", &secret_key, &access_key, &token, &region);
 
     // If not present, try S3:HOST
     if (!secret_key) {
         std::string group_label("S3:");
         group_label += uri.getHost();
         std::transform(group_label.begin(), group_label.end(), group_label.begin(), ::toupper);
-        gfal_http_get_aws_keys(handle, group_label, &secret_key, &access_key);
+        gfal_http_get_aws_keys(handle, group_label, &secret_key, &access_key, &token, &region);
     }
 
     // Last attempt, S3:host removing bucket
@@ -111,7 +120,7 @@ static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, co
         if (i != std::string::npos) {
             group_label += host.substr(i + 1);
             std::transform(group_label.begin(), group_label.end(), group_label.begin(), ::toupper);
-            gfal_http_get_aws_keys(handle, group_label, &secret_key, &access_key);
+            gfal_http_get_aws_keys(handle, group_label, &secret_key, &access_key, &token, &region);
         }
     }
 
@@ -119,9 +128,19 @@ static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, co
         gfal2_log(G_LOG_LEVEL_DEBUG, "Setting S3 key pair");
         params.setAwsAuthorizationKeys(secret_key, access_key);
     }
+    if (token) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Using short-lived access token");
+        params.setAwsToken(token);
+    }
+    if (region) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Using region %s", region);
+        params.setAwsRegion(region);
+    }
 
     g_free(secret_key);
     g_free(access_key);
+    g_free(token);
+    g_free(region);
 }
 
 void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davix::Uri& uri)
