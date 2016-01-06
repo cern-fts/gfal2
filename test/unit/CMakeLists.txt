@@ -2,6 +2,4 @@ add_subdirectory(global)
 add_subdirectory(cancel)
 add_subdirectory(transfer)
 add_subdirectory(uri)
-add_subdirectory(plugins/srm)
-#add_subdirectory(plugins/gridftp)
-add_subdirectory(plugins/xrootd)
+
