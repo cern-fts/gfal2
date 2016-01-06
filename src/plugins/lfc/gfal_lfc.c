@@ -478,7 +478,9 @@ static struct dirent* lfc_convert_dirent_struct(struct lfc_ops *ops , struct dir
     st->st_mtime = (time_t) filestat->mtime;
 
     gsimplecache_add_item_kstr(cache, fullurl, (void*) st);
+#if defined(SOLARIS) || defined(__linux__)
 	dir->d_off +=1;
+#endif
 	g_strlcpy(dir->d_name, filestat->d_name, NAME_MAX);
 	return dir;
 }

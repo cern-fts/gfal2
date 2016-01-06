@@ -38,10 +38,19 @@ extern "C"
 
 typedef struct gfal_uri {
    char     scheme[SCHEME_MAX];
+#ifdef HOST_NAME_MAX
    char     domain[HOST_NAME_MAX];
+#else
+   char     domain[64];
+#endif
    unsigned port;
+#ifdef PATH_MAX
    char     path [PATH_MAX];
    char     query[PATH_MAX];
+#else
+   char     path [4096];
+   char     query[4096];
+#endif
 } gfal2_uri;
 
 typedef gfal2_uri gfal_uri;
