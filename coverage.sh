@@ -20,6 +20,9 @@ CFLAGS=--coverage CXXFLAGS=--coverage cmake "${SOURCE_DIR}" \
     -DUNIT_TESTS=ON -DFUNCTIONAL_TESTS=ON
 make -j2
 
+# Clear counters
+lcov --directory . --zerocounters
+
 # Run
 export GFAL_PLUGIN_DIR="${BUILD_DIR}/plugins"
 export GFAL_CONFIG_DIR="${SOURCE_DIR}/test/conf_test"
