@@ -77,6 +77,12 @@ gfal_file_handle gfal_srm_openG(plugin_handle ch, const char* path, int flag, mo
     int tmp_ret;
     gfal2_log(G_LOG_LEVEL_DEBUG, "  %s ->", __func__);
 
+    // If endpoint is Castor, disable stat on open for GridFTP
+    if (is_castor_endpoint(ch, path)) {
+        gfal2_set_opt_boolean(opts->handle, "GRIDFTP PLUGIN", "SESSION_REUSE", FALSE, NULL);
+        gfal2_set_opt_boolean(opts->handle, "GRIDFTP PLUGIN", "STAT_ON_OPEN", FALSE, NULL);
+    }
+
     if (flag & O_CREAT) { // create turl if file is not existing else get one for this file
         gfal2_log(G_LOG_LEVEL_DEBUG, "   SRM PUT mode", __func__);
         tmp_ret = gfal_srm_putTURLS_plugin(ch, p, turl, GFAL_URL_MAX_LEN, &reqtoken,
@@ -98,8 +104,10 @@ gfal_file_handle gfal_srm_openG(plugin_handle ch, const char* path, int flag, mo
 
     g_free(reqtoken);
 
-    if (tmp_err)
+    if (tmp_err) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+    }
+
     return ret;
 
 }
