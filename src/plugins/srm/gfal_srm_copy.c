@@ -530,44 +530,6 @@ static int srm_cleanup_copy(plugin_handle handle, gfal2_context_t context,
 }
 
 
-static int is_castor_endpoint(plugin_handle handle, const char* surl)
-{
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*)handle;
-
-    if (!srm_check_url(surl)) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "Endpoint not SRM: %s", surl);
-        return 0;
-    }
-
-    GError *tmp_err = NULL;
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
-    if (tmp_err)
-        g_error_free(tmp_err);
-    if (!context) {
-        gfal2_log(G_LOG_LEVEL_WARNING, "Could not get a context for %s", surl);
-        return -1;
-    }
-
-    struct srm_xping_output output;
-    if (gfal_srm_external_call.srm_xping(context, &output) < 0) {
-        gfal2_log(G_LOG_LEVEL_WARNING, "Failed to ping %s", surl);
-        gfal_srm_ifce_easy_context_release(opts, context);
-        return -1;
-    }
-
-    int i, is_castor = 0;
-    for (i = 0; i < output.n_extra && !is_castor; ++i) {
-        if (strcmp(output.extra[i].key, "backend_type") == 0) {
-            gfal2_log(G_LOG_LEVEL_MESSAGE, "Endpoint of type %s: %s", output.extra[i].value, surl);
-            is_castor = (strcasecmp(output.extra[i].value, "CASTOR") == 0);
-        }
-    }
-    srm_xping_output_free(output);
-    gfal_srm_ifce_easy_context_release(opts, context);
-    return is_castor;
-}
-
-
 static void castor_gridftp_session_hack(plugin_handle handle, gfal2_context_t context,
         const char* src, const char* dst)
 {
