@@ -27,6 +27,9 @@
 
 #include "gfal_xrootd_plugin_utils.h"
 
+GQuark xrootd_domain = g_quark_from_static_string("xroot");
+
+
 void file_mode_to_xrootd_ints(mode_t mode, int& user, int& group, int& other)
 {
     user = 0;
@@ -168,4 +171,28 @@ int xrootd_errno_to_posix_errno(int rc)
         case kXR_inProgress:    return EINPROGRESS;
         default:                return ENOMSG;
        }
+}
+
+
+void gfal2_xrootd_set_error(GError **err, int errcode, const char *func, const char *desc, ...)
+{
+    char error_string[64];
+    char *error_string_ptr;
+
+#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && ! _GNU_SOURCE
+    strerror_r(errcode, error_string, sizeof(error_string));
+    error_string_ptr = error_string;
+#else
+    error_string_ptr = strerror_r(errcode, error_string, sizeof(error_string));
+#endif
+
+    char err_msg[256];
+    va_list args;
+    va_start(args, desc);
+    vsnprintf(err_msg, sizeof(err_msg), desc, args);
+    va_end(args);
+
+    char buffer[512];
+    snprintf(buffer, sizeof(buffer), "%s (%s)", err_msg, error_string_ptr);
+    gfal2_set_error(err, xrootd_domain, errno, func, buffer);
 }

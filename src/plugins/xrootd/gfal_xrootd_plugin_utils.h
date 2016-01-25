@@ -25,6 +25,8 @@
 #include <string>
 #include <sys/stat.h>
 
+extern GQuark xrootd_domain;
+
 /// Convert file mode_t to ints
 void file_mode_to_xrootd_ints(mode_t mode, int& user, int& group, int& other);
 
@@ -41,5 +43,9 @@ std::string predefined_checksum_type_to_lower(const std::string& type);
 
 /// Map an xrootd errno to a posix errno
 int xrootd_errno_to_posix_errno(int rc);
+
+/// Set error code with errno description
+void gfal2_xrootd_set_error(GError **err, int errcode, const char *func, const char *desc, ...);
+
 
 #endif /* GFAL_XROOTD_PLUGIN_UTILS_H_ */

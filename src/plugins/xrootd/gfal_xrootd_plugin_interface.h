@@ -30,8 +30,6 @@
 
 extern "C" {
 
-extern GQuark xrootd_domain;
-
 
 int gfal_xrootd_statG(plugin_handle handle, const char* name, struct stat* buff, GError ** err);
 

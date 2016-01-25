@@ -47,7 +47,6 @@
 #include "gfal_xrootd_plugin_interface.h"
 #include "gfal_xrootd_plugin_utils.h"
 
-GQuark xrootd_domain = g_quark_from_static_string("xroot");
 
 void set_xrootd_log_level()
 {
@@ -74,7 +73,7 @@ int gfal_xrootd_statG(plugin_handle handle, const char* path, struct stat* buff,
     reset_stat(*buff);
 
     if (XrdPosixXrootd::Stat(sanitizedUrl.c_str(), buff) != 0) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Failed to stat file");
+        gfal2_xrootd_set_error(err, errno, __func__, "Failed to stat file");
         return -1;
     }
     return 0;
@@ -89,7 +88,7 @@ gfal_file_handle gfal_xrootd_openG(plugin_handle handle, const char *path,
 
     int* fd = new int(XrdPosixXrootd::Open(sanitizedUrl.c_str(), flag, mode));
     if (*fd == -1) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Failed to open file");
+        gfal2_xrootd_set_error(err, errno, __func__, "Failed to open file");
         delete fd;
         return NULL;
     }
@@ -103,12 +102,12 @@ ssize_t gfal_xrootd_readG(plugin_handle handle, gfal_file_handle fd, void *buff,
 
     int * fdesc = (int*) (gfal_file_handle_get_fdesc(fd));
     if (!fdesc) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Bad file handle");
+        gfal2_xrootd_set_error(err, errno, __func__, "Bad file handle");
         return -1;
     }
     ssize_t l = XrdPosixXrootd::Read(*fdesc, buff, count);
     if (l < 0) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Failed while reading from file");
+        gfal2_xrootd_set_error(err, errno, __func__, "Failed while reading from file");
         return -1;
     }
     return l;
@@ -121,12 +120,12 @@ ssize_t gfal_xrootd_writeG(plugin_handle handle, gfal_file_handle fd,
 
     int * fdesc = (int*) (gfal_file_handle_get_fdesc(fd));
     if (!fdesc) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Bad file handle");
+        gfal2_xrootd_set_error(err, errno, __func__, "Bad file handle");
         return -1;
     }
     ssize_t l = XrdPosixXrootd::Write(*fdesc, buff, count);
     if (l < 0) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Failed while writing to file");
+        gfal2_xrootd_set_error(err, errno, __func__, "Failed while writing to file");
         return -1;
     }
     return l;
@@ -139,12 +138,12 @@ off_t gfal_xrootd_lseekG(plugin_handle handle, gfal_file_handle fd,
 
     int * fdesc = (int*) (gfal_file_handle_get_fdesc(fd));
     if (!fdesc) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Bad file handle");
+        gfal2_xrootd_set_error(err, errno, __func__, "Bad file handle");
         return -1;
     }
     off_t l = XrdPosixXrootd::Lseek(*fdesc, offset, whence);
     if (l < 0) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Failed to seek within file");
+        gfal2_xrootd_set_error(err, errno, __func__, "Failed to seek within file");
         return -1;
     }
     return l;
@@ -158,8 +157,9 @@ int gfal_xrootd_closeG(plugin_handle handle, gfal_file_handle fd, GError ** err)
     int * fdesc = (int*) (gfal_file_handle_get_fdesc(fd));
     if (fdesc) {
         r = XrdPosixXrootd::Close(*fdesc);
-        if (r != 0)
-            gfal2_set_error(err, xrootd_domain, errno, __func__, "Failed to close file");
+        if (r != 0) {
+            gfal2_xrootd_set_error(err, errno, __func__, "Failed to close file");
+        }
         delete (int*) (gfal_file_handle_get_fdesc(fd));
     }
     gfal_file_handle_delete(fd);
@@ -173,9 +173,10 @@ int gfal_xrootd_mkdirpG(plugin_handle handle, const char *url, mode_t mode,
     std::string sanitizedUrl = normalize_url((gfal2_context_t)handle, url);
 
     if (XrdPosixXrootd::Mkdir(sanitizedUrl.c_str(), mode) != 0) {
-        if (errno == ECANCELED)
+        if (errno == ECANCELED) {
             errno = EEXIST;
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Failed to create directory %s", url);
+        }
+        gfal2_xrootd_set_error(err, errno, __func__, "Failed to create directory %s", url);
         return -1;
     }
     return 0;
@@ -191,7 +192,7 @@ int gfal_xrootd_chmodG(plugin_handle handle, const char *url, mode_t mode,
     set_xrootd_log_level();
 
     if (!client.Connect()) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Failed to connect to server");
+        gfal2_xrootd_set_error(err, errno, __func__, "Failed to connect to server");
         return -1;
     }
 
@@ -201,7 +202,7 @@ int gfal_xrootd_chmodG(plugin_handle handle, const char *url, mode_t mode,
     XrdClientUrlInfo xrdurl(sanitizedUrl.c_str());
 
     if (!client.Chmod(xrdurl.File.c_str(), user, group, other)) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Failed to change permissions");
+        gfal2_xrootd_set_error(err, errno, __func__, "Failed to change permissions");
         return -1;
     }
     return 0;
@@ -215,7 +216,7 @@ int gfal_xrootd_unlinkG(plugin_handle handle, const char *url,
     std::string sanitizedUrl = normalize_url((gfal2_context_t)handle, url);
 
     if (XrdPosixXrootd::Unlink(sanitizedUrl.c_str()) != 0) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Failed to delete file");
+        gfal2_xrootd_set_error(err, errno, __func__, "Failed to delete file");
         return -1;
     }
     return 0;
@@ -228,9 +229,13 @@ int gfal_xrootd_rmdirG(plugin_handle handle, const char *url, GError **err)
     std::string sanitizedUrl = normalize_url((gfal2_context_t)handle, url);
 
     if (XrdPosixXrootd::Rmdir(sanitizedUrl.c_str()) != 0) {
-        if (errno == EEXIST) errno =  ENOTEMPTY;
-        else if (errno == EIO) errno = ENOTDIR;
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Failed to delete directory");
+        if (errno == EEXIST) {
+            errno =  ENOTEMPTY;
+        }
+        else if (errno == EIO) {
+            errno = ENOTDIR;
+        }
+        gfal2_xrootd_set_error(err, errno, __func__, "Failed to delete directory");
         return -1;
     }
     return 0;
@@ -244,7 +249,7 @@ int gfal_xrootd_accessG(plugin_handle handle, const char *url, int mode,
     std::string sanitizedUrl = normalize_url((gfal2_context_t)handle, url);
 
     if (XrdPosixXrootd::Access(sanitizedUrl.c_str(), mode) != 0) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Failed to access file or directory");
+        gfal2_xrootd_set_error(err, errno, __func__, "Failed to access file or directory");
         return -1;
     }
     return 0;
@@ -258,9 +263,8 @@ int gfal_xrootd_renameG(plugin_handle handle, const char *oldurl,
     std::string oldSanitizedUrl = normalize_url((gfal2_context_t)handle, oldurl);
     std::string newSanitizedUrl = normalize_url((gfal2_context_t)handle, urlnew);
 
-    if (XrdPosixXrootd::Rename(oldSanitizedUrl.c_str(), newSanitizedUrl.c_str())
-            != 0) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Failed to rename file or directory");
+    if (XrdPosixXrootd::Rename(oldSanitizedUrl.c_str(), newSanitizedUrl.c_str()) != 0) {
+        gfal2_xrootd_set_error(err, errno, __func__, "Failed to rename file or directory");
         return -1;
     }
     return 0;
@@ -400,19 +404,19 @@ gfal_file_handle gfal_xrootd_opendirG(plugin_handle handle,
     // Need to do stat first so we can fail syncrhonously for some errors!
     struct stat st;
     if (XrdPosixXrootd::Stat(sanitizedUrl.c_str(), &st) != 0) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Failed to stat file");
+        gfal2_xrootd_set_error(err, errno, __func__, "Failed to stat file");
         return NULL;
     }
 
     if (!S_ISDIR(st.st_mode)) {
-        gfal2_set_error(err, xrootd_domain, ENOTDIR, __func__, "Not a directory");
+        gfal2_xrootd_set_error(err, ENOTDIR, __func__, "Not a directory");
         return NULL;
     }
 
     DirListHandler* handler = new DirListHandler(parsed);
 
     if (handler->List() != 0) {
-        gfal2_set_error(err, xrootd_domain, handler->errcode, __func__, "Failed to open dir: %s",
+        gfal2_xrootd_set_error(err, handler->errcode, __func__, "Failed to open dir: %s",
                 handler->errstr.c_str());
         return NULL;
     }
@@ -426,12 +430,12 @@ struct dirent* gfal_xrootd_readdirG(plugin_handle plugin_data,
 {
     DirListHandler* handler = (DirListHandler*)(gfal_file_handle_get_fdesc(dir_desc));
     if (!handler) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Bad dir handle");
+        gfal2_xrootd_set_error(err, errno, __func__, "Bad dir handle");
         return NULL;
     }
     dirent* entry = handler->Get();
     if (!entry && handler->errcode != 0) {
-        gfal2_set_error(err, xrootd_domain, handler->errcode, __func__, "Failed reading directory: %s",
+        gfal2_xrootd_set_error(err, handler->errcode, __func__, "Failed reading directory: %s",
                 handler->errstr.c_str());
         return NULL;
     }
@@ -444,12 +448,12 @@ struct dirent* gfal_xrootd_readdirppG(plugin_handle plugin_data,
 {
     DirListHandler* handler = (DirListHandler*)(gfal_file_handle_get_fdesc(dir_desc));
     if (!handler) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Bad dir handle");
+        gfal2_xrootd_set_error(err, errno, __func__, "Bad dir handle");
         return NULL;
     }
     dirent* entry = handler->Get(st);
     if (!entry && handler->errcode != 0) {
-        gfal2_set_error(err, xrootd_domain, handler->errcode, __func__, "Failed reading directory: %s",
+        gfal2_xrootd_set_error(err, handler->errcode, __func__, "Failed reading directory: %s",
                 handler->errstr.c_str());
         return NULL;
     }
@@ -479,28 +483,27 @@ int gfal_xrootd_checksumG(plugin_handle plugin_data, const char* url,
     std::string lowerChecksumType = predefined_checksum_type_to_lower(check_type);
 
     if (start_offset != 0 || data_length != 0) {
-        gfal2_set_error(err, xrootd_domain, ENOTSUP, __func__, "XROOTD does not support partial checksums");
+        gfal2_xrootd_set_error(err, ENOTSUP, __func__, "XROOTD does not support partial checksums");
         return -1;
     }
 
     time_t mTime;
-    if (XrdPosixXrootd::QueryChksum(sanitizedUrl.c_str(), mTime,
-            checksum_buffer, buffer_length) < 0) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Could not get the checksum");
+    if (XrdPosixXrootd::QueryChksum(sanitizedUrl.c_str(), mTime, checksum_buffer, buffer_length) < 0) {
+        gfal2_xrootd_set_error(err, errno, __func__, "Could not get the checksum");
         return -1;
     }
 
     // Note that the returned value is "type value"
     char* space = ::index(checksum_buffer, ' ');
     if (!space) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Could not get the checksum (Wrong format)");
+        gfal2_xrootd_set_error(err, errno, __func__, "Could not get the checksum (Wrong format)");
         return -1;
     }
     *space = '\0';
 
     if (strncasecmp(checksum_buffer, lowerChecksumType.c_str(),
             lowerChecksumType.length()) != 0) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Got '%s' while expecting '%s'",
+        gfal2_xrootd_set_error(err, errno, __func__, "Got '%s' while expecting '%s'",
                 checksum_buffer, lowerChecksumType.c_str());
         return -1;
     }
@@ -519,7 +522,7 @@ ssize_t gfal_xrootd_getxattrG(plugin_handle plugin_data, const char* url, const 
     memset(buff, 0x00, s_buff);
     long long len = XrdPosixXrootd::Getxattr(sanitizedUrl.c_str(), key, buff, s_buff);
     if (len < 0) {
-        gfal2_set_error(err, xrootd_domain, errno, __func__, "Failed to get the xattr \"%s\"", key);
+        gfal2_xrootd_set_error(err, errno, __func__, "Failed to get the xattr \"%s\"", key);
     }
     return len;
 }
@@ -539,7 +542,7 @@ ssize_t gfal_xrootd_listxattrG(plugin_handle plugin_data, const char* url,
 int gfal_xrootd_setxattrG(plugin_handle plugin_data, const char* url, const char* key,
                     const void* buff , size_t s_buff, int flags, GError** err)
 {
-    gfal2_set_error(err, xrootd_domain, ENOSYS, __func__, "Can not set extended attributes");
+    gfal2_xrootd_set_error(err, ENOSYS, __func__, "Can not set extended attributes");
     return -1;
 }
 
