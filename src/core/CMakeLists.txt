@@ -14,6 +14,7 @@ file (GLOB src_posix      "posix/*.c*")
 # Core library
 add_definitions(-D__GFAL2_BUILD__)
 
+add_definitions (${gfal2_utils_definitions})
 add_library (gfal2 SHARED ${src_cancel}
                           ${src_common}
                           ${src_config}
@@ -28,6 +29,7 @@ add_library (gfal2 SHARED ${src_cancel}
 target_link_libraries (gfal2 "stdc++" ) # hotfix for libc TLS init bug in EPEL 5
 target_link_libraries (gfal2 ${GLIB2_PKG_LIBRARIES} ${GTHREAD2_PKG_LIBRARIES})
 target_link_libraries (gfal2 "dl")
+target_link_libraries (gfal2 ${gfal2_utils_libraries})
 
 set_target_properties (gfal2 PROPERTIES
                              VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}

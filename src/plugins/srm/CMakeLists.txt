@@ -10,16 +10,13 @@ if (PLUGIN_SRM)
     find_package (Globus_GSS_ASSIST REQUIRED)
 
     add_definitions (${SRM_IFCE_CFLAGS} ${GLOBUS_GSSAPI_GSI_CFLAGS})
-    add_definitions (${gfal2_mds_def})
     include_directories (${SRM_IFCE_INCLUDE_DIR} ${GLOBUS_GSSAPI_GSI_INCLUDE_DIRS})
 
-    add_library(plugin_srm MODULE ${src_srm} ${gfal2_mds_src} )
+    add_library(plugin_srm MODULE ${src_srm})
     target_link_libraries(plugin_srm
         gfal2
         gfal2_transfer
-        ${mds_cache_link}
         ${SRM_IFCE_LIBRARIES}
-        ${is_ifce_link}
         ${GLOBUS_COMMON_LIBRARIES}
         ${GLOBUS_GSSAPI_GSI_LIBRARIES}
         ${GLOBUS_GSS_ASSIST_LIBRARIES}
