@@ -34,6 +34,7 @@ public:
 
     virtual void TearDown() {
         GError* error = NULL;
+        gfal2_chmod(context, surl, 0775, &error);
         gfal2_rmdir(context, surl, &error);
         g_clear_error(&error);
     }
@@ -43,7 +44,18 @@ const char* AccessTest::root;
 
 TEST_F(AccessTest, SimpleAccess)
 {
+    GError *error = NULL;
+    int ret = gfal2_access(context, surl, R_OK, &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
 
+    // If running as root, and the surl is file://, it will always be possible to do anything
+    if (strncmp(surl, "file://", 7) != 0 || geteuid() != 0) {
+        ret = gfal2_chmod(context, surl, 0440, &error);
+        EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+        ret = gfal2_access(context, surl, W_OK, &error);
+        EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, error, EACCES);
+    }
 }
 
 

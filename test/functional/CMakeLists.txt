@@ -39,6 +39,14 @@ if(FUNCTIONAL_TESTS)
         function(stat_test_all name valid)
             add_test(gfal_stat_${name} gfal_test_stat ${valid})
         endfunction(stat_test_all valid)
+
+        # Access test
+        add_test_executable(gfal_test_access "gfal_test_access.cpp")
+        target_link_libraries(gfal_test_access ${GFAL2_LIBRARIES} gfal2_test_shared)
+
+        function(test_access name dir_path)
+            add_test(gfal_test_access_{name} gfal_test_access ${dir_path})
+        endfunction(test_access name dir_path)
         
         # Deletion tests
         add_test_executable(gfal_test_del_nonex "gfal_test_del_nonex.c")
