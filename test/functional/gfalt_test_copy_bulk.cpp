@@ -22,6 +22,7 @@ public:
 
     char *sources[NBPAIRS];
     char *destinations[NBPAIRS];
+    char *nested[NBPAIRS];
     size_t done;
 
     gfal2_context_t handle;
@@ -40,6 +41,7 @@ public:
         for (size_t i = 0; i < NBPAIRS; ++i) {
             sources[i] = new char[2048];
             destinations[i] = new char[2048];
+            nested[i] = new char[2048];
         }
     }
 
@@ -50,6 +52,7 @@ public:
         for (size_t i = 0; i < NBPAIRS; ++i) {
             delete [] sources[i];
             delete [] destinations[i];
+            delete [] nested[i];
         }
     }
 
@@ -68,6 +71,8 @@ public:
 
             ret = generate_file_if_not_exists(handle, sources[i], "file:///etc/hosts", &error);
             EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+            nested[i][0] = '\0';
         }
 
         ret = gfal2_checksum(handle, "file:///etc/hosts", "ADLER32", 0, 0,
@@ -86,6 +91,7 @@ public:
         for (size_t i = 0; i < NBPAIRS; ++i) {
             gfal_unlink(sources[i]);
             gfal_unlink(destinations[i]);
+            gfal_unlink(nested[i]);
             gfal_rmdir(destinations[i]);
         }
     }
@@ -307,7 +313,7 @@ TEST_F(CopyBulk, MkParentDir)
         char buffer[2048];
 
         generate_random_uri(destinations[i], "mkparent", buffer, sizeof(buffer));
-        strncpy(destinations[i], buffer, 2048);
+        strncpy(nested[i], buffer, 2048);
     }
 
     GError* op_error = NULL;
@@ -315,7 +321,7 @@ TEST_F(CopyBulk, MkParentDir)
 
     gfalt_set_replace_existing_file(params, TRUE, NULL);
     gfalt_set_create_parent_dir(params, TRUE, NULL);
-    ret = gfalt_copy_bulk(handle, params, NBPAIRS, sources, destinations, NULL, &op_error, &file_errors);
+    ret = gfalt_copy_bulk(handle, params, NBPAIRS, sources, nested, NULL, &op_error, &file_errors);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, op_error);
 
     if (file_errors) {
