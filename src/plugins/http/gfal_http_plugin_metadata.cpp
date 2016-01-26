@@ -128,6 +128,27 @@ int gfal_http_rmdirG(plugin_handle plugin_data, const char* url, GError** err)
 }
 
 
+int gfal_http_rename(plugin_handle plugin_data, const char* oldurl, const char* newurl, GError** err)
+{
+    char stripped_old[GFAL_URL_MAX_LEN];
+    char stripped_new[GFAL_URL_MAX_LEN];
+    strip_3rd_from_url(oldurl, stripped_old, sizeof(stripped_old));
+    strip_3rd_from_url(newurl, stripped_new, sizeof(stripped_new));
+
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
+    Davix::DavixError* daverr = NULL;
+
+    Davix::RequestParams req_params;
+    davix->get_params(&req_params, Davix::Uri(stripped_old));
+
+    if (davix->posix.rename(&req_params, stripped_old, stripped_new, &daverr) != 0) {
+        davix2gliberr(daverr, err);
+        Davix::DavixError::clearError(&daverr);
+        return -1;
+    }
+    return 0;
+}
+
 
 int gfal_http_access(plugin_handle plugin_data, const char* url, int mode, GError** err)
 {
@@ -284,3 +305,4 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
     g_strlcpy(checksum_buffer, buffer_chk.c_str(), buffer_length);
     return 0;
 }
+

@@ -63,6 +63,8 @@ void gfal_http_delete(plugin_handle plugin_data);
 
 int gfal_http_stat(plugin_handle plugin_data, const char* url, struct stat* buf, GError** err);
 
+int gfal_http_rename(plugin_handle plugin_data, const char* oldurl, const char* newurl, GError** err);
+
 int gfal_http_access(plugin_handle plugin_data, const char* url, int mode, GError** err);
 
 int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, gboolean rec_flag, GError** err);

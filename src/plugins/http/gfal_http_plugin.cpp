@@ -257,6 +257,7 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
         case GFAL_PLUGIN_RMDIR:
         case GFAL_PLUGIN_UNLINK:
         case GFAL_PLUGIN_CHECKSUM:
+        case GFAL_PLUGIN_RENAME:
             return (strncmp("http:", url, 5) == 0 || strncmp("https:", url, 6) == 0 ||
                  strncmp("dav:", url, 4) == 0 || strncmp("davs:", url, 5) == 0 ||
                  strncmp("s3:", url, 3) == 0 || strncmp("s3s:", url, 4) == 0 ||
@@ -414,6 +415,7 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError
     http_plugin.mkdirpG = &gfal_http_mkdirpG;
     http_plugin.unlinkG = &gfal_http_unlinkG;
     http_plugin.rmdirG = &gfal_http_rmdirG;
+    http_plugin.renameG = &gfal_http_rename;
     http_plugin.opendirG = &gfal_http_opendir;
     http_plugin.readdirG = &gfal_http_readdir;
     http_plugin.readdirppG = &gfal_http_readdirpp;
