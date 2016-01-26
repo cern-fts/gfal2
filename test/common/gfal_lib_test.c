@@ -56,8 +56,14 @@ int generate_file_if_not_exists(gfal2_context_t handle, const char* surl,
         const char* src, GError** error)
 {
     struct stat st;
-    if (gfal_stat(surl, &st) == 0)
+    if (gfal2_stat(handle, surl, &st, error) == 0) {
         return 0;
+    }
+
+    if ((*error)->code != ENOENT) {
+        return -1;
+    }
+    g_clear_error(error);
 
     return gfalt_copy_file(handle, NULL, src, surl, error);
 }

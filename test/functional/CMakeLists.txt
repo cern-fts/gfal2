@@ -60,7 +60,15 @@ if(FUNCTIONAL_TESTS)
 
         function (test_gfal_test_mkdir_unlink name dir_path)
             add_test(gfal_test_mkdir_unlink_${name} gfal_test_mkdir_unlink ${dir_path})
-        endfunction (test_gfal_test_mkdir_unlink name path)        
+        endfunction (test_gfal_test_mkdir_unlink name path)
+
+        # Rename tests
+        add_test_executable(gfal_test_rename "gfal_test_rename.cpp")
+        target_link_libraries(gfal_test_rename ${GFAL2_LIBRARIES} gfal2_test_shared)
+
+        function(gfal_test_rename name dir_path)
+            add_test(gfal_test_rename_${name} gfal_test_rename ${dir_path})
+        endfunction(gfal_test_rename name dir_path)
 
         # Chmod tests
         add_test_executable(gfal_test_chmod "gfal_test_chmod.cpp")
