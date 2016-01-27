@@ -197,6 +197,8 @@ IF(PLUGIN_LFC)
         test_chmod_all("LFC_FULL" ${lfc_valid_dir_root} 0565 060 0360 0767)
         test_rmdir_all("LFC_FULL" ${lfc_full_valid_dir_root})
         test_readdir_full("LFC_FULL" ${lfc_full_valid_dir_root} )
+        # Register
+        test_register("LFC" ${gsiftp_prefix_dpm} ${lfc_full_prefix})
 ENDIF(PLUGIN_LFC)
 
 

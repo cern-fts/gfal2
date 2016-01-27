@@ -132,6 +132,14 @@ if(FUNCTIONAL_TESTS)
         add_test(gfal_mkdir_full_${name} gfal_test_mkdir_full ${prefix})
     endfunction(test_mkdir_all name prefix)
 
+    # Register test
+    add_test_executable(gfal_test_register "gfal_test_register.cpp")
+    target_link_libraries(gfal_test_register ${GFAL2_LIBRARIES} gfal2_test_shared)
+
+    function(test_register name origin lfc)
+        add_test(gfal_test_register_${name} gfal_test_register ${origin} ${lfc})
+    endfunction(test_register name origin lfc)
+
     # Set credentials test
     add_test_executable(gfal_test_set_creds "gfal_test_set_creds.c")
     target_link_libraries(gfal_test_set_creds ${GFAL2_LIBRARIES})
