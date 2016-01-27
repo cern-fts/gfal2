@@ -148,7 +148,8 @@ IF(PLUGIN_SRM)
         test_stat_all("SRM_DPM" ${srm_prefix_dpm})
         test_stat_all("SRM_DCACHE" ${srm_prefix_dcache})
         test_access("SRM_DPM" ${srm_prefix_dpm})
-        test_access("SRM_DCACHE" ${srm_prefix_dcache})
+        # dCache says Operation not supported
+        # test_access("SRM_DCACHE" ${srm_prefix_dcache})
         # Rename test
         test_rename("SRM_DPM" ${srm_prefix_dpm})
         test_rename("SRM_DCACHE" ${srm_prefix_dcache})
