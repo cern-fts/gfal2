@@ -130,6 +130,8 @@ IF(PLUGIN_FILE)
         test_checksum_simple("FILE_MD5" ${file_prefix} MD5)
         test_checksum_simple("FILE_ADLER32" ${file_prefix} ADLER32)
         test_checksum_simple("FILE_CRC32" ${file_prefix} CRC32)
+
+        gfal_test_posix("FILE" ${file_prefix})
 ENDIF(PLUGIN_FILE)
 
 IF(PLUGIN_SRM)

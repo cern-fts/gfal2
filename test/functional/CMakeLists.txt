@@ -148,6 +148,14 @@ if(FUNCTIONAL_TESTS)
         add_test(gfal_test_set_credentials_${name} gfal_test_set_creds ${prefix})
     endfunction(gfal_test_set_credentials name prefix)
 
+    # Posix test
+    add_test_executable(gfal_test_posix "gfal_test_posix.cpp")
+    target_link_libraries(gfal_test_posix ${GFAL2_LIBRARIES} gfal2_test_shared)
+
+    function(gfal_test_posix name prefix)
+        add_test(gfal_test_posix_${name} gfal_test_posix ${prefix})
+    endfunction(gfal_test_posix name prefix)
+
     # Tests for file transfer
     if(MAIN_TRANSFER)
 

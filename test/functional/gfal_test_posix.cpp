@@ -1,0 +1,195 @@
+#include <gtest/gtest.h>
+#include <gfal_api.h>
+#include <common/gfal_lib_test.h>
+#include <common/gfal_gtest_asserts.h>
+#include <utils/exceptions/gerror_to_cpp.h>
+#include <list>
+
+
+class PosixTest: public testing::Test {
+public:
+    static const char* root;
+    std::list<std::string> filesToClean;
+    gfal2_context_t context;
+
+    PosixTest() {
+        GError *error = NULL;
+        context = gfal2_context_new(&error);
+        Gfal::gerror_to_cpp(&error);
+    }
+
+    ~PosixTest() {
+        gfal2_context_free(context);
+    }
+
+    void SetUp() {
+    }
+
+    void TearDown() {
+        typedef std::list<std::string>::reverse_iterator iterator;
+
+        for (iterator i = filesToClean.rbegin(); i != filesToClean.rend(); ++i) {
+            GError *error = NULL;
+            gfal2_unlink(context, i->c_str(), &error);
+            g_clear_error(&error);
+            gfal2_rmdir(context, i->c_str(), &error);
+            g_clear_error(&error);
+        }
+        filesToClean.clear();
+    }
+
+    std::string GenerateFile(std::string base = std::string()) {
+        if (base.empty()) {
+            base = root;
+        }
+
+        GError *error = NULL;
+        char file[2048];
+        generate_random_uri(base.c_str(), "test_posix", file, sizeof(file));
+        int ret = generate_file_if_not_exists(context, file, "file:///etc/hosts", &error);
+        EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+        filesToClean.push_back(file);
+        return file;
+    }
+
+    std::string GenerateDir() {
+        GError *error = NULL;
+        char dir[2048];
+        generate_random_uri(root, "test_posix_dir", dir, sizeof(dir));
+        int ret = gfal2_mkdir(context, dir, 0775, &error);
+        EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+        filesToClean.push_back(dir);
+        return dir;
+    }
+};
+
+const char *PosixTest::root;
+
+
+TEST_F(PosixTest, Access)
+{
+    int ret = gfal_access(root, R_OK | W_OK | X_OK);
+    ASSERT_EQ(0, ret);
+}
+
+
+TEST_F(PosixTest, ChMod)
+{
+    std::string file = GenerateFile();
+    struct stat buf;
+
+    int ret = gfal_chmod(file.c_str(), 0701);
+    ASSERT_EQ(0, ret);
+
+    ret = gfal_stat(file.c_str(), &buf);
+    ASSERT_EQ(0, ret);
+    ASSERT_EQ(buf.st_mode & ~S_IFMT, 0701);
+}
+
+
+TEST_F(PosixTest, Rename)
+{
+    std::string file = GenerateFile();
+    int ret = gfal_access(file.c_str(), F_OK);
+    ASSERT_EQ(0, ret);
+
+    std::string newName = file + ".renamed";
+    filesToClean.push_back(newName);
+    ret = gfal_rename(file.c_str(), newName.c_str());
+    ASSERT_EQ(0, ret);
+
+    ret = gfal_access(newName.c_str(), F_OK);
+    ASSERT_EQ(0, ret);
+
+    ret = gfal_access(file.c_str(), F_OK);
+    ASSERT_NE(0, ret);
+    ASSERT_EQ(errno, ENOENT);
+}
+
+
+TEST_F(PosixTest, Stat)
+{
+    std::string file = GenerateFile();
+    struct stat buf;
+    int ret = gfal_stat(file.c_str(), &buf);
+    ASSERT_EQ(0, ret);
+}
+
+
+TEST_F(PosixTest, LStat)
+{
+    std::string file = GenerateFile();
+    struct stat buf;
+    int ret = gfal_lstat(file.c_str(), &buf);
+    ASSERT_EQ(0, ret);
+}
+
+
+TEST_F(PosixTest, OpenDir)
+{
+    std::string dir = GenerateDir();
+    std::string file = GenerateFile(dir);
+    int fnameIndex = file.rfind('/');
+
+    DIR* fd = gfal_opendir(dir.c_str());
+    ASSERT_NE((void*)NULL, fd);
+
+    bool found = false;
+    struct dirent *ent = gfal_readdir(fd);
+    while (ent) {
+        if (file.substr(fnameIndex + 1).compare(ent->d_name) == 0) {
+            found = true;
+        }
+        ent = gfal_readdir(fd);
+    }
+    ASSERT_TRUE(found);
+
+    gfal_closedir(fd);
+}
+
+
+TEST_F(PosixTest, OpenFile)
+{
+    std::string file = GenerateFile();
+
+    int fd = gfal_open(file.c_str(), O_RDONLY);
+    ASSERT_GT(fd, 0);
+
+    char buffer[512];
+    ssize_t readSize = gfal_read(fd, buffer, sizeof(buffer));
+    ASSERT_GT(readSize, 0);
+
+    gfal_close(fd);
+}
+
+
+TEST_F(PosixTest, Creat)
+{
+    char file[2048];
+    generate_random_uri(root, "test_posix", file, sizeof(file));
+    filesToClean.push_back(file);
+    int fd = gfal_creat(file, 0775);
+    ASSERT_GT(fd, 0);
+
+    char buffer[512];
+    ssize_t readSize = gfal_write(fd, buffer, sizeof(buffer));
+    ASSERT_EQ(readSize, sizeof(buffer));
+
+    gfal_close(fd);
+}
+
+
+int main(int argc, char** argv)
+{
+    testing::InitGoogleTest(&argc, argv);
+
+    if (argc < 2) {
+        printf("Missing base url\n");
+        printf("\t%s [options] srm://host/base/path/\n", argv[0]);
+        return 1;
+    }
+
+    PosixTest::root = argv[1];
+
+    return RUN_ALL_TESTS();
+}
