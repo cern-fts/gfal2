@@ -322,4 +322,7 @@ IF (MAIN_TRANSFER)
         test_copy_file_simple("STORM_TO_FILE" ${srm_prefix_storm}  ${file_prefix})
         test_copy_file_simple("FILE_TO_STORM" ${file_prefix}  ${srm_prefix_storm})
 
+        # Passive plugin, which only makes sense for GridFTP
+        test_pasv("PASV" ${gsiftp_prefix_dpm} ${gsiftp_prefix_dpm})
+
 ENDIF (MAIN_TRANSFER)

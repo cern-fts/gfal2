@@ -186,6 +186,9 @@ if(FUNCTIONAL_TESTS)
         add_test_executable(gfalt_test_copy_bulk "gfalt_test_copy_bulk.cpp")
         target_link_libraries(gfalt_test_copy_bulk ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} gfal2_test_shared)
 
+        add_test_executable(gfalt_test_pasv "gfalt_test_pasv.cpp")
+        target_link_libraries(gfalt_test_pasv ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} gfal2_test_shared)
+
         function(test_copy_file_full name src_dir dst_dir)
             add_test(copyfile_checksum_${name} gfalt_test_copy_file_checksum ${src_dir} ${dst_dir})
             add_test(copyfile_checksum_user_${name} gfalt_test_copy_file_checksum_user ${src_dir} ${dst_dir})
@@ -205,6 +208,10 @@ if(FUNCTIONAL_TESTS)
         function(test_copy_file_simple name src_dir dst_dir)
             add_test(copyfile_test_${name} gfalt_test_copy_file ${src_dir} ${dst_dir})
         endfunction(test_copy_file_simple name src_dir dst_dir)
+
+        function(test_pasv name src_dir dst_dir)
+            add_test(gfalt_test_pasv_${name} gfalt_test_pasv ${src_dir} ${dst_dir})
+        endfunction(test_pasv name src_dir dst_dir)
 
     endif(MAIN_TRANSFER)
 
