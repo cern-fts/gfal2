@@ -9,14 +9,17 @@
 class XAttrTest: public testing::Test {
 public:
     static const char* root;
+    static const char* origin_root;
 
     char surl[2048];
+    char origin[2048];
     gfal2_context_t context;
 
     XAttrTest() {
         GError *error = NULL;
         context = gfal2_context_new(&error);
         Gfal::gerror_to_cpp(&error);
+        origin[0] = '\0';
     }
 
     ~XAttrTest() {
@@ -27,17 +30,30 @@ public:
     void SetUp() {
         GError *error = NULL;
         generate_random_uri(root, "xattr_test", surl, sizeof(surl));
-        int ret = generate_file_if_not_exists(context, surl, "file:///etc/hosts", &error);
-        EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+        int ret;
+        if (strncmp(root, "lfc://", 6) != 0) {
+            ret = generate_file_if_not_exists(context, surl, "file:///etc/hosts", &error);
+            EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+        }
+        else {
+            generate_random_uri(origin_root, "xattr_test", origin, sizeof(surl));
+            ret = generate_file_if_not_exists(context, origin, "file:///etc/hosts", &error);
+            EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+            ret = gfalt_copy_file(context, NULL, origin, surl, &error);
+        }
     }
 
     void TearDown() {
         GError *error = NULL;
         gfal2_unlink(context, surl, &error);
+        g_clear_error(&error);
+        gfal2_unlink(context, origin, &error);
+        g_clear_error(&error);
     }
 };
 
 const char *XAttrTest::root;
+const char *XAttrTest::origin_root;
 
 
 TEST_F(XAttrTest, SrmType)
@@ -75,7 +91,7 @@ TEST_F(XAttrTest, SrmType)
 TEST_F(XAttrTest, SrmStatus)
 {
     if (strncmp(root, "srm://", 6) != 0) {
-        SKIP_TEST(SrmType);
+        SKIP_TEST(SrmStatus);
         return;
     }
 
@@ -107,7 +123,7 @@ TEST_F(XAttrTest, SrmStatus)
 TEST_F(XAttrTest, SrmReplicas)
 {
     if (strncmp(root, "srm://", 6) != 0) {
-        SKIP_TEST(SrmType);
+        SKIP_TEST(SrmReplicas);
         return;
     }
 
@@ -136,6 +152,109 @@ TEST_F(XAttrTest, SrmReplicas)
 }
 
 
+TEST_F(XAttrTest, LfcComment)
+{
+    if (strncmp(root, "lfc://", 6) != 0) {
+        SKIP_TEST(LfcComment);
+        return;
+    }
+
+    GError *error = NULL;
+    char comment[] = "this is a comment";
+    char buffer[1024];
+
+    int ret = gfal2_setxattr(context, surl, GFAL_XATTR_COMMENT, comment, sizeof(comment), 0, &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    ret = gfal2_listxattr(context, surl, buffer, sizeof(buffer), &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, 0, error);
+    EXPECT_GT(ret, 0);
+
+    bool found = false;
+    int i = 0;
+    while (i < ret) {
+        if (strncmp(buffer + i, GFAL_XATTR_COMMENT, sizeof(GFAL_XATTR_COMMENT)) == 0) {
+            found = true;
+            break;
+        }
+        i += strlen(buffer + i) + 1;
+    }
+    EXPECT_TRUE(found);
+
+    ret = gfal2_getxattr(context, surl, GFAL_XATTR_COMMENT, buffer, sizeof(buffer), &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, 0, error);
+    EXPECT_GT(ret, 0);
+    EXPECT_STREQ(comment, buffer);
+}
+
+
+TEST_F(XAttrTest, LfcReplica)
+{
+    if (strncmp(root, "lfc://", 6) != 0) {
+        SKIP_TEST(LfcReplica);
+        return;
+    }
+
+    GError *error = NULL;
+    char buffer[1024];
+
+    int ret = gfal2_listxattr(context, surl, buffer, sizeof(buffer), &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, 0, error);
+    EXPECT_GT(ret, 0);
+
+    bool found = false;
+    int i = 0;
+    while (i < ret) {
+        if (strncmp(buffer + i, GFAL_XATTR_REPLICA, sizeof(GFAL_XATTR_REPLICA)) == 0) {
+            found = true;
+            break;
+        }
+        i += strlen(buffer + i) + 1;
+    }
+    EXPECT_TRUE(found);
+
+    ret = gfal2_getxattr(context, surl, GFAL_XATTR_REPLICA, buffer, sizeof(buffer), &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, 0, error);
+    EXPECT_GT(ret, 0);
+    EXPECT_STREQ(origin, buffer);
+}
+
+
+TEST_F(XAttrTest, LfcSetReplica)
+{
+    if (strncmp(root, "lfc://", 6) != 0) {
+        SKIP_TEST(LfcSetReplica);
+        return;
+    }
+
+    struct stat buf;
+    stat("/etc/hosts", &buf);
+
+    GError *error = NULL;
+    char buffer[1024];
+    char replica[1024];
+    snprintf(replica, sizeof(replica), "mock://fake/file?size=%lld", (long long)buf.st_size);
+
+    // Add
+    snprintf(buffer, sizeof(buffer), "+%s", replica);
+    int ret = gfal2_setxattr(context, surl, GFAL_XATTR_REPLICA, buffer, sizeof(buffer), 0, &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, 0, error);
+
+    ret = gfal2_getxattr(context, surl, GFAL_XATTR_REPLICA, buffer, sizeof(buffer), &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, 0, error);
+    EXPECT_EQ(ret, strlen(origin) + strlen(replica) + 2);
+
+    // Remove
+    snprintf(buffer, sizeof(buffer), "-%s", replica);
+    ret = gfal2_setxattr(context, surl, GFAL_XATTR_REPLICA, buffer, sizeof(buffer), 0, &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, 0, error);
+
+    ret = gfal2_getxattr(context, surl, GFAL_XATTR_REPLICA, buffer, sizeof(buffer), &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, 0, error);
+    EXPECT_EQ(ret, strlen(origin) + 1);
+}
+
+
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
@@ -147,6 +266,13 @@ int main(int argc, char** argv)
     }
 
     XAttrTest::root = argv[1];
+    if (strncmp(XAttrTest::root, "lfc://", 6) == 0) {
+        if (argc < 3) {
+            printf("Need a site URL for creating the replica!\n");
+            return 1;
+        }
+        XAttrTest::origin_root = argv[2];
+    }
 
     return RUN_ALL_TESTS();
 }

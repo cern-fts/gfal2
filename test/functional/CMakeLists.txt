@@ -53,7 +53,7 @@ if(FUNCTIONAL_TESTS)
     target_link_libraries(gfal_test_xattr ${GFAL2_LIBRARIES} gfal2_test_shared)
 
     function(test_xattr name dir_path)
-        add_test(gfal_test_xattr_${name} gfal_test_xattr ${dir_path})
+        add_test(gfal_test_xattr_${name} gfal_test_xattr ${dir_path} ${ARGV2})
     endfunction(test_xattr name dir_path)
 
     # Deletion tests

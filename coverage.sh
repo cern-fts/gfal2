@@ -17,7 +17,7 @@ pushd "${BUILD_DIR}"
 
 # Build
 CFLAGS=--coverage CXXFLAGS=--coverage cmake "${SOURCE_DIR}" \
-    -DUNIT_TESTS=ON -DFUNCTIONAL_TESTS=ON
+    -DUNIT_TESTS=ON -DFUNCTIONAL_TESTS=ON -DPLUGIN_MOCK=ON
 make -j2
 
 # Clear counters

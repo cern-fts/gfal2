@@ -204,6 +204,8 @@ IF(PLUGIN_LFC)
         test_readdir_full("LFC_FULL" ${lfc_full_valid_dir_root} )
         # Register
         test_register("LFC" ${gsiftp_prefix_dpm} ${lfc_full_prefix})
+        # Xattr
+        test_xattr("LFC" ${lfc_full_prefix} ${gsiftp_prefix_dpm})
 ENDIF(PLUGIN_LFC)
 
 
