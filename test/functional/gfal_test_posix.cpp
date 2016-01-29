@@ -159,6 +159,15 @@ TEST_F(PosixTest, OpenFile)
     ssize_t readSize = gfal_read(fd, buffer, sizeof(buffer));
     ASSERT_GT(readSize, 0);
 
+    off_t offset = gfal_lseek(fd, 2, SEEK_SET);
+    ASSERT_EQ(offset, 2);
+    readSize = gfal_read(fd, buffer + 50, sizeof(buffer) - 50);
+    ASSERT_GT(readSize, 0);
+
+    ASSERT_EQ(buffer[2], buffer[50]);
+    ASSERT_EQ(buffer[3], buffer[51]);
+    ASSERT_EQ(buffer[4], buffer[52]);
+
     gfal_close(fd);
 }
 
@@ -176,6 +185,54 @@ TEST_F(PosixTest, Creat)
     ASSERT_EQ(readSize, sizeof(buffer));
 
     gfal_close(fd);
+}
+
+
+TEST_F(PosixTest, SymLink)
+{
+    if (strncmp(root, "file://", 7) != 0) {
+        SKIP_TEST(SymLink);
+        return;
+    }
+
+    std::string file = GenerateFile();
+    std::string link = file + ".link";
+    filesToClean.push_back(link);
+    int ret = gfal_symlink(file.c_str(), link.c_str());
+    ASSERT_EQ(0, ret);
+
+    struct stat buf;
+    ret = gfal_lstat(link.c_str(), &buf);
+    ASSERT_EQ(0, ret);
+    ASSERT_TRUE(S_ISLNK(buf.st_mode));
+
+    ret = gfal_stat(link.c_str(), &buf);
+    ASSERT_EQ(0, ret);
+    ASSERT_FALSE(S_ISLNK(buf.st_mode));
+
+    char buffer[1024];
+    ret = gfal_readlink(link.c_str(), buffer, sizeof(buffer));
+    ASSERT_GT(ret, 0);
+    ASSERT_STREQ(file.substr(file.size() - ret).c_str(), buffer);
+}
+
+
+TEST_F(PosixTest, Xattr)
+{
+    std::string file = GenerateFile();
+
+    char attrValue[] = "hello there";
+    int ret = gfal_setxattr(file.c_str(), "user.attr", attrValue, sizeof(attrValue), 0);
+    ASSERT_EQ(0, ret);
+
+    char buffer[64];
+    ret = gfal_getxattr(file.c_str(), "user.attr", buffer, sizeof(buffer));
+    ASSERT_EQ(sizeof(attrValue), ret);
+    ASSERT_STREQ(buffer, attrValue);
+
+    ret = gfal_listxattr(file.c_str(), buffer, sizeof(buffer));
+    ASSERT_EQ(10, ret);
+    ASSERT_STREQ("user.attr", buffer);
 }
 
 
