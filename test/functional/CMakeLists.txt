@@ -48,6 +48,14 @@ if(FUNCTIONAL_TESTS)
         add_test(gfal_test_access_${name} gfal_test_access ${dir_path})
     endfunction(test_access name dir_path)
 
+    # XAttr test
+    add_test_executable(gfal_test_xattr "gfal_test_xattr.cpp")
+    target_link_libraries(gfal_test_xattr ${GFAL2_LIBRARIES} gfal2_test_shared)
+
+    function(test_xattr name dir_path)
+        add_test(gfal_test_xattr_${name} gfal_test_xattr ${dir_path})
+    endfunction(test_xattr name dir_path)
+
     # Deletion tests
     add_test_executable(gfal_test_del_nonex "gfal_test_del_nonex.c")
     target_link_libraries(gfal_test_del_nonex ${GFAL2_LIBRARIES} gfal2_test_shared)

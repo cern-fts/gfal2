@@ -184,6 +184,9 @@ IF(PLUGIN_SRM)
                 
 #       test_chmod_all("SRM_DCACHE" ${srm_valid_dcache_chmod} 0565 060 360 767)  -> disabled, since unavailable on dcache
 #       test_stat_all( "SRM_EOS" ${srm_valid_EOS_stat})
+
+        test_xattr("DPM" ${srm_prefix_dpm})
+        test_xattr("DCACHE" ${srm_prefix_dcache})
 ENDIF(PLUGIN_SRM)
 
 
