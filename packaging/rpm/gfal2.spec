@@ -219,6 +219,7 @@ with all the protocol plugins.
 Summary:            gfal2 tests
 Group:              Applications/Internet
 Requires:           gfal2-all%{?_isa} = %{version}-%{release}
+Requires:           gfal2-plugin-mock%{?_isa} = %{version}-%{release}
 
 %description tests
 gfal2 tests
