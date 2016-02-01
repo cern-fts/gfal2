@@ -179,7 +179,7 @@ void gfal2_xrootd_set_error(GError **err, int errcode, const char *func, const c
     char error_string[64];
     char *error_string_ptr;
 
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && ! _GNU_SOURCE
+#if ((_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && ! _GNU_SOURCE) || defined(__APPLE__)
     strerror_r(errcode, error_string, sizeof(error_string));
     error_string_ptr = error_string;
 #else
