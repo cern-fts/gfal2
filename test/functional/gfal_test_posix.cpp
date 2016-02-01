@@ -155,7 +155,7 @@ TEST_F(PosixTest, OpenFile)
     int fd = gfal_open(file.c_str(), O_RDONLY);
     ASSERT_GT(fd, 0);
 
-    char buffer[512];
+    char buffer[512] = {0};
     ssize_t readSize = gfal_read(fd, buffer, sizeof(buffer));
     ASSERT_GT(readSize, 0);
 
@@ -180,7 +180,7 @@ TEST_F(PosixTest, Creat)
     int fd = gfal_creat(file, 0775);
     ASSERT_GT(fd, 0);
 
-    char buffer[512];
+    char buffer[512] = {0};
     ssize_t readSize = gfal_write(fd, buffer, sizeof(buffer));
     ASSERT_EQ(readSize, sizeof(buffer));
 
@@ -210,7 +210,7 @@ TEST_F(PosixTest, SymLink)
     ASSERT_EQ(0, ret);
     ASSERT_FALSE(S_ISLNK(buf.st_mode));
 
-    char buffer[1024];
+    char buffer[1024] = {0};
     ret = gfal_readlink(link.c_str(), buffer, sizeof(buffer));
     ASSERT_GT(ret, 0);
     ASSERT_STREQ(file.substr(file.size() - ret).c_str(), buffer);
@@ -225,14 +225,24 @@ TEST_F(PosixTest, Xattr)
     int ret = gfal_setxattr(file.c_str(), "user.attr", attrValue, sizeof(attrValue), 0);
     ASSERT_EQ(0, ret);
 
-    char buffer[64];
+    char buffer[64] = {0};
     ret = gfal_getxattr(file.c_str(), "user.attr", buffer, sizeof(buffer));
     ASSERT_EQ(sizeof(attrValue), ret);
     ASSERT_STREQ(buffer, attrValue);
 
     ret = gfal_listxattr(file.c_str(), buffer, sizeof(buffer));
-    ASSERT_EQ(10, ret);
-    ASSERT_STREQ("user.attr", buffer);
+    ASSERT_GE(ret, 10);
+
+    bool found = false;
+    int i = 0;
+    while (i < ret) {
+        if (strncmp(buffer + i, "user.attr", 8) == 0) {
+            found = true;
+            break;
+        }
+        i += strlen(buffer + i) + 1;
+    }
+    EXPECT_TRUE(found);
 }
 
 
