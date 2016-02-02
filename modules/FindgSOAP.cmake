@@ -92,8 +92,17 @@ find_program(GSOAP_SOAPCPP2
 # ----------------------------------------------------
 message(STATUS " - wsdlh : ${GSOAP_WSDL2H}")
 message(STATUS " - SOAPCPP2 : ${GSOAP_SOAPCPP2}")
-execute_process(COMMAND ${GSOAP_SOAPCPP2}  "-v"   OUTPUT_VARIABLE GSOAP_STRING_VERSION ERROR_VARIABLE GSOAP_STRING_VERSION )
+
+# some versions of soapcpp2 interpret "-v" as verbose, and hang while waiting for input
+# try "-help" first, and if it fails, do "-v"
+execute_process(COMMAND ${GSOAP_SOAPCPP2}  "-help"   OUTPUT_VARIABLE GSOAP_STRING_VERSION ERROR_VARIABLE GSOAP_STRING_VERSION )
 string(REGEX MATCH "[0-9]*\\.[0-9]*\\.[0-9]*" GSOAP_VERSION ${GSOAP_STRING_VERSION})
+
+if( "${GSOAP_VERSION}" STREQUAL "..")
+  execute_process(COMMAND ${GSOAP_SOAPCPP2}  "-v"   OUTPUT_VARIABLE GSOAP_STRING_VERSION ERROR_VARIABLE GSOAP_STRING_VERSION )
+  string(REGEX MATCH "[0-9]*\\.[0-9]*\\.[0-9]*" GSOAP_VERSION ${GSOAP_STRING_VERSION})
+endif()
+
 message(STATUS " - GSOAP VERSION : ${GSOAP_VERSION}")
 if( "${GSOAP_VERSION}"  VERSION_LESS "2.7.6")
 	set(GSOAP_276_COMPAT_FLAGS "")
