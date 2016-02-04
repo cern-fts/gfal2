@@ -297,10 +297,19 @@ static int gfal_http_third_party_copy(GfalHttpPluginData* davix,
         req_params.setCopyMode(Davix::CopyMode::Pull);
     }
     else {
-        gfal2_set_error(err, http_plugin_domain, EIO, __func__,
-                    "gfal_http_third_party_copy invalid copy mode");
+        gfal2_set_error(err, http_plugin_domain, EIO, __func__, "gfal_http_third_party_copy invalid copy mode");
         return -1;
     }
+
+    // dCache requires RequireChecksumVerification to be explicitly false if no checksums
+    // are to be used
+    if (mode == HTTP_COPY_PULL && strncmp(dst, "s3", 2) != 0) {
+        if (!gfalt_get_checksum_check(params, err)) {
+            req_params.addHeader("RequireChecksumVerification", "false");
+        }
+        g_clear_error(err);
+    }
+
     Davix::DavixCopy copy(davix->context, &req_params);
 
     copy.setPerformanceCallback(gfal_http_3rdcopy_perfcallback, &perfCallbackData);
