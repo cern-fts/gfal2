@@ -61,6 +61,7 @@ typedef gfal2_uri gfal_uri;
  */
 GFAL2_DEPRECATED(gfal2_hostname_from_uri) int gfal_hostname_from_uri(const char * uri, char* buff_hostname, size_t s_buff, GError ** err);
 int gfal2_hostname_from_uri(const char * uri, char* buff_hostname, size_t s_buff, GError ** err);
+int gfal2_hostname_and_port_from_uri(const char * uri, char* buff_hostname, size_t s_buff, GError ** err);
 
 /*
  * Parse an URI

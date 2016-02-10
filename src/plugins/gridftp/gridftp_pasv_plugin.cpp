@@ -58,8 +58,82 @@ static void gfal2_ftp_client_pasv_fire_event(GridFTPSession* session,
     if (session->params) {
         plugin_trigger_event(session->params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
                 GFAL_EVENT_DESTINATION, GFAL_GRIDFTP_PASV_STAGE_QUARK,
-                "%s:[%s]:%u", hostname, ip, port);
+                "%s:%s:%u", hostname, ip, port);
     }
+}
+
+
+// Entering Passive Mode (h1,h2,h3,h4,p1,p2).
+// Parenthesis are not guaranteed!
+static int parse_227(const char *resp, char *ip, size_t ip_size, unsigned *port)
+{
+    static const char *regex_str = "227 [^[0-9]+\\(?([0-9]+),([0-9]+),([0-9]+),([0-9]+),([0-9]+),([0-9]+)\\)?";
+    regex_t preg;
+
+    assert(regcomp(&preg, regex_str, REG_EXTENDED | REG_ICASE) == 0);
+
+    regmatch_t matches[7];
+    int ret = regexec(&preg, resp, 7, matches, 0);
+    regfree(&preg);
+
+    if (ret < 0) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Failed to apply regex to 227 response");
+        return -1;
+    }
+
+    unsigned h1, h2, h3, h4, p1, p2;
+    h1 = atoi(resp + matches[1].rm_so);
+    h2 = atoi(resp + matches[2].rm_so);
+    h3 = atoi(resp + matches[3].rm_so);
+    h4 = atoi(resp + matches[4].rm_so);
+    p1 = atoi(resp + matches[5].rm_so);
+    p2 = atoi(resp + matches[6].rm_so);
+
+    snprintf(ip, ip_size, "%u.%u.%u.%u", h1, h2, h3, h4);
+    *port = (p1 * 256) + p2;
+
+    return 0;
+}
+
+
+// Entering Long Passive Mode (long address, port).
+// Parenthesis are not guaranteed!
+static int parse_228(const char*, char*, size_t, unsigned*)
+{
+    gfal2_log(G_LOG_LEVEL_WARNING, "Long Passive Mode not supported!");
+    return -1;
+}
+
+
+// Entering Extended Passive Mode (|protocol|ip|port|).
+// Parenthesis are standardized
+static int parse_229(const char *msg, char *ip, size_t ip_size, unsigned *port)
+{
+    const char *p = strchr(msg, '(');
+    if (p) {
+        regex_t preg;
+        int retregex = regcomp(&preg, "\\(\\|([0-9]*)\\|([^|]*)\\|([0-9]+)\\|\\)", REG_EXTENDED);
+        assert(retregex == 0);
+        regmatch_t matches[4];
+        retregex = regexec(&preg, p, 4, matches, 0);
+        regfree(&preg);
+
+        if (retregex == REG_NOMATCH) {
+            gfal2_log(G_LOG_LEVEL_WARNING, "The passive mode response could not be parsed: %s", p);
+            return -1;
+        }
+        else {
+            // Ip
+            size_t len = matches[2].rm_eo - matches[2].rm_so;
+            if (len > sizeof(ip))
+                len = sizeof(ip);
+            g_strlcpy(ip, p + matches[2].rm_so, len);
+            // Port
+            *port = atoi(p + matches[3].rm_so);
+            return 0;
+        }
+    }
+    return -1;
 }
 
 
@@ -80,54 +154,14 @@ static void gfal2_ftp_client_pasv_response(globus_ftp_client_plugin_t* plugin,
         case GLOBUS_FTP_POSITIVE_PRELIMINARY_REPLY:
         case GLOBUS_FTP_POSITIVE_COMPLETION_REPLY:
             switch (ftp_response->code % 100) {
-                // Entering Passive Mode (h1,h2,h3,h4,p1,p2).
-                // Parenthesis are not guaranteed!
                 case 27:
-                    while (*p && !isdigit(*p)) {
-                        ++p;
-                    }
-                    if (*p) {
-                        unsigned h1, h2, h3, h4, p1, p2;
-                        sscanf(p, "(%u,%u,%u,%u,%u,%u)", &h1, &h2, &h3, &h4, &p1, &p2);
-                        got_pasv_ip = true;
-                    }
+                    got_pasv_ip = (parse_227(p, ip, sizeof(ip), &port) == 0);
                     break;
-                // Entering Long Passive Mode (long address, port).
-                // Parenthesis are not guaranteed!
                 case 28:
-                    while (*p && !isdigit(*p)) {
-                        ++p;
-                    }
-                    if (*p) {
-                        sscanf(p, "(%64s, %u)", ip, &port);
-                        got_pasv_ip = true;
-                    }
+                    got_pasv_ip = (parse_228(p, ip, sizeof(ip), &port) == 0);
                     break;
-                // Entering Extended Passive Mode (|protocol|ip|port|).
-                // Parenthesis are standarized
                 case 29:
-                    p = strchr(p, '(');
-                    if (p) {
-                        regex_t regex;
-                        int retregex = regcomp(&regex, "\\(\\|([0-9]*)\\|([^|]*)\\|([0-9]+)\\|\\)", REG_EXTENDED);
-                        assert(retregex == 0);
-                        regmatch_t matches[4];
-                        retregex = regexec(&regex, p, 4, matches, 0);
-                        if (retregex == REG_NOMATCH) {
-                            gfal2_log(G_LOG_LEVEL_WARNING, "The passive mode response could not be parsed: %s", p);
-                        }
-                        else {
-                            // Ip
-                            size_t len = matches[2].rm_eo - matches[2].rm_so;
-                            if (len > sizeof(ip))
-                                len = sizeof(ip);
-                            g_strlcpy(ip, p + matches[2].rm_so, len);
-                            // Port
-                            port = atoi(p + matches[3].rm_so);
-
-                            got_pasv_ip = true;
-                        }
-                    }
+                    got_pasv_ip = (parse_229(p, ip, sizeof(ip), &port) == 0);
                     break;
             }
             break;

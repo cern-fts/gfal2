@@ -169,7 +169,7 @@ static int gfal_get_endpoint_and_setype_from_bdiiG(gfal_srmv2_opt *opts, const c
     int ret = -1;
     GError *tmp_err = NULL;
 
-    ret = gfal2_hostname_from_uri(surl, hostname, sizeof(hostname), &tmp_err);
+    ret = gfal2_hostname_and_port_from_uri(surl, hostname, sizeof(hostname), &tmp_err);
     if (ret == 0) { // get the hostname
 
         if ((ret = gfal_mds_get_se_types_and_endpoints(opts->handle, hostname, &tab_se_type, &tab_endpoint,

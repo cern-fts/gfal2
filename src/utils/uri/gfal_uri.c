@@ -100,6 +100,21 @@ int gfal2_hostname_from_uri(const char * uri, char* buff_hostname, size_t s_buff
         gfal2_set_error(err, scope_uri(), EINVAL, __func__, "No host in the given uri");
         return -1;
     }
+    g_strlcpy(buff_hostname, parsed.domain, s_buff);
+    return 0;
+}
+
+
+int gfal2_hostname_and_port_from_uri(const char * uri, char* buff_hostname, size_t s_buff, GError ** err)
+{
+    gfal_uri parsed;
+    gfal2_parse_uri(uri, &parsed, err);
+    if (*err)
+        return -1;
+    if (parsed.domain[0] == '\0') {
+        gfal2_set_error(err, scope_uri(), EINVAL, __func__, "No host in the given uri");
+        return -1;
+    }
     if (parsed.port)
         snprintf(buff_hostname, s_buff, "%s:%d", parsed.domain, parsed.port);
     else
