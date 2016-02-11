@@ -192,6 +192,20 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davi
         req_params->addHeader("ClientInfo", client_info);
     }
     g_free(client_info);
+
+    // Custom headers
+    gsize headers_length = 0;
+    char **headers = gfal2_get_opt_string_list_with_default(handle, "HTTP PLUGIN", "HEADERS", &headers_length, NULL);
+    if (headers) {
+        for (char **hi = headers; *hi != NULL; ++hi) {
+            char **kv = g_strsplit(*hi, ":", 2);
+            g_strstrip(kv[0]);
+            g_strstrip(kv[1]);
+            req_params->addHeader(kv[0], kv[1]);
+            g_strfreev(kv);
+        }
+        g_strfreev(headers);
+    }
 }
 
 
