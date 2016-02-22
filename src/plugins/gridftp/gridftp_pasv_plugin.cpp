@@ -76,7 +76,7 @@ static int parse_27(const char *resp, char *ip, size_t ip_size, unsigned *port)
     int ret = regexec(&preg, resp, 7, matches, 0);
     regfree(&preg);
 
-    if (ret != REG_NOERROR) {
+    if (ret == REG_NOMATCH) {
         gfal2_log(G_LOG_LEVEL_DEBUG, "Failed to apply regex to 227 response");
         return -1;
     }
