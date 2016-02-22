@@ -65,9 +65,9 @@ static void gfal2_ftp_client_pasv_fire_event(GridFTPSession* session,
 
 // Entering Passive Mode (h1,h2,h3,h4,p1,p2).
 // Parenthesis are not guaranteed!
-static int parse_227(const char *resp, char *ip, size_t ip_size, unsigned *port)
+static int parse_27(const char *resp, char *ip, size_t ip_size, unsigned *port)
 {
-    static const char *regex_str = "227 [^[0-9]+\\(?([0-9]+),([0-9]+),([0-9]+),([0-9]+),([0-9]+),([0-9]+)\\)?";
+    static const char *regex_str = "[12]27 [^[0-9]+\\(?([0-9]+),([0-9]+),([0-9]+),([0-9]+),([0-9]+),([0-9]+)\\)?";
     regex_t preg;
 
     assert(regcomp(&preg, regex_str, REG_EXTENDED | REG_ICASE) == 0);
@@ -76,7 +76,7 @@ static int parse_227(const char *resp, char *ip, size_t ip_size, unsigned *port)
     int ret = regexec(&preg, resp, 7, matches, 0);
     regfree(&preg);
 
-    if (ret < 0) {
+    if (ret != REG_NOERROR) {
         gfal2_log(G_LOG_LEVEL_DEBUG, "Failed to apply regex to 227 response");
         return -1;
     }
@@ -98,7 +98,7 @@ static int parse_227(const char *resp, char *ip, size_t ip_size, unsigned *port)
 
 // Entering Long Passive Mode (long address, port).
 // Parenthesis are not guaranteed!
-static int parse_228(const char*, char*, size_t, unsigned*)
+static int parse_28(const char *, char *, size_t, unsigned *)
 {
     gfal2_log(G_LOG_LEVEL_WARNING, "Long Passive Mode not supported!");
     return -1;
@@ -107,7 +107,7 @@ static int parse_228(const char*, char*, size_t, unsigned*)
 
 // Entering Extended Passive Mode (|protocol|ip|port|).
 // Parenthesis are standardized
-static int parse_229(const char *msg, char *ip, size_t ip_size, unsigned *port)
+static int parse_29(const char *msg, char *ip, size_t ip_size, unsigned *port)
 {
     const char *p = strchr(msg, '(');
     if (p) {
@@ -155,13 +155,13 @@ static void gfal2_ftp_client_pasv_response(globus_ftp_client_plugin_t* plugin,
         case GLOBUS_FTP_POSITIVE_COMPLETION_REPLY:
             switch (ftp_response->code % 100) {
                 case 27:
-                    got_pasv_ip = (parse_227(p, ip, sizeof(ip), &port) == 0);
+                    got_pasv_ip = (parse_27(p, ip, sizeof(ip), &port) == 0);
                     break;
                 case 28:
-                    got_pasv_ip = (parse_228(p, ip, sizeof(ip), &port) == 0);
+                    got_pasv_ip = (parse_28(p, ip, sizeof(ip), &port) == 0);
                     break;
                 case 29:
-                    got_pasv_ip = (parse_229(p, ip, sizeof(ip), &port) == 0);
+                    got_pasv_ip = (parse_29(p, ip, sizeof(ip), &port) == 0);
                     break;
             }
             break;
