@@ -56,3 +56,43 @@ TEST(gfalURI, no_port)
     ASSERT_EQ(0, parsed.port);
     ASSERT_STREQ("/path", parsed.path);
 }
+
+
+TEST(gfalURI, ipv4)
+{
+    GError* tmp_err=NULL;
+    gfal2_uri parsed;
+    int ret;
+
+    ret = gfal2_parse_uri(
+        "gsiftp://192.168.1.1:1234/path",
+        &parsed,
+        &tmp_err);
+
+    ASSERT_EQ(0, ret);
+
+    ASSERT_STREQ("gsiftp", parsed.scheme);
+    ASSERT_STREQ("192.168.1.1", parsed.domain);
+    ASSERT_EQ(1234, parsed.port);
+    ASSERT_STREQ("/path", parsed.path);
+}
+
+
+TEST(gfalURI, ipv6)
+{
+    GError* tmp_err=NULL;
+    gfal2_uri parsed;
+    int ret;
+
+    ret = gfal2_parse_uri(
+        "gsiftp://[2001:1458:301:a8ae::100:24]:1234/path",
+        &parsed,
+        &tmp_err);
+
+    ASSERT_EQ(0, ret);
+
+    ASSERT_STREQ("gsiftp", parsed.scheme);
+    ASSERT_STREQ("[2001:1458:301:a8ae::100:24]", parsed.domain);
+    ASSERT_EQ(1234, parsed.port);
+    ASSERT_STREQ("/path", parsed.path);
+}

@@ -29,7 +29,7 @@
 
 #include "common/gfal_common_err_helpers.h"
 
-#define URI_REGEX "(([[:alnum:]]+):/{2}){1}([[:alnum:]][-_[:alnum:]]*(\\.[-_[:alnum:]]+)*)?(:[[:digit:]]*)?(:)?([^?]*)?(.*)"
+#define URI_REGEX "(([[:alnum:]]+):/{2}){1}(([[:alnum:]][-_[:alnum:]]*(\\.[-_[:alnum:]]+)*)|(\\[[a-zA-Z0-9:]+\\]))?(:[[:digit:]]*)?(:)?([^?]*)?(.*)"
 
 
 static GQuark scope_uri(){
@@ -61,8 +61,8 @@ int gfal2_parse_uri(const char* uri, gfal_uri* parsed, GError** err)
     int ret = regcomp(&preg, URI_REGEX, REG_EXTENDED | REG_ICASE);
     assert(ret == 0);
 
-    regmatch_t pmatch[9];
-    ret = regexec(&preg, uri, 9, pmatch, 0);
+    regmatch_t pmatch[11];
+    ret = regexec(&preg, uri, 11, pmatch, 0);
     if (ret != 0) {
         regerror(ret, &preg, buffer, sizeof(buffer));
         regfree(&preg);
@@ -73,11 +73,11 @@ int gfal2_parse_uri(const char* uri, gfal_uri* parsed, GError** err)
     _cpmatch(parsed->scheme, uri, &pmatch[2], sizeof(parsed->scheme));
     _cpmatch(parsed->domain, uri, &pmatch[3], sizeof(parsed->domain));
 
-    if (_cpmatch(buffer, uri, &pmatch[5], sizeof(buffer)))
+    if (_cpmatch(buffer, uri, &pmatch[7], sizeof(buffer)))
         parsed->port = atoi(buffer + 1);
 
-    _cpmatch(parsed->path, uri, &pmatch[7], sizeof(parsed->path));
-    _cpmatch(parsed->query, uri, &pmatch[8], sizeof(parsed->query));
+    _cpmatch(parsed->path, uri, &pmatch[9], sizeof(parsed->path));
+    _cpmatch(parsed->query, uri, &pmatch[10], sizeof(parsed->query));
 
     regfree(&preg);
     return 0;
