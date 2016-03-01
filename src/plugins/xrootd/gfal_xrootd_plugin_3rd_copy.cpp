@@ -135,7 +135,18 @@ int gfal_xrootd_3rdcopy_check(plugin_handle plugin_data,
     if (check != GFAL_FILE_COPY && check != GFAL_BULK_COPY)
         return 0;
 
-    return (strncmp(src, "root://", 7) == 0 && strncmp(dst, "root://", 7) == 0);
+    bool src_is_root = strncmp(src, "root://", 7) == 0;
+    bool dst_is_root = strncmp(dst, "root://", 7) == 0;
+    bool src_is_file = strncmp(src, "file://", 7) == 0;
+    bool dst_is_file = strncmp(dst, "file://", 7) == 0;
+
+    if (src_is_root) {
+        return dst_is_root || dst_is_file;
+    }
+    else if (dst_is_root) {
+        return src_is_root || src_is_file;
+    }
+    return false;
 }
 
 
@@ -185,7 +196,12 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         job.Set("target", dest_url.GetURL());
         job.Set("force", gfalt_get_replace_existing_file(params, NULL));
         job.Set("posc", true);
-        job.Set("thirdParty", "only");
+        if ((source_url.GetProtocol() == "root") && (dest_url.GetProtocol() == "root")) {
+            job.Set("thirdParty", "only");
+        }
+        else {
+            job.Set("thirdParty", "first");
+        }
         job.Set("tpcTimeout", gfalt_get_timeout(params, NULL));
 #else
         XrdCl::JobDescriptor job;
@@ -194,8 +210,16 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         job.target = dest_url;
         job.force = gfalt_get_replace_existing_file(params, NULL);;
         job.posc = true;
-        job.thirdParty = true;
-        job.thirdPartyFallBack = false;
+
+        if ((source_url.GetProtocol() == "root") && (dest_url.GetProtocol() == "root")) {
+            job.thirdParty = true;
+            job.thirdPartyFallBack = false;
+        }
+        else {
+            job.thirdParty = false;
+            job.thirdPartyFallBack = false;
+        }
+
         job.checkSumPrint = false;
 #endif
 
