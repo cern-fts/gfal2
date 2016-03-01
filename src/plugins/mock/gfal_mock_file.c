@@ -20,9 +20,11 @@
 
 #include "gfal_mock_plugin.h"
 #include <stdio.h>
+#include <string.h>
 
 
 typedef struct {
+    const char *url;
     int fd;
     off_t size;
     off_t offset;
@@ -37,7 +39,16 @@ gfal_file_handle gfal_plugin_mock_open(plugin_handle plugin_data, const char *ur
         return NULL;
     }
 
+    char arg_buffer[64] = {0};
+    gfal_plugin_mock_get_value(url, "open_errno", arg_buffer, sizeof(arg_buffer));
+    int errcode = gfal_plugin_mock_get_int_from_str(arg_buffer);
+    if (errcode > 0) {
+        gfal_plugin_mock_report_error(strerror(errcode), errcode, err);
+        return NULL;
+    }
+
     MockFile *fd = g_malloc(sizeof(MockFile));
+    fd->url = url;
     fd->size = st.st_size;
     fd->offset = 0;
     if (flag == O_RDONLY) {
@@ -63,6 +74,20 @@ gfal_file_handle gfal_plugin_mock_open(plugin_handle plugin_data, const char *ur
 ssize_t gfal_plugin_mock_read(plugin_handle plugin_data, gfal_file_handle fd, void *buff, size_t count, GError **err)
 {
     MockFile *mfd = gfal_file_handle_get_fdesc(fd);
+    char arg_buffer[64] = {0};
+
+    gfal_plugin_mock_get_value(mfd->url, "read_wait", arg_buffer, sizeof(arg_buffer));
+    int wait = gfal_plugin_mock_get_int_from_str(arg_buffer);
+    if (wait > 0) {
+        sleep(wait);
+    }
+
+    gfal_plugin_mock_get_value(mfd->url, "read_errno", arg_buffer, sizeof(arg_buffer));
+    int errcode = gfal_plugin_mock_get_int_from_str(arg_buffer);
+    if (errcode > 0) {
+        gfal_plugin_mock_report_error(strerror(errcode), errcode, err);
+        return -1;
+    }
 
     off_t remaining = mfd->size - mfd->offset;
     if (count > remaining) {

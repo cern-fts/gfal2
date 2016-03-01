@@ -81,31 +81,26 @@ void gfal_plugin_mock_get_value(const char *url, const char *key, char *value, s
 {
     // make sure it's an empty C-string
     value[0] = '\0';
-    // look for the place where parameter list starts
+
     char *str = strchr(url, '?');
-    // if there is no parameter list ...
-    if (str == NULL) return;
-    // find the parameter name
-    str = strstr(str, key);
-    // if the parameter is not on the list
-    if (str == NULL) return;
-    // find the assignment
-    str = strchr(str, '=');
-    // if no value was assigned ...
-    if (str == NULL) return;
-
-    str = str + 1;
-    char *end = strchr(str, '&');
-
-    if (end) {
-        // if it is not the last parameter ...
-        int size = (end - str) + 1;
-        g_strlcpy(value, str, size < val_size ? size : val_size);
+    if (str == NULL) {
+        return;
     }
-    else {
-        // if it is the last parameter just copy the string until it ends
-        g_strlcpy(value, str, val_size);
+
+    size_t key_len = strlen(key);
+    char **args = g_strsplit(str + 1, "&", 0);
+    int i;
+    for (i = 0; args[i] != NULL; ++i) {
+        if (strncmp(args[i], key, key_len) == 0) {
+            char *p = strchr(args[i], '=');
+            if (p) {
+                g_strlcpy(value, p + 1, val_size);
+                break;
+            }
+        }
     }
+
+    g_strfreev(args);
 }
 
 

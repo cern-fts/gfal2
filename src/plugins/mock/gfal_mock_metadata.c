@@ -29,12 +29,19 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char *path, struct st
     char arg_buffer[64] = {0};
     int errcode = 0;
     int signum = 0;
-    long long size = 0;
+    long long size = 0, wait_time = 0;
 
     // Is fts_url_copy calling us?
     const char *agent, *version;
     gfal2_get_user_agent(mdata->handle, &agent, &version);
     int is_url_copy = (agent && strncmp(agent, "fts_url_copy", 12) == 0);
+
+    // Wait a bit?
+    gfal_plugin_mock_get_value(path, "wait", arg_buffer, sizeof(arg_buffer));
+    wait_time = gfal_plugin_mock_get_int_from_str(arg_buffer);
+    if (wait_time > 0) {
+        sleep(wait_time);
+    }
 
     // Trigger signal
     gfal_plugin_mock_get_value(path, "signal", arg_buffer, sizeof(arg_buffer));
