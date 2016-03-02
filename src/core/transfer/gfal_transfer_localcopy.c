@@ -204,7 +204,8 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
         else {
             perf_data.now = time(NULL);
             if (perf_data.now >= timeout) {
-                g_set_error(&nested_error, local_copy_domain(), ETIMEDOUT, "Transfer canceled because the timeout expired");
+                if (nested_error == NULL)
+                    g_set_error(&nested_error, local_copy_domain(), ETIMEDOUT, "Transfer canceled because the timeout expired");
             }
             else if (perf_data.now - perf_data.last_update > 5) {
                 send_performance_data(params, src, dst, &perf_data);
