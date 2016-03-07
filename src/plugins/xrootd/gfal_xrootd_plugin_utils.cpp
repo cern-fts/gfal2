@@ -194,5 +194,5 @@ void gfal2_xrootd_set_error(GError **err, int errcode, const char *func, const c
 
     char buffer[512];
     snprintf(buffer, sizeof(buffer), "%s (%s)", err_msg, error_string_ptr);
-    gfal2_set_error(err, xrootd_domain, errno, func, buffer);
+    gfal2_set_error(err, xrootd_domain, errno, func, "%s", buffer);
 }
