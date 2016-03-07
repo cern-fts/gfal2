@@ -1,7 +1,8 @@
-GFAL2 RELEASE-NOTES:
+GFAL2 RELEASE-NOTES
+===================
 
-* Mon Mar 07 2016 Alejandro Alvarez <aalvarez at cern.ch> - 2.11.0
-** Bug
+## Mon Mar 07 2016 Alejandro Alvarez <aalvarez at cern.ch> - 2.11.0
+### Bug
 - [DMC-758] - Add a Requires on glib2 >= 2.28
 - [DMC-769] - GridFTP Plugin: Missing throw inside copy
 - [DMC-783] - SRM endpoint resolution fails due to an off-by-one introduced when switched to g_strlcpy
@@ -9,12 +10,12 @@ GFAL2 RELEASE-NOTES:
 - [DMC-803] - GridFTP Plugin: PASV plugin fails to extract IP
 - [DMC-808] - gfal2_parse_uri does not support IPv6 URLS
 - [DMC-811] - gfal2 error GLib-WARNING **: GError set over the top of a previous GError or uninitialized memory
-** Improvement
+### Improvement
 - [DMC-793] - SRM Plugin: Set "GRIDFTP PLUGIN:STAT_ON_OPEN" to false when the endpoint is Castor
 - [DMC-795] - XRootD Plugin: Generate better error messages
 - [DMC-809] - XRootD Plugin: Copy from/to XRootD using the Client (as with 3rd party copy)
 - [DMC-812] - Add open/read/write/close to the mock plugin
-** New Feature
+### New Feature
 - [DMC-756] - Mock plugin: Add directory listing and signal raising
 - [DMC-763] - Add plain FTP support (anonymous only)
 - [DMC-781] - Add support for short-term S3 credentials
@@ -22,22 +23,22 @@ GFAL2 RELEASE-NOTES:
 - [DMC-801] - dCache davs pull copy use checksum verification by default, should be disabled if checksums are not asked for
 - [DMC-804] - Allow to pass arbitrary headers to davix
 
-* Wed Dec 09 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.10.3
-** Bug
+## Wed Dec 09 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.10.3
+### Bug
 - [DMC-783] - SRM endpoint resolution fails due to an off-by-one introduced when switched to g_strlcpy
 
-* Fri Nov 06 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.10.2
-** Bug
+## Fri Nov 06 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.10.2
+### Bug
 - [DMC-769] - GridFTP Plugin: Missing throw inside copy
 
-* Tue Oct 20 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.10.1
-** Bug
+## Tue Oct 20 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.10.1
+### Bug
 - [DMC-750] - Respect GLOBUS_THREAD_MODEL environment
-** Improvement
+### Improvement
 - [DMC-738] - HTTP Plugin: Skip source validation checksum if the algorithm is not supported
 
-* Mon Oct 12 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.10.0
-** Bug
+## Mon Oct 12 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.10.0
+### Bug
 - [DMC-676] - SRM Plugin: Response for bringonline may be shorter than the request
 - [DMC-682] - SURLS in responses may not contain full endpoint
 - [DMC-692] - gfal_rw_seq_SRM_DPM hangs somewhere when the proxy is not initialized
@@ -49,32 +50,32 @@ GFAL2 RELEASE-NOTES:
 - [DMC-731] - Segfault on xrootd 3rd party copies
 - [DMC-741] - Replace G_LOG_LEVEL_INFO with other levels
 - [DMC-742] - SRM Plugin: Convert UTC to local timestamp
-** Improvement
+### Improvement
 - [DMC-674] - Validate version as part of the packaging
 - [DMC-679] - SRM Plugin: Reduce log level for the unlinking messages
 - [DMC-685] - All: Mark in a common way when a checksum comparison fails
 - [DMC-698] - Port DMC clients to MacOSX
 - [DMC-737] - File plugin: Avoid large allocation on the stack
 - [DMC-744] - GridFTP Plugin: Parse uid and gid if available
-** New Feature
+### New Feature
 - [DMC-669] - GridFTP Plugin: Hook a plugin to capture final endpoints on transfer
 - [DMC-673] - SRM Plugin: Add srm.type extended attribute
 - [DMC-697] - HTTP Plugin: Add support for pull copies
-** Task
+### Task
 - [DMC-680] - Integrate gfal2-plugin-xrootd into mainline gfal2
 - [DMC-712] - Improve mock plugin
 
-* Tue Jun 08 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.9.3
-** Bug
+## Tue Jun 08 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.9.3
+### Bug
 - [DMC-682] - SRM Plugin: SURLS in responses may not contain full endpoint
 - [DMC-676] - SRM Plugin: Response for poll may be shorter too
 
-* Mon Jun 01 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.9.2
-** Bug
+## Mon Jun 01 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.9.2
+### Bug
 - [DMC-676] - SRM Plugin: Response for bringonline may be shorter than the request
 
-* Fri Apr 10 2015  Alejandro Alvarez <aalvarez at cern.ch> - 2.9.1
-** Bug
+## Fri Apr 10 2015  Alejandro Alvarez <aalvarez at cern.ch> - 2.9.1
+### Bug
 - [DMC-620] - HTTP Plugin: Normalize S3:host to S3:HOST on all cases
 - [DMC-622] - Core: gfal2 crash when aborting staging operation
 - [DMC-626] - LFC Plugin: Off by one bug when checking for parent directory
@@ -87,7 +88,7 @@ GFAL2 RELEASE-NOTES:
 - [DMC-653] - SRM Plugin: Closing when reading must issue a release
 - [DMC-661] - GridFTP Plugin: Error messages generated during transfer seem to be truncated
 - [DMC-662] - GridFTP Plugin: Map correctly "Disk quota" errors
-** Improvement
+### Improvement
 - [DMC-613] - HTTP Plugin: Davix already stats before deletion, so remove the check
 - [DMC-617] - HTTP Plugin: Set Davix retrials to 0
 - [DMC-619] - HTTP Plugin: Add KEEP_ALIVE option
@@ -96,23 +97,23 @@ GFAL2 RELEASE-NOTES:
 - [DMC-649] - Core: Improve logger system, deprecate old methods
 - [DMC-650] - SRM Plugin: Log the request tokens
 - [DMC-651] - Core and plugins: Allow to send custom key/value to the servers
-** New Feature
+### New Feature
 - [DMC-641] - Core: Allow to register multiple event listeners
 - [DMC-642] - Core: Give plugins a chance to register their own event listeners
 - [DMC-643] - Core: Add an event for copies that is triggered at the beginning
 - [DMC-657] - SRM Plugin: On prepare to get and put, get the desired request lifetime from the configuration file
 - [DMC-663] - Add functionality to allow querying the versions of the plugins loaded
 
-* Fri Feb 27 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.8.4
+## Fri Feb 27 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.8.4
 - [DMC-638] - GridFTP Plugin: Performance marker timeout causes abort
 
-* Tue Feb 10 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.8.3
+## Tue Feb 10 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.8.3
 - [DMC-632] - GridFTP Plugin: When the timeout expires, wait for the callback after cancellation
 
-* Thu Jan 29 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.8.2
+## Thu Jan 29 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.8.2
 - [DMC-622] - Core: gfal2 crash when aborting staging operation
 
-* Tue Jan 06 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.8.1
+## Tue Jan 06 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.8.1
 - [DMC-529] - [EPEL7 Only] GridFTP fails to load the configured credentials
 - [DMC-531] - GridFTP Plugin: Partial read and write missing EOF's
 - [DMC-541] - GridFTP and SRM plugins: Transferring from Castor SRM to non-SRM fail with "Connection refused"
@@ -154,11 +155,11 @@ GFAL2 RELEASE-NOTES:
 * Mon Nov 17 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.7.8
 - [DMC-553] - TURLS retrieved from a SRM endpoint should be of one of the requested protocols
 
-* Mon Nov 10 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.7.7
+## Mon Nov 10 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.7.7
 - [DMC-539] - GridFTP Plugin: Transfers from gridftp endpoints hang when a read operation fails
 - [DMC-541] - GridFTP and SRM plugins: Transferring from Castor SRM to non-SRM fail with "Connection refused"
 
-* Fri Nov 07 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.7.6
+## Fri Nov 07 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.7.6
 - [DMC-469] - LFC Plugin: Calling gfal2_set_error with wrong parameters
 - [DMC-473] - HTTP Plugin: 3rd party copy should translate non canonical urls (davs+3rd...) to https
 - [DMC-485] - Core: Recursive mkdir() fail when because of a race an intermediate directory is created
@@ -186,7 +187,7 @@ GFAL2 RELEASE-NOTES:
 - [DMC-460] - GridFTP Plugin: Trimming bug in gridftp_readdir_parser
 - [DMC-462] - GridFTP Plugin: Pipeline copy support
 
-* Mon Jul 28 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.6.8
+## Mon Jul 28 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.6.8
 - [LCGUTIL-169] - GFAL 2.0 : Enable tests for xrootd and http supports
 - [LCGUTIL-345] - GFAL 2.0: add support for dCache test bed for functional tests
 - [LCGUTIL-45] - GFAL 2.0 : non third party transfer should respect all transfers options
@@ -230,7 +231,7 @@ GFAL2 RELEASE-NOTES:
 - [LCGUTIL-417] - gfal-copy return success when there is some error in the plugin
 - [LCGUTIL-460] - Issue with gfalFS and gridftp endpoints
 
-* Wed Feb 26 2014 Adrien Devresse <adevress at cern.ch> - 2.5.5-1
+## Wed Feb 26 2014 Adrien Devresse <adevress at cern.ch> - 2.5.5-1
 - [LCGUTIL-40] - GFAL 2.0 : implement lfc logic that allows third party copy logic with SRM
 - [LCGUTIL-268] - gfal2 returns no error when proxy is invalid
 - [LCGUTIL-290] - Problems with dates in gfalFS
@@ -243,7 +244,7 @@ GFAL2 RELEASE-NOTES:
 - [LCGUTIL-267] - gfal2 checksum doesn't work for local files
 - [LCGUTIL-285] - Add gsiftp meta-data cache
 
-* Fri Dec 06 2013 Alejandro Alvarez <aalvarez at cern.ch> - 2.4.8-0
+## Fri Dec 06 2013 Alejandro Alvarez <aalvarez at cern.ch> - 2.4.8-0
 - [LCGUTIL-216] - Checksum comparison must ignore heading '0'
 - [LCGUTIL-220] - gfal2 crashes with SIGSEGV sometimes on bringonline
 - [LCGUTIL-222] - Timeout doesn't seem to be honored
@@ -258,7 +259,7 @@ GFAL2 RELEASE-NOTES:
 - [LCGUTIL-226] - Partial listing of directory to avoid loading too much the server
 - [LCGUTIL-233] - GridFTP plugin should allow to skip the source checksum
 
-* Tue Jul 02 2013 Adrien Devresse <adevress at cern.ch> - 2.3.0-0
+## Tue Jul 02 2013 Adrien Devresse <adevress at cern.ch> - 2.3.0-0
 - [LCGUTIL-99] gfal2_cancel crashes gfal2 if called twice
 - [LCGUTIL-135] GFAL 2.0 : Migrate the http plugin support for PEM from the old manual one to the new Davix one
 - [LCGUTIL-143] GFAL 2.0 : Regression bug of the stat() call against the dcache instance
@@ -273,43 +274,43 @@ GFAL2 RELEASE-NOTES:
 - Minor error correction from coverity  report
 - bug fixes related to gridFTP thread safety for meta-data operations.
 
-* Thu Jul 02 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-11
- - pass gfal2 to coverity and fix minor issues reported
+## Thu Jul 02 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-11
+- pass gfal2 to coverity and fix minor issues reported
 
-* Mon Jun 10 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-10
- - fixed memory leaks and variables initialization
- - moved event exit message outside try-catch block
- - fix potential crash when can't resolve IP from hostname
- - LCGUTIL-142: gfal2_context_t wrapped in shared_ptr to avoid early destruction
+## Mon Jun 10 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-10
+- fixed memory leaks and variables initialization
+- moved event exit message outside try-catch block
+- fix potential crash when can't resolve IP from hostname
+- LCGUTIL-142: gfal2_context_t wrapped in shared_ptr to avoid early destruction
 
-* Thu Jun 06 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-6
- - log IP and port of gridftp server in IPv4/IPv6 compatible way
+## Thu Jun 06 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-6
+- log IP and port of gridftp server in IPv4/IPv6 compatible way
 
-* Thu May 27 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-5
- - log IP and port of gridftp server
+## Thu May 27 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-5
+- log IP and port of gridftp server
 
-* Thu May 16 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-1
- - replace gridftp exists with mlst
+## Thu May 16 2013 Michail Salichos <msalicho at cern.ch> - 2.2.2-1
+- replace gridftp exists with mlst
 
-* Wed Mar 20 2013 Adrien Devresse <adevress at cern.ch> - 2.2.0-0
- - fix thread safety issue with gsiftp plugin
- - add the bring online API
- - support for the http plugin by default
- - remove executable stack need
- - remove openMP dependency
- - add synchronous cancellation API
- - add gsiftp performance marker timeout
- - support for srm session reuse
- - reduce memory footprint
+## Wed Mar 20 2013 Adrien Devresse <adevress at cern.ch> - 2.2.0-0
+- fix thread safety issue with gsiftp plugin
+- add the bring online API
+- support for the http plugin by default
+- remove executable stack need
+- remove openMP dependency
+- add synchronous cancellation API
+- add gsiftp performance marker timeout
+- support for srm session reuse
+- reduce memory footprint
 
-* Thu Jan 10 2013 Adrien Devresse <adevress at cern.ch> - 2.1.1-0
- - fix a minor memory issue with the gfal_transfer stack
- - fix a wrong error report problem with srm third party copy
+## Thu Jan 10 2013 Adrien Devresse <adevress at cern.ch> - 2.1.1-0
+- fix a minor memory issue with the gfal_transfer stack
+- fix a wrong error report problem with srm third party copy
 
-* Wed Dec 05 2012 Adrien Devresse <adevress at cern.ch> - 2.1.0-2
- - fix an issue this surl to turl resolution for SRM third party copy
+## Wed Dec 05 2012 Adrien Devresse <adevress at cern.ch> - 2.1.0-2
+- fix an issue this surl to turl resolution for SRM third party copy
 
-* Fri Nov 30 2012 Adrien Devresse <adevress at cern.ch> - 2.1.0-0
+## Fri Nov 30 2012 Adrien Devresse <adevress at cern.ch> - 2.1.0-0
 - One-globus session system for gsiftp plugin ( FTS 3.0 need )
 - correct a major issue with the gass attribute system in gsiftp plugin
 - change the lfc set/get env var for a one compatible with set/get opt
@@ -337,31 +338,31 @@ GFAL2 RELEASE-NOTES:
 - provide the choice of turl protocol resolution for srm plugin
 
 
-* Fri Jul 20 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-1
- - Official initial release candidate of gfal 2.0
- - Transfer API is official
- - gridftp support for performance marker, checksum
- - gridftp support for gridftpv2, dcau param
- - SRM support for spacetoken in transfer
- - SRM abort auto-management
- - parallel operations in transfers
- - file protocol dedicated in a plugin
- - configuration file support
- - srm timeout support
- - general purpose checksum operation support
- - POSIX operation support for gridftp
- - cleaner plugin API
- - new documentation
- - I hope that you will enjoy gfal 2.0 :)
+## Fri Jul 20 2012 Adrien Devresse <adevress at cern.ch> - 2.0.0-1
+- Official initial release candidate of gfal 2.0
+- Transfer API is official
+- gridftp support for performance marker, checksum
+- gridftp support for gridftpv2, dcau param
+- SRM support for spacetoken in transfer
+- SRM abort auto-management
+- parallel operations in transfers
+- file protocol dedicated in a plugin
+- configuration file support
+- srm timeout support
+- general purpose checksum operation support
+- POSIX operation support for gridftp
+- cleaner plugin API
+- new documentation
+- I hope that you will enjoy gfal 2.0 :)
 
-2.0.0-0.10 :
+## 2.0.0-0.10
 - effective set/get opt support for lfc/srm/gsiftp
 - checksum calculation management
 - auto-check functionality on transfer
 - support for user-defined checksum
 - performance marker implementation for SRM/GSIFTP
 
-2.0.0-0.9 :
+## 2.0.0-0.9
 - Without environment variable design implemented
 - add set/get option calls
 - add SRM src/dst spacetoken management for gfal transfer
@@ -371,7 +372,7 @@ GFAL2 RELEASE-NOTES:
 - fix memory leak with gsiftp error report
 
 
-2.0.0-0.8 :
+## 2.0.0-0.8
 - big improvement on the gridftp support
 - split the headers files properly
 - remove the carriage return from the gridftp error messages
@@ -385,10 +386,10 @@ GFAL2 RELEASE-NOTES:
 - add several functional tests for the new features.
 - add SRM to X and X to SRM modes to the SRM plugin ( FTS 3.0 requirement )
 
-2.0.0-0.7 :
+## 2.0.0-0.7
 - major improvement for third party transfer
 - initial gridftp support
 - begin to switch to configuration without env var
 
-2.0.0-0.6 :
+## 2.0.0-0.6
 - initial tagged release
