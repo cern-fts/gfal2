@@ -1,5 +1,27 @@
 GFAL2 RELEASE-NOTES:
 
+* Mon Mar 07 2016 Alejandro Alvarez <aalvarez at cern.ch> - 2.11.0
+** Bug
+- [DMC-758] - Add a Requires on glib2 >= 2.28
+- [DMC-769] - GridFTP Plugin: Missing throw inside copy
+- [DMC-783] - SRM endpoint resolution fails due to an off-by-one introduced when switched to g_strlcpy
+- [DMC-798] - FIle Plugin: Readlink implemented but not exposed
+- [DMC-803] - GridFTP Plugin: PASV plugin fails to extract IP
+- [DMC-808] - gfal2_parse_uri does not support IPv6 URLS
+- [DMC-811] - gfal2 error GLib-WARNING **: GError set over the top of a previous GError or uninitialized memory
+** Improvement
+- [DMC-793] - SRM Plugin: Set "GRIDFTP PLUGIN:STAT_ON_OPEN" to false when the endpoint is Castor
+- [DMC-795] - XRootD Plugin: Generate better error messages
+- [DMC-809] - XRootD Plugin: Copy from/to XRootD using the Client (as with 3rd party copy)
+- [DMC-812] - Add open/read/write/close to the mock plugin
+** New Feature
+- [DMC-756] - Mock plugin: Add directory listing and signal raising
+- [DMC-763] - Add plain FTP support (anonymous only)
+- [DMC-781] - Add support for short-term S3 credentials
+- [DMC-797] - HTTP Plugin: Add rename support
+- [DMC-801] - dCache davs pull copy use checksum verification by default, should be disabled if checksums are not asked for
+- [DMC-804] - Allow to pass arbitrary headers to davix
+
 * Wed Dec 09 2015 Alejandro Alvarez <aalvarez at cern.ch> - 2.10.3
 ** Bug
 - [DMC-783] - SRM endpoint resolution fails due to an off-by-one introduced when switched to g_strlcpy
