@@ -7,7 +7,7 @@ SKIP_INIT=0
 UCERT="/afs/cern.ch/user/a/aalvarez/public/saketag-cert.pem"
 UKEY="/afs/cern.ch/user/a/aalvarez/public/saketag-key.pem"
 PASSWD=""
-VOMS="dteam:/dteam/Role=lcgadmin"
+VOMS="dteam"
 OUTPUT_DIR="/tmp"
 
 # Get parameters
