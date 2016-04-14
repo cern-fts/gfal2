@@ -1,6 +1,11 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Thu Apr 14 2016 Alejandro Alvarez <aalvarez at cern.ch> - 2.11.1
+### Bug
+- [DMC-813] - XRootD plugin: gfal2_set_error called without format string
+- [DMC-818] - SRM plugin not invoked when using a relative path to the source file
+
 ## Mon Mar 07 2016 Alejandro Alvarez <aalvarez at cern.ch> - 2.11.0
 ### Bug
 - [DMC-758] - Add a Requires on glib2 >= 2.28
