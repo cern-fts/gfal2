@@ -142,6 +142,13 @@ GridFTPSession::GridFTPSession(gfal2_context_t context, const std::string& hostn
     res = globus_gass_copy_handle_init(&gass_handle, &gass_handle_attr);
     gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
 
+    int block_size = gfal2_get_opt_integer_with_default(context,
+        GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_BLOCK_SIZE, 0);
+    if (block_size > 0) {
+        res = globus_gass_copy_set_buffer_length(&gass_handle, 0);
+        gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
+    }
+
     res = globus_gass_copy_get_ftp_handle(&gass_handle, &handle_ftp);
     gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
 
