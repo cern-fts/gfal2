@@ -9,7 +9,7 @@ SET(TEST_ENVIRONMENT "PRODUCTION"
         CACHE STRING "Define the target for functional test")
 
 ## Global environment
-SET(ftp_prefix "ftp://root.cern.ch/root/")
+SET(ftp_prefix "ftp://ftp.free.fr/mirrors/ftp.ubuntu.com/")
 
 IF(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
