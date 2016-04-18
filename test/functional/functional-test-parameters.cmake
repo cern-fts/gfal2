@@ -57,32 +57,29 @@ SET(root_prefix_dpm "root://marsedpm.in2p3.fr/dpm/in2p3.fr/home/${MY_VO}/gfal2-t
 
 ENDIF(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
-#dpm parameters
+## dpm parameters
 SET(srm_valid_dpm_stat "${srm_prefix_dpm}/testread0011")
 SET(srm_valid_dpm_bigfile "${srm_prefix_dpm}/testbig")
 SET(srm_valid_dir_root "${srm_prefix_dpm}")
 SET(srm_valid_dpm_src_file "${srm_valid_dpm_stat}")
 
-# dcache parameters
+## dcache parameters
 SET(srm_valid_dcache_bigfile "${srm_prefix_dcache}/testbig")
 SET(srm_valid_dcache_stat "${srm_prefix_dcache}/testread0011")
 SET(srm_valid_dcache_dir_root "${srm_prefix_dcache}")
 SET(srm_valid_dcache_src_file "${srm_valid_dcache_stat}")
 
-# storm parameters
-
+## storm parameters
 SET(srm_valid_storm_stat "${srm_prefix_storm}/testread00111")
 SET(srm_valid_storm_dir_root "${srm_prefix_storm}")
 SET(srm_valid_storm_src_file "${srm_prefix_storm}")
 
 ## gsiftp parameters
-#
 SET(gsiftp_valid_dpm_stat "${gsiftp_prefix_dpm}/testread0011")
 SET(gsiftp_valid_dpm_src_file "${gsiftp_valid_dpm_stat}")
 SET(gsiftp_valid_dir_root "${gsiftp_prefix_dpm}")
 
 ## https parameters
-#
 SET(davs_valid_dpm_stat     "${davs_prefix_dpm}/testread0011")
 SET(davs_valid_dpm_src_file "${davs_valid_dpm_stat}")
 SET(davs_valid_dir_root     "${davs_prefix_dpm}")
@@ -101,11 +98,11 @@ SET(lfc_full_stat_ok "${lfc_full_prefix}/testread0011")
 SET(lfc_full_chmod_ok "${lfc_full_prefix}/test_change_right")
 SET(lfc_full_valid_dir_root "${lfc_full_prefix}")
 
-# dcap dcache parameters
+## dcap dcache parameters
 SET(dcap_stat_ok "${dcap_prefix}/testread0011")
 SET(dcap_valid_dir_root "${dcap_prefix}")
 
-#local file parameters
+## local file parameters
 SET(file_prefix "file://${file_base_path}")
 FILE(WRITE "${file_base_path}/testread_0011" "hello world agdlkmgfmklmklklmvc;!:c;:!;:!xc;!:vx!;:bvx!;:!;:o=)=)à=àdg:;;:!:!;!:;b")
 SET(file_stat_ok "${file_prefix}/testread_0011")
@@ -228,7 +225,7 @@ IF(PLUGIN_GRIDFTP)
         test_del("GRIDFTP_DPM"   "${gsiftp_prefix_dpm}")
         test_mkdir_unlink("GRIDFTP" "${gsiftp_prefix_dpm}")
         test_rename("GRIDFTP" ${gsiftp_prefix_dpm})
-        test_stat_all( "GRIDFTP" ${gsiftp_valid_dir_root})
+        test_stat_all("GRIDFTP" ${gsiftp_valid_dir_root})
         test_access("GRIDFTP" ${gsiftp_valid_dir_root})
         test_checksum_simple("GRIDFTP_ADLER32" ${gsiftp_valid_dir_root} ADLER32)
         test_checksum_simple("GRIDFTP_MD5" ${gsiftp_valid_dir_root} MD5)
