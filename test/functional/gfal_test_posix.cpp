@@ -246,6 +246,52 @@ TEST_F(PosixTest, Xattr)
 }
 
 
+TEST_F(PosixTest, PWrite)
+{
+    char file[2048];
+    generate_random_uri(root, "test_posix", file, sizeof(file));
+    filesToClean.push_back(file);
+    int fd = gfal_creat(file, 0775);
+    ASSERT_GT(fd, 0);
+
+    char buffer[512] = {0};
+    ssize_t write_size = gfal_pwrite(fd, buffer, sizeof(buffer), 0);
+    ASSERT_EQ(write_size, sizeof(buffer));
+
+    gfal_close(fd);
+
+    char read_buffer[512] = {0};
+    fd = gfal_open(file, O_RDONLY);
+
+    ssize_t read_size = gfal_read(fd, read_buffer, sizeof(read_buffer));
+    ASSERT_EQ(read_size, write_size);
+    ASSERT_TRUE(memcmp(buffer, read_buffer, read_size) == 0);
+
+    gfal_close(fd);
+}
+
+
+TEST_F(PosixTest, PRead)
+{
+    std::string file = GenerateFile();
+
+    int fd = gfal_open(file.c_str(), O_RDONLY);
+    ASSERT_GT(fd, 0);
+
+    char buffer[512] = {0};
+    ssize_t readSize = gfal_pread(fd, buffer, sizeof(buffer), 0);
+    ASSERT_GT(readSize, 0);
+
+    readSize = gfal_pread(fd, buffer + 50, sizeof(buffer) - 50, 2);
+    ASSERT_GT(readSize, 0);
+
+    ASSERT_EQ(buffer[2], buffer[50]);
+    ASSERT_EQ(buffer[3], buffer[51]);
+    ASSERT_EQ(buffer[4], buffer[52]);
+
+    gfal_close(fd);
+}
+
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
