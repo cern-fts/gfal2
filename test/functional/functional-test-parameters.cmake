@@ -310,21 +310,21 @@ IF (MAIN_TRANSFER)
         #
 
         # local <-> DPM
-        test_copy_file_simple("FILE_TO_SRM_DPM" ${file_prefix} ${srm_valid_dir_root})
-        test_copy_file_simple("SRM_DPM_TO_FILE" ${srm_valid_dir_root}  ${file_prefix})
+        test_copy_file_full("FILE_TO_SRM_DPM" ${file_prefix} ${srm_valid_dir_root})
+        test_copy_file_full("SRM_DPM_TO_FILE" ${srm_valid_dir_root}  ${file_prefix})
 
         # local <-> dcache
-        test_copy_file_simple("FILE_TO_SRM_DCACHE" ${file_prefix} ${srm_valid_dcache_dir_root})
-        test_copy_file_simple("SRM_DCACHE_TO_FILE" ${srm_valid_dcache_dir_root}  ${file_prefix})
-        test_copy_file_simple("FILE_TO_FILE" ${file_prefix}  ${file_prefix})
+        test_copy_file_full("FILE_TO_SRM_DCACHE" ${file_prefix} ${srm_valid_dcache_dir_root})
+        test_copy_file_full("SRM_DCACHE_TO_FILE" ${srm_valid_dcache_dir_root}  ${file_prefix})
+        test_copy_file_full("FILE_TO_FILE" ${file_prefix}  ${file_prefix})
 
         # gsiftp dpm <-> local
-        test_copy_file_simple("GSIFTP_TO_FILE" ${gsiftp_prefix_dpm}  ${file_prefix})
-        test_copy_file_simple("FILE_TO_GSIFTP" ${file_prefix}  ${gsiftp_prefix_dpm})
+        test_copy_file_full("GSIFTP_TO_FILE" ${gsiftp_prefix_dpm}  ${file_prefix})
+        test_copy_file_full("FILE_TO_GSIFTP" ${file_prefix}  ${gsiftp_prefix_dpm})
 
         # local <-> storm
-        test_copy_file_simple("STORM_TO_FILE" ${srm_prefix_storm}  ${file_prefix})
-        test_copy_file_simple("FILE_TO_STORM" ${file_prefix}  ${srm_prefix_storm})
+        test_copy_file_full("STORM_TO_FILE" ${srm_prefix_storm}  ${file_prefix})
+        test_copy_file_full("FILE_TO_STORM" ${file_prefix}  ${srm_prefix_storm})
 
         # Passive plugin, which only makes sense for GridFTP
         test_pasv("PASV" ${gsiftp_prefix_dpm} ${gsiftp_prefix_dpm})

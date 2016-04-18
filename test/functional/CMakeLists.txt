@@ -213,10 +213,6 @@ if(FUNCTIONAL_TESTS)
             add_test(copyfile_bulk_${name} gfalt_test_copy_bulk ${src_dir} ${dst_dir})
         endfunction(test_copy_file_no_checksum name src_dir dst_dir)
 
-        function(test_copy_file_simple name src_dir dst_dir)
-            add_test(copyfile_test_${name} gfalt_test_copy_file ${src_dir} ${dst_dir})
-        endfunction(test_copy_file_simple name src_dir dst_dir)
-
         function(test_pasv name src_dir dst_dir)
             add_test(gfalt_test_pasv_${name} gfalt_test_pasv ${src_dir} ${dst_dir})
         endfunction(test_pasv name src_dir dst_dir)
