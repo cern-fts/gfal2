@@ -268,6 +268,7 @@ IF(PLUGIN_XROOTD)
     test_stat_all("XROOTD" ${root_valid_dir_root})
     test_access("XROOTD" ${root_valid_dir_root})
     test_rename("XROOTD" ${root_valid_dir_root})
+
     # Checksum not supported yet in the XrdCl library
     # Chmod does not work in posix-style, so the test can not be used
     test_mkdir_all("XROOTD" ${root_valid_dir_root})
@@ -277,6 +278,7 @@ IF(PLUGIN_XROOTD)
     test_rwt_all("XROOTD_single" ${root_valid_dir_root} 1)
     test_rwt_seq("XROOTD" ${root_valid_dir_root} 100 4560)
     test_rwt_seq("XROOTD_single" ${root_valid_dir_root} 1 10)
+    test_rwt_seek("XROOTD" ${root_valid_dir_root} 100 4560)
 
     # Copies
     IF (MAIN_TRANSFER)
