@@ -1,5 +1,5 @@
 add_subdirectory(global)
 add_subdirectory(cancel)
+add_subdirectory(mds)
 add_subdirectory(transfer)
 add_subdirectory(uri)
-
