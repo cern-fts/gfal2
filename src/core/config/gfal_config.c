@@ -427,6 +427,9 @@ gint gfal2_get_user_agent(gfal2_context_t handle, const char** user_agent, const
 
 gint gfal2_add_client_info(gfal2_context_t handle, const char* key, const char* value, GError** error)
 {
+    gfal2_remove_client_info(handle, key, error);
+    g_clear_error(error);
+
     gfal_key_value_t keyval = g_new0(struct _gfal_key_value, 1);
     keyval->key = g_strdup(key);
     keyval->value = g_strdup(value);
