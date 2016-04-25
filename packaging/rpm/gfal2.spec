@@ -262,6 +262,7 @@ export GFAL_PLUGIN_DIR=${PWD}/plugins/
 export GFAL_CONFIG_DIR=${PWD}/test/conf_test/
 export LD_LIBRARY_PATH=${PWD}/src/core:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH=${PWD}/plugins:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=${PWD}/test/common:${LD_LIBRARY_PATH}
 cd test/unit
 ctest -V
 
