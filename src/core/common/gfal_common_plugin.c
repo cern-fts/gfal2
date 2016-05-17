@@ -58,10 +58,11 @@ plugin_handle gfal_get_plugin_handle(gfal_plugin_interface* cata_list)
 }
 
 
-gboolean gfal_feature_is_supported(void * ptr, GQuark scope, const char* func_name, GError** err)
+gboolean gfal_feature_is_supported(void *ptr, GQuark scope, const char *func_name, const char *surl, GError **err)
 {
     if (ptr == NULL) {
-        g_set_error(err, gfal2_get_plugins_quark(), EPROTONOSUPPORT, "[%s] Protocol not supported or path/url invalid", func_name);
+        g_set_error(err, gfal2_get_plugins_quark(), EPROTONOSUPPORT,
+            "[%s] Protocol not supported or path/url invalid: %s", func_name, surl);
         return FALSE;
     }
     return TRUE;
@@ -421,7 +422,7 @@ gfal_plugin_interface* gfal_find_plugin(gfal2_context_t handle, const char * url
     }
     else {
         gfal2_set_error(err, gfal2_get_plugins_quark(), EPROTONOSUPPORT,
-                __func__, "Protocol not supported or path/url invalid");
+                __func__, "Protocol not supported or path/url invalid: %s", url);
     }
     return NULL;
 }
@@ -685,7 +686,8 @@ struct dirent* gfal_plugin_readdirppG(gfal2_context_t handle, gfal_file_handle f
     gfal_plugin_interface* if_cata = gfal_plugin_map_file_handle(handle, fh, &tmp_err);
 
     if (!tmp_err) {
-        if (gfal_feature_is_supported(if_cata->readdirppG, g_quark_from_string(GFAL2_PLUGIN_SCOPE), __func__, &tmp_err))
+        if (gfal_feature_is_supported(if_cata->readdirppG, g_quark_from_string(GFAL2_PLUGIN_SCOPE), __func__,
+            fh->path, &tmp_err))
             res = if_cata->readdirppG(if_cata->plugin_data, fh, st, &tmp_err);
     }
 

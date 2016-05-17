@@ -69,7 +69,7 @@ char** gfal_plugins_get_list(gfal2_context_t, GError** err);
 
 int gfal_plugins_delete(gfal2_context_t, GError** err);
 
-gboolean gfal_feature_is_supported(void * ptr, GQuark scope, const char* func_name, GError** err);
+gboolean gfal_feature_is_supported(void *ptr, GQuark scope, const char *func_name, const char *surl, GError **err);
 
 /**
  * Find a compatible catalog or return NULL + error
