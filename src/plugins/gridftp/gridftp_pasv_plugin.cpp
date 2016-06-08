@@ -21,7 +21,7 @@
 
 #include "gridftp_pasv_plugin.h"
 #include "gridftp_filecopy.h"
-#include "gridftpwrapper.h"
+#include "gridftp_plugin.h"
 
 
 static const GQuark GFAL_GRIDFTP_PASV_STAGE_QUARK = g_quark_from_static_string("PASV");
@@ -65,10 +65,13 @@ static void gfal2_ftp_client_pasv_fire_event(GridFTPSession* session,
 
 // Entering Passive Mode (h1,h2,h3,h4,p1,p2).
 // Parenthesis are not guaranteed!
-static int parse_27(const char *resp, char *ip, size_t ip_size, unsigned *port)
+static int parse_27(const char *resp, char *ip, size_t ip_size, unsigned *port, bool *is_ipv6)
 {
     static const char *regex_str = "[12]27 [^[0-9]+\\(?([0-9]+),([0-9]+),([0-9]+),([0-9]+),([0-9]+),([0-9]+)\\)?";
     regex_t preg;
+
+    // This response can not return never IPv6 values
+    *is_ipv6 = false;
 
     assert(regcomp(&preg, regex_str, REG_EXTENDED | REG_ICASE) == 0);
 
@@ -98,7 +101,7 @@ static int parse_27(const char *resp, char *ip, size_t ip_size, unsigned *port)
 
 // Entering Long Passive Mode (long address, port).
 // Parenthesis are not guaranteed!
-static int parse_28(const char *, char *, size_t, unsigned *)
+static int parse_28(const char *, char *, size_t, unsigned *, bool*)
 {
     gfal2_log(G_LOG_LEVEL_WARNING, "Long Passive Mode not supported!");
     return -1;
@@ -107,9 +110,13 @@ static int parse_28(const char *, char *, size_t, unsigned *)
 
 // Entering Extended Passive Mode (|protocol|ip|port|).
 // Parenthesis are standardized
-static int parse_29(const char *msg, char *ip, size_t ip_size, unsigned *port)
+static int parse_29(const char *msg, char *ip, size_t ip_size, unsigned *port, bool *is_ipv6)
 {
     const char *p = strchr(msg, '(');
+
+    // Asume no IPv6, or unknown
+    *is_ipv6 = false;
+
     if (p) {
         regex_t preg;
         int retregex = regcomp(&preg, "\\(\\|([0-9]*)\\|([^|]*)\\|([0-9]+)\\|\\)", REG_EXTENDED);
@@ -123,11 +130,27 @@ static int parse_29(const char *msg, char *ip, size_t ip_size, unsigned *port)
             return -1;
         }
         else {
+            // Type
+            if (matches[1].rm_eo != matches[1].rm_so) {
+                int type = atol(p + matches[1].rm_so);
+                if (type == 2) {
+                    *is_ipv6 = true;
+                }
+            }
             // Ip
-            size_t len = matches[2].rm_eo - matches[2].rm_so;
-            if (len > sizeof(ip))
-                len = sizeof(ip);
-            g_strlcpy(ip, p + matches[2].rm_so, len);
+            if (matches[2].rm_eo != matches[2].rm_so) {
+                size_t len = matches[2].rm_eo - matches[2].rm_so;
+                if (len > ip_size) {
+                    len = ip_size;
+                }
+                if (*is_ipv6) {
+                    char *buffer = g_strndup(p + matches[2].rm_so, len);
+                    snprintf(ip, ip_size, "[%s]", buffer);
+                    g_free(buffer);
+                } else {
+                    g_strlcpy(ip, p + matches[2].rm_so, len);
+                }
+            }
             // Port
             *port = atoi(p + matches[3].rm_so);
             return 0;
@@ -148,20 +171,20 @@ static void gfal2_ftp_client_pasv_response(globus_ftp_client_plugin_t* plugin,
 
     char ip[65] = {0};
     unsigned port = 0;
-    bool got_pasv_ip = false;
+    bool got_pasv_ip = false, is_ipv6 = false;
 
     switch (ftp_response->response_class) {
         case GLOBUS_FTP_POSITIVE_PRELIMINARY_REPLY:
         case GLOBUS_FTP_POSITIVE_COMPLETION_REPLY:
             switch (ftp_response->code % 100) {
                 case 27:
-                    got_pasv_ip = (parse_27(p, ip, sizeof(ip), &port) == 0);
+                    got_pasv_ip = (parse_27(p, ip, sizeof(ip), &port, &is_ipv6) == 0);
                     break;
                 case 28:
-                    got_pasv_ip = (parse_28(p, ip, sizeof(ip), &port) == 0);
+                    got_pasv_ip = (parse_28(p, ip, sizeof(ip), &port, &is_ipv6) == 0);
                     break;
                 case 29:
-                    got_pasv_ip = (parse_29(p, ip, sizeof(ip), &port) == 0);
+                    got_pasv_ip = (parse_29(p, ip, sizeof(ip), &port, &is_ipv6) == 0);
                     break;
             }
             break;
@@ -177,8 +200,11 @@ static void gfal2_ftp_client_pasv_response(globus_ftp_client_plugin_t* plugin,
             g_error_free(err);
         }
         else {
+            // Not specified in the response, so figure it out
             if (ip[0] == '\0') {
-                g_strlcpy(ip, lookup_host(hostname, TRUE).c_str(), sizeof(ip));
+                is_ipv6 = gfal2_get_opt_boolean_with_default(session->context, GRIDFTP_CONFIG_GROUP,
+                    GRIDFTP_CONFIG_IPV6, FALSE);
+                g_strlcpy(ip, lookup_host(hostname, is_ipv6).c_str(), sizeof(ip));
             }
             gfal2_ftp_client_pasv_fire_event(session, hostname, ip, port);
         }
