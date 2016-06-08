@@ -25,6 +25,7 @@
 
 
 static const GQuark GFAL_GRIDFTP_PASV_STAGE_QUARK = g_quark_from_static_string("PASV");
+static const GQuark GFAL_GRIDFTP_IPV6_QUARK = g_quark_from_static_string("IPv6");
 
 
 static globus_ftp_client_plugin_t* gfal2_ftp_client_pasv_plugin_copy(
@@ -53,12 +54,17 @@ static void gfal2_ftp_client_pasv_command(globus_ftp_client_plugin_t* plugin,
 
 
 static void gfal2_ftp_client_pasv_fire_event(GridFTPSession* session,
-        const char* hostname, const char* ip, unsigned port)
+        const char* hostname, const char* ip, unsigned port, bool is_ipv6)
 {
     if (session->params) {
         plugin_trigger_event(session->params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
                 GFAL_EVENT_DESTINATION, GFAL_GRIDFTP_PASV_STAGE_QUARK,
                 "%s:%s:%u", hostname, ip, port);
+        if (is_ipv6) {
+            plugin_trigger_event(session->params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
+                GFAL_EVENT_DESTINATION, GFAL_GRIDFTP_IPV6_QUARK,
+                "%s:%u", ip, port);
+        }
     }
 }
 
@@ -206,7 +212,7 @@ static void gfal2_ftp_client_pasv_response(globus_ftp_client_plugin_t* plugin,
                     GRIDFTP_CONFIG_IPV6, FALSE);
                 g_strlcpy(ip, lookup_host(hostname, is_ipv6).c_str(), sizeof(ip));
             }
-            gfal2_ftp_client_pasv_fire_event(session, hostname, ip, port);
+            gfal2_ftp_client_pasv_fire_event(session, hostname, ip, port, is_ipv6);
         }
     }
 }
