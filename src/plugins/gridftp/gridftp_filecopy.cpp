@@ -28,7 +28,7 @@
 #include "gridftp_plugin.h"
 
 #include <checksums/checksums.h>
-#include <uri/gfal_uri.h>
+#include <uri/gfal2_uri.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -102,12 +102,13 @@ std::string lookup_host(const char *host, gboolean use_ipv6)
 std::string return_host_and_port(const std::string &uri, gboolean use_ipv6)
 {
     GError* error = NULL;
-    gfal_uri parsed;
-    gfal2_parse_uri(uri.c_str(), &parsed, &error);
-    if (error)
+    gfal2_uri *parsed = gfal2_parse_uri(uri.c_str(), &error);
+    if (error) {
         throw Gfal::CoreException(error);
+    }
     std::ostringstream str;
-    str << lookup_host(parsed.domain, use_ipv6) << ":" << parsed.port;
+    str << lookup_host(parsed->host, use_ipv6) << ":" << parsed->port;
+    gfal2_free_uri(parsed);
     return str.str();
 }
 

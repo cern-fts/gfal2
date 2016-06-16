@@ -54,5 +54,5 @@ set (gfal2_utils_libraries ${gfal2_utils_libraries} PARENT_SCOPE)
 set (gfal2_utils_definitions ${gfal2_utils_definitions} PARENT_SCOPE)
 
 # Install public headers
-install (FILES "uri/gfal_uri.h"
+install (FILES "uri/gfal2_uri.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/utils)

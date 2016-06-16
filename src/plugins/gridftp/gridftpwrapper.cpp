@@ -21,7 +21,7 @@
 #include <memory>
 #include <fstream>
 #include <sstream>
-#include <uri/gfal_uri.h>
+#include <uri/gfal2_uri.h>
 #include <exceptions/gfalcoreexception.hpp>
 #include <globus_ftp_client_debug_plugin.h>
 #include "gridftp_plugin.h"
@@ -44,13 +44,14 @@ static const GQuark GFAL_GLOBUS_DONE_SCOPE = g_quark_from_static_string("GridFTP
 
 static std::string gridftp_hostname_from_url(const std::string& url)
 {
-    GError * tmp_err = NULL;
-    char buffer[GFAL_URL_MAX_LEN];
-    buffer[0] = '\0';
-    const int res = gfal2_hostname_and_port_from_uri(url.c_str(), buffer, GFAL_URL_MAX_LEN, &tmp_err);
-    if (res < 0) {
-        throw Gfal::CoreException(tmp_err);
+    GError *err = NULL;
+    gfal2_uri *parsed = gfal2_parse_uri(url.c_str(), &err);
+    if (err != NULL) {
+        throw Gfal::CoreException(err);
     }
+    char buffer[GFAL_URL_MAX_LEN];
+    snprintf(buffer, sizeof(buffer), "%s:%d", parsed->host, parsed->port);
+    gfal2_free_uri(parsed);
     return std::string(buffer);
 }
 

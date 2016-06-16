@@ -23,7 +23,7 @@
 #include <regex.h>
 #include <errno.h>
 #include <mds/gfal_mds.h>
-#include <uri/gfal_uri.h>
+#include <uri/gfal2_uri.h>
 
 #include "gfal_srm_url_check.h"
 #include "gfal_srm_internal_layer.h"
@@ -165,20 +165,19 @@ static int gfal_get_endpoint_and_setype_from_bdiiG(gfal_srmv2_opt *opts, const c
 
     char **tab_endpoint = NULL;
     char **tab_se_type = NULL;
-    char hostname[GFAL_URL_MAX_LEN];
     int ret = -1;
     GError *tmp_err = NULL;
 
-    ret = gfal2_hostname_and_port_from_uri(surl, hostname, sizeof(hostname), &tmp_err);
-    if (ret == 0) { // get the hostname
-
-        if ((ret = gfal_mds_get_se_types_and_endpoints(opts->handle, hostname, &tab_se_type, &tab_endpoint,
-            &tmp_err)) == 0) { // questioning the bdii
+    gfal2_uri *parsed = gfal2_parse_uri(surl, &tmp_err);
+    if (parsed != NULL) { // get the hostname
+        // questioning the bdii
+        if ((ret = gfal_mds_get_se_types_and_endpoints(opts->handle, parsed->host, &tab_se_type, &tab_endpoint, &tmp_err)) == 0) {
             ret = gfal_select_best_protocol_and_endpointG(opts, tab_se_type, tab_endpoint, buff_endpoint,
                 GFAL_URL_MAX_LEN, srm_type, &tmp_err); // map the response if correct
             g_strfreev(tab_endpoint);
             g_strfreev(tab_se_type);
         }
+        gfal2_free_uri(parsed);
     }
     G_RETURN_ERR(ret, tmp_err, err);
 }

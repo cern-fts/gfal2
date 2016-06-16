@@ -17,7 +17,7 @@
 #include <regex.h>
 
 #include <gfal_api.h>
-#include "uri/gfal_uri.h"
+#include "uri/gfal2_uri.h"
 
 #include "gridftp_pasv_plugin.h"
 #include "gridftp_filecopy.h"
@@ -199,9 +199,9 @@ static void gfal2_ftp_client_pasv_response(globus_ftp_client_plugin_t* plugin,
     }
 
     if (got_pasv_ip) {
-        char hostname[512];
         GError* err = NULL;
-        if (gfal2_hostname_from_uri(url, hostname, sizeof(hostname), &err) != 0) {
+        gfal2_uri *parsed = gfal2_parse_uri(url, &err);
+        if (parsed == NULL) {
             gfal2_log(G_LOG_LEVEL_WARNING, "Could not parse the URL: %s (%s)", url, err->message);
             g_error_free(err);
         }
@@ -210,9 +210,10 @@ static void gfal2_ftp_client_pasv_response(globus_ftp_client_plugin_t* plugin,
             if (ip[0] == '\0') {
                 is_ipv6 = gfal2_get_opt_boolean_with_default(session->context, GRIDFTP_CONFIG_GROUP,
                     GRIDFTP_CONFIG_IPV6, FALSE);
-                g_strlcpy(ip, lookup_host(hostname, is_ipv6).c_str(), sizeof(ip));
+                g_strlcpy(ip, lookup_host(parsed->host, is_ipv6).c_str(), sizeof(ip));
             }
-            gfal2_ftp_client_pasv_fire_event(session, hostname, ip, port, is_ipv6);
+            gfal2_ftp_client_pasv_fire_event(session, parsed->host, ip, port, is_ipv6);
+            gfal2_free_uri(parsed);
         }
     }
 }

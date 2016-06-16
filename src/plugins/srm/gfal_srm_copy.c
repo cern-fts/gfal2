@@ -19,7 +19,7 @@
  */
 
 #include <checksums/checksums.h>
-#include <uri/gfal_uri.h>
+#include <uri/gfal2_uri.h>
 
 #include "gfal_srm_getput.h"
 #include "gfal_srm_namespace.h"
