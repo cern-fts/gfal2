@@ -73,8 +73,9 @@ static int gfal_is_file(const char *url) {
         return 0;
     }
     // Check if host is at least defined (even if empty), so only file:// is accepted!
-    int check = strcmp(parsed->scheme, "file") == 0 && parsed->host != NULL && strcmp(parsed->host, "") == 0 &&
-        parsed->path != NULL && parsed->path[0] == '/';
+    int check = parsed->scheme != NULL && strcmp(parsed->scheme, "file") == 0 \
+        && parsed->host != NULL && strcmp(parsed->host, "") == 0 \
+        && parsed->path != NULL && parsed->path[0] == '/';
     gfal2_free_uri(parsed);
     return check;
 }
