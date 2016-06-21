@@ -29,8 +29,10 @@
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_dir_handle.h>
-#include <common/gfal_common_file_handle.h>
+#include <logger/gfal_logger.h>
 #include <config/gfal_config_internal.h>
+#include <stdio.h>
+
 
 /* the version should be set by a "define" at the makefile level */
 static const char *gfalversion = VERSION;
@@ -44,6 +46,58 @@ void core_init()
     if (!g_thread_supported())
     g_thread_init(NULL);
 #endif
+}
+
+static void gfal_setCredentialLocation(const char *where, gfal2_context_t handle, const char *cert, const char *key)
+{
+    GError *error = NULL;
+    gfal2_set_opt_string(handle, "X509", "CERT", cert, &error);
+    g_clear_error(&error);
+    gfal2_set_opt_string(handle, "X509", "KEY", key, &error);
+    g_clear_error(&error);
+
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Using credentials from %s", where);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Certificate: %s", cert);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Private key: %s", key);
+}
+
+// Setup default credentials depending on the environment
+static void gfal_initCredentialLocation(gfal2_context_t handle)
+{
+    // X509_USER_PROXY
+    const char* proxy = getenv("X509_USER_PROXY");
+    if (proxy != NULL) {
+        gfal_setCredentialLocation("X509_USER_PROXY", handle, proxy, proxy);
+        return;
+    }
+    // /tmp/x509up_u<uid>
+    char default_proxy[64];
+    snprintf(default_proxy, sizeof(default_proxy), "/tmp/x509up_u%d", getuid());
+    if (access(default_proxy, F_OK) == 0) {
+        gfal_setCredentialLocation("default proxy location", handle, default_proxy, default_proxy);
+        return;
+    }
+    // X509_USER_CERT and X509_USER_KEY
+    const char *cert, *key;
+    cert = getenv("X509_USER_CERT");
+    key = getenv("X509_USER_KEY");
+    if (cert != NULL && key != NULL) {
+        gfal_setCredentialLocation("X590_USER_CERT and X509_USER_KEY", handle, cert, key);
+        return;
+    }
+    // Default certificate location
+    const char *home = getenv("HOME");
+    if (home != NULL) {
+        char default_cert[PATH_MAX], default_key[PATH_MAX];
+        snprintf(default_cert, sizeof(default_cert), "%s/.globus/usercert.pem", home);
+        snprintf(default_key, sizeof(default_key), "%s/.globus/userkey.pem", home);
+        if (access(default_cert, F_OK) == 0 && access(default_key, F_OK) == 0) {
+            gfal_setCredentialLocation("default certificate location", handle, cert, key);
+            return;
+        }
+    }
+    // No idea!
+    gfal2_log(G_LOG_LEVEL_WARNING, "Could not find the credentials in any of the known locations");
 }
 
 
@@ -60,7 +114,9 @@ gfal2_context_t gfal_initG (GError** err)
     }
 	handle->plugin_opt.plugin_number= 0;
 
-    if((handle->conf = gfal_conf_new(&tmp_err)) && !tmp_err){
+    if((handle->conf = gfal_conf_new(&tmp_err)) && !tmp_err) {
+        // credential location
+        gfal_initCredentialLocation(handle);
         // load and instantiate all the plugins
         gfal_plugins_instance(handle, &tmp_err);
         // cancel logic init
