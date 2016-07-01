@@ -126,3 +126,44 @@ void gfal2_free_uri(gfal2_uri* uri)
     }
     g_free(uri);
 }
+
+int _push_component(gchar **str_array, int i, gchar *component)
+{
+    if (component) {
+        str_array[i++] = component;
+    }
+    return i;
+}
+
+char *gfal2_join_uri(gfal2_uri* uri)
+{
+    gchar *str_array[11];
+    char port[12];
+    int i = 0;
+
+    if (uri->scheme) {
+        i = _push_component(str_array, i, uri->scheme);
+        i = _push_component(str_array, i, "://");
+    }
+    if (uri->userinfo) {
+        i = _push_component(str_array, i, uri->userinfo);
+        i = _push_component(str_array, i, "@");
+    }
+    i = _push_component(str_array, i, uri->host);
+    if (uri->port) {
+        snprintf(port, sizeof(port), ":%d", uri->port);
+        i = _push_component(str_array, i, port);
+    }
+    i = _push_component(str_array, i, uri->path);
+    if (uri->query) {
+        i = _push_component(str_array, i, "?");
+        i = _push_component(str_array, i, uri->query);
+    }
+    if (uri->fragment) {
+        i = _push_component(str_array, i, "#");
+        i = _push_component(str_array, i, uri->fragment);
+    }
+    str_array[i] = NULL;
+
+    return g_strjoinv("", str_array);
+}

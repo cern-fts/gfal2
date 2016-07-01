@@ -57,6 +57,11 @@ gfal2_uri* gfal2_parse_uri(const char *uri, GError **err);
  */
 void gfal2_free_uri(gfal2_uri* uri);
 
+/*
+ * Returns a newly allocated string with the serialized uri
+ */
+char *gfal2_join_uri(gfal2_uri* uri);
+
 
 #ifdef __cplusplus
 }

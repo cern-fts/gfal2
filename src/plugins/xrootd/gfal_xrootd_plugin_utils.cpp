@@ -25,6 +25,7 @@
 #include <sstream>
 #include <XProtocol/XProtocol.hh>
 
+#include <uri/gfal2_uri.h>
 #include "gfal_xrootd_plugin_utils.h"
 
 GQuark xrootd_domain = g_quark_from_static_string("xroot");
@@ -105,30 +106,45 @@ static std::string credentials_query(gfal2_context_t context)
 
 std::string normalize_url(gfal2_context_t context, const char* url)
 {
-    const char* p = url + 7; // Jump over root://
-    p = strchr(p, '/');
+    GError *error = NULL;
+    gfal2_uri *uri = gfal2_parse_uri(url, &error);
+    if (error != NULL) {
+        g_clear_error(&error);
+        return url;
+    }
 
-    std::string sanitized;
-    if (p == NULL) {
-        sanitized = std::string(url) + "///";
+    if (uri->path == NULL) {
+        uri->path = g_strdup("///");
     }
-    else if (strncmp(p, "///", 3) == 0) {
-        sanitized = url;
+    else if (strncmp(uri->path, "///", 3) == 0) {
+        // pass
     }
-    else if (strncmp(p, "//", 2) == 0) {
-        sanitized = std::string(url, p - url) + "/" + p;
+    else if (strncmp(uri->path, "//", 2) == 0) {
+        char *p = uri->path;
+        uri->path = g_strconcat("/", uri->path, NULL);
+        g_free(p);
     }
     else {
-        sanitized = std::string(url, p - url) + "//" + p;
+        char *p = uri->path;
+        uri->path = g_strconcat("//", uri->path, NULL);
+        g_free(p);
     }
 
     std::string creds = credentials_query(context);
     if (!creds.empty()) {
-        if (sanitized.find('?') == std::string::npos)
-            sanitized += "?";
-        sanitized += creds;
+        if (uri->query != NULL) {
+            char *p = uri->query;
+            uri->query = g_strconcat(uri->query, "&", creds.c_str(), NULL);
+            g_free(p);
+        } else {
+            uri->query = g_strdup(creds.c_str());
+        }
     }
 
+    char *new_url = gfal2_join_uri(uri);
+    std::string sanitized(new_url);
+    gfal2_free_uri(uri);
+    g_free(new_url);
     return sanitized;
 }
 
