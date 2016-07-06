@@ -215,8 +215,10 @@ int gfal_globus_error_convert(globus_object_t * error, char ** str_error);
 // throw Glib::Error if error associated with this result
 void gfal_globus_check_result(GQuark scope, globus_result_t res);
 
-void gfal_globus_set_credentials(gfal2_context_t, globus_ftp_client_operationattr_t*);
+void gfal_globus_set_credentials(gfal2_context_t context, const char *url, globus_ftp_client_operationattr_t* opattr);
 
-void gfal_globus_set_credentials(const char* ucert, const char* ukey, globus_ftp_client_operationattr_t*);
+void gfal_globus_set_credentials(const char* ucert, const char* ukey,
+    const char *user, const char *passwd,
+    globus_ftp_client_operationattr_t* opattr);
 
 #endif /* GRIDFTPWRAPPER_H */

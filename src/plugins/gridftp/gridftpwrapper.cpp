@@ -50,7 +50,7 @@ static std::string gridftp_hostname_from_url(const std::string& url)
         throw Gfal::CoreException(err);
     }
     char buffer[GFAL_URL_MAX_LEN];
-    snprintf(buffer, sizeof(buffer), "%s:%d", parsed->host, parsed->port);
+    snprintf(buffer, sizeof(buffer), "%s://%s:%d", parsed->scheme, parsed->host, parsed->port);
     gfal2_free_uri(parsed);
     return std::string(buffer);
 }
@@ -259,72 +259,98 @@ void GridFTPSession::set_udt(bool udt)
 }
 
 
-void gfal_globus_set_credentials(gfal2_context_t context, globus_ftp_client_operationattr_t* opattr)
+void gfal_globus_set_credentials(gfal2_context_t context, const char *url, globus_ftp_client_operationattr_t* opattr)
 {
+    // X509
     gchar* ucert = gfal2_get_opt_string(context, "X509", "CERT", NULL);
     gchar* ukey = gfal2_get_opt_string(context, "X509", "KEY", NULL);
+
+    // User/password
+    gchar *user = NULL, *passwd = NULL;
+    if (strncmp(url, "ftp://", 6) == 0) {
+        user = gfal2_get_opt_string_with_default(context, "FTP", "USER", "anonymous");
+        passwd = gfal2_get_opt_string_with_default(context, "FTP", "PASSWORD", "anonymous");
+    }
+
+    // Set credentials
     if (ucert) {
         gfal2_log(G_LOG_LEVEL_DEBUG, "GSIFTP using certificate %s", ucert);
-        if (ukey)
-            gfal2_log(G_LOG_LEVEL_DEBUG, "GSIFTP using private key %s", ukey);
-        gfal_globus_set_credentials(ucert, ukey, opattr);
-        g_free(ucert);
-        g_free(ukey);
     }
+    if (ukey) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "GSIFTP using private key %s", ukey);
+    }
+    if (user) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "FTP using user %s", user);
+    }
+
+    gfal_globus_set_credentials(ucert, ukey, user, passwd, opattr);
+
+    // Release memory
+    g_free(ucert);
+    g_free(ukey);
+    g_free(user);
+    g_free(passwd);
 }
 
 
-void gfal_globus_set_credentials(const char* ucert, const char* ukey, globus_ftp_client_operationattr_t* opattr)
+void gfal_globus_set_credentials(const char* ucert, const char* ukey,
+    const char *user, const char *passwd,
+    globus_ftp_client_operationattr_t* opattr)
 {
-    std::stringstream buffer;
-    std::ifstream cert_stream(ucert);
-    if (!cert_stream.good()) {
-        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_REQ_STATE, errno,
-                "Could not open the user certificate");
-    }
+    gss_cred_id_t cred_id = GSS_C_NO_CREDENTIAL;
 
-    buffer << cert_stream.rdbuf();
-    if (ukey && strcmp(ucert, ukey) != 0) {
-        std::ifstream key_stream(ukey);
-        if (key_stream.bad()) {
+    if (ucert) {
+        std::stringstream buffer;
+        std::ifstream cert_stream(ucert);
+        if (!cert_stream.good()) {
             throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_REQ_STATE, errno,
-                    "Could not open the user private key");
+                "Could not open the user certificate");
         }
-        buffer << key_stream.rdbuf();
-    }
 
-    gss_buffer_desc_struct buffer_desc;
-    buffer_desc.value = g_strdup(buffer.str().c_str());
-    buffer_desc.length = buffer.str().size();
+        buffer << cert_stream.rdbuf();
+        if (ukey && strcmp(ucert, ukey) != 0) {
+            std::ifstream key_stream(ukey);
+            if (key_stream.bad()) {
+                throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_REQ_STATE, errno,
+                    "Could not open the user private key");
+            }
+            buffer << key_stream.rdbuf();
+        }
 
-    OM_uint32 minor_status, major_status;
-    gss_cred_id_t cred_id;
-    major_status = gss_import_cred(&minor_status, &cred_id,
+        gss_buffer_desc_struct buffer_desc;
+        buffer_desc.value = g_strdup(buffer.str().c_str());
+        buffer_desc.length = buffer.str().size();
+
+        OM_uint32 minor_status, major_status;
+
+        major_status = gss_import_cred(&minor_status, &cred_id,
             GSS_C_NO_OID, 0, // 0 = Pass credentials; 1 = Pass path as X509_USER_PROXY=...
             &buffer_desc, 0, NULL);
-    g_free(buffer_desc.value);
+        g_free(buffer_desc.value);
 
-    if (major_status != GSS_S_COMPLETE) {
-        std::stringstream err_buffer;
+        if (major_status != GSS_S_COMPLETE) {
+            std::stringstream err_buffer;
 
-        err_buffer << "Could not load the user credentials: ";
+            err_buffer << "Could not load the user credentials: ";
 
-        globus_object_t * error = globus_error_get(major_status);
-        char* globus_errstr;
-        int globus_errno = gfal_globus_error_convert(error, &globus_errstr);
-        if (globus_errstr) {
-            err_buffer << globus_errstr;
-            g_free (globus_errstr);
-        }
-        globus_object_free(error);
+            globus_object_t *error = globus_error_get(major_status);
+            char *globus_errstr;
+            int globus_errno = gfal_globus_error_convert(error, &globus_errstr);
+            if (globus_errstr) {
+                err_buffer << globus_errstr;
+                g_free(globus_errstr);
+            }
+            globus_object_free(error);
 
-        err_buffer << " (" << globus_errno << ")";
+            err_buffer << " (" << globus_errno << ")";
 
-        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_REQ_STATE, globus_errno,
+            throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_REQ_STATE, globus_errno,
                 err_buffer.str());
+        }
     }
+    
     globus_ftp_client_operationattr_set_authorization(
-            opattr, cred_id, NULL, NULL, NULL, NULL);
+            opattr, cred_id, user, passwd, NULL, NULL);
 }
 
 
@@ -557,7 +583,7 @@ void gfal_globus_check_result(GQuark scope, globus_result_t res)
 }
 
 
-GridFTPSession* GridFTPFactory::get_new_handle(const std::string & hostname)
+GridFTPSession* GridFTPFactory::get_new_handle(const std::string &hostname)
 {
 
     bool gridftp_v2 = gfal2_get_opt_boolean_with_default(gfal2_context, GRIDFTP_CONFIG_GROUP,
@@ -576,7 +602,7 @@ GridFTPSession* GridFTPFactory::get_new_handle(const std::string & hostname)
     session->set_ipv6(ipv6);
     session->set_delayed_pass(delay_passv);
 
-    gfal_globus_set_credentials(gfal2_context, &session->operation_attr_ftp);
+    gfal_globus_set_credentials(gfal2_context, hostname.c_str(), &session->operation_attr_ftp);
 
     return session.release();
 }
