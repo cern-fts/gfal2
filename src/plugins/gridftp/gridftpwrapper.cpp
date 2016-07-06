@@ -153,6 +153,9 @@ GridFTPSession::GridFTPSession(gfal2_context_t context, const std::string& hostn
     res = globus_gass_copy_get_ftp_handle(&gass_handle, &handle_ftp);
     gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
 
+    res = globus_gass_copy_set_allocate(&gass_handle, GLOBUS_TRUE);
+    gfal_globus_check_result(GFAL_GRIDFTP_SESSION, res);
+
     this->set_nb_streams(0);
 
     globus_ftp_client_features_init(&this->ftp_features);
