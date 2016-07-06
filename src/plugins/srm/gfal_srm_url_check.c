@@ -57,11 +57,12 @@ gboolean plugin_url_check2(plugin_handle handle, gfal2_context_t context,
 
 static const char* gfal2_srm_surl_find_path(const gfal2_uri* parsed)
 {
-    const char* SFN = strstr(parsed->query, "SFN=");
-    if (!SFN)
-        return parsed->path;
-    SFN += 4;
-    return SFN;
+    const char *SFN;
+    if (parsed->query != NULL && (SFN = strstr(parsed->query, "SFN=")) != NULL) {
+        SFN += 4;
+        return SFN;
+    }
+    return parsed->path;
 }
 
 
