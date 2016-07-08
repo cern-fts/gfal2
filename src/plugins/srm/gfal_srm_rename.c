@@ -22,6 +22,7 @@
 #include "gfal_srm_endpoint.h"
 #include "gfal_srm_internal_ls.h"
 #include "gfal_srm_namespace.h"
+#include "gfal_srm_url_check.h"
 #include <dirent.h>
 
 
@@ -55,12 +56,15 @@ int gfal_srm_renameG(plugin_handle plugin_data, const char* oldurl,
 
     int ret = -1;
 
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, oldurl, &tmp_err);
-    if (context != NULL) {
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, oldurl, &tmp_err);
+    if (easy != NULL) {
         gfal_srm_cache_stat_remove(plugin_data, oldurl);
-        ret = gfal_srm_rename_internal_srmv2(context, oldurl, urlnew, &tmp_err);
+
+        char *decodednew = gfal2_srm_get_decoded_path(urlnew);
+        ret = gfal_srm_rename_internal_srmv2(easy->srm_context, easy->path, decodednew, &tmp_err);
+        g_free(decodednew);
     }
-    gfal_srm_ifce_easy_context_release(opts, context);
+    gfal_srm_ifce_easy_context_release(opts, easy);
 
     if (ret != 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);

@@ -31,11 +31,10 @@ static int gfal_checksumG_srmv2_internal(srm_context_t context, const char* surl
 	struct srm_ls_input input;
 	struct srm_ls_output output;
 	struct srmv2_mdfilestatus *srmv2_mdstatuses=NULL;
-	const int nb_request=1;
 	int ret=-1;
 	char* tab_surl[] = { (char*)surl, NULL};
 
-    input.nbfiles = nb_request;
+    input.nbfiles = 1;
     input.surls = tab_surl;
     input.numlevels = 0;
     input.offset = 0;
@@ -85,11 +84,12 @@ static int gfal_srm_cheksumG_internal(plugin_handle ch, const char* surl,
 
     int ret = -1;
 
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
-    if (context != NULL) {
-        ret = gfal_checksumG_srmv2_internal(context, surl, buf_checksum, s_checksum, buf_chktype, s_chktype, &tmp_err);
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    if (easy != NULL) {
+        ret = gfal_checksumG_srmv2_internal(easy->srm_context, easy->path, buf_checksum, s_checksum, buf_chktype,
+            s_chktype, &tmp_err);
     }
-    gfal_srm_ifce_easy_context_release(opts, context);
+    gfal_srm_ifce_easy_context_release(opts, easy);
 
     if (ret != 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);

@@ -18,13 +18,11 @@
  * limitations under the License.
  */
 
-#include <regex.h>
-#include <time.h>
 
 #include "gfal_srm.h"
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_internal_ls.h"
-#include "gfal_srm_endpoint.h"
+#include "gfal_srm_url_check.h"
 
 
 static int gfal_srm_rm_srmv2_isdir(srm_context_t context, const char* surl)
@@ -105,7 +103,7 @@ static int gfal_srm_rm_srmv2_internal(srm_context_t context, int nbfiles, const 
  *
  * bindings of the unlink plugin call
  */
-int gfal_srm_unlink_listG(plugin_handle ch, int nbfiles, const char* const* paths, GError** err)
+int gfal_srm_unlink_listG(plugin_handle ch, int nbfiles, const char* const* surls, GError** err)
 {
     GError *tmp_err = NULL;
     int ret = -1, i;
@@ -113,19 +111,26 @@ int gfal_srm_unlink_listG(plugin_handle ch, int nbfiles, const char* const* path
     if (!err)
         return -1;
 
-    if (!ch || nbfiles < 0 || paths == NULL || *paths == NULL) {
+    if (!ch || nbfiles < 0 || surls == NULL || *surls == NULL) {
         gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL, __func__, "incorrect args");
     }
     else {
         gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
-        srm_context_t context = gfal_srm_ifce_easy_context(opts, paths[0], &tmp_err);
-        if (context) {
-            for(i = 0; i < nbfiles; ++i)
-                gfal_srm_cache_stat_remove(ch, paths[i]);
+        gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surls[0], &tmp_err);
+        if (easy) {
+            char *decoded[nbfiles];
 
-            ret = gfal_srm_rm_srmv2_internal(context, nbfiles, paths, err);
+            for (i = 0; i < nbfiles; ++i) {
+                gfal_srm_cache_stat_remove(ch, surls[i]);
+                decoded[i] = gfal2_srm_get_decoded_path(surls[i]);
+            }
+
+            ret = gfal_srm_rm_srmv2_internal(easy->srm_context, nbfiles, (const char* const*)decoded, err);
+            for (i = 0; i < nbfiles; ++i) {
+                g_free(decoded[i]);
+            }
         }
-        gfal_srm_ifce_easy_context_release(opts, context);
+        gfal_srm_ifce_easy_context_release(opts, easy);
     }
 
     if (tmp_err) {

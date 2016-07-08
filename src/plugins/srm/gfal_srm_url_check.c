@@ -55,14 +55,32 @@ gboolean plugin_url_check2(plugin_handle handle, gfal2_context_t context,
 }
 
 
-static const char* gfal2_srm_surl_find_path(const gfal2_uri* parsed)
+static char* gfal2_srm_surl_find_path(gfal2_uri* parsed)
 {
-    const char *SFN;
-    if (parsed->query != NULL && (SFN = strstr(parsed->query, "SFN=")) != NULL) {
-        SFN += 4;
-        return SFN;
+    char *path;
+    if (parsed->query != NULL && (path = strstr(parsed->query, "SFN=")) != NULL) {
+        path += 4;
+    } else {
+        path = parsed->path;
     }
-    return parsed->path;
+    return path;
+}
+
+char *gfal2_srm_get_decoded_path(const char *surl)
+{
+    GError *err = NULL;
+    gfal2_uri *parsed = gfal2_parse_uri(surl, &err);
+    if (err != NULL) {
+        g_clear_error(&err);
+        return g_strdup(surl);
+    }
+    char *path = gfal2_srm_surl_find_path(parsed);
+    gfal2_urldecode(path);
+
+    char *decoded = g_strconcat("srm://", parsed->host, path, NULL);
+
+    gfal2_free_uri(parsed);
+    return decoded;
 }
 
 

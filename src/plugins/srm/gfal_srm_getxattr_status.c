@@ -88,11 +88,11 @@ ssize_t gfal_srm_status_getxattrG(plugin_handle handle, const char* surl, const 
 
     int ret = -1;
 
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
-    if (context != NULL) {
-        ret = gfal_srm_status_internal(opts, context, surl, buff, s_buff, &tmp_err);
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    if (easy != NULL) {
+        ret = gfal_srm_status_internal(opts, easy->srm_context, easy->path, buff, s_buff, &tmp_err);
     }
-    gfal_srm_ifce_easy_context_release(opts, context);
+    gfal_srm_ifce_easy_context_release(opts, easy);
 
     if (ret < 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);

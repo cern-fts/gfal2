@@ -154,22 +154,20 @@ int gfal_srmv2_put_global(gfal_srmv2_opt* opts, gfal_srm_params_t params, srm_co
 
 //  @brief execute a srmv2 request sync "GET" on the srm_ifce
 int gfal_srm_getTURLS_srmv2_internal(srm_context_t context, gfal_srmv2_opt* opts,
-        gfal_srm_params_t params, char** surls, gfal_srm_result** resu,  GError** err)
+        gfal_srm_params_t params, char* surl, gfal_srm_result** resu,  GError** err)
 {
-    g_return_val_err_if_fail(surls!=NULL, -1, err, "[gfal_srmv2_getasync] tab null");
+    g_return_val_err_if_fail(surl!=NULL, -1, err, "[gfal_srmv2_getasync] tab null");
 
 	GError* tmp_err=NULL;
     int ret=-1;
 	struct srm_preparetoget_input preparetoget_input;
 
-	size_t n_surl = g_strv_length (surls);
-
 	// set the structures datafields
 	preparetoget_input.desiredpintime = 0;
-	preparetoget_input.nbfiles = n_surl;
+	preparetoget_input.nbfiles = 1;
 	preparetoget_input.protocols = gfal_srm_params_get_protocols(params);
     preparetoget_input.spacetokendesc = gfal_srm_params_get_spacetoken(params);
-	preparetoget_input.surls = surls;
+	preparetoget_input.surls = &surl;
 
     ret = gfal_srmv2_get_global(opts, params, context, &preparetoget_input, resu, &tmp_err);
 	G_RETURN_ERR(ret, tmp_err, err);
@@ -178,26 +176,23 @@ int gfal_srm_getTURLS_srmv2_internal(srm_context_t context, gfal_srmv2_opt* opts
 
 // execute a srmv2 request sync "PUT" on the srm_ifce
 int gfal_srm_putTURLS_srmv2_internal(srm_context_t context, gfal_srmv2_opt* opts, gfal_srm_params_t params,
-        char** surls, gfal_srm_result** resu, GError** err)
+        char* surl, gfal_srm_result** resu, GError** err)
 {
-	g_return_val_err_if_fail(surls!=NULL,-1,err,"[gfal_srm_putTURLS_srmv2_internal] GList passed null");
+	g_return_val_err_if_fail(surl!=NULL,-1,err,"[gfal_srm_putTURLS_srmv2_internal] GList passed null");
 
 	GError* tmp_err = NULL;
-    int ret=-1,i=0;
+    int ret=-1;
 	struct srm_preparetoput_input preparetoput_input;
 
-	size_t n_surl = g_strv_length (surls);
-	SRM_LONG64 filesize_tab[n_surl];
-	for(i=0; i < n_surl;++i)
-        filesize_tab[i] = params->file_size;
+	SRM_LONG64 filesize = params->file_size;
 
 	// set the structures datafields
 	preparetoput_input.desiredpintime = 0;
-	preparetoput_input.nbfiles = n_surl;
+	preparetoput_input.nbfiles = 1;
 	preparetoput_input.protocols = gfal_srm_params_get_protocols(params);
     preparetoput_input.spacetokendesc = gfal_srm_params_get_spacetoken(params);
-	preparetoput_input.surls = surls;
-	preparetoput_input.filesizes = filesize_tab;
+	preparetoput_input.surls = &surl;
+	preparetoput_input.filesizes = &filesize;
 
     ret = gfal_srmv2_put_global(opts, params, context, &preparetoput_input, resu, &tmp_err);
 
@@ -207,27 +202,26 @@ int gfal_srm_putTURLS_srmv2_internal(srm_context_t context, gfal_srmv2_opt* opts
 
 // Internal function of gfal_srm_getTurls without argument check for internal usage
 static int gfal_srm_mTURLS_internal(gfal_srmv2_opt* opts, gfal_srm_params_t params,
-        srm_req_type req_type, char** surls, gfal_srm_result** resu,
+        srm_req_type req_type, const char* surl, gfal_srm_result** resu,
         GError** err)
 {
     GError* tmp_err = NULL;
     int ret = -1;
 
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, surls[0], &tmp_err);
-    if (context != NULL) {
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    if (easy != NULL) {
         if (req_type == SRM_GET)
-            ret = gfal_srm_getTURLS_srmv2_internal(context, opts, params, surls, resu, &tmp_err);
+            ret = gfal_srm_getTURLS_srmv2_internal(easy->srm_context, opts, params, easy->path, resu, &tmp_err);
         else
-            ret = gfal_srm_putTURLS_srmv2_internal(context, opts, params, surls, resu, &tmp_err);
+            ret = gfal_srm_putTURLS_srmv2_internal(easy->srm_context, opts, params, easy->path, resu, &tmp_err);
     }
-    gfal_srm_ifce_easy_context_release(opts, context);
+    gfal_srm_ifce_easy_context_release(opts, easy);
 
     if (ret < 0) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     }
     else {
-        int n_results = g_strv_length(surls);
-        if (validate_turls(n_results, resu, params, &tmp_err)) {
+        if (validate_turls(1, resu, params, &tmp_err)) {
             gfal2_propagate_prefixed_error(err, tmp_err, __func__);
             ret = -1;
         }
@@ -239,23 +233,22 @@ static int gfal_srm_mTURLS_internal(gfal_srmv2_opt* opts, gfal_srm_params_t para
 //  simple wrapper to getTURLs for the gfal_module layer
 int gfal_srm_getTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl, int size_turl, char** reqtoken,  GError** err){
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
-	gfal_srm_result* resu=NULL;
+    gfal_srm_result *resu = NULL;
 	GError* tmp_err=NULL;
-	char* surls[]= { (char*)surl, NULL };
 	int ret = -1;
 
 	gfal_srm_params_t params = gfal_srm_params_new(opts);
 	if(params != NULL){
-		ret= gfal_srm_mTURLS_internal(opts, params, SRM_GET, surls, &resu, &tmp_err);
+		ret= gfal_srm_mTURLS_internal(opts, params, SRM_GET, surl, &resu, &tmp_err);
 		if(ret >0){
-			if(resu[0].err_code == 0){
-				g_strlcpy(buff_turl, resu[0].turl, size_turl);
+			if(resu->err_code == 0){
+				g_strlcpy(buff_turl, resu->turl, size_turl);
 				if(reqtoken)
-					*reqtoken = resu[0].reqtoken;
+					*reqtoken = resu->reqtoken;
 				ret=0;
 			}else{
-                gfal2_set_error(&tmp_err,gfal2_get_plugin_srm_quark() , resu[0].err_code, __func__,
-                        "error on the turl request : %s ", resu[0].err_str);
+                gfal2_set_error(&tmp_err,gfal2_get_plugin_srm_quark() , resu->err_code, __func__,
+                        "error on the turl request : %s ", resu->err_str);
 				ret = -1;
                 g_free(resu->reqtoken);
 			}
@@ -272,20 +265,19 @@ int gfal_srm_getTURL_checksum(plugin_handle ch, const char* surl, char* buff_tur
     gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
     gfal_srm_result* resu=NULL;
     GError* tmp_err=NULL;
-    char* surls[]= { (char*)surl, NULL };
     int ret = -1;
 
     gfal_srm_params_t params = gfal_srm_params_new(opts);
     if(params != NULL){
         gfal_srm_params_set_protocols(params, srm_get_3rdparty_turls_sup_protocol(opts->handle));
-        ret= gfal_srm_mTURLS_internal(opts, params, SRM_GET, surls, &resu, &tmp_err);
+        ret= gfal_srm_mTURLS_internal(opts, params, SRM_GET, surl, &resu, &tmp_err);
         if(ret >0){
-            if(resu[0].err_code == 0){
-                g_strlcpy(buff_turl, resu[0].turl, size_turl);
+            if(resu->err_code == 0){
+                g_strlcpy(buff_turl, resu->turl, size_turl);
                 ret=0;
             }else{
-                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), resu[0].err_code, __func__,
-                        "error on the turl request : %s ", resu[0].err_str);
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), resu->err_code, __func__,
+                        "error on the turl request : %s ", resu->err_str);
                 ret = -1;
             }
             free(resu);
@@ -304,7 +296,6 @@ int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl,
     gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
     gfal_srm_result* resu = NULL;
     GError* tmp_err = NULL;
-    char* surls[] = { (char*) surl, NULL };
     int ret = -1;
 
     gfal_srm_params_t params = gfal_srm_params_new(opts);
@@ -313,19 +304,18 @@ int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl,
         gfal_srm_params_set_protocols(params,
                 srm_get_3rdparty_turls_sup_protocol(opts->handle));
 
-        ret = gfal_srm_mTURLS_internal(opts, params, SRM_GET, surls, &resu,
-                &tmp_err);
+        ret = gfal_srm_mTURLS_internal(opts, params, SRM_GET, surl, &resu, &tmp_err);
         if (ret >= 0) {
-            if (resu[0].err_code == 0) {
-                g_strlcpy(buff_turl, resu[0].turl, size_turl);
+            if (resu->err_code == 0) {
+                g_strlcpy(buff_turl, resu->turl, size_turl);
                 if (reqtoken)
-                    g_strlcpy(reqtoken, resu[0].reqtoken, size_reqtoken);
+                    g_strlcpy(reqtoken, resu->reqtoken, size_reqtoken);
                 ret = 0;
             }
             else {
                 gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
-                        resu[0].err_code, __func__,
-                        "error on the turl request : %s ", resu[0].err_str);
+                        resu->err_code, __func__,
+                        "error on the turl request : %s ", resu->err_str);
                 ret = -1;
             }
             free(resu);
@@ -333,24 +323,6 @@ int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl,
         gfal_srm_params_free(params);
     }
     G_RETURN_ERR(ret, tmp_err, err);
-}
-
-
-//  launch a surls-> turls translation in the synchronous mode
-int gfal_srm_getTURLS(gfal_srmv2_opt* opts, char** surls, gfal_srm_result** resu,  GError** err){
-	g_return_val_err_if_fail(opts!=NULL,-1,err,"[gfal_srm_getTURLS] handle passed is null");
-
-	GError* tmp_err=NULL;
-	int ret=-1;
-
-	gfal_srm_params_t params = gfal_srm_params_new(opts);
-	if(params != NULL){
-		if( gfal_srm_surl_group_checker	(opts, surls, &tmp_err) == TRUE){
-			ret = gfal_srm_mTURLS_internal(opts, params, SRM_GET, surls, resu,  &tmp_err);
-		}
-		gfal_srm_params_free(params);
-	}
-	G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
@@ -363,7 +335,6 @@ int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl,
     gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
     gfal_srm_result* resu = NULL;
     GError* tmp_err = NULL;
-    char* surls[] = { (char*) surl, NULL };
     int ret = -1;
 
     gfal_srm_params_t params = gfal_srm_params_new(opts);
@@ -373,19 +344,19 @@ int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl,
                 srm_get_3rdparty_turls_sup_protocol(opts->handle));
         gfal_srm_params_set_size(params, surl_file_size);
 
-        ret = gfal_srm_mTURLS_internal(opts, params, SRM_PUT, surls, &resu, &tmp_err);
+        ret = gfal_srm_mTURLS_internal(opts, params, SRM_PUT, surl, &resu, &tmp_err);
         if (ret >= 0) {
-            if (resu[0].err_code == 0) {
-                g_strlcpy(buff_turl, resu[0].turl, size_turl);
+            if (resu->err_code == 0) {
+                g_strlcpy(buff_turl, resu->turl, size_turl);
                 if (reqtoken)
-                    g_strlcpy(reqtoken, resu[0].reqtoken, size_reqtoken);
+                    g_strlcpy(reqtoken, resu->reqtoken, size_reqtoken);
                 ret = 0;
                 free(resu);
             }
             else {
                 gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
-                        resu[0].err_code, __func__,
-                        "error on the turl request : %s ", resu[0].err_str);
+                        resu->err_code, __func__,
+                        "error on the turl request : %s ", resu->err_str);
                 ret = -1;
             }
 
@@ -402,21 +373,20 @@ int gfal_srm_putTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl
 	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)ch;
 	gfal_srm_result* resu=NULL;
 	GError* tmp_err=NULL;
-	char* surls[]= { (char*)surl, NULL };
 	int ret = -1;
 
 	gfal_srm_params_t params = gfal_srm_params_new(opts);
 	if(params != NULL){
-		ret= gfal_srm_mTURLS_internal(opts, params, SRM_PUT, surls, &resu,  &tmp_err);
+		ret= gfal_srm_mTURLS_internal(opts, params, SRM_PUT, surl, &resu,  &tmp_err);
 		if(ret >0){
-			if(resu[0].err_code == 0){
-				g_strlcpy(buff_turl, resu[0].turl, size_turl);
+			if(resu->err_code == 0){
+				g_strlcpy(buff_turl, resu->turl, size_turl);
 				if(reqtoken)
-					*reqtoken = resu[0].reqtoken;
+					*reqtoken = resu->reqtoken;
 				ret=0;
 			}else{
-                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), resu[0].err_code, __func__,
-                        "error on the turl request : %s ", resu[0].err_str);
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), resu->err_code, __func__,
+                        "error on the turl request : %s ", resu->err_str);
 				ret = -1;
 			}
             free(resu);
@@ -427,80 +397,52 @@ int gfal_srm_putTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
-
-// @brief launch a surls-> turls translation in the synchronous mode for file creation
-int gfal_srm_putTURLS(gfal_srmv2_opt* opts , char** surls, gfal_srm_result** resu,  GError** err){
-	g_return_val_err_if_fail(opts!=NULL,-1,err,"[gfal_srm_putTURLS] handle passed is null");
-
-	GError* tmp_err=NULL;
-	int ret=-1;
-
-	gfal_srm_params_t params = gfal_srm_params_new(opts);
-	if(params != NULL){
-		if( gfal_srm_surl_group_checker	(opts, surls, &tmp_err) == TRUE){
-			ret = gfal_srm_mTURLS_internal(opts, params, SRM_PUT, surls, resu, &tmp_err);
-		}
-		gfal_srm_params_free(params);
-	}
-    G_RETURN_ERR(ret, tmp_err, err);
-}
-
-
 // execute a srm put done on the specified surl and token, return 0 if success else -1 and errno is set
-static int gfal_srm_putdone_srmv2_internal(srm_context_t context, char** surls, const char* token,  GError** err)
+static int gfal_srm_putdone_srmv2_internal(srm_context_t context, char* surl, const char* token,  GError** err)
 {
-    g_return_val_err_if_fail(surls!=NULL, -1, err, "[gfal_srm_putdone_srmv2_internal] invalid args ");
+    g_return_val_err_if_fail(surl!=NULL, -1, err, "[gfal_srm_putdone_srmv2_internal] invalid args ");
 
 	GError* tmp_err=NULL;
 	int ret=0;
 	struct srm_putdone_input putdone_input;
 	struct srmv2_filestatus *statuses;
 
-	size_t n_surl = g_strv_length (surls);
-
 	// set the structures datafields
-	putdone_input.nbfiles = n_surl;
+	putdone_input.nbfiles = 1;
 	putdone_input.reqtoken = (char*)token;
-	putdone_input.surls = surls;
+	putdone_input.surls = &surl;
 
-    gfal2_log(G_LOG_LEVEL_DEBUG, "    [gfal_srm_putdone_srmv2_internal] start srm put done on %s", surls[0]);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "    [gfal_srm_putdone_srmv2_internal] start srm put done on %s", surl);
     ret = gfal_srm_external_call.srm_put_done(context,&putdone_input, &statuses);
     if(ret < 0){
         gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), errno, __func__,
                 "call to srm_ifce error: %s", context->errbuf);
     } else{
          ret = gfal_srm_convert_filestatuses_to_GError(statuses, ret, &tmp_err);
-         gfal_srm_external_call.srm_srmv2_filestatus_delete(statuses, n_surl);
+         gfal_srm_external_call.srm_srmv2_filestatus_delete(statuses, 1);
     }
 
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
-int gfal_srm_putdone(gfal_srmv2_opt* opts , char** surls, const char* token,  GError** err)
+int gfal_srm_putdone(gfal_srmv2_opt* opts, const char* surl, const char* token,  GError** err)
 {
     GError* tmp_err = NULL;
     int ret = -1;
 
     gfal2_log(G_LOG_LEVEL_DEBUG, "   -> [gfal_srm_putdone] ");
 
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, surls[0], &tmp_err);
-    if (context != NULL) {
-        ret = gfal_srm_putdone_srmv2_internal(context, surls, token, &tmp_err);
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    if (easy != NULL) {
+        ret = gfal_srm_putdone_srmv2_internal(easy->srm_context, easy->path, token, &tmp_err);
     }
-    gfal_srm_ifce_easy_context_release(opts, context);
+    gfal_srm_ifce_easy_context_release(opts, easy);
 
     if (ret < 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
     return ret;
-}
-
-
-int gfal_srm_putdone_simple(plugin_handle * handle , const char* surl, const char* token,  GError** err){
-	gfal_srmv2_opt* opts = (gfal_srmv2_opt*)handle;
-	char* surls[]= { (char*)surl, NULL };
-	return gfal_srm_putdone(opts, surls, token, err);
 }
 
 
@@ -529,11 +471,11 @@ int srm_abort_request_plugin(plugin_handle * handle , const char* surl,
 
     gfal2_log(G_LOG_LEVEL_DEBUG, "   -> [srm_abort_request] ");
 
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
-    if (context != NULL) {
-        ret = srmv2_abort_request_internal(context, surl, reqtoken, &tmp_err);
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    if (easy != NULL) {
+        ret = srmv2_abort_request_internal(easy->srm_context, easy->path, reqtoken, &tmp_err);
     }
-    gfal_srm_ifce_easy_context_release(opts, context);
+    gfal_srm_ifce_easy_context_release(opts, easy);
 
     gfal2_log(G_LOG_LEVEL_DEBUG, " [srm_abort_request] <-");
 
@@ -542,8 +484,3 @@ int srm_abort_request_plugin(plugin_handle * handle , const char* surl,
 
     return ret;
 }
-
-
-
-
-

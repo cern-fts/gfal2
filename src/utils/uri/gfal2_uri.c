@@ -176,7 +176,7 @@ char *gfal2_urldecode(char *str)
     if (str == NULL) {
         return NULL;
     }
-    
+
     char *r = str, *w = str;
     while (*r != '\0') {
         if (*r == '%') {

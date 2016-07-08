@@ -54,10 +54,10 @@ int gfal_srm_statG(plugin_handle ch, const char* surl, struct stat* buf, GError*
     }
 	// Ask server otherwise
     else {
-        srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
-        if (context != NULL) {
+        gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+        if (easy != NULL) {
             gfal2_log(G_LOG_LEVEL_DEBUG, "   [gfal_srm_statG] try to stat file %s", surl);
-            ret = gfal_statG_srmv2_internal(context, buf, &loc, surl, &tmp_err);
+            ret = gfal_statG_srmv2_internal(easy->srm_context, buf, &loc, easy->path, &tmp_err);
             if (ret == 0) {
                 gfal2_log(G_LOG_LEVEL_DEBUG, "   [gfal_srm_statG] store %s stat info in cache", surl);
                 gfal_srm_cache_stat_add(ch, surl, buf, &loc);
@@ -66,7 +66,7 @@ int gfal_srm_statG(plugin_handle ch, const char* surl, struct stat* buf, GError*
         else {
             ret = -1;
         }
-        gfal_srm_ifce_easy_context_release(opts, context);
+        gfal_srm_ifce_easy_context_release(opts, easy);
     }
 
     if(tmp_err)

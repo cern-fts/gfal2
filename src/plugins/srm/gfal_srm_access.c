@@ -21,7 +21,6 @@
 #include <string.h>
 #include "gfal_srm_namespace.h"
 #include "gfal_srm_internal_layer.h"
-#include "gfal_srm_endpoint.h"
 
 
 static int gfal_access_srmv2_internal(srm_context_t context, const char* surl, int mode, GError** err)
@@ -86,11 +85,11 @@ int gfal_srm_accessG(plugin_handle ch, const char* surl, int mode, GError** err)
 
     int ret = -1;
 
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
-    if (context != NULL) {
-        ret = gfal_access_srmv2_internal(context, surl, mode, &tmp_err);
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    if (easy != NULL) {
+        ret = gfal_access_srmv2_internal(easy->srm_context, easy->path, mode, &tmp_err);
     }
-    gfal_srm_ifce_easy_context_release(opts, context);
+    gfal_srm_ifce_easy_context_release(opts, easy);
 
     if (ret != 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);

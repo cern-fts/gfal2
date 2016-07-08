@@ -251,18 +251,18 @@ int is_castor_endpoint(plugin_handle handle, const char* surl)
     }
 
     GError *tmp_err = NULL;
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
     if (tmp_err)
         g_error_free(tmp_err);
-    if (!context) {
+    if (!easy) {
         gfal2_log(G_LOG_LEVEL_WARNING, "Could not get a context for %s", surl);
         return -1;
     }
 
     struct srm_xping_output output;
-    if (gfal_srm_external_call.srm_xping(context, &output) < 0) {
+    if (gfal_srm_external_call.srm_xping(easy->srm_context, &output) < 0) {
         gfal2_log(G_LOG_LEVEL_WARNING, "Failed to ping %s", surl);
-        gfal_srm_ifce_easy_context_release(opts, context);
+        gfal_srm_ifce_easy_context_release(opts, easy);
         return -1;
     }
 
@@ -274,6 +274,6 @@ int is_castor_endpoint(plugin_handle handle, const char* surl)
         }
     }
     srm_xping_output_free(output);
-    gfal_srm_ifce_easy_context_release(opts, context);
+    gfal_srm_ifce_easy_context_release(opts, easy);
     return is_castor;
 }

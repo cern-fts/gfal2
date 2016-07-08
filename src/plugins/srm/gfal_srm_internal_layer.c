@@ -28,6 +28,8 @@ const char * srm_config_keep_alive = "KEEP_ALIVE";
 const char * srm_spacetokendesc = "SPACETOKENDESC";
 
 #include "gfal_srm_internal_layer.h"
+#include "gfal_srm_url_check.h"
+
 // hotfix for the old srm lib
 void disable_srm_srmv2_pinfilestatus_delete(struct srmv2_pinfilestatus*  srmv2_pinstatuses, int n){}
 void disable_srm_srmv2_mdfilestatus_delete(struct srmv2_mdfilestatus* mdfilestatus, int n){}
@@ -136,7 +138,7 @@ static int is_same_context(gfal_srmv2_opt* opts, const char* endpoint, const cha
 }
 
 
-srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
+gfal_srm_easy_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
         const char* surl, GError** err)
 {
     GError* nested_error = NULL;
@@ -191,6 +193,10 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
     }
 
     // Configure
+    gfal_srm_easy_t easy = g_malloc0(sizeof(struct gfal_srm_easy));
+
+    easy->path = gfal2_srm_get_decoded_path(surl);
+
     if (opts->srm_context) {
         g_strlcpy(opts->endpoint, full_endpoint, GFAL_URL_MAX_LEN);
         if (ucert) {
@@ -211,13 +217,17 @@ srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
     g_free(ucert);
     g_free(ukey);
 
-    return opts->srm_context;
+    easy->srm_context = opts->srm_context;
+    return easy;
 }
 
 
 void gfal_srm_ifce_easy_context_release(gfal_srmv2_opt* opts,
-        srm_context_t context)
+    gfal_srm_easy_t easy)
 {
-    if (opts && context)
+    if (opts && easy && easy->srm_context) {
         g_static_rec_mutex_unlock(&opts->srm_context_mutex);
+    }
+    g_free(easy->path);
+    g_free(easy);
 }

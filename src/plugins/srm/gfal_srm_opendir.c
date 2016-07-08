@@ -129,11 +129,11 @@ gfal_file_handle gfal_srm_opendirG(plugin_handle ch, const char* surl, GError **
 	gfal_file_handle resu = NULL;
 	GError* tmp_err=NULL;
 
-	srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
-	if (context) {
-	    resu = gfal_srm_opendir_internal(context, surl, &tmp_err);
+	gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+	if (easy) {
+	    resu = gfal_srm_opendir_internal(easy->srm_context, easy->path, &tmp_err);
 	}
-	gfal_srm_ifce_easy_context_release(opts, context);
+	gfal_srm_ifce_easy_context_release(opts, easy);
 
     if(tmp_err)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);

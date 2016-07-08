@@ -35,14 +35,14 @@ static ssize_t gfal_srm_get_endpoint_type_xattrG(plugin_handle handle, const cha
 {
 	GError *tmp_err = NULL;
 
-	srm_context_t context = gfal_srm_ifce_easy_context(handle, path, &tmp_err);
-	if (!context) {
+	gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(handle, path, &tmp_err);
+	if (!easy) {
 		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 		return -1;
 	}
 
 	struct srm_xping_output output;
-	if (gfal_srm_external_call.srm_xping(context, &output) < 0) {
+	if (gfal_srm_external_call.srm_xping(easy->srm_context, &output) < 0) {
 		gfal2_set_error(err, gfal2_get_plugin_srm_quark(), errno, __func__,
 				"Could not get the storage type");
 		return -1;
@@ -57,7 +57,7 @@ static ssize_t gfal_srm_get_endpoint_type_xattrG(plugin_handle handle, const cha
 		}
 	}
 	srm_xping_output_free(output);
-	gfal_srm_ifce_easy_context_release(handle, context);
+	gfal_srm_ifce_easy_context_release(handle, easy);
 	return strlen(buff);
 }
 

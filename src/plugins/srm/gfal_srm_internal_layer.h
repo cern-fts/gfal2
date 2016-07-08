@@ -41,6 +41,13 @@ typedef enum _srm_req_type{
 } srm_req_type;
 
 
+struct gfal_srm_easy {
+	srm_context_t srm_context;
+	char *path;
+};
+
+typedef struct gfal_srm_easy *gfal_srm_easy_t;
+
 /*
  * structure for mock abylity in the srm part
  *
@@ -130,16 +137,12 @@ int gfal_srm_getTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl
 
 int gfal_srm_putTURLS_plugin(plugin_handle ch, const char* surl, char* buff_turl, int size_turl, char** reqtoken, GError** err);
 
-int gfal_srm_getTURLS(gfal_srmv2_opt* opts, char** surls, gfal_srm_result** resu,  GError** err);
-
-int gfal_srm_putTURLS(gfal_srmv2_opt* opts , char** surls, gfal_srm_result** resu,  GError** err);
-
-int gfal_srm_putdone(gfal_srmv2_opt* opts, char** surls, const char* token,  GError** err);
+int gfal_srm_putdone(gfal_srmv2_opt* opts, const char* surl, const char* token,  GError** err);
 
 void gfal_srm_report_error(char* errbuff, GError** err);
 
-srm_context_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
+gfal_srm_easy_t gfal_srm_ifce_easy_context(gfal_srmv2_opt* opts,
         const char* surl, GError** err);
 
 void gfal_srm_ifce_easy_context_release(gfal_srmv2_opt* opts,
-        srm_context_t context);
+	gfal_srm_easy_t easy);

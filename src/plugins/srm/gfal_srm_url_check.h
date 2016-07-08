@@ -45,4 +45,11 @@ gboolean plugin_url_check2(plugin_handle handle, gfal2_context_t context,
  **/
 int gfal2_srm_surl_cmp(const char* surl1, const char* surl2);
 
+/**
+ * Returns srm://host//url-decoded path from the surl, regardless of wether the path
+ * is as SFN=/ form, or directly.
+ * The return value needs to be g_free
+ */
+char *gfal2_srm_get_decoded_path(const char *surl);
+
 #endif /* GFAL_COMMON_SRM_URL_CHECK_H */ 

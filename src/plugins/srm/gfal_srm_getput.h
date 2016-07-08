@@ -33,9 +33,5 @@ int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t params,
 int gfal_srm_getTURL_checksum(plugin_handle ch, const char* surl,
         char* buff_turl, int size_turl, GError** err);
 
-int gfal_srm_putdone_simple(plugin_handle * handle, const char* surl,
-        const char* token, GError** err);
-
 int srm_abort_request_plugin(plugin_handle * handle, const char* surl,
         const char *reqtoken, GError** err);
-

@@ -44,7 +44,7 @@ static void gfal_srmv2_configure_set_permission(const char* surl,  mode_t mode, 
 {
 	memset(perms_input, 0, sizeof(struct srm_setpermission_input));
 	perms_input->surl = (char*)surl;
-	perms_input->permission_type =SRM_PERMISSION_CHANGE;
+	perms_input->permission_type = SRM_PERMISSION_CHANGE;
 	perms_input->owner_permission = gfal_srmv2_mode_t_to_TPermissionMode(mode, 00700, 6);
 	perms_input->other_permission= gfal_srmv2_mode_t_to_TPermissionMode(mode, 007, 0);
 }
@@ -80,12 +80,12 @@ int	gfal_srm_chmodG(plugin_handle ch, const char * path , mode_t mode, GError** 
 
     int ret = -1;
 
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, path, &tmp_err);
-    if (context != NULL) {
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, path, &tmp_err);
+    if (easy != NULL) {
         gfal_srm_cache_stat_remove(ch, path);
-        ret = gfal_srmv2_chmod_internal(context, path, mode, &tmp_err);
+        ret = gfal_srmv2_chmod_internal(easy->srm_context, easy->path, mode, &tmp_err);
     }
-    gfal_srm_ifce_easy_context_release(opts, context);
+    gfal_srm_ifce_easy_context_release(opts, easy);
 
     if (ret != 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);

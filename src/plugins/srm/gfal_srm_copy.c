@@ -502,7 +502,7 @@ static int srm_do_transfer(plugin_handle handle, gfal2_context_t context,
                 GFAL_EVENT_CLOSE_ENTER, "%s", destination);
 
         if (srm_check_url(destination)) {
-            if (gfal_srm_putdone_simple(handle, destination, token_destination, &tmp_err) < 0)
+            if (gfal_srm_putdone(handle, destination, token_destination, &tmp_err) < 0)
                 gfalt_propagate_prefixed_error(err, tmp_err, __func__, GFALT_ERROR_DESTINATION, "SRM_PUTDONE");
         }
 

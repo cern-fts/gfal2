@@ -289,11 +289,11 @@ ssize_t gfal_srm_space_getxattrG(plugin_handle handle, const char* path,
     ssize_t ret_size = 0;
 
     gfal_srmv2_opt* opts = (gfal_srmv2_opt*)handle;
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, path, &nested_error);
-    if (context) {
-        ret_size = gfal_srm_space_property(context, subprop_name, (char*)buff, s_buff, &nested_error);
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, path, &nested_error);
+    if (easy) {
+        ret_size = gfal_srm_space_property(easy->srm_context, subprop_name, (char*)buff, s_buff, &nested_error);
     }
-    gfal_srm_ifce_easy_context_release(opts, context);
+    gfal_srm_ifce_easy_context_release(opts, easy);
 
     if (nested_error != NULL)
         gfal2_propagate_prefixed_error(err, nested_error, __func__);

@@ -65,15 +65,15 @@ int gfal_srm_rmdirG(plugin_handle ch, const char* surl, GError** err)
 
     int ret = -1;
 
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
-    if (context != NULL) {
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    if (easy != NULL) {
         struct stat st;
         gfal2_log(G_LOG_LEVEL_DEBUG, "   [gfal_srm_rmdirG] try to delete directory %s", surl);
-        ret = gfal_statG_srmv2_internal(context, &st, NULL, surl, &tmp_err);
+        ret = gfal_statG_srmv2_internal(easy->srm_context, &st, NULL, easy->path, &tmp_err);
         if (ret == 0) {
             if (S_ISDIR(st.st_mode)) {
                 gfal_srm_cache_stat_remove(ch, surl); // invalidate cache entry
-                ret = gfal_srmv2_rmdir_internal(context, surl, &tmp_err);
+                ret = gfal_srmv2_rmdir_internal(easy->srm_context, easy->path, &tmp_err);
             }
             else {
                 ret = -1;
@@ -82,7 +82,7 @@ int gfal_srm_rmdirG(plugin_handle ch, const char* surl, GError** err)
             }
         }
     }
-    gfal_srm_ifce_easy_context_release(opts, context);
+    gfal_srm_ifce_easy_context_release(opts, easy);
 
     if (ret != 0)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);

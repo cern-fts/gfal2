@@ -19,10 +19,8 @@
  */
 
 #include <regex.h>
-#include <time.h>
 
 #include "gfal_srm.h"
-#include "gfal_srm_endpoint.h"
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_request.h"
 #include "gfal_srm_url_check.h"
@@ -143,12 +141,12 @@ int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl,
 
     int ret = -1;
 
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
-    if (context != NULL) {
-        ret = gfal_srmv2_bring_online_internal(context, opts, 1, &surl,
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    if (easy != NULL) {
+        ret = gfal_srmv2_bring_online_internal(easy->srm_context, opts, 1, (const char* const*)&easy->path,
                     pintime, timeout, token, tsize, async, &tmp_err);
     }
-    gfal_srm_ifce_easy_context_release(opts, context);
+    gfal_srm_ifce_easy_context_release(opts, easy);
 
     if (tmp_err) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
@@ -163,12 +161,12 @@ int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char* con
         time_t pintime, time_t timeout, char* token, size_t tsize,
         int async, GError** errors)
 {
+    int i;
     GError* tmp_err = NULL;
     gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
 
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, *surls, &tmp_err);
-    if (context == NULL) {
-        int i;
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, *surls, &tmp_err);
+    if (easy == NULL) {
         for (i = 0; i < nbfiles; ++i) {
             errors[i] = g_error_copy(tmp_err);
         }
@@ -176,9 +174,19 @@ int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char* con
         return -1;
     }
 
-    int ret = gfal_srmv2_bring_online_internal(context, opts, nbfiles, surls,
+    char* decoded[nbfiles];
+    for (i = 0; i < nbfiles; ++i) {
+        decoded[i] = gfal2_srm_get_decoded_path(surls[i]);
+    }
+
+    int ret = gfal_srmv2_bring_online_internal(easy->srm_context, opts, nbfiles, (const char* const*)decoded,
                 pintime, timeout, token, tsize, async, errors);
-    gfal_srm_ifce_easy_context_release(opts, context);
+    gfal_srm_ifce_easy_context_release(opts, easy);
+
+    for (i = 0; i < nbfiles; ++i) {
+        g_free(decoded[i]);
+    }
+
     return ret;
 }
 
@@ -255,11 +263,12 @@ int gfal_srmv2_bring_online_pollG(plugin_handle ch, const char* surl,
 
     int ret = -1;
 
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
-    if (context != NULL) {
-        ret = gfal_srmv2_bring_online_poll_internal(context, 1, &surl, token, &tmp_err);
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    if (easy != NULL) {
+        ret = gfal_srmv2_bring_online_poll_internal(easy->srm_context, 1, (const char* const*)&easy->path, token,
+            &tmp_err);
     }
-    gfal_srm_ifce_easy_context_release(opts, context);
+    gfal_srm_ifce_easy_context_release(opts, easy);
 
     if (tmp_err) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
@@ -274,12 +283,12 @@ int gfal_srmv2_bring_online_pollG(plugin_handle ch, const char* surl,
 int gfal_srmv2_bring_online_poll_listG(plugin_handle ch, int nbfiles,
         const char* const * surls, const char* token, GError** errors)
 {
+    int i;
     GError* tmp_err = NULL;
     gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
 
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, *surls, &tmp_err);
-    if (context == NULL) {
-        int i;
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, *surls, &tmp_err);
+    if (easy == NULL) {
         for (i = 0; i < nbfiles; ++i) {
             errors[i] = g_error_copy(tmp_err);
         }
@@ -287,8 +296,19 @@ int gfal_srmv2_bring_online_poll_listG(plugin_handle ch, int nbfiles,
         return -1;
     }
 
-    int ret = gfal_srmv2_bring_online_poll_internal(context, nbfiles, surls, token, errors);
-    gfal_srm_ifce_easy_context_release(opts, context);
+    char* decoded[nbfiles];
+    for (i = 0; i < nbfiles; ++i) {
+        decoded[i] = gfal2_srm_get_decoded_path(surls[i]);
+    }
+
+    int ret = gfal_srmv2_bring_online_poll_internal(easy->srm_context, nbfiles, (const char* const*)decoded,
+        token, errors);
+    gfal_srm_ifce_easy_context_release(opts, easy);
+
+    for (i = 0; i < nbfiles; ++i) {
+        g_free(decoded[i]);
+    }
+
     return ret;
 }
 
@@ -346,11 +366,12 @@ int gfal_srmv2_release_fileG(plugin_handle ch, const char* surl,
 
     int ret = -1;
 
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
-    if (context != NULL) {
-        ret = gfal_srmv2_release_file_internal(context, opts, 1, &surl, token, &tmp_err);
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    if (easy != NULL) {
+        ret = gfal_srmv2_release_file_internal(easy->srm_context, opts, 1, (const char* const*)&easy->path, token,
+            &tmp_err);
     }
-    gfal_srm_ifce_easy_context_release(opts, context);
+    gfal_srm_ifce_easy_context_release(opts, easy);
 
     if (tmp_err) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
@@ -365,12 +386,12 @@ int gfal_srmv2_release_fileG(plugin_handle ch, const char* surl,
 int gfal_srmv2_release_file_listG(plugin_handle ch, int nbfiles, const char* const* surls,
         const char* token, GError** errors)
 {
+    int i;
     GError* tmp_err = NULL;
     gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
 
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, *surls, &tmp_err);
-    if (context == NULL) {
-        int i;
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surls[0], &tmp_err);
+    if (easy == NULL) {
         for (i = 0; i < nbfiles; ++i) {
             errors[i] = g_error_copy(tmp_err);
         }
@@ -378,8 +399,19 @@ int gfal_srmv2_release_file_listG(plugin_handle ch, int nbfiles, const char* con
         return -1;
     }
 
-    int ret = gfal_srmv2_release_file_internal(context, opts, nbfiles, surls, token, errors);
-    gfal_srm_ifce_easy_context_release(opts, context);
+    char* decoded[nbfiles];
+    for (i = 0; i < nbfiles; ++i) {
+        decoded[i] = gfal2_srm_get_decoded_path(surls[i]);
+    }
+
+    int ret = gfal_srmv2_release_file_internal(easy->srm_context, opts, nbfiles, (const char* const*)decoded,
+        token, errors);
+    gfal_srm_ifce_easy_context_release(opts, easy);
+
+    for (i = 0; i < nbfiles; ++i) {
+        g_free(decoded[i]);
+    }
+
     return ret;
 }
 
@@ -431,12 +463,13 @@ static int gfal_srmv2_abort_files_internal(srm_context_t context, gfal_srmv2_opt
 
 int gfal_srm2_abort_filesG(plugin_handle ch, int nbfiles, const char* const* surls, const char* token, GError ** errors)
 {
+    int i;
+
     GError* tmp_err = NULL;
     gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
 
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, *surls, &tmp_err);
-    if (context == NULL) {
-        int i;
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surls[0], &tmp_err);
+    if (easy == NULL) {
         for (i = 0; i < nbfiles; ++i) {
             errors[i] = g_error_copy(tmp_err);
         }
@@ -444,7 +477,17 @@ int gfal_srm2_abort_filesG(plugin_handle ch, int nbfiles, const char* const* sur
         return -1;
     }
 
-    int ret = gfal_srmv2_abort_files_internal(context, opts, nbfiles, surls, token, errors);
-    gfal_srm_ifce_easy_context_release(opts, context);
+    char* decoded[nbfiles];
+    for (i = 0; i < nbfiles; ++i) {
+        decoded[i] = gfal2_srm_get_decoded_path(surls[i]);
+    }
+
+    int ret = gfal_srmv2_abort_files_internal(easy->srm_context, opts, nbfiles, (const char* const*) decoded,
+        token, errors);
+    gfal_srm_ifce_easy_context_release(opts, easy);
+    for (i = 0; i < nbfiles; ++i) {
+        g_free(decoded[i]);
+    }
+
     return ret;
 }

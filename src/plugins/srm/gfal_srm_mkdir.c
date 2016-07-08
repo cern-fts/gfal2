@@ -51,12 +51,12 @@ int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError*
     int ret = -1;
 
     gfal2_log(G_LOG_LEVEL_DEBUG, "  ->  [gfal_srm_mkdir_recG] ");
-    srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
-    if (context != NULL) {
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    if (easy != NULL) {
         gfal2_log(G_LOG_LEVEL_DEBUG, "   [gfal_srm_mkdir_recG] try to create directory %s", surl);
         struct stat st;
 
-        ret = gfal_statG_srmv2_internal(context, &st, NULL, surl, &tmp_err);
+        ret = gfal_statG_srmv2_internal(easy->srm_context, &st, NULL, easy->path, &tmp_err);
         if (ret == 0) {
             if (!S_ISDIR(st.st_mode)) {
                 gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), ENOTDIR, __func__, "%s it is a file", surl);
@@ -68,14 +68,14 @@ int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError*
         }
         else {
             g_clear_error(&tmp_err);
-            ret = gfal_mkdir_srmv2_internal(context, surl, mode, &tmp_err);
+            ret = gfal_mkdir_srmv2_internal(easy->srm_context, easy->path, mode, &tmp_err);
             if (ret < 0 && tmp_err->code == EEXIST) {
                 ret = 0;
                 g_clear_error(&tmp_err);
             }
         }
     }
-    gfal_srm_ifce_easy_context_release(opts, context);
+    gfal_srm_ifce_easy_context_release(opts, easy);
     gfal2_log(G_LOG_LEVEL_DEBUG, "   [gfal_srm_mkdir_recG] <-");
     G_RETURN_ERR(ret, tmp_err, err);
 }
@@ -94,22 +94,22 @@ int gfal_srm_mkdirG(plugin_handle ch, const char* surl, mode_t mode, gboolean pf
     }
     else {
         gfal2_log(G_LOG_LEVEL_DEBUG, "  ->  [gfal_srm_mkdirG] ");
-        srm_context_t context = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
-        if (context != NULL) {
+        gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+        if (easy != NULL) {
             gfal2_log(G_LOG_LEVEL_DEBUG, "   [gfal_srm_mkdirG] try to create directory %s", surl);
             struct stat st;
 
-            ret = gfal_statG_srmv2_internal(context, &st, NULL, surl, &tmp_err);
+            ret = gfal_statG_srmv2_internal(easy->srm_context, &st, NULL, easy->path, &tmp_err);
             if (ret == 0) {
                 gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EEXIST, __func__, "directory already exist");
                 ret = -1;
             }
             else {
                 g_clear_error(&tmp_err);
-                ret = gfal_mkdir_srmv2_internal(context, surl, mode, &tmp_err);
+                ret = gfal_mkdir_srmv2_internal(easy->srm_context, easy->path, mode, &tmp_err);
             }
         }
-        gfal_srm_ifce_easy_context_release(opts, context);
+        gfal_srm_ifce_easy_context_release(opts, easy);
         gfal2_log(G_LOG_LEVEL_DEBUG, "   [gfal_srm_mkdirG] <-");
     }
 

@@ -179,9 +179,8 @@ int gfal_srm_closeG(plugin_handle ch, gfal_file_handle fh, GError ** err)
     int ret = gfal_plugin_closeG(opts->handle, gfal_srm_file_handle_map(fh), &tmp_err);
     if (ret == 0) {
         gfal_srm_handle_open sh = (gfal_srm_handle_open) gfal_file_handle_get_fdesc(fh);
-        char* surls[] = { sh->surl, NULL };
         if (sh->req_type == SRM_PUT)
-            ret = gfal_srm_putdone(opts, surls, sh->reqtoken, &tmp_err);
+            ret = gfal_srm_putdone(opts, sh->surl, sh->reqtoken, &tmp_err);
         else
             ret = gfal_srmv2_release_fileG(ch, sh->surl, sh->reqtoken, &tmp_err);
         g_free(sh->reqtoken);
