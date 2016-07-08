@@ -203,5 +203,9 @@ TEST(gfalURI, special)
     ASSERT_STREQ(URI, rebuilt);
 
     g_free(rebuilt);
+
+    gfal2_urldecode(parsed->path);
+    ASSERT_STREQ("/dpm/cern.ch/home/dteam/xrd-f1460564827990430820aBc0!@#%^_-+=: .dat", parsed->path);
+
     gfal2_free_uri(parsed);
 }

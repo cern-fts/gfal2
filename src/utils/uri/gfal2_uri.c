@@ -170,3 +170,24 @@ char *gfal2_join_uri(gfal2_uri* uri)
 
     return g_strjoinv("", str_array);
 }
+
+char *gfal2_urldecode(char *str)
+{
+    if (str == NULL) {
+        return NULL;
+    }
+    
+    char *r = str, *w = str;
+    while (*r != '\0') {
+        if (*r == '%') {
+            *w = strtol(r + 1, &r, 16);
+            ++w;
+        } else {
+            *w = *r;
+            ++r;
+            ++w;
+        }
+    }
+    *w = '\0';
+    return str;
+}

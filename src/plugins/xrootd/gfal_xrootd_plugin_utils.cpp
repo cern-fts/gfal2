@@ -141,6 +141,10 @@ std::string normalize_url(gfal2_context_t context, const char* url)
         }
     }
 
+    // Url-decode path
+    // XRootD and SRM expect the path to be url-decoded, while dav and gsiftp expect the opposite
+    gfal2_urldecode(uri->path);
+
     char *new_url = gfal2_join_uri(uri);
     std::string sanitized(new_url);
     gfal2_free_uri(uri);

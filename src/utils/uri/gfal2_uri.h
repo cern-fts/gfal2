@@ -62,6 +62,12 @@ void gfal2_free_uri(gfal2_uri* uri);
  */
 char *gfal2_join_uri(gfal2_uri* uri);
 
+/*
+ * url-decodes the string, and returns a pointer to the same string
+ * Modifies the buffer pointed by str!!
+ */
+char *gfal2_urldecode(char *str);
+
 
 #ifdef __cplusplus
 }
