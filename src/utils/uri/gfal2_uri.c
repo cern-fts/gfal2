@@ -85,12 +85,14 @@ gfal2_uri *gfal2_parse_uri(const char *uri, GError **err)
     }
     // Authority has content
     if (pmatch[4].rm_so != pmatch[4].rm_eo) {
+        char *authority = _strdupmatch(uri, &pmatch[4]);
+
         regex_t authreg;
         ret = regcomp(&authreg, AUTHORITY_REGEX, REG_EXTENDED | REG_ICASE);
         assert(ret == 0);
 
         regmatch_t authmatch[8];
-        ret = regexec(&authreg, uri + pmatch[4].rm_so, 8, authmatch, 0);
+        ret = regexec(&authreg, authority, 8, authmatch, 0);
         if (ret != 0) {
             regerror(ret, &preg, buffer, sizeof(buffer));
             regfree(&preg);
@@ -99,13 +101,14 @@ gfal2_uri *gfal2_parse_uri(const char *uri, GError **err)
             return NULL;
         }
 
-        parsed->userinfo = _strdupmatch(uri + pmatch[4].rm_so, &authmatch[2]);
-        parsed->host = _strdupmatch(uri + pmatch[4].rm_so, &authmatch[3]);
+        parsed->userinfo = _strdupmatch(authority, &authmatch[2]);
+        parsed->host = _strdupmatch(authority, &authmatch[3]);
         if (authmatch[7].rm_so > -1) {
-            parsed->port = atol(uri + pmatch[4].rm_so + authmatch[7].rm_so + 1);
+            parsed->port = atol(authority + authmatch[7].rm_so + 1);
         }
 
         regfree(&authreg);
+        g_free(authority);
     }
 
     regfree(&preg);

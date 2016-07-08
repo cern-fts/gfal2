@@ -183,3 +183,25 @@ TEST(gfalURI, file)
     g_free(rebuilt);
     gfal2_free_uri(parsed);
 }
+
+TEST(gfalURI, special)
+{
+    const char *URI = "davs://arioch.cern.ch/dpm/cern.ch/home/dteam/xrd-f1460564827990430820aBc0!@%23%25%5e_-+=:%20.dat";
+    GError* tmp_err = NULL;
+
+    gfal2_uri *parsed = gfal2_parse_uri(URI, &tmp_err);
+
+    ASSERT_NE(parsed, (void*)NULL);
+
+    ASSERT_STREQ("davs", parsed->scheme);
+    ASSERT_STREQ("arioch.cern.ch", parsed->host);
+    ASSERT_STREQ("/dpm/cern.ch/home/dteam/xrd-f1460564827990430820aBc0!@%23%25%5e_-+=:%20.dat", parsed->path);
+    ASSERT_EQ(NULL, parsed->query);
+    ASSERT_EQ(NULL, parsed->fragment);
+
+    char *rebuilt = gfal2_join_uri(parsed);
+    ASSERT_STREQ(URI, rebuilt);
+
+    g_free(rebuilt);
+    gfal2_free_uri(parsed);
+}
