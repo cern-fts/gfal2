@@ -29,12 +29,13 @@
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_internal_ls.h"
 
+
 /**
  * Casts a 64 bits stat into whatever stat type we are using in this compilation unit.
  * Intended for cases where we compile using 32 bits size types, which I don't believe to be
  * the case any more, but just in case...
  */
-static void gfal_srm_stat64_to_stat(const struct stat64* st64, struct stat *st)
+static void gfal_srm_stat64_to_stat(const struct stat64 *st64, struct stat *st)
 {
     if (sizeof(struct stat64) == sizeof(struct stat))
         memcpy(st, st64, sizeof(*st));
@@ -60,13 +61,13 @@ static void gfal_srm_stat64_to_stat(const struct stat64* st64, struct stat *st)
  * Converts a SRM status into a dirent + struct stat
  * Returns, for convenience, the same pointer passed as dir_ent
  */
-static struct dirent* gfal_srm_readdir_convert_result(plugin_handle ch,
-        const char* parent_surl, const struct srmv2_mdfilestatus * srm_status,
-        struct dirent* dir_ent, struct stat* st, GError ** err)
+static struct dirent *gfal_srm_readdir_convert_result(plugin_handle ch,
+    const char *parent_surl, const struct srmv2_mdfilestatus *srm_status,
+    struct dirent *dir_ent, struct stat *st, GError **err)
 {
     char buff_surlfull[GFAL_URL_MAX_LEN];
 
-    char* p = strrchr(srm_status->surl, '/');
+    char *p = strrchr(srm_status->surl, '/');
     if (p != NULL) {
         g_strlcpy(buff_surlfull, parent_surl, GFAL_URL_MAX_LEN);
         g_strlcat(buff_surlfull, p, GFAL_URL_MAX_LEN);
@@ -100,24 +101,24 @@ static struct dirent* gfal_srm_readdir_convert_result(plugin_handle ch,
  * Wraps the actual call to srm-ifce
  */
 static int gfal_srm_readdir_internal(plugin_handle ch,
-        gfal_srm_opendir_handle oh, GError** err)
+    gfal_srm_opendir_handle oh, GError **err)
 {
-	g_return_val_err_if_fail(ch && oh, -1, err, "[gfal_srmv2_opendir_internal] invaldi args");
-	GError* tmp_err = NULL;
-	int resu = -1;
-	struct srm_ls_input input;
-	struct srm_ls_output output;
-	struct srmv2_mdfilestatus *srmv2_mdstatuses=NULL;
-	int ret =-1;
+    g_return_val_err_if_fail(ch && oh, -1, err, "[gfal_srmv2_opendir_internal] invaldi args");
+    GError *tmp_err = NULL;
+    int resu = -1;
+    struct srm_ls_input input;
+    struct srm_ls_output output;
+    struct srmv2_mdfilestatus *srmv2_mdstatuses = NULL;
+    int ret = -1;
 
-	memset(&input, 0, sizeof(input));
-	memset(&output, 0, sizeof(output));
+    memset(&input, 0, sizeof(input));
+    memset(&output, 0, sizeof(output));
 
-	gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(ch, oh->surl, &tmp_err);
-	if (!easy) {
-	    G_RETURN_ERR(resu, tmp_err, err);
-	}
-    char* tab_surl[] = {easy->path, NULL};
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(ch, oh->surl, &tmp_err);
+    if (!easy) {
+        G_RETURN_ERR(resu, tmp_err, err);
+    }
+    char *tab_surl[] = {easy->path, NULL};
 
     input.nbfiles = 1;
     input.surls = tab_surl;
@@ -134,9 +135,9 @@ static int gfal_srm_readdir_internal(plugin_handle ch,
         srmv2_mdstatuses = output.statuses;
         if (srmv2_mdstatuses[0].status != 0) {
             gfal2_set_error(err, gfal2_get_plugin_srm_quark(),
-                    srmv2_mdstatuses->status, __func__,
-                    "Error reported from srm_ifce : %d %s",
-                    srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
+                srmv2_mdstatuses->status, __func__,
+                "Error reported from srm_ifce : %d %s",
+                srmv2_mdstatuses->status, srmv2_mdstatuses->explanation);
             resu = -1;
 
         }
@@ -160,10 +161,10 @@ static int gfal_srm_readdir_internal(plugin_handle ch,
  * Wraps the SRM request.
  * Request each chunks, then iterates through the responses as readdir is called
  */
-static struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch,
-        gfal_srm_opendir_handle oh, struct stat* st, GError** err)
+static struct dirent *gfal_srm_readdir_pipeline(plugin_handle ch,
+    gfal_srm_opendir_handle oh, struct stat *st, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
 
     // Nothing yet, so get the bulk
     if (oh->srm_file_statuses == NULL) {
@@ -185,9 +186,9 @@ static struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch,
     }
 
     // Iterate and return statuses
-    struct dirent* ret = gfal_srm_readdir_convert_result(ch, oh->surl,
-            &oh->srm_file_statuses->subpaths[oh->response_index], &oh->dirent_buffer,
-            st, &tmp_err);
+    struct dirent *ret = gfal_srm_readdir_convert_result(ch, oh->surl,
+        &oh->srm_file_statuses->subpaths[oh->response_index], &oh->dirent_buffer,
+        st, &tmp_err);
     oh->response_index++;
 
     // If chunk listing, and the index passed the last entry in the buffer,
@@ -206,24 +207,24 @@ static struct dirent* gfal_srm_readdir_pipeline(plugin_handle ch,
  * Only read.
  * SRM listing returns the file stat anyway, so wrap Read + Stat and discard the stat
  */
-struct dirent* gfal_srm_readdirG(plugin_handle ch, gfal_file_handle fh, GError** err)
+struct dirent *gfal_srm_readdirG(plugin_handle ch, gfal_file_handle fh, GError **err)
 {
-	g_return_val_err_if_fail( ch && fh, NULL, err, "[gfal_srm_readdirG] Invalid args");
-	struct stat _; // Ignore this
-	return gfal_srm_readdirppG(ch, fh, &_, err);
+    g_return_val_err_if_fail(ch && fh, NULL, err, "[gfal_srm_readdirG] Invalid args");
+    struct stat _; // Ignore this
+    return gfal_srm_readdirppG(ch, fh, &_, err);
 }
 
 
 /**
  * Read + Stat
  */
-struct dirent* gfal_srm_readdirppG(plugin_handle ch,
-        gfal_file_handle fh, struct stat* st, GError** err)
+struct dirent *gfal_srm_readdirppG(plugin_handle ch,
+    gfal_file_handle fh, struct stat *st, GError **err)
 {
-    g_return_val_err_if_fail( ch && fh, NULL, err, "[gfal_srm_readdirppG] Invalid args");
-    GError* tmp_err = NULL;
+    g_return_val_err_if_fail(ch && fh, NULL, err, "[gfal_srm_readdirppG] Invalid args");
+    GError *tmp_err = NULL;
 
-    struct dirent* ret = NULL;
+    struct dirent *ret = NULL;
     gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;
     ret = gfal_srm_readdir_pipeline(ch, oh, st, &tmp_err);
 
@@ -232,7 +233,7 @@ struct dirent* gfal_srm_readdirppG(plugin_handle ch,
         // If we already tried, abort!
         if (oh->is_chunked_listing) {
             gfal2_propagate_prefixed_error_extended(err, tmp_err, __func__,
-                    "EFBIG received when already trying chunk listing");
+                "EFBIG received when already trying chunk listing");
             return NULL;
         }
         // Prepare for chunk listing, and re-issue
@@ -243,16 +244,16 @@ struct dirent* gfal_srm_readdirppG(plugin_handle ch,
         oh->response_index = 0;
 
         gfal2_log(G_LOG_LEVEL_WARNING,
-                "EFBIG while listing SRM directory, trying with chunk listing of size %d",
-                oh->chunk_size);
+            "EFBIG while listing SRM directory, trying with chunk listing of size %d",
+            oh->chunk_size);
 
         ret = gfal_srm_readdir_pipeline(ch, oh, st, &tmp_err);
         if (tmp_err)
             gfal2_propagate_prefixed_error_extended(err, tmp_err, __func__,
-                                "Failed when attempting chunk listing");
+                "Failed when attempting chunk listing");
     }
-    // Just an error
-    else if(tmp_err) {
+        // Just an error
+    else if (tmp_err) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     }
     return ret;

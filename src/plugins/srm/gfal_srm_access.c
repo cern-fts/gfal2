@@ -23,13 +23,13 @@
 #include "gfal_srm_internal_layer.h"
 
 
-static int gfal_access_srmv2_internal(srm_context_t context, const char* surl, int mode, GError** err)
+static int gfal_access_srmv2_internal(srm_context_t context, const char *surl, int mode, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     struct srm_checkpermission_input checkpermission_input;
     struct srmv2_filestatus *resu;
     int ret = -1;
-    char* tab_surl[] = { (char*) surl, NULL };
+    char *tab_surl[] = {(char *) surl, NULL};
 
     checkpermission_input.nbfiles = 1;
     checkpermission_input.amode = mode;
@@ -46,17 +46,17 @@ static int gfal_access_srmv2_internal(srm_context_t context, const char* surl, i
         if (strnlen(resu[0].surl, GFAL_URL_MAX_LEN) >= GFAL_URL_MAX_LEN ||
             strnlen(resu[0].explanation, GFAL_URL_MAX_LEN) >= GFAL_URL_MAX_LEN) {
             gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
-                    resu[0].status, __func__, "Memory corruption in the libgfal_srm_ifce answer, fatal");
+                resu[0].status, __func__, "Memory corruption in the libgfal_srm_ifce answer, fatal");
         }
         else {
             gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
-                    resu[0].status, __func__,
-                    "Error %d : %s , file %s: %s", resu[0].status,
-                    strerror(resu[0].status), resu[0].surl, resu[0].explanation);
+                resu[0].status, __func__,
+                "Error %d : %s , file %s: %s", resu[0].status,
+                strerror(resu[0].status), resu[0].surl, resu[0].explanation);
         }
         ret = -1;
     }
-    // resu[0].status == 0 is success
+        // resu[0].status == 0 is success
     else {
         ret = 0;
         errno = 0;
@@ -77,11 +77,11 @@ static int gfal_access_srmv2_internal(srm_context_t context, const char* surl, i
  * @param err : GError error reprot system
  * @warning : not safe, surl must be verified
  */
-int gfal_srm_accessG(plugin_handle ch, const char* surl, int mode, GError** err)
+int gfal_srm_accessG(plugin_handle ch, const char *surl, int mode, GError **err)
 {
     g_return_val_err_if_fail(ch && surl, EINVAL, err, "[gfal_srm_accessG] Invalid value handle and/or surl");
-    GError* tmp_err = NULL;
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    GError *tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
 
     int ret = -1;
 

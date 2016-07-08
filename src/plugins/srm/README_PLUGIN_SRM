@@ -9,6 +9,4 @@
 - warnings :
 
  * SRM uses SOAP, it inherits of the advantages and the inconvenients of this technology.
-   SRM is portable, but can be slow for little files/ entry or for big directory listing 
-
-
+   SRM is portable, but can be slow for little files/ entry or for big directory listing

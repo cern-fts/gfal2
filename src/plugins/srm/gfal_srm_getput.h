@@ -20,18 +20,18 @@
 #include "gfal_srm.h"
 
 
-int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t p, const char* surl,
-        size_t surl_file_size, char* buff_turl, int size_turl,
-        char* reqtoken, size_t size_reqtoken,
-        GError** err);
+int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t p, const char *surl,
+    size_t surl_file_size, char *buff_turl, int size_turl,
+    char *reqtoken, size_t size_reqtoken,
+    GError **err);
 
 int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t params,
-        const char* surl, char* buff_turl, int size_turl,
-        char* reqtoken, size_t size_reqtoken,
-        GError** err);
+    const char *surl, char *buff_turl, int size_turl,
+    char *reqtoken, size_t size_reqtoken,
+    GError **err);
 
-int gfal_srm_getTURL_checksum(plugin_handle ch, const char* surl,
-        char* buff_turl, int size_turl, GError** err);
+int gfal_srm_getTURL_checksum(plugin_handle ch, const char *surl,
+    char *buff_turl, int size_turl, GError **err);
 
-int srm_abort_request_plugin(plugin_handle * handle, const char* surl,
-        const char *reqtoken, GError** err);
+int srm_abort_request_plugin(plugin_handle *handle, const char *surl,
+    const char *reqtoken, GError **err);

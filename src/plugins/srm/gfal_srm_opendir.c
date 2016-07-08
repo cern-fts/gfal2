@@ -31,9 +31,9 @@
 // Replaces the first occurence of ';' with '/0', so
 // we have a valid surl. Returns a pointer
 // to the beginning of the additional parameters, if any
-static char* _strip_parameters(char* surl)
+static char *_strip_parameters(char *surl)
 {
-    char* first_semicolon = strchr(surl, ';');
+    char *first_semicolon = strchr(surl, ';');
     if (first_semicolon) {
         *first_semicolon = '\0';
         return first_semicolon + 1;
@@ -46,15 +46,15 @@ static char* _strip_parameters(char* surl)
 // Parse any possible additional parameters passed in the URL and set the
 // corresponding values in h
 // parameters should be already in the form of key=value;key=value
-static void _parse_opendir_parameters(char* parameters, gfal_srm_opendir_handle h)
+static void _parse_opendir_parameters(char *parameters, gfal_srm_opendir_handle h)
 {
     if (parameters) {
-        char* saveptr = NULL;
-        char* pair = strtok_r(parameters, ";", &saveptr);
+        char *saveptr = NULL;
+        char *pair = strtok_r(parameters, ";", &saveptr);
         if (pair) {
             do {
-                char* key = pair;
-                char* value = strchr(pair, '=');
+                char *key = pair;
+                char *value = strchr(pair, '=');
                 if (value) {
                     *value = '\0';
                     ++value;
@@ -78,17 +78,17 @@ static void _parse_opendir_parameters(char* parameters, gfal_srm_opendir_handle 
 }
 
 static gfal_file_handle gfal_srm_opendir_internal(srm_context_t context,
-        const char* surl, GError** err)
+    const char *surl, GError **err)
 {
     g_return_val_err_if_fail(context && surl, NULL, err,
-            "[gfal_srmv2_opendir_internal] invalid args");
+        "[gfal_srmv2_opendir_internal] invalid args");
 
     // As extra parameters may be passed separated with ';',
     // we need to remove those from the surl, and then process them
-    char* real_surl  = g_strdup(surl);
-    char* parameters = _strip_parameters(real_surl);
+    char *real_surl = g_strdup(surl);
+    char *parameters = _strip_parameters(real_surl);
 
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     gfal_file_handle resu = NULL;
     struct stat st;
     int exist = gfal_statG_srmv2_internal(context, &st, NULL, real_surl, &tmp_err);
@@ -105,11 +105,11 @@ static gfal_file_handle gfal_srm_opendir_internal(srm_context_t context,
 
             _parse_opendir_parameters(parameters, h);
             resu = gfal_file_handle_new2(gfal_srm_getName(), (gpointer) h, NULL,
-                                         real_surl);
+                real_surl);
         }
         else {
             gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), ENOTDIR, __func__,
-                    "srm-plugin: %s is not a directory, impossible to list content", surl);
+                "srm-plugin: %s is not a directory, impossible to list content", surl);
         }
     }
 
@@ -121,32 +121,31 @@ static gfal_file_handle gfal_srm_opendir_internal(srm_context_t context,
 }
 
 
-
-gfal_file_handle gfal_srm_opendirG(plugin_handle ch, const char* surl, GError ** err)
+gfal_file_handle gfal_srm_opendirG(plugin_handle ch, const char *surl, GError **err)
 {
-	g_return_val_err_if_fail(ch && surl, NULL, err, "[gfal_srm_opendirG] Invalid args");
-	gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
-	gfal_file_handle resu = NULL;
-	GError* tmp_err=NULL;
+    g_return_val_err_if_fail(ch && surl, NULL, err, "[gfal_srm_opendirG] Invalid args");
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
+    gfal_file_handle resu = NULL;
+    GError *tmp_err = NULL;
 
-	gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
-	if (easy) {
-	    resu = gfal_srm_opendir_internal(easy->srm_context, easy->path, &tmp_err);
-	}
-	gfal_srm_ifce_easy_context_release(opts, easy);
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
+    if (easy) {
+        resu = gfal_srm_opendir_internal(easy->srm_context, easy->path, &tmp_err);
+    }
+    gfal_srm_ifce_easy_context_release(opts, easy);
 
-    if(tmp_err)
+    if (tmp_err)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     return resu;
 }
 
 
-int gfal_srm_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err)
+int gfal_srm_closedirG(plugin_handle handle, gfal_file_handle fh, GError **err)
 {
-	g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_srm_opendirG] Invalid args");
-	gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;
-	gfal_srm_external_call.srm_srmv2_mdfilestatus_delete(oh->srm_file_statuses, 1);
-	g_free(oh);
+    g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_srm_opendirG] Invalid args");
+    gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;
+    gfal_srm_external_call.srm_srmv2_mdfilestatus_delete(oh->srm_file_statuses, 1);
+    g_free(oh);
     gfal_file_handle_delete(fh);
-	return 0;
+    return 0;
 }

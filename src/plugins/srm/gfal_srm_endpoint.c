@@ -29,7 +29,7 @@
 #include "gfal_srm_internal_layer.h"
 
 
-static enum gfal_srm_proto gfal_proto_list_prefG[]= { PROTO_SRMv2, PROTO_SRM, PROTO_ERROR_UNKNOW };
+static enum gfal_srm_proto gfal_proto_list_prefG[] = {PROTO_SRMv2, PROTO_SRM, PROTO_ERROR_UNKNOW};
 
 
 // construct a default service endpoint format, Guessing that the service endpoint follows the default DPM/dCache convention
@@ -171,7 +171,8 @@ static int gfal_get_endpoint_and_setype_from_bdiiG(gfal_srmv2_opt *opts, const c
     gfal2_uri *parsed = gfal2_parse_uri(surl, &tmp_err);
     if (parsed != NULL) { // get the hostname
         // questioning the bdii
-        if ((ret = gfal_mds_get_se_types_and_endpoints(opts->handle, parsed->host, &tab_se_type, &tab_endpoint, &tmp_err)) == 0) {
+        if ((ret = gfal_mds_get_se_types_and_endpoints(opts->handle, parsed->host, &tab_se_type, &tab_endpoint,
+            &tmp_err)) == 0) {
             ret = gfal_select_best_protocol_and_endpointG(opts, tab_se_type, tab_endpoint, buff_endpoint,
                 GFAL_URL_MAX_LEN, srm_type, &tmp_err); // map the response if correct
             g_strfreev(tab_endpoint);
@@ -211,7 +212,7 @@ int gfal_srm_determine_endpoint(gfal_srmv2_opt *opts, const char *surl,
                 if (tmp_err) {
                     gfal2_log(G_LOG_LEVEL_WARNING,
                         "Error while bdii SRM service resolution : %s, fallback on the default service path."
-                        "This can lead to wrong service path, you should use FULL SURL format or register your endpoint into the BDII",
+                            "This can lead to wrong service path, you should use FULL SURL format or register your endpoint into the BDII",
                         tmp_err->message);
                     g_clear_error(&tmp_err);
                 }
@@ -241,9 +242,9 @@ int gfal_srm_determine_endpoint(gfal_srmv2_opt *opts, const char *surl,
 }
 
 
-int is_castor_endpoint(plugin_handle handle, const char* surl)
+int is_castor_endpoint(plugin_handle handle, const char *surl)
 {
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*)handle;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) handle;
 
     if (!srm_check_url(surl)) {
         gfal2_log(G_LOG_LEVEL_DEBUG, "Endpoint not SRM: %s", surl);

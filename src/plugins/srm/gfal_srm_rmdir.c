@@ -25,21 +25,21 @@
 #include "gfal_srm_internal_ls.h"
 
 
-static int gfal_srmv2_rmdir_internal(srm_context_t context, const char* surl, GError** err)
+static int gfal_srmv2_rmdir_internal(srm_context_t context, const char *surl, GError **err)
 {
     struct srm_rmdir_input rmdir_input;
     struct srm_rmdir_output rmdir_output;
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     int ret = -1;
 
     rmdir_input.recursive = 0;
-    rmdir_input.surl = (char*) surl;
+    rmdir_input.surl = (char *) surl;
 
     if (gfal_srm_external_call.srm_rmdir(context, &rmdir_input, &rmdir_output) >= 0) {
         const int sav_errno = rmdir_output.statuses[0].status;
         if (sav_errno) {
             gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), sav_errno,
-                    __func__, "Error report from the srm_ifce %s ", strerror(sav_errno));
+                __func__, "Error report from the srm_ifce %s ", strerror(sav_errno));
             ret = -1;
         }
         else {
@@ -57,11 +57,11 @@ static int gfal_srmv2_rmdir_internal(srm_context_t context, const char* surl, GE
 }
 
 
-int gfal_srm_rmdirG(plugin_handle ch, const char* surl, GError** err)
+int gfal_srm_rmdirG(plugin_handle ch, const char *surl, GError **err)
 {
     g_return_val_err_if_fail(ch && surl, EINVAL, err, "[gfal_srm_rmdirG] Invalid value handle and/or surl");
-    GError* tmp_err = NULL;
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    GError *tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
 
     int ret = -1;
 
@@ -78,7 +78,7 @@ int gfal_srm_rmdirG(plugin_handle ch, const char* surl, GError** err)
             else {
                 ret = -1;
                 gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), ENOTDIR, __func__,
-                        "This file is not a directory, impossible to use rmdir on it");
+                    "This file is not a directory, impossible to use rmdir on it");
             }
         }
     }

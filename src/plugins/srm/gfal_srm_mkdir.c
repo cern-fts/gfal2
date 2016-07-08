@@ -24,15 +24,15 @@
 #include "gfal_srm_endpoint.h"
 
 
-static int gfal_mkdir_srmv2_internal(srm_context_t context, const char* path, mode_t mode, GError** err)
+static int gfal_mkdir_srmv2_internal(srm_context_t context, const char *path, mode_t mode, GError **err)
 {
-	struct srm_mkdir_input mkdir_input;
-	int res = -1;
-	GError* tmp_err=NULL;
+    struct srm_mkdir_input mkdir_input;
+    int res = -1;
+    GError *tmp_err = NULL;
 
-	errno = 0;
-    mkdir_input.dir_name = (char*) path;
-    res  = gfal_srm_external_call.srm_mkdir(context, &mkdir_input);
+    errno = 0;
+    mkdir_input.dir_name = (char *) path;
+    res = gfal_srm_external_call.srm_mkdir(context, &mkdir_input);
 
     if (res < 0) {
         gfal_srm_report_error(context->errbuf, &tmp_err);
@@ -42,11 +42,11 @@ static int gfal_mkdir_srmv2_internal(srm_context_t context, const char* path, mo
 }
 
 
-int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError** err)
+int gfal_srm_mkdir_recG(plugin_handle ch, const char *surl, mode_t mode, GError **err)
 {
     g_return_val_err_if_fail(ch && surl, EINVAL, err, "[gfal_srm_mkdir_recG] Invalid value handle and/or surl");
-    GError* tmp_err = NULL;
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    GError *tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
 
     int ret = -1;
 
@@ -81,15 +81,15 @@ int gfal_srm_mkdir_recG(plugin_handle ch, const char* surl, mode_t mode, GError*
 }
 
 
-int gfal_srm_mkdirG(plugin_handle ch, const char* surl, mode_t mode, gboolean pflag, GError** err)
+int gfal_srm_mkdirG(plugin_handle ch, const char *surl, mode_t mode, gboolean pflag, GError **err)
 {
     g_return_val_err_if_fail(ch && surl, EINVAL, err, "[gfal_srm_mkdirG] Invalid value handle and/or surl");
-    GError* tmp_err = NULL;
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    GError *tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
 
     int ret = -1;
 
-    if(pflag) { // pflag set : behavior similar to mkdir -p requested
+    if (pflag) { // pflag set : behavior similar to mkdir -p requested
         ret = gfal_srm_mkdir_recG(ch, surl, mode, &tmp_err);
     }
     else {

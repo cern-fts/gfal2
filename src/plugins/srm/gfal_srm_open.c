@@ -30,12 +30,12 @@ typedef struct _gfal_srm_handle_open {
     gfal_file_handle internal_handle;
     char surl[GFAL_URL_MAX_LEN];
     srm_req_type req_type;
-    char* reqtoken;
-}*gfal_srm_handle_open;
+    char *reqtoken;
+} *gfal_srm_handle_open;
 
 
-static gfal_file_handle gfal_srm_file_handle_create(gfal_file_handle fh, char* surl,
-        char* reqtoken, srm_req_type req_type)
+static gfal_file_handle gfal_srm_file_handle_create(gfal_file_handle fh, char *surl,
+    char *reqtoken, srm_req_type req_type)
 {
     if (fh == NULL)
         return NULL;
@@ -64,15 +64,15 @@ static void gfal_srm_file_handle_delete(gfal_file_handle fh)
 /*
  * open function for the srm  plugin
  */
-gfal_file_handle gfal_srm_openG(plugin_handle ch, const char* path, int flag, mode_t mode,
-        GError** err)
+gfal_file_handle gfal_srm_openG(plugin_handle ch, const char *path, int flag, mode_t mode,
+    GError **err)
 {
     gfal_file_handle ret = NULL;
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
-    GError* tmp_err = NULL;
-    char* p = (char*) path;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
+    GError *tmp_err = NULL;
+    char *p = (char *) path;
     char turl[GFAL_URL_MAX_LEN];
-    char* reqtoken = NULL;
+    char *reqtoken = NULL;
     srm_req_type req_type;
     int tmp_ret;
     gfal2_log(G_LOG_LEVEL_DEBUG, "  %s ->", __func__);
@@ -86,13 +86,13 @@ gfal_file_handle gfal_srm_openG(plugin_handle ch, const char* path, int flag, mo
     if (flag & O_CREAT) { // create turl if file is not existing else get one for this file
         gfal2_log(G_LOG_LEVEL_DEBUG, "   SRM PUT mode", __func__);
         tmp_ret = gfal_srm_putTURLS_plugin(ch, p, turl, GFAL_URL_MAX_LEN, &reqtoken,
-                &tmp_err);
+            &tmp_err);
         req_type = SRM_PUT;
     }
     else {
         gfal2_log(G_LOG_LEVEL_DEBUG, "   SRM GET mode", __func__);
         tmp_ret = gfal_srm_getTURLS_plugin(ch, p, turl, GFAL_URL_MAX_LEN, &reqtoken,
-                &tmp_err);
+            &tmp_err);
         req_type = SRM_GET;
     }
 
@@ -115,13 +115,13 @@ gfal_file_handle gfal_srm_openG(plugin_handle ch, const char* path, int flag, mo
 /*
  * read function for the srm  plugin
  */
-ssize_t gfal_srm_readG(plugin_handle ch, gfal_file_handle fd, void* buff, size_t count,
-        GError** err)
+ssize_t gfal_srm_readG(plugin_handle ch, gfal_file_handle fd, void *buff, size_t count,
+    GError **err)
 {
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
-    GError* tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
+    GError *tmp_err = NULL;
     int ret = gfal_plugin_readG(opts->handle, gfal_srm_file_handle_map(fd), buff, count,
-            &tmp_err);
+        &tmp_err);
     if (tmp_err)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     return ret;
@@ -130,13 +130,13 @@ ssize_t gfal_srm_readG(plugin_handle ch, gfal_file_handle fd, void* buff, size_t
 /*
  * pread function for the srm  plugin
  */
-ssize_t gfal_srm_preadG(plugin_handle ch, gfal_file_handle fd, void* buff, size_t count,
-        off_t offset, GError** err)
+ssize_t gfal_srm_preadG(plugin_handle ch, gfal_file_handle fd, void *buff, size_t count,
+    off_t offset, GError **err)
 {
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
-    GError* tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
+    GError *tmp_err = NULL;
     int ret = gfal_plugin_preadG(opts->handle, gfal_srm_file_handle_map(fd), buff, count,
-            offset, &tmp_err);
+        offset, &tmp_err);
     if (tmp_err)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     return ret;
@@ -145,13 +145,13 @@ ssize_t gfal_srm_preadG(plugin_handle ch, gfal_file_handle fd, void* buff, size_
 /*
  * write function for the srm  plugin
  */
-ssize_t gfal_srm_writeG(plugin_handle ch, gfal_file_handle fd, const void* buff,
-        size_t count, GError** err)
+ssize_t gfal_srm_writeG(plugin_handle ch, gfal_file_handle fd, const void *buff,
+    size_t count, GError **err)
 {
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
-    GError* tmp_err = NULL;
-    int ret = gfal_plugin_writeG(opts->handle, gfal_srm_file_handle_map(fd), (void*) buff,
-            count, &tmp_err);
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
+    GError *tmp_err = NULL;
+    int ret = gfal_plugin_writeG(opts->handle, gfal_srm_file_handle_map(fd), (void *) buff,
+        count, &tmp_err);
     if (tmp_err)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     return ret;
@@ -161,21 +161,21 @@ ssize_t gfal_srm_writeG(plugin_handle ch, gfal_file_handle fd, const void* buff,
  * lseek function for the srm  plugin
  */
 off_t gfal_srm_lseekG(plugin_handle ch, gfal_file_handle fd, off_t offset, int whence,
-        GError** err)
+    GError **err)
 {
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
-    GError* tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
+    GError *tmp_err = NULL;
     int ret = gfal_plugin_lseekG(opts->handle, gfal_srm_file_handle_map(fd), offset,
-            whence, &tmp_err);
+        whence, &tmp_err);
     if (tmp_err)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
     return ret;
 }
 
-int gfal_srm_closeG(plugin_handle ch, gfal_file_handle fh, GError ** err)
+int gfal_srm_closeG(plugin_handle ch, gfal_file_handle fh, GError **err)
 {
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
-    GError* tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
+    GError *tmp_err = NULL;
     int ret = gfal_plugin_closeG(opts->handle, gfal_srm_file_handle_map(fh), &tmp_err);
     if (ret == 0) {
         gfal_srm_handle_open sh = (gfal_srm_handle_open) gfal_file_handle_get_fdesc(fh);

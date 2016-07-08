@@ -24,7 +24,8 @@
 
 #include "gfal_srm.h"
 
-gboolean srm_check_url(const char * surl);
+
+gboolean srm_check_url(const char *surl);
 
 /*
  *
@@ -34,7 +35,7 @@ gboolean srm_check_url(const char * surl);
  * */
 
 gboolean plugin_url_check2(plugin_handle handle, gfal2_context_t context,
-        const char* src, const char* dst, gfal_url2_check type );
+    const char *src, const char *dst, gfal_url2_check type);
 
 
 /**
@@ -43,7 +44,7 @@ gboolean plugin_url_check2(plugin_handle handle, gfal2_context_t context,
  * must be considered equivalent to
  * srm://host:port/blah
  **/
-int gfal2_srm_surl_cmp(const char* surl1, const char* surl2);
+int gfal2_srm_surl_cmp(const char *surl1, const char *surl2);
 
 /**
  * Returns srm://host//url-decoded path from the surl, regardless of wether the path

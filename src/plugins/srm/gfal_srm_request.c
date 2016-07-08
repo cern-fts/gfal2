@@ -22,19 +22,19 @@
 #include "gfal_srm_internal_layer.h"
 
 
-static gchar* get_spacetoken_from_config(gfal_srmv2_opt* handle)
+static gchar *get_spacetoken_from_config(gfal_srmv2_opt *handle)
 {
-    GError* error = NULL;
-    gchar* stoken = gfal2_get_opt_string(handle->handle, srm_config_group, srm_spacetokendesc, &error);
+    GError *error = NULL;
+    gchar *stoken = gfal2_get_opt_string(handle->handle, srm_config_group, srm_spacetokendesc, &error);
     if (error) g_error_free(error); // Do not really care about this
     return stoken;
 }
 
 
-gfal_srm_params_t gfal_srm_params_new(gfal_srmv2_opt* handle)
+gfal_srm_params_t gfal_srm_params_new(gfal_srmv2_opt *handle)
 {
     gfal_srm_params_t
-    res = g_new0(struct _gfal_srm_params,1);
+        res = g_new0(struct _gfal_srm_params, 1);
     res->protocols = srm_get_turls_sup_protocol(handle->handle);
     res->proto_version = handle->srm_proto_type;
     res->spacetokendesc = get_spacetoken_from_config(handle);
@@ -53,26 +53,26 @@ void gfal_srm_params_free(gfal_srm_params_t params)
 }
 
 
-char ** gfal_srm_params_get_protocols(gfal_srm_params_t params)
+char **gfal_srm_params_get_protocols(gfal_srm_params_t params)
 {
     return params->protocols;
 }
 
 
-gchar* gfal_srm_params_get_spacetoken(gfal_srm_params_t params)
+gchar *gfal_srm_params_get_spacetoken(gfal_srm_params_t params)
 {
     return params->spacetokendesc;
 }
 
 
-void gfal_srm_params_set_spacetoken(gfal_srm_params_t params, const char* spacetoken)
+void gfal_srm_params_set_spacetoken(gfal_srm_params_t params, const char *spacetoken)
 {
     g_free(params->spacetokendesc);
     params->spacetokendesc = g_strdup(spacetoken);
 }
 
 
-void gfal_srm_params_set_protocols(gfal_srm_params_t params, char** protocols)
+void gfal_srm_params_set_protocols(gfal_srm_params_t params, char **protocols)
 {
     if (params->protocols)
         g_strfreev(params->protocols);

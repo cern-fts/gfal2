@@ -27,6 +27,7 @@
 #include <glib.h>
 #include <common/gfal_common_filedescriptor.h>
 
+
 typedef struct _gfal_srm_opendir_handle {
     // SURL we are listing
     char surl[GFAL_URL_MAX_LEN];
@@ -46,12 +47,12 @@ typedef struct _gfal_srm_opendir_handle {
     struct srmv2_mdfilestatus *srm_file_statuses;
     // Array position inside srm_file_statuses while iterating
     int response_index;
-}* gfal_srm_opendir_handle;
+} *gfal_srm_opendir_handle;
 
-gfal_file_handle gfal_srm_opendirG(plugin_handle handle, const char* path, GError ** err);
+gfal_file_handle gfal_srm_opendirG(plugin_handle handle, const char *path, GError **err);
 
-int gfal_srm_closedirG(plugin_handle handle, gfal_file_handle fh, GError** err);
+int gfal_srm_closedirG(plugin_handle handle, gfal_file_handle fh, GError **err);
 
-struct dirent* gfal_srm_readdirG(plugin_handle handle, gfal_file_handle fh, GError** err);
+struct dirent *gfal_srm_readdirG(plugin_handle handle, gfal_file_handle fh, GError **err);
 
-struct dirent* gfal_srm_readdirppG(plugin_handle ch, gfal_file_handle fh, struct stat* st, GError** err);
+struct dirent *gfal_srm_readdirppG(plugin_handle ch, gfal_file_handle fh, struct stat *st, GError **err);

@@ -23,6 +23,7 @@
 #include "gfal_srm.h"
 #include <stdlib.h>
 
+
 /**
  * Extract endpoint and srm_type from a surl
  *  determine the best endpoint associated with the surl and the param of the actual handle (no bdii check or not)
@@ -33,4 +34,4 @@ int gfal_srm_determine_endpoint(gfal_srmv2_opt *opts, const char *surl, char *bu
     enum gfal_srm_proto *srm_type, GError **err);
 
 /** Returns 1 if the surl is a castor endpoint */
-int is_castor_endpoint(plugin_handle handle, const char* surl);
+int is_castor_endpoint(plugin_handle handle, const char *surl);

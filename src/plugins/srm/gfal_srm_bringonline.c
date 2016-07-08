@@ -30,37 +30,37 @@
 // surls in the initial request (plus, the response order doesn't have to be the same
 // as when requested)
 static int gfal_srmv2_bring_online_internal_status_index(
-		int nresponses,
-		struct srm_bringonline_output* output,
-		const char *surl)
+    int nresponses,
+    struct srm_bringonline_output *output,
+    const char *surl)
 {
-	int i;
-	for (i = 0; i < nresponses; ++i) {
-		if (gfal2_srm_surl_cmp(output->filestatuses[i].surl, surl) == 0) {
-			return i;
-		}
-	}
-	return -1;
+    int i;
+    for (i = 0; i < nresponses; ++i) {
+        if (gfal2_srm_surl_cmp(output->filestatuses[i].surl, surl) == 0) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 
-static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_opt* opts,
-        int nbfiles, const char* const* surl, time_t pintime, time_t timeout,
-        char* token, size_t tsize, int async, GError** errors)
+static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_opt *opts,
+    int nbfiles, const char *const *surl, time_t pintime, time_t timeout,
+    char *token, size_t tsize, int async, GError **errors)
 {
-    struct srm_bringonline_input  input;
+    struct srm_bringonline_input input;
     struct srm_bringonline_output output;
-    gfal_srm_params_t             params = gfal_srm_params_new(opts);
+    gfal_srm_params_t params = gfal_srm_params_new(opts);
     int i;
 
     memset(&output, 0, sizeof(output));
 
     srm_set_desired_request_time(context, timeout);
 
-    input.nbfiles        = nbfiles;
-    input.surls          = (char**)surl;
+    input.nbfiles = nbfiles;
+    input.surls = (char **) surl;
     input.desiredpintime = pintime;
-    input.protocols      = gfal_srm_params_get_protocols(params);
+    input.protocols = gfal_srm_params_get_protocols(params);
     input.spacetokendesc = gfal_srm_params_get_spacetoken(params);
 
     if (input.spacetokendesc)
@@ -85,8 +85,8 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
 
     if (nresponses != nbfiles) {
         gfal2_log(G_LOG_LEVEL_DEBUG,
-                "%d files in the request, %d in the response", nbfiles,
-                nresponses);
+            "%d files in the request, %d in the response", nbfiles,
+            nresponses);
     }
 
     if (output.token)
@@ -108,15 +108,15 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
                     break;
                 default:
                     gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
-                            output.filestatuses[status_index].status, __func__,
-                            "error on the bring online request: %s ",
-                            output.filestatuses[status_index].explanation);
+                        output.filestatuses[status_index].status, __func__,
+                        "error on the bring online request: %s ",
+                        output.filestatuses[status_index].explanation);
                     ++nterminal;
                     break;
             }
         } else {
             gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
-                    EPROTO, __func__, "missing surl on the response: %s", surl[i]);
+                EPROTO, __func__, "missing surl on the response: %s", surl[i]);
             ++nterminal;
         }
     }
@@ -131,20 +131,21 @@ static int gfal_srmv2_bring_online_internal(srm_context_t context, gfal_srmv2_op
 }
 
 
-int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl,
-        time_t pintime, time_t timeout, char* token, size_t tsize,
-        int async, GError** err)
+int gfal_srmv2_bring_onlineG(plugin_handle ch, const char *surl,
+    time_t pintime, time_t timeout, char *token, size_t tsize,
+    int async, GError **err)
 {
-    g_return_val_err_if_fail(ch && surl && token, EINVAL, err, "[gfal_srmv2_bring_onlineG] Invalid value handle and/or surl");
-    GError* tmp_err = NULL;
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    g_return_val_err_if_fail(ch && surl && token, EINVAL, err,
+        "[gfal_srmv2_bring_onlineG] Invalid value handle and/or surl");
+    GError *tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
 
     int ret = -1;
 
     gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
     if (easy != NULL) {
-        ret = gfal_srmv2_bring_online_internal(easy->srm_context, opts, 1, (const char* const*)&easy->path,
-                    pintime, timeout, token, tsize, async, &tmp_err);
+        ret = gfal_srmv2_bring_online_internal(easy->srm_context, opts, 1, (const char *const *) &easy->path,
+            pintime, timeout, token, tsize, async, &tmp_err);
     }
     gfal_srm_ifce_easy_context_release(opts, easy);
 
@@ -156,14 +157,13 @@ int gfal_srmv2_bring_onlineG(plugin_handle ch, const char* surl,
 }
 
 
-
-int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char* const* surls,
-        time_t pintime, time_t timeout, char* token, size_t tsize,
-        int async, GError** errors)
+int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char *const *surls,
+    time_t pintime, time_t timeout, char *token, size_t tsize,
+    int async, GError **errors)
 {
     int i;
-    GError* tmp_err = NULL;
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    GError *tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
 
     gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, *surls, &tmp_err);
     if (easy == NULL) {
@@ -174,13 +174,13 @@ int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char* con
         return -1;
     }
 
-    char* decoded[nbfiles];
+    char *decoded[nbfiles];
     for (i = 0; i < nbfiles; ++i) {
         decoded[i] = gfal2_srm_get_decoded_path(surls[i]);
     }
 
-    int ret = gfal_srmv2_bring_online_internal(easy->srm_context, opts, nbfiles, (const char* const*)decoded,
-                pintime, timeout, token, tsize, async, errors);
+    int ret = gfal_srmv2_bring_online_internal(easy->srm_context, opts, nbfiles, (const char *const *) decoded,
+        pintime, timeout, token, tsize, async, errors);
     gfal_srm_ifce_easy_context_release(opts, easy);
 
     for (i = 0; i < nbfiles; ++i) {
@@ -192,9 +192,9 @@ int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char* con
 
 
 static int gfal_srmv2_bring_online_poll_internal(srm_context_t context,
-		int nbfiles, const char* const* surls, const char* token, GError ** errors)
+    int nbfiles, const char *const *surls, const char *token, GError **errors)
 {
-    struct srm_bringonline_input  input;
+    struct srm_bringonline_input input;
     struct srm_bringonline_output output;
     int i;
 
@@ -202,8 +202,8 @@ static int gfal_srmv2_bring_online_poll_internal(srm_context_t context,
     memset(&output, 0, sizeof(output));
 
     input.nbfiles = nbfiles;
-    input.surls   = (char**)surls;
-    output.token  = (char*)token;
+    input.surls = (char **) surls;
+    output.token = (char *) token;
 
     int nresponses = gfal_srm_external_call.srm_bring_online_status(context, &input, &output);
     if (nresponses < 0) {
@@ -226,21 +226,21 @@ static int gfal_srmv2_bring_online_poll_internal(srm_context_t context,
                     break;
                 case EAGAIN:
                     gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
-                                    EAGAIN, __func__,
-                                    "still queued: %s ",
-                                    output.filestatuses[i].explanation);
+                        EAGAIN, __func__,
+                        "still queued: %s ",
+                        output.filestatuses[i].explanation);
                     break;
                 default:
                     gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
-                                    output.filestatuses[status_index].status, __func__,
-                                    "error on the bring online request: %s ",
-                                    output.filestatuses[status_index].explanation);
+                        output.filestatuses[status_index].status, __func__,
+                        "error on the bring online request: %s ",
+                        output.filestatuses[status_index].explanation);
                     ++nterminal;
                     break;
             }
         } else {
             gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(),
-                            EPROTO, __func__, "missing surl on the response: %s", surls[i]);
+                EPROTO, __func__, "missing surl on the response: %s", surls[i]);
             ++nterminal;
         }
     }
@@ -253,19 +253,19 @@ static int gfal_srmv2_bring_online_poll_internal(srm_context_t context,
 }
 
 
-
-int gfal_srmv2_bring_online_pollG(plugin_handle ch, const char* surl,
-                                  const char* token, GError** err)
+int gfal_srmv2_bring_online_pollG(plugin_handle ch, const char *surl,
+    const char *token, GError **err)
 {
-    g_return_val_err_if_fail(ch && surl && token, EINVAL, err, "[gfal_srmv2_bring_online_pollG] Invalid value handle and, surl or token");
-    GError* tmp_err = NULL;
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    g_return_val_err_if_fail(ch && surl && token, EINVAL, err,
+        "[gfal_srmv2_bring_online_pollG] Invalid value handle and, surl or token");
+    GError *tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
 
     int ret = -1;
 
     gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
     if (easy != NULL) {
-        ret = gfal_srmv2_bring_online_poll_internal(easy->srm_context, 1, (const char* const*)&easy->path, token,
+        ret = gfal_srmv2_bring_online_poll_internal(easy->srm_context, 1, (const char *const *) &easy->path, token,
             &tmp_err);
     }
     gfal_srm_ifce_easy_context_release(opts, easy);
@@ -279,13 +279,12 @@ int gfal_srmv2_bring_online_pollG(plugin_handle ch, const char* surl,
 }
 
 
-
 int gfal_srmv2_bring_online_poll_listG(plugin_handle ch, int nbfiles,
-        const char* const * surls, const char* token, GError** errors)
+    const char *const *surls, const char *token, GError **errors)
 {
     int i;
-    GError* tmp_err = NULL;
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    GError *tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
 
     gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, *surls, &tmp_err);
     if (easy == NULL) {
@@ -296,12 +295,12 @@ int gfal_srmv2_bring_online_poll_listG(plugin_handle ch, int nbfiles,
         return -1;
     }
 
-    char* decoded[nbfiles];
+    char *decoded[nbfiles];
     for (i = 0; i < nbfiles; ++i) {
         decoded[i] = gfal2_srm_get_decoded_path(surls[i]);
     }
 
-    int ret = gfal_srmv2_bring_online_poll_internal(easy->srm_context, nbfiles, (const char* const*)decoded,
+    int ret = gfal_srmv2_bring_online_poll_internal(easy->srm_context, nbfiles, (const char *const *) decoded,
         token, errors);
     gfal_srm_ifce_easy_context_release(opts, easy);
 
@@ -313,12 +312,11 @@ int gfal_srmv2_bring_online_poll_listG(plugin_handle ch, int nbfiles,
 }
 
 
-
-static int gfal_srmv2_release_file_internal(srm_context_t context, gfal_srmv2_opt* opts,
-        int nbfiles, const char* const* surl, const char* token, GError** errors)
+static int gfal_srmv2_release_file_internal(srm_context_t context, gfal_srmv2_opt *opts,
+    int nbfiles, const char *const *surl, const char *token, GError **errors)
 {
     struct srm_releasefiles_input input;
-    struct srmv2_filestatus      *statuses;
+    struct srmv2_filestatus *statuses;
     int i;
 
     if (token)
@@ -327,11 +325,11 @@ static int gfal_srmv2_release_file_internal(srm_context_t context, gfal_srmv2_op
         gfal2_log(G_LOG_LEVEL_MESSAGE, "Released file without token");
 
     // Perform
-    input.nbfiles  = nbfiles;
+    input.nbfiles = nbfiles;
     input.reqtoken = NULL;
-    input.surls    = (char**)surl;
-    if(token)
-        input.reqtoken = (char*)token;
+    input.surls = (char **) surl;
+    if (token)
+        input.reqtoken = (char *) token;
 
     int ret = gfal_srm_external_call.srm_release_files(context, &input, &statuses);
 
@@ -348,7 +346,7 @@ static int gfal_srmv2_release_file_internal(srm_context_t context, gfal_srmv2_op
     for (i = 0; i < nbfiles; ++i) {
         if (statuses[i].status != 0) {
             gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(), statuses[i].status, __func__,
-                    "error on the release request : %s ", statuses[0].explanation);
+                "error on the release request : %s ", statuses[0].explanation);
         }
     }
     gfal_srm_external_call.srm_srmv2_filestatus_delete(statuses, 1);
@@ -356,19 +354,19 @@ static int gfal_srmv2_release_file_internal(srm_context_t context, gfal_srmv2_op
 }
 
 
-
-int gfal_srmv2_release_fileG(plugin_handle ch, const char* surl,
-        const char* token, GError** err)
+int gfal_srmv2_release_fileG(plugin_handle ch, const char *surl,
+    const char *token, GError **err)
 {
-    g_return_val_err_if_fail(ch && surl && token, EINVAL, err, "[gfal_srmv2_release_fileG] Invalid value handle, surl or token");
-    GError* tmp_err = NULL;
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    g_return_val_err_if_fail(ch && surl && token, EINVAL, err,
+        "[gfal_srmv2_release_fileG] Invalid value handle, surl or token");
+    GError *tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
 
     int ret = -1;
 
     gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
     if (easy != NULL) {
-        ret = gfal_srmv2_release_file_internal(easy->srm_context, opts, 1, (const char* const*)&easy->path, token,
+        ret = gfal_srmv2_release_file_internal(easy->srm_context, opts, 1, (const char *const *) &easy->path, token,
             &tmp_err);
     }
     gfal_srm_ifce_easy_context_release(opts, easy);
@@ -382,13 +380,12 @@ int gfal_srmv2_release_fileG(plugin_handle ch, const char* surl,
 }
 
 
-
-int gfal_srmv2_release_file_listG(plugin_handle ch, int nbfiles, const char* const* surls,
-        const char* token, GError** errors)
+int gfal_srmv2_release_file_listG(plugin_handle ch, int nbfiles, const char *const *surls,
+    const char *token, GError **errors)
 {
     int i;
-    GError* tmp_err = NULL;
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    GError *tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
 
     gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surls[0], &tmp_err);
     if (easy == NULL) {
@@ -399,12 +396,12 @@ int gfal_srmv2_release_file_listG(plugin_handle ch, int nbfiles, const char* con
         return -1;
     }
 
-    char* decoded[nbfiles];
+    char *decoded[nbfiles];
     for (i = 0; i < nbfiles; ++i) {
         decoded[i] = gfal2_srm_get_decoded_path(surls[i]);
     }
 
-    int ret = gfal_srmv2_release_file_internal(easy->srm_context, opts, nbfiles, (const char* const*)decoded,
+    int ret = gfal_srmv2_release_file_internal(easy->srm_context, opts, nbfiles, (const char *const *) decoded,
         token, errors);
     gfal_srm_ifce_easy_context_release(opts, easy);
 
@@ -416,12 +413,12 @@ int gfal_srmv2_release_file_listG(plugin_handle ch, int nbfiles, const char* con
 }
 
 
-static int gfal_srmv2_abort_files_internal(srm_context_t context, gfal_srmv2_opt* opts,
-        int nbfiles, const char* const* surl, const char* token, GError** errors)
+static int gfal_srmv2_abort_files_internal(srm_context_t context, gfal_srmv2_opt *opts,
+    int nbfiles, const char *const *surl, const char *token, GError **errors)
 {
     struct srm_abort_files_input input;
-    struct srmv2_filestatus      *statuses;
-    GError                       *tmp_err = NULL;
+    struct srmv2_filestatus *statuses;
+    GError *tmp_err = NULL;
     int i;
 
     if (token)
@@ -430,11 +427,11 @@ static int gfal_srmv2_abort_files_internal(srm_context_t context, gfal_srmv2_opt
         gfal2_log(G_LOG_LEVEL_MESSAGE, "Abort file without token");
 
     // Perform
-    input.nbfiles  = nbfiles;
+    input.nbfiles = nbfiles;
     input.reqtoken = NULL;
-    input.surls    = (char**)surl;
-    if(token)
-        input.reqtoken = (char*)token;
+    input.surls = (char **) surl;
+    if (token)
+        input.reqtoken = (char *) token;
 
     int ret = gfal_srm_external_call.srm_abort_files(context, &input, &statuses);
 
@@ -450,8 +447,8 @@ static int gfal_srmv2_abort_files_internal(srm_context_t context, gfal_srmv2_opt
         for (i = 0; i < nbfiles; ++i) {
             if (statuses[i].status != 0) {
                 gfal2_set_error(&(errors[i]), gfal2_get_plugin_srm_quark(),
-                        statuses[i].status, __func__,
-                        "error on the abort request : %s ", statuses[i].explanation);
+                    statuses[i].status, __func__,
+                    "error on the abort request : %s ", statuses[i].explanation);
                 ret -= 1;
             }
         }
@@ -461,12 +458,12 @@ static int gfal_srmv2_abort_files_internal(srm_context_t context, gfal_srmv2_opt
     return ret;
 }
 
-int gfal_srm2_abort_filesG(plugin_handle ch, int nbfiles, const char* const* surls, const char* token, GError ** errors)
+int gfal_srm2_abort_filesG(plugin_handle ch, int nbfiles, const char *const *surls, const char *token, GError **errors)
 {
     int i;
 
-    GError* tmp_err = NULL;
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    GError *tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
 
     gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surls[0], &tmp_err);
     if (easy == NULL) {
@@ -477,12 +474,12 @@ int gfal_srm2_abort_filesG(plugin_handle ch, int nbfiles, const char* const* sur
         return -1;
     }
 
-    char* decoded[nbfiles];
+    char *decoded[nbfiles];
     for (i = 0; i < nbfiles; ++i) {
         decoded[i] = gfal2_srm_get_decoded_path(surls[i]);
     }
 
-    int ret = gfal_srmv2_abort_files_internal(easy->srm_context, opts, nbfiles, (const char* const*) decoded,
+    int ret = gfal_srmv2_abort_files_internal(easy->srm_context, opts, nbfiles, (const char *const *) decoded,
         token, errors);
     gfal_srm_ifce_easy_context_release(opts, easy);
     for (i = 0; i < nbfiles; ++i) {

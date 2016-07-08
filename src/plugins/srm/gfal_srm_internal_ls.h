@@ -21,14 +21,15 @@
 #include "gfal_srm.h"
 #include "gfal_srm_internal_layer.h"
 
+
 struct extended_stat {
-    struct stat   stat;
+    struct stat stat;
     TFileLocality locality;
 };
 
-int gfal_statG_srmv2__generic_internal(srm_context_t context, struct stat* buf, TFileLocality* loc,
-						const char* surl, GError** err);
+int gfal_statG_srmv2__generic_internal(srm_context_t context, struct stat *buf, TFileLocality *loc,
+    const char *surl, GError **err);
 
-int gfal_srm_cache_stat_add(plugin_handle ch, const char* surl, const struct stat * value, const TFileLocality* loc);
+int gfal_srm_cache_stat_add(plugin_handle ch, const char *surl, const struct stat *value, const TFileLocality *loc);
 
-void gfal_srm_cache_stat_remove(plugin_handle ch, const char* surl);
+void gfal_srm_cache_stat_remove(plugin_handle ch, const char *surl);

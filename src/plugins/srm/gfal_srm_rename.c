@@ -27,14 +27,14 @@
 
 
 static int gfal_srm_rename_internal_srmv2(srm_context_t context,
-        const char* src, const char* dst, GError** err)
+    const char *src, const char *dst, GError **err)
 {
-    GError*       tmp_err = NULL;
-    int           ret = -1;
+    GError *tmp_err = NULL;
+    int ret = -1;
     struct srm_mv_input input;
 
-    input.from = (char*)src;
-    input.to   = (char*)dst;
+    input.from = (char *) src;
+    input.to = (char *) dst;
 
     ret = gfal_srm_external_call.srm_mv(context, &input);
 
@@ -47,12 +47,13 @@ static int gfal_srm_rename_internal_srmv2(srm_context_t context,
 }
 
 
-int gfal_srm_renameG(plugin_handle plugin_data, const char* oldurl,
-                     const char* urlnew, GError** err)
+int gfal_srm_renameG(plugin_handle plugin_data, const char *oldurl,
+    const char *urlnew, GError **err)
 {
-    g_return_val_err_if_fail(plugin_data && oldurl && urlnew, EINVAL, err, "[gfal_srm_renameG] Invalid value handle and/or surl");
-    GError* tmp_err = NULL;
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) plugin_data;
+    g_return_val_err_if_fail(plugin_data && oldurl && urlnew, EINVAL, err,
+        "[gfal_srm_renameG] Invalid value handle and/or surl");
+    GError *tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) plugin_data;
 
     int ret = -1;
 

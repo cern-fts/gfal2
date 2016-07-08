@@ -24,17 +24,18 @@
 #include <sys/types.h>
 #include "gfal_srm_space.h"
 
-static void json_putc(char* buff, size_t s_buff, char c, size_t* offset)
+
+static void json_putc(char *buff, size_t s_buff, char c, size_t *offset)
 {
     if (*offset < s_buff)
         buff[(*offset)++] = c;
 }
 
 
-static void json_puts(char* buff, size_t s_buff, const char* str, size_t* offset)
+static void json_puts(char *buff, size_t s_buff, const char *str, size_t *offset)
 {
     json_putc(buff, s_buff, '"', offset);
-    const char* p = str;
+    const char *p = str;
     while (*p != '\0') {
         if (*p == '\\') {
             json_putc(buff, s_buff, '\\', offset);
@@ -53,7 +54,7 @@ static void json_puts(char* buff, size_t s_buff, const char* str, size_t* offset
 }
 
 
-static void json_put_null(char* buff, size_t s_buff, size_t* offset)
+static void json_put_null(char *buff, size_t s_buff, size_t *offset)
 {
     json_putc(buff, s_buff, 'n', offset);
     json_putc(buff, s_buff, 'u', offset);
@@ -62,7 +63,7 @@ static void json_put_null(char* buff, size_t s_buff, size_t* offset)
 }
 
 
-static void json_putattrs(char* buff, size_t s_buff, const char* attr, const char* value, size_t* offset)
+static void json_putattrs(char *buff, size_t s_buff, const char *attr, const char *value, size_t *offset)
 {
     json_puts(buff, s_buff, attr, offset);
     json_putc(buff, s_buff, ':', offset);
@@ -73,13 +74,13 @@ static void json_putattrs(char* buff, size_t s_buff, const char* attr, const cha
 }
 
 
-static void json_putattri(char* buff, size_t s_buff, const char* attr, int64_t value, size_t* offset)
+static void json_putattri(char *buff, size_t s_buff, const char *attr, int64_t value, size_t *offset)
 {
     json_puts(buff, s_buff, attr, offset);
     json_putc(buff, s_buff, ':', offset);
     char buffer[128];
     sprintf(buffer, "%"PRId64, value);
-    char* p;
+    char *p;
     for (p = buffer; *p != '\0'; ++p) {
         json_putc(buff, s_buff, *p, offset);
     }
@@ -87,9 +88,9 @@ static void json_putattri(char* buff, size_t s_buff, const char* attr, int64_t v
 
 
 static ssize_t gfal_srm_space_list(srm_context_t context,
-        char* buff, size_t s_buff, GError** err)
+    char *buff, size_t s_buff, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     struct srm_getspacetokens_input input;
     struct srm_getspacetokens_output output;
     ssize_t ret_size = 0;
@@ -128,9 +129,9 @@ static ssize_t gfal_srm_space_list(srm_context_t context,
 }
 
 
-static const char* retention2str(TRetentionPolicy retentionpolicy)
+static const char *retention2str(TRetentionPolicy retentionpolicy)
 {
-    switch(retentionpolicy) {
+    switch (retentionpolicy) {
         case GFAL_POLICY_REPLICA:
             return "REPLICA";
         case GFAL_POLICY_OUTPUT:
@@ -142,9 +143,9 @@ static const char* retention2str(TRetentionPolicy retentionpolicy)
     }
 }
 
-static const char* accesslatency2str(TAccessLatency accesslatency)
+static const char *accesslatency2str(TAccessLatency accesslatency)
 {
-    switch(accesslatency) {
+    switch (accesslatency) {
         case GFAL_LATENCY_ONLINE:
             return "ONLINE";
         case GFAL_LATENCY_NEARLINE:
@@ -155,14 +156,14 @@ static const char* accesslatency2str(TAccessLatency accesslatency)
 }
 
 
-static ssize_t gfal_srm_space_token_info(srm_context_t context, const char* token,
-        char* buff, size_t s_buff, GError** err)
+static ssize_t gfal_srm_space_token_info(srm_context_t context, const char *token,
+    char *buff, size_t s_buff, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     struct srm_getspacemd_input input;
     struct srm_spacemd *spaces = NULL;
     ssize_t ret_size = 0;
-    char* spacetokens[] = {(char*)token, NULL};
+    char *spacetokens[] = {(char *) token, NULL};
 
     input.nbtokens = 1;
     input.spacetokens = spacetokens;
@@ -205,14 +206,14 @@ static ssize_t gfal_srm_space_token_info(srm_context_t context, const char* toke
 
 
 static ssize_t gfal_srm_space_token_descr_info(srm_context_t context,
-        const char* token_desc, char* buff, size_t s_buff, GError** err)
+    const char *token_desc, char *buff, size_t s_buff, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     struct srm_getspacetokens_input input;
     struct srm_getspacetokens_output output;
     ssize_t ret_size = 0;
 
-    input.spacetokendesc = (char*)token_desc;
+    input.spacetokendesc = (char *) token_desc;
 
     if (gfal_srm_external_call.srm_getspacetokens(context, &input, &output) < 0) {
         gfal_srm_report_error(context->errbuf, &tmp_err);
@@ -224,7 +225,7 @@ static ssize_t gfal_srm_space_token_descr_info(srm_context_t context,
         json_putc(buff, s_buff, '[', &offset);
         for (i = 0; i < output.nbtokens; ++i) {
             ssize_t s = gfal_srm_space_token_info(context, output.spacetokens[i],
-                    buff + offset, s_buff - offset, &tmp_err);
+                buff + offset, s_buff - offset, &tmp_err);
             if (s < 0) {
                 ret_size = -1;
                 break;
@@ -247,8 +248,8 @@ static ssize_t gfal_srm_space_token_descr_info(srm_context_t context,
 }
 
 
-static ssize_t gfal_srm_space_property(srm_context_t context, const char* name,
-        char* buff, size_t s_buff, GError** err)
+static ssize_t gfal_srm_space_property(srm_context_t context, const char *name,
+    char *buff, size_t s_buff, GError **err)
 {
     if (name[0] == '\0') {
         return gfal_srm_space_list(context, buff, s_buff, err);
@@ -261,37 +262,37 @@ static ssize_t gfal_srm_space_property(srm_context_t context, const char* name,
     }
     else {
         gfal2_set_error(err, gfal2_get_plugin_srm_quark(), ENOATTR, __func__,
-                "Unknown space token attribute %s", name);
+            "Unknown space token attribute %s", name);
         return -1;
     }
 }
 
 
-ssize_t gfal_srm_space_getxattrG(plugin_handle handle, const char* path,
-        const char* name, void* buff, size_t s_buff, GError** err)
+ssize_t gfal_srm_space_getxattrG(plugin_handle handle, const char *path,
+    const char *name, void *buff, size_t s_buff, GError **err)
 {
     if (strncmp(name, "spacetoken", 10) != 0) {
         gfal2_set_error(err, gfal2_get_plugin_srm_quark(), ENOATTR,
-                __func__, "Unknown attribute %s", name);
+            __func__, "Unknown attribute %s", name);
         return -1;
     }
-    const char* subprop_name = name + 10;
+    const char *subprop_name = name + 10;
     if (*subprop_name == '.') {
         ++subprop_name;
     }
     else if (subprop_name[0] != '\0') {
         gfal2_set_error(err, gfal2_get_plugin_srm_quark(), ENOATTR,
-                __func__, "Unknown space token attribute %s", name);
+            __func__, "Unknown space token attribute %s", name);
         return -1;
     }
 
     GError *nested_error = NULL;
     ssize_t ret_size = 0;
 
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*)handle;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) handle;
     gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, path, &nested_error);
     if (easy) {
-        ret_size = gfal_srm_space_property(easy->srm_context, subprop_name, (char*)buff, s_buff, &nested_error);
+        ret_size = gfal_srm_space_property(easy->srm_context, subprop_name, (char *) buff, s_buff, &nested_error);
     }
     gfal_srm_ifce_easy_context_release(opts, easy);
 

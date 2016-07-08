@@ -22,7 +22,6 @@
 #include <time.h>
 
 
-
 #include "gfal_srm.h"
 #include "gfal_srm_namespace.h"
 #include "gfal_srm_bringonline.h"
@@ -35,6 +34,7 @@
 
 #include <gssapi.h>
 #include <globus_gss_assist.h>
+
 
 /*
  * Set up globus (see LCGUTIL-429)
@@ -53,7 +53,7 @@ static void globus_setup(void)
  *
  * list of the turls supported protocols
  */
-static char* srm_turls_sup_protocols_default[] = { "rfio", "gsidcap", "dcap", "kdcap", "gsiftp",  NULL };
+static char *srm_turls_sup_protocols_default[] = {"rfio", "gsidcap", "dcap", "kdcap", "gsiftp", NULL};
 
 
 GQuark gfal2_get_plugin_srm_quark()
@@ -64,48 +64,47 @@ GQuark gfal2_get_plugin_srm_quark()
 /*
  * list of protocols supporting third party transfer
  */
-char* srm_turls_thirdparty_protocols_default[] = { "gsiftp", NULL };
+char *srm_turls_thirdparty_protocols_default[] = {"gsiftp", NULL};
 
 
-char** srm_get_turls_sup_protocol(gfal2_context_t context)
+char **srm_get_turls_sup_protocol(gfal2_context_t context)
 {
     gsize len;
     return gfal2_get_opt_string_list_with_default(context, srm_config_group,
-            srm_config_turl_protocols, &len, srm_turls_sup_protocols_default);
+        srm_config_turl_protocols, &len, srm_turls_sup_protocols_default);
 }
 
 
-char** srm_get_3rdparty_turls_sup_protocol(gfal2_context_t context)
+char **srm_get_3rdparty_turls_sup_protocol(gfal2_context_t context)
 {
     gsize len;
     return gfal2_get_opt_string_list_with_default(context, srm_config_group,
-            srm_config_3rd_party_turl_protocols, &len,
-            srm_turls_thirdparty_protocols_default);
+        srm_config_3rd_party_turl_protocols, &len,
+        srm_turls_thirdparty_protocols_default);
 }
-
 
 
 /*
  *
  * srm plugin id
  */
-const char* gfal_srm_getName()
+const char *gfal_srm_getName()
 {
     return GFAL2_PLUGIN_VERSIONED("srm", VERSION);
 }
 
 
-int gfal_checker_compile(gfal_srmv2_opt* opts, GError** err)
+int gfal_checker_compile(gfal_srmv2_opt *opts, GError **err)
 {
     int ret = regcomp(&opts->rexurl, "^srm://([:alnum:]|-|/|.|_)+$",
-            REG_ICASE | REG_EXTENDED);
+        REG_ICASE | REG_EXTENDED);
     g_return_val_err_if_fail(ret == 0, -1, err,
-            "[gfal_surl_checker_] fail to compile regex for srm checking, report this bug");
+        "[gfal_surl_checker_] fail to compile regex for srm checking, report this bug");
     ret = regcomp(&(opts->rex_full),
-            "^srm://([:alnum:]|-|/|.|_)+:[0-9]+/([:alnum:]|-|/|.|_)+?SFN=",
-            REG_ICASE | REG_EXTENDED);
+        "^srm://([:alnum:]|-|/|.|_)+:[0-9]+/([:alnum:]|-|/|.|_)+?SFN=",
+        REG_ICASE | REG_EXTENDED);
     g_return_val_err_if_fail(ret == 0, -1, err,
-            "[gfal_surl_checker_] fail to compile regex for the full SURL srm checking, report this bug");
+        "[gfal_surl_checker_] fail to compile regex for the full SURL srm checking, report this bug");
     return ret;
 }
 
@@ -113,12 +112,12 @@ int gfal_checker_compile(gfal_srmv2_opt* opts, GError** err)
 /*
  * parse a surl to check the validity
  */
-int gfal_surl_checker(plugin_handle ch, const char* surl, GError** err)
+int gfal_surl_checker(plugin_handle ch, const char *surl, GError **err)
 {
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
     if (surl == NULL || strnlen(surl, GFAL_URL_MAX_LEN) == GFAL_URL_MAX_LEN) {
         gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
-                "Invalid surl, surl too long or NULL");
+            "Invalid surl, surl too long or NULL");
         return -1;
     }
     return regexec(&opts->rexurl, surl, 0, NULL, 0);
@@ -127,12 +126,12 @@ int gfal_surl_checker(plugin_handle ch, const char* surl, GError** err)
 /*
  * convenience func for a group of surls
  */
-gboolean gfal_srm_surl_group_checker(gfal_srmv2_opt* opts, char** surls, GError** err)
+gboolean gfal_srm_surl_group_checker(gfal_srmv2_opt *opts, char **surls, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     if (surls == NULL) {
         gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
-                "Invalid argument surls ");
+            "Invalid argument surls ");
         return FALSE;
     }
     while (*surls != NULL) {
@@ -150,8 +149,8 @@ gboolean gfal_srm_surl_group_checker(gfal_srmv2_opt* opts, char** surls, GError*
  * url checker for the srm module, surl part
  *
  * */
-static gboolean gfal_srm_check_url(plugin_handle handle, const char* url,
-        plugin_mode mode, GError** err)
+static gboolean gfal_srm_check_url(plugin_handle handle, const char *url,
+    plugin_mode mode, GError **err)
 {
     switch (mode) {
         case GFAL_PLUGIN_ACCESS:
@@ -181,7 +180,7 @@ static gboolean gfal_srm_check_url(plugin_handle handle, const char* url,
  * */
 void gfal_srm_destroyG(plugin_handle ch)
 {
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
     regfree(&opts->rexurl);
     regfree(&opts->rex_full);
     g_static_rec_mutex_free(&opts->srm_context_mutex);
@@ -199,14 +198,14 @@ static void srm_internal_copy_stat(gpointer origin, gpointer copy)
 /*
  * Init an opts struct with the default parameters
  * */
-void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal2_context_t handle)
+void gfal_srm_opt_initG(gfal_srmv2_opt *opts, gfal2_context_t handle)
 {
     memset(opts, 0, sizeof(gfal_srmv2_opt));
     gfal_checker_compile(opts, NULL);
     opts->srm_proto_type = PROTO_SRMv2;
     opts->handle = handle;
     opts->cache = gsimplecache_new(5000, &srm_internal_copy_stat,
-            sizeof(struct extended_stat));
+        sizeof(struct extended_stat));
     g_static_rec_mutex_init(&opts->srm_context_mutex);
 }
 
@@ -214,37 +213,38 @@ void gfal_srm_opt_initG(gfal_srmv2_opt* opts, gfal2_context_t handle)
 /*
  * Init function, called before all
  * */
-gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err){
-	gfal_plugin_interface srm_plugin;
-	memset(&srm_plugin,0,sizeof(gfal_plugin_interface));	// clear the plugin
-	gfal_srmv2_opt* opts = g_new0(struct _gfal_srmv2_opt,1);	// define the srmv2 option struct and clear it
-	gfal_srm_opt_initG(opts, handle);
-	srm_plugin.plugin_data = (void*) opts;
-	srm_plugin.check_plugin_url = &gfal_srm_check_url;
-	srm_plugin.plugin_delete = &gfal_srm_destroyG;
-	srm_plugin.accessG = &gfal_srm_accessG;
-	srm_plugin.mkdirpG = &gfal_srm_mkdirG;
-	srm_plugin.statG= &gfal_srm_statG;
-	srm_plugin.lstatG = &gfal_srm_statG; // no management for symlink in srm protocol/srm-ifce, just map to stat
-	srm_plugin.rmdirG = &gfal_srm_rmdirG;
-	srm_plugin.opendirG = &gfal_srm_opendirG;
-	srm_plugin.readdirG = &gfal_srm_readdirG;
-	srm_plugin.readdirppG = &gfal_srm_readdirppG;
-	srm_plugin.closedirG = &gfal_srm_closedirG;
-	srm_plugin.getName= &gfal_srm_getName;
-	srm_plugin.openG = &gfal_srm_openG;
-	srm_plugin.closeG = &gfal_srm_closeG;
-	srm_plugin.readG= &gfal_srm_readG;
-	srm_plugin.preadG = &gfal_srm_preadG;
-	srm_plugin.writeG= &gfal_srm_writeG;
-	srm_plugin.chmodG= &gfal_srm_chmodG;
-	srm_plugin.lseekG= &gfal_srm_lseekG;
-	srm_plugin.unlinkG = &gfal_srm_unlinkG;
-	srm_plugin.getxattrG = &gfal_srm_getxattrG;
-	srm_plugin.listxattrG = &gfal_srm_listxattrG;
+gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError **err)
+{
+    gfal_plugin_interface srm_plugin;
+    memset(&srm_plugin, 0, sizeof(gfal_plugin_interface));    // clear the plugin
+    gfal_srmv2_opt *opts = g_new0(struct _gfal_srmv2_opt, 1);    // define the srmv2 option struct and clear it
+    gfal_srm_opt_initG(opts, handle);
+    srm_plugin.plugin_data = (void *) opts;
+    srm_plugin.check_plugin_url = &gfal_srm_check_url;
+    srm_plugin.plugin_delete = &gfal_srm_destroyG;
+    srm_plugin.accessG = &gfal_srm_accessG;
+    srm_plugin.mkdirpG = &gfal_srm_mkdirG;
+    srm_plugin.statG = &gfal_srm_statG;
+    srm_plugin.lstatG = &gfal_srm_statG; // no management for symlink in srm protocol/srm-ifce, just map to stat
+    srm_plugin.rmdirG = &gfal_srm_rmdirG;
+    srm_plugin.opendirG = &gfal_srm_opendirG;
+    srm_plugin.readdirG = &gfal_srm_readdirG;
+    srm_plugin.readdirppG = &gfal_srm_readdirppG;
+    srm_plugin.closedirG = &gfal_srm_closedirG;
+    srm_plugin.getName = &gfal_srm_getName;
+    srm_plugin.openG = &gfal_srm_openG;
+    srm_plugin.closeG = &gfal_srm_closeG;
+    srm_plugin.readG = &gfal_srm_readG;
+    srm_plugin.preadG = &gfal_srm_preadG;
+    srm_plugin.writeG = &gfal_srm_writeG;
+    srm_plugin.chmodG = &gfal_srm_chmodG;
+    srm_plugin.lseekG = &gfal_srm_lseekG;
+    srm_plugin.unlinkG = &gfal_srm_unlinkG;
+    srm_plugin.getxattrG = &gfal_srm_getxattrG;
+    srm_plugin.listxattrG = &gfal_srm_listxattrG;
     srm_plugin.checksum_calcG = &gfal_srm_checksumG;
     srm_plugin.copy_file = &srm_plugin_filecopy;
-    srm_plugin.check_plugin_url_transfer =&plugin_url_check2;
+    srm_plugin.check_plugin_url_transfer = &plugin_url_check2;
     srm_plugin.bring_online = &gfal_srmv2_bring_onlineG;
     srm_plugin.bring_online_poll = &gfal_srmv2_bring_online_pollG;
     srm_plugin.release_file = &gfal_srmv2_release_fileG;
@@ -254,19 +254,19 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err){
     srm_plugin.abort_files = &gfal_srm2_abort_filesG;
     srm_plugin.renameG = &gfal_srm_renameG;
     srm_plugin.unlink_listG = &gfal_srm_unlink_listG;
-	return srm_plugin;
+    return srm_plugin;
 }
 
 
 /*
  * Construct a key for the cache system from a url and a prefix
  * */
-char* gfal_srm_construct_key(const char* url, const char* prefix, char* buff,
-        const size_t s_buff)
+char *gfal_srm_construct_key(const char *url, const char *prefix, char *buff,
+    const size_t s_buff)
 {
     g_strlcpy(buff, prefix, s_buff);
     g_strlcat(buff, url, s_buff);
-    char* p2 = buff + strlen(prefix) + strlen(GFAL_PREFIX_SRM) + 2;
+    char *p2 = buff + strlen(prefix) + strlen(GFAL_PREFIX_SRM) + 2;
     while (*p2 != '\0') { //remove the duplicate //
         if (*p2 == '/' && *(p2 + 1) == '/') {
             memmove(p2, p2 + 1, strlen(p2 + 1) + 1);
@@ -281,24 +281,24 @@ char* gfal_srm_construct_key(const char* url, const char* prefix, char* buff,
 /*
  *  brief accessor for the default storage type definition
  * */
-void gfal_set_default_storageG(gfal_srmv2_opt* opts, enum gfal_srm_proto proto)
+void gfal_set_default_storageG(gfal_srmv2_opt *opts, enum gfal_srm_proto proto)
 {
     opts->srm_proto_type = proto;
 }
 
 
-int gfal_srm_convert_filestatuses_to_GError(struct srmv2_filestatus* statuses, int n,
-        GError** err)
+int gfal_srm_convert_filestatuses_to_GError(struct srmv2_filestatus *statuses, int n,
+    GError **err)
 {
     g_return_val_err_if_fail(statuses && n, -1, err,
-            "[gfal_srm_convert_filestatuses_to_GError] args invalids");
+        "[gfal_srm_convert_filestatuses_to_GError] args invalids");
     int i;
     int ret = 0;
     for (i = 0; i < n; ++i) {
         if (statuses[i].status != 0) {
             gfal2_set_error(err, gfal2_get_plugin_srm_quark(), statuses[i].status,
-                    __func__, "Error on the surl %s while putdone : %s", statuses[i].surl,
-                    statuses[i].explanation);
+                __func__, "Error on the surl %s while putdone : %s", statuses[i].surl,
+                statuses[i].explanation);
             ret = -1;
         }
     }
@@ -306,19 +306,19 @@ int gfal_srm_convert_filestatuses_to_GError(struct srmv2_filestatus* statuses, i
 }
 
 
-void gfal_srm_report_error(char* errbuff, GError** err)
+void gfal_srm_report_error(char *errbuff, GError **err)
 {
     int errcode = (errno != ECOMM && errno != 0) ? errno : ECOMM;
     gfal2_set_error(err, gfal2_get_plugin_srm_quark(), errcode, __func__,
-            "srm-ifce err: %s, err: %s", strerror(errcode), errbuff);
+        "srm-ifce err: %s, err: %s", strerror(errcode), errbuff);
 }
 
 
-gboolean gfal_srm_check_cancel(gfal2_context_t context, GError** err)
+gboolean gfal_srm_check_cancel(gfal2_context_t context, GError **err)
 {
     if (gfal2_is_canceled(context)) {
         gfal2_set_error(err, gfal2_get_plugin_srm_quark(), ECANCELED, __func__,
-                "SRM operation canceled");
+            "SRM operation canceled");
         return TRUE;
     }
     return FALSE;

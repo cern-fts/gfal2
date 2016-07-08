@@ -25,13 +25,13 @@
 #include "gfal_srm_url_check.h"
 
 
-static int gfal_srm_rm_srmv2_isdir(srm_context_t context, const char* surl)
+static int gfal_srm_rm_srmv2_isdir(srm_context_t context, const char *surl)
 {
     struct srm_ls_input input;
     struct srm_ls_output output;
 
     input.nbfiles = 1;
-    input.surls = (char**)(&surl);
+    input.surls = (char **) (&surl);
     input.numlevels = 0;
     input.offset = 0;
     input.count = 0;
@@ -48,21 +48,21 @@ static int gfal_srm_rm_srmv2_isdir(srm_context_t context, const char* surl)
 }
 
 
-static int gfal_srm_rm_srmv2_internal(srm_context_t context, int nbfiles, const char* const * surls,
-        GError** errors)
+static int gfal_srm_rm_srmv2_internal(srm_context_t context, int nbfiles, const char *const *surls,
+    GError **errors)
 {
     struct srm_rm_input input;
     struct srm_rm_output output;
     int ret = -1, i;
 
     input.nbfiles = nbfiles;
-    input.surls = (char**)(surls);
+    input.surls = (char **) (surls);
 
     ret = gfal_srm_external_call.srm_rm(context, &input, &output);
 
     if (ret == nbfiles) {
         ret = 0;
-        struct srmv2_filestatus* statuses = output.statuses;
+        struct srmv2_filestatus *statuses = output.statuses;
 
         for (i = 0; i < nbfiles; ++i) {
             int err_code = statuses[i].status;
@@ -76,17 +76,17 @@ static int gfal_srm_rm_srmv2_internal(srm_context_t context, int nbfiles, const 
 
                 if (statuses[i].explanation)
                     gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(), err_code, __func__,
-                            "error reported from srm_ifce, %s", statuses[i].explanation);
+                        "error reported from srm_ifce, %s", statuses[i].explanation);
                 else
                     gfal2_set_error(&errors[i], gfal2_get_plugin_srm_quark(), err_code, __func__,
-                            "error reported from srm_ifce, without explanation!");
+                        "error reported from srm_ifce, without explanation!");
             }
         }
 
         gfal_srm_external_call.srm_srm2__TReturnStatus_delete(
-                output.retstatus);
+            output.retstatus);
         gfal_srm_external_call.srm_srmv2_filestatus_delete(output.statuses,
-                nbfiles);
+            nbfiles);
     }
     else {
         gfal_srm_report_error(context->errbuf, &errors[0]);
@@ -103,7 +103,7 @@ static int gfal_srm_rm_srmv2_internal(srm_context_t context, int nbfiles, const 
  *
  * bindings of the unlink plugin call
  */
-int gfal_srm_unlink_listG(plugin_handle ch, int nbfiles, const char* const* surls, GError** err)
+int gfal_srm_unlink_listG(plugin_handle ch, int nbfiles, const char *const *surls, GError **err)
 {
     GError *tmp_err = NULL;
     int ret = -1, i;
@@ -115,7 +115,7 @@ int gfal_srm_unlink_listG(plugin_handle ch, int nbfiles, const char* const* surl
         gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL, __func__, "incorrect args");
     }
     else {
-        gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+        gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
         gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surls[0], &tmp_err);
         if (easy) {
             char *decoded[nbfiles];
@@ -125,7 +125,7 @@ int gfal_srm_unlink_listG(plugin_handle ch, int nbfiles, const char* const* surl
                 decoded[i] = gfal2_srm_get_decoded_path(surls[i]);
             }
 
-            ret = gfal_srm_rm_srmv2_internal(easy->srm_context, nbfiles, (const char* const*)decoded, err);
+            ret = gfal_srm_rm_srmv2_internal(easy->srm_context, nbfiles, (const char *const *) decoded, err);
             for (i = 0; i < nbfiles; ++i) {
                 g_free(decoded[i]);
             }
@@ -141,11 +141,11 @@ int gfal_srm_unlink_listG(plugin_handle ch, int nbfiles, const char* const* surl
 }
 
 
-int gfal_srm_unlinkG(plugin_handle ch, const char * path, GError** err)
+int gfal_srm_unlinkG(plugin_handle ch, const char *path, GError **err)
 {
     int ret;
     GError *tmp_err = NULL;
-    const char* paths[1] = {path};
+    const char *paths[1] = {path};
 
     ret = gfal_srm_unlink_listG(ch, 1, paths, &tmp_err);
 

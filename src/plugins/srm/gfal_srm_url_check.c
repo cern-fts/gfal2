@@ -23,27 +23,30 @@
 
 #include "gfal_srm_url_check.h"
 
-const char * surl_prefix = GFAL_PREFIX_SRM;
+
+const char *surl_prefix = GFAL_PREFIX_SRM;
 
 
-gboolean srm_check_url(const char * surl){
+gboolean srm_check_url(const char *surl)
+{
     gboolean res = FALSE;
     const size_t prefix_len = strlen(surl_prefix);
     size_t surl_len = strnlen(surl, GFAL_URL_MAX_LEN);
     if ((surl_len < GFAL_URL_MAX_LEN)
-            && (strncmp(surl, surl_prefix, prefix_len) == 0)) {
+        && (strncmp(surl, surl_prefix, prefix_len) == 0)) {
         res = TRUE;
     }
     return res;
 }
 
-static gboolean srm_has_schema(const char * surl){
+static gboolean srm_has_schema(const char *surl)
+{
     return strchr(surl, ':') != NULL;
 }
 
 
 gboolean plugin_url_check2(plugin_handle handle, gfal2_context_t context,
-        const char* src, const char* dst, gfal_url2_check type)
+    const char *src, const char *dst, gfal_url2_check type)
 {
     g_return_val_if_fail(handle != NULL && src != NULL && dst != NULL, FALSE);
     gboolean src_srm = srm_check_url(src);
@@ -55,7 +58,7 @@ gboolean plugin_url_check2(plugin_handle handle, gfal2_context_t context,
 }
 
 
-static char* gfal2_srm_surl_find_path(gfal2_uri* parsed)
+static char *gfal2_srm_surl_find_path(gfal2_uri *parsed)
 {
     char *path;
     if (parsed->query != NULL && (path = strstr(parsed->query, "SFN=")) != NULL) {
@@ -84,11 +87,11 @@ char *gfal2_srm_get_decoded_path(const char *surl)
 }
 
 
-int gfal2_srm_surl_cmp(const char* surl1, const char* surl2)
+int gfal2_srm_surl_cmp(const char *surl1, const char *surl2)
 {
     int cmp;
 
-    GError* error = NULL;
+    GError *error = NULL;
     gfal2_uri *parsed1, *parsed2;
 
     // Parse urls
@@ -107,18 +110,18 @@ int gfal2_srm_surl_cmp(const char* surl1, const char* surl2)
 
     // If no SFN is found, the path is as-is
     // Otherwise, the path is whatever is found in the SFN
-    const char* sfn1 = gfal2_srm_surl_find_path(parsed1);
-    const char* sfn2 = gfal2_srm_surl_find_path(parsed2);
+    const char *sfn1 = gfal2_srm_surl_find_path(parsed1);
+    const char *sfn2 = gfal2_srm_surl_find_path(parsed2);
 
     cmp = strcmp(sfn1, sfn2);
     goto srm_surl_cmp_done;
 
     // Fallback to raw strcmp
-srm_surl_cmp_fallback:
+    srm_surl_cmp_fallback:
     g_error_free(error);
     cmp = strcmp(surl1, surl2);
 
-srm_surl_cmp_done:
+    srm_surl_cmp_done:
     gfal2_free_uri(parsed1);
     gfal2_free_uri(parsed2);
     return cmp;

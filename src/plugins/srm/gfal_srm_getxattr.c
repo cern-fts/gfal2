@@ -25,57 +25,58 @@
 #include "gfal_srm_namespace.h"
 #include "gfal_srm_space.h"
 
+
 #define GFAL_SRM_TYPE "srm.type"
 
-static char* srm_listxattr[]= { SRM_XATTR_GETURL, GFAL_XATTR_STATUS, GFAL_SRM_TYPE, NULL };
+static char *srm_listxattr[] = {SRM_XATTR_GETURL, GFAL_XATTR_STATUS, GFAL_SRM_TYPE, NULL};
 
 
-static ssize_t gfal_srm_get_endpoint_type_xattrG(plugin_handle handle, const char* path,
-  const char* name , void* buff, size_t s_buff, GError** err)
+static ssize_t gfal_srm_get_endpoint_type_xattrG(plugin_handle handle, const char *path,
+    const char *name, void *buff, size_t s_buff, GError **err)
 {
-	GError *tmp_err = NULL;
+    GError *tmp_err = NULL;
 
-	gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(handle, path, &tmp_err);
-	if (!easy) {
-		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
-		return -1;
-	}
+    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(handle, path, &tmp_err);
+    if (!easy) {
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+        return -1;
+    }
 
-	struct srm_xping_output output;
-	if (gfal_srm_external_call.srm_xping(easy->srm_context, &output) < 0) {
-		gfal2_set_error(err, gfal2_get_plugin_srm_quark(), errno, __func__,
-				"Could not get the storage type");
-		return -1;
-	}
+    struct srm_xping_output output;
+    if (gfal_srm_external_call.srm_xping(easy->srm_context, &output) < 0) {
+        gfal2_set_error(err, gfal2_get_plugin_srm_quark(), errno, __func__,
+            "Could not get the storage type");
+        return -1;
+    }
 
-	memset(buff, 0, s_buff);
-	int i;
-	for (i = 0; i < output.n_extra; ++i) {
-		if (strcmp(output.extra[i].key, "backend_type") == 0) {
-			strncpy(buff, output.extra[i].value, s_buff);
-			break;
-		}
-	}
-	srm_xping_output_free(output);
-	gfal_srm_ifce_easy_context_release(handle, easy);
-	return strlen(buff);
+    memset(buff, 0, s_buff);
+    int i;
+    for (i = 0; i < output.n_extra; ++i) {
+        if (strcmp(output.extra[i].key, "backend_type") == 0) {
+            strncpy(buff, output.extra[i].value, s_buff);
+            break;
+        }
+    }
+    srm_xping_output_free(output);
+    gfal_srm_ifce_easy_context_release(handle, easy);
+    return strlen(buff);
 }
 
 
-ssize_t gfal_srm_geturl_getxattrG(plugin_handle handle, const char* path,
-		const char* name, void* buff, size_t s_buff, GError** err)
+ssize_t gfal_srm_geturl_getxattrG(plugin_handle handle, const char *path,
+    const char *name, void *buff, size_t s_buff, GError **err)
 {
-	GError* tmp_err = NULL;
-	ssize_t ret = -1;
-	if (s_buff == 0 || buff == NULL)
-		return GFAL_URL_MAX_LEN;
+    GError *tmp_err = NULL;
+    ssize_t ret = -1;
+    if (s_buff == 0 || buff == NULL)
+        return GFAL_URL_MAX_LEN;
 
-	ret = gfal_srm_getTURLS_plugin(handle, path, buff, s_buff, NULL, &tmp_err);
-	if (ret >= 0) {
-		ret = strlen(buff) * sizeof(char);
-	}
+    ret = gfal_srm_getTURLS_plugin(handle, path, buff, s_buff, NULL, &tmp_err);
+    if (ret >= 0) {
+        ret = strlen(buff) * sizeof(char);
+    }
 
-	G_RETURN_ERR(ret, tmp_err, err);
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
@@ -83,29 +84,29 @@ ssize_t gfal_srm_geturl_getxattrG(plugin_handle handle, const char* path,
  * implementation of the getxattr for turl resolution, pin management and spacetoken set/get
  *
  * */
-ssize_t gfal_srm_getxattrG(plugin_handle handle, const char* path,
-        const char* name, void* buff, size_t s_buff, GError** err)
+ssize_t gfal_srm_getxattrG(plugin_handle handle, const char *path,
+    const char *name, void *buff, size_t s_buff, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     ssize_t ret = -1;
     gfal2_log(G_LOG_LEVEL_DEBUG, " gfal_srm_getxattrG ->");
     if (strcmp(name, SRM_XATTR_GETURL) == 0) {
         ret = gfal_srm_geturl_getxattrG(handle, path, name, buff, s_buff,
-                &tmp_err);
+            &tmp_err);
     }
     else if (strcmp(name, GFAL_XATTR_STATUS) == 0) {
         ret = gfal_srm_status_getxattrG(handle, path, name, buff, s_buff,
-                &tmp_err);
+            &tmp_err);
     }
     else if (strcmp(name, GFAL_SRM_TYPE) == 0) {
-	ret = gfal_srm_get_endpoint_type_xattrG(handle, path, name, buff, s_buff, err);
+        ret = gfal_srm_get_endpoint_type_xattrG(handle, path, name, buff, s_buff, err);
     }
     else if (strncmp(name, "spacetoken", 10) == 0) {
         return gfal_srm_space_getxattrG(handle, path, name, buff, s_buff, err);
     }
     else {
         gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), ENOATTR,
-                __func__, "not an existing extended attribute");
+            __func__, "not an existing extended attribute");
     }
 
     gfal2_log(G_LOG_LEVEL_DEBUG, " gfal_srm_getxattrG <- ");
@@ -113,22 +114,22 @@ ssize_t gfal_srm_getxattrG(plugin_handle handle, const char* path,
 }
 
 
-
 /*
  * lfc getxattr implem
  * */
-ssize_t gfal_srm_listxattrG(plugin_handle handle, const char* path, char* list, size_t size, GError** err){
-	ssize_t res = 0;
-	char** p= srm_listxattr;
-	char* plist= list;
-	while(*p != NULL){
-		const int size_str = strlen(*p)+1;
-		if( size > res && size - res >= size_str) {
-			memcpy(plist, *p, size_str);
+ssize_t gfal_srm_listxattrG(plugin_handle handle, const char *path, char *list, size_t size, GError **err)
+{
+    ssize_t res = 0;
+    char **p = srm_listxattr;
+    char *plist = list;
+    while (*p != NULL) {
+        const int size_str = strlen(*p) + 1;
+        if (size > res && size - res >= size_str) {
+            memcpy(plist, *p, size_str);
             plist += size_str;
         }
-		res += size_str;
-		p++;
-	}
-	return res;
+        res += size_str;
+        p++;
+    }
+    return res;
 }

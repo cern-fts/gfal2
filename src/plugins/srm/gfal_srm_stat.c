@@ -25,7 +25,8 @@
 #include "gfal_srm_endpoint.h"
 
 
-int gfal_statG_srmv2_internal(srm_context_t context, struct stat* buf, TFileLocality* loc, const char* surl, GError** err)
+int gfal_statG_srmv2_internal(srm_context_t context, struct stat *buf, TFileLocality *loc, const char *surl,
+    GError **err)
 {
     return gfal_statG_srmv2__generic_internal(context, buf, loc, surl, err);
 }
@@ -34,25 +35,25 @@ int gfal_statG_srmv2_internal(srm_context_t context, struct stat* buf, TFileLoca
  * stat call, for the srm interface stat and lstat are the same call !! the default behavior is similar to stat by default and ignore links
  *
  * */
-int gfal_srm_statG(plugin_handle ch, const char* surl, struct stat* buf, GError** err)
+int gfal_srm_statG(plugin_handle ch, const char *surl, struct stat *buf, GError **err)
 {
-	g_return_val_err_if_fail( ch && surl && buf, -1, err, "[gfal_srm_statG] Invalid args in handle/surl/buf");
-	GError* tmp_err = NULL;
-	int ret =-1;
-	char key_buff[GFAL_URL_MAX_LEN];
-	gfal_srmv2_opt* opts = (gfal_srmv2_opt*) ch;
+    g_return_val_err_if_fail(ch && surl && buf, -1, err, "[gfal_srm_statG] Invalid args in handle/surl/buf");
+    GError *tmp_err = NULL;
+    int ret = -1;
+    char key_buff[GFAL_URL_MAX_LEN];
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
     TFileLocality loc;
     struct extended_stat xstat;
 
-	// Try cache first
-	gfal_srm_construct_key(surl, GFAL_SRM_LSTAT_PREFIX, key_buff, GFAL_URL_MAX_LEN);
-	if (gsimplecache_take_one_kstr(opts->cache, key_buff, &xstat) == 0) {
+    // Try cache first
+    gfal_srm_construct_key(surl, GFAL_SRM_LSTAT_PREFIX, key_buff, GFAL_URL_MAX_LEN);
+    if (gsimplecache_take_one_kstr(opts->cache, key_buff, &xstat) == 0) {
         gfal2_log(G_LOG_LEVEL_DEBUG,
-                " srm_statG -> value taken from the cache");
+            " srm_statG -> value taken from the cache");
         ret = 0;
         *buf = xstat.stat;
     }
-	// Ask server otherwise
+        // Ask server otherwise
     else {
         gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
         if (easy != NULL) {
@@ -69,7 +70,7 @@ int gfal_srm_statG(plugin_handle ch, const char* surl, struct stat* buf, GError*
         gfal_srm_ifce_easy_context_release(opts, easy);
     }
 
-    if(tmp_err)
+    if (tmp_err)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
 
     return ret;

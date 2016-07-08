@@ -26,41 +26,43 @@
 #include "gfal_srm_endpoint.h"
 #include "gfal_srm_internal_ls.h"
 
-void gfal_srm_status_copy(TFileLocality loc, char* buff, size_t s_buff){
-	char * org_string;
-	switch(loc){
-		case GFAL_LOCALITY_ONLINE_:
-			org_string = GFAL_XATTR_STATUS_ONLINE;
-			break;
-		case GFAL_LOCALITY_LOST:
-			org_string = GFAL_XATTR_STATUS_LOST;
-			break;
-		case GFAL_LOCALITY_NEARLINE_:
-			org_string = GFAL_XATTR_STATUS_NEARLINE;
-			break;
-		case GFAL_LOCALITY_UNAVAILABLE:
-			org_string = GFAL_XATTR_STATUS_UNAVAILABLE;
-			break;
-		case GFAL_LOCALITY_ONLINE_USCOREAND_USCORENEARLINE:
-			org_string = GFAL_XATTR_STATUS_NEARLINE_ONLINE;
-			break;
-		default:
-			org_string = GFAL_XATTR_STATUS_UNKNOW;
-			break;
-	}
-	g_strlcpy(buff, org_string, s_buff);
+
+void gfal_srm_status_copy(TFileLocality loc, char *buff, size_t s_buff)
+{
+    char *org_string;
+    switch (loc) {
+        case GFAL_LOCALITY_ONLINE_:
+            org_string = GFAL_XATTR_STATUS_ONLINE;
+            break;
+        case GFAL_LOCALITY_LOST:
+            org_string = GFAL_XATTR_STATUS_LOST;
+            break;
+        case GFAL_LOCALITY_NEARLINE_:
+            org_string = GFAL_XATTR_STATUS_NEARLINE;
+            break;
+        case GFAL_LOCALITY_UNAVAILABLE:
+            org_string = GFAL_XATTR_STATUS_UNAVAILABLE;
+            break;
+        case GFAL_LOCALITY_ONLINE_USCOREAND_USCORENEARLINE:
+            org_string = GFAL_XATTR_STATUS_NEARLINE_ONLINE;
+            break;
+        default:
+            org_string = GFAL_XATTR_STATUS_UNKNOW;
+            break;
+    }
+    g_strlcpy(buff, org_string, s_buff);
 }
 
 
-ssize_t gfal_srm_status_internal(gfal_srmv2_opt* opts, srm_context_t context, const char* path,
-        void* buff, size_t s_buff, GError** err)
+ssize_t gfal_srm_status_internal(gfal_srmv2_opt *opts, srm_context_t context, const char *path,
+    void *buff, size_t s_buff, GError **err)
 {
-	GError* tmp_err=NULL;
-	ssize_t ret = -1;
-	struct extended_stat buf;
-	char key_buff[GFAL_URL_MAX_LEN];
+    GError *tmp_err = NULL;
+    ssize_t ret = -1;
+    struct extended_stat buf;
+    char key_buff[GFAL_URL_MAX_LEN];
 
-	gfal_srm_construct_key(path, GFAL_SRM_LSTAT_PREFIX, key_buff, GFAL_URL_MAX_LEN);
+    gfal_srm_construct_key(path, GFAL_SRM_LSTAT_PREFIX, key_buff, GFAL_URL_MAX_LEN);
     if (gsimplecache_take_one_kstr(opts->cache, key_buff, &buf) == 0) {
         gfal2_log(G_LOG_LEVEL_DEBUG, " gfal_srm_status_internal -> value taken from the cache");
         ret = 0;
@@ -70,21 +72,23 @@ ssize_t gfal_srm_status_internal(gfal_srmv2_opt* opts, srm_context_t context, co
     }
 
     if (ret >= 0) {
-        gfal_srm_status_copy(buf.locality, (char*) buff, s_buff);
-        ret = MIN( strlen(buff), s_buff);
+        gfal_srm_status_copy(buf.locality, (char *) buff, s_buff);
+        ret = MIN(strlen(buff), s_buff);
     }
 
-	G_RETURN_ERR(ret, tmp_err, err);
+    G_RETURN_ERR(ret, tmp_err, err);
 }
 
 /*
  * main implementation of the srm status -> getxattr
  */
-ssize_t gfal_srm_status_getxattrG(plugin_handle handle, const char* surl, const char* name , void* buff, size_t s_buff, GError** err)
+ssize_t gfal_srm_status_getxattrG(plugin_handle handle, const char *surl, const char *name, void *buff, size_t s_buff,
+    GError **err)
 {
-    g_return_val_err_if_fail(handle && surl, EINVAL, err, "[gfal_srm_status_getxattrG] Invalid value handle and/or surl");
-    GError* tmp_err = NULL;
-    gfal_srmv2_opt* opts = (gfal_srmv2_opt*) handle;
+    g_return_val_err_if_fail(handle && surl, EINVAL, err,
+        "[gfal_srm_status_getxattrG] Invalid value handle and/or surl");
+    GError *tmp_err = NULL;
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) handle;
 
     int ret = -1;
 
