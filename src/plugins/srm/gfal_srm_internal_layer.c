@@ -233,9 +233,11 @@ gfal_srm_easy_t gfal_srm_ifce_easy_context(gfal_srmv2_opt *opts,
 void gfal_srm_ifce_easy_context_release(gfal_srmv2_opt *opts,
     gfal_srm_easy_t easy)
 {
-    if (opts && easy && easy->srm_context) {
+    if (opts) {
         g_static_rec_mutex_unlock(&opts->srm_context_mutex);
     }
-    g_free(easy->path);
-    g_free(easy);
+    if (easy) {
+        g_free(easy->path);
+        g_free(easy);
+    }
 }

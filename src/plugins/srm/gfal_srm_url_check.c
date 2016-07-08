@@ -92,7 +92,7 @@ int gfal2_srm_surl_cmp(const char *surl1, const char *surl2)
     int cmp;
 
     GError *error = NULL;
-    gfal2_uri *parsed1, *parsed2;
+    gfal2_uri *parsed1 = NULL, *parsed2 = NULL;
 
     // Parse urls
     parsed1 = gfal2_parse_uri(surl1, &error);
@@ -121,7 +121,7 @@ int gfal2_srm_surl_cmp(const char *surl1, const char *surl2)
     g_error_free(error);
     cmp = strcmp(surl1, surl2);
 
-    srm_surl_cmp_done:
+srm_surl_cmp_done:
     gfal2_free_uri(parsed1);
     gfal2_free_uri(parsed2);
     return cmp;

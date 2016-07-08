@@ -104,7 +104,7 @@ GridFTPSessionHandler::~GridFTPSessionHandler()
 
 
 GridFTPSession::GridFTPSession(gfal2_context_t context, const std::string& hostname):
-        hostname(hostname), context(context), params(NULL)
+        hostname(hostname), context(context), params(NULL), pasv_plugin(NULL)
 {
     globus_result_t res;
 
