@@ -19,11 +19,11 @@
  */
 
 #include <assert.h>
+#include <ctype.h>
 #include <errno.h>
 #include <regex.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include "gfal2_uri.h"
 
 
@@ -171,6 +171,20 @@ char *gfal2_join_uri(gfal2_uri* uri)
     return g_strjoinv("", str_array);
 }
 
+static int _hex(char digit)
+{
+    if (digit >= '0' && digit <= '9') {
+        return digit - '0';
+    }
+    else if (digit >= 'A' && digit <= 'F') {
+        return (digit - 'A') + 0xA;
+    }
+    else if (digit >= 'a' && digit <= 'f') {
+        return (digit - 'a') + 0xA;
+    }
+    return 0;
+}
+
 char *gfal2_urldecode(char *str)
 {
     if (str == NULL) {
@@ -179,8 +193,9 @@ char *gfal2_urldecode(char *str)
 
     char *r = str, *w = str;
     while (*r != '\0') {
-        if (*r == '%') {
-            *w = strtol(r + 1, &r, 16);
+        if (*r == '%' && isxdigit(*(r + 1)) && isxdigit(*(r + 2))) {
+            *w = (_hex(*(r + 1)) << 4) + _hex(*(r + 2));
+            r += 3;
             ++w;
         } else {
             *w = *r;
