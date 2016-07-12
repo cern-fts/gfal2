@@ -27,3 +27,5 @@ RUN yum install -y epel-release
 RUN yum clean all && yum update -y
 RUN yum install -y gfal2-all
 
+# Leave yum cache clean
+RUN yum clean all
