@@ -104,7 +104,7 @@ GridFTPSessionHandler::~GridFTPSessionHandler()
 
 
 GridFTPSession::GridFTPSession(gfal2_context_t context, const std::string& hostname):
-        hostname(hostname), context(context), params(NULL), pasv_plugin(NULL)
+        hostname(hostname), pasv_plugin(NULL), context(context), params(NULL) 
 {
     globus_result_t res;
 
@@ -647,6 +647,13 @@ void gfal_globus_done_callback(void* user_args,
         g_strlcpy(err_static, err_buffer, sizeof(err_static));
         g_free(err_buffer);
         state->error = new Gfal::CoreException(GFAL_GLOBUS_DONE_SCOPE, err_code, err_static);
+
+        // Log complete error dump
+        char *chain = globus_error_print_chain(globus_error);
+        if (chain != NULL) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, chain);
+            globus_free(chain);
+        }   
     }
     state->done = true;
     globus_cond_signal(&state->cond);
