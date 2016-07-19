@@ -84,6 +84,11 @@ public:
     // rmdir query on path
     void rmdir(const char* path);
 
+    // Query an extended attribute
+    ssize_t getxattr(const char *path,
+                  const char *name,
+                  void *buff, size_t s_buff);
+
     void autoCleanFileCopy(gfalt_params_t params, GError* checked_error,
             const char* dst);
 

@@ -24,6 +24,7 @@
 
 #include <globus_gass_copy.h>
 #include <globus_ftp_client.h>
+#include <globus_ftp_control.h>
 #include <globus_ftp_client_debug_plugin.h>
 #include <globus_ftp_client_throughput_plugin.h>
 
@@ -55,6 +56,7 @@ GridFTPModule::GridFTPModule(GridFTPFactory* factory)
 
     globus_module_activate(GLOBUS_GASS_COPY_MODULE);
     globus_module_activate(GLOBUS_FTP_CLIENT_MODULE);
+    globus_module_activate(GLOBUS_FTP_CONTROL_MODULE);
     globus_module_activate(GLOBUS_FTP_CLIENT_DEBUG_PLUGIN_MODULE);
     globus_module_activate(GLOBUS_FTP_CLIENT_THROUGHPUT_PLUGIN_MODULE);
 }
@@ -66,6 +68,7 @@ GridFTPModule::~GridFTPModule()
 
     globus_module_deactivate(GLOBUS_GASS_COPY_MODULE);
     globus_module_deactivate(GLOBUS_FTP_CLIENT_MODULE);
+    globus_module_deactivate(GLOBUS_FTP_CONTROL_MODULE);
     globus_module_deactivate(GLOBUS_FTP_CLIENT_DEBUG_PLUGIN_MODULE);
     globus_module_deactivate(GLOBUS_FTP_CLIENT_THROUGHPUT_PLUGIN_MODULE);
 }

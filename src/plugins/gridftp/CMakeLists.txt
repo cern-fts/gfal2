@@ -4,6 +4,7 @@ if (PLUGIN_GRIDFTP)
     file (GLOB_RECURSE src_gridftp "*.c*")
 
     find_package (Globus_FTP_CLIENT REQUIRED)
+    find_package (Globus_FTP_CONTROL REQUIRED)
     find_package (Globus_GASS_COPY REQUIRED)
     find_package (Globus_COMMON REQUIRED)
     find_package (Globus_GSS_ASSIST REQUIRED)
@@ -14,6 +15,7 @@ if (PLUGIN_GRIDFTP)
 
     target_link_libraries(plugin_gridftp gfal2 gfal2_transfer
                           ${GLOBUS_FTP_CLIENT_LIBRARIES}
+                          ${GLOBUS_FTP_CONTROL_LIBRARIES}
 			              ${GLOBUS_GASS_COPY_LIBRARIES}
                           ${GLOBUS_GSSAPI_GSI}
                           ${GLOBUS_COMMON_LIBRARIES}
