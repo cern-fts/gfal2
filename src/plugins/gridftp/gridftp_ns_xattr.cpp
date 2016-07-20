@@ -462,7 +462,7 @@ ssize_t GridFTPModule::getxattr(const char *path,
     json_putc(cbuff, s_buff, '{', &offset);
     if (handler.m_usage >= 0)
     {
-        json_putattri(cbuff, s_buff, "totalsize", handler.m_usage, &offset);
+        json_putattri(cbuff, s_buff, "usedsize", handler.m_usage, &offset);
         prev_attr = true;
     }
     if (handler.m_free >= 0)
@@ -473,7 +473,7 @@ ssize_t GridFTPModule::getxattr(const char *path,
     if (handler.m_total >= 0)
     {
         if (prev_attr) json_putc(cbuff, s_buff, ',', &offset);
-        json_putattri(cbuff, s_buff, "guaranteedsize", handler.m_total, &offset);
+        json_putattri(cbuff, s_buff, "totalsize", handler.m_total, &offset);
     }
     json_putc(cbuff, s_buff, '}', &offset);
     if (is_descr) {json_putc(cbuff, s_buff, ']', &offset);}
