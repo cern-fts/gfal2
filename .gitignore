@@ -6,3 +6,17 @@
 *.tar.gz
 *.gz
 *.dsc
+CMakeCache.txt
+**/*.cmake
+**/Makefile
+**/CMakeFiles
+test/common/*.so
+src/core/lib*.so*
+DartConfiguration.tcl
+doc/Doxyfile
+install_manifest.txt
+src/core/gfal2.pc
+src/core/transfer/gfal_transfer.pc
+src/plugins/xrootd/libplugin_xrootd_static.a
+src/version/gfal2_version
+plugins/
