@@ -1,6 +1,30 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Mon Aug 01 2016 Alejandro Alvarez <aalvarez at cern.ch> - 2.12.0
+### Bug
+- [DMC-833] - gfal2_add_client_info should overwrite existing key
+- [DMC-841] - Make scheme handling consistent across gfal2
+- [DMC-846] - File Plugin: Only strict URIs must be accepted
+- [DMC-848] - GridFTP Plugin: PASV plugin parses incorrectly some IPv6
+- [DMC-853] - [Known Issue] Connection issues when a PUT and a GET are done through the same GridFTP connection
+- [DMC-856] - Set user and password when accessing plain FTP
+- [DMC-858] - XRootD: Urldecode path before passing to xrootd libraries
+- [DMC-860] - SRM Plugin: Urldecode path before passing to srm-ifce
+### New Feature
+- [DMC-827] - GridFTP Plugin: Allow to configure blocksize
+- [DMC-849] - GridFTP Plugin: Fire an event if IPv6 is used
+- [DMC-866] - Expand '-' to stdout when used as destination for gfal-copy
+- [DMC-868] - GridFTP Plugin: Add spacetoken xattr 
+### Task
+- [DMC-852] - GridFTP: Workaround for Globus' higher priority to /etc/grid-security/hostcert.pem 
+### Improvement
+- [DMC-837] - When an operation is not supported, include the url on the error
+- [DMC-851] - Improve URI parser (breaks internal API)
+- [DMC-855] - Accept xroot:// as well as root://
+- [DMC-857] - GridFTP Plugin: Set ALLO to remote storages
+- [DMC-864] - Can gfal2 indicate the origin of errors (source/destination) when using GridFTP?
+
 ## Thu Apr 14 2016 Alejandro Alvarez <aalvarez at cern.ch> - 2.11.1
 ### Bug
 - [DMC-813] - XRootD plugin: gfal2_set_error called without format string
