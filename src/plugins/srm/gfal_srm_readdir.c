@@ -114,11 +114,7 @@ static int gfal_srm_readdir_internal(plugin_handle ch,
     memset(&input, 0, sizeof(input));
     memset(&output, 0, sizeof(output));
 
-    gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(ch, oh->surl, &tmp_err);
-    if (!easy) {
-        G_RETURN_ERR(resu, tmp_err, err);
-    }
-    char *tab_surl[] = {easy->path, NULL};
+    char *tab_surl[] = {oh->surl, NULL};
 
     input.nbfiles = 1;
     input.surls = tab_surl;
@@ -129,7 +125,7 @@ static int gfal_srm_readdir_internal(plugin_handle ch,
     input.offset = &offset_buffer;
 
     oh->response_index = 0;
-    ret = gfal_srm_external_call.srm_ls(easy->srm_context, &input, &output);
+    ret = gfal_srm_external_call.srm_ls(oh->easy->srm_context, &input, &output);
 
     if (ret >= 0) {
         srmv2_mdstatuses = output.statuses;
@@ -147,12 +143,11 @@ static int gfal_srm_readdir_internal(plugin_handle ch,
         }
     }
     else {
-        gfal_srm_report_error(easy->srm_context->errbuf, &tmp_err);
+        gfal_srm_report_error(oh->easy->srm_context->errbuf, &tmp_err);
         resu = -1;
     }
     gfal_srm_external_call.srm_srm2__TReturnStatus_delete(output.retstatus);
 
-    gfal_srm_ifce_easy_context_release(ch, easy);
     G_RETURN_ERR(resu, tmp_err, err);
 }
 

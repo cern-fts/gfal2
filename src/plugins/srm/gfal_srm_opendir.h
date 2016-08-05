@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "gfal_srm_internal_layer.h"
 #include <gfal_srm_ifce_types.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -29,6 +30,8 @@
 
 
 typedef struct _gfal_srm_opendir_handle {
+    gfal_srm_easy_t easy;
+
     // SURL we are listing
     char surl[GFAL_URL_MAX_LEN];
 
