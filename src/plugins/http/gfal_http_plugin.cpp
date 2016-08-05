@@ -82,12 +82,13 @@ static void gfal_http_get_ucert(RequestParams & params, gfal2_context_t handle)
 
 /// AWS implementation
 static void gfal_http_get_aws_keys(gfal2_context_t handle, const std::string& group,
-        gchar** secret_key, gchar** access_key, gchar** token, gchar** region)
+        gchar** secret_key, gchar** access_key, gchar** token, gchar** region, bool *alternate_url)
 {
     *secret_key = gfal2_get_opt_string(handle, group.c_str(), "SECRET_KEY", NULL);
     *access_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_KEY", NULL);
     *token = gfal2_get_opt_string(handle, group.c_str(), "TOKEN", NULL);
     *region = gfal2_get_opt_string(handle, group.c_str(), "REGION", NULL);
+    *alternate_url =gfal2_get_opt_boolean_with_default(handle, group.c_str(), "ALTERNATE", false);
 
     // For retrocompatibility
     if (!*secret_key) {
@@ -101,18 +102,16 @@ static void gfal_http_get_aws_keys(gfal2_context_t handle, const std::string& gr
 static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, const Davix::Uri& uri)
 {
     // Try generic configuration
+    bool alternate_url;
     gchar *secret_key, *access_key, *token, *region;
-    gfal_http_get_aws_keys(handle, "S3", &secret_key, &access_key, &token, &region);
 
-    // If not present, try S3:HOST
-    if (!secret_key) {
-        std::string group_label("S3:");
-        group_label += uri.getHost();
-        std::transform(group_label.begin(), group_label.end(), group_label.begin(), ::toupper);
-        gfal_http_get_aws_keys(handle, group_label, &secret_key, &access_key, &token, &region);
-    }
+    // Try S3:HOST
+    std::string group_label("S3:");
+    group_label += uri.getHost();
+    std::transform(group_label.begin(), group_label.end(), group_label.begin(), ::toupper);
+    gfal_http_get_aws_keys(handle, group_label, &secret_key, &access_key, &token, &region, &alternate_url);
 
-    // Last attempt, S3:host removing bucket
+    // Try S3:host removing bucket
     if (!secret_key) {
         std::string group_label("S3:");
         std::string host = uri.getHost();
@@ -120,8 +119,13 @@ static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, co
         if (i != std::string::npos) {
             group_label += host.substr(i + 1);
             std::transform(group_label.begin(), group_label.end(), group_label.begin(), ::toupper);
-            gfal_http_get_aws_keys(handle, group_label, &secret_key, &access_key, &token, &region);
+            gfal_http_get_aws_keys(handle, group_label, &secret_key, &access_key, &token, &region, &alternate_url);
         }
+    }
+
+    // Try default
+    if (!secret_key) {
+        gfal_http_get_aws_keys(handle, "S3", &secret_key, &access_key, &token, &region, &alternate_url);
     }
 
     if (secret_key && access_key) {
@@ -136,6 +140,8 @@ static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, co
         gfal2_log(G_LOG_LEVEL_DEBUG, "Using region %s", region);
         params.setAwsRegion(region);
     }
+
+    params.setAwsAlternate(alternate_url);
 
     g_free(secret_key);
     g_free(access_key);
