@@ -12,7 +12,11 @@
 #  PYTHON_AVAILABLE_VERSIONS		= list all the version available on the system
 # --
 
-LIST(APPEND L_PYTHON_VERSIONS "1.5" "1.6" "2.0" "2.1" "2.2" "2.4" "2.5" "2.6" "2.7" "2.8" "3.0" "3.1" "3.2" "3.3" "3.4")
+LIST(APPEND L_PYTHON_VERSIONS
+    "1.5" "1.6"
+    "2.0" "2.1" "2.2" "2.4" "2.5" "2.6" "2.7" "2.8"
+    "3" "3.0" "3.1" "3.2" "3.3" "3.4" "3.5"
+)
 
 INCLUDE(FindPackageHandleStandardArgs)
 
@@ -46,71 +50,38 @@ INCLUDE(FindPackageHandleStandardArgs)
 EXECUTE_PROCESS( COMMAND ${PYTHON_EXECUTABLE} -c "import sys; print('%s.%s' % sys.version_info[:2])" 
 					OUTPUT_VARIABLE PYTHON_CURRENT_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
 					
-
-
-
 ## tests for all versions of the  packages
-
 FOREACH(_VERSION ${L_PYTHON_VERSIONS})
 
-  STRING(REPLACE "." "" _VERSION_NO_DOTS ${_VERSION})
+    STRING(REPLACE "." "" _VERSION_NO_DOTS ${_VERSION})
 
-FIND_PROGRAM(PYTHON_EXECUTABLE_${_VERSION}
-  NAMES python${_VERSION}
-  HINTS
-	${ALT_PYTHON_LOCATION}/bin/
-  PATHS
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\3.4\\InstallPath]
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\3.3\\InstallPath]
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\3.2\\InstallPath]
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\3.1\\InstallPath]
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\3.0\\InstallPath]
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\2.8\\InstallPath]
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\2.7\\InstallPath]
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\2.6\\InstallPath]
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\2.5\\InstallPath]
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\2.4\\InstallPath]
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\2.3\\InstallPath]
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\2.2\\InstallPath]
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\2.1\\InstallPath]
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\2.0\\InstallPath]
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\1.6\\InstallPath]
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\1.5\\InstallPath]
- )
+    FIND_PROGRAM(PYTHON_EXECUTABLE_${_VERSION}
+        NAMES python${_VERSION}
+        HINTS
+    	    ${ALT_PYTHON_LOCATION}/bin/
+    )
  
  
- IF(PYTHON_EXECUTABLE_${_VERSION})
+    IF(PYTHON_EXECUTABLE_${_VERSION})
  
 		LIST(APPEND PYTHON_AVAILABLE_VERSIONS ${_VERSION})
  
-                EXECUTE_PROCESS( COMMAND ${PYTHON_EXECUTABLE_${_VERSION}} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(True))"
-						OUTPUT_VARIABLE PYTHON_SITE_PACKAGES_${_VERSION} OUTPUT_STRIP_TRAILING_WHITESPACE)
+        EXECUTE_PROCESS(COMMAND
+            ${PYTHON_EXECUTABLE_${_VERSION}} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(True))"
+			OUTPUT_VARIABLE PYTHON_SITE_PACKAGES_${_VERSION} OUTPUT_STRIP_TRAILING_WHITESPACE)
  
-		#find libs
-		FIND_LIBRARY(PYTHON_LIBRARY_${_VERSION}
-			NAMES python${_VERSION_NO_DOTS} python${_VERSION}
-            HINTS
-				${ALT_PYTHON_LOCATION}/lib/
-			PATHS
-			[HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_VERSION}\\InstallPath]/libs
-			PATH_SUFFIXES
-			# Avoid finding the .dll in the PATH.  We want the .lib.
-			NO_SYSTEM_ENVIRONMENT_PATH
-	 	)
-		SET(PYTHON_LIBRARIES_${_VERSION} ${PYTHON_LIBRARY_${_VERSION}})
+		# find libs
+        EXECUTE_PROCESS(COMMAND
+            python${_VERSION}-config --libs
+            OUTPUT_VARIABLE PYTHON_LIBRARY_${_VERSION} OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        SET(PYTHON_LIBRARIES_${_VERSION} ${PYTHON_LIBRARY_${_VERSION}})
 
-	 # find path
-	  FIND_PATH(PYTHON_INCLUDE_PATH_${_VERSION}
-		NAMES Python.h
-		HINTS
-			${ALT_PYTHON_LOCATION}/include/python${_VERSION}/
-		PATHS
-		  [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_VERSION}\\InstallPath]/include
-		PATH_SUFFIXES
-		  python${_VERSION}
-	  )
-  
-	
+        # find include
+        EXECUTE_PROCESS(COMMAND
+            ${PYTHON_EXECUTABLE_${_VERSION}} -c "from distutils import sysconfig; print(sysconfig.get_python_inc())"
+            OUTPUT_VARIABLE PYTHON_INCLUDE_PATH_${_VERSION} OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
 	
 		FIND_PACKAGE_HANDLE_STANDARD_ARGS(Python${_VERSION} DEFAULT_MSG PYTHON_EXECUTABLE_${_VERSION})
 
@@ -137,6 +108,10 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(PythonCurrentInclude DEFAULT_MSG PYTHON_INCLUD
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(PythonCurrentLibs DEFAULT_MSG PYTHON_LIBRARIES )
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(PythonCurrentModsDir DEFAULT_MSG PYTHON_SITE_PACKAGES )
 
+IF(PYTHON_EXECUTABLE_3)
+    EXECUTE_PROCESS(COMMAND ${PYTHON_EXECUTABLE_3} -c "import sys; print('%s.%s' % sys.version_info[:2])"
+            OUTPUT_VARIABLE PYTHON3_CURRENT_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+ENDIF()
  
 
 MARK_AS_ADVANCED(PYTHON_EXECUTABLE) 
