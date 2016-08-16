@@ -1,6 +1,12 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Tue Aug 16 2016 Alejandro Alvarez <aalvarez at cern.ch> - 2.12.1
+### Bug
+- [DMC-872] - SRM Plugin: DMC-860 broke directory listing when endpoint can not be resolved from BDII
+### New Feature
+- [DMC-870] - Add support for s3 alternate syntax URLs to gfal
+
 ## Mon Aug 01 2016 Alejandro Alvarez <aalvarez at cern.ch> - 2.12.0
 ### Bug
 - [DMC-833] - gfal2_add_client_info should overwrite existing key
