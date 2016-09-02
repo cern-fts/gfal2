@@ -321,13 +321,16 @@ int gfal_xrootd_3rd_copy(plugin_handle plugin_data, gfal2_context_t context,
     gfalt_get_user_defined_checksum(params, checksumType, sizeof(checksumType),
             checksumValue, sizeof(checksumValue),
             NULL);
-    char checksumConcat[576];
-    snprintf(checksumConcat, sizeof(checksumConcat), "%s:%s", checksumType, checksumValue);
+
+    char *checksumConcat[1];
+    checksumConcat[0] = g_strdup_printf("%s:%s", checksumType, checksumValue);
 
     int ret = gfal_xrootd_3rd_copy_bulk(plugin_data,
             context, params, 1,
-            &src, &dst, (const char*const*)&checksumConcat,
+            &src, &dst, checksumConcat,
             &op_error, &file_error);
+
+    g_free(checksumConcat[0]);
 
     if (ret < 0) {
         if (op_error) {
