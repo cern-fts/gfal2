@@ -682,8 +682,11 @@ GridFTPRequestState::GridFTPRequestState(GridFTPSessionHandler* s,
         GridFTPRequestType request_type) :
         handler(s), request_type(request_type), error(NULL), done(false)
 {
+    int global_ns_timeout = gfal2_get_opt_integer_with_default(
+        s->get_factory()->get_gfal2_context(), CORE_CONFIG_GROUP, CORE_CONFIG_NAMESPACE_TIMEOUT, 300);
     this->default_timeout = gfal2_get_opt_integer_with_default(
-            s->get_factory()->get_gfal2_context(), GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_OP_TIMEOUT, 300);
+            s->get_factory()->get_gfal2_context(), GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_OP_TIMEOUT, global_ns_timeout);
+
     globus_mutex_init(&mutex, NULL);
     globus_cond_init(&cond, NULL);
 }

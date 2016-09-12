@@ -105,8 +105,11 @@ struct XAttrState
         m_cred(GSS_C_NO_CREDENTIAL), m_error(NULL), m_done(true), m_needs_quit(false),
         m_usage(-1), m_free(-1), m_total(-1)
     {
+        int global_timeout = gfal2_get_opt_integer_with_default(
+            factory->get_gfal2_context(), CORE_CONFIG_GROUP, CORE_CONFIG_NAMESPACE_TIMEOUT, 300);
         m_default_timeout = gfal2_get_opt_integer_with_default(
-            factory->get_gfal2_context(), GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_OP_TIMEOUT, 300);
+            factory->get_gfal2_context(), GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_OP_TIMEOUT, global_timeout);
+
         globus_mutex_init(&m_mutex, NULL);
         globus_cond_init(&m_cond, NULL);
         memset(&m_auth, '\0', sizeof(m_auth));

@@ -90,8 +90,11 @@ static srm_context_t gfal_srm_ifce_context_setup(gfal2_context_t handle,
         gfal2_log_get_level() >= G_LOG_LEVEL_DEBUG, keep_alive);
 
     if (context != NULL) {
+        gint global_timeout = gfal2_get_opt_integer_with_default(handle,
+            CORE_CONFIG_GROUP, CORE_CONFIG_NAMESPACE_TIMEOUT, 180);
         timeout = gfal2_get_opt_integer_with_default(handle, srm_config_group,
-            srm_ops_timeout_key, 180);
+            srm_ops_timeout_key, global_timeout);
+
         gfal2_log(G_LOG_LEVEL_DEBUG, " SRM operation timeout %d", timeout);
         context->timeout = timeout;
         context->timeout_ops = timeout;

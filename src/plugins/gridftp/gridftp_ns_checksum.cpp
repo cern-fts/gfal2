@@ -74,9 +74,16 @@ void GridFTPModule::checksum(const char* url, const char* check_type,
             globus_ftp_client_done_callback, &req);
     gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_CHECKSUM, res);
     // wait for answer with a timeout
+    const time_t global_timeout = gfal2_get_opt_integer_with_default(
+        _handle_factory->get_gfal2_context(),
+        CORE_CONFIG_GROUP, CORE_CONFIG_CHECKSUM_TIMEOUT, 1800
+    );
+
     const time_t timeout = gfal2_get_opt_integer_with_default(
             _handle_factory->get_gfal2_context(),
-            GRIDFTP_CONFIG_GROUP, gridftp_checksum_calc_timeout, 1800);
+            GRIDFTP_CONFIG_GROUP, gridftp_checksum_calc_timeout, global_timeout);
+
+
     req.wait(GFAL_GRIDFTP_SCOPE_CHECKSUM, timeout);
     gfal2_log(G_LOG_LEVEL_DEBUG, " <- [GridFTPModule::checksum] ");
 }

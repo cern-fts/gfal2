@@ -34,6 +34,11 @@ extern "C"
 {
 #endif
 
+#define CORE_CONFIG_GROUP "CORE"
+#define CORE_CONFIG_CHECKSUM_TIMEOUT "CHECKSUM_TIMEOUT"
+#define CORE_CONFIG_NAMESPACE_TIMEOUT "NAMESPACE_TIMEOUT"
+
+
 /**
  * @file gfal_config.h
  * @brief gfal2 configuration API
