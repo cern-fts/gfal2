@@ -33,12 +33,13 @@ public:
 
     Davix::Context  context;
     Davix::DavPosix posix;
+    gfal2_context_t handle;
 
     void get_params(Davix::RequestParams*, const Davix::Uri& uri);
 
 private:
     Davix::RequestParams reference_params;
-    gfal2_context_t      handle;
+
 };
 
 const char* gfal_http_get_name(void);

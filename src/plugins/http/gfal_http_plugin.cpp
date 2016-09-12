@@ -212,6 +212,11 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davi
         }
         g_strfreev(headers);
     }
+
+    // Timeout
+    struct timespec opTimeout;
+    opTimeout.tv_sec = gfal2_get_opt_integer_with_default(handle, CORE_CONFIG_GROUP, CORE_CONFIG_NAMESPACE_TIMEOUT, 60);
+    req_params->setOperationTimeout(&opTimeout);
 }
 
 
@@ -231,7 +236,7 @@ static void log_davix2gfal(void* userdata, int msg_level, const char* msg)
 
 
 GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
-    context(), posix(&context), reference_params(), handle(handle)
+    context(), posix(&context), handle(handle), reference_params()
 {
     davix_set_log_handler(log_davix2gfal, NULL);
     int davix_level = get_corresponding_davix_log_level();

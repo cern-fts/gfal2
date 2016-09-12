@@ -296,6 +296,12 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
     Davix::RequestParams req_params;
     davix->get_params(&req_params, Davix::Uri(stripped_url));
 
+    // Override timeout with checksum timeout
+    struct timespec opTimeout;
+    opTimeout.tv_sec = gfal2_get_opt_integer_with_default(davix->handle,
+        CORE_CONFIG_GROUP, CORE_CONFIG_CHECKSUM_TIMEOUT, 300);
+    req_params.setOperationTimeout(&opTimeout);
+
     Davix::File f(davix->context, Davix::Uri(stripped_url));
     if(f.checksum(&req_params, buffer_chk, check_type, &daverr) <0 ){
         davix2gliberr(daverr, err);
