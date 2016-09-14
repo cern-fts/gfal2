@@ -24,6 +24,8 @@
 #include <sys/types.h>
 #include "gfal_srm_space.h"
 
+#include "space/gfal2_space.h"
+
 
 static void json_putc(char *buff, size_t s_buff, char c, size_t *offset)
 {
@@ -51,39 +53,6 @@ static void json_puts(char *buff, size_t s_buff, const char *str, size_t *offset
         ++p;
     }
     json_putc(buff, s_buff, '"', offset);
-}
-
-
-static void json_put_null(char *buff, size_t s_buff, size_t *offset)
-{
-    json_putc(buff, s_buff, 'n', offset);
-    json_putc(buff, s_buff, 'u', offset);
-    json_putc(buff, s_buff, 'l', offset);
-    json_putc(buff, s_buff, 'l', offset);
-}
-
-
-static void json_putattrs(char *buff, size_t s_buff, const char *attr, const char *value, size_t *offset)
-{
-    json_puts(buff, s_buff, attr, offset);
-    json_putc(buff, s_buff, ':', offset);
-    if (value)
-        json_puts(buff, s_buff, value, offset);
-    else
-        json_put_null(buff, s_buff, offset);
-}
-
-
-static void json_putattri(char *buff, size_t s_buff, const char *attr, int64_t value, size_t *offset)
-{
-    json_puts(buff, s_buff, attr, offset);
-    json_putc(buff, s_buff, ':', offset);
-    char buffer[128];
-    sprintf(buffer, "%"PRId64, value);
-    char *p;
-    for (p = buffer; *p != '\0'; ++p) {
-        json_putc(buff, s_buff, *p, offset);
-    }
 }
 
 
@@ -129,33 +98,6 @@ static ssize_t gfal_srm_space_list(srm_context_t context,
 }
 
 
-static const char *retention2str(TRetentionPolicy retentionpolicy)
-{
-    switch (retentionpolicy) {
-        case GFAL_POLICY_REPLICA:
-            return "REPLICA";
-        case GFAL_POLICY_OUTPUT:
-            return "OUTPUT";
-        case GFAL_POLICY_CUSTODIAL:
-            return "CUSTODIAL";
-        default:
-            return "UNKNOWN";
-    }
-}
-
-static const char *accesslatency2str(TAccessLatency accesslatency)
-{
-    switch (accesslatency) {
-        case GFAL_LATENCY_ONLINE:
-            return "ONLINE";
-        case GFAL_LATENCY_NEARLINE:
-            return "NEARLINE";
-        default:
-            return "UNKNOWN";
-    }
-}
-
-
 static ssize_t gfal_srm_space_token_info(srm_context_t context, const char *token,
     char *buff, size_t s_buff, GError **err)
 {
@@ -173,30 +115,21 @@ static ssize_t gfal_srm_space_token_info(srm_context_t context, const char *toke
         ret_size = -1;
     }
     else {
-        size_t offset = 0;
-        json_putc(buff, s_buff, '{', &offset);
-        json_putattrs(buff, s_buff, "spacetoken", spaces[0].spacetoken, &offset);
-        json_putc(buff, s_buff, ',', &offset);
-        json_putattrs(buff, s_buff, "owner", spaces[0].owner, &offset);
-        json_putc(buff, s_buff, ',', &offset);
-        json_putattri(buff, s_buff, "totalsize", spaces[0].totalsize, &offset);
-        json_putc(buff, s_buff, ',', &offset);
-        json_putattri(buff, s_buff, "guaranteedsize", spaces[0].guaranteedsize, &offset);
-        json_putc(buff, s_buff, ',', &offset);
-        json_putattri(buff, s_buff, "unusedsize", spaces[0].unusedsize, &offset);
-        json_putc(buff, s_buff, ',', &offset);
-        json_putattri(buff, s_buff, "lifetimeassigned", spaces[0].lifetimeassigned, &offset);
-        json_putc(buff, s_buff, ',', &offset);
-        json_putattri(buff, s_buff, "lifetimeleft", spaces[0].lifetimeleft, &offset);
-        json_putc(buff, s_buff, ',', &offset);
-        json_putattrs(buff, s_buff, "retentionpolicy", retention2str(spaces[0].retentionpolicy), &offset);
-        json_putc(buff, s_buff, ',', &offset);
-        json_putattrs(buff, s_buff, "accesslatency", accesslatency2str(spaces[0].accesslatency), &offset);
+        struct space_report report = {0};
 
-        json_putc(buff, s_buff, '}', &offset);
-        json_putc(buff, s_buff, '\0', &offset);
+        uint64_t guaranteed = (uint64_t)spaces[0].guaranteedsize;
 
-        ret_size = offset;
+        report.spacetoken = spaces[0].spacetoken;
+        report.owner = spaces[0].owner;
+        report.total = (uint64_t)spaces[0].totalsize;
+        report.largest_chunk = &guaranteed;
+        report.free = (uint64_t)spaces[0].unusedsize;
+        report.lifetime_assigned = &spaces[0].lifetimeassigned;
+        report.lifetime_left = &spaces[0].lifetimeleft;
+        report.retention = (enum space_retention_policy)spaces[0].retentionpolicy;
+        report.latency = (enum space_latency)spaces[0].accesslatency;
+
+        ret_size = gfal2_space_generate_json(&report, buff, s_buff);
     }
 
     if (tmp_err != NULL)

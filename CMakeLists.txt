@@ -56,6 +56,7 @@ set (SKIP_TESTS FALSE CACHE STRING "skip the tests")
 # libs checks
 find_package (GLIB2 REQUIRED)
 find_package (GTHREAD2 REQUIRED)
+find_package (JSONC REQUIRED)
 
 # include directories
 include_directories (${GLIB2_INCLUDE_DIRS})

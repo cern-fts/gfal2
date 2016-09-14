@@ -17,6 +17,7 @@
 #include "gridftp_namespace.h"
 #include "gridftp_plugin.h"
 #include <exceptions/cpp_to_gerror.hpp>
+#include "space/gfal2_space.h"
 
 
 #define GlobusErrorGeneric(reason)                                     \
@@ -43,48 +44,6 @@ static void gfal_globus_done_callback(void* user_args, globus_object_t *globus_e
 static void gridftp_cancel(gfal2_context_t context, void* userdata);
 }
 static int callback_cond_wait(XAttrState* state, time_t timeout);
-
-
-static void json_putc(char *buff, size_t s_buff, char c, size_t *offset)
-{
-    if (*offset < s_buff)
-        buff[(*offset)++] = c;
-}
-
-
-static void json_puts(char *buff, size_t s_buff, const char *str, size_t *offset)
-{
-    json_putc(buff, s_buff, '"', offset);
-    const char *p = str;
-    while (*p != '\0') {
-        if (*p == '\\') {
-            json_putc(buff, s_buff, '\\', offset);
-            json_putc(buff, s_buff, '\\', offset);
-        }
-        else if (*p == '"') {
-            json_putc(buff, s_buff, '\\', offset);
-            json_putc(buff, s_buff, '"', offset);
-        }
-        else {
-            json_putc(buff, s_buff, *p, offset);
-        }
-        ++p;
-    }
-    json_putc(buff, s_buff, '"', offset);
-}
-
-
-static void json_putattri(char *buff, size_t s_buff, const char *attr, int64_t value, size_t *offset)
-{
-    json_puts(buff, s_buff, attr, offset);
-    json_putc(buff, s_buff, ':', offset);
-    char buffer[128];
-    sprintf(buffer, "%ld", value);
-    char *p;
-    for (p = buffer; *p != '\0'; ++p) {
-        json_putc(buff, s_buff, *p, offset);
-    }
-}
 
 
 void globus_ftp_control_done_callback(void * user_arg,
@@ -458,31 +417,13 @@ ssize_t GridFTPModule::getxattr(const char *path,
 
     gfal2_log(G_LOG_LEVEL_DEBUG, " <- [GridFTPModule::getxattr] ");
 
-    size_t offset = 0;
-    bool prev_attr = false;
-    char *cbuff = (char*)buff;
-    if (is_descr) {json_putc(cbuff, s_buff, '[', &offset);}
-    json_putc(cbuff, s_buff, '{', &offset);
-    if (handler.m_usage >= 0)
-    {
-        json_putattri(cbuff, s_buff, "usedsize", handler.m_usage, &offset);
-        prev_attr = true;
-    }
-    if (handler.m_free >= 0)
-    {
-        if (prev_attr) json_putc(cbuff, s_buff, ',', &offset);
-        json_putattri(cbuff, s_buff, "unusedsize", handler.m_free, &offset);
-    }
-    if (handler.m_total >= 0)
-    {
-        if (prev_attr) json_putc(cbuff, s_buff, ',', &offset);
-        json_putattri(cbuff, s_buff, "totalsize", handler.m_total, &offset);
-    }
-    json_putc(cbuff, s_buff, '}', &offset);
-    if (is_descr) {json_putc(cbuff, s_buff, ']', &offset);}
-    json_putc(cbuff, s_buff, '\0', &offset);
+    struct space_report report = {0};
 
-    return offset;
+    report.used = handler.m_usage;
+    report.free = handler.m_free;
+    report.total = handler.m_total;
+
+    return gfal2_space_generate_json(&report, (char*)buff, s_buff);
 }
 
 

@@ -33,16 +33,16 @@ extern "C"
  */
 
 enum space_latency {
-    GFAL_LATENCY_UNKNOWN = 0,
-    GFAL_LATENCY_ONLINE,
-    GFAL_LATENCY_NEARLINE
+    LATENCY_UNKNOWN = 0,
+    LATENCY_ONLINE,
+    LATENCY_NEARLINE
 };
 
 enum space_retention_policy {
-    GFAL_POLICY_UNKNOWN = 0,
-    GFAL_POLICY_REPLICA,
-    GFAL_POLICY_OUTPUT,
-    GFAL_POLICY_CUSTODIAL
+    POLICY_UNKNOWN = 0,
+    POLICY_REPLICA,
+    POLICY_OUTPUT,
+    POLICY_CUSTODIAL
 };
 
 struct space_report {
@@ -55,8 +55,8 @@ struct space_report {
     int *lifetime_assigned;
     int *lifetime_left;
 
-    enum space_latency *latency;
-    enum space_retention_policy *retention;
+    enum space_latency latency;
+    enum space_retention_policy retention;
 
     char *owner;
     char *spacetoken;
