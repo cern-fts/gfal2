@@ -22,6 +22,7 @@ BuildRoot:          %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXX
 #main lib dependencies
 BuildRequires:      cmake
 BuildRequires:      doxygen
+BuildRequires:      json-c-devel
 %if %{?fedora}%{!?fedora:0} >= 13 || %{?rhel}%{!?rhel:0} >= 6
 BuildRequires:      glib2-devel >= 2.28
 Requires:           glib2 >= 2.28

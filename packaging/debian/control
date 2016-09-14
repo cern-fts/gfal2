@@ -1,7 +1,7 @@
 Source: gfal2
 Priority: optional
 Maintainer: DMC Devel <dmc-devel@cern.ch>
-Build-Depends: debhelper (>= 8.0.0), cmake, doxygen, libglib2.0-dev, libglibmm-2.4-dev, libattr1-dev, libldap2-dev, uuid-dev, liblfc-dev, libdpm-dev, srm-ifce-dev (>= 1.16.0), dcap-dev, libglobus-gass-copy-dev, davix-dev (>= 0.4.2), libgridsite-dev, gsoap, pkg-config
+Build-Depends: debhelper (>= 8.0.0), cmake, doxygen, libglib2.0-dev, libglibmm-2.4-dev, libattr1-dev, libldap2-dev, uuid-dev, liblfc-dev, libdpm-dev, srm-ifce-dev (>= 1.16.0), dcap-dev, libglobus-gass-copy-dev, davix-dev (>= 0.4.2), libgridsite-dev, libjson-c-dev, gsoap, pkg-config
 Standards-Version: 3.9.5
 Section: net
 Homepage: http://dmc.web.cern.ch/
