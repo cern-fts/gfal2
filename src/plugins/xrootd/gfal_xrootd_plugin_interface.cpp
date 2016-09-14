@@ -525,12 +525,17 @@ int gfal_xrootd_checksumG(plugin_handle plugin_data, const char* url,
 ssize_t gfal_xrootd_getxattrG(plugin_handle plugin_data, const char* url, const char* key,
                             void* buff, size_t s_buff, GError** err)
 {
-    std::string sanitizedUrl = normalize_url((gfal2_context_t)plugin_data, url);
+    ssize_t len = 0;
 
-    memset(buff, 0x00, s_buff);
-    long long len = XrdPosixXrootd::Getxattr(sanitizedUrl.c_str(), key, buff, s_buff);
-    if (len < 0) {
-        gfal2_xrootd_set_error(err, errno, __func__, "Failed to get the xattr \"%s\"", key);
+    if (strcmp(key, GFAL_XATTR_SPACETOKEN) == 0) {
+        len = gfal_xrootd_space_reporting(plugin_data, url, key, buff, s_buff, err);
+    } else {
+        std::string sanitizedUrl = normalize_url((gfal2_context_t)plugin_data, url);
+        memset(buff, 0x00, s_buff);
+        len = XrdPosixXrootd::Getxattr(sanitizedUrl.c_str(), key, buff, s_buff);
+        if (len < 0) {
+            gfal2_xrootd_set_error(err, errno, __func__, "Failed to get the xattr \"%s\"", key);
+        }
     }
     return len;
 }

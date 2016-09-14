@@ -66,6 +66,7 @@ extern "C"
 #define GFAL_XATTR_CHKSUM_TYPE "user.chksumtype"
 /** file checksum */
 #define GFAL_XATTR_CHKSUM_VALUE "user.checksum"
+
 /**
  * File availability status
  * This key can be used to check or set the stage status of a file
@@ -81,6 +82,9 @@ extern "C"
 #define GFAL_XATTR_STATUS_UNKNOW "UNKNOW"
 #define GFAL_XATTR_STATUS_LOST "LOST"
 #define GFAL_XATTR_STATUS_UNAVAILABLE "UNAVAILABLE"
+
+/** space reporting */
+#define GFAL_XATTR_SPACETOKEN "spacetoken"
 
 
 #ifdef __cplusplus

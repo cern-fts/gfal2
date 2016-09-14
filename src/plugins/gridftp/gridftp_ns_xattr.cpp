@@ -393,7 +393,7 @@ ssize_t GridFTPModule::getxattr(const char *path,
                 "Invalid path argument");
     }
 
-    if (strncmp(name, "spacetoken", 10) != 0) {
+    if (strncmp(name, GFAL_XATTR_SPACETOKEN, 10) != 0) {
         throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_GETXATTR, ENOATTR,
                 "not an existing extended attribute");
     }

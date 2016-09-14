@@ -26,9 +26,9 @@
 #include "gfal_srm_space.h"
 
 
-#define GFAL_SRM_TYPE "srm.type"
+#define GFAL_XATTR_SRM_TYPE "srm.type"
 
-static char *srm_listxattr[] = {SRM_XATTR_GETURL, GFAL_XATTR_STATUS, GFAL_SRM_TYPE, NULL};
+static char *srm_listxattr[] = {SRM_XATTR_GETURL, GFAL_XATTR_STATUS, GFAL_XATTR_SRM_TYPE, NULL};
 
 
 static ssize_t gfal_srm_get_endpoint_type_xattrG(plugin_handle handle, const char *path,
@@ -98,10 +98,10 @@ ssize_t gfal_srm_getxattrG(plugin_handle handle, const char *path,
         ret = gfal_srm_status_getxattrG(handle, path, name, buff, s_buff,
             &tmp_err);
     }
-    else if (strcmp(name, GFAL_SRM_TYPE) == 0) {
+    else if (strcmp(name, GFAL_XATTR_SRM_TYPE) == 0) {
         ret = gfal_srm_get_endpoint_type_xattrG(handle, path, name, buff, s_buff, err);
     }
-    else if (strncmp(name, "spacetoken", 10) == 0) {
+    else if (strncmp(name, GFAL_XATTR_SPACETOKEN, 10) == 0) {
         return gfal_srm_space_getxattrG(handle, path, name, buff, s_buff, err);
     }
     else {

@@ -271,7 +271,7 @@ static ssize_t gfal_srm_space_property(srm_context_t context, const char *name,
 ssize_t gfal_srm_space_getxattrG(plugin_handle handle, const char *path,
     const char *name, void *buff, size_t s_buff, GError **err)
 {
-    if (strncmp(name, "spacetoken", 10) != 0) {
+    if (strncmp(name, GFAL_XATTR_SPACETOKEN, 10) != 0) {
         gfal2_set_error(err, gfal2_get_plugin_srm_quark(), ENOATTR,
             __func__, "Unknown attribute %s", name);
         return -1;

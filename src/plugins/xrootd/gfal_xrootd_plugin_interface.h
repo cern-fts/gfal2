@@ -92,6 +92,9 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         const char* const * checksums, GError** op_error,
         GError*** file_errors);
 
+ssize_t gfal_xrootd_space_reporting(plugin_handle plugin_data, const char *sanitizedUrl,
+    const char *key, void *buff, size_t s_buf, GError **err);
+
 const char* gfal_xrootd_getName();
 
 void set_xrootd_log_level();
