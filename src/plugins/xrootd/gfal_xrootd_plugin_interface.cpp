@@ -487,6 +487,14 @@ int gfal_xrootd_checksumG(plugin_handle plugin_data, const char* url,
         return -1;
     }
 
+    if (sanitizedUrl.find("?") == std::string::npos) {
+        sanitizedUrl += "?";
+    } else {
+        sanitizedUrl += "&";
+    }
+    sanitizedUrl += "cks.type=";
+    sanitizedUrl += lowerChecksumType;
+
     time_t mTime;
     if (XrdPosixXrootd::QueryChksum(sanitizedUrl.c_str(), mTime, checksum_buffer, buffer_length) < 0) {
         gfal2_xrootd_set_error(err, errno, __func__, "Could not get the checksum");
