@@ -14,6 +14,8 @@ file (GLOB src_posix      "posix/*.c*")
 # Core library
 add_definitions(-D__GFAL2_BUILD__)
 
+include_directories(${gfal2_utils_includes})
+
 add_definitions (${gfal2_utils_definitions})
 add_library (gfal2 SHARED ${src_cancel}
                           ${src_common}

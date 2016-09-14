@@ -31,6 +31,7 @@ endif (NOT PUGIXML_FOUND)
 list (APPEND gfal2_utils_libraries
     ${is_ifce_link}
     ${mds_cache_link}
+    ${JSONC_LIBRARIES}
 )
 
 # Sources
@@ -38,6 +39,7 @@ file (GLOB src_exceptions   "${CMAKE_CURRENT_SOURCE_DIR}/exceptions/*.c*")
 file (GLOB src_gsimplecache "${CMAKE_CURRENT_SOURCE_DIR}/gsimplecache/*.c*")
 file (GLOB src_uri          "${CMAKE_CURRENT_SOURCE_DIR}/uri/*.c*")
 file (GLOB src_checksums    "${CMAKE_CURRENT_SOURCE_DIR}/checksums/*.c*")
+file (GLOB src_space        "${CMAKE_CURRENT_SOURCE_DIR}/space/*.c")
 
 list (APPEND gfal2_utils_src ${src_exceptions})
 
@@ -46,12 +48,14 @@ list (APPEND gfal2_utils_c_src
     ${src_uri}
     ${src_checksums}
     ${src_mds}
+    ${src_space}
 )
 
 set (gfal2_utils_c_src ${gfal2_utils_c_src} PARENT_SCOPE)
 set (gfal2_utils_src ${gfal2_utils_src} PARENT_SCOPE)
 set (gfal2_utils_libraries ${gfal2_utils_libraries} PARENT_SCOPE)
 set (gfal2_utils_definitions ${gfal2_utils_definitions} PARENT_SCOPE)
+set (gfal2_utils_includes ${JSONC_INCLUDE_DIRS} PARENT_SCOPE)
 
 # Install public headers
 install (FILES "uri/gfal2_uri.h"
