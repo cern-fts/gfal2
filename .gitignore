@@ -19,4 +19,4 @@ src/core/gfal2.pc
 src/core/transfer/gfal_transfer.pc
 src/plugins/xrootd/libplugin_xrootd_static.a
 src/version/gfal2_version
-plugins/
+/plugins/
