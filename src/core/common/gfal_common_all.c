@@ -88,13 +88,19 @@ static void gfal_initCredentialLocation(gfal2_context_t handle)
     // Default certificate location
     const char *home = getenv("HOME");
     if (home != NULL) {
-        char default_cert[PATH_MAX], default_key[PATH_MAX];
+        size_t cert_path_length = strlen(home) + 22;
+        char *default_cert = (char*) malloc(cert_path_length);
+        char *default_key = (char*) malloc(cert_path_length);
         snprintf(default_cert, sizeof(default_cert), "%s/.globus/usercert.pem", home);
         snprintf(default_key, sizeof(default_key), "%s/.globus/userkey.pem", home);
         if (access(default_cert, F_OK) == 0 && access(default_key, F_OK) == 0) {
-            gfal_setCredentialLocation("default certificate location", handle, cert, key);
+            gfal_setCredentialLocation("default certificate location", handle, default_cert, default_key);
+            free(default_cert);
+            free(default_key);
             return;
         }
+        free(default_cert);
+        free(default_key);
     }
     // No idea!
     gfal2_log(G_LOG_LEVEL_WARNING, "Could not find the credentials in any of the known locations");
@@ -104,15 +110,15 @@ static void gfal_initCredentialLocation(gfal2_context_t handle)
 // Initiate a gfal's context with default parameters for use
 gfal2_context_t gfal_initG (GError** err)
 {
-	GError* tmp_err=NULL;
-	gfal2_context_t handle = g_new0(struct gfal_handle_,1);// clear allocation of the struct and set defautl options
+    GError* tmp_err=NULL;
+    gfal2_context_t handle = g_new0(struct gfal_handle_,1);// clear allocation of the struct and set defautl options
     if (handle == NULL) {
         errno = ENOMEM;
         g_set_error(err, gfal2_get_plugins_quark(), ENOMEM,
                 "[gfal_initG] bad allocation, no more memory free");
         return NULL;
     }
-	handle->plugin_opt.plugin_number= 0;
+    handle->plugin_opt.plugin_number= 0;
 
     if((handle->conf = gfal_conf_new(&tmp_err)) && !tmp_err) {
         // credential location
