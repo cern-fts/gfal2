@@ -208,9 +208,10 @@ static void gfal2_ftp_client_pasv_response(globus_ftp_client_plugin_t* plugin,
         else {
             // Not specified in the response, so figure it out
             if (ip[0] == '\0') {
-                is_ipv6 = gfal2_get_opt_boolean_with_default(session->context, GRIDFTP_CONFIG_GROUP,
+                bool ipv6_enabled = gfal2_get_opt_boolean_with_default(session->context, GRIDFTP_CONFIG_GROUP,
                     GRIDFTP_CONFIG_IPV6, FALSE);
-                g_strlcpy(ip, lookup_host(parsed->host, is_ipv6).c_str(), sizeof(ip));
+
+                g_strlcpy(ip, lookup_host(parsed->host, ipv6_enabled, &is_ipv6).c_str(), sizeof(ip));
             }
             gfal2_ftp_client_pasv_fire_event(session, parsed->host, ip, port, is_ipv6);
             gfal2_free_uri(parsed);

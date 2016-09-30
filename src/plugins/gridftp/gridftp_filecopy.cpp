@@ -45,7 +45,7 @@ static const GQuark GFAL_GRIDFTP_SCOPE_FILECOPY = g_quark_from_string("GridFTPFi
 const GQuark GFAL_GRIDFTP_DOMAIN_GSIFTP = g_quark_from_string("GSIFTP");
 
 /*IPv6 compatible lookup*/
-std::string lookup_host(const char *host, gboolean use_ipv6)
+std::string lookup_host(const char *host, bool ipv6_enabled, bool *got_ipv6)
 {
     struct addrinfo hints, *addresses = NULL;
     int errcode;
@@ -68,6 +68,10 @@ std::string lookup_host(const char *host, gboolean use_ipv6)
         return std::string("cant.be.resolved");
     }
 
+    if (got_ipv6) {
+        *got_ipv6 = false;
+    }
+
     struct addrinfo *i = addresses;
     while (i) {
         inet_ntop(i->ai_family, i->ai_addr->sa_data, addrstr, sizeof(addrstr));
@@ -75,27 +79,36 @@ std::string lookup_host(const char *host, gboolean use_ipv6)
         switch (i->ai_family) {
         case AF_INET:
             ptr = &((struct sockaddr_in *) i->ai_addr)->sin_addr;
-            if (ptr)
+            if (ptr) {
                 inet_ntop(i->ai_family, ptr, ip4str, sizeof(ip4str));
+            }
             break;
         case AF_INET6:
             ptr = &((struct sockaddr_in6 *) i->ai_addr)->sin6_addr;
-            if (ptr)
+            if (ptr) {
                 inet_ntop(i->ai_family, ptr, ip6str, sizeof(ip6str));
+                if (got_ipv6) {
+                    *got_ipv6 = true;
+                }
+            }
             break;
         }
         i = i->ai_next;
     }
 
-    if (addresses)
+    if (addresses) {
         freeaddrinfo(addresses);
+    }
 
-    if (use_ipv6 && ip6str[0])
+    if (ipv6_enabled && ip6str[0]) {
         return std::string("[").append(ip6str).append("]");
-    else if (ip4str[0])
+    }
+    else if (ip4str[0]) {
         return std::string(ip4str);
-    else
+    }
+    else {
         return std::string("cant.be.resolved");
+    }
 }
 
 
@@ -107,7 +120,7 @@ std::string return_host_and_port(const std::string &uri, gboolean use_ipv6)
         throw Gfal::CoreException(error);
     }
     std::ostringstream str;
-    str << lookup_host(parsed->host, use_ipv6) << ":" << parsed->port;
+    str << lookup_host(parsed->host, use_ipv6, NULL) << ":" << parsed->port;
     gfal2_free_uri(parsed);
     return str.str();
 }

@@ -42,7 +42,15 @@ int gridftp_filecopy_delete_existing(GridFTPModule* module,
 void gridftp_create_parent_copy(GridFTPModule* module, gfalt_params_t params,
         const char * gridftp_url);
 
-std::string lookup_host(const char *host, gboolean use_ipv6);
+/**
+ * Return the ip of the given host
+ * @param host          Hostname
+ * @param ipv6_enabled  If true, this function will look for an ipv6 preferably
+ * @param got_ipv6      Will be set to true if ipv6_enabled is true, and the function finds an ipv6 for the host.
+ *                      If NULL, it will be ignored.
+ * @return An IP associated with host.
+ */
+std::string lookup_host(const char *host, bool ipv6_enabled, bool *got_ipv6);
 
 std::string return_host_and_port(const std::string &uri, gboolean use_ipv6);
 
