@@ -16,7 +16,6 @@ IF(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 ## Testbed environment
 SET(file_base_path "/tmp/")
 SET(srm_prefix_storm "srm://storm-01.roma3.infn.it:8444/srm/manager?SFN=/${MY_VO_STORM}/gfal2-tests/")
-SET(dcap_prefix "gsidcap://dcache-door-desy09.desy.de:22128/pnfs/desy.de/${MY_VO}/gfal2-tests/")
 SET(srm_prefix_dcache "srm://dcache-se-cms.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/${MY_VO}/gfal2-tests/")
 SET(lfc_prefix "lfn:/grid/${MY_VO}/gfal2-tests/")
 SET(lfc_host_name "lfc-puppet02.cern.ch")
@@ -30,7 +29,6 @@ ELSEIF(TEST_ENVIRONMENT STREQUAL "TESTBED_TRUNK")
 ## Testbed trunk environment
 SET(file_base_path "/tmp/")
 SET(srm_prefix_storm "srm://storm-01.roma3.infn.it:8444/srm/manager?SFN=/${MY_VO_STORM}/gfal2-tests/")
-SET(dcap_prefix "gsidcap://vm-dcache-deploy6.desy.de/data/${MY_VO}/gfal2-tests/")
 SET(srm_prefix_dcache "srm://vm-dcache-deploy6.desy.de:8443/data/${MY_VO}/gfal2-tests")
 SET(lfc_prefix "lfn:/grid/${MY_VO}/gfal2-tests/")
 SET(lfc_host_name "lfc-puppet02.cern.ch")
@@ -44,7 +42,6 @@ ELSE(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 ## Production environment : default
 SET(file_base_path "/tmp/")
 SET(srm_prefix_storm "srm://storm-01.roma3.infn.it:8444/srm/manager?SFN=/${MY_VO_STORM}/gfal2-tests/")
-SET(dcap_prefix "gsidcap://dcache-door-desy09.desy.de:22128/pnfs/desy.de/${MY_VO}/gfal2-tests/")
 SET(srm_prefix_dcache "srm://dcache-se-cms.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/${MY_VO}/gfal2-tests/")
 SET(lfc_prefix "lfn:/grid/${MY_VO}/gfal2-tests/")
 SET(lfc_host_name "lfc-puppet02.cern.ch")
@@ -97,10 +94,6 @@ SET(lfc_full_prefix "lfc://${lfc_host_name}/grid/${MY_VO}")
 SET(lfc_full_stat_ok "${lfc_full_prefix}/testread0011")
 SET(lfc_full_chmod_ok "${lfc_full_prefix}/test_change_right")
 SET(lfc_full_valid_dir_root "${lfc_full_prefix}")
-
-## dcap dcache parameters
-SET(dcap_stat_ok "${dcap_prefix}/testread0011")
-SET(dcap_valid_dir_root "${dcap_prefix}")
 
 ## local file parameters
 SET(file_prefix "file://${file_base_path}")
@@ -204,21 +197,6 @@ IF(PLUGIN_LFC)
         # Xattr
         test_xattr("LFC" ${lfc_full_prefix} ${gsiftp_prefix_dpm})
 ENDIF(PLUGIN_LFC)
-
-
-IF(PLUGIN_DCAP)
-        test_stat_all( "DCAP" ${dcap_prefix})
-
-        test_mkdir_all("DCAP" ${dcap_prefix})
-        # disable not supported by most of the server, impossible to test
-        # test_chmod_all("DCAP" ${dcap_prefix} 0565 000 0320 0767)
-        # disable not supported by most of the server, impossible to test
-        #test_readdir_full("DCAP" ${dcap_valid_dir_root} )      
-        #test_rmdir_all("DCAP" ${dcap_valid_dir_root})
-        test_rwt_all("DCAP" ${dcap_valid_dir_root} 4578)        
-        test_rwt_seq("DCAP" ${dcap_valid_dir_root} 100 4560)    
-ENDIF(PLUGIN_DCAP)
-
 
 IF(PLUGIN_GRIDFTP)
         test_del_nonex("GRIDFTP_DPM"  "${gsiftp_prefix_dpm}")
