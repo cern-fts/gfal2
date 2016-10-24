@@ -192,15 +192,17 @@ int gfal2_mkdir_rec(gfal2_context_t context, const char* url, mode_t mode,
                     res = 0;
                     GList* tmp_list = stack_url;
                     while (tmp_list != NULL && res == 0) {
-                        res = gfal_plugin_mkdirp(context,
-                                (char*) tmp_list->data, mode, FALSE, &tmp_err);
+                        res = gfal_plugin_mkdirp(context, (char*) tmp_list->data, mode, FALSE, &tmp_err);
                         if (res == 0) {
-                            gfal2_log(G_LOG_LEVEL_DEBUG, "create directory %s",
-                                    current_url);
+                            gfal2_log(G_LOG_LEVEL_DEBUG, "create directory %s", current_url);
+                        }
+                        // Due to a race condition, maybe someone else created the directory
+                        else if (tmp_err->code == EEXIST) {
+                            res = 0;
+                            g_clear_error(&tmp_err);
                         }
                         tmp_list = g_list_next(tmp_list);
                     }
-
                 }
 
                 g_list_free_full(stack_url, g_free);
