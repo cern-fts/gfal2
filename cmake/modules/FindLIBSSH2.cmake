@@ -22,7 +22,7 @@ else (LIBSSH2_PKG_FOUND)
     set (CMAKE_FIND_FRAMEWORK NEVER)
 
     find_library(LIBSSH2_LIBRARIES
-        NAMES libssh2
+        NAMES ssh2
         HINTS ${LIBSSH2_LOCATION}
         ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib
         ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib64
