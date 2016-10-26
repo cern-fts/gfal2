@@ -18,6 +18,7 @@
 #define GFAL_SFTP_PLUGIN_H
 
 #include <gfal_plugins_api.h>
+#include <libssh2.h>
 #include <libssh2_sftp.h>
 
 

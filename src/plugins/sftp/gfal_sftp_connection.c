@@ -38,7 +38,9 @@ void gfal_plugin_sftp_translate_error(const char *func, gfal_sftp_handle_t *hand
         case LIBSSH2_ERROR_PROTO:
             errn = EPROTO;
             break;
+#ifdef LIBSSH2_ERROR_AUTHENTICATION_FAILED
         case LIBSSH2_ERROR_AUTHENTICATION_FAILED:
+#endif
         case LIBSSH2_ERROR_PUBLICKEY_UNVERIFIED:
         case LIBSSH2_ERROR_CHANNEL_REQUEST_DENIED:
         case LIBSSH2_ERROR_REQUEST_DENIED:
@@ -52,9 +54,6 @@ void gfal_plugin_sftp_translate_error(const char *func, gfal_sftp_handle_t *hand
             break;
         case LIBSSH2_ERROR_EAGAIN:
             errn = EAGAIN;
-            break;
-        case LIBSSH2_ERROR_BAD_SOCKET:
-            errn = EINVAL;
             break;
         case LIBSSH2_ERROR_SFTP_PROTOCOL:
             errn = libssh2_sftp_last_error(handle->sftp_session);
