@@ -68,7 +68,7 @@ void gfal_plugin_sftp_translate_error(const char *func, gfal_sftp_handle_t *hand
 }
 
 
-static int gfal_sftp_socket(gfal_sftp_data_t *data, gfal2_uri *parsed, GError **err)
+static int gfal_sftp_socket(gfal2_uri *parsed, GError **err)
 {
     struct addrinfo hints, *addresses = NULL;
 
@@ -83,7 +83,7 @@ static int gfal_sftp_socket(gfal_sftp_data_t *data, gfal2_uri *parsed, GError **
         return -1;
     }
 
-    int port = htons(parsed->port?parsed->port:22);
+    int port = htons(parsed->port ? parsed->port : 22);
 
     struct addrinfo *i;
     struct sockaddr_in *ipv4 = NULL;
@@ -91,11 +91,11 @@ static int gfal_sftp_socket(gfal_sftp_data_t *data, gfal2_uri *parsed, GError **
     for (i = addresses; i != NULL; i = i->ai_next) {
         switch (i->ai_family) {
             case AF_INET:
-                ipv4 = (struct sockaddr_in*)i->ai_addr;
+                ipv4 = (struct sockaddr_in *) i->ai_addr;
                 ipv4->sin_port = port;
                 break;
             case AF_INET6:
-                ipv6 = (struct sockaddr_in6*)i->ai_addr;
+                ipv6 = (struct sockaddr_in6 *) i->ai_addr;
                 ipv6->sin6_port = port;
                 break;
         }
@@ -104,11 +104,11 @@ static int gfal_sftp_socket(gfal_sftp_data_t *data, gfal2_uri *parsed, GError **
     char addrstr[100] = {0};
     struct sockaddr *addr = NULL;
     if (ipv4) {
-        addr = (struct sockaddr*)ipv4;
+        addr = (struct sockaddr *) ipv4;
         inet_ntop(AF_INET, &ipv4->sin_addr, addrstr, sizeof(addrstr));
     }
     else if (ipv6) {
-        addr = (struct sockaddr*)ipv6;
+        addr = (struct sockaddr *) ipv6;
         inet_ntop(AF_INET6, &ipv6->sin6_addr, addrstr, sizeof(addrstr));
     }
     else {
@@ -133,13 +133,13 @@ static int gfal_sftp_socket(gfal_sftp_data_t *data, gfal2_uri *parsed, GError **
 }
 
 
-static void gfal_sftp_get_authn_params(gfal_sftp_data_t *data, gfal2_uri *parsed,
+static void gfal_sftp_get_authn_params(gfal_sftp_context_t *data, gfal2_uri *parsed,
     char **user, char **passwd, char **privkey)
 {
     *user = *passwd = *privkey = NULL;
 
-    char *config_user = gfal2_get_opt_string_with_default(data->context, "SFTP PLUGIN", "USER", NULL);
-    char *config_passwd = gfal2_get_opt_string_with_default(data->context, "SFTP PLUGIN", "PASSWORD", NULL);
+    char *config_user = gfal2_get_opt_string_with_default(data->gfal2_context, "SFTP PLUGIN", "USER", NULL);
+    char *config_passwd = gfal2_get_opt_string_with_default(data->gfal2_context, "SFTP PLUGIN", "PASSWORD", NULL);
 
     // User and password
     if (parsed->userinfo) {
@@ -163,9 +163,9 @@ static void gfal_sftp_get_authn_params(gfal_sftp_data_t *data, gfal2_uri *parsed
         }
     }
     // key
-    *privkey = gfal2_get_opt_string_with_default(data->context, "SFTP PLUGIN", "PRIVKEY", NULL);
+    *privkey = gfal2_get_opt_string_with_default(data->gfal2_context, "SFTP PLUGIN", "PRIVKEY", NULL);
     if (!*privkey && getenv("HOME")) {
-       *privkey = g_strconcat(getenv("HOME"), "/.ssh/id_rsa", NULL);
+        *privkey = g_strconcat(getenv("HOME"), "/.ssh/id_rsa", NULL);
     }
 
     g_free(config_user);
@@ -173,7 +173,7 @@ static void gfal_sftp_get_authn_params(gfal_sftp_data_t *data, gfal2_uri *parsed
 }
 
 
-static int gfal_sftp_authn(gfal_sftp_data_t *data, gfal2_uri *parsed, gfal_sftp_handle_t *handle, GError **err)
+static int gfal_sftp_authn(gfal_sftp_context_t *data, gfal2_uri *parsed, gfal_sftp_handle_t *handle, GError **err)
 {
     char *user, *passwd, *privkey;
     gfal_sftp_get_authn_params(data, parsed, &user, &passwd, &privkey);
@@ -219,12 +219,14 @@ static int gfal_sftp_authn(gfal_sftp_data_t *data, gfal2_uri *parsed, gfal_sftp_
 }
 
 
-static gfal_sftp_handle_t *gfal_sftp_new_handle(gfal_sftp_data_t *data, gfal2_uri *parsed, GError **err)
+static gfal_sftp_handle_t *gfal_sftp_new_handle(gfal_sftp_context_t *data, gfal2_uri *parsed, GError **err)
 {
     int rc;
 
     gfal_sftp_handle_t *handle = g_malloc(sizeof(gfal_sftp_handle_t));
-    handle->sock = gfal_sftp_socket(data, parsed, err);
+    handle->host = g_strdup(parsed->host);
+    handle->port = parsed->port;
+    handle->sock = gfal_sftp_socket(parsed, err);
     if (handle->sock < 0) {
         goto get_handle_failure;
     }
@@ -266,31 +268,102 @@ static gfal_sftp_handle_t *gfal_sftp_new_handle(gfal_sftp_data_t *data, gfal2_ur
 }
 
 
-gfal_sftp_handle_t *gfal_sftp_connect(gfal_sftp_data_t *data, const char *url, GError **err)
+static void gfal_sftp_destroy_handle(gfal_sftp_handle_t *handle)
+{
+    close(handle->sock);
+    libssh2_sftp_shutdown(handle->sftp_session);
+    libssh2_session_disconnect(handle->ssh_session, "");
+    libssh2_session_free(handle->ssh_session);
+    g_free(handle);
+}
+
+
+gfal_sftp_handle_t *gfal_sftp_connect(gfal_sftp_context_t *context, const char *url, GError **err)
 {
     gfal2_uri *parsed = gfal2_parse_uri(url, err);
     if (!parsed) {
         return NULL;
     }
 
-    // TODO: Cached sessions
-    gfal_sftp_handle_t *handle = gfal_sftp_new_handle(data, parsed, err);
+    gfal_sftp_handle_t *handle = gfal_sftp_cache_pop(context->cache, parsed->host, parsed->port);
     if (!handle) {
-        return NULL;
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Creating new SFTP handle");
+        handle = gfal_sftp_new_handle(context, parsed, err);
+    } else {
+        int seconds = 10;
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Reusing SFTP handle from cache for %s:%d", handle->host, handle->port);
+        int rc = libssh2_keepalive_send(handle->ssh_session, &seconds);
+        if (rc < 0) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Recycled SFTP handle failed to send keepalive. Discard and reconnect");
+            gfal_sftp_destroy_handle(handle);
+            handle = gfal_sftp_new_handle(context, parsed, err);
+        }
+    }
+    if (handle) {
+        handle->path = g_strdup(parsed->path);
     }
 
-    handle->path = g_strdup(parsed->path);
     gfal2_free_uri(parsed);
-
     return handle;
 }
 
 
-void gfal_sftp_release(gfal_sftp_data_t *data, gfal_sftp_handle_t *sftp_handle)
+void gfal_sftp_release(gfal_sftp_context_t *context, gfal_sftp_handle_t *handle)
 {
-    close(sftp_handle->sock);
-    libssh2_sftp_shutdown(sftp_handle->sftp_session);
-    libssh2_session_disconnect(sftp_handle->ssh_session, "");
-    libssh2_session_free(sftp_handle->ssh_session);
-    g_free(sftp_handle);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Pushing SFTP handle into cache for %s:%d", handle->host, handle->port);
+    gfal_sftp_cache_push(context->cache, handle);
+}
+
+
+static void gfal_sftpdestroy_key(gpointer p)
+{
+    g_string_free((GString*)p, TRUE);
+}
+
+
+GHashTable *gfal_sftp_cache_new()
+{
+    return g_hash_table_new_full((GHashFunc) g_string_hash, (GEqualFunc) g_string_equal,
+        gfal_sftpdestroy_key, NULL);
+}
+
+
+gfal_sftp_handle_t *gfal_sftp_cache_pop(GHashTable *cache, const char *host, int port)
+{
+    GString *key = g_string_new(NULL);
+    g_string_printf(key, "%s:%d", host, port);
+    GSList *list = (GSList*)g_hash_table_lookup(cache, key);
+    if (!list) {
+        g_string_free(key, TRUE);
+        return NULL;
+    }
+    gfal_sftp_handle_t *handle = (gfal_sftp_handle_t*)list->data;
+    list = g_slist_delete_link(list, list);
+    // g_hash_table_insert acquires ownership of key
+    g_hash_table_insert(cache, key, list);
+    return handle;
+}
+
+
+void gfal_sftp_cache_push(GHashTable *cache, gfal_sftp_handle_t *handle)
+{
+    GString *key = g_string_new(NULL);
+    g_string_printf(key, "%s:%d", handle->host, handle->port);
+    GSList *list = (GSList*)g_hash_table_lookup(cache, key);
+    list = g_slist_prepend(list, handle);
+    // g_hash_table_insert acquires ownership of key
+    g_hash_table_insert(cache, key, list);
+}
+
+
+void gfal_sftp_destroy_cache_entry(gpointer key, gpointer value, gpointer user_data)
+{
+    g_slist_free_full((GSList*)value, (GDestroyNotify )gfal_sftp_destroy_handle);
+}
+
+
+void gfal_sftp_cache_destroy(GHashTable *cache)
+{
+    g_hash_table_foreach(cache, gfal_sftp_destroy_cache_entry, NULL);
+    g_hash_table_destroy(cache);
 }

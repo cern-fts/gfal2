@@ -60,7 +60,8 @@ static gboolean gfal_sftp_check_url(plugin_handle handle, const char *url, plugi
 
 static void gfal_plugin_sftp_delete(plugin_handle plugin_data)
 {
-    gfal_sftp_data_t *data = (gfal_sftp_data_t*)plugin_data;
+    gfal_sftp_context_t *data = (gfal_sftp_context_t*)plugin_data;
+    gfal_sftp_cache_destroy(data->cache);
     free(data);
 }
 
@@ -70,8 +71,9 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t context, GError **err)
     gfal_plugin_interface sftp_plugin;
     memset(&sftp_plugin, 0, sizeof(gfal_plugin_interface));
 
-    gfal_sftp_data_t *data = g_malloc(sizeof(gfal_sftp_data_t));
-    data->context = context;
+    gfal_sftp_context_t *data = g_malloc(sizeof(gfal_sftp_context_t));
+    data->gfal2_context = context;
+    data->cache = gfal_sftp_cache_new();
 
     sftp_plugin.plugin_data = data;
     sftp_plugin.plugin_delete = gfal_plugin_sftp_delete;

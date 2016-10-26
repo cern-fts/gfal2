@@ -18,17 +18,12 @@
 #define GFAL_SFTP_PLUGIN_H
 
 #include <gfal_plugins_api.h>
-#include <libssh2.h>
 #include <libssh2_sftp.h>
+#include "gfal_sftp_connection.h"
 
 
 GQuark gfal2_get_plugin_sftp_quark();
 
-// Plugin internal data
-struct gfal_sftp_data_s {
-    gfal2_context_t context;
-};
-typedef struct gfal_sftp_data_s gfal_sftp_data_t;
 
 // Get the plugin name
 const char *gfal_sftp_plugin_get_name();

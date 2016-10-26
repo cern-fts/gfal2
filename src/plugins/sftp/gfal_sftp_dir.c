@@ -28,7 +28,7 @@ typedef struct gfal_sftp_dir_s gfal_sftp_dir_t;
 
 gfal_file_handle gfal_sftp_opendir(plugin_handle plugin_data, const char *url, GError **err)
 {
-    gfal_sftp_data_t *data = (gfal_sftp_data_t*)plugin_data;
+    gfal_sftp_context_t *data = (gfal_sftp_context_t*)plugin_data;
     gfal_sftp_handle_t *sftp_handle = gfal_sftp_connect(data, url, err);
     if (!sftp_handle) {
         return NULL;
@@ -51,7 +51,7 @@ gfal_file_handle gfal_sftp_opendir(plugin_handle plugin_data, const char *url, G
 
 int gfal_sftp_closedir(plugin_handle plugin_data, gfal_file_handle dir_desc, GError **err)
 {
-    gfal_sftp_data_t *data = (gfal_sftp_data_t*)plugin_data;
+    gfal_sftp_context_t *data = (gfal_sftp_context_t*)plugin_data;
     gfal_sftp_dir_t *dir = gfal_file_handle_get_fdesc(dir_desc);
 
     libssh2_sftp_closedir(dir->dir_handle);

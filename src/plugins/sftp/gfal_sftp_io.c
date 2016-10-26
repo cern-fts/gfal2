@@ -58,7 +58,7 @@ static unsigned long gfal_sftp_std2ssh2_open_flags(int flag)
 
 gfal_file_handle gfal_sftp_open(plugin_handle plugin_data, const char *url, int flag, mode_t mode, GError **err)
 {
-    gfal_sftp_data_t *data = (gfal_sftp_data_t*)plugin_data;
+    gfal_sftp_context_t *data = (gfal_sftp_context_t*)plugin_data;
     gfal_sftp_handle_t *sftp_handle = gfal_sftp_connect(data, url, err);
     if (!sftp_handle) {
         return NULL;
@@ -82,7 +82,7 @@ gfal_file_handle gfal_sftp_open(plugin_handle plugin_data, const char *url, int 
 
 int gfal_sftp_close(plugin_handle plugin_data, gfal_file_handle fd, GError **err)
 {
-    gfal_sftp_data_t *data = (gfal_sftp_data_t*)plugin_data;
+    gfal_sftp_context_t *data = (gfal_sftp_context_t*)plugin_data;
     gfal_sftp_file_t *ssh_fd = gfal_file_handle_get_fdesc(fd);
 
     libssh2_sftp_close(ssh_fd->file_handle);

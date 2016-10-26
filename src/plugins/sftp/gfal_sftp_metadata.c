@@ -39,7 +39,7 @@ void gfal_sftp_fill_stat(struct stat *st, LIBSSH2_SFTP_ATTRIBUTES *attrs)
 
 int gfal_sftp_stat(plugin_handle plugin_data, const char *url, struct stat *buf, GError **err)
 {
-    gfal_sftp_data_t *data = (gfal_sftp_data_t*)plugin_data;
+    gfal_sftp_context_t *data = (gfal_sftp_context_t*)plugin_data;
     gfal_sftp_handle_t *sftp_handle = gfal_sftp_connect(data, url, err);
     if (!sftp_handle) {
         return -1;
@@ -61,7 +61,7 @@ int gfal_sftp_stat(plugin_handle plugin_data, const char *url, struct stat *buf,
 
 int gfal_sftp_unlink(plugin_handle plugin_data, const char *url, GError **err)
 {
-    gfal_sftp_data_t *data = (gfal_sftp_data_t*)plugin_data;
+    gfal_sftp_context_t *data = (gfal_sftp_context_t*)plugin_data;
     gfal_sftp_handle_t *sftp_handle = gfal_sftp_connect(data, url, err);
     if (!sftp_handle) {
         return -1;
@@ -79,7 +79,7 @@ int gfal_sftp_unlink(plugin_handle plugin_data, const char *url, GError **err)
 
 int gfal_sftp_rename(plugin_handle plugin_data, const char *oldurl, const char *urlnew, GError **err)
 {
-    gfal_sftp_data_t *data = (gfal_sftp_data_t*)plugin_data;
+    gfal_sftp_context_t *data = (gfal_sftp_context_t*)plugin_data;
     gfal_sftp_handle_t *sftp_handle = gfal_sftp_connect(data, oldurl, err);
     if (!sftp_handle) {
         return -1;
@@ -105,7 +105,7 @@ int gfal_sftp_rename(plugin_handle plugin_data, const char *oldurl, const char *
 
 int gfal_sftp_mkdir(plugin_handle plugin_data, const char *url, mode_t mode, gboolean rec_flag, GError **err)
 {
-    gfal_sftp_data_t *data = (gfal_sftp_data_t*)plugin_data;
+    gfal_sftp_context_t *data = (gfal_sftp_context_t*)plugin_data;
     gfal_sftp_handle_t *sftp_handle = gfal_sftp_connect(data, url, err);
     if (!sftp_handle) {
         return -1;
@@ -127,7 +127,7 @@ int gfal_sftp_mkdir(plugin_handle plugin_data, const char *url, mode_t mode, gbo
 int gfal_sftp_rmdir(plugin_handle plugin_data, const char *url, GError **err)
 {
     LIBSSH2_SFTP_ATTRIBUTES attrs;
-    gfal_sftp_data_t *data = (gfal_sftp_data_t*)plugin_data;
+    gfal_sftp_context_t *data = (gfal_sftp_context_t*)plugin_data;
     gfal_sftp_handle_t *sftp_handle = gfal_sftp_connect(data, url, err);
     if (!sftp_handle) {
         return -1;
@@ -160,7 +160,7 @@ int gfal_sftp_rmdir(plugin_handle plugin_data, const char *url, GError **err)
 
 int gfal_sftp_symlink(plugin_handle plugin_data, const char *oldurl, const char *urlnew, GError **err)
 {
-    gfal_sftp_data_t *data = (gfal_sftp_data_t*)plugin_data;
+    gfal_sftp_context_t *data = (gfal_sftp_context_t*)plugin_data;
     gfal_sftp_handle_t *sftp_handle = gfal_sftp_connect(data, oldurl, err);
     if (!sftp_handle) {
         return -1;
@@ -183,7 +183,7 @@ int gfal_sftp_symlink(plugin_handle plugin_data, const char *oldurl, const char 
 
 ssize_t gfal_sftp_readlink(plugin_handle plugin_data, const char *url, char *buff, size_t buffsiz, GError **err)
 {
-    gfal_sftp_data_t *data = (gfal_sftp_data_t*)plugin_data;
+    gfal_sftp_context_t *data = (gfal_sftp_context_t*)plugin_data;
     gfal_sftp_handle_t *sftp_handle = gfal_sftp_connect(data, url, err);
     if (!sftp_handle) {
         return -1;
@@ -201,7 +201,7 @@ ssize_t gfal_sftp_readlink(plugin_handle plugin_data, const char *url, char *buf
 
 int	gfal_sftp_chmod(plugin_handle plugin_data, const char * url, mode_t mode, GError** err)
 {
-    gfal_sftp_data_t *data = (gfal_sftp_data_t*)plugin_data;
+    gfal_sftp_context_t *data = (gfal_sftp_context_t*)plugin_data;
     gfal_sftp_handle_t *sftp_handle = gfal_sftp_connect(data, url, err);
     if (!sftp_handle) {
         return -1;
