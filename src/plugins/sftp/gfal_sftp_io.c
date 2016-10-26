@@ -17,6 +17,12 @@
 #include "gfal_sftp_plugin.h"
 #include "gfal_sftp_connection.h"
 
+// These methods were introduced with version 1.0
+#if LIBSSH2_VERSION_MAJOR < 1
+#   define libssh2_sftp_tell64 libssh2_sftp_tell
+#   define libssh2_sftp_seek64 libssh2_sftp_seek
+#endif
+
 
 struct gfal_sftp_file_s {
     gfal_sftp_handle_t *sftp_handle;

@@ -20,6 +20,11 @@
 #include <arpa/inet.h>
 #include <pwd.h>
 
+// libssh2_session_handshake introduced with 1.2.8
+#if LIBSSH2_VERSION_NUM < 0x010208
+#   define libssh2_session_handshake libssh2_session_startup
+#endif
+
 
 void gfal_plugin_sftp_translate_error(const char *func, gfal_sftp_handle_t *handle, GError **err)
 {
