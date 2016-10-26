@@ -1,0 +1,292 @@
+/*
+ * Copyright (c) CERN 2016
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include "gfal_sftp_connection.h"
+#include <uri/gfal2_uri.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <pwd.h>
+
+
+void gfal_plugin_sftp_translate_error(const char *func, gfal_sftp_handle_t *handle, GError **err)
+{
+    char *msg;
+    int len;
+    int ssh_errn = libssh2_session_last_error(handle->ssh_session, &msg, &len, 0);
+    int errn = EIO;
+    switch (ssh_errn) {
+        case LIBSSH2_ERROR_TIMEOUT:
+        case LIBSSH2_ERROR_SOCKET_TIMEOUT:
+            errn = ETIMEDOUT;
+            break;
+        case LIBSSH2_ERROR_SOCKET_DISCONNECT:
+            errn = ECONNRESET;
+            break;
+        case LIBSSH2_ERROR_PROTO:
+            errn = EPROTO;
+            break;
+        case LIBSSH2_ERROR_AUTHENTICATION_FAILED:
+        case LIBSSH2_ERROR_PUBLICKEY_UNVERIFIED:
+        case LIBSSH2_ERROR_CHANNEL_REQUEST_DENIED:
+        case LIBSSH2_ERROR_REQUEST_DENIED:
+            errn = EACCES;
+            break;
+        case LIBSSH2_ERROR_METHOD_NOT_SUPPORTED:
+            errn = ENOSYS;
+            break;
+        case LIBSSH2_ERROR_INVAL:
+            errn = EINVAL;
+            break;
+        case LIBSSH2_ERROR_EAGAIN:
+            errn = EAGAIN;
+            break;
+        case LIBSSH2_ERROR_BAD_SOCKET:
+            errn = EINVAL;
+            break;
+        case LIBSSH2_ERROR_SFTP_PROTOCOL:
+            errn = libssh2_sftp_last_error(handle->sftp_session);
+            break;
+    }
+    gfal2_set_error(err, gfal2_get_plugin_sftp_quark(), errn, func, "%s", msg);
+}
+
+
+static int gfal_sftp_socket(gfal_sftp_data_t *data, gfal2_uri *parsed, GError **err)
+{
+    struct addrinfo hints, *addresses = NULL;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = PF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags |= AI_CANONNAME;
+
+    int rc = getaddrinfo(parsed->host, NULL, &hints, &addresses);
+    if (rc != 0) {
+        gfal2_set_error(err, gfal2_get_plugin_sftp_quark(), EREMOTE, __func__, "Could not resolve host");
+        return -1;
+    }
+
+    int port = htons(parsed->port?parsed->port:22);
+
+    struct addrinfo *i;
+    struct sockaddr_in *ipv4 = NULL;
+    struct sockaddr_in6 *ipv6 = NULL;
+    for (i = addresses; i != NULL; i = i->ai_next) {
+        switch (i->ai_family) {
+            case AF_INET:
+                ipv4 = (struct sockaddr_in*)i->ai_addr;
+                ipv4->sin_port = port;
+                break;
+            case AF_INET6:
+                ipv6 = (struct sockaddr_in6*)i->ai_addr;
+                ipv6->sin6_port = port;
+                break;
+        }
+    }
+    // TODO: Configuration for IPv4 or 6
+    char addrstr[100] = {0};
+    struct sockaddr *addr = NULL;
+    if (ipv4) {
+        addr = (struct sockaddr*)ipv4;
+        inet_ntop(AF_INET, &ipv4->sin_addr, addrstr, sizeof(addrstr));
+    }
+    else if (ipv6) {
+        addr = (struct sockaddr*)ipv6;
+        inet_ntop(AF_INET6, &ipv6->sin6_addr, addrstr, sizeof(addrstr));
+    }
+    else {
+        freeaddrinfo(addresses);
+        gfal2_set_error(err, gfal2_get_plugin_sftp_quark(), EHOSTUNREACH, __func__, "Could not find an IPv4 or IPv6");
+        return -1;
+    }
+
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Connect to %s:%d", addrstr, port);
+
+    int sock = socket(addr->sa_family, SOCK_STREAM, 0);
+    rc = connect(sock, addr, sizeof(*addr));
+    freeaddrinfo(addresses);
+
+    if (rc < 0) {
+        close(sock);
+        gfal2_set_error(err, gfal2_get_plugin_sftp_quark(), errno, __func__, "Could not connect");
+        return -1;
+    }
+
+    return sock;
+}
+
+
+static void gfal_sftp_get_authn_params(gfal_sftp_data_t *data, gfal2_uri *parsed,
+    char **user, char **passwd, char **privkey)
+{
+    *user = *passwd = *privkey = NULL;
+
+    char *config_user = gfal2_get_opt_string_with_default(data->context, "SFTP PLUGIN", "USER", NULL);
+    char *config_passwd = gfal2_get_opt_string_with_default(data->context, "SFTP PLUGIN", "PASSWORD", NULL);
+
+    // User and password
+    if (parsed->userinfo) {
+        char *separator = strchr(parsed->userinfo, ':');
+        if (!separator) {
+            *user = g_strdup(parsed->userinfo);
+        }
+        else {
+            *user = g_strndup(parsed->userinfo, separator - parsed->userinfo);
+            *passwd = g_strdup(separator + 1);
+        }
+    }
+    else if (config_user) {
+        *user = g_strdup(config_user);
+        *passwd = g_strdup(config_passwd);
+    }
+    else {
+        struct passwd *me_info = getpwuid(getuid());
+        if (me_info) {
+            *user = g_strdup(me_info->pw_name);
+        }
+    }
+    // key
+    *privkey = gfal2_get_opt_string_with_default(data->context, "SFTP PLUGIN", "PRIVKEY", NULL);
+    if (!*privkey && getenv("HOME")) {
+       *privkey = g_strconcat(getenv("HOME"), "/.ssh/id_rsa", NULL);
+    }
+
+    g_free(config_user);
+    g_free(config_passwd);
+}
+
+
+static int gfal_sftp_authn(gfal_sftp_data_t *data, gfal2_uri *parsed, gfal_sftp_handle_t *handle, GError **err)
+{
+    char *user, *passwd, *privkey;
+    gfal_sftp_get_authn_params(data, parsed, &user, &passwd, &privkey);
+
+    gfal2_log(G_LOG_LEVEL_DEBUG, "User %s, key %s", user, privkey);
+
+    const char *userauthlist = libssh2_userauth_list(handle->ssh_session, user, strlen(user));
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Supported authn methods: %s", userauthlist);
+
+    const char *auth_method = userauthlist;
+    int authenticated = 0;
+    while (auth_method) {
+        if (strncmp(auth_method, "publickey", 9) == 0) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Trying publickey");
+            if (libssh2_userauth_publickey_fromfile(handle->ssh_session, user, NULL, privkey, NULL) == 0) {
+                authenticated = 1;
+            }
+        }
+        else if (strncmp(auth_method, "password", 8) == 0) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Trying password");
+            if (libssh2_userauth_password(handle->ssh_session, user, passwd) == 0) {
+                authenticated = 1;
+            }
+        }
+        if (authenticated) {
+            break;
+        }
+        auth_method = strchr(auth_method, ',');
+        if (auth_method) {
+            ++auth_method;
+        }
+    }
+    g_free(user);
+    g_free(passwd);
+    g_free(privkey);
+
+    if (!authenticated) {
+        gfal2_set_error(err, gfal2_get_plugin_sftp_quark(), EACCES, __func__,
+            "All supported authentication methods failed");
+        return -1;
+    }
+    return 0;
+}
+
+
+static gfal_sftp_handle_t *gfal_sftp_new_handle(gfal_sftp_data_t *data, gfal2_uri *parsed, GError **err)
+{
+    int rc;
+
+    gfal_sftp_handle_t *handle = g_malloc(sizeof(gfal_sftp_handle_t));
+    handle->sock = gfal_sftp_socket(data, parsed, err);
+    if (handle->sock < 0) {
+        goto get_handle_failure;
+    }
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Connected to remote");
+
+    handle->ssh_session = libssh2_session_init();
+    if (!handle->ssh_session) {
+        gfal2_set_error(err, gfal2_get_plugin_sftp_quark(), ECONNABORTED, __func__,
+            "Failed to get a session");
+        goto get_handle_failure;
+    }
+
+    rc = libssh2_session_handshake(handle->ssh_session, handle->sock);
+    if (rc != 0) {
+        goto get_handle_failure_ssh;
+    }
+
+    rc = gfal_sftp_authn(data, parsed, handle, err);
+    if (rc != 0) {
+        goto get_handle_failure;
+    }
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Authenticated with remote");
+
+    handle->sftp_session = libssh2_sftp_init(handle->ssh_session);
+    if (!handle->sftp_session) {
+        goto get_handle_failure_ssh;
+    }
+    gfal2_log(G_LOG_LEVEL_DEBUG, "SFTP initialized");
+
+    libssh2_session_set_blocking(handle->ssh_session, 1);
+
+    return handle;
+
+    get_handle_failure_ssh:
+    gfal_plugin_sftp_translate_error(__func__, handle, err);
+    get_handle_failure:
+    g_free(handle);
+    return NULL;
+}
+
+
+gfal_sftp_handle_t *gfal_sftp_connect(gfal_sftp_data_t *data, const char *url, GError **err)
+{
+    gfal2_uri *parsed = gfal2_parse_uri(url, err);
+    if (!parsed) {
+        return NULL;
+    }
+
+    // TODO: Cached sessions
+    gfal_sftp_handle_t *handle = gfal_sftp_new_handle(data, parsed, err);
+    if (!handle) {
+        return NULL;
+    }
+
+    handle->path = g_strdup(parsed->path);
+    gfal2_free_uri(parsed);
+
+    return handle;
+}
+
+
+void gfal_sftp_release(gfal_sftp_data_t *data, gfal_sftp_handle_t *sftp_handle)
+{
+    close(sftp_handle->sock);
+    libssh2_sftp_shutdown(sftp_handle->sftp_session);
+    libssh2_session_disconnect(sftp_handle->ssh_session, "");
+    libssh2_session_free(sftp_handle->ssh_session);
+    g_free(sftp_handle);
+}

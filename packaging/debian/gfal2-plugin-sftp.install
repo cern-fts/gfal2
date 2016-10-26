@@ -1,0 +1,2 @@
+usr/lib/gfal2-plugins/libgfal_plugin_sftp.so*
+etc/gfal2.d/sftp_plugin.conf

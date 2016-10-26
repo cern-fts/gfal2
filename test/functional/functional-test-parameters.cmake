@@ -23,6 +23,7 @@ SET(gsiftp_prefix_dpm "gsiftp://dpmhead-rc.cern.ch/dpm/cern.ch/home/${MY_VO}/gfa
 SET(srm_prefix_dpm "srm://dpmhead-rc.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(davs_prefix_dpm "davs+3rd://dpmhead-rc.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(root_prefix_dpm "root://dpmhead-rc.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
+SET(sftp_prefix "sftp://gfal2@arioch.cern.ch/home/gfal2/gfal2-tests")
 
 ELSEIF(TEST_ENVIRONMENT STREQUAL "TESTBED_TRUNK")
 
@@ -36,6 +37,7 @@ SET(gsiftp_prefix_dpm "gsiftp://dpmhead-trunk.cern.ch/dpm/cern.ch/home/${MY_VO}/
 SET(srm_prefix_dpm "srm://dpmhead-trunk.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(davs_prefix_dpm "davs+3rd://dpmhead-trunk.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(root_prefix_dpm "root://dpmhead-trunk.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
+SET(sftp_prefix "sftp://gfal2@arioch.cern.ch/home/gfal2/gfal2-tests")
 
 ELSE(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
@@ -47,6 +49,7 @@ SET(lfc_prefix "lfn:/grid/${MY_VO}/gfal2-tests/")
 SET(lfc_host_name "lfc-puppet02.cern.ch")
 SET(gsiftp_prefix_dpm "gsiftp://marsedpm.in2p3.fr/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
 SET(srm_prefix_dpm "srm://marsedpm.in2p3.fr:8446/srm/managerv2?SFN=/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
+SET(sftp_prefix "sftp://gfal2@arioch.cern.ch/home/gfal2/gfal2-tests")
 
 # Need to find something better!
 SET(davs_prefix_dpm "davs+3rd://dpmhead-rc.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
@@ -263,6 +266,23 @@ IF(PLUGIN_XROOTD)
         test_copy_file_no_checksum("XROOTD" ${root_valid_dir_root} ${root_valid_dir_root})
     ENDIF (MAIN_TRANSFER)
 ENDIF()
+
+IF (PLUGIN_SFTP)
+    test_del_nonex("SFTP" "${sftp_prefix}")
+    test_del("SFTP" "${sftp_prefix}")
+    test_mkdir_unlink("SFTP" "${sftp_prefix}")
+    test_rename("SFTP" "${sftp_prefix}")
+    test_stat_all("SFTP" "${sftp_prefix}")
+    test_chmod_all("SFTP" "${sftp_prefix}" 0565 060 360 767)
+    test_mkdir_all("SFTP" "${sftp_prefix}")
+    test_rmdir_all("SFTP" "${sftp_prefix}")
+    test_readdir_full("SFTP" "${sftp_prefix}")
+    test_rwt_all("SFTP" "${sftp_prefix}" 4578)
+    test_rwt_all("SFTP" "${sftp_prefix}" 1)
+    test_rwt_all("SFTP" "${sftp_prefix}" 100000)
+    test_rwt_seq("SFTP" "${sftp_prefix}" 100 4560)
+    test_rwt_seek("SFTP" "${sftp_prefix}" 100 4560)
+ENDIF ()
 
 IF (MAIN_TRANSFER)
         test_copy_file_full("GRIDFTP_DPM"               ${gsiftp_prefix_dpm} ${gsiftp_prefix_dpm})   

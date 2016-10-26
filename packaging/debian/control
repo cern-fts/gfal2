@@ -1,7 +1,8 @@
 Source: gfal2
 Priority: optional
 Maintainer: DMC Devel <dmc-devel@cern.ch>
-Build-Depends: debhelper (>= 8.0.0), cmake, doxygen, libglib2.0-dev, libglibmm-2.4-dev, libattr1-dev, libldap2-dev, uuid-dev, liblfc-dev, libdpm-dev, srm-ifce-dev (>= 1.16.0), dcap-dev, libglobus-gass-copy-dev, davix-dev (>= 0.4.2), libgridsite-dev, libjson-c-dev, gsoap, pkg-config
+Build-Depends: debhelper (>= 8.0.0), cmake, doxygen, libglib2.0-dev, libglibmm-2.4-dev, libattr1-dev, libldap2-dev, uuid-dev, liblfc-dev, libdpm-dev, srm-ifce-dev (>= 1.16.0), dcap-dev, libglobus-gass-copy-dev, davix-dev (>= 0.4.2), libgridsite-dev, libjson-c-dev, gsoap, pkg-config,
+ libssh2-1-dev
 Standards-Version: 3.9.5
 Section: net
 Homepage: http://dmc.web.cern.ch/
@@ -102,9 +103,14 @@ Description: Provide the http access for gfal2
  provides the POSIX operations and the third party transfer support on
  the HTTP URLs. This plugin is able to do third-party copy with WebDAV.
 
+Package: gfal2-plugin-sftp
+Architecture: any
+Depends: libgfal2-2 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Provide sftp access for gfal2
+  Provide sftp support for gfal2.
+
 Package: gfal2-plugin-mock
 Architecture: any
 Depends: libgfal2-2 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Description: Provides a mock dummy protocol for gfal2
  Provides a dummy mock:// protocol for gfal2.
-

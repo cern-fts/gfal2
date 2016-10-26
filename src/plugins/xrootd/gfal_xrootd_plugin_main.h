@@ -29,7 +29,7 @@ extern "C"
 #endif
 
 // Entry point of the plugin
-gfal_plugin_interface gfal_plugin_init(gfal_handle handle, GError** err);
+gfal_plugin_interface gfal_plugin_init(gfal_handle context, GError** err);
 
 
 #ifdef __cplusplus

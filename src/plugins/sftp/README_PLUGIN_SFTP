@@ -1,0 +1,9 @@
+SFTP Plugin
+===========
+
+Provides access via SFTP (SSH)
+
+Examples
+--------
+gfal-stat sftp://arioch.cern.ch/etc/passwd
+

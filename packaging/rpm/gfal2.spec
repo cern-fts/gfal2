@@ -58,6 +58,8 @@ BuildRequires:      globus-gass-copy-devel
 BuildRequires:      davix-devel >= 0.4.2
 #xrootd plugin dependencies
 BuildRequires:      xrootd-client-devel >= 1:4.1.1
+# sftp plugin dependencies
+BuildRequires:      libssh2-devel
 #tests dependencies
 BuildRequires:      gtest-devel
 
@@ -187,6 +189,18 @@ access via a variety of protocols. This package contains a plugin for the
 xrootd protocol (root://).
 
 
+%package plugin-sftp
+Summary:            Provide sftp support for GFAL2
+Group:              Applications/Internet
+Requires:           %{name}%{?_isa} = %{version}-%{release}
+
+%description plugin-sftp
+The Grid File Access Library, GFAL2, provides a simple POSIX-like API for file
+operations in grid and cloud environments. Plug-ins are available to allow
+access via a variety of protocols. This package contains a plugin for the
+sftp protocol (sftp://).
+
+
 %if %{?_with_mock_plugin:1}%{!?_with_mock_plugin:0}
 %package plugin-mock
 Summary:            Provides a Mock dummy protocol for %{name}
@@ -210,6 +224,7 @@ Requires:           %{name}-plugin-rfio%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-gridftp%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-http%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-xrootd%{?_isa} = %{version}-%{release}
+Requires:           %{name}-plugin-sftp%{?_isa} = %{version}-%{release}
 
 %description all
 Meta-package for complete install of GFAL2 
@@ -342,6 +357,11 @@ make DESTDIR=%{buildroot} install
 %{_libdir}/%{name}-plugins/libgfal_plugin_xrootd.so*
 %{_pkgdocdir}/README_PLUGIN_XROOTD
 %config(noreplace) %{_sysconfdir}/%{name}.d/xrootd_plugin.conf
+
+%files plugin-sftp
+%{_libdir}/%{name}-plugins/libgfal_plugin_sftp.so*
+%{_pkgdocdir}/README_PLUGIN_SFTP
+%config(noreplace) %{_sysconfdir}/%{name}.d/sftp_plugin.conf
 
 %if %{?_with_mock_plugin:1}%{!?_with_mock_plugin:0}
 %files plugin-mock
