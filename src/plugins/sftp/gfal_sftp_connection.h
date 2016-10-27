@@ -18,8 +18,6 @@
 #define GFAL_SFTP_CONNECTION_H
 
 #include "gfal_sftp_plugin.h"
-#include <libssh2.h>
-#include <libssh2_sftp.h>
 
 /// Wraps a connection plus a session to a remote SSH server
 struct gfal_sftp_handle_s {
