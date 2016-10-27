@@ -1,11 +1,13 @@
 #!/bin/bash
+set -xe
 
 # Defaults
 MOCK_CONFIG_DIR="/etc/mock"
-MOCK_ROOT="epel-6-x86_64"
+MOCK_ROOT="dev-epel-6-x86_64"
 SKIP_INIT=0
 UCERT="/afs/cern.ch/user/a/aalvarez/public/saketag-cert.pem"
 UKEY="/afs/cern.ch/user/a/aalvarez/public/saketag-key.pem"
+SSHKEY="/afs/cern.ch/user/a/aalvarez/public/tests_id_rsa"
 PASSWD=""
 VOMS="dteam"
 OUTPUT_DIR="/tmp"
@@ -35,6 +37,10 @@ while [ -n "$1" ]; do
         "--passwd")
             shift
             PASSWD=$1
+        ;;
+        "--sshkey")
+            shift
+            SSHKEY=$1
         ;;
         "--voms")
             shift
@@ -78,11 +84,13 @@ mock_cmd install cmake gfal2-tests lcg-CA voms-clients voms-config-vo-dteam
 
 # Push certificate and key
 MOCK_HOME="/builddir"
-mock_cmd chroot mkdir "${MOCK_HOME}/.globus"
+mock_cmd chroot mkdir -p "${MOCK_HOME}/.globus" "${MOCK_HOME}/.ssh"
 mock_cmd --copyin "${UCERT}" "${MOCK_HOME}/.globus/usercert.pem"
 mock_cmd --copyin "${UKEY}" "${MOCK_HOME}/.globus/userkey.pem"
-mock_cmd chroot "chmod 0400 ${MOCK_HOME}/.globus/*.pem"
-mock_cmd chroot "chown root.root ${MOCK_HOME}/.globus/*.pem"
+mock_cmd --copyin "${SSHKEY}" "${MOCK_HOME}/.ssh/id_rsa"
+mock_cmd chroot "chmod 0400 ${MOCK_HOME}/.globus/*.pem ${MOCK_HOME}/.ssh/id_rsa"
+mock_cmd chroot "chown root.root ${MOCK_HOME}/.globus/*.pem ${MOCK_HOME}/.ssh/id_rsa"
+mock_cmd chroot "echo -e \"[SFTP PLUGIN]\nPASSPHRASE=${PASSWD}\" > /etc/gfal2.d/sftp_plugin.conf"
 
 # Create proxy
 mock_cmd chroot "echo ${PASSWD} | voms-proxy-init --rfc --cert ${MOCK_HOME}/.globus/usercert.pem --key ${MOCK_HOME}/.globus/userkey.pem --voms ${VOMS} --pwstdin"
