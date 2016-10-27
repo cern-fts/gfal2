@@ -134,7 +134,7 @@ static int gfal_sftp_socket(gfal2_uri *parsed, GError **err)
 
 
 static void gfal_sftp_get_authn_params(gfal_sftp_context_t *data, gfal2_uri *parsed,
-    char **user, char **passwd, char **privkey)
+    char **user, char **passwd, char **privkey, char **passphrase)
 {
     *user = *passwd = *privkey = NULL;
 
@@ -164,6 +164,7 @@ static void gfal_sftp_get_authn_params(gfal_sftp_context_t *data, gfal2_uri *par
     }
     // key
     *privkey = gfal2_get_opt_string_with_default(data->gfal2_context, "SFTP PLUGIN", "PRIVKEY", NULL);
+    *passphrase = gfal2_get_opt_string_with_default(data->gfal2_context, "SFTP PLUGIN", "PASSPHRASE", NULL);
     if (!*privkey && getenv("HOME")) {
         *privkey = g_strconcat(getenv("HOME"), "/.ssh/id_rsa", NULL);
     }
@@ -175,8 +176,8 @@ static void gfal_sftp_get_authn_params(gfal_sftp_context_t *data, gfal2_uri *par
 
 static int gfal_sftp_authn(gfal_sftp_context_t *data, gfal2_uri *parsed, gfal_sftp_handle_t *handle, GError **err)
 {
-    char *user, *passwd, *privkey;
-    gfal_sftp_get_authn_params(data, parsed, &user, &passwd, &privkey);
+    char *user, *passwd, *privkey, *passphrase;
+    gfal_sftp_get_authn_params(data, parsed, &user, &passwd, &privkey, &passphrase);
 
     gfal2_log(G_LOG_LEVEL_DEBUG, "User %s, key %s", user, privkey);
 
@@ -188,7 +189,7 @@ static int gfal_sftp_authn(gfal_sftp_context_t *data, gfal2_uri *parsed, gfal_sf
     while (auth_method) {
         if (strncmp(auth_method, "publickey", 9) == 0) {
             gfal2_log(G_LOG_LEVEL_DEBUG, "Trying publickey");
-            if (libssh2_userauth_publickey_fromfile(handle->ssh_session, user, NULL, privkey, NULL) == 0) {
+            if (libssh2_userauth_publickey_fromfile(handle->ssh_session, user, passwd, privkey, passphrase) == 0) {
                 authenticated = 1;
             }
         }
