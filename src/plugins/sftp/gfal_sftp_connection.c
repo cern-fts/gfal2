@@ -269,7 +269,7 @@ static gfal_sftp_handle_t *gfal_sftp_new_handle(gfal_sftp_context_t *data, gfal2
 }
 
 
-static void gfal_sftp_destroy_handle(gfal_sftp_handle_t *handle)
+static void gfal_sftp_destroy_handle(gfal_sftp_handle_t *handle, gpointer user_data)
 {
     close(handle->sock);
     libssh2_sftp_shutdown(handle->sftp_session);
@@ -291,14 +291,16 @@ gfal_sftp_handle_t *gfal_sftp_connect(gfal_sftp_context_t *context, const char *
         gfal2_log(G_LOG_LEVEL_DEBUG, "Creating new SFTP handle");
         handle = gfal_sftp_new_handle(context, parsed, err);
     } else {
+#if LIBSSH2_VERSION_NUM >= 0x010205
         int seconds = 10;
         gfal2_log(G_LOG_LEVEL_DEBUG, "Reusing SFTP handle from cache for %s:%d", handle->host, handle->port);
         int rc = libssh2_keepalive_send(handle->ssh_session, &seconds);
         if (rc < 0) {
             gfal2_log(G_LOG_LEVEL_DEBUG, "Recycled SFTP handle failed to send keepalive. Discard and reconnect");
-            gfal_sftp_destroy_handle(handle);
+            gfal_sftp_destroy_handle(handle, NULL);
             handle = gfal_sftp_new_handle(context, parsed, err);
         }
+#endif
     }
     if (handle) {
         handle->path = g_strdup(parsed->path);
@@ -359,7 +361,8 @@ void gfal_sftp_cache_push(GHashTable *cache, gfal_sftp_handle_t *handle)
 
 void gfal_sftp_destroy_cache_entry(gpointer key, gpointer value, gpointer user_data)
 {
-    g_slist_free_full((GSList*)value, (GDestroyNotify )gfal_sftp_destroy_handle);
+    g_slist_foreach((GSList*)value, (GFunc)gfal_sftp_destroy_handle, NULL);
+    g_slist_free((GSList*)value);
 }
 
 
