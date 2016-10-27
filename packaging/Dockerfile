@@ -25,7 +25,7 @@ ADD "http://repository.egi.eu/sw/production/cas/1/current/repo-files/EGI-trustan
 
 RUN yum install -y epel-release
 RUN yum clean all && yum update -y
-RUN yum install -y gfal2-all
+RUN yum install -y gfal2-all gfal2-tests
 
 # Leave yum cache clean
 RUN yum clean all
