@@ -84,8 +84,8 @@ mock_cmd install cmake gfal2-tests lcg-CA voms-clients voms-config-vo-dteam
 
 # Push certificate and key
 MOCK_HOME="/builddir"
-mock_cmd chroot mkdir -p "${MOCK_HOME}/.globus"
-mock_cmd chroot mkdir -p "${MOCK_HOME}/.ssh"
+mock_cmd chroot "mkdir -p ${MOCK_HOME}/.globus"
+mock_cmd chroot "mkdir -p ${MOCK_HOME}/.ssh"
 mock_cmd --copyin "${UCERT}" "${MOCK_HOME}/.globus/usercert.pem"
 mock_cmd --copyin "${UKEY}" "${MOCK_HOME}/.globus/userkey.pem"
 mock_cmd --copyin "${SSHKEY}" "${MOCK_HOME}/.ssh/id_rsa"
