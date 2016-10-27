@@ -1,6 +1,10 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Thu Oct 27 2016 Alejandro Alvarez <aalvarez at cern.ch> - 2.12.3
+### Bug
+- [DMC-891] - GridFTP Plugin: IPv6 detection misfire in some cases
+
 ## Tue Sep 06 2016 Alejandro Alvarez <aalvarez at cern.ch> - 2.12.2
 ### Bug
 - [DMC-879] - XRootD Plugin: Segfault on 3rd party copy
