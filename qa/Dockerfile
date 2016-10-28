@@ -23,11 +23,11 @@ ADD "http://repository.egi.eu/sw/production/cas/1/current/repo-files/EGI-trustan
 RUN yum install -y epel-release yum-utils
 
 # Build requirements
-RUN yum groupinstall -y 'Development Tools'
+RUN yum install -y gcc gcc-c++
 RUN yum-builddep -y gfal2
 
 # Run dependencies
-RUN yum install -y voms-clients voms-config-vo-dteam lcg-CA rats cppcheck java-1.8.0-openjdk lcov which
+RUN yum install -y cppcheck java-1.8.0-openjdk lcg-CA lcov rats unzip voms-clients voms-config-vo-dteam which
 
 # Coverage requirements
 ADD "http://repo1.maven.org/maven2/org/codehaus/sonar/runner/sonar-runner-dist/2.4/sonar-runner-dist-2.4.zip" /tmp
