@@ -264,6 +264,7 @@ IF(PLUGIN_XROOTD)
     # Copies
     IF (MAIN_TRANSFER)
         test_copy_file_no_checksum("XROOTD" ${root_valid_dir_root} ${root_valid_dir_root})
+        test_copy_bulk("XROOTD" ${root_valid_dir_root} ${root_valid_dir_root})
     ENDIF (MAIN_TRANSFER)
 ENDIF()
 
@@ -285,44 +286,25 @@ IF (PLUGIN_SFTP)
 ENDIF ()
 
 IF (MAIN_TRANSFER)
-        test_copy_file_full("GRIDFTP_DPM"               ${gsiftp_prefix_dpm} ${gsiftp_prefix_dpm})   
-        test_copy_file_full("SRM_DPM"                   ${srm_valid_dir_root} ${srm_valid_dir_root})
+        test_copy_file_full("GRIDFTP_TO_GRIDFTP"        ${gsiftp_prefix_dpm} ${gsiftp_prefix_dpm})
         test_copy_file_full("SRM_DPM_TO_DCACHE"         ${srm_valid_dir_root} ${srm_valid_dcache_dir_root})
-        test_copy_file_full("SRM_DCACHE_TO_SRM"         ${srm_valid_dcache_dir_root} ${srm_valid_dir_root})
-        test_copy_file_full("GSIFTP_DPM_TO_SRM_DCACHE"  ${gsiftp_prefix_dpm} ${srm_valid_dcache_dir_root})
-        test_copy_file_full("SRM_DCACHE"                ${srm_valid_dcache_dir_root} ${srm_valid_dcache_dir_root})
+        test_copy_file_full("SRM_DCACHE_TO_DPM"         ${srm_valid_dcache_dir_root} ${srm_valid_dir_root})
+        test_copy_file_full("GRIDFTP_TO_SRM"            ${gsiftp_prefix_dpm} ${srm_valid_dcache_dir_root})
         test_copy_file_full("SRM_TO_GRIDFTP"            ${srm_valid_dir_root} ${gsiftp_prefix_dpm})
-        test_copy_file_full("GRIDFTP_TO_SRM"            ${gsiftp_prefix_dpm} ${srm_valid_dir_root})
         test_copy_file_full("DAVS_TO_DAVS"              ${davs_valid_dir_root} ${davs_valid_dir_root})
 
-        # global transfer tests for storage compatibility
+        test_copy_file_full("FILE_TO_SRM"               ${file_prefix} ${srm_valid_dir_root})
+        test_copy_file_full("SRM_TO_FILE"               ${srm_valid_dcache_dir_root}  ${file_prefix})
+        test_copy_file_full("FILE_TO_FILE"              ${file_prefix}  ${file_prefix})
+        test_copy_file_full("GRIDFTP_TO_FILE"           ${gsiftp_prefix_dpm}  ${file_prefix})
+        test_copy_file_full("FILE_TO_GRIDFTP"           ${file_prefix}  ${gsiftp_prefix_dpm})
 
-        # storm <-> storm
-        test_copy_file_full("STORM_TO_STORM" ${srm_prefix_storm}  ${srm_prefix_storm})
-        # storm -> dpm
-        test_copy_file_full("STORM_TO_SRM_DPM" ${srm_prefix_storm}  ${srm_valid_dir_root})
-        # storm -> dcache
-        test_copy_file_full("STORM_TO_SRM_DCACHE" ${srm_prefix_storm}  ${srm_valid_dcache_dir_root})
+        test_copy_file_full("STORM_TO_STORM"            ${srm_prefix_storm}  ${srm_prefix_storm})
+        test_copy_file_full("STORM_TO_SRM_DPM"          ${srm_prefix_storm}  ${srm_valid_dir_root})
 
-        # local transfer
-        #
-
-        # local <-> DPM
-        test_copy_file_full("FILE_TO_SRM_DPM" ${file_prefix} ${srm_valid_dir_root})
-        test_copy_file_full("SRM_DPM_TO_FILE" ${srm_valid_dir_root}  ${file_prefix})
-
-        # local <-> dcache
-        test_copy_file_full("FILE_TO_SRM_DCACHE" ${file_prefix} ${srm_valid_dcache_dir_root})
-        test_copy_file_full("SRM_DCACHE_TO_FILE" ${srm_valid_dcache_dir_root}  ${file_prefix})
-        test_copy_file_full("FILE_TO_FILE" ${file_prefix}  ${file_prefix})
-
-        # gsiftp dpm <-> local
-        test_copy_file_full("GSIFTP_TO_FILE" ${gsiftp_prefix_dpm}  ${file_prefix})
-        test_copy_file_full("FILE_TO_GSIFTP" ${file_prefix}  ${gsiftp_prefix_dpm})
-
-        # local <-> storm
-        test_copy_file_full("STORM_TO_FILE" ${srm_prefix_storm}  ${file_prefix})
-        test_copy_file_full("FILE_TO_STORM" ${file_prefix}  ${srm_prefix_storm})
+        # bulk, only a subset, otherwise this takes too long
+        test_copy_bulk("GSIFTP" ${gsiftp_prefix_dpm} ${gsiftp_prefix_dpm})
+        test_copy_bulk("SRM" ${srm_valid_dir_root} ${srm_valid_dcache_dir_root})
 
         # Passive plugin, which only makes sense for GridFTP
         test_pasv("PASV" ${gsiftp_prefix_dpm} ${gsiftp_prefix_dpm})

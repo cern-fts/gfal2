@@ -80,24 +80,6 @@ TEST_F(DeleteTest, DeleteSequential)
     }
 }
 
-TEST_F(DeleteTest, BulkDeletion)
-{
-    GError *errors[N_FILES] = {0};
-    int ret = gfal2_unlink_list(context, N_FILES, files, errors);
-
-    for (int i = 0; i < N_FILES; ++i) {
-        EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, errors[i]);
-    }
-
-    // Were they really removed?
-    struct stat st;
-    for (int i = 0; i < N_FILES; ++i) {
-        GError *err = NULL;
-        ret = gfal2_stat(context, files[i], &st, &err);
-        EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, err, ENOENT);
-    }
-}
-
 TEST_F(DeleteTest, BulkDeletionOddFail)
 {
     int ret;
@@ -140,7 +122,7 @@ TEST_F(DeleteTest, BulkDeletionIsDir)
     int ret;
     GError* err = NULL;
 
-    // Remove the first file, create  dir instead, create a file instead
+    // Remove the first file, create  dir instead
     ret = gfal2_unlink(context, files[0], &err);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, err);
     ret = gfal2_mkdir(context, files[0], 0775, &err);

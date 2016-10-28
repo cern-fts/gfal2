@@ -203,14 +203,16 @@ if(FUNCTIONAL_TESTS)
             add_test(copyfile_replace_${name} gfalt_test_copy_file_replace ${src_dir} ${dst_dir})
             add_test(copyfile_test_${name} gfalt_test_copy_file ${src_dir} ${dst_dir})
             add_test(copyfile_test_mkdir_${name} gfalt_test_copy_file_mkdir ${src_dir} ${dst_dir})
-            add_test(copyfile_bulk_${name} gfalt_test_copy_bulk ${src_dir} ${dst_dir})
         endfunction(test_copy_file_full name dst_dir)
+
+        function (test_copy_bulk name src_dir dst_dir)
+            add_test(copyfile_bulk_${name} gfalt_test_copy_bulk ${src_dir} ${dst_dir})
+        endfunction (test_copy_bulk name src_dir dst_dir)
 
         function(test_copy_file_no_checksum name src_dir dst_dir)
             add_test(copyfile_replace_${name} gfalt_test_copy_file_replace ${src_dir} ${dst_dir})
             add_test(copyfile_test_${name} gfalt_test_copy_file ${src_dir} ${dst_dir})
             add_test(copyfile_test_mkdir_${name} gfalt_test_copy_file_mkdir ${src_dir} ${dst_dir})
-            add_test(copyfile_bulk_${name} gfalt_test_copy_bulk ${src_dir} ${dst_dir})
         endfunction(test_copy_file_no_checksum name src_dir dst_dir)
 
         function(test_pasv name src_dir dst_dir)
