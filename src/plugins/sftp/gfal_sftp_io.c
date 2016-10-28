@@ -100,8 +100,9 @@ ssize_t gfal_sftp_read(plugin_handle plugin_data, gfal_file_handle fd, void *buf
     ssize_t read = 0;
 
     // libssh2 may need to read in chunks
+    char *buffer = (char*)buff;
     do {
-        ssize_t rc = libssh2_sftp_read(ssh_fd->file_handle, buff + read, count - read);
+        ssize_t rc = libssh2_sftp_read(ssh_fd->file_handle, buffer + read, count - read);
         if (rc < 0) {
             gfal_plugin_sftp_translate_error(__func__, ssh_fd->sftp_handle, err);
             return rc;

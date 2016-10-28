@@ -55,9 +55,9 @@ static int gfal_checksumG_srmv2_internal(srm_context_t context, const char *surl
                 g_strlcpy(buf_chktype, srmv2_mdstatuses->checksumtype, s_chktype);
             } else {
                 if (s_checksum > 0)
-                    buf_checksum = '\0';
+                    *buf_checksum = '\0';
                 if (s_chktype > 0)
-                    buf_chktype = '\0';
+                    *buf_chktype = '\0';
             }
             ret = 0;
         }

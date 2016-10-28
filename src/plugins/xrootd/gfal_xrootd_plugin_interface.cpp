@@ -86,7 +86,8 @@ gfal_file_handle gfal_xrootd_openG(plugin_handle handle, const char *path,
 
     std::string sanitizedUrl = normalize_url((gfal2_context_t)handle, path);
 
-    int* fd = new int(XrdPosixXrootd::Open(sanitizedUrl.c_str(), flag, mode));
+    int *fd = new int;
+    *fd = XrdPosixXrootd::Open(sanitizedUrl.c_str(), flag, mode);
     if (*fd == -1) {
         gfal2_xrootd_set_error(err, errno, __func__, "Failed to open file");
         delete fd;
