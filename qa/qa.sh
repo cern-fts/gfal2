@@ -32,7 +32,7 @@ ctest -T test
 
 # Extract coverage
 lcov --directory . --capture --output-file="/tmp/coverage.info"
-python /tmp/lcov_cobertura.py "/tmp/coverage.info" -b "/gfal2" -e ".+usr.include." -o "/tmp/coverage.xml"
+python /tmp/lcov_cobertura.py "/tmp/coverage.info" -b "/gfal2" -e ".+usr.include." -o "coverage.xml"
 
 # Run sonar
 cp /sonar-project.properties .
