@@ -48,7 +48,7 @@ SET(srm_prefix_dcache "srm://dcache-se-cms.desy.de:8443/srm/managerv2?SFN=/pnfs/
 SET(lfc_prefix "lfn:/grid/${MY_VO}/gfal2-tests/")
 SET(lfc_host_name "lfc-puppet02.cern.ch")
 SET(gsiftp_prefix_dpm "gsiftp://marsedpm.in2p3.fr/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
-SET(srm_prefix_dpm "srm://ipnsedpm.in2p3.fr:8446/srm/managerv1?SFN=/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
+SET(srm_prefix_dpm "srm://ipnsedpm.in2p3.fr:8446/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
 SET(sftp_prefix "sftp://gfal2@arioch.cern.ch/home/gfal2/gfal2-tests")
 
 # Need to find something better!
@@ -181,7 +181,6 @@ IF(PLUGIN_SRM)
         test_xattr("DPM" ${srm_prefix_dpm})
         test_xattr("DCACHE" ${srm_prefix_dcache})
 ENDIF(PLUGIN_SRM)
-
 
 IF(PLUGIN_LFC)
         test_stat_all( "LFC" ${lfc_prefix})
