@@ -20,21 +20,16 @@ FROM centos:7
 ADD "https://grid-deployment.web.cern.ch/grid-deployment/dms/dmc/repos/dmc-ci-el7.repo" "/etc/yum.repos.d/"
 ADD "http://repository.egi.eu/sw/production/cas/1/current/repo-files/EGI-trustanchors.repo" "/etc/yum.repos.d/"
 
-# Epel and upgrade
-RUN yum install -y epel-release
-RUN yum clean all && yum update -y
+RUN yum install -y epel-release yum-utils
 
 # Build requirements
-RUN yum install -y yum-utils
 RUN yum groupinstall -y 'Development Tools'
 RUN yum-builddep -y gfal2
 
 # Run dependencies
-RUN yum install -y voms-clients voms-config-vo-dteam lcg-CA
-RUN yum install -y rats cppcheck
+RUN yum install -y voms-clients voms-config-vo-dteam lcg-CA rats cppcheck java-1.8.0-openjdk lcov which
 
 # Coverage requirements
-RUN yum install -y java-1.8.0-openjdk lcov which
 ADD "http://repo1.maven.org/maven2/org/codehaus/sonar/runner/sonar-runner-dist/2.4/sonar-runner-dist-2.4.zip" /tmp
 RUN unzip "/tmp/sonar-runner-dist-2.4.zip" -d "/tmp"
 ADD sonar-runner.properties "/tmp/sonar-runner-2.4/conf" 
@@ -45,6 +40,5 @@ RUN chmod a+r /tmp/lcov_cobertura.py
 VOLUME ["/gfal2", "/.ssh", "/.globus"]
 
 # Entry point
-ADD qa.sh /qa.sh
-ADD sonar-project.properties /sonar-project.properties 
+COPY "qa.sh" "sonar-project.properties" /
 ENTRYPOINT ["/qa.sh"]
