@@ -20,6 +20,10 @@ CFLAGS=--coverage CXXFLAGS=--coverage cmake "/gfal2" \
     -DUNIT_TESTS=ON -DFUNCTIONAL_TESTS=ON -DPLUGIN_MOCK=ON
 make -j
 
+# Static checkers
+cppcheck -v --enable=all --xml "/gfal2" 2> cppcheck.xml
+rats -w 3 --xml "/gfal2" > rats.xml
+
 # Clear counters
 lcov --directory . --zerocounters
 

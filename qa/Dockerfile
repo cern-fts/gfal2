@@ -31,6 +31,7 @@ RUN yum-builddep -y gfal2
 
 # Run dependencies
 RUN yum install -y voms-clients voms-config-vo-dteam lcg-CA
+RUN yum install -y rats cppcheck
 
 # Coverage requirements
 RUN yum install -y java-1.8.0-openjdk lcov which
@@ -38,6 +39,7 @@ ADD "http://repo1.maven.org/maven2/org/codehaus/sonar/runner/sonar-runner-dist/2
 RUN unzip "/tmp/sonar-runner-dist-2.4.zip" -d "/tmp"
 ADD sonar-runner.properties "/tmp/sonar-runner-2.4/conf" 
 ADD "https://raw.github.com/eriwen/lcov-to-cobertura-xml/master/lcov_cobertura/lcov_cobertura.py" /tmp
+RUN chmod a+r /tmp/lcov_cobertura.py
 
 # Required input
 VOLUME ["/gfal2", "/.ssh", "/.globus"]
@@ -46,4 +48,3 @@ VOLUME ["/gfal2", "/.ssh", "/.globus"]
 ADD qa.sh /qa.sh
 ADD sonar-project.properties /sonar-project.properties 
 ENTRYPOINT ["/qa.sh"]
-
