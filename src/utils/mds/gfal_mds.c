@@ -36,15 +36,9 @@ const char* bdii_config_group   = "BDII";
 const char* bdii_config_enable  = "ENABLED";
 const char* bdii_config_timeout = "TIMEOUT";
 
-/*
- * set the bdii value of the handle specified
- */
-void gfal_set_nobdiiG(gfal2_context_t handle, gboolean no_bdii_chk){
-    gfal2_set_opt_boolean(handle, bdii_config_group, bdii_config_enable, !no_bdii_chk, NULL);
-}
-
-gboolean gfal_get_nobdiiG(gfal2_context_t handle){
-    return (!gfal2_get_opt_boolean_with_default(handle, bdii_config_group,bdii_config_enable,TRUE));
+gboolean gfal_get_nobdiiG(gfal2_context_t handle)
+{
+    return (!gfal2_get_opt_boolean_with_default(handle, bdii_config_group, bdii_config_enable, TRUE));
 }
 
 /*
@@ -95,18 +89,6 @@ int gfal_mds_get_se_types_and_endpoints (gfal2_context_t handle, const char *hos
     return (n > 0) ? 0 : -1;
 }
 
-/*
- *  try to get lfc hostname from bdii
- *  @return string if success or NULL & set the err if fail
- *
- */
- char * gfal_get_lfchost_bdii(gfal2_context_t handle, GError** err){
-		size_t s_errbuff = GFAL_ERRMSG_LEN;
-		char errbuff[s_errbuff];
-		memset(errbuff, '\0', sizeof(char)*s_errbuff);
-        g_set_error(err, gfal2_get_core_quark(), EPROTONOSUPPORT, "[%s] disable in gfal 2.0, api broken in is interface",__func__);
-		return NULL;
- }
 
 #if MDS_BDII_EXTERNAL
 /*

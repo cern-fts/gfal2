@@ -55,11 +55,6 @@ int gfal_mds_resolve_srm_endpoint(gfal2_context_t handle, const char* base_url, 
 // deprecated, use gfal_mds_resolve_srm_endpoint instead
 int gfal_mds_get_se_types_and_endpoints(gfal2_context_t handle, const char *host, char ***se_types, char ***se_endpoints, GError** err);
 
-char * gfal_get_lfchost_bdii(gfal2_context_t handle, GError** err);
-
-
-void gfal_set_nobdiiG(gfal2_context_t handle, gboolean no_bdii_chk);
-
 gboolean gfal_get_nobdiiG(gfal2_context_t handle);
 
 #ifdef __cplusplus
