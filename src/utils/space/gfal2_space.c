@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include "gfal2_space.h"
 
+#include <glib.h>
 #include <json.h>
 #include <string.h>
 
@@ -89,7 +90,7 @@ size_t gfal2_space_generate_json(struct space_report *report, char *buffer, size
     }
 
     const char *serialized = json_object_to_json_string(root);
-    strncpy(buffer, serialized, s_buff);
+    g_strlcpy(buffer, serialized, s_buff);
 
     json_object_put(root);
 

@@ -51,7 +51,7 @@ static int gfal_srm_guess_service_endpoint(gfal_srmv2_opt *opts, const char *sur
             "Impossible to setup default service endpoint from %s : bad URI format", surl);
         ret = -1;
     } else {
-        strncat(buff_endpoint, org_p, p - org_p);
+        g_strlcat(buff_endpoint, org_p, p - org_p);
         g_strlcat(buff_endpoint, GFAL_DEFAULT_SERVICE_ENDPOINT_SUFFIX, s_buff);
         *srm_type = opts->srm_proto_type;
         ret = 0;

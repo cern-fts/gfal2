@@ -517,7 +517,7 @@ int gfal_xrootd_checksumG(plugin_handle plugin_data, const char* url,
         return -1;
     }
 
-    strcpy(checksum_buffer, space + 1);
+    g_strlcpy(checksum_buffer, space + 1, buffer_length);
 
     return 0;
 }

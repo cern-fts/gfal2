@@ -53,7 +53,7 @@ static ssize_t gfal_srm_get_endpoint_type_xattrG(plugin_handle handle, const cha
     int i;
     for (i = 0; i < output.n_extra; ++i) {
         if (strcmp(output.extra[i].key, "backend_type") == 0) {
-            strncpy(buff, output.extra[i].value, s_buff);
+            g_strlcpy(buff, output.extra[i].value, s_buff);
             break;
         }
     }
