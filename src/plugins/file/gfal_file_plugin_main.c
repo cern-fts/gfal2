@@ -456,7 +456,7 @@ static int md5_getResult(void *chk_handler, char *resu, size_t s_b)
     if (s_b < 33) // buffer to short
         return -1;
     gfal2_md5_final(buffer, ctx);
-    gfal2_md5_to_hex_string((char *) buffer, resu);
+    gfal2_md5_to_hex_string(buffer, resu, sizeof(buffer));
     free(ctx);
     return 0;
 }

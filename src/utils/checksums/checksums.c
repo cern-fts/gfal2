@@ -305,15 +305,16 @@ void gfal2_md5_final(unsigned char *result, GFAL_MD5_CTX *ctx)
 }
 
 
-void gfal2_md5_to_hex_string(char* bytes, char* hex){
+void gfal2_md5_to_hex_string(const unsigned char *bytes, char *hex, size_t hex_size)
+{
     int i;
-    const char hex_str[] = { '0' , '1' ,'2', '3', '4' ,'5' , '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+    const char hex_str[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     char *p = hex;
-    for(i=0; i < 16; i++){
-        *p =  hex_str[((bytes[i] >> 4 )& 0x0f)];
+    for (i = 0; i < 16 && i < hex_size; i++) {
+        *p = hex_str[((bytes[i] >> 4) & 0x0f)];
         p++;
         *p = hex_str[bytes[i] & 0x0f];
         p++;
     }
-    *p='\0';
+    *p = '\0';
 }

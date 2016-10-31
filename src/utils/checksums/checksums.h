@@ -52,7 +52,7 @@ void gfal2_md5_update(GFAL_MD5_CTX *ctx, const void *data, unsigned long size);
 
 void gfal2_md5_final(unsigned char *result, GFAL_MD5_CTX *ctx);
 
-void gfal2_md5_to_hex_string(char* bytes, char* hex);
+void gfal2_md5_to_hex_string(const unsigned char *bytes, char *hex, size_t hex_size);
 
 #ifdef __cplusplus
 }
