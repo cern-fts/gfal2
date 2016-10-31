@@ -21,7 +21,12 @@ CFLAGS=--coverage CXXFLAGS=--coverage cmake "/gfal2" \
 make -j
 
 # Static checkers
-cppcheck -v --enable=all --xml "/gfal2" 2> cppcheck.xml
+cppcheck -v --enable=all \
+    -I "/usr/include" \
+    -I "/usr/include/glib-2.0" \
+    -I "/gfal2/src/core" \
+    -I "/gfal2/src/utilis" \
+    --xml "/gfal2" 2> cppcheck.xml
 rats -w 3 --xml "/gfal2" > rats.xml
 
 # Clear counters
