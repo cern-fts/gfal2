@@ -131,14 +131,13 @@ GConfigManager_t gfal_load_static_configuration(GError ** err)
         if(d != NULL){
             while( (dirinfo = readdir(d)) != NULL){
                 if( is_config_dir(dirinfo->d_name)){
-                    char buff[strlen(dir_config) + strlen(dirinfo->d_name) + 2];
-                    strcpy(buff, dir_config);
-                    strcat(buff,"/");
-                    strcat(buff, dirinfo->d_name);
-
-                    gfal2_log(G_LOG_LEVEL_DEBUG, " try to load configuration file %s ...", buff);
-                    if(gfal_load_configuration_to_conf_manager(res, buff, &tmp_err) != 0)
+                    char *config_file = g_strdup_printf("%s/%s", dir_config, dirinfo->d_name);
+                    gfal2_log(G_LOG_LEVEL_DEBUG, " try to load configuration file %s ...", config_file);
+                    int rc = gfal_load_configuration_to_conf_manager(res, config_file, &tmp_err);
+                    g_free(config_file);
+                    if (rc != 0) {
                         break;
+                    }
                 }
             }
             closedir(d);

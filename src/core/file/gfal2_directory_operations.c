@@ -126,6 +126,7 @@ static size_t gfal_rw_get_root_length(const char* surl)
     return matches[0].rm_eo - matches[0].rm_so;
 }
 
+
 inline static struct dirent* gfal_rw_gfalfilehandle_readdirpp(gfal2_context_t context, gfal_file_handle fh, struct stat* st, GError** err)
 {
     g_return_val_err_if_fail(context && fh, NULL, err, "[gfal_posix_gfalfilehandle_readdirpp] incorrect args");
@@ -137,26 +138,22 @@ inline static struct dirent* gfal_rw_gfalfilehandle_readdirpp(gfal2_context_t co
         g_clear_error(&tmp_err);
         ret = gfal_rw_gfalfilehandle_readdir(context, fh, &tmp_err);
         if (!tmp_err && ret != NULL ) {
-            const size_t s_path = strlen(fh->path);
-            const size_t s_d_name = strlen(ret->d_name);
-            char buffer[s_d_name + s_path + 2];
+            char *url = NULL;
 
             if (ret->d_name[0] != '/') {
-                char* p = mempcpy(buffer, fh->path, s_path);
-                *p = '/';
-                p = mempcpy(++p, ret->d_name, s_d_name);
-                *p = '\0';
+                url = g_strconcat(fh->path, "/", ret->d_name, NULL);
             }
             else {
                 size_t root_len = gfal_rw_get_root_length(fh->path);
-                if (root_len > 0)
-                    mempcpy(buffer, fh->path, root_len);
-                mempcpy(buffer + root_len, ret->d_name, sizeof(buffer) - root_len);
+                char *root = g_strndup(fh->path, root_len);
+                url = g_strconcat(root, ret->d_name, NULL);
+                g_free(root);
             }
 
-            if (gfal2_stat(context, buffer, st, &tmp_err) < 0) {
+            if (gfal2_stat(context, url, st, &tmp_err) < 0) {
                 ret = NULL;
             }
+            g_free(url);
         }
     }
 
