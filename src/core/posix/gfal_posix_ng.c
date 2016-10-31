@@ -94,10 +94,9 @@ int gfal_closedir(DIR* d)
 
 int gfal_open(const char * path, int flag, ...)
 {
-    mode_t mode = S_IRWXU | S_IRGRP | S_IROTH;
     va_list va;
     va_start(va, flag);
-    mode = va_arg(va, mode_t);
+    mode_t mode = va_arg(va, mode_t);
     va_end(va);
     return gfal_posix_internal_open(path, flag, mode);
 }

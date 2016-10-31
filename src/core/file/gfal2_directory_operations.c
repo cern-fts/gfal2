@@ -205,9 +205,7 @@ static int gfal_rw_dir_handle_close(gfal2_context_t handle, gfal_file_handle fh,
     g_return_val_err_if_fail(handle && fh, -1, err,
             "[gfal_posix_gfalfilehandle_close] invalid args");
     GError *tmp_err = NULL;
-    int ret = -1;
-
-    ret = gfal_plugin_closedirG(handle, fh, &tmp_err);
+    int ret = gfal_plugin_closedirG(handle, fh, &tmp_err);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 

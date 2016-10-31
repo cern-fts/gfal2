@@ -129,9 +129,8 @@ static int gfal_rw_file_handle_delete(gfal_fdesc_container_handle container, int
 
 static int gfal_rw_file_handle_close(gfal2_context_t handle, gfal_file_handle fhandle, GError ** err){
     GError* tmp_err=NULL;
-    int ret = -1;
 
-    ret = gfal_plugin_closeG(handle, fhandle, &tmp_err);
+    int ret = gfal_plugin_closeG(handle, fhandle, &tmp_err);
 
     if(tmp_err){
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
