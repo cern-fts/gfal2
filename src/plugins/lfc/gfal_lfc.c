@@ -90,7 +90,7 @@ static inline int lfc_full_urlconverter(const char * lfn_url, char** host,
     GError* tmp_err = NULL;
 
     int res = -1;
-    const int pref_len = strlen(GFAL_LFC_PREFIX2);
+    const int pref_len = (sizeof(GFAL_LFC_PREFIX2) - 1);
     const int strsize = strnlen(lfn_url, GFAL_URL_MAX_LEN - 1);
     const int res_len = strsize - pref_len;
     char *p_org, *p_end, *p;

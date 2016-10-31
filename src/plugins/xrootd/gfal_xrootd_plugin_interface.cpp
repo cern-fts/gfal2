@@ -361,7 +361,7 @@ public:
         XrdCl::StatInfo* stinfo = entry->GetStatInfo();
 
         g_strlcpy(dbuffer.d_name, entry->GetName().c_str(), sizeof(dbuffer.d_name));
-        dbuffer.d_reclen = strlen(dbuffer.d_name);
+        dbuffer.d_reclen = strnlen(dbuffer.d_name, sizeof(dbuffer.d_reclen));
 
         if (stinfo && stinfo->TestFlags(XrdCl::StatInfo::IsDir))
             dbuffer.d_type = DT_DIR;

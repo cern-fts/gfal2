@@ -164,8 +164,7 @@ void gridftp_create_parent_copy(GridFTPModule* module, gfalt_params_t params,
     if (create_parent) {
         gfal2_log(G_LOG_LEVEL_DEBUG, " -> [gridftp_create_parent_copy]");
         char current_uri[GFAL_URL_MAX_LEN];
-        g_strlcpy(current_uri, gridftp_url, GFAL_URL_MAX_LEN);
-        const size_t s_uri = strlen(current_uri);
+        const size_t s_uri = g_strlcpy(current_uri, gridftp_url, GFAL_URL_MAX_LEN);
         char* p_uri = current_uri + s_uri - 1;
 
         while (p_uri > current_uri && *p_uri == '/') { // remove trailing '/'

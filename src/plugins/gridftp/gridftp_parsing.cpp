@@ -153,8 +153,8 @@ globus_result_t parse_mlst_line(char *line, struct stat *stat_info, char *filena
     startfact = startline;
 
     if (filename_buf) {
-        g_strlcpy(filename_buf, filename, filename_size);
-        char* trailing = filename_buf + strlen(filename);
+        size_t len = g_strlcpy(filename_buf, filename, filename_size);
+        char* trailing = filename_buf + len;
         do {
             *trailing = '\0';
             --trailing;

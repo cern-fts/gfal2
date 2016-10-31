@@ -59,7 +59,7 @@ static ssize_t gfal_srm_get_endpoint_type_xattrG(plugin_handle handle, const cha
     }
     srm_xping_output_free(output);
     gfal_srm_ifce_easy_context_release(handle, easy);
-    return strlen(buff);
+    return strnlen(buff, s_buff);
 }
 
 
@@ -73,7 +73,7 @@ ssize_t gfal_srm_geturl_getxattrG(plugin_handle handle, const char *path,
 
     ret = gfal_srm_getTURLS_plugin(handle, path, buff, s_buff, NULL, &tmp_err);
     if (ret >= 0) {
-        ret = strlen(buff) * sizeof(char);
+        ret = strnlen(buff, s_buff) * sizeof(char);
     }
 
     G_RETURN_ERR(ret, tmp_err, err);

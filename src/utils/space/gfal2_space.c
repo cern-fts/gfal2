@@ -19,7 +19,6 @@
  */
 
 #include <stdint.h>
-#include <inttypes.h>
 #include <stdio.h>
 #include "gfal2_space.h"
 
@@ -94,5 +93,5 @@ size_t gfal2_space_generate_json(struct space_report *report, char *buffer, size
 
     json_object_put(root);
 
-    return strlen(buffer);
+    return strnlen(buffer, s_buff);
 }

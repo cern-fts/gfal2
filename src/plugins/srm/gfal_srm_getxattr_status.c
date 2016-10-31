@@ -73,7 +73,7 @@ ssize_t gfal_srm_status_internal(gfal_srmv2_opt *opts, srm_context_t context, co
 
     if (ret >= 0) {
         gfal_srm_status_copy(buf.locality, (char *) buff, s_buff);
-        ret = MIN(strlen(buff), s_buff);
+        ret = strnlen(buff, s_buff);
     }
 
     G_RETURN_ERR(ret, tmp_err, err);

@@ -73,7 +73,7 @@ gfal_file_handle gfal_plugin_mock_opendir(plugin_handle plugin_data,
                 entry->st.st_size = strtol(sep + 1, &sep, 10);
             }
         }
-        entry->de.d_reclen = strlen(entry->de.d_name);
+        entry->de.d_reclen = strnlen(entry->de.d_name, 256);
 
         dir->list = g_slist_append(dir->list, entry);
         p = strtok_r(NULL, ",", &saveptr);
