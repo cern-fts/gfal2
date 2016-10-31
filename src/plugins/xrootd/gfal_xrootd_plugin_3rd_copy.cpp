@@ -226,7 +226,8 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         if (performChecksum) {
             checksumType[0] = '\0';
             checksumValue[0] = '\0';
-            sscanf(checksums[i], "%s:%s", checksumType, checksumValue);
+            sscanf(checksums[i], "%63s:%511s", checksumType, checksumValue);
+            checksumType[63] = checksumValue[511] = '\0';
 
             if (!checksumType[0] || !checksumValue[0]) {
                 char* defaultChecksumType = gfal2_get_opt_string(context, XROOTD_CONFIG_GROUP, XROOTD_DEFAULT_CHECKSUM, &internalError);
