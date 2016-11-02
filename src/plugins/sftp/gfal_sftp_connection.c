@@ -120,6 +120,11 @@ static int gfal_sftp_socket(gfal2_uri *parsed, GError **err)
     gfal2_log(G_LOG_LEVEL_DEBUG, "Connect to %s:%d", addrstr, port);
 
     int sock = socket(addr->sa_family, SOCK_STREAM, 0);
+    if (sock < 0) {
+        freeaddrinfo(addresses);
+        gfal2_set_error(err, gfal2_get_plugin_sftp_quark(), errno, __func__, "Could not create the socket");
+        return -1;
+    }
     rc = connect(sock, addr, sizeof(*addr));
     freeaddrinfo(addresses);
 
