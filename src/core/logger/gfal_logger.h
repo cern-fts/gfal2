@@ -70,24 +70,6 @@ GLogLevelFlags gfal2_log_get_level(void);
 int gfal2_log_set_handler(GLogFunc func, gpointer user_data);
 
 
-
-/****************************************
- * The following methods are deprecated *
- ****************************************/
-
-
-/** GFAL_VERBOSE_NORMAL only errors are printed */
-#define GFAL_VERBOSE_NORMAL     0x00    /* Use G_LOG_LEVEL_MESSAGE */
-/** GFAL_VERBOSE_VERBOSE a bit more verbose information is printed */
-#define GFAL_VERBOSE_VERBOSE    0x01    /* Use G_LOG_LEVEL_INFO */
-/** GFAL_VERBOSE_DEBUG  extra information is printed */
-#define GFAL_VERBOSE_DEBUG      0x02    /* Use G_LOG_LEVEL_DEBUG */
-/** GFAL_VERBOSE_TRACE execution trace internal to GFAL2 */
-#define GFAL_VERBOSE_TRACE		0x08    /* Use G_LOG_LEVEL_DEBUG */
-/** GFAL_VERBOSE_TRACE_PLUGIN log all the plugin related debug information */
-#define GFAL_VERBOSE_TRACE_PLUGIN 0x04  /* Use G_LOG_LEVEL_DEBUG */
-
-
 #ifdef __cplusplus
 }
 #endif

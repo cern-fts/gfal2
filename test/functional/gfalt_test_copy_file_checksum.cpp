@@ -122,7 +122,7 @@ int main(int argc, char** argv)
     CopyTestChecksum::source_root = argv[1];
     CopyTestChecksum::destination_root = argv[2];
 
-    //gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE | GFAL_VERBOSE_DEBUG);
+    // gfal2_log_set_level(G_LOG_LEVEL_DEBUG);
 
     return RUN_ALL_TESTS();
 }
