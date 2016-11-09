@@ -27,32 +27,32 @@
 #include "gfal_transfer_types.h"
 
 
-struct _gfalt_params_t{
-	gboolean lock; 				// lock enabled after the start of the transfer
-	guint64 timeout; 			// connexion timeout
+struct _gfalt_params_t {
+    gboolean lock;                // lock enabled after the start of the transfer
+    guint64 timeout;            // connexion timeout
     guint64 tcp_buffer_size;
-	gboolean replace_existing;  // replace destination or not
-	off_t start_offset;			// start offset in case of restart
-	guint nb_data_streams;		// nb of parallels streams
-    gboolean strict_mode;  		// state of the strict copy mode
+    gboolean replace_existing;  // replace destination or not
+    off_t start_offset;            // start offset in case of restart
+    guint nb_data_streams;        // nb of parallels streams
+    gboolean strict_mode;        // state of the strict copy mode
     gboolean local_transfers;   // local transfer authorized
     gboolean parent_dir_create;  // force the creation of the parent dir
     // spacetoken management for SRM
-    gchar * src_space_token;
-    gchar* dst_space_token;
+    gchar *src_space_token;
+    gchar *dst_space_token;
     // checksum management
     gboolean checksum_check;
-    gchar* user_checksum;
-    gchar* user_checksum_type;
+    gchar *user_checksum;
+    gchar *user_checksum_type;
 
-	// callback lists
-	GSList* monitor_callbacks;
-	GSList* event_callbacks;
+    // callback lists
+    GSList *monitor_callbacks;
+    GSList *event_callbacks;
 };
 
 
 struct _gfalt_transfer_status {
-    const gfalt_hook_transfer_plugin_t* hook;
+    const gfalt_hook_transfer_plugin_t *hook;
 };
 
 struct _gfalt_callback_entry {
