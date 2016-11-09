@@ -45,10 +45,6 @@ struct _gfalt_params_t{
     gchar* user_checksum;
     gchar* user_checksum_type;
 
-    // performance callback
-	gpointer user_data;			// user data information for the monitoring callback
-	size_t buffer_size; // internal buffer size per flow for non-third party transfer
-
 	// callback lists
 	GSList* monitor_callbacks;
 	GSList* event_callbacks;

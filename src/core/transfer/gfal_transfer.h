@@ -195,38 +195,6 @@ gint gfalt_set_create_parent_dir(gfalt_params_t, gboolean value, GError** err);
 gboolean gfalt_get_create_parent_dir(gfalt_params_t, GError** err);
 
 /**
- * Set the user_data pointer for the monitoring callback
- */
-GFAL2_DEPRECATED_NOALT gint gfalt_set_user_data(gfalt_params_t, gpointer user_data, GError** err);
-
-/**
- * Get the user_data pointer for the monitoring callback
- */
-GFAL2_DEPRECATED_NOALT gpointer gfalt_get_user_data(gfalt_params_t,  GError** err);
-
-/**
- * @brief define a callback for monitoring the current transfer
- * The default value is NULL and no monitoring will occur
- */
-GFAL2_DEPRECATED(gfalt_add_monitor_callback) gint gfalt_set_monitor_callback(gfalt_params_t params, gfalt_monitor_func callback, GError** err);
-
-/**
- * @brief get the current monitor callback
- */
-GFAL2_DEPRECATED(plugin_trigger_monitor) gfalt_monitor_func gfalt_get_monitor_callback(gfalt_params_t params, GError** err);
-
-/**
- * @brief Define a callback for event monitoring
- * The default value is NULL and no monitoring will occur
- */
-GFAL2_DEPRECATED(gfalt_add_event_callback) gint gfalt_set_event_callback(gfalt_params_t params, gfalt_event_func callback, GError** err);
-
-/**
- * @brief Get the current event monitor callback.
- */
-GFAL2_DEPRECATED(plugin_trigger_event) gfalt_event_func gfalt_get_event_callback (gfalt_params_t params, GError** err);
-
-/**
  * @brief Add a new callback for monitoring the current transfer
  * Adding the same callback with a different udata will just change the udata and the free method, but the callback will not be called twice.
  * In this case, udata_free will be called with the old data.

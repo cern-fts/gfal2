@@ -297,47 +297,6 @@ gint gfalt_remove_event_callback(gfalt_params_t params, gfalt_event_func callbac
 }
 
 
-gint gfalt_set_user_data(gfalt_params_t params, gpointer user_data, GError** err)
-{
-    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
-    params->user_data = user_data;
-    return 0;
-}
-
-
-gpointer gfalt_get_user_data(gfalt_params_t params, GError** err)
-{
-    g_return_val_err_if_fail(params != NULL, NULL, err, "[BUG] invalid params handle");
-    return params->user_data;
-}
-
-
-gint gfalt_set_monitor_callback(gfalt_params_t params, gfalt_monitor_func callback,
-        GError** err)
-{
-    return gfalt_add_monitor_callback(params, callback, params->user_data, NULL, err);
-}
-
-
-gfalt_monitor_func gfalt_get_monitor_callback(gfalt_params_t params, GError** err)
-{
-    return NULL;
-}
-
-
-gint gfalt_set_event_callback(gfalt_params_t params, gfalt_event_func callback,
-        GError** err)
-{
-    return gfalt_add_event_callback(params, callback, params->user_data, NULL, err);
-}
-
-
-gfalt_event_func gfalt_get_event_callback(gfalt_params_t params, GError** err)
-{
-    return NULL;
-}
-
-
 guint gfalt_get_nbstreams(gfalt_params_t params, GError** err)
 {
     g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid parameter handle");

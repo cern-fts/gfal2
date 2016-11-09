@@ -166,8 +166,3 @@ const char *gfal2_version()
     return gfalversion;
 }
 
-
-char *gfal_version()
-{
-    return (char*) gfalversion;
-}

@@ -540,20 +540,6 @@ void gfal_posix_print_error();
 int gfal_posix_code_error();
 
 /**
- * set the gfal verbose level
- *
- * see gfal_constant.h for details
- *
- */
-GFAL2_DEPRECATED(gfal2_log_set_level) int gfal_set_verbose (int);
-
-/**
- * get a string representation of the gfal version
- * @return string of the gfal_version
- */
-GFAL2_DEPRECATED(gfal2_version) char *gfal_version();
-
-/**
  * get a string representation of the gfal2 version
  */
 const char *gfal2_version();

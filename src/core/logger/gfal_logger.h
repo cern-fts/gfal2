@@ -87,36 +87,6 @@ int gfal2_log_set_handler(GLogFunc func, gpointer user_data);
 /** GFAL_VERBOSE_TRACE_PLUGIN log all the plugin related debug information */
 #define GFAL_VERBOSE_TRACE_PLUGIN 0x04  /* Use G_LOG_LEVEL_DEBUG */
 
-/**
- * @brief print error message with the gfal2 logger
- * @param verbose_lvl Verbosity level
- * @param msg The message format string
- */
-GFAL2_DEPRECATED(gfal2_log) void gfal_log(int verbose_lvl, const char* msg, ...);
-
-/**
- * \brief set the current log level
- *  log level can be a combination of GFAL_VERBOSE_* flags
- */
-GFAL2_DEPRECATED(gfal2_log_set_level) int gfal_set_verbose (int value);
-
-
-/**
- * \brief get the current log level
- *  log level can be a combination of GFAL_VERBOSE_* flags
- */
-GFAL2_DEPRECATED(gfal2_log_get_level) int gfal_get_verbose();
-
-/**
- * define a log handler for the gfal messages
- * see Glib 2.0 message logging system for more informations about log_func
- *
- * internally, GFAL 2.0 use the glib 2.0 log system with the "GFAL2" domain :
- * usual glib 2.0 functions can be used to control the GFAL 2.0 messages flow.
- **/
-GFAL2_DEPRECATED(gfal2_log_set_handler)
-    guint gfal_log_set_handler(GLogFunc log_func, gpointer user_data);
-
 
 #ifdef __cplusplus
 }

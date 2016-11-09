@@ -26,7 +26,6 @@
 #include "gfal_logger.h"
 
 
-static int gfal_verbose = 0;
 static GLogLevelFlags gfal2_log_level = G_LOG_LEVEL_WARNING;
 
 
@@ -67,45 +66,3 @@ int gfal2_log_set_handler(GLogFunc func, gpointer user_data)
     return g_log_set_handler("GFAL2", G_LOG_LEVEL_MASK, func, user_data);
 }
 
-
-/*** DEPRECATED ***/
-
-int gfal_get_verbose(){
-	return gfal_verbose;
-}
-
-
-int gfal_set_verbose (int value)
-{
-    if (value < 0)
-        return -1;
-    gfal_verbose = value;
-
-    // For compatibility, need to set the new log level
-    if ((value & GFAL_VERBOSE_DEBUG) | (value & GFAL_VERBOSE_TRACE) | (value & GFAL_VERBOSE_TRACE_PLUGIN))
-        gfal2_log_level = G_LOG_LEVEL_DEBUG;
-    else if (value & GFAL_VERBOSE_VERBOSE)
-        gfal2_log_level = G_LOG_LEVEL_INFO;
-    else
-        gfal2_log_level = G_LOG_LEVEL_WARNING;
-
-    return 0;
-}
-
-
-guint gfal_log_set_handler(GLogFunc log_func, gpointer user_data)
-{
-    // The handler is the same for both legacy and new, only the log level will change
-    return gfal2_log_set_handler(log_func, user_data);
-}
-
-
-void gfal_log(int verbose_lvl, const char* msg, ...)
-{
-    if (verbose_lvl & gfal_verbose) {
-        va_list args;
-        va_start(args, msg);
-        gfal2_logv(G_LOG_LEVEL_MESSAGE, msg, args);
-        va_end(args);
-    }
-}

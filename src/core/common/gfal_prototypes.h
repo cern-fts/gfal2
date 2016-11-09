@@ -83,8 +83,6 @@ typedef struct _gfal_file_descriptor_container *gfal_fdesc_container_handle;
 /* dir part file descriptor*/
 typedef struct _gfal_file_handle_* gfal_file_handle;
 
-/* main */
-typedef GFAL2_DEPRECATED(gfal2_context) struct gfal_handle_* gfal_handle;
 typedef struct _gfal_descriptors_container gfal_descriptors_container;
 typedef struct _gfal_conf_container gfal_conf_container;
 

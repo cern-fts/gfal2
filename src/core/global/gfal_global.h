@@ -42,8 +42,6 @@ extern "C"
  * providing an advanced interface to  GFAL
  */
 typedef struct gfal_handle_* gfal2_context_t;
-/** backward compatibility */
-typedef GFAL2_DEPRECATED(gfal2_context_t) gfal2_context_t gfal_context_t;
 
 /**
  * @brief Create a gfal2 context
@@ -67,19 +65,6 @@ void gfal2_context_free(gfal2_context_t context);
  * The returned list must be freed using g_strfreev
  */
 gchar** gfal2_get_plugin_names(gfal2_context_t context);
-
-
-/**
- * @deprecated
- * Same as gfal2_context_new but with old compatibility
- */
-GFAL2_DEPRECATED(gfal2_context_new) gfal2_context_t gfal_context_new(GError ** err);
-
-/**
- * @deprecated
- * Same as gfal2_context_free
- */
-GFAL2_DEPRECATED(gfal2_context_free) void gfal_context_free(gfal2_context_t context);
 
 /** For errors, gfal2 core quark */
 #define GFAL2_QUARK_CORE "GFAL2::CORE"

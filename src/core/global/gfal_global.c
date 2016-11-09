@@ -65,14 +65,3 @@ gchar** gfal2_get_plugin_names(gfal2_context_t context)
     return array;
 }
 
-
-gfal2_context_t gfal_context_new(GError ** err)
-{
-    return gfal2_context_new(err);
-}
-
-
-void gfal_context_free(gfal2_context_t context)
-{
-    return gfal2_context_free(context);
-}
