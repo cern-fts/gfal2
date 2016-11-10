@@ -171,7 +171,9 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
     GError* internalError = NULL;
     char checksumType[64] = { 0 };
     char checksumValue[512] = { 0 };
-    bool performChecksum = gfalt_get_checksum_check(params, NULL);
+    gfalt_checksum_mode_t checksumMode = gfalt_get_checksum(params,
+        checksumType, sizeof(checksumType),
+        checksumValue, sizeof(checksumValue), NULL);
 
     XrdCl::CopyProcess copy_process;
 #if XrdMajorVNUM(XrdVNUMBER) == 4
@@ -223,7 +225,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         job.checkSumPrint = false;
 #endif
 
-        if (performChecksum) {
+        if (checksumMode) {
             checksumType[0] = '\0';
             checksumValue[0] = '\0';
             sscanf(checksums[i], "%63s:%511s", checksumType, checksumValue);
@@ -243,8 +245,19 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
             }
 
 #if XrdMajorVNUM(XrdVNUMBER) == 4
-            job.Set("checkSumMode",
-                    gfal2_get_opt_string_with_default(context, XROOTD_CONFIG_GROUP, XROOTD_CHECKSUM_MODE, "end2end"));
+            switch (checksumMode) {
+                case GFALT_CHECKSUM_BOTH:
+                    job.Set("checkSumMode", "end2end");
+                    break;
+                case GFALT_CHECKSUM_TARGET:
+                    job.Set("checkSumMode", "target");
+                    break;
+                case GFALT_CHECKSUM_SOURCE:
+                    job.Set("checkSumMode", "source");
+                    break;
+                default:
+                    job.Set("checkSumMode", "none");
+            }
             job.Set("checkSumType", predefined_checksum_type_to_lower(checksumType));
             job.Set("checkSumPreset", checksumValue);
 #else
@@ -319,7 +332,7 @@ int gfal_xrootd_3rd_copy(plugin_handle plugin_data, gfal2_context_t context,
 
     char checksumType[64] = { 0 };
     char checksumValue[512] = { 0 };
-    gfalt_get_user_defined_checksum(params, checksumType, sizeof(checksumType),
+    gfalt_get_checksum(params, checksumType, sizeof(checksumType),
             checksumValue, sizeof(checksumValue),
             NULL);
 

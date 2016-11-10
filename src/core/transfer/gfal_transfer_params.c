@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gfal_api.h>
 
 #include "gfal_transfer_types_internal.h"
 
@@ -65,8 +66,8 @@ gfalt_params_t gfalt_params_handle_copy(gfalt_params_t params, GError ** err)
     memcpy(p, params, sizeof(struct _gfalt_params_t));
     p->src_space_token = g_strdup(params->src_space_token);
     p->dst_space_token = g_strdup(params->dst_space_token);
-    p->user_checksum = g_strdup(params->user_checksum);
-    p->user_checksum_type = g_strdup(params->user_checksum_type);
+    p->checksum_type = g_strdup(params->checksum_type);
+    p->checksum_value = g_strdup(params->checksum_value);
 
     p->monitor_callbacks = gfalt_params_copy_callbacks(params->monitor_callbacks);
     p->event_callbacks = gfalt_params_copy_callbacks(params->event_callbacks);
@@ -99,8 +100,8 @@ void gfalt_params_handle_delete(gfalt_params_t params, GError ** err)
         params->lock = FALSE;
         g_free(params->src_space_token);
         g_free(params->dst_space_token);
-        g_free(params->user_checksum);
-        g_free(params->user_checksum_type);
+        g_free(params->checksum_type);
+        g_free(params->checksum_value);
         g_slist_foreach(params->monitor_callbacks, gfalt_params_free_callback , NULL);
         g_slist_free(params->monitor_callbacks);
         g_slist_foreach(params->event_callbacks, gfalt_params_free_callback , NULL);
@@ -351,19 +352,6 @@ const gchar* gfalt_get_dst_spacetoken(gfalt_params_t params, GError** err)
 }
 
 
-gint gfalt_set_checksum_check(gfalt_params_t params, gboolean value, GError** err)
-{
-    params->checksum_check = value;
-    return 0;
-}
-
-
-gboolean gfalt_get_checksum_check(gfalt_params_t params, GError** err)
-{
-    return params->checksum_check;
-}
-
-
 gint gfalt_set_create_parent_dir(gfalt_params_t params, gboolean value, GError** err)
 {
     params->parent_dir_create = value;
@@ -377,20 +365,26 @@ gboolean gfalt_get_create_parent_dir(gfalt_params_t params, GError** err)
 }
 
 
+gint gfalt_set_checksum_check(gfalt_params_t params, gboolean value, GError** err)
+{
+    if (value) {
+        return gfalt_set_checksum(params, GFALT_CHECKSUM_BOTH,
+            params->checksum_type, params->checksum_value, err);
+    }
+    return gfalt_set_checksum(params, GFALT_CHECKSUM_NONE, NULL, NULL, err);
+}
+
+
+gboolean gfalt_get_checksum_check(gfalt_params_t params, GError** err)
+{
+    return params->checksum_mode != GFALT_CHECKSUM_NONE;
+}
+
+
 gint gfalt_set_user_defined_checksum(gfalt_params_t params, const gchar* chktype,
         const gchar* checksum, GError** err)
 {
-    g_free(params->user_checksum);
-    g_free(params->user_checksum_type);
-    params->user_checksum = NULL;
-    params->user_checksum_type = NULL;
-
-    if (chktype)
-        params->user_checksum_type = g_strdup(chktype);
-    if (checksum)
-        params->user_checksum = g_strdup(checksum);
-
-    return 0;
+    return gfalt_set_checksum(params, GFALT_CHECKSUM_BOTH, chktype, checksum, err);
 }
 
 
@@ -398,18 +392,58 @@ gint gfalt_get_user_defined_checksum(gfalt_params_t params, gchar* chktype_buff,
         size_t chk_type_len, gchar* checksum_buff, size_t checksum_len, GError** err)
 {
     g_assert(chktype_buff && checksum_buff);
+    gfalt_get_checksum(params, chktype_buff, chk_type_len, checksum_buff, checksum_len, err);
+    return 0;
+}
 
-    if (params->user_checksum)
-        g_strlcpy(checksum_buff, params->user_checksum, checksum_len);
-    else
-        checksum_buff[0] = '\0';
 
-    if (params->user_checksum_type)
-        g_strlcpy(chktype_buff, params->user_checksum_type, chk_type_len);
-    else
-        chktype_buff[0] = '\0';
+gint gfalt_set_checksum(gfalt_params_t params, gfalt_checksum_mode_t mode,
+    const gchar* type, const gchar *checksum, GError **err)
+{
+    if ((mode == GFALT_CHECKSUM_SOURCE || mode == GFALT_CHECKSUM_TARGET) && (checksum == NULL || checksum[0] == '\0')) {
+        gfal2_set_error(err, gfal2_get_core_quark(), EINVAL, __func__,
+            "Checksum value required if mode is not end to end");
+        return -1;
+    }
+
+    params->checksum_mode = mode;
+
+    if (type) {
+        g_free(params->checksum_type);
+        params->checksum_type = g_strdup(type);
+    }
+    g_free(params->checksum_value);
+    params->checksum_value = g_strdup(checksum);
 
     return 0;
+}
+
+
+gfalt_checksum_mode_t gfalt_get_checksum(gfalt_params_t params,
+    gchar* type_buff, size_t type_buff_len, gchar* checksum_buff, size_t checksum_buff_len,
+    GError **err)
+{
+    if (params->checksum_type) {
+        g_strlcpy(type_buff, params->checksum_type, type_buff_len);
+    }
+    else {
+        g_strlcpy(type_buff, "", type_buff_len);
+    }
+
+    if (params->checksum_value) {
+        g_strlcpy(checksum_buff, params->checksum_value, checksum_buff_len);
+    }
+    else {
+        g_strlcpy(checksum_buff, "", checksum_buff_len);
+    }
+
+    return params->checksum_mode;
+}
+
+
+gfalt_checksum_mode_t gfalt_get_checksum_mode(gfalt_params_t params, GError **err)
+{
+    return params->checksum_mode;
 }
 
 

@@ -132,8 +132,6 @@ int gfal_srm_checksumG_fallback(plugin_handle handle, const char *url, const cha
         }
     }
 
-
-
     // If we got no error, but neither a valid checksum,
     // fallback into the turl
     if (res != 0 && !tmp_err && turl_fallback) {

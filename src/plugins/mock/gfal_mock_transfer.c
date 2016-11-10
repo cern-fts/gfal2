@@ -43,29 +43,17 @@ int gfal_plugin_mock_filecopy(plugin_handle plugin_data,
     gfal2_context_t context, gfalt_params_t params, const char *src,
     const char *dst, GError **err)
 {
-    // do we use checksum
-    gboolean checksum_check = gfalt_get_checksum_check(params, NULL);
-
-    // do we care about source checksum
-    gboolean skip_source_checksum = gfal2_get_opt_boolean(
-        context,
-        "MOCK PLUGIN",
-        "SKIP_SOURCE_CHECKSUM",
-        NULL
-    );
-
-    // user defined checksum
     char checksum_type[GFAL_URL_MAX_LEN] = {0};
     char checksum_usr[GFAL_URL_MAX_LEN] = {0};
     char checksum_src[GFAL_URL_MAX_LEN] = {0};
 
-    gfalt_get_user_defined_checksum(params,
+    gfalt_checksum_mode_t checksum_method = gfalt_get_checksum(params,
         checksum_type, sizeof(checksum_type),
         checksum_usr, sizeof(checksum_usr),
         NULL);
 
     // validate source checksum
-    if (checksum_check && !skip_source_checksum) {
+    if (checksum_method & GFALT_CHECKSUM_SOURCE) {
         gfal_plugin_mock_get_value(src, "checksum", checksum_src, sizeof(checksum_src));
         if (!gfal_plugin_mock_checksum_verify(checksum_usr, checksum_src)) {
             gfal_plugin_mock_report_error("User and source checksums do not match", EIO, err);
@@ -132,18 +120,18 @@ int gfal_plugin_mock_filecopy(plugin_handle plugin_data,
     mdata->stat_stage = STAT_DESTINATION_AFTER_TRANSFER;
 
     // validate destination checksum
-    if (!*err && checksum_check) {
+    if (!*err && (checksum_method & GFALT_CHECKSUM_TARGET)) {
         char checksum_dst[GFAL_URL_MAX_LEN] = {0};
         gfal_plugin_mock_get_value(dst, "checksum", checksum_dst, sizeof(checksum_dst));
 
-        if (skip_source_checksum) {
-            if (!gfal_plugin_mock_checksum_verify(checksum_usr, checksum_dst)) {
-                gfal_plugin_mock_report_error("User and destination checksums do not match", EIO, err);
+        if (checksum_method & GFALT_CHECKSUM_SOURCE) {
+            if (!gfal_plugin_mock_checksum_verify(checksum_src, checksum_dst)) {
+                gfal_plugin_mock_report_error("Source and destination checksums do not match", EIO, err);
             }
         }
         else {
-            if (!gfal_plugin_mock_checksum_verify(checksum_src, checksum_dst)) {
-                gfal_plugin_mock_report_error("Source and destination checksums do not match", EIO, err);
+            if (!gfal_plugin_mock_checksum_verify(checksum_usr, checksum_dst)) {
+                gfal_plugin_mock_report_error("User and destination checksums do not match", EIO, err);
             }
         }
     }

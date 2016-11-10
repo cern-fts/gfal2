@@ -237,36 +237,37 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
     GError* nested_error = NULL;
     gfal2_log(G_LOG_LEVEL_DEBUG, " -> Gfal::Transfer::start_local_copy ");
 
-    char checksum_type[1024];
-    char user_checksum[1024];
-    char source_checksum[1024];
+    char checksum_type[1024] = {0};
+    char user_checksum[1024] = {0};
+    char source_checksum[1024] = {0};
     gboolean is_strict_mode = gfalt_get_strict_copy_mode(params, NULL);
-    gboolean is_checksum_enabled = !is_strict_mode && gfalt_get_checksum_check(params, NULL);
+    gfalt_checksum_mode_t checksum_mode = GFALT_CHECKSUM_NONE;
+
+    if (!is_strict_mode) {
+        checksum_mode = gfalt_get_checksum(params,
+            checksum_type, sizeof(checksum_type),
+            user_checksum, sizeof(user_checksum),
+            error);
+    }
 
     // Source checksum
-    if (is_checksum_enabled && !is_strict_mode) {
+    if (checksum_mode & GFALT_CHECKSUM_SOURCE) {
         plugin_trigger_event(params, local_copy_domain(), GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER, "");
-        gfalt_get_user_defined_checksum(params,
-                                        checksum_type, sizeof(checksum_type),
-                                        user_checksum, sizeof(user_checksum),
-                                        NULL);
-        if (checksum_type[0] == '\0')
-            g_strlcpy(checksum_type, "ADLER32", sizeof(checksum_type));
-
         gfal2_checksum(context, src, checksum_type, 0, 0, source_checksum, sizeof(source_checksum), &nested_error);
         if (nested_error != NULL) {
             gfal2_propagate_prefixed_error_extended(error, nested_error, __func__, "Could not get the source checksum: ");
             return -1;
         }
+        plugin_trigger_event(params, local_copy_domain(), GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT, "");
+    }
 
-        if (user_checksum[0] && gfal_compare_checksums(user_checksum, source_checksum, 1024) != 0) {
+    if (user_checksum[0] && source_checksum[0]) {
+        if (gfal_compare_checksums(user_checksum, source_checksum, 1024) != 0) {
             gfalt_set_error(error, local_copy_domain(), EIO, __func__,
                     GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM_MISMATCH,
                     "Source checksum and user-specified checksum do not match: %s != %s", source_checksum, user_checksum);
             return -1;
         }
-
-        plugin_trigger_event(params, local_copy_domain(), GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT, "");
     }
 
     if (!is_strict_mode) {
@@ -295,7 +296,11 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
     }
 
     // Destination checksum
-    if (is_checksum_enabled && !is_strict_mode) {
+    char *compare_against = user_checksum;
+    if (user_checksum[0] == '\0')
+        compare_against = source_checksum;
+
+    if (checksum_mode & GFALT_CHECKSUM_TARGET) {
         char destination_checksum[1024];
 
         plugin_trigger_event(params, local_copy_domain(), GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER, "");
@@ -305,17 +310,16 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
             gfal2_propagate_prefixed_error_extended(error, nested_error, __func__, "Could not get the destination checksum: ");
             return -1;
         }
+        plugin_trigger_event(params, local_copy_domain(), GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_EXIT, "");
 
-        if (gfal_compare_checksums(source_checksum, destination_checksum, 1204) != 0) {
+        if (gfal_compare_checksums(compare_against, destination_checksum, 1204) != 0) {
             gfalt_set_error(error, local_copy_domain(), EIO, __func__,
                     GFALT_ERROR_DESTINATION, GFALT_ERROR_CHECKSUM_MISMATCH,
-                    "Source checksum and destination checksum do not match: %s != %s", source_checksum, destination_checksum);
+                    "Source checksum and destination checksum do not match: %s != %s", compare_against, destination_checksum);
             return -1;
         }
-
-        plugin_trigger_event(params, local_copy_domain(), GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_EXIT, "");
     }
 
-    gfal2_log(G_LOG_LEVEL_DEBUG, " <- Gfal::Transfer::start_local_copy ");
+    gfal2_log(G_LOG_LEVEL_DEBUG, " <- Gfal::Transfer::start_local_copy");
     return 0;
 }

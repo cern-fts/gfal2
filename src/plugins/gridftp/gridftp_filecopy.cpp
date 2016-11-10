@@ -456,42 +456,6 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
 
 }
 
-
-static
-void gridftp_checksum_transfer_verify(const char * src_chk, const char* dst_chk,
-        const char* user_defined_chk)
-{
-    std::ostringstream ss;
-
-    if (*user_defined_chk == '\0') {
-        if (gfal_compare_checksums(src_chk, dst_chk, GFAL_URL_MAX_LEN) != 0) {
-            ss << "SRC and DST checksum are different. Source: " << src_chk
-                    << " Destination: " << dst_chk;
-            throw Gfal::TransferException(GFAL_GRIDFTP_SCOPE_FILECOPY, EIO, ss.str(),
-                    GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM_MISMATCH);
-        }
-    }
-    else {
-        if (src_chk[0] != '\0'
-                && gfal_compare_checksums(src_chk, user_defined_chk,
-                        GFAL_URL_MAX_LEN) != 0) {
-            ss << "USER_DEFINE and SRC checksums are different. "
-                    << user_defined_chk << " != " << src_chk;
-            throw Gfal::TransferException(GFAL_GRIDFTP_SCOPE_FILECOPY, EIO, ss.str(),
-                    GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM_MISMATCH);
-        }
-
-        if (gfal_compare_checksums(dst_chk, user_defined_chk, GFAL_URL_MAX_LEN)
-                != 0) {
-            ss << "USER_DEFINE and DST checksums are different. "
-                    << user_defined_chk << " != " << dst_chk;
-            throw Gfal::TransferException(GFAL_GRIDFTP_SCOPE_FILECOPY, EIO, ss.str(),
-                    GFALT_ERROR_DESTINATION, GFALT_ERROR_CHECKSUM_MISMATCH);
-        }
-    }
-}
-
-
 // clear dest if error occures in transfer, does not clean if dest file if set as already exist before any transfer
 void GridFTPModule::autoCleanFileCopy(gfalt_params_t params,
         GError* checked_error, const char* dst)
@@ -512,27 +476,25 @@ void GridFTPModule::autoCleanFileCopy(gfalt_params_t params,
 void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
         const char* dst)
 {
+    std::stringstream errstr;
     char checksum_type[GFAL_URL_MAX_LEN] = { 0 };
     char checksum_user_defined[GFAL_URL_MAX_LEN];
     char checksum_src[GFAL_URL_MAX_LEN] = { 0 };
     char checksum_dst[GFAL_URL_MAX_LEN] = { 0 };
 
-    gboolean checksum_check =
-            gfalt_get_checksum_check(params, NULL) && !gfalt_get_strict_copy_mode(params, NULL);
-    gboolean skip_source_checksum = gfal2_get_opt_boolean(
-            _handle_factory->get_gfal2_context(),
-            GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_SKIP_CHECKSUM,
-            NULL);
     gboolean use_ipv6 = gfal2_get_opt_boolean(_handle_factory->get_gfal2_context(),
         GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_IPV6,
         NULL);
 
-    if (checksum_check) {
-        gfalt_get_user_defined_checksum(params, checksum_type,
-                sizeof(checksum_type), checksum_user_defined,
-                sizeof(checksum_user_defined),
-                NULL);
+    gfalt_checksum_mode_t checksum_mode = GFALT_CHECKSUM_NONE;
+    if (!gfalt_get_strict_copy_mode(params, NULL)) {
+        checksum_mode = gfalt_get_checksum(params,
+            checksum_type, sizeof(checksum_type),
+            checksum_user_defined, sizeof(checksum_user_defined),
+            NULL);
+    }
 
+    if (checksum_mode) {
         if (checksum_user_defined[0] == '\0' && checksum_type[0] == '\0') {
             GError *get_default_error = NULL;
             char *default_checksum_type;
@@ -556,99 +518,88 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
                 checksum_type);
     }
 
-    // Retrieving the source checksum and doing the transfer can be, potentially,
-    // done in parallel. But not for now.
-    // (That's why the brackets: they are marking potential parallelizable sections)
-    // But remember to modify the catches when you make them parallel!
-
     // Source checksum
-    {
-        try {
-            if (checksum_check && !skip_source_checksum) {
-                plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
-                        GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER, "%s",
-                        checksum_type);
+    if (checksum_mode & GFALT_CHECKSUM_SOURCE) {
+        plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
+            GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER, "%s",
+            checksum_type);
 
-                checksum(src, checksum_type, checksum_src, sizeof(checksum_src),
-                        0, 0);
+        checksum(src, checksum_type, checksum_src, sizeof(checksum_src), 0, 0);
 
-                plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
-                        GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT, "%s=%s",
-                        checksum_type, checksum_src);
+        plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
+            GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT, "%s=%s",
+            checksum_type, checksum_src);
+
+        if (checksum_user_defined[0]) {
+            if (gfal_compare_checksums(checksum_user_defined, checksum_src, GFAL_URL_MAX_LEN) != 0) {
+                errstr << "USER_DEFINE and SRC checksums are different. "
+                       << checksum_user_defined << " != " << checksum_src;
+                throw Gfal::TransferException(GFAL_GRIDFTP_SCOPE_FILECOPY, EIO, errstr.str(),
+                    GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM_MISMATCH);
             }
-        }
-        catch (const Gfal::CoreException &e) {
-            throw Gfal::TransferException(e.domain(), e.code(), e.what(),
-                    GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM);
-        }
-        catch (...) {
-            throw Gfal::TransferException(GFAL_GRIDFTP_DOMAIN_GSIFTP, EIO,
-                    "Undefined Exception caught while getting the source checksum!!",
-                    GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM);
         }
     }
 
     // Transfer
     GError* transfer_error = NULL;
-    {
-        plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP, GFAL_EVENT_NONE,
-                GFAL_EVENT_TRANSFER_ENTER, "(%s) %s => (%s) %s",
-                return_host_and_port(src, use_ipv6).c_str(), src,
-                return_host_and_port(dst, use_ipv6).c_str(), dst);
-        try {
-            gridftp_filecopy_copy_file_internal(this, _handle_factory, params, src, dst);
-        }
-        catch (Gfal::TransferException & e) {
-            throw;
-        }
-        catch (const Gfal::CoreException & e) {
-            autoCleanFileCopy(params, transfer_error, dst);
-            throw Gfal::TransferException(e.domain(), e.code(), e.what(),
-                    GFALT_ERROR_TRANSFER);
-        }
-        catch (std::exception & e) {
-            autoCleanFileCopy(params, transfer_error, dst);
-            throw Gfal::TransferException(GFAL_GRIDFTP_DOMAIN_GSIFTP, EIO, e.what(),
-                    GFALT_ERROR_TRANSFER, "UNEXPECTED");
-        }
-        catch (...) {
-            autoCleanFileCopy(params, transfer_error, dst);
-            throw;
-        }
-
-        plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP, GFAL_EVENT_NONE,
-                GFAL_EVENT_TRANSFER_EXIT, "(%s) %s => (%s) %s",
-                return_host_and_port(src, use_ipv6).c_str(), src,
-                return_host_and_port(dst, use_ipv6).c_str(), dst);
+    plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP, GFAL_EVENT_NONE,
+            GFAL_EVENT_TRANSFER_ENTER, "(%s) %s => (%s) %s",
+            return_host_and_port(src, use_ipv6).c_str(), src,
+            return_host_and_port(dst, use_ipv6).c_str(), dst);
+    try {
+        gridftp_filecopy_copy_file_internal(this, _handle_factory, params, src, dst);
+    }
+    catch (Gfal::TransferException & e) {
+        throw;
+    }
+    catch (const Gfal::CoreException & e) {
+        autoCleanFileCopy(params, transfer_error, dst);
+        throw Gfal::TransferException(e.domain(), e.code(), e.what(),
+                GFALT_ERROR_TRANSFER);
+    }
+    catch (std::exception & e) {
+        autoCleanFileCopy(params, transfer_error, dst);
+        throw Gfal::TransferException(GFAL_GRIDFTP_DOMAIN_GSIFTP, EIO, e.what(),
+                GFALT_ERROR_TRANSFER, "UNEXPECTED");
+    }
+    catch (...) {
+        autoCleanFileCopy(params, transfer_error, dst);
+        throw;
     }
 
+    plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP, GFAL_EVENT_NONE,
+            GFAL_EVENT_TRANSFER_EXIT, "(%s) %s => (%s) %s",
+            return_host_and_port(src, use_ipv6).c_str(), src,
+            return_host_and_port(dst, use_ipv6).c_str(), dst);
+
     // Validate destination checksum
-    if (checksum_check) {
+    if (checksum_mode & GFALT_CHECKSUM_TARGET) {
         plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
                 GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER, "%s",
                 checksum_type);
 
-        try {
-            checksum(dst, checksum_type, checksum_dst, sizeof(checksum_dst), 0,
-                    0);
-            gridftp_checksum_transfer_verify(checksum_src, checksum_dst,
-                    checksum_user_defined);
-        }
-        catch (const Gfal::TransferException &e) {
-            throw;
-        }
-        catch (const Gfal::CoreException& e) {
-            throw Gfal::TransferException(e.domain(), e.code(), e.what(),
-                    GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM);
-        }
-        catch (...) {
-            throw Gfal::TransferException(GFAL_GRIDFTP_DOMAIN_GSIFTP, EIO,
-                    "Unexpected exception", GFALT_ERROR_TRANSFER);
-        }
+        checksum(dst, checksum_type, checksum_dst, sizeof(checksum_dst), 0, 0);
 
         plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
-                GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_EXIT, "%s",
-                checksum_type);
+            GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_EXIT, "%s",
+            checksum_type);
+
+        if (checksum_mode & GFALT_CHECKSUM_SOURCE) {
+            if (gfal_compare_checksums(checksum_src, checksum_dst, GFAL_URL_MAX_LEN) != 0) {
+                errstr << "SRC and DST checksum are different. Source: " << checksum_src
+                   << " Destination: " << checksum_dst;
+                throw Gfal::TransferException(GFAL_GRIDFTP_SCOPE_FILECOPY, EIO, errstr.str(),
+                    GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM_MISMATCH);
+            }
+        }
+        else {
+            if (gfal_compare_checksums(checksum_user_defined, checksum_dst, GFAL_URL_MAX_LEN) != 0) {
+                errstr << "USER_DEFINE and DST checksums are different. "
+                   << checksum_user_defined << " != " << checksum_dst;
+                throw Gfal::TransferException(GFAL_GRIDFTP_SCOPE_FILECOPY, EIO, errstr.str(),
+                    GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM_MISMATCH);
+            }
+        }
     }
 }
 

@@ -304,7 +304,7 @@ static int gfal_http_third_party_copy(GfalHttpPluginData* davix,
     // dCache requires RequireChecksumVerification to be explicitly false if no checksums
     // are to be used
     if (mode == HTTP_COPY_PULL && strncmp(dst, "s3", 2) != 0) {
-        if (!gfalt_get_checksum_check(params, err)) {
+        if (!(gfalt_get_checksum_mode(params, err) & GFALT_CHECKSUM_TARGET)) {
             req_params.addHeader("RequireChecksumVerification", "false");
         }
         g_clear_error(err);
@@ -495,24 +495,19 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     gfal2_log(G_LOG_LEVEL_DEBUG, "Using destination: %s", dst);
 
     // Get user defined checksum
-    bool do_checksum = false;
-    char checksum_type[1024];
-    char user_checksum[1024];
-    char src_checksum[1024];
+    gfalt_checksum_mode_t checksum_mode = GFALT_CHECKSUM_NONE;
+    char checksum_type[1024] = {0};
+    char user_checksum[1024] = {0};
+    char src_checksum[1024] = {0};
 
-    do_checksum = !gfalt_get_strict_copy_mode(params, NULL)
-            && gfalt_get_checksum_check(params, NULL);
-
-    if (do_checksum) {
-        gfalt_get_user_defined_checksum(params, checksum_type,
-                sizeof(checksum_type), user_checksum, sizeof(user_checksum),
-                NULL);
-        if (!checksum_type[0])
-            g_strlcpy(checksum_type, "MD5", sizeof(checksum_type));
+    if (!gfalt_get_strict_copy_mode(params, NULL)) {
+        checksum_mode = gfalt_get_checksum(params,
+            checksum_type, sizeof(checksum_type),
+            user_checksum, sizeof(user_checksum), NULL);
     }
 
     // Source checksum
-    if (do_checksum) {
+    if (checksum_mode & GFALT_CHECKSUM_SOURCE) {
         plugin_trigger_event(params, http_plugin_domain, GFAL_EVENT_SOURCE,
                 GFAL_EVENT_CHECKSUM_ENTER, "");
 
@@ -638,8 +633,8 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         return gfal_http_copy_cleanup(plugin_data, dst, err);
     }
 
-    // Checksum check
-    if (do_checksum) {
+    // Destination checksum validation
+    if (checksum_mode & GFALT_CHECKSUM_TARGET) {
         char dst_checksum[1024];
         plugin_trigger_event(params, http_plugin_domain, GFAL_EVENT_DESTINATION,
                 GFAL_EVENT_CHECKSUM_ENTER, "");

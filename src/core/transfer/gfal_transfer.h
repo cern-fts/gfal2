@@ -47,7 +47,19 @@ extern "C"
     @{
 */
 
-
+/**
+ * Checksum verification mode
+ */
+typedef enum {
+    /// Don't verify checksum
+    GFALT_CHECKSUM_NONE    = 0b00,
+    /// Compare user provided checksum vs source
+    GFALT_CHECKSUM_SOURCE  = 0b01,
+    /// Compare user provided checksum vs destination
+    GFALT_CHECKSUM_TARGET  = 0b10,
+    /// Compare user provided checksum vs both, *or* source checksum vs target checksum
+    GFALT_CHECKSUM_BOTH = (GFALT_CHECKSUM_SOURCE | GFALT_CHECKSUM_TARGET)
+} gfalt_checksum_mode_t;
 
 /**
  * Create a new parameter handle
@@ -153,18 +165,21 @@ gint gfalt_set_strict_copy_mode(gfalt_params_t, gboolean strict_mode, GError** e
 gboolean gfalt_get_strict_copy_mode(gfalt_params_t, GError** err);
 
 /**
+ * @deprecated Equivalent to gfalt_get_checksum_check(params, GFALT_CHECKSUM_BOTH, err)
  * Force additional checksum verification between source and destination
  * an Error is return by the copy function is case of checksum failure.
  * @warning for safety reason, even in case of checksum failure the destination file is not removed.
  */
-gint gfalt_set_checksum_check(gfalt_params_t, gboolean value, GError** err);
+GFAL2_DEPRECATED(gfalt_set_checksum_method) gint gfalt_set_checksum_check(gfalt_params_t, gboolean value, GError** err);
 
 /**
+ * @deprecated
  * Get the checksum verification boolean
  */
-gboolean gfalt_get_checksum_check(gfalt_params_t, GError** err);
+GFAL2_DEPRECATED(gfalt_get_checksum_method) gboolean gfalt_get_checksum_check(gfalt_params_t, GError** err);
 
 /**
+ * @deprecated gfalt_set_checksum
  * Set an user-defined checksum for file content verification
  * Setting NULL & NULL clear the current one.
  * This function requires to enable global checksum verification with \ref gfalt_set_checksum_check
@@ -174,15 +189,51 @@ gboolean gfalt_get_checksum_check(gfalt_params_t, GError** err);
  * @param checksum : value of checksum in string format
  * @param err : GError error report
  */
-gint gfalt_set_user_defined_checksum(gfalt_params_t param, const gchar* chktype,
-                                const gchar* checksum, GError** err);
+GFAL2_DEPRECATED(gfalt_set_checksum) gint gfalt_set_user_defined_checksum(gfalt_params_t param,
+    const gchar* chktype, const gchar* checksum, GError** err);
 
 /**
+ * @deprecated gfalt_get_checksum
  * Get the current user-defined checksum for file content verification
  * If current user-defined checksum is NULL, both of the buffer are set to empty string
+ * If the value is set, but not the type, ADLER32 will be assumed
  */
-gint gfalt_get_user_defined_checksum(gfalt_params_t params, gchar* chktype_buff, size_t chk_type_len,
-                                gchar* checksum_buff, size_t checksum_len, GError** err);
+GFAL2_DEPRECATED(gfalt_get_checksum) gint gfalt_get_user_defined_checksum(gfalt_params_t params,
+    gchar* chktype_buff, size_t chk_type_len, gchar* checksum_buff, size_t checksum_len, GError** err);
+
+/**
+ * Set the checksum configuration to use
+ * @param mode      For GFALT_CHECKSUM_SOURCE or GFALT_CHECKSUM_TARGET only, the checksum value is mandatory.
+ *                  For GFALT_CHECKSUM_BOTH, the checksum value can be NULL, as the verification can be done end to end.
+ * @param type      Checksum algorithm to use. Support depends on protocol and storage, but ADLER32 and MD5
+ *                  are normally safe bets. If NULL, previous type is kept.
+ * @param checksum  Expected checksum value. Can be NULL for GFALT_CHECKSUM_BOTH mode. If NULL, clears value.
+ * @param err       GError error report
+ * @return          0 on success, < 0 on failure
+ * @version         2.13.0
+ */
+gint gfalt_set_checksum(gfalt_params_t params, gfalt_checksum_mode_t mode,
+    const gchar* type, const gchar *checksum, GError **err);
+
+/**
+ * Get the checksum configuration
+ * @param type_buff         Put in this buffer the configured algorithm (or "\0" if none).
+ * @param type_buff_len     algorithm_buffer capacity.
+ * @param checksum_buff     Put in this buffer the configured checksum value ("\0" if none).
+ * @param checksum_buff_len checksum_buff capacity.
+ * @param err               GError error report
+ * @return                  The configured checksum mode
+ * @version                 2.13.0
+ */
+gfalt_checksum_mode_t gfalt_get_checksum(gfalt_params_t params,
+    gchar* type_buff, size_t type_buff_len, gchar* checksum_buff, size_t checksum_buff_len,
+    GError **err);
+
+/**
+ * Get only the checksum mode configured
+ * @return  The configured checksum mode
+ */
+gfalt_checksum_mode_t gfalt_get_checksum_mode(gfalt_params_t params, GError **err);
 
 /**
  * Enable or disable the destination parent directory creation

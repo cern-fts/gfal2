@@ -354,9 +354,8 @@ int gridftp_bulk_check_sources(plugin_handle plugin_data, gfal2_context_t contex
     struct stat st;
     int nfailed = 0, ret = 0;
     char chk_type[32] = {0}, chk_value[128], dummy[1];
-    gboolean validate_checksum = gfalt_get_checksum_check(pairs->params, NULL);
-
-    gfalt_get_user_defined_checksum(pairs->params, chk_type, sizeof(chk_type), dummy, 0, NULL);
+    gfalt_checksum_mode_t checksum_mode = gfalt_get_checksum(pairs->params,
+        chk_type, sizeof(chk_type), dummy, 0, NULL);
 
     for (size_t i = 0; i < pairs->nbfiles; ++i) {
         if (gfal2_is_canceled(context)) {
@@ -376,7 +375,7 @@ int gridftp_bulk_check_sources(plugin_handle plugin_data, gfal2_context_t contex
         else {
             pairs->fsize[i] = st.st_size;
 
-            if (validate_checksum) {
+            if (checksum_mode & GFALT_CHECKSUM_SOURCE) {
                 plugin_trigger_event(pairs->params, GSIFTP_BULK_DOMAIN,
                                      GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER,
                                      "%s", pairs->srcs[i]);
@@ -490,9 +489,8 @@ int gridftp_bulk_close(plugin_handle plugin_data,
     int nfailed = 0, ret = 0;
     struct stat st;
     char chk_type[32] = {0}, chk_value[128], dummy[1];
-    gboolean validate_checksum = gfalt_get_checksum_check(pairs->params, NULL);
-
-    gfalt_get_user_defined_checksum(pairs->params, chk_type, sizeof(chk_type), dummy, 0, NULL);
+    gfalt_checksum_mode_t checksum_mode = gfalt_get_checksum(pairs->params,
+        chk_type, sizeof(chk_type), dummy, 0, NULL);
 
     plugin_trigger_event(pairs->params, GSIFTP_BULK_DOMAIN,
             GFAL_EVENT_NONE, GFAL_EVENT_CLOSE_ENTER, "");
@@ -516,7 +514,7 @@ int gridftp_bulk_close(plugin_handle plugin_data,
                             (long long)pairs->fsize, (long long)st.st_size);
                     pairs->errn[i] = EIO;
                 }
-                else if (validate_checksum) {
+                else if (checksum_mode & GFALT_CHECKSUM_TARGET) {
                     plugin_trigger_event(pairs->params, GSIFTP_BULK_DOMAIN,
                             GFAL_EVENT_DESTINATION, GFAL_EVENT_CHECKSUM_ENTER, "%s",
                             pairs->dsts[i]);

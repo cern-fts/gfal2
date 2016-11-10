@@ -220,17 +220,11 @@ static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
 
 
 static int srm_get_checksum_config(gfal2_context_t context, gfalt_params_t params,
-    gboolean *enabled, gboolean *allow_empty,
-    char *algorithm, size_t algorithm_size,
+    gfalt_checksum_mode_t *mode, char *algorithm, size_t algorithm_size,
     char *user_checksum, size_t user_checksum_size,
     GError **err)
 {
-    *enabled = gfalt_get_checksum_check(params, NULL);
-    *allow_empty = gfal2_get_opt_boolean(context, "SRM PLUGIN",
-        "ALLOW_EMPTY_SOURCE_CHECKSUM", NULL);
-
-    gfalt_get_user_defined_checksum(params, algorithm, algorithm_size,
-        user_checksum, user_checksum_size, NULL);
+    *mode = gfalt_get_checksum(params, algorithm, algorithm_size, user_checksum, user_checksum_size, NULL);
 
     if (algorithm[0] == '\0') {
         const char *configured;
@@ -240,9 +234,9 @@ static int srm_get_checksum_config(gfal2_context_t context, gfalt_params_t param
     }
 
     if (*err == NULL) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tChecksum check enabled: %d", *enabled);
-        if (*enabled) {
-            gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tAllow empty source checksum: %d", *allow_empty);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tChecksum check enabled: %d", *mode);
+        if (*mode) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tVerify source checksum: %d", (*mode & GFALT_CHECKSUM_SOURCE));
             gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tChecksum algorithm: %s", algorithm);
             gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tUser defined checksum: %s", user_checksum);
         }
@@ -256,8 +250,8 @@ static int srm_get_checksum_config(gfal2_context_t context, gfalt_params_t param
 
 static int srm_validate_source_checksum(plugin_handle handle, gfal2_context_t context,
     gfalt_params_t params, const char *src,
+    gfalt_checksum_mode_t checksum_mode,
     const char *checksum_algorithm, const char *checksum_user,
-    gboolean allow_empty,
     char *checksum_source, size_t checksum_source_size,
     GError **err)
 {
@@ -268,31 +262,21 @@ static int srm_validate_source_checksum(plugin_handle handle, gfal2_context_t co
 
     int ret = 0;
 
+    gboolean turl_fallback = (checksum_mode & GFALT_CHECKSUM_SOURCE);
     ret = gfal_srm_checksumG_fallback(handle, src, checksum_algorithm,
-        checksum_source, checksum_source_size, 0, 0, !allow_empty, &tmp_err);
-    if (ret == 0) {
-        if (checksum_source[0] != '\0') {
-            if (checksum_user[0] != '\0' &&
-                gfal_compare_checksums(checksum_source, checksum_user, checksum_source_size) != 0) {
-                gfalt_set_error(err, gfal2_get_plugin_srm_quark(), EIO, __func__,
-                    GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM_MISMATCH,
-                    "User defined checksum and source checksum do not match %s != %s",
-                    checksum_source, checksum_user);
-                ret = -1;
-            }
-        }
-        else if (!allow_empty) {
-            gfalt_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
-                GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM,
-                "Empty source checksum");
+        checksum_source, checksum_source_size, 0, 0, turl_fallback, &tmp_err);
+
+    if (ret != 0) {
+        gfalt_propagate_prefixed_error(err, tmp_err, __func__, GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM);
+    }
+    else if (checksum_mode & GFALT_CHECKSUM_SOURCE && checksum_user[0]) {
+        if (gfal_compare_checksums(checksum_source, checksum_user, checksum_source_size) != 0) {
+            gfalt_set_error(err, gfal2_get_plugin_srm_quark(), EIO, __func__,
+                GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM_MISMATCH,
+                "User defined checksum and source checksum do not match %s != %s",
+                checksum_user, checksum_source);
             ret = -1;
         }
-        else {
-            gfal2_log(G_LOG_LEVEL_WARNING, "Source checksum could not be retrieved. Ignoring.");
-        }
-    }
-    else {
-        gfalt_propagate_prefixed_error(err, tmp_err, __func__, GFALT_ERROR_SOURCE, GFALT_ERROR_CHECKSUM);
     }
 
     plugin_trigger_event(params, srm_domain(), GFAL_EVENT_SOURCE,
@@ -323,7 +307,7 @@ static int srm_validate_destination_checksum(plugin_handle handle, gfal2_context
         if (checksum_destination[0] != '\0') {
             if (checksum_source[0] != '\0' &&
                 gfal_compare_checksums(checksum_source, checksum_destination, sizeof(checksum_destination)) != 0) {
-                gfalt_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
+                gfalt_set_error(err, gfal2_get_plugin_srm_quark(), EIO, __func__,
                     GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM_MISMATCH,
                     "Source and destination checksums do not match %s != %s",
                     checksum_source, checksum_destination);
@@ -331,7 +315,7 @@ static int srm_validate_destination_checksum(plugin_handle handle, gfal2_context
             }
             else if (checksum_user[0] != '\0' &&
                      gfal_compare_checksums(checksum_user, checksum_destination, sizeof(checksum_destination)) != 0) {
-                gfalt_set_error(err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
+                gfalt_set_error(err, gfal2_get_plugin_srm_quark(), EIO, __func__,
                     GFALT_ERROR_TRANSFER, GFALT_ERROR_CHECKSUM_MISMATCH,
                     "User defined checksum and destination checksums do not match %s != %s",
                     checksum_user, checksum_destination);
@@ -486,7 +470,12 @@ static int srm_do_transfer(plugin_handle handle, gfal2_context_t context,
     gfalt_params_t params_turl;
 
     params_turl = gfalt_params_handle_copy(params, NULL);
-    gfalt_set_checksum_check(params_turl, FALSE, NULL); // checksum check done here!
+
+    // checksum check done here!
+    if (gfalt_set_checksum(params, GFALT_CHECKSUM_NONE, NULL, NULL, err) < 0) {
+        return -1;
+    }
+
     if (srm_check_url(destination)) { // srm destination
         gfalt_set_replace_existing_file(params_turl, FALSE, NULL);
         gfalt_set_strict_copy_mode(params_turl, TRUE, NULL);
@@ -560,8 +549,7 @@ int srm_plugin_filecopy(plugin_handle handle, gfal2_context_t context,
     char token_source[GFAL_URL_MAX_LEN] = {0};
     char turl_destination[GFAL_URL_MAX_LEN] = {0};
     char token_destination[GFAL_URL_MAX_LEN] = {0};
-    gboolean is_checksum_enabled;
-    gboolean allow_empty_source_checksum;
+    gfalt_checksum_mode_t checksum_mode;
     gboolean transfer_finished = FALSE;
 
     // Check if any of the endpoints is castor
@@ -573,7 +561,7 @@ int srm_plugin_filecopy(plugin_handle handle, gfal2_context_t context,
         GFAL_EVENT_PREPARE_ENTER, "");
 
     srm_get_checksum_config(context, params,
-        &is_checksum_enabled, &allow_empty_source_checksum,
+        &checksum_mode,
         checksum_algorithm, sizeof(checksum_algorithm),
         checksum_user, sizeof(checksum_user),
         &nested_error);
@@ -581,10 +569,10 @@ int srm_plugin_filecopy(plugin_handle handle, gfal2_context_t context,
         goto copy_finalize;
 
     // Source checksum validation
-    if (is_checksum_enabled) {
+    if (checksum_mode) {
         srm_validate_source_checksum(handle, context, params, source,
+            checksum_mode,
             checksum_algorithm, checksum_user,
-            allow_empty_source_checksum,
             checksum_source, sizeof(checksum_source),
             &nested_error);
 
@@ -616,7 +604,7 @@ int srm_plugin_filecopy(plugin_handle handle, gfal2_context_t context,
     transfer_finished = TRUE;
 
     // Destination checksum validation
-    if (is_checksum_enabled) {
+    if (checksum_mode & GFALT_CHECKSUM_TARGET) {
         srm_validate_destination_checksum(handle, context, params, dest,
             checksum_algorithm, checksum_user, checksum_source,
             &nested_error);

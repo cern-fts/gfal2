@@ -28,22 +28,22 @@
 
 
 struct _gfalt_params_t {
-    gboolean lock;                // lock enabled after the start of the transfer
+    gboolean lock;              // lock enabled after the start of the transfer
     guint64 timeout;            // connexion timeout
     guint64 tcp_buffer_size;
     gboolean replace_existing;  // replace destination or not
-    off_t start_offset;            // start offset in case of restart
-    guint nb_data_streams;        // nb of parallels streams
-    gboolean strict_mode;        // state of the strict copy mode
+    off_t start_offset;         // start offset in case of restart
+    guint nb_data_streams;      // nb of parallels streams
+    gboolean strict_mode;       // state of the strict copy mode
     gboolean local_transfers;   // local transfer authorized
-    gboolean parent_dir_create;  // force the creation of the parent dir
+    gboolean parent_dir_create; // force the creation of the parent dir
     // spacetoken management for SRM
     gchar *src_space_token;
     gchar *dst_space_token;
-    // checksum management
-    gboolean checksum_check;
-    gchar *user_checksum;
-    gchar *user_checksum_type;
+    // checksums
+    gfalt_checksum_mode_t checksum_mode;
+    gchar *checksum_value;
+    gchar *checksum_type;
 
     // callback lists
     GSList *monitor_callbacks;

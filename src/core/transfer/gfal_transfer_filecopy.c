@@ -153,27 +153,21 @@ static int perform_copy(gfal2_context_t context, gfalt_params_t params, const ch
 }
 
 
-static void set_checksum(gfalt_params_t params, const char* checksum)
+static int set_checksum(gfalt_params_t params, const char* checksum, GError **err)
 {
     if (checksum == NULL) {
-        gfalt_set_checksum_check(params, FALSE, NULL);
-        gfalt_set_user_defined_checksum(params, NULL, NULL, NULL);
+        return gfalt_set_checksum(params, params->checksum_mode, NULL, NULL, err);
     }
     else {
-        gfalt_set_checksum_check(params, TRUE, NULL);
-
         const char* colon = strchr(checksum, ':');
         if (colon == NULL) {
-            char chktype[64], chkvalue[1];
-            gfalt_get_user_defined_checksum(params, chktype, sizeof(chktype), chkvalue,
-                    sizeof(chkvalue), NULL);
-            gfalt_set_user_defined_checksum(params, chktype, checksum, NULL);
+            return gfalt_set_checksum(params, params->checksum_mode, NULL, checksum, err);
         }
         else {
             char chktype[64];
             size_t chktype_len = colon - checksum;
             g_strlcpy(chktype, checksum, chktype_len < 64 ? chktype_len : 64);
-            gfalt_set_user_defined_checksum(params, chktype, colon + 1, NULL);
+            return gfalt_set_checksum(params, params->checksum_mode, chktype, colon + 1, err);
         }
     }
 }
@@ -187,17 +181,24 @@ static int bulk_fallback(gfal2_context_t context, gfalt_params_t params, size_t 
     int ret = 0;
     size_t i;
     for (i = 0; i < nbfiles; ++i) {
+        int subret = 0;
+
         if (checksums) {
             const char* checksum = checksums[i];
-            set_checksum(params, checksum);
+            subret = set_checksum(params, checksum, &(*file_errors)[i]);
         }
         else {
-            set_checksum(params, NULL);
+            subret = set_checksum(params, NULL, &(*file_errors)[i]);
+        }
+        if (subret < 0) {
+            ret -= 1;
+            continue;
         }
 
-        int subret = perform_copy(context, params, srcs[i], dsts[i], &(*file_errors)[i]);
-        if (subret < 0)
+        subret = perform_copy(context, params, srcs[i], dsts[i], &(*file_errors)[i]);
+        if (subret < 0) {
             ret -= 1;
+        }
     }
     return ret;
 }

@@ -12,6 +12,16 @@
 #include <common/gfal_lib_test.h>
 #include <common/gfal_gtest_asserts.h>
 
+
+void event_callback(const gfalt_event_t e, gpointer user_data)
+{
+    bool *transfer_happened = static_cast<bool*>(user_data);
+    if (e->stage == GFAL_EVENT_TRANSFER_ENTER) {
+        *transfer_happened = true;
+    }
+}
+
+
 class CopyTestUserChecksum: public testing::Test {
 public:
     static const char* source_root;
@@ -21,13 +31,14 @@ public:
     char destination[2048];
     gfal2_context_t handle;
     gfalt_params_t params;
+    bool transfer_happened;
 
-    CopyTestUserChecksum() {
+    CopyTestUserChecksum(): transfer_happened(false) {
         GError *error = NULL;
         handle =  gfal2_context_new(&error);
         Gfal::gerror_to_cpp(&error);
         params = gfalt_params_handle_new(NULL);
-        gfalt_set_checksum_check(params, TRUE, NULL);
+        gfalt_add_event_callback(params, &event_callback, &transfer_happened, NULL, NULL);
     }
 
     virtual ~CopyTestUserChecksum() {
@@ -36,6 +47,9 @@ public:
     }
 
     virtual void SetUp() {
+        transfer_happened = false;
+        gfalt_set_checksum(params, GFALT_CHECKSUM_BOTH, NULL, NULL, NULL);
+
         generate_random_uri(source_root, "copyfile_checksum_user_source", source, 2048);
         generate_random_uri(destination_root, "copyfile_checksum_user", destination, 2048);
 
@@ -57,6 +71,7 @@ const char* CopyTestUserChecksum::source_root;
 const char* CopyTestUserChecksum::destination_root;
 
 
+// Enabling checksum with the correct checksum, the copy must succeed
 TEST_F(CopyTestUserChecksum, CopyRightUserChecksum)
 {
     GError* error = NULL;
@@ -66,22 +81,95 @@ TEST_F(CopyTestUserChecksum, CopyRightUserChecksum)
     ret = gfal2_checksum(handle, source, "ADLER32", 0, 0, checksum_source, sizeof(checksum_source), &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
 
-    gfalt_set_user_defined_checksum(params, "ADLER32", checksum_source, NULL);
+    gfalt_set_checksum(params, GFALT_CHECKSUM_BOTH, "ADLER32", checksum_source, NULL);
 
     ret = gfalt_copy_file(handle, params, source, destination, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
 }
 
-
+// Enabling checksum with a wrong checksum, the copy must fail
+// There must be no copy, since the source would not pass the validation
 TEST_F(CopyTestUserChecksum, CopyBadChecksum)
 {
     GError* error = NULL;
     int ret = 0;
 
-    gfalt_set_user_defined_checksum(params, "ADLER32", "aaaaaaa", NULL);
+    gfalt_set_checksum(params, GFALT_CHECKSUM_BOTH, "ADLER32", "aaaaaaa", NULL);
 
     ret = gfalt_copy_file(handle, params, source, destination, &error);
     EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, error, EIO);
+    EXPECT_FALSE(transfer_happened);
+}
+
+// Enabling checksum for the source only with the correct checksum, the copy must succeed
+TEST_F(CopyTestUserChecksum, CopyRightUserChecksumSource)
+{
+    GError* error = NULL;
+    int ret = 0;
+
+    char checksum_source[2048];
+    ret = gfal2_checksum(handle, source, "ADLER32", 0, 0, checksum_source, sizeof(checksum_source), &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    gfalt_set_checksum(params, GFALT_CHECKSUM_SOURCE, "ADLER32", checksum_source, NULL);
+
+    ret = gfalt_copy_file(handle, params, source, destination, &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+}
+
+// Enabling checksum for the destination only with the correct checksum, the copy must succeed
+TEST_F(CopyTestUserChecksum, CopyRightUserChecksumDestination)
+{
+    GError* error = NULL;
+    int ret = 0;
+
+    char checksum_source[2048];
+    ret = gfal2_checksum(handle, source, "ADLER32", 0, 0, checksum_source, sizeof(checksum_source), &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    gfalt_set_checksum(params, GFALT_CHECKSUM_TARGET, "ADLER32", checksum_source, NULL);
+
+    ret = gfalt_copy_file(handle, params, source, destination, &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+}
+
+// Enabling checksum for the source only with a wrong checksum, the copy must fail
+TEST_F(CopyTestUserChecksum, CopyRightUserChecksumSourceBad)
+{
+    GError* error = NULL;
+    int ret = 0;
+
+    gfalt_set_checksum(params, GFALT_CHECKSUM_SOURCE, "ADLER32", "aaaaaaa", NULL);
+
+    ret = gfalt_copy_file(handle, params, source, destination, &error);
+    EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, error, EIO);
+    EXPECT_FALSE(transfer_happened);
+}
+
+// Enabling checksum for the destination only with a wrong checksum, the copy must fail
+// Note that the transfer must happen even if the source file does not match!
+TEST_F(CopyTestUserChecksum, CopyRightUserChecksumDestinationBad)
+{
+    GError* error = NULL;
+    int ret = 0;
+
+    gfalt_set_checksum(params, GFALT_CHECKSUM_TARGET, "ADLER32", "aaaaaaa", NULL);
+
+    ret = gfalt_copy_file(handle, params, source, destination, &error);
+    EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, error, EIO);
+    EXPECT_TRUE(transfer_happened);
+}
+
+// Disabling checksum with a wrong checksum, the copy must succeed
+TEST_F(CopyTestUserChecksum, CopyRightUserChecksumDisabledBad)
+{
+    GError* error = NULL;
+    int ret = 0;
+
+    gfalt_set_checksum(params, GFALT_CHECKSUM_NONE, "ADLER32", "aaaaaaa", NULL);
+
+    ret = gfalt_copy_file(handle, params, source, destination, &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
 }
 
 

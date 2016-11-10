@@ -35,7 +35,6 @@ public:
         handle =  gfal2_context_new(&error);
         Gfal::gerror_to_cpp(&error);
         params = gfalt_params_handle_new(NULL);
-        gfalt_set_checksum_check(params, TRUE, NULL);
         gfalt_add_event_callback(params, transfer_callback, this, NULL, NULL);
 
         for (size_t i = 0; i < NBPAIRS; ++i) {
@@ -81,8 +80,7 @@ public:
 
         done = 0;
 
-        gfalt_set_user_defined_checksum(params, NULL, NULL, NULL);
-        gfalt_set_checksum_check(params, FALSE, NULL);
+        gfalt_set_checksum(params, GFALT_CHECKSUM_NONE, NULL, NULL, &error);
         gfalt_set_replace_existing_file(params, FALSE, NULL);
         gfalt_set_create_parent_dir(params, FALSE, NULL);
     }
@@ -226,8 +224,7 @@ TEST_F(CopyBulk, CopyBulkChecksuming)
     GError** file_errors = NULL;
     int ret = 0;
 
-    gfalt_set_user_defined_checksum(params, "ADLER32", NULL, NULL);
-    gfalt_set_checksum_check(params, TRUE, NULL);
+    gfalt_set_checksum(params, GFALT_CHECKSUM_BOTH, "ADLER32", NULL, NULL);
     ret = gfalt_copy_bulk(handle, params, NBPAIRS, sources, destinations, checksums, &op_error, &file_errors);
 
     ASSERT_LT(ret, 0);

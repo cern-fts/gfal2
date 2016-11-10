@@ -62,9 +62,7 @@ TEST_F(CopyTestChecksum, CopyChecksumEnabled)
     GError* error = NULL;
     int ret = 0;
 
-    ret = gfalt_set_checksum_check(params, TRUE, &error);
-    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
-    ret = gfalt_set_user_defined_checksum(params, "ADLER32", NULL, &error);
+    ret = gfalt_set_checksum(params, GFALT_CHECKSUM_BOTH, "ADLER32", NULL, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
 
     ret = gfalt_copy_file(handle, params, source, destination, &error);
@@ -77,11 +75,9 @@ TEST_F(CopyTestChecksum, CopyChecksumAndReplaceEnabled)
     GError* error = NULL;
     int ret = 0;
 
-    ret = gfalt_set_checksum_check(params, TRUE, &error);
+    ret = gfalt_set_checksum(params, GFALT_CHECKSUM_BOTH, "ADLER32", NULL, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
     ret = gfalt_set_replace_existing_file(params, TRUE, &error);
-    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
-    ret = gfalt_set_user_defined_checksum(params, "ADLER32", NULL, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
 
     ret = gfalt_copy_file(handle, params, source, destination, &error);
@@ -94,11 +90,9 @@ TEST_F(CopyTestChecksum, CopyChecksumAndReplaceEnabledENOENT)
     GError* error = NULL;
     int ret = 0;
 
-    ret = gfalt_set_checksum_check(params, TRUE, &error);
+    ret = gfalt_set_checksum(params, GFALT_CHECKSUM_BOTH, "ADLER32", NULL, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
     ret = gfalt_set_replace_existing_file(params, TRUE, &error);
-    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
-    ret = gfalt_set_user_defined_checksum(params, "ADLER32", NULL, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
 
     gfal2_unlink(handle, source, &error);
@@ -106,6 +100,29 @@ TEST_F(CopyTestChecksum, CopyChecksumAndReplaceEnabledENOENT)
 
     ret = gfalt_copy_file(handle, params, source, destination, &error);
     EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, error, ENOENT);
+}
+
+
+// Ask to compare only source checksum and do not give a checksum
+// Must fail
+TEST_F(CopyTestChecksum, CopyChecksumOnlySourceNoValue)
+{
+    GError* error = NULL;
+    int ret = 0;
+
+    ret = gfalt_set_checksum(params, GFALT_CHECKSUM_SOURCE, "ADLER32", NULL, &error);
+    EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, error, EINVAL);
+}
+
+// Ask to compare only destination checksum and do not give a checksum
+// Must fail
+TEST_F(CopyTestChecksum, CopyChecksumOnlyDestinationNoValue)
+{
+    GError* error = NULL;
+    int ret = 0;
+
+    ret = gfalt_set_checksum(params, GFALT_CHECKSUM_TARGET, "ADLER32", NULL, &error);
+    EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, error, EINVAL);
 }
 
 

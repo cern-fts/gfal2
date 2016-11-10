@@ -114,8 +114,6 @@ typedef struct _gfalt_event* gfalt_event_t;
  */
 typedef void (*gfalt_event_func)(const gfalt_event_t e, gpointer user_data);
 
-
-
 // plugin reserved API
 //! @cond
 typedef struct _gfalt_hook_transfer_plugin {
