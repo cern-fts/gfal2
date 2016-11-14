@@ -52,11 +52,11 @@ extern "C"
  */
 typedef enum {
     /// Don't verify checksum
-    GFALT_CHECKSUM_NONE    = 0b00,
+    GFALT_CHECKSUM_NONE    = 0x00,
     /// Compare user provided checksum vs source
-    GFALT_CHECKSUM_SOURCE  = 0b01,
+    GFALT_CHECKSUM_SOURCE  = 0x01,
     /// Compare user provided checksum vs destination
-    GFALT_CHECKSUM_TARGET  = 0b10,
+    GFALT_CHECKSUM_TARGET  = 0x02,
     /// Compare user provided checksum vs both, *or* source checksum vs target checksum
     GFALT_CHECKSUM_BOTH = (GFALT_CHECKSUM_SOURCE | GFALT_CHECKSUM_TARGET)
 } gfalt_checksum_mode_t;
