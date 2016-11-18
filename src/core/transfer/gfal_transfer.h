@@ -170,13 +170,13 @@ gboolean gfalt_get_strict_copy_mode(gfalt_params_t, GError** err);
  * an Error is return by the copy function is case of checksum failure.
  * @warning for safety reason, even in case of checksum failure the destination file is not removed.
  */
-GFAL2_DEPRECATED(gfalt_set_checksum_method) gint gfalt_set_checksum_check(gfalt_params_t, gboolean value, GError** err);
+GFAL2_DEPRECATED(gfalt_set_checksum) gint gfalt_set_checksum_check(gfalt_params_t, gboolean value, GError** err);
 
 /**
  * @deprecated
  * Get the checksum verification boolean
  */
-GFAL2_DEPRECATED(gfalt_get_checksum_method) gboolean gfalt_get_checksum_check(gfalt_params_t, GError** err);
+GFAL2_DEPRECATED(gfalt_get_checksum) gboolean gfalt_get_checksum_check(gfalt_params_t, GError** err);
 
 /**
  * @deprecated gfalt_set_checksum
