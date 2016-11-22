@@ -109,6 +109,9 @@ int gfal_plugin_mock_bring_online_poll_list(plugin_handle plugin_data,
 int gfal_plugin_mock_release_file_list(plugin_handle plugin_data, int nbfiles,
     const char *const *urls, const char *token, GError **err);
 
+int gfal_plugin_mock_abort_file_list(plugin_handle plugin_data, int nbfiles, const char *const *uris, const char *token,
+    GError **err);
+
 // Copy
 int gfal_plugin_mock_filecopy(plugin_handle plugin_data,
     gfal2_context_t context, gfalt_params_t params, const char *src,

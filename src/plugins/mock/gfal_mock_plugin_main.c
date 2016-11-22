@@ -158,6 +158,7 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError **err)
     mock_plugin.bring_online_list = gfal_plugin_mock_bring_online_list;
     mock_plugin.bring_online_poll_list = gfal_plugin_mock_bring_online_poll_list;
     mock_plugin.release_file_list = gfal_plugin_mock_release_file_list;
+    mock_plugin.abort_files = gfal_plugin_mock_abort_file_list;
 
     mock_plugin.check_plugin_url_transfer = &gfal_plugin_mock_check_url_transfer;
     mock_plugin.copy_file = &gfal_plugin_mock_filecopy;

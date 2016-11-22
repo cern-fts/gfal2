@@ -141,3 +141,22 @@ int gfal_plugin_mock_release_file_list(plugin_handle plugin_data, int nbfiles,
     }
     return 1;
 }
+
+
+int gfal_plugin_mock_abort_file_list(plugin_handle plugin_data, int nbfiles, const char *const *uris, const char *token,
+    GError **err)
+{
+    MockPluginData *mdata = plugin_data;
+
+    // Just make sure the pointers are at least valid, so access them
+    int token_len = strlen(token);
+    int i = 0, total_len = 0;
+    for (i = 0; i < nbfiles; ++i) {
+        total_len += strlen(uris[i]);
+    }
+
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Counter to avoid optimizing away: %d (state %d)",
+        token_len + total_len, mdata->stat_stage);
+
+    return 0;
+}
