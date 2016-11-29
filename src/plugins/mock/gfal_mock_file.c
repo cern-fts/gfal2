@@ -22,6 +22,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifndef EBADFD
+#define EBADFD EBADF
+#endif
 
 typedef struct {
     const char *url;
