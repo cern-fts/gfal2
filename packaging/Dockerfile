@@ -15,7 +15,6 @@
 #
 
 # gfal2 image
-# No devel packages are installed!
 
 FROM centos:7
 
@@ -25,7 +24,7 @@ ADD "http://repository.egi.eu/sw/production/cas/1/current/repo-files/EGI-trustan
 RUN yum install -y epel-release
 RUN yum clean all && yum update -y
 RUN yum install -y gfal2-all gfal2-tests
-RUN yum install -y git
+RUN yum install -y git gfal2-devel
 
 # Leave yum cache clean
 RUN yum clean all
