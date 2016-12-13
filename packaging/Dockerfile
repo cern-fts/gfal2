@@ -18,7 +18,7 @@
 
 FROM centos:7
 
-ADD "https://grid-deployment.web.cern.ch/grid-deployment/dms/dmc/repos/dmc-ci-el7.repo" "/etc/yum.repos.d/"
+ADD "https://dmc-repo.web.cern.ch/dmc-repo/dmc-ci-el7.repo" "/etc/yum.repos.d/"
 ADD "http://repository.egi.eu/sw/production/cas/1/current/repo-files/EGI-trustanchors.repo" "/etc/yum.repos.d/"
 
 RUN yum install -y epel-release
@@ -28,3 +28,4 @@ RUN yum install -y git gfal2-devel
 
 # Leave yum cache clean
 RUN yum clean all
+
