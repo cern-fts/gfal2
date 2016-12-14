@@ -53,7 +53,7 @@ int gfal_srm_statG(plugin_handle ch, const char *surl, struct stat *buf, GError 
         ret = 0;
         *buf = xstat.stat;
     }
-        // Ask server otherwise
+    // Ask server otherwise
     else {
         gfal_srm_easy_t easy = gfal_srm_ifce_easy_context(opts, surl, &tmp_err);
         if (easy != NULL) {

@@ -195,11 +195,11 @@ gfal_srm_easy_t gfal_srm_ifce_easy_context(gfal_srmv2_opt *opts,
             case PROTO_SRM:
                 gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT,
                     __func__, "SRM v1 is not supported, failure");
-                break;
+                return NULL;
             default:
                 gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT,
                     __func__, "Unknow version of the protocol SRM, failure");
-                break;
+                return NULL;
         }
     }
 

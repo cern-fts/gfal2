@@ -36,28 +36,29 @@ static enum gfal_srm_proto gfal_proto_list_prefG[] = {PROTO_SRMv2, PROTO_SRM, PR
 static int gfal_srm_guess_service_endpoint(gfal_srmv2_opt *opts, const char *surl, char *buff_endpoint, size_t s_buff,
     enum gfal_srm_proto *srm_type, GError **err)
 {
-    guint msize = 0;
     GError *tmp_err = NULL;
-    int ret = 0;
-
-    msize = g_strlcpy(buff_endpoint, GFAL_ENDPOINT_DEFAULT_PREFIX, s_buff);
-    char *p, *org_p;
-    p = org_p = ((char *) surl) + strlen(GFAL_PREFIX_SRM);
-    const int surl_len = strlen(surl);
-    while (p < surl + surl_len && *p != '/' && *p != '\0')
-        p++;
-    if (org_p + 1 > p || msize >= s_buff || p - org_p + msize + strlen(GFAL_DEFAULT_SERVICE_ENDPOINT_SUFFIX) > s_buff) {
-        gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
-            "Impossible to setup default service endpoint from %s : bad URI format", surl);
-        ret = -1;
-    } else {
-        g_strlcat(buff_endpoint, org_p, p - org_p);
-        g_strlcat(buff_endpoint, GFAL_DEFAULT_SERVICE_ENDPOINT_SUFFIX, s_buff);
-        *srm_type = opts->srm_proto_type;
-        ret = 0;
+    gfal2_uri *parsed = gfal2_parse_uri(surl, err);
+    if (!parsed) {
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+        return -1;
     }
 
-    G_RETURN_ERR(ret, tmp_err, err);
+    if (parsed->port) {
+        snprintf(buff_endpoint, s_buff,
+            "%s%s:%d%s", GFAL_ENDPOINT_DEFAULT_PREFIX,
+            parsed->host, parsed->port, GFAL_DEFAULT_SERVICE_ENDPOINT_SUFFIX
+        );
+    }
+    else {
+        snprintf(buff_endpoint, s_buff,
+            "%s%s%s", GFAL_ENDPOINT_DEFAULT_PREFIX,
+            parsed->host, GFAL_DEFAULT_SERVICE_ENDPOINT_SUFFIX
+        );
+    }
+    *srm_type = opts->srm_proto_type;
+
+    gfal2_free_uri(parsed);
+    return 0;
 }
 
 
