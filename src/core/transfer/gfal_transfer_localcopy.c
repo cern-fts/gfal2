@@ -183,12 +183,13 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
     const time_t timeout = perf_data.start + gfalt_get_timeout(params, NULL);
     ssize_t s_file = 1;
 
-    char* buffer = g_malloc0(DEFAULT_BUFFER_SIZE);
+    size_t buffersize = gfal2_get_opt_integer_with_default(context, "CORE", "COPY_BUFFERSIZE", DEFAULT_BUFFER_SIZE);
+    char* buffer = g_malloc0(buffersize);
 
-    gfal2_log(G_LOG_LEVEL_DEBUG, "  begin local transfer %s ->  %s with buffer size %ld", src, dst, DEFAULT_BUFFER_SIZE);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  begin local transfer %s ->  %s with buffer size %ld", src, dst, buffersize);
 
     while (s_file > 0 && !nested_error) {
-        s_file = gfal_plugin_readG(context, f_src, buffer, DEFAULT_BUFFER_SIZE, &nested_error);
+        s_file = gfal_plugin_readG(context, f_src, buffer, buffersize, &nested_error);
         if (s_file > 0)
             gfal_plugin_writeG(context, f_dst, buffer, s_file, &nested_error);
 
