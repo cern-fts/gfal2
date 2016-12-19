@@ -119,6 +119,14 @@ TEST_F(BringonlineTest, TwoBringOnlineAsync)
             sleep(1);
             printf("Poll\n");
             ret = gfal2_bring_online_poll_list(handle, 2, surls, token, error);
+            if (error[0] != NULL) {
+                ASSERT_TRUE(error[0]->code == EAGAIN || error[0]->code == ENOENT);
+                g_clear_error(&error[0]);
+            }
+            if (error[1] != NULL) {
+                ASSERT_EQ(error[1]->code, EAGAIN);
+                g_clear_error(&error[1]);
+            }
         }
     }
 
@@ -169,12 +177,14 @@ TEST_F(BringonlineTest, TwoAbort)
         while (ret == 0) {
             sleep(1);
             printf("Poll\n");
+            g_clear_error(&error[0]);
+            g_clear_error(&error[1]);
             ret = gfal2_bring_online_poll_list(handle, 2, surls, token, error);
         }
 
         ASSERT_EQ(1, ret);
-        ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error[0], ECANCELED);
-        ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error[1], ECANCELED);
+        ASSERT_TRUE(error[0]->code == ECANCELED || error[0]->code == ENOENT);
+        ASSERT_TRUE(error[1]->code == ECANCELED || error[1]->code == 0);
     }
 }
 
@@ -240,6 +250,17 @@ TEST_F(BringonlineTest, DuplicatedSURLs)
             sleep(1);
             printf("Poll\n");
             ret = gfal2_bring_online_poll_list(handle, nbfiles, surls, token, error);
+            for (int i = 0; i < nbfiles; ++i) {
+                if (error[i] != NULL) {
+                    if (i % 2 == 0) {
+                        ASSERT_EQ(EAGAIN, error[i]->code);
+                    }
+                    else {
+                        ASSERT_TRUE(error[i]->code == EAGAIN || error[i]->code == ENOENT);
+                    }
+                    g_clear_error(&error[i]);
+                }
+            }
         }
     }
 
