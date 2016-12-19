@@ -27,7 +27,7 @@
 #include "gfal_transfer_internal.h"
 
 
-const size_t DEFAULT_BUFFER_SIZE = 4000000;
+const size_t DEFAULT_BUFFER_SIZE = 4194304;
 
 
 static GQuark local_copy_domain() {
@@ -162,14 +162,42 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
             GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
             "%s => %s", src, dst);
 
-    gfal2_log(G_LOG_LEVEL_DEBUG, " open src file : %s ", src);
-    gfal_file_handle f_src = gfal_plugin_openG(context, src, O_RDONLY, 0, &nested_error);
+    size_t alignment = gfal2_get_opt_integer_with_default(context, "CORE", "COPY_BUFFER_ALIGNMENT", 512);
+    size_t buffersize = gfal2_get_opt_integer_with_default(context, "CORE", "COPY_BUFFERSIZE", DEFAULT_BUFFER_SIZE);
+    char *buffer;
+    errno = posix_memalign((void**)&buffer, alignment, buffersize);
+    if (errno) {
+        g_set_error(error, local_copy_domain(), errno, "Failed to allocate aligned buffer");
+        return -1;
+    }
+
+    gboolean direct_io = gfal2_get_opt_boolean_with_default(context, "CORE", "COPY_DIRECT_IO", FALSE);
+
+    int src_open_flags = O_RDONLY;
+    if (direct_io) {
+        src_open_flags |= O_DIRECT;
+        gfal2_log(G_LOG_LEVEL_DEBUG, " open src file with direct io : %s ", src);
+    }
+    else {
+        gfal2_log(G_LOG_LEVEL_DEBUG, " open src file : %s ", src);
+    }
+
+    gfal_file_handle f_src = gfal_plugin_openG(context, src, src_open_flags, 0, &nested_error);
     if (nested_error) {
         gfal2_propagate_prefixed_error_extended(error, nested_error, __func__, "Could not open source: ");
         return -1;
     }
 
-    gfal_file_handle f_dst = gfal_plugin_openG(context, dst, O_WRONLY | O_CREAT, 0755, &nested_error);
+    int dst_open_flags = O_WRONLY | O_CREAT;
+    if (direct_io) {
+        dst_open_flags |= O_DIRECT;
+        gfal2_log(G_LOG_LEVEL_DEBUG, " open dst file with direct io : %s ", dst);
+    }
+    else {
+        gfal2_log(G_LOG_LEVEL_DEBUG, " open dst file : %s ", dst);
+    }
+
+    gfal_file_handle f_dst = gfal_plugin_openG(context, dst, dst_open_flags, 0755, &nested_error);
     if (nested_error) {
         gfal_plugin_closeG(context, f_src, NULL);
         gfal2_propagate_prefixed_error_extended(error, nested_error, __func__, "Could not open destination: ");
@@ -182,9 +210,6 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
 
     const time_t timeout = perf_data.start + gfalt_get_timeout(params, NULL);
     ssize_t s_file = 1;
-
-    size_t buffersize = gfal2_get_opt_integer_with_default(context, "CORE", "COPY_BUFFERSIZE", DEFAULT_BUFFER_SIZE);
-    char* buffer = g_malloc0(buffersize);
 
     gfal2_log(G_LOG_LEVEL_DEBUG, "  begin local transfer %s ->  %s with buffer size %ld", src, dst, buffersize);
 
@@ -215,7 +240,7 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
             }
         }
     }
-    g_free(buffer);
+    free(buffer);
 
     gfal_plugin_closeG(context, f_dst, (nested_error)?NULL:(&nested_error));
     gfal_plugin_closeG(context, f_src, (nested_error)?NULL:(&nested_error));
