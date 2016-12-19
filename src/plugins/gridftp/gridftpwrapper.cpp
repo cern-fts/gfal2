@@ -170,6 +170,8 @@ GridFTPSession::~GridFTPSession()
     globus_gass_copy_handleattr_destroy(&gass_handle_attr);
     globus_ftp_client_handleattr_destroy(&attr_handle);
     globus_ftp_client_features_destroy(&this->ftp_features);
+    OM_uint32 minor_status;
+    gss_release_cred(&minor_status, &this->cred_id);
 }
 
 
@@ -262,7 +264,8 @@ void GridFTPSession::set_udt(bool udt)
 }
 
 
-void gfal_globus_set_credentials(gfal2_context_t context, const char *url, globus_ftp_client_operationattr_t* opattr)
+void gfal_globus_set_credentials(gfal2_context_t context, const char *url, gss_cred_id_t *cred_id,
+    globus_ftp_client_operationattr_t* opattr)
 {
     // X509
     gchar* ucert = gfal2_get_opt_string(context, "X509", "CERT", NULL);
@@ -286,7 +289,7 @@ void gfal_globus_set_credentials(gfal2_context_t context, const char *url, globu
         gfal2_log(G_LOG_LEVEL_DEBUG, "FTP using user %s", user);
     }
 
-    gfal_globus_set_credentials(ucert, ukey, user, passwd, opattr);
+    gfal_globus_set_credentials(ucert, ukey, user, passwd, cred_id, opattr);
 
     // Release memory
     g_free(ucert);
@@ -298,10 +301,9 @@ void gfal_globus_set_credentials(gfal2_context_t context, const char *url, globu
 
 void gfal_globus_set_credentials(const char* ucert, const char* ukey,
     const char *user, const char *passwd,
+    gss_cred_id_t *cred_id,
     globus_ftp_client_operationattr_t* opattr)
 {
-    gss_cred_id_t cred_id = GSS_C_NO_CREDENTIAL;
-
     if (ucert) {
         std::stringstream buffer;
         std::ifstream cert_stream(ucert);
@@ -320,13 +322,13 @@ void gfal_globus_set_credentials(const char* ucert, const char* ukey,
             buffer << key_stream.rdbuf();
         }
 
+        OM_uint32 minor_status, major_status;
+
         gss_buffer_desc_struct buffer_desc;
         buffer_desc.value = g_strdup(buffer.str().c_str());
         buffer_desc.length = buffer.str().size();
 
-        OM_uint32 minor_status, major_status;
-
-        major_status = gss_import_cred(&minor_status, &cred_id,
+        major_status = gss_import_cred(&minor_status, cred_id,
             GSS_C_NO_OID, 0, // 0 = Pass credentials; 1 = Pass path as X509_USER_PROXY=...
             &buffer_desc, 0, NULL);
         g_free(buffer_desc.value);
@@ -353,7 +355,7 @@ void gfal_globus_set_credentials(const char* ucert, const char* ukey,
     }
     
     globus_ftp_client_operationattr_set_authorization(
-            opattr, cred_id, user, passwd, NULL, NULL);
+            opattr, *cred_id, user, passwd, NULL, NULL);
 }
 
 
@@ -605,7 +607,7 @@ GridFTPSession* GridFTPFactory::get_new_handle(const std::string &hostname)
     session->set_ipv6(ipv6);
     session->set_delayed_pass(delay_passv);
 
-    gfal_globus_set_credentials(gfal2_context, hostname.c_str(), &session->operation_attr_ftp);
+    gfal_globus_set_credentials(gfal2_context, hostname.c_str(), &session->cred_id, &session->operation_attr_ftp);
 
     return session.release();
 }

@@ -242,21 +242,20 @@ int gfal_mds_get_srm_types_endpoint(LDAP *ld, LDAPMessage *result, gfal_mds_endp
  **/
 int gfal_mds_get_ldapuri(gfal2_context_t context, char *buff, size_t s_buff, GError **err)
 {
-	char *bdii_var = getenv(bdii_env_var);
-	if (bdii_var == NULL)
+	char *bdii_var = g_strdup(getenv(bdii_env_var));
+	if (bdii_var == NULL) {
 		bdii_var = gfal2_get_opt_string(context, bdii_config_group, bdii_config_var, NULL);
+	}
 
 	if (bdii_var == NULL || bdii_var[0] == '\0') {
 		g_set_error(err, gfal2_get_core_quark(), EINVAL,
 				" no valid value for BDII found:"
 						" please, configure the plugin properly, or try setting in the environment LCG_GFAL_INFOSYS");
+        g_free(bdii_var);
 		return -1;
 	}
 
 	gfal2_log(G_LOG_LEVEL_DEBUG, " use LCG_GFAL_INFOSYS : %s", bdii_var);
-
-	// Since strtok will modify, use a copy
-	bdii_var = g_strdup(bdii_var);
 
 	char *save_ptr = NULL;
 	char *token = NULL;
@@ -275,7 +274,6 @@ int gfal_mds_get_ldapuri(gfal2_context_t context, char *buff, size_t s_buff, GEr
 	buff[i - 1] = '\0';
 
 	g_free(bdii_var);
-
 	return 0;
 }
 

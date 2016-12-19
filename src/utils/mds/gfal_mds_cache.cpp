@@ -70,8 +70,7 @@ int gfal_mds_cache_resolve_endpoint(gfal2_context_t handle, const char* host,
                                     GError** err)
 {
     // Cache configuration
-    gchar *cache_file = gfal2_get_opt_string(handle, bdii_config_group,
-            bdii_cache_file, NULL);
+    gchar *cache_file = gfal2_get_opt_string(handle, bdii_config_group, bdii_cache_file, NULL);
     if (!cache_file)
         return 0;
 
@@ -81,6 +80,9 @@ int gfal_mds_cache_resolve_endpoint(gfal2_context_t handle, const char* host,
     // (A cache may not be present!)
     pugi::xml_document cache;
     pugi::xml_parse_result loadResult = cache.load_file(cache_file);
+
+    g_free(cache_file);
+
     if (loadResult.status != pugi::status_ok) {
         gfal2_log(G_LOG_LEVEL_WARNING, "Could not load BDII CACHE_FILE: %s",
                 loadResult.description());
