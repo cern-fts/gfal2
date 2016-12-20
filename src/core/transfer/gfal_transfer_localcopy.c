@@ -171,9 +171,11 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
         return -1;
     }
 
+    int src_open_flags = O_RDONLY;
+
+#ifdef O_DIRECT
     gboolean direct_io = gfal2_get_opt_boolean_with_default(context, "CORE", "COPY_DIRECT_IO", FALSE);
 
-    int src_open_flags = O_RDONLY;
     if (direct_io) {
         src_open_flags |= O_DIRECT;
         gfal2_log(G_LOG_LEVEL_DEBUG, " open src file with direct io : %s ", src);
@@ -181,6 +183,7 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
     else {
         gfal2_log(G_LOG_LEVEL_DEBUG, " open src file : %s ", src);
     }
+#endif
 
     gfal_file_handle f_src = gfal_plugin_openG(context, src, src_open_flags, 0, &nested_error);
     if (nested_error) {
@@ -189,6 +192,8 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
     }
 
     int dst_open_flags = O_WRONLY | O_CREAT;
+
+#ifdef O_DIRECT
     if (direct_io) {
         dst_open_flags |= O_DIRECT;
         gfal2_log(G_LOG_LEVEL_DEBUG, " open dst file with direct io : %s ", dst);
@@ -196,6 +201,7 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
     else {
         gfal2_log(G_LOG_LEVEL_DEBUG, " open dst file : %s ", dst);
     }
+#endif
 
     gfal_file_handle f_dst = gfal_plugin_openG(context, dst, dst_open_flags, 0755, &nested_error);
     if (nested_error) {
