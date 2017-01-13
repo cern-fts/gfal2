@@ -20,6 +20,7 @@
 
 #include "gfal_mock_plugin.h"
 #include <string.h>
+#include <uuid/uuid.h>
 
 
 int gfal_plugin_mock_bring_online(plugin_handle plugin_data, const char *url,
@@ -38,7 +39,14 @@ int gfal_plugin_mock_bring_online(plugin_handle plugin_data, const char *url,
     mdata->staging_end = time(NULL) + gfal_plugin_mock_get_int_from_str(arg_buffer);
 
     // Fake token
-    g_strlcpy(token, "mock-token", tsize);
+    if (tsize > 36) {
+        uuid_t uuid;
+        uuid_generate_random(uuid);
+        uuid_unparse(uuid, token);
+    }
+    else {
+        g_strlcpy(token, "mock-token", tsize);
+    }
 
     // Now, if remaining is <= 0, or blocking call, we are done
     if (mdata->staging_end <= time(NULL) || !async) {
