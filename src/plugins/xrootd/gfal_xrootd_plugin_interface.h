@@ -95,6 +95,24 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
 ssize_t gfal_xrootd_space_reporting(plugin_handle plugin_data, const char *sanitizedUrl,
     const char *key, void *buff, size_t s_buf, GError **err);
 
+int gfal_xrootd_bring_online(plugin_handle plugin_data,
+    const char* url, time_t pintime, time_t timeout, char* token, size_t tsize, int async, GError** err);
+int gfal_xrootd_bring_online_poll(plugin_handle plugin_data,
+    const char* url, const char* token, GError** err);
+
+int gfal_xrootd_release_file(plugin_handle plugin_data,
+    const char* url, const char* token, GError** err);
+
+int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
+    int nbfiles, const char* const* urls, time_t pintime, time_t timeout, char* token, size_t tsize,
+    int async, GError** err);
+
+int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
+    int nbfiles, const char* const* urls, const char* token, GError** err);
+
+int gfal_xrootd_release_file_list(plugin_handle plugin_data,
+    int nbfiles, const char* const* urls, const char* token, GError** err);
+
 const char* gfal_xrootd_getName();
 
 void set_xrootd_log_level();

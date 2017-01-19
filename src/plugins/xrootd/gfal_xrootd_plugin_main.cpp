@@ -77,9 +77,16 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)
 
     xrootd_plugin.checksum_calcG = &gfal_xrootd_checksumG;
 
-    xrootd_plugin.check_plugin_url_transfer = gfal_xrootd_3rdcopy_check;
-    xrootd_plugin.copy_file = gfal_xrootd_3rd_copy;
-    xrootd_plugin.copy_bulk = gfal_xrootd_3rd_copy_bulk;
+    xrootd_plugin.check_plugin_url_transfer = &gfal_xrootd_3rdcopy_check;
+    xrootd_plugin.copy_file = &gfal_xrootd_3rd_copy;
+    xrootd_plugin.copy_bulk = &gfal_xrootd_3rd_copy_bulk;
+
+    xrootd_plugin.bring_online = &gfal_xrootd_bring_online;
+    xrootd_plugin.bring_online_list = &gfal_xrootd_bring_online_list;
+    xrootd_plugin.bring_online_poll = &gfal_xrootd_bring_online_poll;
+    xrootd_plugin.bring_online_poll_list = &gfal_xrootd_bring_online_poll_list;
+    xrootd_plugin.release_file = &gfal_xrootd_release_file;
+    xrootd_plugin.release_file_list = &gfal_xrootd_release_file_list;
 
     return xrootd_plugin;
 }
@@ -107,6 +114,7 @@ gboolean gfal_xrootd_check_url(plugin_handle ch, const char* url,
         case GFAL_PLUGIN_GETXATTR:
         case GFAL_PLUGIN_SETXATTR:
         case GFAL_PLUGIN_LISTXATTR:
+        case GFAL_PLUGIN_BRING_ONLINE:
             ret = TRUE;
             break;
         default:
