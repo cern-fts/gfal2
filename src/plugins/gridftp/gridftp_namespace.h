@@ -71,6 +71,8 @@ int gfal_gridftp_checksumG(plugin_handle handle, const char* url,
 ssize_t gfal_gridftp_getxattrG(plugin_handle handle, const char* path,
         const char *name, void *buff, size_t s_buff, GError** err);
 
+ssize_t gfal_gridftp_listxattrG(plugin_handle plugin_data, const char* url, char* list, size_t s_list, GError** err);
+
 #ifdef __cplusplus
 }
 #endif

@@ -21,7 +21,7 @@
 
 
 #define GlobusErrorGeneric(reason)                                     \
-    globus_error_put(GlobusErrorObjGeneric(reason))                               
+    globus_error_put(GlobusErrorObjGeneric(reason))
 
 #define GlobusErrorObjGeneric(reason)                                  \
     globus_error_construct_error(                                      \
@@ -443,3 +443,9 @@ extern "C" ssize_t gfal_gridftp_getxattrG(plugin_handle handle, const char* path
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
+
+extern "C" ssize_t gfal_gridftp_listxattrG(plugin_handle handle,
+    const char* url, char* list, size_t s_list, GError** err)
+{
+    return g_strlcpy(list, GFAL_XATTR_SPACETOKEN, s_list);
+}

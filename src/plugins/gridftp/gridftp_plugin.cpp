@@ -75,6 +75,7 @@ int gridftp_check_url(plugin_handle handle, const char* src, plugin_mode check,
             case GFAL_PLUGIN_CHECKSUM:
             case GFAL_PLUGIN_RENAME:
             case GFAL_PLUGIN_GETXATTR:
+            case GFAL_PLUGIN_LISTXATTR:
                 res = TRUE;
                 break;
             default:
@@ -161,6 +162,7 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)
     ret.copy_file = &gridftp_plugin_filecopy;
     ret.copy_bulk = &gridftp_bulk_copy;
     ret.getxattrG = &gfal_gridftp_getxattrG;
+    ret.listxattrG = &gfal_gridftp_listxattrG;
 
 	G_RETURN_ERR(ret, tmp_err, err);
 }

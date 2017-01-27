@@ -28,7 +28,7 @@
 
 #define GFAL_XATTR_SRM_TYPE "srm.type"
 
-static char *srm_listxattr[] = {SRM_XATTR_GETURL, GFAL_XATTR_STATUS, GFAL_XATTR_SRM_TYPE, NULL};
+static char *srm_listxattr[] = {SRM_XATTR_GETURL, GFAL_XATTR_STATUS, GFAL_XATTR_SRM_TYPE, GFAL_XATTR_SPACETOKEN, NULL};
 
 
 static ssize_t gfal_srm_get_endpoint_type_xattrG(plugin_handle handle, const char *path,

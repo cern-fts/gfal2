@@ -545,10 +545,10 @@ ssize_t gfal_xrootd_getxattrG(plugin_handle plugin_data, const char* url, const 
 ssize_t gfal_xrootd_listxattrG(plugin_handle plugin_data, const char* url,
         char* list, size_t s_list, GError** err)
 {
-    static const char props[] = "xroot.cksum\0xroot.space\0xroot.xattr";
+    static const char props[] = "xroot.cksum\0xroot.space\0xroot.xattr\0spacetoken";
     static const size_t proplen = sizeof(props);
     size_t len = proplen > s_list ? s_list : proplen;
-    g_strlcpy(list, props, len);
+    memcpy(list, props, len);
     return len;
 }
 
