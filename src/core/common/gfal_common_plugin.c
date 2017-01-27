@@ -26,6 +26,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <logger/gfal_logger.h>
+#include <gfal_api.h>
 #include "gfal_types.h"
 #include "gfal_common_plugin.h"
 #include "gfal_constants.h"
@@ -46,7 +47,7 @@
 gfal_plugin_interface* gfal_plugin_interface_new()
 {
     size_t s_plugin = sizeof(gfal_plugin_interface) + 1;
-    gfal_plugin_interface* res = malloc(s_plugin); // bigger allocation that needed for futur extensions
+    gfal_plugin_interface* res = malloc(s_plugin); // bigger allocation that needed for future extensions
     memset(res, 0, s_plugin);
     return res;
 }
@@ -206,17 +207,17 @@ static int gfal_module_load(gfal2_context_t handle, char* module_name, GError** 
 {
     void* dlhandle = dlopen(module_name, RTLD_NOW);
     GError * tmp_err = NULL;
-    int res = -1;
+    int res = 0;
     if (dlhandle == NULL) {
-        g_set_error(&tmp_err, gfal2_get_plugins_quark(), EINVAL,
-                "Unable to open the %s plugin specified in the plugin directory, failure : %s",
-                module_name, dlerror());
+        gfal2_log(G_LOG_LEVEL_WARNING, "Unable to open the %s plugin specified in the plugin directory: %s",
+            module_name, dlerror());
     }
     else {
         res = gfal_module_init(handle, dlhandle, module_name, &tmp_err);
     }
-    if (tmp_err)
+    if (tmp_err) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+    }
     return res;
 }
 
