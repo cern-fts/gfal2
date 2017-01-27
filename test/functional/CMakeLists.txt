@@ -14,6 +14,7 @@ if(FUNCTIONAL_TESTS)
         "${CMAKE_SOURCE_DIR}/src/posix/"
         "${GLIB2_INCLUDE_DIRS}"
         "${GTEST_INCLUDE_DIR}"
+        "${JSONC_INCLUDE_DIRS}"
     )
 
     # Bring online tests

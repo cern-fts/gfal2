@@ -2,12 +2,19 @@
 #include <gtest/gtest.h>
 #include <utils/exceptions/gerror_to_cpp.h>
 #include <common/gfal_gtest_asserts.h>
+#include <json.h>
 
 
 class SpaceTest: public testing::Test {
 public:
     static const char* root;
     gfal2_context_t context;
+    static enum ResponseType {
+        kUnsupported,
+        kSpaceTokenArray,
+        kSpaceInfo,
+    } responseType;
+    static char responseBuffer[1024];
 
     SpaceTest() {
         GError *error = NULL;
@@ -21,6 +28,8 @@ public:
 };
 
 const char* SpaceTest::root;
+SpaceTest::ResponseType SpaceTest::responseType;
+char SpaceTest::responseBuffer[1024];
 
 
 TEST_F(SpaceTest, SpaceInAttrList)
@@ -48,12 +57,97 @@ TEST_F(SpaceTest, SpaceInAttrList)
 TEST_F(SpaceTest, GetSpaceAttr)
 {
     GError *error = NULL;
-    char buffer[1024];
 
-    int ret = gfal2_getxattr(context, root, GFAL_XATTR_SPACETOKEN, buffer, sizeof(buffer), &error);
+    int ret = gfal2_getxattr(context, root, GFAL_XATTR_SPACETOKEN, responseBuffer, sizeof(responseBuffer), &error);
+    if (ret < 0 && (error->code == ENOSYS || error->code == ECOMM)) {
+        GTEST_LOG_(INFO) << "Not supported by the storage: " << error->message;
+        g_error_free(error);
+        responseType = kUnsupported;
+        SKIP_TEST(GetSpaceAttr);
+        return;
+    }
     ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
 
-    GTEST_LOG_(INFO) << buffer;
+    // Now, there are two possible responses: either an array with spacetoken names (SRM),
+    // or just space info (xrootd)
+    if (responseBuffer[0] == '[') {
+        responseType = kSpaceTokenArray;
+    }
+    else {
+        responseType = kSpaceInfo;
+    }
+}
+
+
+static void _validate_space_info(const char *response)
+{
+    json_object *info = json_tokener_parse(response);
+    ASSERT_NE(info, (void*)NULL);
+    ASSERT_TRUE(json_object_is_type(info, json_type_object));
+
+    json_object *totalsizeObj, *unusedObj, *usedObj;
+    ASSERT_TRUE(json_object_object_get_ex(info, "totalsize", &totalsizeObj));
+    ASSERT_TRUE(json_object_object_get_ex(info, "unusedsize", &unusedObj));
+    ASSERT_TRUE(json_object_object_get_ex(info, "usedsize", &usedObj));
+
+    errno = 0;
+    int64_t total = json_object_get_int64(totalsizeObj);
+    ASSERT_EQ(errno, 0);
+
+    errno = 0;
+    int64_t unused = json_object_get_int64(unusedObj);
+    ASSERT_EQ(errno, 0);
+
+    errno = 0;
+    int64_t used = json_object_get_int64(usedObj);
+    ASSERT_EQ(errno, 0);
+
+    GTEST_LOG_(INFO) << used << "/" << total << "(" << unused << ")";
+    json_object_put(info);
+}
+
+
+TEST_F(SpaceTest, SpaceTokenList)
+{
+    GError *error;
+    char buffer[1024];
+
+    if (responseType != kSpaceTokenArray) {
+        SKIP_TEST(SpaceTokenList);
+        return;
+    }
+
+    json_object *obj = json_tokener_parse(responseBuffer);
+    ASSERT_NE(obj, (void*)NULL);
+    ASSERT_TRUE(json_object_is_type(obj, json_type_array));
+
+    // Iterate and ask for the info of each token
+    int arrayLen = json_object_array_length(obj);
+    for (int i = 0; i < arrayLen; ++i) {
+        json_object *tokenObj = json_object_array_get_idx(obj, i);
+        ASSERT_TRUE(json_object_is_type(tokenObj, json_type_string));
+        const char *token = json_object_get_string(tokenObj);
+
+        char *attrName = g_strconcat(GFAL_XATTR_SPACETOKEN, ".token?", token, NULL);
+        GTEST_LOG_(INFO) << attrName;
+
+        int ret = gfal2_getxattr(context, root, attrName, buffer, sizeof(buffer), &error);
+        g_free(attrName);
+        ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+        _validate_space_info(buffer);
+    }
+
+    json_object_put(obj);
+}
+
+
+TEST_F(SpaceTest, SpaceInfo)
+{
+    if (responseType != kSpaceInfo) {
+        SKIP_TEST(SpaceTokenList);
+        return;
+    }
+    _validate_space_info(responseBuffer);
 }
 
 
