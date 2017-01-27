@@ -73,7 +73,7 @@ TEST_F(SpaceTest, GetSpaceAttr)
     if (responseBuffer[0] == '[') {
         responseType = kSpaceTokenArray;
     }
-    else {
+    else if (responseBuffer[0] == '{') {
         responseType = kSpaceInfo;
     }
 }

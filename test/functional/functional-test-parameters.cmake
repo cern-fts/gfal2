@@ -157,29 +157,31 @@ IF(PLUGIN_SRM)
         test_mkdir_all("SRM_DCACHE" ${srm_prefix_dcache})
         test_chmod_all("SRM_DPM" ${srm_valid_dir_root} 0575 070 370 777)
         test_rmdir_all("SRM_DPM" ${srm_valid_dir_root})
-        test_readdir_full("SRM_DPM" ${srm_valid_dir_root} )     
+        test_readdir_full("SRM_DPM" ${srm_valid_dir_root} )
         test_rwt_all("SRM_DPM" ${srm_valid_dir_root} 4578)
         test_rwt_all("SRM_DPM_little" ${srm_valid_dir_root} 10)
-        test_rwt_all("SRM_DPM_single" ${srm_valid_dir_root} 1)  
+        test_rwt_all("SRM_DPM_single" ${srm_valid_dir_root} 1)
         test_rwt_all("SRM_DCAP" ${srm_valid_dcache_dir_root} 4578)
-        test_rwt_all("SRM_DCAP_little" ${srm_valid_dcache_dir_root} 10) 
-        test_rwt_all("SRM_DCAP_single" ${srm_valid_dcache_dir_root} 1)          
-        test_rwt_seq("SRM_DPM" ${srm_valid_dir_root} 100 4560)  
-        test_rwt_seq("SRM_DPM_unit" ${srm_valid_dir_root} 1 10)                 
-        test_rwt_seq("SRM_DCAP" ${srm_valid_dir_root} 100 4560) 
+        test_rwt_all("SRM_DCAP_little" ${srm_valid_dcache_dir_root} 10)
+        test_rwt_all("SRM_DCAP_single" ${srm_valid_dcache_dir_root} 1)
+        test_rwt_seq("SRM_DPM" ${srm_valid_dir_root} 100 4560)
+        test_rwt_seq("SRM_DPM_unit" ${srm_valid_dir_root} 1 10)
+        test_rwt_seq("SRM_DCAP" ${srm_valid_dir_root} 100 4560)
 
         test_rwt_seq("SRM_STORM" ${srm_prefix_storm} 100 4560)
-        
+
         # Bringonline
         test_bringonline("SRM_DPM" ${srm_prefix_dpm})
         test_bringonline("SRM_DCACHE" ${srm_prefix_dcache})
         # Note: STORM may not support tapes
-                
+
 #       test_chmod_all("SRM_DCACHE" ${srm_valid_dcache_chmod} 0565 060 360 767)  -> disabled, since unavailable on dcache
 #       test_stat_all( "SRM_EOS" ${srm_valid_EOS_stat})
 
         test_xattr("DPM" ${srm_prefix_dpm})
         test_xattr("DCACHE" ${srm_prefix_dcache})
+
+        test_space("DPM" ${srm_prefix_dpm})
 ENDIF(PLUGIN_SRM)
 
 IF(PLUGIN_LFC)
@@ -210,15 +212,16 @@ IF(PLUGIN_GRIDFTP)
         test_checksum_simple("GRIDFTP_ADLER32" ${gsiftp_valid_dir_root} ADLER32)
         test_checksum_simple("GRIDFTP_MD5" ${gsiftp_valid_dir_root} MD5)
         test_checksum_simple("GRIDFTP_CRC32" ${gsiftp_valid_dir_root} CRC32)
-        test_mkdir_all("GRIDFTP" ${gsiftp_prefix_dpm})  
+        test_mkdir_all("GRIDFTP" ${gsiftp_prefix_dpm})
         test_chmod_all("GRIDFTP" ${gsiftp_prefix_dpm} 0565 060 0360 0767)
         test_rmdir_all("GRIDFTP" ${gsiftp_valid_dir_root})
         test_readdir_full("GRIDFTP" ${gsiftp_valid_dir_root})
         test_rwt_all("GRIDFTP" ${gsiftp_valid_dir_root} 4578)
-        test_rwt_all("GRIDFTP_single" ${gsiftp_valid_dir_root} 1)               
+        test_rwt_all("GRIDFTP_single" ${gsiftp_valid_dir_root} 1)
         test_rwt_seq("GRIDFTP" ${gsiftp_valid_dir_root} 100 4560)
         test_rwt_seq("GRIDFTP_unit" ${gsiftp_valid_dir_root} 1 10)
         test_rwt_seek("GRIDFTP" ${gsiftp_valid_dir_root} 100 4560)
+        test_space("GRIDFTP" ${gsiftp_valid_dir_root})
 
         test_stat_all("FTP" ${ftp_prefix})
 ENDIF(PLUGIN_GRIDFTP)
@@ -259,6 +262,8 @@ IF(PLUGIN_XROOTD)
     test_rwt_seq("XROOTD" ${root_valid_dir_root} 100 4560)
     test_rwt_seq("XROOTD_single" ${root_valid_dir_root} 1 10)
     test_rwt_seek("XROOTD" ${root_valid_dir_root} 100 4560)
+
+    test_space("XROOTD" ${root_valid_dir_root})
 
     # Copies
     IF (MAIN_TRANSFER)

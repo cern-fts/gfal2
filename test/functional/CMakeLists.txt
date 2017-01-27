@@ -168,9 +168,9 @@ if(FUNCTIONAL_TESTS)
     # Space test
     add_test_executable(gfal_test_space "gfal_test_space.cpp")
     target_link_libraries(gfal_test_space ${GFAL2_LIBRARIES} gfal2_test_shared)
-    function(gfal_test_space name prefix)
+    function(test_space name prefix)
         add_test(gfal_test_space_${name} gfal_test_space ${prefix})
-    endfunction(gfal_test_space name prefix)
+    endfunction(test_space name prefix)
 
     # Tests for file transfer
     if(MAIN_TRANSFER)
