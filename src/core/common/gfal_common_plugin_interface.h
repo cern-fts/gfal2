@@ -121,7 +121,7 @@ struct _gfal_plugin_interface {
 	 *  @param url : URL for access checking
 	 *  @param mode : mode to check ( see man 2 access )
 	 *  @param err : Error report, the code field of err should be set to errno value when possible
-	 *  @return 0 or -1 if error occures,
+	 *  @return 0 or -1 if error occurs,
 	 *          err MUST be set in case of error
 	 * */
 	int (*accessG)(plugin_handle plugin_data, const char* url, int mode, GError** err);
@@ -132,7 +132,7 @@ struct _gfal_plugin_interface {
 	 *  @param url : URL of the file
 	 *  @param mode : mode to set
 	 *  @param err : Error report, the code field of err should be set to errno value when possible
-	 *  @return 0 or -1 if error occures,
+	 *  @return 0 or -1 if error occurs,
 	 *          err MUST be set in case of error
 	 * */
 	int	(*chmodG)(plugin_handle plugin_data, const char * url, mode_t mode, GError** err);
@@ -142,7 +142,7 @@ struct _gfal_plugin_interface {
 	 *  @param oldurl : old url of the file
 	 *  @param urlnew : new url of the file
 	 *  @param err : Error report, the code field of err should be set to errno value when possible
-	 *  @return 0 or -1 if error occures,
+	 *  @return 0 or -1 if error occurs,
 	 *          err MUST be set in case of error
 	 * */
 	int	(*renameG)(plugin_handle plugin_data, const char * oldurl, const char * urlnew, GError** err);
@@ -152,7 +152,7 @@ struct _gfal_plugin_interface {
 	 *  @param oldurl : old url of the file
 	 *  @param urlnew : symlink to create
 	 *  @param err : Error report, the code field of err should be set to errno value when possible
-	 *  @return 0 or -1 if error occures,
+	 *  @return 0 or -1 if error occurs,
 	 *          err MUST be set in case of error
 	 * */
 	int (*symlinkG)(plugin_handle plugin_data, const char* oldurl, const char* newold, GError** err);
@@ -163,7 +163,7 @@ struct _gfal_plugin_interface {
 	 *  @param url : url to stat
 	 *  @param buf : informations of the file
 	 *  @param err : Error report, the code field of err should be set to errno value when possible
-	 *  @return 0 or -1 if error occures,
+	 *  @return 0 or -1 if error occurs,
 	 *          err MUST be set in case of error
 	 * */
 	int (*statG)(plugin_handle plugin_data , const char* url, struct stat *buf, GError** err);
@@ -176,7 +176,7 @@ struct _gfal_plugin_interface {
 	 *  @param url : url to stat
 	 *  @param buf : informations of the file
 	 *  @param err : Error report, the code field of err should be set to errno value when possible
-	 *  @return 0 or -1 if error occures,
+	 *  @return 0 or -1 if error occurs,
 	 *          err MUST be set in case of error
 	 * */
 	int (*lstatG)(plugin_handle plugin_data, const char* url, struct stat *buf, GError** err);
@@ -188,7 +188,7 @@ struct _gfal_plugin_interface {
 	 *  @param buff : buffer for the readlink result
 	 *  @param size_t : buffsize maximum size to fill in the buffer
 	 *  @param err : Error report, the code field of err should be set to errno value when possible
-	 *  @return number of bytes in buff in case of success or -1 if error occures,
+	 *  @return number of bytes in buff in case of success or -1 if error occurs,
 	 *          err MUST be set in case of error
 	 * */
 	ssize_t (*readlinkG)(plugin_handle plugin_data, const char* url, char* buff, size_t buffsiz, GError** );
@@ -235,7 +235,7 @@ struct _gfal_plugin_interface {
      *  @param rec_flag : recursive mode, if enabled the plugin MUST create the parent directories if needed,
      *       if the rec_flag is not supported by this plugin, the plugin MUST return a negative value and set the GError errcode to ENOENT
 	 *  @param err : Error report, the code field of err should be set to errno value when possible
-	 *  @return 0 in case of success or -1 if error occures,
+	 *  @return 0 in case of success or -1 if error occurs,
 	 *          err MUST be set in case of error
 	 * */
     int (*mkdirpG)(plugin_handle plugin_data, const char* url, mode_t mode, gboolean rec_flag, GError** err);
@@ -245,7 +245,7 @@ struct _gfal_plugin_interface {
 	 *  @param plugin_data : internal plugin data
 	 *  @param url : url of the directory to delete
 	 *  @param err : Error report, the code field of err should be set to errno value when possible
-	 *  @return 0 in case of success or -1 if error occures,
+	 *  @return 0 in case of success or -1 if error occurs,
 	 *          err MUST be set in case of error
 	 * */
 	int (*rmdirG)(plugin_handle plugin_data, const char* url, GError** err);
@@ -259,7 +259,7 @@ struct _gfal_plugin_interface {
 	 *  @param flag : open flags
 	 *  @param mode : mode of the file, in case of creation
 	 *  @param err : Error report, the code field of err should be set to errno value when possible
-	 *  @return gfal_file_handle in case of success or NULL if error occures,
+	 *  @return gfal_file_handle in case of success or NULL if error occurs,
 	 *          err MUST be set in case of error
 	 * */
 	 gfal_file_handle (*openG)(plugin_handle plugin_data, const char* url, int flag, mode_t mode, GError**);
@@ -312,7 +312,7 @@ struct _gfal_plugin_interface {
 	 *  @param plugin_data : internal plugin data
      *  @param url : url of the file
 	 *  @param err : Error report, the code field of err should be set to errno value when possible
-	 *  @return 0 in case of success or -1 if error occures,
+	 *  @return 0 in case of success or -1 if error occurs,
 	 *          err MUST be set in case of error
 	 * */
 	 int (*unlinkG)(plugin_handle plugin_data, const char* url, GError** err);
@@ -327,7 +327,7 @@ struct _gfal_plugin_interface {
 	 *  @param buff : buffer for the attribute content
 	 *  @param s_buff : maximum buffer size
 	 *  @param err : Error report, the code field of err should be set to errno value when possible
-	 *  @return size of the attribute in case of success or -1 if error occures,
+	 *  @return size of the attribute in case of success or -1 if error occurs,
 	 *          err MUST be set in case of error
 	 * */
 	 ssize_t (*getxattrG)(plugin_handle plugin_data, const char* url, const char* key,
@@ -340,7 +340,7 @@ struct _gfal_plugin_interface {
 	 *  @param list : buffer for the list attribute content
 	 *  @param s_buff : maximum buffer size
 	 *  @param s_list : Error report, the code field of err should be set to errno value when possible
-	 *  @return size of the list in case of success or -1 if error occures,
+	 *  @return size of the list in case of success or -1 if error occurs,
 	 *          err MUST be set in case of error
 	 * */
 	 ssize_t (*listxattrG)(plugin_handle plugin_data, const char* url, char* list, size_t s_list, GError** err);
@@ -355,7 +355,7 @@ struct _gfal_plugin_interface {
 	 *  @param s_buff : maximum buffer size
 	 *  @param flas : set/get flags
 	 *  @param err : Error report, the code field of err should be set to errno value when possible
-	 *  @return 0 or -1 if error occures,
+	 *  @return 0 or -1 if error occurs,
 	 *          err MUST be set in case of error
 	 * */
 	 int (*setxattrG)(plugin_handle plugin_data, const char* url, const char* key,
