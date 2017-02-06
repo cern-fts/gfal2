@@ -1,6 +1,29 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Mon Feb 06 2017 Alejandro Alvarez <aalvarez at cern.ch> - 2.13.0
+### Bug
+- [DMC-895] - Recursive directory creation: EEXIST shouldn't cause a failure
+- [DMC-901] - Xrootd succeeds to copy even if one of the storages does not support checksums
+- [DMC-909] - SRM Plugin: When BDII is disabled, SRM endpoint is built incorrectly
+- [DMC-910] - Leaks in BDII bindings and GridFTP plugin
+
+### New Feature
+- [DMC-885] - XrootD Plugin: Add space reporting to the API
+- [DMC-886] - Consolidate space reporting between plugins
+- [DMC-892] - Generalize checksum methods
+- [DMC-896] - SFTP plugin
+
+### Task
+- [DMC-902] - Delete old deprecated methods
+- [DMC-905] - Expose Low level parameters for local -> remote copies
+
+### Improvement
+- [DMC-880] - If the option -t is passed, make sure that Davix knows it
+- [DMC-884] - XRootD Plugin: Pass desired checksum type to the storage
+- [DMC-900] - Apply QA tools feedback
+- [DMC-913] - Log a warning and keep going if loading a plugin fails
+
 ## Thu Oct 27 2016 Alejandro Alvarez <aalvarez at cern.ch> - 2.12.3
 ### Bug
 - [DMC-891] - GridFTP Plugin: IPv6 detection misfire in some cases
