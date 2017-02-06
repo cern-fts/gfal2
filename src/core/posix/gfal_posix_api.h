@@ -33,10 +33,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+
 #ifdef __APPLE__
 #include <sys/xattr.h>
 #else
+
 #include <attr/xattr.h>
+
 #endif
 
 #include <common/gfal_common.h>
@@ -75,7 +78,7 @@ extern "C"
  * @return return 0 if success else -1 if errors occures.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-int gfal_chmod(const char* url, mode_t mode);
+int gfal_chmod(const char *url, mode_t mode);
 
 /**
  * @brief  change the name or location of a file
@@ -89,7 +92,7 @@ int gfal_chmod(const char* url, mode_t mode);
  * @return : return 0 if success, else -1 if errors.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
 */
-int gfal_rename (const char *oldurl, const char * newurl);
+int gfal_rename(const char *oldurl, const char *newurl);
 
 
 /**
@@ -103,7 +106,7 @@ int gfal_rename (const char *oldurl, const char * newurl);
  * @return    : return 0 if success, else -1 if errors.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-int gfal_stat (const char * url, struct stat * st);
+int gfal_stat(const char *url, struct stat *st);
 
 /**
  *  @brief  get the file status, does not follow links
@@ -120,7 +123,7 @@ int gfal_stat (const char * url, struct stat * st);
  * @return    : return 0 if success, else -1 if errors.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-int gfal_lstat (const char * url, struct stat * st);
+int gfal_lstat(const char *url, struct stat *st);
 
 /**
  * @brief check user permissions for a file
@@ -132,7 +135,7 @@ int gfal_lstat (const char * url, struct stat * st);
  * @return This routine return 0 if the operation was successful, or -1 if error occured.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-int gfal_access (const char * url , int amode);
+int gfal_access(const char *url, int amode);
 
 /**
  * @brief resolve a link destination
@@ -149,7 +152,7 @@ int gfal_access (const char * url , int amode);
  *  if the operation was successful, or -1 if error occured.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-ssize_t gfal_readlink(const char* url, char* buff, size_t buffsiz);
+ssize_t gfal_readlink(const char *url, char *buff, size_t buffsiz);
 
 /**
  * @brief create a symbolic link
@@ -164,7 +167,7 @@ ssize_t gfal_readlink(const char* url, char* buff, size_t buffsiz);
  * @return This routine return 0 if the operation was successful, or -1 if error occured.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-int gfal_symlink(const char* oldurl, const char * newurl);
+int gfal_symlink(const char *oldurl, const char *newurl);
 
 /**
  * @brief unlink a file, delete it
@@ -175,7 +178,7 @@ int gfal_symlink(const char* oldurl, const char * newurl);
  * @return This routine return 0 if the operation was successful, or -1 if error occured.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-int gfal_unlink (const char * url);
+int gfal_unlink(const char *url);
 
 /**
  * @brief create a directory
@@ -187,7 +190,7 @@ int gfal_unlink (const char * url);
  * @return This routine return 0 if the operation was successful, or -1 if error occured.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-int gfal_mkdir (const char * url, mode_t mode);
+int gfal_mkdir(const char *url, mode_t mode);
 
 /**
  * @brief open a directory
@@ -198,7 +201,7 @@ int gfal_mkdir (const char * url, mode_t mode);
  * @return This routine return a directory descriptor if the operation was successful, or -1 if error occured.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-DIR *gfal_opendir (const char * url);
+DIR *gfal_opendir(const char *url);
 
 /**
  * @brief read a directory
@@ -212,7 +215,7 @@ DIR *gfal_opendir (const char * url);
  *   or  if error occured.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-struct dirent *gfal_readdir (DIR * d);
+struct dirent *gfal_readdir(DIR *d);
 
 /**
  * @brief close a directory
@@ -223,7 +226,7 @@ struct dirent *gfal_readdir (DIR * d);
  * @return This routine return 0 if the operation was successful, or -1 if error occured.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-int gfal_closedir (DIR * d);
+int gfal_closedir(DIR *d);
 
 /**
  * @brief delete a directory
@@ -234,7 +237,7 @@ int gfal_closedir (DIR * d);
  * @return This routine return 0 if the operation was successful, or -1 if error occured.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-int gfal_rmdir (const char * url);
+int gfal_rmdir(const char *url);
 
 /**
  *  @brief creat a file
@@ -248,7 +251,7 @@ int gfal_rmdir (const char * url);
  *  or -1 if error occured.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-int gfal_creat (const char * url , mode_t mode);
+int gfal_creat(const char *url, mode_t mode);
 
 /**
  * @brief open a file
@@ -295,7 +298,7 @@ int gfal_creat (const char * url , mode_t mode);
  *  or -1 if error occured.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-int gfal_open(const char * url, int flags, ...);
+int gfal_open(const char *url, int flags, ...);
 
 /**
  * @brief reposition read/write file offset
@@ -309,7 +312,7 @@ int gfal_open(const char * url, int flags, ...);
  *  or -1 if error occured.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-off_t gfal_lseek (int fd , off_t off , int flags );
+off_t gfal_lseek(int fd, off_t off, int flags);
 
 /**
  * @brief close a gfal file descriptor
@@ -321,7 +324,7 @@ off_t gfal_lseek (int fd , off_t off , int flags );
  *  or -1 if error occured.
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-int gfal_close (int fd);
+int gfal_close(int fd);
 
 /**
  * @brief read  from a gfal file descriptor
@@ -338,7 +341,7 @@ int gfal_close (int fd);
  *   see @ref gfal_posix_check_error() for error management
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-ssize_t gfal_read (int fd , void * buff , size_t size);
+ssize_t gfal_read(int fd, void *buff, size_t size);
 
 /**
  * @brief write  from a gfal file descriptor
@@ -352,7 +355,7 @@ ssize_t gfal_read (int fd , void * buff , size_t size);
  *   In case of errors, -1 is returned
  *   see @ref gfal_posix_check_error() for error management
  */
-ssize_t gfal_write (int fd , const void * buff , size_t size);
+ssize_t gfal_write(int fd, const void *buff, size_t size);
 
 /**
  * @brief flush the given file descriptor
@@ -392,7 +395,7 @@ int gfal_flush(int fd);
  *   see @ref gfal_posix_check_error() for error management
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-ssize_t gfal_pread(int fd, void * buff, size_t size, off_t offset);
+ssize_t gfal_pread(int fd, void *buff, size_t size, off_t offset);
 
 /**
  * @brief parallel write from a gfal file descriptor
@@ -418,7 +421,7 @@ ssize_t gfal_pread(int fd, void * buff, size_t size, off_t offset);
  *   see @ref gfal_posix_check_error() for error management
  *  In case of errors, see @ref gfal_posix_check_error() for error management
  */
-ssize_t gfal_pwrite(int fd, const void * buff, size_t size, off_t offset);
+ssize_t gfal_pwrite(int fd, const void *buff, size_t size, off_t offset);
 
 /**
  * @brief retrieve an extended attribute value
@@ -439,8 +442,8 @@ ssize_t gfal_pwrite(int fd, const void * buff, size_t size, off_t offset);
  *   In case of errors, -1 is returned
  *   see @ref gfal_posix_check_error() for error management
  */
-ssize_t gfal_getxattr (const char *url, const char *name,
-                        void *value, size_t size);
+ssize_t gfal_getxattr(const char *url, const char *name,
+    void *value, size_t size);
 
 /**
  * @brief retrieve a list of the extended attributes availables
@@ -455,7 +458,7 @@ ssize_t gfal_getxattr (const char *url, const char *name,
  *   In case of errors, -1 is returned
  *   see @ref gfal_posix_check_error() for error management
  */
-ssize_t gfal_listxattr (const char *url, char *list, size_t size);
+ssize_t gfal_listxattr(const char *url, char *list, size_t size);
 
 /**
  * @brief define an extended attribute value
@@ -479,8 +482,8 @@ ssize_t gfal_listxattr (const char *url, char *list, size_t size);
  *   see @ref gfal_posix_check_error() for error management
  */
 
-int gfal_setxattr (const char *url, const char *name,
-			   const void *value, size_t size, int flags);
+int gfal_setxattr(const char *url, const char *name,
+    const void *value, size_t size, int flags);
 
 /**
  * @brief delete a extended attribute value
@@ -503,7 +506,7 @@ int gfal_removexattr(const char *url, const char *name);
  * -> else do nothing
  * @return 0 if no error, 1 else
  */
-int gfal_posix_check_error();
+GFAL2_DEPRECATED_NOALT int gfal_posix_check_error();
 
 /**
  * clear the last error  \
@@ -516,7 +519,7 @@ void gfal_posix_clear_error();
  * and clear it.
  * provided for convenience.
  */
-void gfal_posix_release_error();
+GFAL2_DEPRECATED_NOALT void gfal_posix_release_error();
 
 /**
  * Get the string representation of the last error
@@ -524,13 +527,13 @@ void gfal_posix_release_error();
  * @param s_err : maximum message size
  * @return return pointer to buff_err for convenience
  */
-char* gfal_posix_strerror_r(char* buff_err, size_t s_err);
+char *gfal_posix_strerror_r(char *buff_err, size_t s_err);
 
 /**
  *  display the last error recorded to the standard output,
  *  provided for convenience.
  */
-void gfal_posix_print_error();
+GFAL2_DEPRECATED_NOALT void gfal_posix_print_error();
 
 /**
  * return the code associated with the last error.
@@ -550,7 +553,7 @@ const char *gfal2_version();
  * Allow to do advanced operation ( config, checksum, transfer ) on this context
  * @warning Delete this context leads to undefined behavior.
  */
-gfal2_context_t gfal_posix_get_context();
+gfal2_context_t gfal_posix_get_handle();
 
 /**
 	@}

@@ -102,14 +102,8 @@ typedef int (*plugin_filecopy_bulk_call)(plugin_handle, gfal2_context_t, gfalt_p
         size_t nbfiles, const char* const* src, const char* const* dsts, const char* const* checksums,
         GError** op_error, GError*** file_errors);
 
-/**
- * Prototype for the function that returns the method name
- */
-typedef const char * (*plugin_name_call)();
-
 #ifdef __cplusplus
 }
 #endif // __cplusplus
 
 #endif /* GFAL_TRANSFER_PLUGINS_H_ */
-

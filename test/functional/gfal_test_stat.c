@@ -15,11 +15,13 @@ int main(int argc, char **argv)
 
 	if (argc != 2) {
 		fprintf (stderr, "usage: %s filename\n", argv[0]);
-		exit (1);
+		return 1;
 	}
-	if (gfal_stat (argv[1], &statbuf) < 0) {
-		gfal_posix_check_error();
-		exit (1);
+	if (gfal_stat(argv[1], &statbuf) < 0) {
+		char errbuf[512];
+		gfal_posix_strerror_r(errbuf, sizeof(errbuf));
+		printf("%s\n", errbuf);
+		return 1;
 	}
 	printf ("stat successful\n");
 	printf ("mode = %o\n", statbuf.st_mode);

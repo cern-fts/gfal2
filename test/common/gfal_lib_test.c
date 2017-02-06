@@ -69,7 +69,7 @@ int generate_file_if_not_exists(gfal2_context_t handle, const char* surl,
 }
 
 
-/* Everything that links agains this will, automatically,
+/* Everything that links against this will, automatically,
  * setup the segfault handler
  */
 #define MAX_STACK_DEPTH 25
@@ -112,7 +112,9 @@ int clean_file(const char* surl)
 {
     if (gfal_unlink(surl) < 0) {
         if (gfal_posix_code_error() != ENOENT) {
-            gfal_posix_check_error();
+            char errbuf[512];
+            gfal_posix_strerror_r(errbuf, sizeof(errbuf));
+            printf("%s\n", errbuf);
             g_assert_not_reached();
         }
     }
