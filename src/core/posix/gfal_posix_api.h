@@ -39,7 +39,7 @@
 #include <attr/xattr.h>
 #endif
 
-#include <global/gfal_global.h>
+#include <common/gfal_common.h>
 #include <common/gfal_constants.h>
 
 #ifdef __cplusplus

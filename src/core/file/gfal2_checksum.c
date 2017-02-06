@@ -18,11 +18,10 @@
  * limitations under the License.
  */
 #include <file/gfal_file_api.h>
-#include <common/gfal_common_internal.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_err_helpers.h>
 #include <logger/gfal_logger.h>
-#include <cancel/gfal_cancel.h>
+#include <common/gfal_cancel.h>
 
 // fiel descriptor checksum calculation
 GQuark gfal_checksum_file_quark()

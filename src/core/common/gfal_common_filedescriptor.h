@@ -21,13 +21,13 @@
 #pragma once
 #ifndef GFAL_COMMON_FILEDESCRIPTOR_H_
 #define GFAL_COMMON_FILEDESCRIPTOR_H_
- 
+
 #include <glib.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <common/gfal_prototypes.h>
 #include <common/gfal_constants.h>
-#include <fdesc/gfal_file_handle.h>
+#include <file/gfal_file_handle.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -36,7 +36,7 @@ extern "C"
 
 struct _gfal_file_descriptor_container{
 	GHashTable* container;
-	pthread_mutex_t m_container;	
+	pthread_mutex_t m_container;
 };
 
 struct _gfal_file_handle_{
@@ -44,7 +44,7 @@ struct _gfal_file_handle_{
 	GMutex* lock;
 	off_t offset;
 	gpointer ext_data;
-	gpointer fdesc;	
+	gpointer fdesc;
     gchar* path;
 };
 

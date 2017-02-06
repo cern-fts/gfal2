@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 
 # Sources needed for the core library
 file (GLOB src_cancel     "cancel/*.c*")
-file (GLOB src_common     "common/*.c" "common/future/*.c")
+file (GLOB src_common     "common/*.c" "future/*.c")
 file (GLOB src_config     "config/*.c")
 file (GLOB src_exceptions "exceptions/*.c*")
 file (GLOB src_gconfig    "g_config_manager/*.c*")
@@ -53,7 +53,7 @@ install (FILES ${CMAKE_CURRENT_BINARY_DIR}/gfal2.pc DESTINATION ${PKGCONFIG_FILE
 # Install development headers
 install (FILES "gfal_api.h" "gfal_plugins_api.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/)
-install (FILES "cancel/gfal_cancel.h"
+install (FILES "common/gfal_cancel.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/cancel)
 install (FILES "logger/gfal_logger.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/logger)
@@ -67,7 +67,7 @@ install (FILES "common/gfal_constants.h"
                "common/gfal_deprecated.h"
                "common/gfal_common_err_helpers.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/common)
-install (FILES "global/gfal_global.h"
+install (FILES "common/gfal_common.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/global)
 install (FILES "config/gfal_config.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/config)
@@ -75,7 +75,7 @@ install (FILES "g_config_manager/g_config_manager.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/g_config_manager)
 install (FILES "file/gfal_file_api.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/file)
-install (FILES "fdesc/gfal_file_handle.h"
+install (FILES "file/gfal_file_handle.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/fdesc)
 
 # Transfer library

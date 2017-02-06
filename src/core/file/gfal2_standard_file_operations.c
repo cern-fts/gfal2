@@ -20,17 +20,16 @@
 
 #include <file/gfal_file_api.h>
 
-#include <common/future/glib.h>
+#include <future/glib.h>
 #include <common/gfal_constants.h>
 #include <common/gfal_types.h>
-#include <common/gfal_common_internal.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_err_helpers.h>
 #include <logger/gfal_logger.h>
-#include <cancel/gfal_cancel.h>
+#include <common/gfal_cancel.h>
 
 //
-// Mapping for the gfal 2.0 standard opeations of the file interface
+// Mapping for the gfal 2.0 standard operations of the file interface
 //
 // @author : Devresse Adrien
 //

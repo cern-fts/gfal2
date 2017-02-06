@@ -34,7 +34,7 @@ extern "C" {
 int gfal_compare_checksums(const char* chk1, const char* chk2, size_t len);
 
 
-// md5 checksum camculation
+// md5 checksum calculation
 
 typedef unsigned int gfal2_md5_u32plus;
 

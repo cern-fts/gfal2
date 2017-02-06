@@ -18,9 +18,9 @@
  * limitations under the License.
  */
 
-#include "global/gfal_global.h"
+#include "common/gfal_common.h"
 #include "g_config_manager.h"
-#include "common/future/glib.h"
+#include "future/glib.h"
 
 struct _GConfigManager {
     GList* configs;

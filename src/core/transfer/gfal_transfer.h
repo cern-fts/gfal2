@@ -28,7 +28,7 @@
 
 
 #include <transfer/gfal_transfer_types.h>
-#include <global/gfal_global.h>
+#include <common/gfal_common.h>
 #include <logger/gfal_logger.h>
 #include <common/gfal_constants.h>
 

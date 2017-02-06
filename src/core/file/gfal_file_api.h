@@ -38,7 +38,7 @@
 #endif
 #include <glib.h>
 
-#include <global/gfal_global.h>
+#include <common/gfal_common.h>
 #include <common/gfal_constants.h>
 
 #ifdef __cplusplus

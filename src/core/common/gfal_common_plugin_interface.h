@@ -29,7 +29,7 @@
 #include <glib.h>
 #include <common/gfal_prototypes.h>
 #include <common/gfal_constants.h>
-#include <global/gfal_global.h>
+#include <common/gfal_common.h>
 #include <transfer/gfal_transfer_types.h>
 #include <sys/stat.h>
 

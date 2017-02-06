@@ -28,7 +28,6 @@
 
 #include <config/gfal_config_internal.h>
 #include <common/gfal_common_err_helpers.h>
-#include <common/gfal_common_internal.h>
 #include <logger/gfal_logger.h>
 
 #ifndef GFAL_CONFIG_DIR_DEFAULT

@@ -27,7 +27,7 @@
 #endif
 
 #include <glib.h>
-#include <global/gfal_global.h>
+#include <common/gfal_common.h>
 
 #ifdef __cplusplus
 extern "C"

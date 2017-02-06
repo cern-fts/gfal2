@@ -22,13 +22,12 @@
 
 #include <common/gfal_constants.h>
 #include <common/gfal_types.h>
-#include <common/gfal_common_internal.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_filedescriptor.h>
 #include <common/gfal_common_file_handle.h>
 #include <logger/gfal_logger.h>
-#include <cancel/gfal_cancel.h>
+#include <common/gfal_cancel.h>
 
 //
 // Mapping for the gfal 2.0  open/read/write/close opeations of the file interface

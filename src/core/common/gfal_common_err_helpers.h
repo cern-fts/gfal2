@@ -24,7 +24,7 @@
 
 #include <errno.h>
 #include <glib.h>
-#include <global/gfal_global.h>
+#include <common/gfal_common.h>
 
 #if !defined(__GFAL2_H_INSIDE__) && !defined(__GFAL2_BUILD__)
 #   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"

@@ -27,7 +27,6 @@
 #include <common/gfal_prototypes.h>
 #include <common/gfal_types.h>
 #include <common/gfal_common_plugin.h>
-#include <common/gfal_common_internal.h>
 
 #include "gfal_posix_internal.h"
 
@@ -39,7 +38,7 @@ static __thread GError* last_error = NULL;
 
 static void gfal_posix_free_handle(void)
 {
-    gfal_handle_freeG(handle);
+    gfal2_context_free(handle);
 }
 
 
@@ -48,7 +47,7 @@ gfal2_context_t gfal_posix_instance()
     if (handle == NULL) {
         pthread_mutex_lock(&m_instance);
         if (handle == NULL) {
-            handle = gfal_initG(&last_error);
+            handle = gfal2_context_new(&last_error);
         }
         atexit(gfal_posix_free_handle);
         pthread_mutex_unlock(&m_instance);

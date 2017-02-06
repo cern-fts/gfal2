@@ -30,7 +30,7 @@
 #endif
 
 /* global context operations */
-#include <global/gfal_global.h>
+#include <common/gfal_common.h>
 
 /* parameter and configuration API */
 #include <config/gfal_config.h>
@@ -42,9 +42,9 @@
 #include <file/gfal_file_api.h>
 
 /* operation control API */
-#include <cancel/gfal_cancel.h>
+#include <common/gfal_cancel.h>
 
-/* gfal 1 compatibility layer */
+/* posix compatibility layer */
 #include <posix/gfal_posix_api.h>
 
 /* transfers*/
