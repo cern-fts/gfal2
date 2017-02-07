@@ -184,7 +184,6 @@ gpointer GConfigFunction_get_string(GKeyFile* keyfile, gpointer userdata,
 gchar * g_config_manager_get_string(GConfigManager_t config_manager,
         const gchar *group_name, const gchar *key, GError **error)
 {
-
     struct ConfigFuncArgs args = { .group_name = group_name, .key = key };
     return (char*) g_config_manager_find_first_valid(config_manager,
             &GConfigFunction_get_string, &args, error);

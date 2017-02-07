@@ -56,30 +56,13 @@ struct _gfal_descriptors_container{
 
 };
 
-typedef struct _gfal_conf_elem{
-	GKeyFile * key_file;
-} *gfal_conf_elem_t;
-
-typedef struct _gfal_conf{
-	GMutex* mux;
-    GKeyFile* running_config;
-    GConfigManager_t static_manager;
-    GConfigManager_t running_manager;
-} *gfal_conf_t;
-
-
-typedef struct _gfal_key_value {
-    char *key, *value;
-}* gfal_key_value_t;
-
-
-struct gfal_handle_ {		// define the protocol version of SRM chosen by default
-	gboolean initiated; 					// 1 if initiated, else error
+struct gfal_handle_ {
+	gboolean initiated;
 	// struct of the plugin opts
 	struct _plugin_opts plugin_opt;
 	//struct for the file descriptors
 	gfal_descriptors_container fdescs;
-	gfal_conf_t conf;
+	GConfigManager_t conf;
     // cancel logic
     volatile gint running_ops;
     gboolean cancel;

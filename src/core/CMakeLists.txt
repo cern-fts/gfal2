@@ -69,7 +69,7 @@ install (FILES "common/gfal_constants.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/common)
 install (FILES "common/gfal_common.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/global)
-install (FILES "config/gfal_config.h"
+install (FILES "common/gfal_config.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/config)
 install (FILES "g_config_manager/g_config_manager.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/g_config_manager)

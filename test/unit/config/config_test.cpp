@@ -23,7 +23,7 @@ public:
 // Regression test for DMC-833
 TEST_F(ConfigFixture, ClientData)
 {
-    GError* error = NULL;
+    GError *error = NULL;
     int ret = 0;
 
     ret = gfal2_add_client_info(context, "TEST", "VALUE", &error);
@@ -43,4 +43,35 @@ TEST_F(ConfigFixture, ClientData)
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
 
     EXPECT_STRCASEEQ(value, "REPLACED");
+}
+
+
+TEST_F(ConfigFixture, String)
+{
+    GError *error = NULL;
+    int ret = 0;
+
+    ret = gfal2_set_opt_string(context, "GROUP1", "KEY2", "MYVALUE3", &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    gchar *value = gfal2_get_opt_string(context, "GROUP1", "KEY2", &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    EXPECT_EQ(0, strncmp(value, "MYVALUE3", 8));
+    g_free(value);
+}
+
+
+TEST_F(ConfigFixture, Integer)
+{
+    GError *error = NULL;
+    int ret = 0;
+
+    ret = gfal2_set_opt_integer(context, "GROUP1", "KEY2", 43215, &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    int value = gfal2_get_opt_integer(context, "GROUP1", "KEY2", &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    EXPECT_EQ(43215, value);
 }

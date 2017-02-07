@@ -24,14 +24,10 @@
 
 #include <common/gfal_prototypes.h>
 #include <common/gfal_types.h>
-#include <config/gfal_config.h>
+#include <common/gfal_config.h>
 
 // create or delete configuration manager for gfal 2.0, internal
-gfal_conf_t gfal_conf_new();
-
-void gfal_conf_delete(gfal_conf_t conf);
-
-GQuark gfal_quark_config_loader();
+GConfigManager_t gfal2_init_config(GError **err);
 
 void gfal_free_keyvalue(gpointer data, gpointer user_data);
 

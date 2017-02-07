@@ -33,7 +33,7 @@
 #include <common/gfal_common.h>
 
 /* parameter and configuration API */
-#include <config/gfal_config.h>
+#include <common/gfal_config.h>
 
 /* log  API */
 #include <logger/gfal_logger.h>

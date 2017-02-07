@@ -25,7 +25,6 @@
 #include <davix.hpp>
 #include <errno.h>
 #include <common/gfal_common_err_helpers.h>
-#include <config/gfal_config.h>
 #include <logger/gfal_logger.h>
 
 using namespace Davix;
