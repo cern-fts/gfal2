@@ -46,65 +46,63 @@ static char* mempcpy(char* dst, const char* src, size_t len)
 #endif
 
 
-inline static int gfal_rw_dir_handle_store(gfal2_context_t handle,
-        gfal_file_handle fhandle, GError** err)
+static int gfal_rw_dir_handle_store(gfal2_context_t handle,
+    gfal_file_handle fhandle, GError **err)
 {
     g_return_val_err_if_fail(handle && fhandle, 0, err,
-            "[gfal_rw_dir_handle_store] handle invalid");
-    GError* tmp_err = NULL;
+        "[gfal_rw_dir_handle_store] handle invalid");
+    GError *tmp_err = NULL;
     int key = 0;
-    gfal_fdesc_container_handle container = gfal_dir_handle_container_instance(
-            &(handle->fdescs), &tmp_err);
-    if (container)
+    gfal_fdesc_container_handle container = gfal_dir_handle_container_instance(&(handle->fdescs), &tmp_err);
+    if (container) {
         key = gfal_add_new_file_desc(container, (gpointer) fhandle, &tmp_err);
+    }
     G_RETURN_ERR(key, tmp_err, err);
 }
 
 
-DIR* gfal2_opendir(gfal2_context_t handle, const char* name, GError ** err)
+DIR *gfal2_opendir(gfal2_context_t handle, const char *name, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     gfal_file_handle ret = NULL;
     GFAL2_BEGIN_SCOPE_CANCEL(handle, NULL, err);
     if (name == NULL || handle == NULL) {
-        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT,
-                "uri  or/and handle are NULL");
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "uri  or/and handle are NULL");
     }
     else {
         ret = gfal_plugin_opendirG(handle, name, &tmp_err);
     }
 
     int key = 0;
-    if (ret)
+    if (ret) {
         key = gfal_rw_dir_handle_store(handle, ret, &tmp_err);
+    }
     GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(GINT_TO_POINTER(key), tmp_err, err);
 }
 
 
-inline static struct dirent* gfal_rw_gfalfilehandle_readdir(
-        gfal2_context_t handle, gfal_file_handle fh, GError** err)
+static struct dirent *gfal_rw_gfalfilehandle_readdir(gfal2_context_t handle, gfal_file_handle fh, GError **err)
 {
-    g_return_val_err_if_fail(handle && fh, NULL, err,
-            "[gfal_posix_gfalfilehandle_readdir] incorrect args");
+    g_return_val_err_if_fail(handle && fh, NULL, err, "[gfal_posix_gfalfilehandle_readdir] incorrect args");
     GError *tmp_err = NULL;
-    struct dirent* ret = gfal_plugin_readdirG(handle, fh, &tmp_err);
+    struct dirent *ret = gfal_plugin_readdirG(handle, fh, &tmp_err);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
-struct dirent* gfal2_readdir(gfal2_context_t handle, DIR* dir, GError ** err)
+struct dirent *gfal2_readdir(gfal2_context_t handle, DIR *dir, GError **err)
 {
-    GError* tmp_err = NULL;
-    struct dirent* res = NULL;
+    GError *tmp_err = NULL;
+    struct dirent *res = NULL;
     GFAL2_BEGIN_SCOPE_CANCEL(handle, NULL, err);
     if (dir == NULL || handle == NULL) {
         g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT,
-                "file descriptor or/and handle are NULL");
+            "file descriptor or/and handle are NULL");
     }
     else {
         gfal_fdesc_container_handle container =
-                gfal_dir_handle_container_instance(&(handle->fdescs), &tmp_err);
+            gfal_dir_handle_container_instance(&(handle->fdescs), &tmp_err);
         const int key = GPOINTER_TO_INT(dir);
         gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
         if (fh != NULL) {
@@ -116,7 +114,7 @@ struct dirent* gfal2_readdir(gfal2_context_t handle, DIR* dir, GError ** err)
 }
 
 
-static size_t gfal_rw_get_root_length(const char* surl)
+static size_t gfal_rw_get_root_length(const char *surl)
 {
     regex_t rx;
     regmatch_t matches[1];
@@ -126,17 +124,18 @@ static size_t gfal_rw_get_root_length(const char* surl)
 }
 
 
-inline static struct dirent* gfal_rw_gfalfilehandle_readdirpp(gfal2_context_t context, gfal_file_handle fh, struct stat* st, GError** err)
+static struct dirent *
+gfal_rw_gfalfilehandle_readdirpp(gfal2_context_t context, gfal_file_handle fh, struct stat *st, GError **err)
 {
     g_return_val_err_if_fail(context && fh, NULL, err, "[gfal_posix_gfalfilehandle_readdirpp] incorrect args");
-    GError *tmp_err=NULL;
-    struct dirent* ret = gfal_plugin_readdirppG(context, fh, st, &tmp_err);
+    GError *tmp_err = NULL;
+    struct dirent *ret = gfal_plugin_readdirppG(context, fh, st, &tmp_err);
 
     // try to simulate readdirpp
-    if (tmp_err && tmp_err->code == EPROTONOSUPPORT && fh->path != NULL ) {
+    if (tmp_err && tmp_err->code == EPROTONOSUPPORT && fh->path != NULL) {
         g_clear_error(&tmp_err);
         ret = gfal_rw_gfalfilehandle_readdir(context, fh, &tmp_err);
-        if (!tmp_err && ret != NULL ) {
+        if (!tmp_err && ret != NULL) {
             char *url = NULL;
 
             if (ret->d_name[0] != '/') {
@@ -160,19 +159,18 @@ inline static struct dirent* gfal_rw_gfalfilehandle_readdirpp(gfal2_context_t co
 }
 
 
-struct dirent* gfal2_readdirpp(gfal2_context_t context, DIR* dir,
-        struct stat* st, GError ** err)
+struct dirent *gfal2_readdirpp(gfal2_context_t context, DIR *dir,
+    struct stat *st, GError **err)
 {
-    GError* tmp_err = NULL;
-    struct dirent* res = NULL;
+    GError *tmp_err = NULL;
+    struct dirent *res = NULL;
     GFAL2_BEGIN_SCOPE_CANCEL(context, NULL, err);
     if (dir == NULL || context == NULL) {
         g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT,
-                "file descriptor or/and handle are NULL");
+            "file descriptor or/and handle are NULL");
     }
     else {
-        gfal_fdesc_container_handle container =
-                gfal_dir_handle_container_instance(&(context->fdescs), &tmp_err);
+        gfal_fdesc_container_handle container = gfal_dir_handle_container_instance(&(context->fdescs), &tmp_err);
         const int key = GPOINTER_TO_INT(dir);
         gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
         if (fh != NULL) {
@@ -185,10 +183,10 @@ struct dirent* gfal2_readdirpp(gfal2_context_t context, DIR* dir,
 
 
 static int gfal_rw_dir_handle_delete(gfal_fdesc_container_handle container,
-        int key, GError** err)
+    int key, GError **err)
 {
     g_return_val_err_if_fail(container, -1, err,
-            "[gfal_posix_dir_handle_delete] invalid args");
+        "[gfal_posix_dir_handle_delete] invalid args");
     GError *tmp_err = NULL;
     int ret = -1;
     if (container) {
@@ -199,28 +197,28 @@ static int gfal_rw_dir_handle_delete(gfal_fdesc_container_handle container,
 
 
 static int gfal_rw_dir_handle_close(gfal2_context_t handle, gfal_file_handle fh,
-        GError** err)
+    GError **err)
 {
     g_return_val_err_if_fail(handle && fh, -1, err,
-            "[gfal_posix_gfalfilehandle_close] invalid args");
+        "[gfal_posix_gfalfilehandle_close] invalid args");
     GError *tmp_err = NULL;
     int ret = gfal_plugin_closedirG(handle, fh, &tmp_err);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
 
-int gfal2_closedir(gfal2_context_t handle, DIR* d, GError ** err)
+int gfal2_closedir(gfal2_context_t handle, DIR *d, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     int ret = -1;
 
     if (d == NULL || handle == NULL) {
         g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT,
-                "file descriptor or/and handle are NULL");
+            "file descriptor or/and handle are NULL");
     }
     else {
         gfal_fdesc_container_handle container =
-                gfal_dir_handle_container_instance(&(handle->fdescs), &tmp_err);
+            gfal_dir_handle_container_instance(&(handle->fdescs), &tmp_err);
         int key = GPOINTER_TO_INT(d);
         gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
         if (fh != NULL) {

@@ -35,26 +35,26 @@
 //
 //
 
-int gfal2_access(gfal2_context_t context, const char *url, int amode, GError** err)
+int gfal2_access(gfal2_context_t context, const char *url, int amode, GError **err)
 {
     int res = -1;
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
 
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (url == NULL || context == NULL) {
         g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context or/and url are incorrect arguments");
     }
     else {
-        res = gfal_plugins_accessG(context, (char*) url, amode, &tmp_err);
+        res = gfal_plugins_accessG(context, (char *) url, amode, &tmp_err);
     }
     GFAL2_END_SCOPE_CANCEL(context);
     G_RETURN_ERR(res, tmp_err, err);
 }
 
 
-int gfal2_chmod(gfal2_context_t context, const char* url, mode_t mode, GError ** err)
+int gfal2_chmod(gfal2_context_t context, const char *url, mode_t mode, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     int res = -1;
 
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
@@ -69,9 +69,9 @@ int gfal2_chmod(gfal2_context_t context, const char* url, mode_t mode, GError **
 }
 
 
-int gfal2_rename(gfal2_context_t context, const char *oldurl, const char *newurl, GError ** err)
+int gfal2_rename(gfal2_context_t context, const char *oldurl, const char *newurl, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     int res = -1;
 
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
@@ -86,9 +86,9 @@ int gfal2_rename(gfal2_context_t context, const char *oldurl, const char *newurl
 }
 
 
-int gfal2_stat(gfal2_context_t context, const char* url, struct stat* buff, GError ** err)
+int gfal2_stat(gfal2_context_t context, const char *url, struct stat *buff, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (url == NULL || context == NULL || buff == NULL) {
@@ -102,9 +102,9 @@ int gfal2_stat(gfal2_context_t context, const char* url, struct stat* buff, GErr
 }
 
 
-int gfal2_lstat(gfal2_context_t context, const char* url, struct stat* buff, GError ** err)
+int gfal2_lstat(gfal2_context_t context, const char *url, struct stat *buff, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (url == NULL || context == NULL || buff == NULL) {
@@ -124,9 +124,9 @@ int gfal2_lstat(gfal2_context_t context, const char* url, struct stat* buff, GEr
 }
 
 
-int gfal2_mkdir(gfal2_context_t context, const char* url, mode_t mode, GError ** err)
+int gfal2_mkdir(gfal2_context_t context, const char *url, mode_t mode, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (url == NULL || context == NULL) {
@@ -140,10 +140,10 @@ int gfal2_mkdir(gfal2_context_t context, const char* url, mode_t mode, GError **
 }
 
 
-int gfal2_mkdir_rec(gfal2_context_t context, const char* url, mode_t mode,
-        GError ** err)
+int gfal2_mkdir_rec(gfal2_context_t context, const char *url, mode_t mode,
+    GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (url == NULL || context == NULL) {
@@ -158,16 +158,16 @@ int gfal2_mkdir_rec(gfal2_context_t context, const char* url, mode_t mode,
             }
             else if (tmp_err->code == ENOENT) {
                 gfal2_log(G_LOG_LEVEL_DEBUG, "execute recusive directory creation for %s", url);
-                GList* stack_url = NULL;
+                GList *stack_url = NULL;
                 char current_url[GFAL_URL_MAX_LEN];
                 g_strlcpy(current_url, url, GFAL_URL_MAX_LEN);
 
                 while (tmp_err && tmp_err->code == ENOENT) {
                     stack_url = g_list_prepend(stack_url,
-                            g_strdup(current_url));
+                        g_strdup(current_url));
                     g_clear_error(&tmp_err);
                     const size_t s_url = strlen(current_url);
-                    char* p_url = current_url + s_url - 1;
+                    char *p_url = current_url + s_url - 1;
                     while (p_url > current_url && *p_url == '/') { // remove trailing '/'
                         *p_url = '\0';
                         p_url--;
@@ -179,7 +179,7 @@ int gfal2_mkdir_rec(gfal2_context_t context, const char* url, mode_t mode,
                         *p_url = '\0';
 
                         res = gfal_plugin_mkdirp(context, current_url, mode,
-                                FALSE, &tmp_err);
+                            FALSE, &tmp_err);
                         if (res == 0) {
                             gfal2_log(G_LOG_LEVEL_DEBUG, "create directory %s", current_url);
                         }
@@ -189,13 +189,13 @@ int gfal2_mkdir_rec(gfal2_context_t context, const char* url, mode_t mode,
 
                 if (!tmp_err) {
                     res = 0;
-                    GList* tmp_list = stack_url;
+                    GList *tmp_list = stack_url;
                     while (tmp_list != NULL && res == 0) {
-                        res = gfal_plugin_mkdirp(context, (char*) tmp_list->data, mode, FALSE, &tmp_err);
+                        res = gfal_plugin_mkdirp(context, (char *) tmp_list->data, mode, FALSE, &tmp_err);
                         if (res == 0) {
                             gfal2_log(G_LOG_LEVEL_DEBUG, "create directory %s", current_url);
                         }
-                        // Due to a race condition, maybe someone else created the directory
+                            // Due to a race condition, maybe someone else created the directory
                         else if (tmp_err->code == EEXIST) {
                             res = 0;
                             g_clear_error(&tmp_err);
@@ -214,9 +214,9 @@ int gfal2_mkdir_rec(gfal2_context_t context, const char* url, mode_t mode,
 }
 
 
-int gfal2_rmdir(gfal2_context_t context, const char* url, GError ** err)
+int gfal2_rmdir(gfal2_context_t context, const char *url, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (url == NULL || context == NULL) {
@@ -230,13 +230,14 @@ int gfal2_rmdir(gfal2_context_t context, const char* url, GError ** err)
 }
 
 
-int gfal2_symlink(gfal2_context_t context, const char* oldurl, const char * newurl, GError ** err)
+int gfal2_symlink(gfal2_context_t context, const char *oldurl, const char *newurl, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (oldurl == NULL || newurl == NULL || context == NULL) {
-        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "oldurl and/or newurl and/or context are incorrect arguments");
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT,
+            "oldurl and/or newurl and/or context are incorrect arguments");
     }
     else {
         res = gfal_plugin_symlinkG(context, oldurl, newurl, &tmp_err);
@@ -246,14 +247,15 @@ int gfal2_symlink(gfal2_context_t context, const char* oldurl, const char * newu
 }
 
 
-ssize_t gfal2_getxattr(gfal2_context_t context, const char *url, const char *name, void *value, size_t size, GError ** err)
+ssize_t
+gfal2_getxattr(gfal2_context_t context, const char *url, const char *name, void *value, size_t size, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     ssize_t res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (url == NULL || context == NULL || name == NULL) {
         g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT,
-                "url or/and context or/and name are incorrect arguments");
+            "url or/and context or/and name are incorrect arguments");
     }
     else {
         res = gfal_plugin_getxattrG(context, url, name, value, size, &tmp_err);
@@ -263,9 +265,9 @@ ssize_t gfal2_getxattr(gfal2_context_t context, const char *url, const char *nam
 }
 
 
-ssize_t gfal2_readlink(gfal2_context_t context, const char* url, char* buff, size_t buffsiz, GError ** err)
+ssize_t gfal2_readlink(gfal2_context_t context, const char *url, char *buff, size_t buffsiz, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     ssize_t res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (url == NULL || buff == NULL || context == NULL) {
@@ -279,9 +281,9 @@ ssize_t gfal2_readlink(gfal2_context_t context, const char* url, char* buff, siz
 }
 
 
-int gfal2_unlink(gfal2_context_t context, const char* url, GError ** err)
+int gfal2_unlink(gfal2_context_t context, const char *url, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     ssize_t res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (url == NULL || context == NULL) {
@@ -295,9 +297,9 @@ int gfal2_unlink(gfal2_context_t context, const char* url, GError ** err)
 }
 
 
-ssize_t gfal2_listxattr(gfal2_context_t context, const char *url, char *list, size_t size, GError ** err)
+ssize_t gfal2_listxattr(gfal2_context_t context, const char *url, char *list, size_t size, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     ssize_t res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (url == NULL || context == NULL) {
@@ -312,27 +314,30 @@ ssize_t gfal2_listxattr(gfal2_context_t context, const char *url, char *list, si
 }
 
 
-int gfal2_setxattr(gfal2_context_t context, const char *url, const char *name, const void *value, size_t size, int flags, GError ** err)
+int
+gfal2_setxattr(gfal2_context_t context, const char *url, const char *name, const void *value, size_t size, int flags,
+    GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (url == NULL || name == NULL || context == NULL) {
-        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "url or/and name or/and context are an incorrect arguments");
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT,
+            "url or/and name or/and context are an incorrect arguments");
     }
     else {
         res = gfal_plugin_setxattrG(context, url, name, value, size, flags,
-                &tmp_err);
+            &tmp_err);
     }
     GFAL2_END_SCOPE_CANCEL(context);
     G_RETURN_ERR(res, tmp_err, err);
 }
 
 
-int gfal2_bring_online(gfal2_context_t context, const char* url, time_t pintime,
-        time_t timeout, char* token, size_t tsize, int async, GError ** err)
+int gfal2_bring_online(gfal2_context_t context, const char *url, time_t pintime,
+    time_t timeout, char *token, size_t tsize, int async, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (url == NULL || context == NULL) {
@@ -346,9 +351,9 @@ int gfal2_bring_online(gfal2_context_t context, const char* url, time_t pintime,
 }
 
 
-int gfal2_bring_online_poll(gfal2_context_t context, const char* url, const char* token, GError ** err)
+int gfal2_bring_online_poll(gfal2_context_t context, const char *url, const char *token, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (url == NULL || context == NULL) {
@@ -362,9 +367,9 @@ int gfal2_bring_online_poll(gfal2_context_t context, const char* url, const char
 }
 
 
-int gfal2_release_file(gfal2_context_t context, const char* url, const char* token, GError ** err)
+int gfal2_release_file(gfal2_context_t context, const char *url, const char *token, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (url == NULL || context == NULL) {
@@ -379,8 +384,8 @@ int gfal2_release_file(gfal2_context_t context, const char* url, const char* tok
 
 
 int gfal2_bring_online_list(gfal2_context_t context, int nbfiles,
-        const char* const* urls, time_t pintime, time_t timeout, char* token,
-        size_t tsize, int async, GError ** errors)
+    const char *const *urls, time_t pintime, time_t timeout, char *token,
+    size_t tsize, int async, GError **errors)
 {
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, errors);
@@ -401,7 +406,7 @@ int gfal2_bring_online_list(gfal2_context_t context, int nbfiles,
 
 
 int gfal2_bring_online_poll_list(gfal2_context_t context, int nbfiles,
-        const char* const * urls, const char* token, GError ** errors)
+    const char *const *urls, const char *token, GError **errors)
 {
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, errors);
@@ -421,7 +426,8 @@ int gfal2_bring_online_poll_list(gfal2_context_t context, int nbfiles,
 }
 
 
-int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char* const* urls, const char* token, GError ** errors)
+int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char *const *urls, const char *token,
+    GError **errors)
 {
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, errors);
@@ -441,14 +447,15 @@ int gfal2_release_file_list(gfal2_context_t context, int nbfiles, const char* co
 }
 
 
-int gfal2_unlink_list(gfal2_context_t context, int nbfiles, const char* const* urls, GError ** errors)
+int gfal2_unlink_list(gfal2_context_t context, int nbfiles, const char *const *urls, GError **errors)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     int res = 0;
 
-    if(urls == NULL || *urls == NULL || context == NULL) {
-       g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "urls or/and name or/and context are an incorrect arguments");
-       res = -1;
+    if (urls == NULL || *urls == NULL || context == NULL) {
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT,
+            "urls or/and name or/and context are an incorrect arguments");
+        res = -1;
     }
     else {
         res = gfal2_start_scope_cancel(context, &tmp_err);
@@ -468,9 +475,9 @@ int gfal2_unlink_list(gfal2_context_t context, int nbfiles, const char* const* u
     return res;
 }
 
-int gfal2_abort_files(gfal2_context_t context, int nbfiles, const char* const* urls, const char* token, GError ** err)
+int gfal2_abort_files(gfal2_context_t context, int nbfiles, const char *const *urls, const char *token, GError **err)
 {
-    GError* tmp_err = NULL;
+    GError *tmp_err = NULL;
     int res = -1;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (urls == NULL || *urls == NULL || context == NULL) {
@@ -480,5 +487,29 @@ int gfal2_abort_files(gfal2_context_t context, int nbfiles, const char* const* u
         res = gfal_plugin_abort_filesG(context, nbfiles, urls, token, err);
     }
     GFAL2_END_SCOPE_CANCEL(context);
+    G_RETURN_ERR(res, tmp_err, err);
+}
+
+int gfal2_checksum(gfal2_context_t handle, const char *url, const char *check_type,
+    off_t start_offset, size_t data_length,
+    char *checksum_buffer, size_t buffer_length, GError **err)
+{
+    if (!(handle != NULL && url != NULL && check_type != NULL
+          && checksum_buffer != NULL && buffer_length != 0)) {
+        g_set_error(err, gfal2_get_core_quark(), EFAULT, "Invalid parameters to %s", __func__);
+        return -1;
+    }
+
+    GFAL2_BEGIN_SCOPE_CANCEL(handle, -1, err);
+    int res = -1;
+    GError *tmp_err = NULL;
+    gfal_plugin_interface *p = gfal_find_plugin(handle, url, GFAL_PLUGIN_CHECKSUM, &tmp_err);
+
+    if (p) {
+        res = p->checksum_calcG(gfal_get_plugin_handle(p), url, check_type, checksum_buffer, buffer_length,
+            start_offset,
+            data_length, &tmp_err);
+    }
+    GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(res, tmp_err, err);
 }

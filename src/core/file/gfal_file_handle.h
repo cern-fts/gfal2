@@ -36,8 +36,6 @@ extern "C"
 {
 #endif
 
-// convenience funcs
-
 /**
 * @brief create a gfal file handle
 * @param module_name : module name must be the plugin_name of the plugin creating the gfal_file_handle, \ref _gfal_plugin_interface
