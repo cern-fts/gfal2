@@ -30,8 +30,9 @@
 #include <common/gfal_prototypes.h>
 #include <common/gfal_constants.h>
 #include <common/gfal_common.h>
-#include <transfer/gfal_transfer_types.h>
+#include <transfer/gfal_transfer_plugins.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #ifdef __cplusplus
 extern "C"

@@ -19,19 +19,18 @@
  */
 
 #include <common/gfal_common_err_helpers.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <gfal_api.h>
 
-#include "gfal_transfer_types_internal.h"
+#include "gfal_transfer_internal.h"
 
 
-void gfalt_params_handle_init(gfalt_params_t p, GError ** err)
+static void gfalt_params_handle_init(gfalt_params_t p, GError ** err)
 {
     p->lock = FALSE;
-    p->nb_data_streams = GFALT_DEFAULT_NB_STREAM;
-    p->timeout = GFALT_DEFAULT_TRANSFERT_TIMEOUT;
+    p->nb_data_streams = 0;
+    p->timeout = 3600;
     p->start_offset = 0;
     p->tcp_buffer_size = 0;
     p->replace_existing = FALSE;

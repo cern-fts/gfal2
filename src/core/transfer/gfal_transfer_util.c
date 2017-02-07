@@ -23,7 +23,6 @@
 #include <time.h>
 
 #include <transfer/gfal_transfer_internal.h>
-#include <transfer/gfal_transfer_types_internal.h>
 #include <common/gfal_common_err_helpers.h>
 
 

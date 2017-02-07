@@ -20,9 +20,6 @@
 
 #include <ctype.h>
 #include <gfal_plugins_api.h>
-#include <transfer/gfal_transfer.h>
-#include <transfer/gfal_transfer_plugins.h>
-#include <transfer/gfal_transfer_types.h>
 #include "gfal_xrootd_plugin_interface.h"
 #include "gfal_xrootd_plugin_utils.h"
 

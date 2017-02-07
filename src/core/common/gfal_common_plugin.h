@@ -36,7 +36,7 @@
 #include <common/gfal_prototypes.h>
 #include <common/gfal_types.h>
 #include <common/gfal_common_plugin_interface.h>
-#include <transfer/gfal_transfer_types.h>
+#include <transfer/gfal_transfer.h>
 
 
 #define GFAL2_PLUGIN_SCOPE "GFAL2::PLUGIN"

@@ -27,7 +27,6 @@
 #endif
 
 
-#include <transfer/gfal_transfer_types.h>
 #include <common/gfal_common.h>
 #include <logger/gfal_logger.h>
 #include <common/gfal_constants.h>
@@ -46,6 +45,74 @@ extern "C"
     \addtogroup transfer_group
     @{
 */
+
+
+/**
+ * @brief container for transfer related parameters
+ * */
+typedef struct _gfalt_params_t* gfalt_params_t;
+
+/**
+ * @brief internal status of a copy file action
+ * */
+typedef struct _gfalt_transfer_status* gfalt_transfer_status_t;
+
+/**
+ * @brief copy gfalt_monitor_transfer
+ * This function is called callback_mperiod milli-seconds in order to provide informations and a control on the tranfers.
+ *  @param src : URL of the source file
+ *  @param dst : URL of the dest file
+ *  @param user_data : external pointer provided before
+ * */
+typedef void (*gfalt_monitor_func)(gfalt_transfer_status_t h, const char* src, const char* dst, gpointer user_data);
+
+/**
+ * @brief Predefined stages.
+ */
+extern GQuark GFAL_EVENT_PREPARE_ENTER;   /**< Triggered before entering preparation */
+extern GQuark GFAL_EVENT_PREPARE_EXIT;    /**< Triggered after exiting the preparation */
+extern GQuark GFAL_EVENT_TRANSFER_ENTER;  /**< Triggered before entering the transfer */
+extern GQuark GFAL_EVENT_TRANSFER_EXIT;   /**< Triggered after exiting the transfer */
+extern GQuark GFAL_EVENT_CLOSE_ENTER;     /**< Triggered before entering the closing (putdone) */
+extern GQuark GFAL_EVENT_CLOSE_EXIT;      /**< Triggered after exiting the closing (putdone) */
+extern GQuark GFAL_EVENT_CHECKSUM_ENTER;  /**< Triggered before entering checksum validation */
+extern GQuark GFAL_EVENT_CHECKSUM_EXIT;   /**< Triggered after exiting checksum validation */
+extern GQuark GFAL_EVENT_CANCEL_ENTER;    /**< Triggered before the cancellation logic */
+extern GQuark GFAL_EVENT_CANCEL_EXIT;     /**< Triggered after the cancellation logic */
+extern GQuark GFAL_EVENT_OVERWRITE_DESTINATION; /**< Triggered before overwriting */
+extern GQuark GFAL_EVENT_LIST_ENTER;      /**< Triggered before listing the urls to be transferred */
+extern GQuark GFAL_EVENT_LIST_ITEM;       /**< Triggered once per url pair to be transferred */
+extern GQuark GFAL_EVENT_LIST_EXIT;       /**< Triggered after listing the urls to be transferred */
+
+/** Trigger of the event */
+typedef enum {
+    GFAL_EVENT_SOURCE = 0,  /**< Event triggered by the source */
+    GFAL_EVENT_DESTINATION, /**< Event triggered by the destination */
+    GFAL_EVENT_NONE         /**< Event triggered by the transfer */
+} gfal_event_side_t;
+
+/**
+ * @brief Event message.
+ */
+struct _gfalt_event {
+    gfal_event_side_t side;         /**< Which side triggered the stage change */
+    gint64            timestamp;    /**< Timestamp in milliseconds */
+    GQuark            stage;        /**< Stage. You can check the predefined ones. */
+    GQuark            domain;       /**< Domain/protocol of this stage. i.e. SRM*/
+    const char       *description;  /**< Additional description */
+};
+
+/**
+ * Event message
+ */
+typedef struct _gfalt_event* gfalt_event_t;
+
+/**
+ * This function is called when a transfer changes its stage.
+ * @param e : Event message.
+ * @param user_data : external pointer provided before
+ */
+typedef void (*gfalt_event_func)(const gfalt_event_t e, gpointer user_data);
 
 /**
  * Checksum verification mode
@@ -326,17 +393,6 @@ time_t gfalt_copy_get_elapsed_time(gfalt_transfer_status_t, GError ** err);
     @}
     End of the File Transfer API
 */
-
-/**
- * Create a transfer status struct
- */
-gfalt_transfer_status_t gfalt_transfer_status_create(const gfalt_hook_transfer_plugin_t * hook);
-
-/**
- * Destroy a transfer status struct
- */
-void gfalt_transfer_status_delete(gfalt_transfer_status_t state);
-
 
 #ifdef __cplusplus
 }

@@ -23,13 +23,43 @@
 #define GFAL_TRANSFER_INTERNAL_H_
 
 #include "gfal_transfer.h"
-#include "gfal_transfer_types.h"
-#include "gfal_transfer_types_internal.h"
+#include "gfal_transfer_plugins.h"
+
+struct _gfalt_params_t {
+    gboolean lock;              // lock enabled after the start of the transfer
+    guint64 timeout;            // connexion timeout
+    guint64 tcp_buffer_size;
+    gboolean replace_existing;  // replace destination or not
+    off_t start_offset;         // start offset in case of restart
+    guint nb_data_streams;      // nb of parallels streams
+    gboolean strict_mode;       // state of the strict copy mode
+    gboolean local_transfers;   // local transfer authorized
+    gboolean parent_dir_create; // force the creation of the parent dir
+    // spacetoken management for SRM
+    gchar *src_space_token;
+    gchar *dst_space_token;
+    // checksums
+    gfalt_checksum_mode_t checksum_mode;
+    gchar *checksum_value;
+    gchar *checksum_type;
+
+    // callback lists
+    GSList *monitor_callbacks;
+    GSList *event_callbacks;
+};
 
 
-void gfalt_params_handle_init(gfalt_params_t  handle, GError ** err);
+struct _gfalt_transfer_status {
+    const gfalt_hook_transfer_plugin_t *hook;
+};
+
+
+struct _gfalt_callback_entry {
+    gpointer func, udata;
+    GDestroyNotify udata_free;
+};
 
 int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
-        const char* src, const char* dst, GError** error);
+    const char *src, const char *dst, GError **error);
 
 #endif /* GFAL_TRANSFER_INTERNAL_H_ */

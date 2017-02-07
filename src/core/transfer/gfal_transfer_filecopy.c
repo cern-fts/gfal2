@@ -22,7 +22,6 @@
 #include <common/gfal_common_err_helpers.h>
 #include <transfer/gfal_transfer_plugins.h>
 #include <transfer/gfal_transfer_internal.h>
-#include <transfer/gfal_transfer_types_internal.h>
 #include <common/gfal_cancel.h>
 
 static GQuark scope_copy_domain() {
