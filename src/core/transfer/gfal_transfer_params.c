@@ -449,33 +449,33 @@ gfalt_checksum_mode_t gfalt_get_checksum_mode(gfalt_params_t params, GError **er
 gint gfalt_copy_get_status(gfalt_transfer_status_t s, GError ** err)
 {
     g_return_val_err_if_fail(s != NULL, -1, err, "[BUG] invalid transfer status handle");
-    return s->hook->status;
+    return s->status;
 }
 
 
 size_t gfalt_copy_get_average_baudrate(gfalt_transfer_status_t s, GError ** err)
 {
     g_return_val_err_if_fail(s != NULL, -1, err, "[BUG] invalid transfer status handle");
-    return s->hook->average_baudrate;
+    return s->average_baudrate;
 }
 
 
 size_t gfalt_copy_get_instant_baudrate(gfalt_transfer_status_t s, GError ** err)
 {
     g_return_val_err_if_fail(s != NULL, -1, err, "[BUG] invalid transfer status handle");
-    return s->hook->instant_baudrate;
+    return s->instant_baudrate;
 }
 
 
 size_t gfalt_copy_get_bytes_transfered(gfalt_transfer_status_t s, GError ** err)
 {
     g_return_val_err_if_fail(s != NULL, -1, err, "[BUG] invalid transfer status handle");
-    return s->hook->bytes_transfered;
+    return s->bytes_transfered;
 }
 
 
 time_t gfalt_copy_get_elapsed_time(gfalt_transfer_status_t s, GError ** err)
 {
     g_return_val_err_if_fail(s != NULL, -1, err, "[BUG] invalid transfer status handle");
-    return s->hook->transfer_time;
+    return s->transfer_time;
 }

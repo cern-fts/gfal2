@@ -49,15 +49,11 @@ struct _gfalt_params_t {
 };
 
 
-struct _gfalt_transfer_status {
-    const gfalt_hook_transfer_plugin_t *hook;
-};
-
-
 struct _gfalt_callback_entry {
     gpointer func, udata;
     GDestroyNotify udata_free;
 };
+
 
 int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
     const char *src, const char *dst, GError **error);

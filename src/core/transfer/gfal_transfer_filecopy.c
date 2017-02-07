@@ -153,19 +153,23 @@ static int perform_copy(gfal2_context_t context, gfalt_params_t params, const ch
 
 static int set_checksum(gfalt_params_t params, const char* checksum, GError **err)
 {
+    gfalt_checksum_mode_t mode = gfalt_get_checksum_mode(params, err);
+    if (*err) {
+        return -1;
+    }
     if (checksum == NULL) {
-        return gfalt_set_checksum(params, params->checksum_mode, NULL, NULL, err);
+        return gfalt_set_checksum(params, mode, NULL, NULL, err);
     }
     else {
         const char* colon = strchr(checksum, ':');
         if (colon == NULL) {
-            return gfalt_set_checksum(params, params->checksum_mode, NULL, checksum, err);
+            return gfalt_set_checksum(params, mode, NULL, checksum, err);
         }
         else {
             char chktype[64];
             size_t chktype_len = colon - checksum;
             g_strlcpy(chktype, checksum, chktype_len < 64 ? chktype_len : 64);
-            return gfalt_set_checksum(params, params->checksum_mode, chktype, colon + 1, err);
+            return gfalt_set_checksum(params, mode, chktype, colon + 1, err);
         }
     }
 }
@@ -240,22 +244,6 @@ static int perform_bulk_copy(gfal2_context_t context, gfalt_params_t params,
     if (tmp_err != NULL)
         gfal2_propagate_prefixed_error(op_error, tmp_err, __func__);
     return res;
-}
-
-
-gfalt_transfer_status_t gfalt_transfer_status_create(
-        const gfalt_hook_transfer_plugin_t * hook)
-{
-    gfalt_transfer_status_t state = g_new0(struct _gfalt_transfer_status, 1);
-    state->hook = hook;
-    return state;
-}
-
-
-void gfalt_transfer_status_delete(gfalt_transfer_status_t state)
-{
-    if (state)
-        g_free(state);
 }
 
 

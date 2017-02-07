@@ -183,15 +183,13 @@ void gridftp_bulk_throughput_cb(void *user_specific,
     GridFTPBulkPerformance* pd;
     globus_ftp_client_throughput_plugin_get_user_specific(original->plugin, (void**)(&pd));
 
-    gfalt_hook_transfer_plugin_t hook;
-    hook.bytes_transfered = bytes;
-    hook.average_baudrate = (size_t) avg_throughput;
-    hook.instant_baudrate = (size_t) instantaneous_throughput;
-    hook.transfer_time = (time(NULL) - pd->start_time);
+    _gfalt_transfer_status status;
+    status.bytes_transfered = bytes;
+    status.average_baudrate = (size_t) avg_throughput;
+    status.instant_baudrate = (size_t) instantaneous_throughput;
+    status.transfer_time = (time(NULL) - pd->start_time);
 
-    gfalt_transfer_status_t state = gfalt_transfer_status_create(&hook);
-    plugin_trigger_monitor(pd->params, state, pd->source.c_str(), pd->destination.c_str());
-    gfalt_transfer_status_delete(state);
+    plugin_trigger_monitor(pd->params, &status, pd->source.c_str(), pd->destination.c_str());
 }
 
 

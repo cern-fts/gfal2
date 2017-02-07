@@ -41,7 +41,7 @@ TEST(gfalTransfer, testtimeout){
 	GError * tmp_err=NULL;
 	gfalt_params_t p = gfalt_params_handle_new(&tmp_err);
     ASSERT_TRUE( p != NULL && tmp_err==NULL);
-	long res = gfalt_get_timeout(p, &tmp_err);
+	gfalt_get_timeout(p, &tmp_err);
     ASSERT_TRUE(tmp_err==NULL);
 	guint64  r = (guint64) rand();
 	gfalt_set_timeout(p, r, &tmp_err);
@@ -54,7 +54,7 @@ TEST(gfalTransfer, testnbstream){
 	GError * tmp_err=NULL;
 	gfalt_params_t p = gfalt_params_handle_new(&tmp_err);
     ASSERT_TRUE( p != NULL && tmp_err==NULL);
-	long res = gfalt_get_nbstreams(p, &tmp_err);
+	gfalt_get_nbstreams(p, &tmp_err);
     ASSERT_TRUE(tmp_err==NULL);
 	long  r = rand();
 	gfalt_set_nbstreams(p, r, &tmp_err);

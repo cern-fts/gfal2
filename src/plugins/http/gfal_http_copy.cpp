@@ -208,17 +208,14 @@ static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfDat
     PerfCallbackData* pdata = static_cast<PerfCallbackData*>(data);
     if (pdata)
     {
-        gfalt_hook_transfer_plugin_t hook;
+        _gfalt_transfer_status status;
 
-        hook.average_baudrate = static_cast<size_t>(perfData.avgTransfer());
-        hook.bytes_transfered = static_cast<size_t>(perfData.totalTransferred());
-        hook.instant_baudrate = static_cast<size_t>(perfData.diffTransfer());
-        hook.transfer_time    = perfData.absElapsed();
+        status.average_baudrate = static_cast<size_t>(perfData.avgTransfer());
+        status.bytes_transfered = static_cast<size_t>(perfData.totalTransferred());
+        status.instant_baudrate = static_cast<size_t>(perfData.diffTransfer());
+        status.transfer_time    = perfData.absElapsed();
 
-        gfalt_transfer_status_t state = gfalt_transfer_status_create(&hook);
-        plugin_trigger_monitor(pdata->params, state,
-                pdata->source.c_str(), pdata->destination.c_str());
-        gfalt_transfer_status_delete(state);
+        plugin_trigger_monitor(pdata->params, &status, pdata->source.c_str(), pdata->destination.c_str());
     }
 }
 
@@ -336,7 +333,7 @@ struct HttpStreamProvider {
     int source_fd;
     time_t start, last_update;
     dav_ssize_t read_instant;
-    gfalt_hook_transfer_plugin_t perf;
+    _gfalt_transfer_status perf;
 
     HttpStreamProvider(const char* source, const char* destination,
             gfal2_context_t context, int source_fd, gfalt_params_t params):
@@ -381,9 +378,7 @@ static dav_ssize_t gfal_http_streamed_provider(void *userdata,
             data->last_update = now;
             data->read_instant = 0;
 
-            gfalt_transfer_status_t state = gfalt_transfer_status_create(&data->perf);
-            plugin_trigger_monitor(data->params, state, data->source, data->destination);
-            gfalt_transfer_status_delete(state);
+            plugin_trigger_monitor(data->params, &data->perf, data->source, data->destination);
         }
     }
 

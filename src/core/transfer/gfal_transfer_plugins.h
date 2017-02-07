@@ -33,15 +33,14 @@ extern "C"
 {
 #endif  // __cplusplus
 
-typedef struct _gfalt_hook_transfer_plugin {
+struct _gfalt_transfer_status {
     gpointer plugin_transfer_data;
     int status;
     size_t average_baudrate;
     size_t instant_baudrate;
     time_t transfer_time;
     size_t bytes_transfered;
-    void* futur_usage[25];
-} gfalt_hook_transfer_plugin_t;
+};
 
 /**
  * Convenience method for event callback
@@ -110,16 +109,6 @@ typedef int (*plugin_filecopy_call)(plugin_handle, gfal2_context_t, gfalt_params
 typedef int (*plugin_filecopy_bulk_call)(plugin_handle, gfal2_context_t, gfalt_params_t,
         size_t nbfiles, const char* const* src, const char* const* dsts, const char* const* checksums,
         GError** op_error, GError*** file_errors);
-
-/**
- * Create a transfer status struct
- */
-gfalt_transfer_status_t gfalt_transfer_status_create(const gfalt_hook_transfer_plugin_t * hook);
-
-/**
- * Destroy a transfer status struct
- */
-void gfalt_transfer_status_delete(gfalt_transfer_status_t state);
 
 #ifdef __cplusplus
 }

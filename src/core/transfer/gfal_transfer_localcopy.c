@@ -137,19 +137,17 @@ struct perf_data_t {
 
 static void send_performance_data(gfalt_params_t params, const char* src, const char* dst, const struct perf_data_t* perf)
 {
-    gfalt_hook_transfer_plugin_t hook;
+    struct _gfalt_transfer_status status;
 
     time_t total_time = perf->now - perf->start;
     time_t inc_time = perf->now - perf->last_update;
 
-    hook.average_baudrate = (size_t)(perf->done / total_time);
-    hook.bytes_transfered = (size_t)(perf->done);
-    hook.instant_baudrate = (size_t)(perf->done_since_last_update / inc_time);
-    hook.transfer_time    = total_time;
+    status.average_baudrate = (size_t)(perf->done / total_time);
+    status.bytes_transfered = (size_t)(perf->done);
+    status.instant_baudrate = (size_t)(perf->done_since_last_update / inc_time);
+    status.transfer_time    = total_time;
 
-    gfalt_transfer_status_t state = gfalt_transfer_status_create(&hook);
-    plugin_trigger_monitor(params, state, src, dst);
-    gfalt_transfer_status_delete(state);
+    plugin_trigger_monitor(params, &status, src, dst);
 }
 
 

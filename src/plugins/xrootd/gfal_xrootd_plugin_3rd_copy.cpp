@@ -36,13 +36,11 @@ public:
     CopyFeedback(gfal2_context_t context, gfalt_params_t p) :
             context(context), params(p), startTime(0)
     {
-        monitorCallbackData = gfalt_transfer_status_create(&this->status);
         memset(&status, 0x00, sizeof(status));
     }
 
     virtual ~CopyFeedback()
     {
-        gfalt_transfer_status_delete(this->monitorCallbackData);
     }
 
     void BeginJob(uint16_t jobNum, uint16_t jobTotal, const XrdCl::URL *source,
@@ -103,8 +101,7 @@ public:
             this->status.average_baudrate = bytesProcessed / elapsed;
         this->status.instant_baudrate = this->status.average_baudrate;
 
-        plugin_trigger_monitor(this->params, this->monitorCallbackData,
-                this->source.c_str(), this->destination.c_str());
+        plugin_trigger_monitor(this->params, &this->status, this->source.c_str(), this->destination.c_str());
     }
 
     bool ShouldCancel()
@@ -116,8 +113,7 @@ private:
     gfal2_context_t context;
     gfalt_params_t params;
 
-    gfalt_transfer_status_t monitorCallbackData;
-    gfalt_hook_transfer_plugin_t status;
+    _gfalt_transfer_status status;
     time_t startTime;
 
     std::string source, destination;

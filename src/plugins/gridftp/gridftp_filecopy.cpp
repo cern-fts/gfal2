@@ -298,15 +298,13 @@ void gsiftp_3rd_callback(void* user_args, globus_gass_copy_handle_t* handle,
 {
     CallbackHandler* args = (CallbackHandler*)user_args;
 
-    gfalt_hook_transfer_plugin_t hook;
-    hook.bytes_transfered = total_bytes;
-    hook.average_baudrate = (size_t) avg_throughput;
-    hook.instant_baudrate = (size_t) throughput;
-    hook.transfer_time = (time(NULL) - args->start_time);
+    _gfalt_transfer_status status;
+    status.bytes_transfered = total_bytes;
+    status.average_baudrate = (size_t) avg_throughput;
+    status.instant_baudrate = (size_t) throughput;
+    status.transfer_time = (time(NULL) - args->start_time);
 
-    gfalt_transfer_status_t state = gfalt_transfer_status_create(&hook);
-    plugin_trigger_monitor(args->params, state, args->src, args->dst);
-    gfalt_transfer_status_delete(state);
+    plugin_trigger_monitor(args->params, &status, args->src, args->dst);
 
     if (args->timeout_time > 0) {
         // If throughput != 0, or the file has been already sent, reset timer callback
