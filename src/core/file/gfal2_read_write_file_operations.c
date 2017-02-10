@@ -87,18 +87,6 @@ int gfal2_creat(gfal2_context_t handle, const char *filename, mode_t mode, GErro
     return (gfal2_open2(handle, filename, (O_WRONLY | O_CREAT | O_TRUNC), mode, err));
 }
 
-/*
- *  map the file handle to the correct call
- */
-static int
-gfal_rw_gfalfilehandle_read(gfal2_context_t handle, gfal_file_handle fh, void *buff, size_t s_buff, GError **err)
-{
-    g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_rw_gfalfilehandle_read] incorrect args");
-    GError *tmp_err = NULL;
-    int ret = gfal_plugin_readG(handle, fh, buff, s_buff, &tmp_err);
-
-    G_RETURN_ERR(ret, tmp_err, err);
-}
 
 ssize_t gfal2_read(gfal2_context_t handle, int fd, void *buff, size_t s_buff, GError **err)
 {
@@ -113,42 +101,11 @@ ssize_t gfal2_read(gfal2_context_t handle, int fd, void *buff, size_t s_buff, GE
         const int key = fd;
         gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
         if (fh != NULL) {
-            res = gfal_rw_gfalfilehandle_read(handle, fh, buff, s_buff, &tmp_err);
+            res = gfal_plugin_readG(handle, fh, buff, s_buff, &tmp_err);
         }
     }
     GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(res, tmp_err, err);
-}
-
-
-static int gfal_rw_file_handle_delete(gfal_fdesc_container_handle container, int key, GError **err)
-{
-    g_return_val_err_if_fail(container, -1, err, "[gfal_rw_dir_handle_delete] invalid args");
-    GError *tmp_err = NULL;
-    int ret = -1;
-    if (container) {
-        ret = (gfal_remove_file_desc(container, key, &tmp_err)) ? 0 : -1;
-    }
-    if (tmp_err) {
-        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
-    }
-    else {
-        errno = 0;
-    }
-    return ret;
-}
-
-static int gfal_rw_file_handle_close(gfal2_context_t handle, gfal_file_handle fhandle, GError **err)
-{
-    GError *tmp_err = NULL;
-
-    int ret = gfal_plugin_closeG(handle, fhandle, &tmp_err);
-
-    if (tmp_err) {
-        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
-    }
-    return ret;
-
 }
 
 
@@ -165,23 +122,15 @@ int gfal2_close(gfal2_context_t handle, int fd, GError **err)
         int key = GPOINTER_TO_INT(fd);
         gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
         if (fh != NULL) {
-            ret = gfal_rw_file_handle_close(handle, fh, &tmp_err);
+            ret = gfal_plugin_closeG(handle, fh, &tmp_err);
             if (ret == 0) {
-                ret = gfal_rw_file_handle_delete(container, key, &tmp_err);
+                ret = (gfal_remove_file_desc(container, key, &tmp_err)) ? 0 : -1;
             }
         }
     }
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
-
-static int
-gfal_rw_gfalfilehandle_lseek(gfal2_context_t handle, gfal_file_handle fh, off_t offset, int whence, GError **err)
-{
-    GError *tmp_err = NULL;
-    int ret = gfal_plugin_lseekG(handle, fh, offset, whence, &tmp_err);
-    G_RETURN_ERR(ret, tmp_err, err);
-}
 
 off_t gfal2_lseek(gfal2_context_t handle, int fd, off_t offset, int whence, GError **err)
 {
@@ -196,7 +145,7 @@ off_t gfal2_lseek(gfal2_context_t handle, int fd, off_t offset, int whence, GErr
         const int key = fd;
         gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
         if (fh != NULL) {
-            res = gfal_rw_gfalfilehandle_lseek(handle, fh, offset, whence, &tmp_err);
+            res = gfal_plugin_lseekG(handle, fh, offset, whence, &tmp_err);
         }
     }
     GFAL2_END_SCOPE_CANCEL(handle);
@@ -209,14 +158,6 @@ int gfal2_flush(gfal2_context_t handle, int fd, GError **err)
     return 0;
 }
 
-static ssize_t gfal_rw_gfalfilehandle_pread(gfal2_context_t handle, gfal_file_handle fh, void *buff,
-    size_t s_buff, off_t offset, GError **err)
-{
-    GError *tmp_err = NULL;
-    ssize_t ret = gfal_plugin_preadG(handle, fh, buff, s_buff, offset, &tmp_err);
-
-    G_RETURN_ERR(ret, tmp_err, err);
-}
 
 ssize_t gfal2_pread(gfal2_context_t handle, int fd, void *buff, size_t s_buff, off_t offset, GError **err)
 {
@@ -231,21 +172,13 @@ ssize_t gfal2_pread(gfal2_context_t handle, int fd, void *buff, size_t s_buff, o
         const int key = fd;
         gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
         if (fh != NULL) {
-            res = gfal_rw_gfalfilehandle_pread(handle, fh, buff, s_buff, offset, &tmp_err);
+            res = gfal_plugin_preadG(handle, fh, buff, s_buff, offset, &tmp_err);
         }
     }
     GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(res, tmp_err, err);
 }
 
-
-int
-gfal_rw_gfalfilehandle_write(gfal2_context_t handle, gfal_file_handle fh, const void *buff, size_t s_buff, GError **err)
-{
-    GError *tmp_err = NULL;
-    int ret = gfal_plugin_writeG(handle, fh, (void *) buff, s_buff, &tmp_err);
-    G_RETURN_ERR(ret, tmp_err, err);
-}
 
 ssize_t gfal2_write(gfal2_context_t handle, int fd, const void *buff, size_t s_buff, GError **err)
 {
@@ -260,25 +193,13 @@ ssize_t gfal2_write(gfal2_context_t handle, int fd, const void *buff, size_t s_b
         const int key = fd;
         gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
         if (fh != NULL) {
-            res = gfal_rw_gfalfilehandle_write(handle, fh, buff, s_buff, &tmp_err);
+            res = gfal_plugin_writeG(handle, fh, (void *) buff, s_buff, &tmp_err);
         }
     }
     GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(res, tmp_err, err);
 }
 
-
-/*
- *  map the file handle to the correct call for pwrite
- */
-int gfal_rw_gfalfilehandle_pwrite(gfal2_context_t handle, gfal_file_handle fh, const void *buff, size_t s_buff,
-    off_t offset, GError **err)
-{
-    g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_posix_gfalfilehandle_pwrite] incorrect args");
-    GError *tmp_err = NULL;
-    int ret = gfal_plugin_pwriteG(handle, fh, (void *) buff, s_buff, offset, &tmp_err);
-    G_RETURN_ERR(ret, tmp_err, err);
-}
 
 ssize_t gfal2_pwrite(gfal2_context_t handle, int fd, const void *buff, size_t s_buff, off_t offset, GError **err)
 {
@@ -293,11 +214,9 @@ ssize_t gfal2_pwrite(gfal2_context_t handle, int fd, const void *buff, size_t s_
         const int key = fd;
         gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
         if (fh != NULL) {
-            res = gfal_rw_gfalfilehandle_pwrite(handle, fh, buff, s_buff, offset, &tmp_err);
+            res = gfal_plugin_pwriteG(handle, fh, (void *) buff, s_buff, offset, &tmp_err);
         }
     }
     GFAL2_END_SCOPE_CANCEL(handle);
     G_RETURN_ERR(res, tmp_err, err);
 }
-
-
