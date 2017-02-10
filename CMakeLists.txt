@@ -79,7 +79,10 @@ if (NOT ONLY_TESTS)
 			 DESTINATION ${DOC_INSTALL_DIR})
 			
     # install global configuration files
-    list (APPEND lst_conf_files "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/gfal2_core.conf" "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/bdii.conf")
+    list (APPEND lst_conf_files
+        "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/gfal2_core.conf"
+        "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/bdii.conf"
+        "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/x509.conf")
     install (FILES ${lst_conf_files}
              DESTINATION ${SYSCONF_INSTALL_DIR}/gfal2.d/)
 
