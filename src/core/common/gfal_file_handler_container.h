@@ -57,10 +57,7 @@ int gfal_add_new_file_desc(gfal_file_handle_container fhandle, gpointer pfile, G
 
 gboolean gfal_remove_file_desc(gfal_file_handle_container fhandle, int key, GError** err);
 
-
-gpointer gfal_get_file_desc(gfal_file_handle_container fhandle, int key, GError** err);
-
-gfal_file_handle gfal_file_handle_bind(gfal_file_handle_container h, int file_desc, GError** err);
+gfal_file_handle gfal_file_handle_bind(gfal_file_handle_container h, int fd, GError** err);
 
 #ifdef __cplusplus
 }

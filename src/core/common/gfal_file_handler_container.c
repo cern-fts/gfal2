@@ -71,21 +71,6 @@ int gfal_add_new_file_desc(gfal_file_handle_container fhandle, gpointer pfile,
     return key;
 }
 
-//return the associated file handle for the given file descriptor or NULL if the key is not present and err is set
-gpointer gfal_get_file_desc(gfal_file_handle_container fhandle, int key,
-        GError** err)
-{
-    pthread_mutex_lock(&(fhandle->m_container));
-    GHashTable* c = fhandle->container;
-    gpointer p = g_hash_table_lookup(c, GINT_TO_POINTER(key));
-    if (!p)
-        gfal2_set_error(err, gfal2_get_plugins_quark(), EBADF, __func__,
-                "bad file descriptor");
-    pthread_mutex_unlock(&(fhandle->m_container));
-    return p;
-}
-
-
 // remove the associated file handle associated with the given file descriptor
 // return true if success else false
 gboolean gfal_remove_file_desc(gfal_file_handle_container fhandle, int key,
@@ -123,104 +108,23 @@ void gfal_file_descriptor_handle_destroy(gfal_file_handle_container fhandle)
 
 
  /*
- *  Create a new gfal_file_handle
- *  a gfal_handle is a rich file handle with additional information for the internal purpose
- *  @param id_module : id of the module which create the handle ( <10 -> gfal internal module, >=10 : plugin, plugin, external module ( ex : lfc )
- *  @param fdesc : original descriptor
- *  @warning need to be free manually
- * */
-gfal_file_handle gfal_file_handle_new(const char* module_name, gpointer fdesc)
-{
-    gfal_file_handle f = g_new(struct _gfal_file_handle, 1);
-    g_strlcpy(f->module_name, module_name, GFAL_MODULE_NAME_SIZE);
-    f->lock = g_mutex_new();
-    f->offset = 0;
-    f->fdesc = fdesc;
-    f->ext_data = NULL;
-    f->path = NULL;
-    return f;
-}
-
-
-gfal_file_handle gfal_file_handle_new2(const char *module_name, gpointer fdesc,
-        gpointer user_data, const char *file_path)
-{
-    gfal_file_handle f = gfal_file_handle_new(module_name, fdesc);
-    if (file_path)
-        f->path = g_strdup(file_path);
-    f->ext_data = user_data;
-    return f;
-}
-
-
-/**
-* return the file descriptor of this gfal file handle
-*/
-gpointer gfal_file_handle_get_fdesc(gfal_file_handle fh)
-{
-    return fh->fdesc;
-}
-
-
-void gfal_file_handle_set_fdesc(gfal_file_handle fh, gpointer fdesc)
-{
-    fh->fdesc = fdesc;
-}
-
-/**
-* return the user data of this gfal file descriptor
-*/
-gpointer gfal_file_handle_get_user_data(gfal_file_handle fh)
-{
-    return fh->ext_data;
-}
-
-
-const gchar* gfal_file_handle_get_path(gfal_file_handle fh)
-{
-    return fh->path;
-}
-
- /*
  *
  * return the file handle associated with the file_desc
  * @warning does not free the handle
  *
  * */
 gfal_file_handle gfal_file_handle_bind(gfal_file_handle_container h,
-        int file_desc, GError** err)
+        int fd, GError** err)
 {
-    g_return_val_err_if_fail(file_desc, 0, err,
-            "[gfal_dir_handle_bind] invalid dir descriptor");
-    GError* tmp_err = NULL;
-    gfal_file_handle resu = NULL;
-    resu = gfal_get_file_desc(h, file_desc, &tmp_err);
-    if (tmp_err)
-        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
-    return resu;
-}
+    g_return_val_err_if_fail(fd, 0, err, "invalid dir descriptor");
 
 
-void gfal_file_handle_lock(gfal_file_handle fh)
-{
-    g_assert(fh);
-    g_mutex_lock(fh->lock);
-}
-
-
-void gfal_file_handle_unlock(gfal_file_handle fh)
-{
-    g_assert(fh);
-    g_mutex_unlock(fh->lock);
-}
-
-
-//  Delete a gfal_file handle
-void gfal_file_handle_delete(gfal_file_handle fh)
-{
-    if (fh) {
-        g_mutex_free(fh->lock);
-        g_free(fh->path);
-        g_free(fh);
+    pthread_mutex_lock(&(h->m_container));
+    gpointer p = g_hash_table_lookup(h->container, GINT_TO_POINTER(fd));
+    if (!p) {
+        gfal2_set_error(err, gfal2_get_plugins_quark(), EBADF, __func__,
+            "bad file descriptor");
     }
+    pthread_mutex_unlock(&(h->m_container));
+    return (gfal_file_handle)p;
 }
