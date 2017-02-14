@@ -27,7 +27,7 @@
 #include <pthread.h>
 #include <common/gfal_prototypes.h>
 #include <common/gfal_constants.h>
-#include <file/gfal_file_handle.h>
+#include <common/gfal_file_handle.h>
 
 #ifdef __cplusplus
 extern "C"
