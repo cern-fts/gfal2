@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <glib.h>
-#include <common/gfal_common_filedescriptor.h>
 
 
 typedef struct _gfal_srm_opendir_handle {

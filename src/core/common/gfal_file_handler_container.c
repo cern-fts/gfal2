@@ -25,11 +25,11 @@
 #include <logger/gfal_logger.h>
 #include "gfal_common_err_helpers.h"
 #include "gfal_handle.h"
-#include "gfal_common_filedescriptor.h"
+#include "gfal_file_handler_container.h"
 
 
 // generate a new unique key
-static int gfal_file_key_generatorG(gfal_fdesc_container_handle fhandle, GError** err)
+static int gfal_file_key_generatorG(gfal_file_handle_container fhandle, GError** err)
 {
     g_return_val_err_if_fail(fhandle, 0, err,
             "[gfal_file_descriptor_generatorG] Invalid  arg file handle");
@@ -52,7 +52,7 @@ static int gfal_file_key_generatorG(gfal_fdesc_container_handle fhandle, GError*
  * Add the given file handle to the and return a file descriptor
  * return the associated key if success else 0 and set err
  */
-int gfal_add_new_file_desc(gfal_fdesc_container_handle fhandle, gpointer pfile,
+int gfal_add_new_file_desc(gfal_file_handle_container fhandle, gpointer pfile,
         GError** err)
 {
     g_return_val_err_if_fail(fhandle && pfile, 0, err,
@@ -72,7 +72,7 @@ int gfal_add_new_file_desc(gfal_fdesc_container_handle fhandle, gpointer pfile,
 }
 
 //return the associated file handle for the given file descriptor or NULL if the key is not present and err is set
-gpointer gfal_get_file_desc(gfal_fdesc_container_handle fhandle, int key,
+gpointer gfal_get_file_desc(gfal_file_handle_container fhandle, int key,
         GError** err)
 {
     pthread_mutex_lock(&(fhandle->m_container));
@@ -88,7 +88,7 @@ gpointer gfal_get_file_desc(gfal_fdesc_container_handle fhandle, int key,
 
 // remove the associated file handle associated with the given file descriptor
 // return true if success else false
-gboolean gfal_remove_file_desc(gfal_fdesc_container_handle fhandle, int key,
+gboolean gfal_remove_file_desc(gfal_file_handle_container fhandle, int key,
         GError** err)
 {
     pthread_mutex_lock(&(fhandle->m_container));
@@ -103,17 +103,16 @@ gboolean gfal_remove_file_desc(gfal_fdesc_container_handle fhandle, int key,
 
 
 //create a new file descriptor container with the given destroyer function to an element of the container
-gfal_fdesc_container_handle gfal_file_descriptor_handle_create(
-        GDestroyNotify destroyer)
+gfal_file_handle_container gfal_file_descriptor_handle_create(GDestroyNotify destroyer)
 {
-    gfal_fdesc_container_handle d = g_malloc0(sizeof(struct _gfal_file_descriptor_container));
+    gfal_file_handle_container d = g_malloc0(sizeof(struct _gfal_file_handle_container));
     d->container = g_hash_table_new_full(NULL, NULL, NULL, destroyer);
     pthread_mutex_init(&(d->m_container), NULL);
     return d;
 }
 
 
-void gfal_file_descriptor_handle_destroy(gfal_fdesc_container_handle fhandle)
+void gfal_file_descriptor_handle_destroy(gfal_file_handle_container fhandle)
 {
     if (fhandle->container) {
         g_hash_table_destroy(fhandle->container);
@@ -132,7 +131,7 @@ void gfal_file_descriptor_handle_destroy(gfal_fdesc_container_handle fhandle)
  * */
 gfal_file_handle gfal_file_handle_new(const char* module_name, gpointer fdesc)
 {
-    gfal_file_handle f = g_new(struct _gfal_file_handle_, 1);
+    gfal_file_handle f = g_new(struct _gfal_file_handle, 1);
     g_strlcpy(f->module_name, module_name, GFAL_MODULE_NAME_SIZE);
     f->lock = g_mutex_new();
     f->offset = 0;
@@ -188,7 +187,7 @@ const gchar* gfal_file_handle_get_path(gfal_file_handle fh)
  * @warning does not free the handle
  *
  * */
-gfal_file_handle gfal_file_handle_bind(gfal_fdesc_container_handle h,
+gfal_file_handle gfal_file_handle_bind(gfal_file_handle_container h,
         int file_desc, GError** err)
 {
     g_return_val_err_if_fail(file_desc, 0, err,

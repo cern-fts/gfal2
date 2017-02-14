@@ -73,13 +73,9 @@ typedef gpointer plugin_handle;
 
 
 /* file descriptor */
-typedef struct _gfal_file_descriptor_container *gfal_fdesc_container_handle;
+typedef struct _gfal_file_handle_container *gfal_file_handle_container;
+typedef struct _gfal_file_handle* gfal_file_handle;
 
-/* dir part file descriptor*/
-typedef struct _gfal_file_handle_* gfal_file_handle;
-
-typedef struct _gfal_descriptors_container gfal_descriptors_container;
-typedef struct _gfal_conf_container gfal_conf_container;
 
 #ifdef __cplusplus
 }

@@ -22,7 +22,7 @@
 
 #include <common/gfal_handle.h>
 #include <common/gfal_common_err_helpers.h>
-#include <common/gfal_common_filedescriptor.h>
+#include <common/gfal_file_handler_container.h>
 #include <common/gfal_cancel.h>
 
 

@@ -220,7 +220,7 @@ struct dirent *gfal_srm_readdirppG(plugin_handle ch,
     GError *tmp_err = NULL;
 
     struct dirent *ret = NULL;
-    gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;
+    gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle)gfal_file_handle_get_fdesc(fh);
     ret = gfal_srm_readdir_pipeline(ch, oh, st, &tmp_err);
 
     // Directory too big, so prepare to read in chunks and delegate

@@ -25,7 +25,7 @@
 #include <string.h>
 #include <common/gfal_common_plugin.h>
 #include <gfal_api.h>
-#include "gfal_common_filedescriptor.h"
+#include "gfal_file_handler_container.h"
 
 // initialization
 __attribute__((constructor))

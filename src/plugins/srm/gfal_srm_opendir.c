@@ -141,7 +141,7 @@ int gfal_srm_closedirG(plugin_handle handle, gfal_file_handle fh, GError **err)
     g_return_val_err_if_fail(handle && fh, -1, err, "[gfal_srm_opendirG] Invalid args");
 
     gfal_srmv2_opt *opts = (gfal_srmv2_opt *) handle;
-    gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle) fh->fdesc;
+    gfal_srm_opendir_handle oh = (gfal_srm_opendir_handle)gfal_file_handle_get_fdesc(fh);
 
     gfal_srm_external_call.srm_srmv2_mdfilestatus_delete(oh->srm_file_statuses, 1);
     gfal_srm_ifce_easy_context_release(opts, oh->easy);

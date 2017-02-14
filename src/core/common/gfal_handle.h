@@ -49,7 +49,7 @@ struct gfal_handle_ {
 	// struct of the plugin opts
     gfal_plugin_opts plugin_opt;
 	//struct for the file descriptors
-	gfal_fdesc_container_handle fdescs;
+	gfal_file_handle_container fdescs;
 	GConfigManager_t conf;
     // cancel logic
     volatile gint running_ops;

@@ -30,7 +30,7 @@
 #include "gfal_common_plugin.h"
 #include "gfal_constants.h"
 #include "gfal_common_err_helpers.h"
-#include "gfal_common_filedescriptor.h"
+#include "gfal_file_handler_container.h"
 #include "../file/gfal_file_api.h"
 
 #ifndef GFAL_PLUGIN_DIR_DEFAULT

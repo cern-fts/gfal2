@@ -34,12 +34,12 @@ extern "C"
 {
 #endif
 
-struct _gfal_file_descriptor_container{
+struct _gfal_file_handle_container {
 	GHashTable* container;
 	pthread_mutex_t m_container;
 };
 
-struct _gfal_file_handle_{
+struct _gfal_file_handle {
 	char module_name[GFAL_MODULE_NAME_SIZE]; // This MUST be the Name of the plugin associated with this handle!
 	GMutex* lock;
 	off_t offset;
@@ -49,30 +49,18 @@ struct _gfal_file_handle_{
 };
 
  // low level funcs
-gfal_fdesc_container_handle gfal_file_descriptor_handle_create(GDestroyNotify destroyer);
+gfal_file_handle_container gfal_file_descriptor_handle_create(GDestroyNotify destroyer);
 
-void gfal_file_descriptor_handle_destroy(gfal_fdesc_container_handle fhandle);
+void gfal_file_descriptor_handle_destroy(gfal_file_handle_container fhandle);
 
-int gfal_add_new_file_desc(gfal_fdesc_container_handle fhandle, gpointer pfile, GError** err);
+int gfal_add_new_file_desc(gfal_file_handle_container fhandle, gpointer pfile, GError** err);
 
-gboolean gfal_remove_file_desc(gfal_fdesc_container_handle fhandle, int key, GError** err);
-
-
-gpointer gfal_get_file_desc(gfal_fdesc_container_handle fhandle, int key, GError** err);
+gboolean gfal_remove_file_desc(gfal_file_handle_container fhandle, int key, GError** err);
 
 
-// high level funcs
+gpointer gfal_get_file_desc(gfal_file_handle_container fhandle, int key, GError** err);
 
-gfal_file_handle gfal_file_handle_bind(gfal_fdesc_container_handle h, int file_desc, GError** err);
-
-// convenience funcs
-
-
-void gfal_file_handle_delete(gfal_file_handle fh);
-
-void gfal_file_handle_lock(gfal_file_handle fh);
-
-void gfal_file_handle_unlock(gfal_file_handle fh);
+gfal_file_handle gfal_file_handle_bind(gfal_file_handle_container h, int file_desc, GError** err);
 
 #ifdef __cplusplus
 }

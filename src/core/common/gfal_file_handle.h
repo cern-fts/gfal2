@@ -74,6 +74,16 @@ const gchar* gfal_file_handle_get_path(gfal_file_handle fh);
 */
 void gfal_file_handle_delete(gfal_file_handle fh);
 
+/**
+ * Lock file handler
+ */
+void gfal_file_handle_lock(gfal_file_handle fh);
+
+/**
+ * Unlock file handler
+ */
+void gfal_file_handle_unlock(gfal_file_handle fh);
+
 #ifdef __cplusplus
 }
 #endif
