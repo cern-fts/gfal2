@@ -18,17 +18,9 @@
  * limitations under the License.
  */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <glib.h>
+#include "gfal_handle.h"
+#include <gfal_api.h>
 #include <string.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <common/gfal_config_internal.h>
-#include <common/gfal_common_err_helpers.h>
-#include <logger/gfal_logger.h>
 
 #ifndef GFAL_CONFIG_DIR_DEFAULT
 #error "GFAL_CONFIG_DIR_DEFAULT should be define at compile time"

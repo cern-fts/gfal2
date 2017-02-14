@@ -24,7 +24,7 @@
 #include <pthread.h>
 #include <logger/gfal_logger.h>
 #include "gfal_common_err_helpers.h"
-#include "gfal_types.h"
+#include "gfal_handle.h"
 #include "gfal_common_filedescriptor.h"
 
 

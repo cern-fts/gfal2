@@ -20,7 +20,7 @@
 
 #include <file/gfal_file_api.h>
 
-#include <common/gfal_types.h>
+#include <common/gfal_handle.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_err_helpers.h>
 #include <common/gfal_cancel.h>

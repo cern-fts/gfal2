@@ -545,14 +545,6 @@ struct _gfal_plugin_interface {
 	 //! @endcond
 };
 
-//! @cond
-struct _plugin_opts {
-    gfal_plugin_interface plugin_list[MAX_PLUGIN_LIST];
-    GList* sorted_plugin;
-    int plugin_number;
-};
-//! @endcond
-
 /**
  * Trigger plugin instantiation from the client code
  * The passed interface is copied, so you can, if needed, free it after the call

@@ -26,22 +26,8 @@
 #   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
 #endif
 
-#include <unistd.h>
-#include <glib.h>
-#include <sys/types.h>
-#include <dirent.h>
-#include <sys/stat.h>
-#ifdef __APPLE__
-#include <sys/xattr.h>
-#else
-#include <attr/xattr.h>
-#endif
-
-#include <common/gfal_prototypes.h>
-#include <common/gfal_constants.h>
-#include <common/gfal_common_plugin_interface.h>
+#include "gfal_common_plugin_interface.h"
 #include <g_config_manager/g_config_manager.h>
-
 
 /* enforce proper calling convention */
 #ifdef __cplusplus
@@ -50,10 +36,18 @@ extern "C"
 #endif
 
 
+struct _gfal_plugin_opts {
+    gfal_plugin_interface plugin_list[MAX_PLUGIN_LIST];
+    GList* sorted_plugin;
+    int plugin_number;
+};
+typedef struct _gfal_plugin_opts gfal_plugin_opts;
+
+
 struct gfal_handle_ {
 	gboolean initiated;
 	// struct of the plugin opts
-	struct _plugin_opts plugin_opt;
+    gfal_plugin_opts plugin_opt;
 	//struct for the file descriptors
 	gfal_fdesc_container_handle fdescs;
 	GConfigManager_t conf;

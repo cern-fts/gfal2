@@ -68,7 +68,6 @@ typedef enum _gfal_url2_check {
 
 
  /* plugin */
-typedef struct _plugin_opts plugin_opts;
 typedef struct _gfal_plugin_interface gfal_plugin_interface;
 typedef gpointer plugin_handle;
 

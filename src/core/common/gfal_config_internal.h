@@ -22,9 +22,7 @@
 #ifndef GFAL_CONFIG_INTERNAL_H_
 #define GFAL_CONFIG_INTERNAL_H_
 
-#include <common/gfal_prototypes.h>
-#include <common/gfal_types.h>
-#include <common/gfal_config.h>
+#include <g_config_manager/g_config_manager.h>
 
 // create or delete configuration manager for gfal 2.0, internal
 GConfigManager_t gfal2_init_config(GError **err);
