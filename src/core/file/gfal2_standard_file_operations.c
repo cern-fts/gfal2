@@ -20,20 +20,11 @@
 
 #include <file/gfal_file_api.h>
 
-#include <future/glib.h>
-#include <common/gfal_constants.h>
 #include <common/gfal_types.h>
 #include <common/gfal_common_plugin.h>
 #include <common/gfal_common_err_helpers.h>
-#include <logger/gfal_logger.h>
 #include <common/gfal_cancel.h>
 
-//
-// Mapping for the gfal 2.0 standard operations of the file interface
-//
-// @author : Devresse Adrien
-//
-//
 
 int gfal2_access(gfal2_context_t context, const char *url, int amode, GError **err)
 {
@@ -475,6 +466,7 @@ int gfal2_unlink_list(gfal2_context_t context, int nbfiles, const char *const *u
     return res;
 }
 
+
 int gfal2_abort_files(gfal2_context_t context, int nbfiles, const char *const *urls, const char *token, GError **err)
 {
     GError *tmp_err = NULL;
@@ -489,6 +481,7 @@ int gfal2_abort_files(gfal2_context_t context, int nbfiles, const char *const *u
     GFAL2_END_SCOPE_CANCEL(context);
     G_RETURN_ERR(res, tmp_err, err);
 }
+
 
 int gfal2_checksum(gfal2_context_t handle, const char *url, const char *check_type,
     off_t start_offset, size_t data_length,

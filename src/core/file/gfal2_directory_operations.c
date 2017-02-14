@@ -19,23 +19,14 @@
  */
 
 #include <regex.h>
-#include <string.h>
 #include <file/gfal_file_api.h>
 
-#include <future/glib.h>
-#include <common/gfal_constants.h>
 #include <common/gfal_types.h>
-#include <common/gfal_common_plugin.h>
 #include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_filedescriptor.h>
 #include <common/gfal_common_dir_handle.h>
-#include <logger/gfal_logger.h>
 #include <common/gfal_cancel.h>
 
-//
-// Mapping for the gfal2  opendir/readdir/closedir operations
-//
-// @author : Devresse Adrien
 
 #ifdef __APPLE__
 static char* mempcpy(char* dst, const char* src, size_t len)
