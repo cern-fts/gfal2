@@ -74,13 +74,6 @@ const gchar* gfal_file_handle_get_path(gfal_file_handle fh);
 */
 void gfal_file_handle_delete(gfal_file_handle fh);
 
-
-/**
-* @deprecated
-* deprecated, use @ref gfal_file_handle_new2 instead
-*/
-gfal_file_handle gfal_file_handle_ext_new(const char* module_name, gpointer fdesc, gpointer user_data);
-
 #ifdef __cplusplus
 }
 #endif
