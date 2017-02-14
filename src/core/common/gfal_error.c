@@ -21,7 +21,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <logger/gfal_logger.h>
-#include "gfal_common_err_helpers.h"
+#include "gfal_error.h"
 
 #if (GLIB_CHECK_VERSION(2,16,0) != TRUE)
 #include "future/glib.h"

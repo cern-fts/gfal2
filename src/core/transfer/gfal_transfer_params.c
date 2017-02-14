@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-#include <common/gfal_common_err_helpers.h>
+#include <common/gfal_error.h>
 #include <stdlib.h>
 #include <string.h>
 #include <gfal_api.h>

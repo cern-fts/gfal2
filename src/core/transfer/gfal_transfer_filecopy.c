@@ -18,8 +18,8 @@
  * limitations under the License.
  */
 
-#include <common/gfal_common_plugin.h>
-#include <common/gfal_common_err_helpers.h>
+#include <common/gfal_plugin.h>
+#include <common/gfal_error.h>
 #include <transfer/gfal_transfer_plugins.h>
 #include <transfer/gfal_transfer_internal.h>
 #include <common/gfal_cancel.h>

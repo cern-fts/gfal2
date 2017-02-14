@@ -23,7 +23,7 @@
 #include <logger/gfal_logger.h>
 #include <stdio.h>
 #include <string.h>
-#include <common/gfal_common_plugin.h>
+#include <common/gfal_plugin.h>
 #include <gfal_api.h>
 #include "gfal_file_handler_container.h"
 

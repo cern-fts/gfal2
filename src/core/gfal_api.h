@@ -51,7 +51,7 @@
 #include <transfer/gfal_transfer.h>
 
 /* error helpers*/
-#include <common/gfal_common_err_helpers.h>
+#include <common/gfal_error.h>
 
 #undef __GFAL2_H_INSIDE__
 

@@ -23,7 +23,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <logger/gfal_logger.h>
-#include "gfal_common_err_helpers.h"
+#include "gfal_error.h"
 #include "gfal_handle.h"
 #include "gfal_file_handler_container.h"
 

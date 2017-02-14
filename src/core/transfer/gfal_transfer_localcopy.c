@@ -21,7 +21,7 @@
 #include <string.h>
 
 #include <gfal_api.h>
-#include <common/gfal_common_plugin_interface.h>
+#include <common/gfal_plugin_interface.h>
 #include <checksums/checksums.h>
 #include "gfal_transfer_plugins.h"
 #include "gfal_transfer_internal.h"

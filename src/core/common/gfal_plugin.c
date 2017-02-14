@@ -27,9 +27,9 @@
 #include <fcntl.h>
 #include <logger/gfal_logger.h>
 #include <gfal_api.h>
-#include "gfal_common_plugin.h"
+#include "gfal_plugin.h"
 #include "gfal_constants.h"
-#include "gfal_common_err_helpers.h"
+#include "gfal_error.h"
 #include "gfal_file_handler_container.h"
 #include "../file/gfal_file_api.h"
 

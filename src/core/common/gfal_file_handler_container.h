@@ -48,7 +48,7 @@ struct _gfal_file_handle {
     gchar* path;
 };
 
- // low level funcs
+
 gfal_file_handle_container gfal_file_descriptor_handle_create(GDestroyNotify destroyer);
 
 void gfal_file_descriptor_handle_destroy(gfal_file_handle_container fhandle);

@@ -34,7 +34,7 @@
 #include <sys/stat.h>
 
 #include <common/gfal_prototypes.h>
-#include <common/gfal_common_plugin_interface.h>
+#include <common/gfal_plugin_interface.h>
 #include <transfer/gfal_transfer.h>
 
 #include "gfal_handle.h"

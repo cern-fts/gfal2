@@ -24,7 +24,7 @@
 
 #define __GFAL2_H_INSIDE__
 
-#include <common/gfal_common_plugin_interface.h>
+#include <common/gfal_plugin_interface.h>
 #include <common/gfal_file_handle.h>
 #include <transfer/gfal_transfer_plugins.h>
 

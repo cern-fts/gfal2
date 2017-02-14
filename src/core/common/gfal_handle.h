@@ -26,7 +26,7 @@
 #   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
 #endif
 
-#include "gfal_common_plugin_interface.h"
+#include "gfal_plugin_interface.h"
 #include <g_config_manager/g_config_manager.h>
 
 /* enforce proper calling convention */

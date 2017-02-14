@@ -21,7 +21,7 @@
 #include <unistd.h>
 
 #include <common/gfal_cancel.h>
-#include <common/gfal_common_plugin.h>
+#include <common/gfal_plugin.h>
 #include "gfal_handle.h"
 
 //
