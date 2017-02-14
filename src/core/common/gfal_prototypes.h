@@ -67,10 +67,6 @@ typedef enum _gfal_url2_check {
 } gfal_url2_check;
 
 
-enum _GFAL_TYPE { GFAL_TYPE_INT=0, GFAL_TYPE_STRING=1 };
-
-enum _GFAL_PARAM_FUNC{ GFAL_PARAM_SET=0, GFAL_PARAM_GET=1 };
-
  /* plugin */
 typedef struct _plugin_opts plugin_opts;
 typedef struct _gfal_plugin_interface gfal_plugin_interface;
@@ -85,11 +81,6 @@ typedef struct _gfal_file_handle_* gfal_file_handle;
 
 typedef struct _gfal_descriptors_container gfal_descriptors_container;
 typedef struct _gfal_conf_container gfal_conf_container;
-
-
-typedef enum _GFAL_TYPE GFAL_TYPE;
-typedef enum _GFAL_PARAM_FUNC GFAL_PARAM_FUNC;
-
 
 #ifdef __cplusplus
 }
