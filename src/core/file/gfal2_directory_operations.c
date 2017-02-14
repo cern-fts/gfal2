@@ -73,15 +73,6 @@ DIR *gfal2_opendir(gfal2_context_t handle, const char *name, GError **err)
 }
 
 
-static struct dirent *gfal_rw_gfalfilehandle_readdir(gfal2_context_t handle, gfal_file_handle fh, GError **err)
-{
-    g_return_val_err_if_fail(handle && fh, NULL, err, "[gfal_posix_gfalfilehandle_readdir] incorrect args");
-    GError *tmp_err = NULL;
-    struct dirent *ret = gfal_plugin_readdirG(handle, fh, &tmp_err);
-    G_RETURN_ERR(ret, tmp_err, err);
-}
-
-
 struct dirent *gfal2_readdir(gfal2_context_t handle, DIR *dir, GError **err)
 {
     GError *tmp_err = NULL;
@@ -97,7 +88,7 @@ struct dirent *gfal2_readdir(gfal2_context_t handle, DIR *dir, GError **err)
         const int key = GPOINTER_TO_INT(dir);
         gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
         if (fh != NULL) {
-            res = gfal_rw_gfalfilehandle_readdir(handle, fh, &tmp_err);
+            res = gfal_plugin_readdirG(handle, fh, &tmp_err);
         }
     }
     GFAL2_END_SCOPE_CANCEL(handle);
@@ -125,7 +116,7 @@ gfal_rw_gfalfilehandle_readdirpp(gfal2_context_t context, gfal_file_handle fh, s
     // try to simulate readdirpp
     if (tmp_err && tmp_err->code == EPROTONOSUPPORT && fh->path != NULL) {
         g_clear_error(&tmp_err);
-        ret = gfal_rw_gfalfilehandle_readdir(context, fh, &tmp_err);
+        ret = gfal_plugin_readdirG(context, fh, &tmp_err);
         if (!tmp_err && ret != NULL) {
             char *url = NULL;
 
@@ -173,31 +164,6 @@ struct dirent *gfal2_readdirpp(gfal2_context_t context, DIR *dir,
 }
 
 
-static int gfal_rw_dir_handle_delete(gfal_fdesc_container_handle container,
-    int key, GError **err)
-{
-    g_return_val_err_if_fail(container, -1, err,
-        "[gfal_posix_dir_handle_delete] invalid args");
-    GError *tmp_err = NULL;
-    int ret = -1;
-    if (container) {
-        ret = (gfal_remove_file_desc(container, key, &tmp_err)) ? 0 : -1;
-    }
-    G_RETURN_ERR(ret, tmp_err, err);
-}
-
-
-static int gfal_rw_dir_handle_close(gfal2_context_t handle, gfal_file_handle fh,
-    GError **err)
-{
-    g_return_val_err_if_fail(handle && fh, -1, err,
-        "[gfal_posix_gfalfilehandle_close] invalid args");
-    GError *tmp_err = NULL;
-    int ret = gfal_plugin_closedirG(handle, fh, &tmp_err);
-    G_RETURN_ERR(ret, tmp_err, err);
-}
-
-
 int gfal2_closedir(gfal2_context_t handle, DIR *d, GError **err)
 {
     GError *tmp_err = NULL;
@@ -213,9 +179,9 @@ int gfal2_closedir(gfal2_context_t handle, DIR *d, GError **err)
         int key = GPOINTER_TO_INT(d);
         gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
         if (fh != NULL) {
-            ret = gfal_rw_dir_handle_close(handle, fh, &tmp_err);
+            ret = gfal_plugin_closedirG(handle, fh, &tmp_err);
             if (ret == 0) {
-                ret = gfal_rw_dir_handle_delete(container, key, &tmp_err);
+                ret = (gfal_remove_file_desc(container, key, &tmp_err)) ? 0 : -1;
             }
         }
     }
