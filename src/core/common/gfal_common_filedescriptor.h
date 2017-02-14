@@ -51,6 +51,8 @@ struct _gfal_file_handle_{
  // low level funcs
 gfal_fdesc_container_handle gfal_file_descriptor_handle_create(GDestroyNotify destroyer);
 
+void gfal_file_descriptor_handle_destroy(gfal_fdesc_container_handle fhandle);
+
 int gfal_add_new_file_desc(gfal_fdesc_container_handle fhandle, gpointer pfile, GError** err);
 
 gboolean gfal_remove_file_desc(gfal_fdesc_container_handle fhandle, int key, GError** err);

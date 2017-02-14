@@ -50,18 +50,12 @@ extern "C"
 #endif
 
 
-struct _gfal_descriptors_container{
-	gfal_fdesc_container_handle dir_container;
-	gfal_fdesc_container_handle file_container;
-
-};
-
 struct gfal_handle_ {
 	gboolean initiated;
 	// struct of the plugin opts
 	struct _plugin_opts plugin_opt;
 	//struct for the file descriptors
-	gfal_descriptors_container fdescs;
+	gfal_fdesc_container_handle fdescs;
 	GConfigManager_t conf;
     // cancel logic
     volatile gint running_ops;

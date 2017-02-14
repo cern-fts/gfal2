@@ -25,7 +25,7 @@
 #include <string.h>
 #include <common/gfal_common_plugin.h>
 #include <gfal_api.h>
-#include <common/gfal_common_dir_handle.h>
+#include "gfal_common_filedescriptor.h"
 
 // initialization
 __attribute__((constructor))
@@ -115,37 +115,35 @@ static void gfal_initCredentialLocation(gfal2_context_t handle)
 gfal2_context_t gfal2_context_new(GError **err)
 {
     GError *tmp_err = NULL;
-    gfal2_context_t context = g_new0(struct gfal_handle_, 1);// clear allocation of the struct and set defautl options
+    gfal2_context_t context = g_new0(struct gfal_handle_, 1);
     if (context == NULL) {
-        errno = ENOMEM;
-        g_set_error(err, gfal2_get_plugins_quark(), ENOMEM,
+        g_set_error(err, gfal2_get_plugins_quark(), errno,
             "[%s] bad allocation, no more memory free", __func__);
         return NULL;
     }
-    context->plugin_opt.plugin_number = 0;
 
-    if ((context->conf = gfal2_init_config(&tmp_err)) && !tmp_err) {
-        // credential location
-        gfal_initCredentialLocation(context);
-        // load and instantiate all the plugins
-        gfal_plugins_instance(context, &tmp_err);
-        // cancel logic init
-        context->cancel = FALSE;
-        context->running_ops = 0;
-        context->mux_cancel = g_mutex_new();
-        g_hook_list_init(&context->cancel_hooks, sizeof(GHook));
-    }
-
-    if (tmp_err) {
-        if (context && context->conf) {
-            g_config_manager_delete(context->conf);
-        }
+    context->initiated = TRUE;
+    context->conf = gfal2_init_config(&tmp_err);
+    if (!context->conf) {
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
         g_free(context);
-        context = NULL;
+        return NULL;
     }
-    else {
-        context->client_info = g_ptr_array_new();
+
+    gfal_initCredentialLocation(context);
+
+    context->plugin_opt.plugin_number = 0;
+    gfal_plugins_instance(context, &tmp_err);
+    if (tmp_err) {
+        g_config_manager_delete(context->conf);
+        g_free(context);
+        return NULL;
     }
+
+    context->client_info = g_ptr_array_new();
+    context->mux_cancel = g_mutex_new();
+    g_hook_list_init(&context->cancel_hooks, sizeof(GHook));
+    context->fdescs = gfal_file_descriptor_handle_create(NULL);
 
     G_RETURN_ERR(context, tmp_err, err);
 }
@@ -154,10 +152,12 @@ gfal2_context_t gfal2_context_new(GError **err)
 void gfal2_context_free(gfal2_context_t context)
 {
     if (context == NULL) {
+        errno = EFAULT;
         return;
     }
+
     gfal_plugins_delete(context, NULL);
-    gfal_dir_handle_container_delete(&(context->fdescs));
+    gfal_file_descriptor_handle_destroy(context->fdescs);
     g_config_manager_delete(context->conf);
     g_list_free(context->plugin_opt.sorted_plugin);
     g_mutex_free(context->mux_cancel);

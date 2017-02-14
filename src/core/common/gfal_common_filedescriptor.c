@@ -106,11 +106,20 @@ gboolean gfal_remove_file_desc(gfal_fdesc_container_handle fhandle, int key,
 gfal_fdesc_container_handle gfal_file_descriptor_handle_create(
         GDestroyNotify destroyer)
 {
-    gfal_fdesc_container_handle d = calloc(1,
-            sizeof(struct _gfal_file_descriptor_container));
+    gfal_fdesc_container_handle d = g_malloc0(sizeof(struct _gfal_file_descriptor_container));
     d->container = g_hash_table_new_full(NULL, NULL, NULL, destroyer);
     pthread_mutex_init(&(d->m_container), NULL);
     return d;
+}
+
+
+void gfal_file_descriptor_handle_destroy(gfal_fdesc_container_handle fhandle)
+{
+    if (fhandle->container) {
+        g_hash_table_destroy(fhandle->container);
+    }
+    pthread_mutex_destroy(&fhandle->m_container);
+    g_free(fhandle);
 }
 
 

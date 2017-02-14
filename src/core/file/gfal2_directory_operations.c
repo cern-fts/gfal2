@@ -24,7 +24,6 @@
 #include <common/gfal_types.h>
 #include <common/gfal_common_err_helpers.h>
 #include <common/gfal_common_filedescriptor.h>
-#include <common/gfal_common_dir_handle.h>
 #include <common/gfal_cancel.h>
 
 
@@ -44,10 +43,7 @@ static int gfal_rw_dir_handle_store(gfal2_context_t handle,
         "[gfal_rw_dir_handle_store] handle invalid");
     GError *tmp_err = NULL;
     int key = 0;
-    gfal_fdesc_container_handle container = gfal_dir_handle_container_instance(&(handle->fdescs), &tmp_err);
-    if (container) {
-        key = gfal_add_new_file_desc(container, (gpointer) fhandle, &tmp_err);
-    }
+    key = gfal_add_new_file_desc(handle->fdescs, (gpointer) fhandle, &tmp_err);
     G_RETURN_ERR(key, tmp_err, err);
 }
 
@@ -83,10 +79,8 @@ struct dirent *gfal2_readdir(gfal2_context_t handle, DIR *dir, GError **err)
             "file descriptor or/and handle are NULL");
     }
     else {
-        gfal_fdesc_container_handle container =
-            gfal_dir_handle_container_instance(&(handle->fdescs), &tmp_err);
         const int key = GPOINTER_TO_INT(dir);
-        gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
+        gfal_file_handle fh = gfal_file_handle_bind(handle->fdescs, key, &tmp_err);
         if (fh != NULL) {
             res = gfal_plugin_readdirG(handle, fh, &tmp_err);
         }
@@ -152,9 +146,8 @@ struct dirent *gfal2_readdirpp(gfal2_context_t context, DIR *dir,
             "file descriptor or/and handle are NULL");
     }
     else {
-        gfal_fdesc_container_handle container = gfal_dir_handle_container_instance(&(context->fdescs), &tmp_err);
         const int key = GPOINTER_TO_INT(dir);
-        gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
+        gfal_file_handle fh = gfal_file_handle_bind(context->fdescs, key, &tmp_err);
         if (fh != NULL) {
             res = gfal_rw_gfalfilehandle_readdirpp(context, fh, st, &tmp_err);
         }
@@ -174,14 +167,12 @@ int gfal2_closedir(gfal2_context_t handle, DIR *d, GError **err)
             "file descriptor or/and handle are NULL");
     }
     else {
-        gfal_fdesc_container_handle container =
-            gfal_dir_handle_container_instance(&(handle->fdescs), &tmp_err);
         int key = GPOINTER_TO_INT(d);
-        gfal_file_handle fh = gfal_file_handle_bind(container, key, &tmp_err);
+        gfal_file_handle fh = gfal_file_handle_bind(handle->fdescs, key, &tmp_err);
         if (fh != NULL) {
             ret = gfal_plugin_closedirG(handle, fh, &tmp_err);
             if (ret == 0) {
-                ret = (gfal_remove_file_desc(container, key, &tmp_err)) ? 0 : -1;
+                ret = (gfal_remove_file_desc(handle->fdescs, key, &tmp_err)) ? 0 : -1;
             }
         }
     }
