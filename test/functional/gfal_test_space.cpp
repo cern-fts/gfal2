@@ -109,7 +109,7 @@ static void _validate_space_info(const char *response)
 
 TEST_F(SpaceTest, SpaceTokenList)
 {
-    GError *error;
+    GError *error = NULL;
     char buffer[1024];
 
     if (responseType != kSpaceTokenArray) {
