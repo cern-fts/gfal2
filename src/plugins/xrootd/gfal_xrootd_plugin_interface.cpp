@@ -83,7 +83,6 @@ int gfal_xrootd_statG(plugin_handle handle, const char* path, struct stat* buff,
 gfal_file_handle gfal_xrootd_openG(plugin_handle handle, const char *path,
         int flag, mode_t mode, GError ** err)
 {
-
     std::string sanitizedUrl = normalize_url((gfal2_context_t)handle, path);
 
     int *fd = new int;
@@ -100,7 +99,6 @@ gfal_file_handle gfal_xrootd_openG(plugin_handle handle, const char *path,
 ssize_t gfal_xrootd_readG(plugin_handle handle, gfal_file_handle fd, void *buff,
         size_t count, GError ** err)
 {
-
     int * fdesc = (int*) (gfal_file_handle_get_fdesc(fd));
     if (!fdesc) {
         gfal2_xrootd_set_error(err, errno, __func__, "Bad file handle");
@@ -118,7 +116,6 @@ ssize_t gfal_xrootd_readG(plugin_handle handle, gfal_file_handle fd, void *buff,
 ssize_t gfal_xrootd_writeG(plugin_handle handle, gfal_file_handle fd,
         const void *buff, size_t count, GError ** err)
 {
-
     int * fdesc = (int*) (gfal_file_handle_get_fdesc(fd));
     if (!fdesc) {
         gfal2_xrootd_set_error(err, errno, __func__, "Bad file handle");
@@ -136,7 +133,6 @@ ssize_t gfal_xrootd_writeG(plugin_handle handle, gfal_file_handle fd,
 off_t gfal_xrootd_lseekG(plugin_handle handle, gfal_file_handle fd,
         off_t offset, int whence, GError **err)
 {
-
     int * fdesc = (int*) (gfal_file_handle_get_fdesc(fd));
     if (!fdesc) {
         gfal2_xrootd_set_error(err, errno, __func__, "Bad file handle");
@@ -153,7 +149,6 @@ off_t gfal_xrootd_lseekG(plugin_handle handle, gfal_file_handle fd,
 
 int gfal_xrootd_closeG(plugin_handle handle, gfal_file_handle fd, GError ** err)
 {
-
     int r = 0;
     int * fdesc = (int*) (gfal_file_handle_get_fdesc(fd));
     if (fdesc) {
@@ -172,6 +167,14 @@ int gfal_xrootd_mkdirpG(plugin_handle handle, const char *url, mode_t mode,
         gboolean pflag, GError **err)
 {
     std::string sanitizedUrl = normalize_url((gfal2_context_t)handle, url);
+
+    // EOS returns success for mkdir for a directory that exists
+    struct stat buf;
+    if (XrdPosixXrootd::Stat(sanitizedUrl.c_str(), &buf) == 0) {
+        errno = EEXIST;
+        gfal2_xrootd_set_error(err, errno, __func__, "Failed to create directory %s", url);
+        return -1;
+    }
 
     if (XrdPosixXrootd::Mkdir(sanitizedUrl.c_str(), mode) != 0) {
         if (errno == ECANCELED) {
@@ -213,7 +216,6 @@ int gfal_xrootd_chmodG(plugin_handle handle, const char *url, mode_t mode,
 int gfal_xrootd_unlinkG(plugin_handle handle, const char *url,
         GError **err)
 {
-
     std::string sanitizedUrl = normalize_url((gfal2_context_t)handle, url);
 
     if (XrdPosixXrootd::Unlink(sanitizedUrl.c_str()) != 0) {
@@ -226,15 +228,26 @@ int gfal_xrootd_unlinkG(plugin_handle handle, const char *url,
 
 int gfal_xrootd_rmdirG(plugin_handle handle, const char *url, GError **err)
 {
-
     std::string sanitizedUrl = normalize_url((gfal2_context_t)handle, url);
 
     if (XrdPosixXrootd::Rmdir(sanitizedUrl.c_str()) != 0) {
+        struct stat buf;
+        // Need some errno massaging because of EOS
         if (errno == EEXIST) {
             errno =  ENOTEMPTY;
         }
         else if (errno == EIO) {
-            errno = ENOTDIR;
+            if (XrdPosixXrootd::Stat(sanitizedUrl.c_str(), &buf) == 0 && S_ISDIR(buf.st_mode)) {
+                errno = ENOTEMPTY;
+            }
+            else {
+                errno = ENOTDIR;
+            }
+        }
+        else if (errno == ENOENT) {
+            if (XrdPosixXrootd::Stat(sanitizedUrl.c_str(), &buf) == 0) {
+                errno = ENOTDIR;
+            }
         }
         gfal2_xrootd_set_error(err, errno, __func__, "Failed to delete directory");
         return -1;
@@ -246,7 +259,6 @@ int gfal_xrootd_rmdirG(plugin_handle handle, const char *url, GError **err)
 int gfal_xrootd_accessG(plugin_handle handle, const char *url, int mode,
         GError **err)
 {
-
     std::string sanitizedUrl = normalize_url((gfal2_context_t)handle, url);
 
     if (XrdPosixXrootd::Access(sanitizedUrl.c_str(), mode) != 0) {
@@ -260,7 +272,6 @@ int gfal_xrootd_accessG(plugin_handle handle, const char *url, int mode,
 int gfal_xrootd_renameG(plugin_handle handle, const char *oldurl,
         const char *urlnew, GError **err)
 {
-
     std::string oldSanitizedUrl = normalize_url((gfal2_context_t)handle, oldurl);
     std::string newSanitizedUrl = normalize_url((gfal2_context_t)handle, urlnew);
 

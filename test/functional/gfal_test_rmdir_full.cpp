@@ -140,8 +140,7 @@ TEST_F(RmDirTest, RmDirNestedNotEmpty)
 
 TEST_F(RmDirTest, RmDirNestedEACCESS)
 {
-    // dav does not support chmod, so skip
-    if (is_dav(surl) || strncmp("file:", surl, 5) == 0) {
+    if (is_dav(surl) || strncmp("file:", surl, 5) == 0 || strncmp("root:", surl, 5) == 0) {
         SKIP_TEST(RmDirNestedEACCESS);
         return;
     }

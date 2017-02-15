@@ -249,7 +249,8 @@ IF(PLUGIN_XROOTD)
     test_del("XROOTD_DPM" ${root_valid_dir_root})
     test_mkdir_unlink("XROOTD_DPM" ${root_valid_dir_root})
     test_stat_all("XROOTD" ${root_valid_dir_root})
-    test_access("XROOTD" ${root_valid_dir_root})
+    # Doesn't work with EOS
+    # test_access("XROOTD" ${root_valid_dir_root})
     test_rename("XROOTD" ${root_valid_dir_root})
 
     # Checksum not supported yet in the XrdCl library
