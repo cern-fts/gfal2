@@ -27,7 +27,6 @@
 #endif
 
 #include <glib.h>
-#include <common/gfal_prototypes.h>
 #include <common/gfal_deprecated.h>
 
 #ifdef __cplusplus

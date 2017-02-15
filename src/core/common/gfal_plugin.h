@@ -33,7 +33,6 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
-#include <common/gfal_prototypes.h>
 #include <common/gfal_plugin_interface.h>
 #include <transfer/gfal_transfer.h>
 

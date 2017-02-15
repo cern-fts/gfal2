@@ -25,7 +25,6 @@
 #include <glib.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <common/gfal_prototypes.h>
 #include <common/gfal_constants.h>
 #include <common/gfal_file_handle.h>
 

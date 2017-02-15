@@ -91,25 +91,6 @@ void gfalt_set_error(GError **err, GQuark domain, gint code, const gchar *functi
  */
 #define GFALT_ERROR_SIZE_MISMATCH     "SIZE MISMATCH"
 
-/**
- * Prototype for the url_check entry point : this entry point is mandatory !!!
- */
-typedef int (*plugin_url_check2_call)(plugin_handle, gfal2_context_t, const char* src,
-        const char* dst, gfal_url2_check check);
-
-/**
- * Prototype for the filecopy entry point in the plugins
- */
-typedef int (*plugin_filecopy_call)(plugin_handle, gfal2_context_t, gfalt_params_t, const char* src,
-        const char* dst, GError**);
-
-/**
- * Prototype for the bulk filecopy entry point in the plugins
- */
-typedef int (*plugin_filecopy_bulk_call)(plugin_handle, gfal2_context_t, gfalt_params_t,
-        size_t nbfiles, const char* const* src, const char* const* dsts, const char* const* checksums,
-        GError** op_error, GError*** file_errors);
-
 #ifdef __cplusplus
 }
 #endif // __cplusplus

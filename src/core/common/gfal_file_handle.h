@@ -29,12 +29,14 @@
 
 #include <glib.h>
 #include <stdlib.h>
-#include <common/gfal_prototypes.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+typedef struct _gfal_file_handle_container *gfal_file_handle_container;
+typedef struct _gfal_file_handle* gfal_file_handle;
 
 /**
 * @brief create a gfal file handle

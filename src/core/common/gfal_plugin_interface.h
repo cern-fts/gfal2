@@ -26,11 +26,12 @@
 #   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h"
 #endif
 
-#include <glib.h>
-#include <common/gfal_prototypes.h>
-#include <common/gfal_constants.h>
-#include <common/gfal_common.h>
+#include "gfal_common.h"
+#include "gfal_constants.h"
+#include "gfal_file_handle.h"
 #include <transfer/gfal_transfer_plugins.h>
+
+#include <glib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -50,6 +51,44 @@ extern "C"
 #define GFAL_PLUGIN_PRIORITY_DATA 0;      /**< The plugin provides IO */
 #define GFAL_PLUGIN_PRIORITY_CATALOG 100; /**< The plugin provides namespace operations */
 #define GFAL_PLUGIN_PRIORITY_CACHE 200;   /**< The plugin provides a cache */
+
+
+typedef struct _gfal_plugin_interface gfal_plugin_interface;
+typedef gpointer plugin_handle;
+
+/**
+ * Plugin check type
+ */
+typedef enum _plugin_mode {
+    GFAL_PLUGIN_ALL=0,
+    GFAL_PLUGIN_ACCESS,
+    GFAL_PLUGIN_CHMOD,
+    GFAL_PLUGIN_RENAME,
+    GFAL_PLUGIN_SYMLINK,
+    GFAL_PLUGIN_STAT,
+    GFAL_PLUGIN_LSTAT,
+    GFAL_PLUGIN_MKDIR,
+    GFAL_PLUGIN_RMDIR,
+    GFAL_PLUGIN_OPENDIR,	 /**< concat of opendir readdir, closedir*/
+    GFAL_PLUGIN_OPEN, 		 /**< concat of open read, close*/
+    GFAL_PLUGIN_RESOLVE_GUID,
+    GFAL_PLUGIN_GETXATTR,
+    GFAL_PLUGIN_SETXATTR,
+    GFAL_PLUGIN_LISTXATTR,
+    GFAL_PLUGIN_READLINK,
+    GFAL_PLUGIN_UNLINK,
+    GFAL_PLUGIN_CHECKSUM,
+    GFAL_PLUGIN_MKDIR_REC,
+    GFAL_PLUGIN_BRING_ONLINE
+} plugin_mode;
+
+/**
+ * Check modes for transfers
+ */
+typedef enum _gfal_url2_check {
+    GFAL_FILE_COPY,
+    GFAL_BULK_COPY
+} gfal_url2_check;
 
 /**
  * Prototype of the plugins entry point

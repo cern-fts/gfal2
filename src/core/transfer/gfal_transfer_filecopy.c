@@ -29,7 +29,7 @@ static GQuark scope_copy_domain() {
 }
 
 
-static void* find_copy_plugin(gfal2_context_t context, gfal_url2_check operation,
+static gfal_plugin_interface* find_copy_plugin(gfal2_context_t context, gfal_url2_check operation,
         const char* src, const char* dst, void** plugin_data, GError** error)
 {
     GList* item = g_list_first(context->plugin_opt.sorted_plugin);
@@ -37,20 +37,12 @@ static void* find_copy_plugin(gfal2_context_t context, gfal_url2_check operation
 
     while (item != NULL && resu == NULL) {
         gfal_plugin_interface* plugin_ifce = (gfal_plugin_interface*)item->data;
-        plugin_url_check2_call check_call = plugin_ifce->check_plugin_url_transfer;
-        if (check_call != NULL) {
+        if (plugin_ifce->check_plugin_url_transfer != NULL) {
             gboolean compatible;
-            if ((compatible = check_call(plugin_ifce->plugin_data, context, src, dst,
+            if ((compatible = plugin_ifce->check_plugin_url_transfer(plugin_ifce->plugin_data, context, src, dst,
                     operation)) == TRUE) {
                 *plugin_data = plugin_ifce->plugin_data;
-                switch (operation) {
-                    case GFAL_FILE_COPY:
-                        resu = plugin_ifce->copy_file;
-                        break;
-                    case GFAL_BULK_COPY:
-                        resu = plugin_ifce->copy_bulk;
-                        break;
-                }
+                resu = plugin_ifce;
             }
         }
         item = g_list_next(item);
@@ -123,11 +115,11 @@ static int perform_copy(gfal2_context_t context, gfalt_params_t params, const ch
     }
 
     void *plugin_data = NULL;
-    plugin_filecopy_call p_copy = find_copy_plugin(context, GFAL_FILE_COPY, src, dst,
+    gfal_plugin_interface* plugin = find_copy_plugin(context, GFAL_FILE_COPY, src, dst,
             &plugin_data, &tmp_err);
 
     if (tmp_err == NULL) {
-        if (p_copy == NULL) {
+        if (plugin == NULL) {
             if (gfalt_get_local_transfer_perm(params, NULL)) {
                 res = perform_local_copy(context, params, src, dst, &tmp_err);
             }
@@ -139,7 +131,7 @@ static int perform_copy(gfal2_context_t context, gfalt_params_t params, const ch
             }
         }
         else {
-            res = p_copy(plugin_data, context, params, src, dst, &tmp_err);
+            res = plugin->copy_file(plugin_data, context, params, src, dst, &tmp_err);
         }
     }
 
@@ -225,16 +217,16 @@ static int perform_bulk_copy(gfal2_context_t context, gfalt_params_t params,
     }
 
     void *plugin_data = NULL;
-    plugin_filecopy_bulk_call p_copy = find_copy_plugin(context, GFAL_BULK_COPY, srcs[0],
+    gfal_plugin_interface *plugin = find_copy_plugin(context, GFAL_BULK_COPY, srcs[0],
             dsts[0], &plugin_data, &tmp_err);
 
     if (tmp_err == NULL) {
-        if (p_copy == NULL) {
+        if (plugin == NULL) {
             res = bulk_fallback(context, params, nbfiles, srcs, dsts, checksums, op_error,
                     file_errors);
         }
         else {
-            res = p_copy(plugin_data, context, params, nbfiles, srcs, dsts, checksums,
+            res = plugin->copy_bulk(plugin_data, context, params, nbfiles, srcs, dsts, checksums,
                     op_error, file_errors);
         }
     }
