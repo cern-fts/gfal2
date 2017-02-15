@@ -266,6 +266,13 @@ int gfal_xrootd_renameG(plugin_handle handle, const char *oldurl,
 
     if (XrdPosixXrootd::Rename(oldSanitizedUrl.c_str(), newSanitizedUrl.c_str()) != 0) {
         gfal2_xrootd_set_error(err, errno, __func__, "Failed to rename file or directory");
+        // EOS may return EEXIST when new is a directory
+        if (*err && (*err)->code == EEXIST) {
+            struct stat buf;
+            if (XrdPosixXrootd::Stat(newSanitizedUrl.c_str(), &buf) == 0 && S_ISDIR(buf.st_mode)) {
+                (*err)->code = EISDIR;
+            }
+        }
         return -1;
     }
     return 0;
