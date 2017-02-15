@@ -185,6 +185,7 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
 
     gfal_file_handle f_src = gfal_plugin_openG(context, src, src_open_flags, 0, &nested_error);
     if (nested_error) {
+        free(buffer);
         gfal2_propagate_prefixed_error_extended(error, nested_error, __func__, "Could not open source: ");
         return -1;
     }
@@ -203,6 +204,7 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
 
     gfal_file_handle f_dst = gfal_plugin_openG(context, dst, dst_open_flags, 0755, &nested_error);
     if (nested_error) {
+        free(buffer);
         gfal_plugin_closeG(context, f_src, NULL);
         gfal2_propagate_prefixed_error_extended(error, nested_error, __func__, "Could not open destination: ");
         return -1;
@@ -219,8 +221,9 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
 
     while (s_file > 0 && !nested_error) {
         s_file = gfal_plugin_readG(context, f_src, buffer, buffersize, &nested_error);
-        if (s_file > 0)
+        if (s_file > 0) {
             gfal_plugin_writeG(context, f_dst, buffer, s_file, &nested_error);
+        }
 
         perf_data.done += s_file;
         perf_data.done_since_last_update += s_file;

@@ -94,19 +94,18 @@ static void gfal_initCredentialLocation(gfal2_context_t handle)
     // Default certificate location
     const char *home = getenv("HOME");
     if (home != NULL) {
-        size_t cert_path_length = strlen(home) + 22;
-        char *default_cert = (char *) malloc(cert_path_length);
-        char *default_key = (char *) malloc(cert_path_length);
-        snprintf(default_cert, sizeof(default_cert), "%s/.globus/usercert.pem", home);
-        snprintf(default_key, sizeof(default_key), "%s/.globus/userkey.pem", home);
-        if (access(default_cert, F_OK) == 0 && access(default_key, F_OK) == 0) {
+        char *default_cert = g_strconcat(home, "/.globus/usercert.pem", NULL);
+        char *default_key = g_strconcat(home, "/.globus/userkey.pem", NULL);
+
+        int canAccess = (access(default_cert, F_OK) == 0 && access(default_key, F_OK));
+
+        g_free(default_cert);
+        g_free(default_key);
+
+        if (canAccess) {
             gfal_setCredentialLocation("default certificate location", handle, default_cert, default_key);
-            free(default_cert);
-            free(default_key);
             return;
         }
-        free(default_cert);
-        free(default_key);
     }
     // No idea!
     gfal2_log(G_LOG_LEVEL_WARNING, "Could not find the credentials in any of the known locations");
@@ -133,8 +132,8 @@ gfal2_context_t gfal2_context_new(GError **err)
     gfal_initCredentialLocation(context);
 
     context->plugin_opt.plugin_number = 0;
-    gfal_plugins_instance(context, &tmp_err);
-    if (tmp_err) {
+    int ret = gfal_plugins_instance(context, &tmp_err);
+    if (ret <= 0 && tmp_err) {
         g_config_manager_delete(context->conf);
         g_free(context);
         return NULL;

@@ -37,7 +37,7 @@ static int gfal_srm_guess_service_endpoint(gfal_srmv2_opt *opts, const char *sur
     enum gfal_srm_proto *srm_type, GError **err)
 {
     GError *tmp_err = NULL;
-    gfal2_uri *parsed = gfal2_parse_uri(surl, err);
+    gfal2_uri *parsed = gfal2_parse_uri(surl, &tmp_err);
     if (!parsed) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
         return -1;

@@ -104,7 +104,7 @@ GridFTPSessionHandler::~GridFTPSessionHandler()
 
 
 GridFTPSession::GridFTPSession(gfal2_context_t context, const std::string& hostname):
-        hostname(hostname), pasv_plugin(NULL), context(context), params(NULL) 
+        hostname(hostname), cred_id(NULL), pasv_plugin(NULL), context(context), params(NULL)
 {
     globus_result_t res;
 
@@ -353,7 +353,7 @@ void gfal_globus_set_credentials(const char* ucert, const char* ukey,
                 err_buffer.str());
         }
     }
-    
+
     globus_ftp_client_operationattr_set_authorization(
             opattr, *cred_id, user, passwd, NULL, NULL);
 }
@@ -655,7 +655,7 @@ void gfal_globus_done_callback(void* user_args,
         if (chain != NULL) {
             gfal2_log(G_LOG_LEVEL_DEBUG, chain);
             globus_free(chain);
-        }   
+        }
     }
     state->done = true;
     globus_cond_signal(&state->cond);
