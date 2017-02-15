@@ -27,7 +27,7 @@
 #endif
 
 #include <glib.h>
-#include <common/gfal_deprecated.h>
+#include "gfal_deprecated.h"
 
 #ifdef __cplusplus
 extern "C"

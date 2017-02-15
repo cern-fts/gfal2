@@ -26,8 +26,7 @@
 #   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
 #endif
 
-#include <glib.h>
-#include <common/gfal_common.h>
+#include "gfal_common.h"
 
 #ifdef __cplusplus
 extern "C"

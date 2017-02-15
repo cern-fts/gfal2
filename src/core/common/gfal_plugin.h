@@ -26,6 +26,10 @@
 #   warning "Direct inclusion of gfal2 headers is deprecated. Please, include only gfal_api.h or gfal_plugins_api.h"
 #endif
 
+#include "gfal_handle.h"
+#include "gfal_plugin_interface.h"
+#include <transfer/gfal_transfer.h>
+
 #include <stdarg.h>
 #include <glib.h>
 #include <errno.h>
@@ -33,10 +37,6 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
-#include <common/gfal_plugin_interface.h>
-#include <transfer/gfal_transfer.h>
-
-#include "gfal_handle.h"
 
 #define GFAL2_PLUGIN_SCOPE "GFAL2::PLUGIN"
 

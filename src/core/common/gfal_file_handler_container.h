@@ -22,11 +22,12 @@
 #ifndef GFAL_COMMON_FILEDESCRIPTOR_H_
 #define GFAL_COMMON_FILEDESCRIPTOR_H_
 
+#include "gfal_constants.h"
+#include "gfal_file_handle.h"
+
 #include <glib.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <common/gfal_constants.h>
-#include <common/gfal_file_handle.h>
 
 #ifdef __cplusplus
 extern "C"
