@@ -121,7 +121,9 @@ TEST_F(BringonlineTest, TwoBringOnlineAsync)
             ret = gfal2_bring_online_poll_list(handle, 2, surls, token, error);
             if (error[0] != NULL) {
                 ASSERT_TRUE(error[0]->code == EAGAIN || error[0]->code == ENOENT);
-                g_clear_error(&error[0]);
+                if (error[0]->code == EAGAIN) {
+                    g_clear_error(&error[0]);
+                }
             }
             if (error[1] != NULL) {
                 ASSERT_EQ(error[1]->code, EAGAIN);
@@ -258,7 +260,9 @@ TEST_F(BringonlineTest, DuplicatedSURLs)
                     else {
                         ASSERT_TRUE(error[i]->code == EAGAIN || error[i]->code == ENOENT);
                     }
-                    g_clear_error(&error[i]);
+                    if (error[i] && error[i]->code == EAGAIN) {
+                        g_clear_error(&error[i]);
+                    }
                 }
             }
         }
