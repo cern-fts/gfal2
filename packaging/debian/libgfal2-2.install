@@ -1,3 +1,4 @@
 usr/lib/libgfal2.so.*
 etc/gfal2.d/bdii.conf
 etc/gfal2.d/gfal2_core.conf
+etc/gfal2.d/x509.conf
