@@ -22,6 +22,9 @@ void gfal_cancel_hook_cb_s(gfal2_context_t context, void* userdata){
 TEST(gfalGlobal, testCancelCallback){
     GError* tmp_err=NULL;
     gfal2_context_t c = gfal2_context_new(&tmp_err);
+    if (tmp_err) {
+        printf("%d %s\n", tmp_err->code, tmp_err->message);
+    }
     ASSERT_TRUE(c != NULL);
 
     int i=0,res ;

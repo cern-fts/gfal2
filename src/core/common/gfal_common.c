@@ -134,6 +134,7 @@ gfal2_context_t gfal2_context_new(GError **err)
     context->plugin_opt.plugin_number = 0;
     int ret = gfal_plugins_instance(context, &tmp_err);
     if (ret <= 0 && tmp_err) {
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
         g_config_manager_delete(context->conf);
         g_free(context);
         return NULL;

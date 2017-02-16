@@ -36,6 +36,7 @@
 #include <gfal_plugins_api.h>
 #include <checksums/checksums.h>
 #include <uri/gfal2_uri.h>
+#include <future/glib.h>
 
 typedef struct _chksum_interface{
     // init checksum handle

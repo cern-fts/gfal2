@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <transfer/gfal_transfer.h>
 #include <unistd.h>
+#include <future/glib.h>
 
 
 typedef struct copier_params_t {

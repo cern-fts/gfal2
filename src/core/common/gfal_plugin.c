@@ -31,7 +31,7 @@
 #include "gfal_constants.h"
 #include "gfal_error.h"
 #include "gfal_file_handler_container.h"
-#include "../file/gfal_file_api.h"
+#include <future/glib.h>
 
 #ifndef GFAL_PLUGIN_DIR_DEFAULT
 #error "GFAL_PLUGIN_DIR_DEFAULT should be define at compile time"

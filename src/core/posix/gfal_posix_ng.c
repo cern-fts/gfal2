@@ -19,7 +19,6 @@
  */
 
 #include <string.h>
-#include <glib/gthread.h>
 #include <gfal_api.h>
 
 #include "gfal_posix_api.h"

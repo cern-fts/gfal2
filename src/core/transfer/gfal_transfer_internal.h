@@ -24,6 +24,7 @@
 
 #include "gfal_transfer.h"
 #include "gfal_transfer_plugins.h"
+#include <sys/types.h>
 
 struct _gfalt_params_t {
     gboolean lock;              // lock enabled after the start of the transfer
