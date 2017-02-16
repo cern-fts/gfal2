@@ -53,30 +53,24 @@ install (FILES ${CMAKE_CURRENT_BINARY_DIR}/gfal2.pc DESTINATION ${PKGCONFIG_FILE
 # Install development headers
 install (FILES "gfal_api.h" "gfal_plugins_api.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/)
-install (FILES "common/gfal_cancel.h"
-         DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/cancel)
 install (FILES "logger/gfal_logger.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/logger)
 install (FILES "posix/gfal_posix_api.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/posix)
-install (FILES "common/gfal_constants.h"
-               "common/gfal_plugin_interface.h"
-               "common/gfal_prototypes.h"
-               "common/gfal_plugin.h"
-               "common/gfal_types.h"
+install (FILES "common/gfal_cancel.h"
+               "common/gfal_common.h"
+               "common/gfal_config.h"
+               "common/gfal_constants.h"
                "common/gfal_deprecated.h"
                "common/gfal_error.h"
+               "common/gfal_plugin.h"
+               "common/gfal_file_handle.h"
+               "common/gfal_plugin_interface.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/common)
-install (FILES "common/gfal_common.h"
-         DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/global)
-install (FILES "common/gfal_config.h"
-         DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/config)
 install (FILES "g_config_manager/g_config_manager.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/g_config_manager)
 install (FILES "file/gfal_file_api.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/file)
-install (FILES "common/gfal_file_handle.h"
-         DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/fdesc)
 
 # Transfer library
 if (MAIN_TRANSFER)

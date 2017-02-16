@@ -2,7 +2,10 @@ cmake_minimum_required (VERSION 2.6)
 
 if (MAIN_TRANSFER)
         file (GLOB src_trans "*.c")
-        list (APPEND header_transfer "gfal_transfer.h" "gfal_transfer_types.h" "gfal_transfer_plugins.h")
+        list (APPEND header_transfer
+            "gfal_transfer.h"
+            "gfal_transfer_plugins.h"
+        )
 
         add_definitions( ${GLIB2_PKG_CFLAGS} ${GTHREAD2_PKG_CFLAGS})
 
@@ -16,14 +19,14 @@ if (MAIN_TRANSFER)
                                      SOVERSION ${VERSION_MAJOR}
                                      CLEAN_DIRECT_OUTPUT 1
                                      OUTPUT_NAME "gfal_transfer")
-        add_PkgConfigFile_for_Library("gfal_transfer.pc" gfal2_transfer 
+        add_PkgConfigFile_for_Library("gfal_transfer.pc" gfal2_transfer
                                        HEADER_DIRS "gfal2"
                                        DESCRIPTION "gfal_transfer pkgconfig file"
                                        REQUIRES "gfal2")
 
         install(TARGETS gfal2_transfer
         LIBRARY DESTINATION ${LIB_INSTALL_DIR} )
-            
+
         install(FILES ${CMAKE_CURRENT_BINARY_DIR}/gfal_transfer.pc DESTINATION ${PKGCONFIG_FILES_DIR})
         install(FILES ${header_transfer} DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/transfer)
 
