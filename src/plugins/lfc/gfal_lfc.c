@@ -184,7 +184,6 @@ int lfc_chmodG(plugin_handle handle, const char *path, mode_t mode, GError **err
     if ((ret = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
         ret = lfc_configure_environment(ops, url_host, &tmp_err);
         if (!tmp_err) {
-            gfal_lfc_init_thread(ops);
             gfal_auto_maintain_session(ops, &tmp_err);
             ret = ops->chmod(url_path, mode);
             if (ret < 0) {
@@ -219,7 +218,6 @@ int lfc_accessG(plugin_handle handle, const char *lfn, int mode, GError **err)
     if ((ret = url_converter(handle, lfn, &url_host, &url_path, &tmp_err)) == 0) {
         ret = lfc_configure_environment(ops, url_host, &tmp_err);
         if (!tmp_err) {
-            gfal_lfc_init_thread(ops);
             gfal_auto_maintain_session(ops, &tmp_err);
             ret = ops->access(url_path, mode);
             if (ret < 0) {
@@ -257,7 +255,6 @@ int lfc_renameG(plugin_handle handle, const char *oldpath, const char *newpath, 
         && (ret = url_converter(handle, newpath, &dest_url_host, &dest_url_path, &tmp_err)) == 0) {
         ret = lfc_configure_environment(ops, source_url_host, &tmp_err);
         if (!tmp_err) {
-            gfal_lfc_init_thread(ops);
             gfal_auto_maintain_session(ops, &tmp_err);
             ret = ops->rename(source_url_path, dest_url_path);
             if (ret < 0) {
@@ -298,7 +295,6 @@ int lfc_symlinkG(plugin_handle handle, const char *oldpath, const char *newpath,
         && (ret = url_converter(handle, newpath, &link_url_host, &link_url_path, &tmp_err)) == 0) {
         ret = lfc_configure_environment(ops, url_host, &tmp_err);
         if (!tmp_err) {
-            gfal_lfc_init_thread(ops);
             gfal_auto_maintain_session(ops, &tmp_err);
             ret = ops->symlink(url_path, link_url_path);
             if (ret < 0) {
@@ -329,7 +325,6 @@ int lfc_statG(plugin_handle handle, const char *path, struct stat *st, GError **
     if ((ret = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
         ret = lfc_configure_environment(ops, url_host, &tmp_err);
         if (!tmp_err) {
-            gfal_lfc_init_thread(ops);
             gfal_auto_maintain_session(ops, &tmp_err);
             struct lfc_filestatg statbuf;
             ret = gfal_lfc_statg(ops, url_path, &statbuf, &tmp_err);
@@ -367,7 +362,6 @@ static int lfc_lstatG(plugin_handle handle, const char *path, struct stat *st, G
             }
             else {
                 gfal2_log(G_LOG_LEVEL_DEBUG, " lfc_lstatG -> value not in cache, do normal call");
-                gfal_lfc_init_thread(ops);
                 gfal_auto_maintain_session(ops, &tmp_err);
                 if (!tmp_err) {
                     ret = ops->lstat(url_path, &statbuf);
@@ -404,7 +398,6 @@ static int lfc_mkdirpG(plugin_handle handle, const char *path, mode_t mode, gboo
     if ((ret = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
         ret = lfc_configure_environment(ops, url_host, &tmp_err);
         if (!tmp_err) {
-            gfal_lfc_init_thread(ops);
             gfal_auto_maintain_session(ops, &tmp_err);
             ret = gfal_lfc_ifce_mkdirpG(ops, url_path, mode, pflag, &tmp_err);
         }
@@ -424,7 +417,6 @@ static int lfc_rmdirG(plugin_handle handle, const char *path, GError **err)
     GError *tmp_err = NULL;
     int ret = -1;
     struct lfc_ops *ops = (struct lfc_ops *) handle;
-    gfal_lfc_init_thread(ops);
     char *url_path = NULL, *url_host = NULL;
 
     if ((ret = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
@@ -459,7 +451,6 @@ static gfal_file_handle lfc_opendirG(plugin_handle handle, const char *path, GEr
     if (url_converter(handle, path, &url_host, &url_path, &tmp_err) == 0) {
         lfc_configure_environment(ops, url_host, &tmp_err);
         if (!tmp_err) {
-            gfal_lfc_init_thread(ops);
             gfal_auto_maintain_session(ops, &tmp_err);
 
             d = (DIR *) ops->opendirg(url_path, NULL);
@@ -526,7 +517,6 @@ static struct dirent *lfc_readdirppG(plugin_handle handle, gfal_file_handle fh,
     int sav_errno = 0;
     struct lfc_ops *ops = (struct lfc_ops *) handle;
 
-    gfal_lfc_init_thread(ops);
     gfal_auto_maintain_session(ops, &tmp_err);
     gfal_lfc_reset_errno(ops);
 
@@ -556,7 +546,6 @@ static int lfc_closedirG(plugin_handle handle, gfal_file_handle fh, GError **err
 {
     g_return_val_err_if_fail(handle && fh, -1, err, "[lfc_rmdirG] Invalid value in args handle/path");
     struct lfc_ops *ops = (struct lfc_ops *) handle;
-    gfal_lfc_init_thread(ops);
     int ret = ops->closedir(gfal_file_handle_get_fdesc(fh));
     if (ret != 0) {
         int sav_errno = gfal_lfc_get_errno(ops);
@@ -579,7 +568,6 @@ char **lfc_getSURLG(plugin_handle handle, const char *path, GError **err)
     GError *tmp_err = NULL;
     char **resu = NULL;
     struct lfc_ops *ops = (struct lfc_ops *) handle;
-    gfal_lfc_init_thread(ops);
     char *url_path = NULL, *url_host = NULL;
 
     if ((url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
@@ -672,7 +660,6 @@ ssize_t lfc_getxattrG(plugin_handle handle, const char *path, const char *name, 
     GError *tmp_err = NULL;
     ssize_t res = -1;
     struct lfc_ops *ops = (struct lfc_ops *) handle;
-    gfal_lfc_init_thread(ops);
     gfal_auto_maintain_session(ops, &tmp_err);
     if (strncmp(name, GFAL_XATTR_GUID, LFC_MAX_XATTR_LEN) == 0) {
         res = lfc_getxattr_getguid(handle, path, buff, size, &tmp_err);
@@ -877,7 +864,6 @@ static ssize_t lfc_readlinkG(plugin_handle handle, const char *path, char *buff,
     GError *tmp_err = NULL;
     ssize_t ret = -1;
     char res_buff[LFC_BUFF_SIZE];
-    gfal_lfc_init_thread(ops);
     gfal_auto_maintain_session(ops, &tmp_err);
 
     char *url_path = NULL, *url_host = NULL;
@@ -977,7 +963,6 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError **err)
         ops->Cthread_init();    // must be called one time for DPM thread safety
         init_thread = TRUE;
     }
-    gfal_lfc_init_thread(ops);
     pthread_mutex_unlock(&m_lfcinit);
     return lfc_plugin;
 }

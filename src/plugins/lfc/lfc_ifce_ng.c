@@ -83,6 +83,8 @@ const char *lfc_plugin_get_lfc_env(struct lfc_ops *ops, const char *var_name)
 
 int lfc_configure_environment(struct lfc_ops *ops, const char *host, GError **err)
 {
+    gfal_lfc_init_thread(ops);
+
     GError *tmp_err = NULL;
     const char *tab_envar[] = {ops->lfc_endpoint_predefined, ops->lfc_conn_timeout,
                                ops->lfc_conn_retry, ops->lfc_conn_try_int};
@@ -266,7 +268,6 @@ int gfal_convert_guid_to_lfn_r(plugin_handle handle, const char *guid, char *buf
     int ret;
     int size = 0;
     struct lfc_ops *ops = (struct lfc_ops *) handle;
-    gfal_lfc_init_thread(ops);
     struct lfc_linkinfo *links = NULL;
     if (ops->getlinks(NULL, guid, &size, &links) < 0) {
         int sav_errno = gfal_lfc_get_errno(ops);

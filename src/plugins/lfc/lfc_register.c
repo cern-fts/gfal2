@@ -244,8 +244,6 @@ int gfal_lfc_register(plugin_handle handle, gfal2_context_t context,
         goto register_end;
     }
 
-    gfal_lfc_init_thread(ops);
-
     // Stat LFC entry
     struct lfc_filestatg statg;
     ret_status = ops->statg(lfc_path, NULL, &statg);

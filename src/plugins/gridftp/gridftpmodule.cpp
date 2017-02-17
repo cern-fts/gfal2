@@ -65,13 +65,4 @@ GridFTPModule::GridFTPModule(GridFTPFactory* factory)
 GridFTPModule::~GridFTPModule()
 {
     delete _handle_factory;
-
-    globus_module_deactivate(GLOBUS_GASS_COPY_MODULE);
-    globus_module_deactivate(GLOBUS_FTP_CLIENT_MODULE);
-    globus_module_deactivate(GLOBUS_FTP_CONTROL_MODULE);
-    globus_module_deactivate(GLOBUS_FTP_CLIENT_DEBUG_PLUGIN_MODULE);
-    globus_module_deactivate(GLOBUS_FTP_CLIENT_THROUGHPUT_PLUGIN_MODULE);
 }
-
-
-
