@@ -30,26 +30,29 @@
 /*
  * open function for the srm  plugin
  */
-gfal_file_handle lfc_openG(plugin_handle ch, const char* path, int flag, mode_t mode, GError** err){
-	gfal2_context_t handle = ((struct lfc_ops*)ch)->handle;
-	GError* tmp_err=NULL;
-	gfal_file_handle res=NULL;
-	gfal2_log(G_LOG_LEVEL_DEBUG, "  %s ->",__func__);
+gfal_file_handle lfc_openG(plugin_handle ch, const char *path, int flag, mode_t mode, GError **err)
+{
+    gfal2_context_t handle = ((struct lfc_ops *) ch)->handle;
+    GError *tmp_err = NULL;
+    gfal_file_handle res = NULL;
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  %s ->", __func__);
 
-	char** surls = lfc_getSURLG(ch, path, &tmp_err);
-	if(surls != 0 && tmp_err == NULL){
-		char** p = surls;
-		while( *p != NULL){
-			gfal2_log(G_LOG_LEVEL_MESSAGE, " LFC resolution %s -> %s ", path, *p);
-			res = gfal_plugin_openG(handle, *p, flag, mode, &tmp_err);
-			if(res || ( tmp_err && tmp_err->code!=ECOMM))
-				break;
-			p++;
-		}
-	}
-	g_strfreev(surls);
-	if(tmp_err)
-		gfal2_propagate_prefixed_error(err, tmp_err, __func__);
-	return res;
+    char **surls = lfc_getSURLG(ch, path, &tmp_err);
+    if (surls != 0 && tmp_err == NULL) {
+        char **p = surls;
+        while (*p != NULL) {
+            gfal2_log(G_LOG_LEVEL_MESSAGE, " LFC resolution %s -> %s ", path, *p);
+            res = gfal_plugin_openG(handle, *p, flag, mode, &tmp_err);
+            if (res || (tmp_err && tmp_err->code != ECOMM)) {
+                break;
+            }
+            p++;
+        }
+    }
+    g_strfreev(surls);
+    if (tmp_err) {
+        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+    }
+    return res;
 
 }
