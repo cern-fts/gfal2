@@ -36,7 +36,10 @@ int gfal_plugin_mock_bring_online(plugin_handle plugin_data, const char *url,
 
     // Polling time
     gfal_plugin_mock_get_value(url, "staging_time", arg_buffer, sizeof(arg_buffer));
-    mdata->staging_end = time(NULL) + gfal_plugin_mock_get_int_from_str(arg_buffer);
+    time_t *staging_end = g_new0(time_t, 1);
+    *staging_end = time(NULL) + gfal_plugin_mock_get_int_from_str(arg_buffer);
+
+    g_hash_table_insert(mdata->staging_end, g_strdup(url), staging_end);
 
     // Fake token
     if (tsize > 36) {
@@ -49,7 +52,7 @@ int gfal_plugin_mock_bring_online(plugin_handle plugin_data, const char *url,
     }
 
     // Now, if remaining is <= 0, or blocking call, we are done
-    if (mdata->staging_end <= time(NULL) || !async) {
+    if (*staging_end <= time(NULL) || !async) {
         if (staging_errno) {
             gfal_plugin_mock_report_error(strerror(staging_errno), staging_errno, err);
             return -1;
@@ -70,7 +73,9 @@ int gfal_plugin_mock_bring_online_poll(plugin_handle plugin_data,
     gfal_plugin_mock_get_value(url, "staging_errno", arg_buffer, sizeof(arg_buffer));
     int staging_errno = gfal_plugin_mock_get_int_from_str(arg_buffer);
 
-    if (mdata->staging_end <= time(NULL)) {
+    time_t *staging_end = g_hash_table_lookup(mdata->staging_end, url);
+
+    if (staging_end == NULL || *staging_end <= time(NULL)) {
         if (staging_errno) {
             gfal_plugin_mock_report_error(strerror(staging_errno), staging_errno, err);
             return -1;
