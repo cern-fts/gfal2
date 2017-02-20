@@ -294,6 +294,7 @@ make DESTDIR=%{buildroot} install
 %dir %{_sysconfdir}/%{name}.d
 %config(noreplace) %{_sysconfdir}/%{name}.d/bdii.conf
 %config(noreplace) %{_sysconfdir}/%{name}.d/gfal2_core.conf
+%config(noreplace) %{_sysconfdir}/%{name}.d/x509.conf
 
 %{_mandir}/man1/gfal2_version.1*
 %dir %{_pkgdocdir}
