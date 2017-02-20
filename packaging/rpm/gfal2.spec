@@ -1,21 +1,20 @@
 # unversionned doc dir F20 change https://fedoraproject.org/wiki/Changes/UnversionedDocdirs
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
-%bcond_with mock_plugin
 %bcond_with tests
 
 Name:               gfal2
-Version:            2.14.0
+Version:            2.13.1
 Release:            1%{?dist}
-Summary:            Grid file access library 2
+Summary:            Grid file access library 2.0
 Group:              Applications/Internet
 License:            ASL 2.0
 URL:                http://dmc.web.cern.ch/projects/gfal-2/home
-# git clone --depth=1 --branch master https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.12.3
-# pushd gfal2-2.12.3
-# git checkout v2.12.3
+# git clone --depth=1 --branch master https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.13.1
+# pushd gfal2-2.13.1
+# git checkout v2.13.1
 # popd
-# tar czf gfal2-2.12.3.tar.gz --exclude-vcs gfal2-2.12.3
+# tar czf gfal2-2.13.1.tar.gz --exclude-vcs gfal2-2.13.1
 Source0:            %{name}-%{version}.tar.gz
 BuildRoot:          %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
@@ -70,9 +69,9 @@ Provides:           %{name}-transfer = %{version}-%{release}
 Obsoletes:          gfal2-plugin-xrootd-debuginfo
 
 %description
-GFAL 2.0 offers an a single and simple POSIX-like API
-for the file operations in grids and cloud environments.
-The set of supported protocols depends
+GFAL 2.0 offers an a single and simple POSIX-like API 
+for the file operations in grids and cloud environments. 
+The set of supported protocols depends 
 of the %{name} installed plugins.
 
 %package devel
@@ -80,7 +79,7 @@ Summary:            Development files of %{name}
 Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           glib2-devel%{?_isa}
-Requires:           libattr-devel%{?_isa}
+Requires:           libattr-devel%{?_isa} 
 Requires:           pkgconfig
 
 %description devel
@@ -114,31 +113,31 @@ Requires:           %{name}%{?_isa} = %{version}-%{release}
 
 %description plugin-lfc
 Provides the lfc support (lfn://) for %{name}.
-The LFC plugin allows read-only POSIX operations
+The LFC plugin allows read-only POSIX operations 
 for the LFC catalog.
 
 
 %package plugin-rfio
 Summary:            Provides the rfio support for %{name}
 Group:              Applications/Internet
-Requires:           %{name}%{?_isa} = %{version}-%{release}
+Requires:           %{name}%{?_isa} = %{version}-%{release} 
 Requires:           dpm-libs%{?_isa}
 
 %description plugin-rfio
-Provides the rfio support (rfio://) for %{name}.
-The rfio plugin provides the POSIX operations for
-the rfio URLs, the rfio protocol is used on the DPM
+Provides the rfio support (rfio://) for %{name}. 
+The rfio plugin provides the POSIX operations for 
+the rfio URLs, the rfio protocol is used on the DPM 
 and on the Castor storage systems.
 
 
 %package plugin-dcap
 Summary:            Provides the support access for %{name}
 Group:              Applications/Internet
-Requires:           %{name}%{?_isa} = %{version}-%{release}
+Requires:           %{name}%{?_isa} = %{version}-%{release} 
 Requires:           dcap-tunnel-gsi%{?_isa}
 
 %description plugin-dcap
-Provides the dcap support (gsidcap://, dcap://) for %{name}.
+Provides the dcap support (gsidcap://, dcap://) for %{name}. 
 The dcap plugin provides the POSIX operations for the dcap \
 URLs, the dcap protocol is used on the DCACHE storage system
 
@@ -146,23 +145,23 @@ URLs, the dcap protocol is used on the DCACHE storage system
 %package plugin-srm
 Summary:            Provides the srm access for %{name}
 Group:              Applications/Internet
-Requires:           %{name}%{?_isa} = %{version}-%{release}
+Requires:           %{name}%{?_isa} = %{version}-%{release} 
 Requires:           srm-ifce >= 1.23.1
 
 %description plugin-srm
-Provides the srm support (srm://) for %{name}.
-The srm plugin provides the POSIX operations and
+Provides the srm support (srm://) for %{name}. 
+The srm plugin provides the POSIX operations and 
 the third party transfer support on the SRM URLs.
 
 
 %package plugin-gridftp
 Summary:            Provides the gridftp support for %{name}
 Group:              Applications/Internet
-Requires:           %{name}%{?_isa} = %{version}-%{release}
+Requires:           %{name}%{?_isa} = %{version}-%{release} 
 
 %description plugin-gridftp
-Provides the gridftp support (gsiftp://) for %{name}.
-The gridftp plugin provides the POSIX operations and
+Provides the gridftp support (gsiftp://) for %{name}. 
+The gridftp plugin provides the POSIX operations and 
 the third party transfer support on the GSIFTP URLs.
 
 
@@ -188,7 +187,6 @@ operations in grid and cloud environments. Plug-ins are available to allow
 access via a variety of protocols. This package contains a plugin for the
 xrootd protocol (root://).
 
-
 %package plugin-sftp
 Summary:            Provide sftp support for GFAL2
 Group:              Applications/Internet
@@ -196,12 +194,10 @@ Requires:           %{name}%{?_isa} = %{version}-%{release}
 
 %description plugin-sftp
 The Grid File Access Library, GFAL2, provides a simple POSIX-like API for file
-operations in grid and cloud environments. Plug-ins are available to allow
+perations in grid and cloud environments. Plug-ins are available to allow
 access via a variety of protocols. This package contains a plugin for the
 sftp protocol (sftp://).
 
-
-%if %{?_with_mock_plugin:1}%{!?_with_mock_plugin:0}
 %package plugin-mock
 Summary:            Provides a Mock dummy protocol for %{name}
 Group:              Applications/Internet
@@ -209,7 +205,6 @@ Requires:           %{name}%{?_isa} = %{version}-%{release}
 
 %description plugin-mock
 Provides a dummy mock:// protocol for %{name}.
-%endif
 
 
 %package all
@@ -227,7 +222,7 @@ Requires:           %{name}-plugin-xrootd%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-sftp%{?_isa} = %{version}-%{release}
 
 %description all
-Meta-package for complete install of GFAL2
+Meta-package for complete install of GFAL2 
 with all the protocol plugins.
 
 %if %{?_with_tests:1}%{!?_with_tests:0}
@@ -267,7 +262,7 @@ export CXX=/usr/bin/g++44
 %cmake \
     -DDOC_INSTALL_DIR=%{_pkgdocdir} \
     -DUNIT_TESTS=TRUE \
-    -DPLUGIN_MOCK=%{?with_mock_plugin:ON}%{?!with_mock_plugin:OFF} \
+    -DPLUGIN_MOCK=TRUE \
     -DFUNCTIONAL_TESTS=%{?with_tests:ON}%{?!with_tests:OFF} \
     .
 make %{?_smp_mflags}
@@ -299,7 +294,6 @@ make DESTDIR=%{buildroot} install
 %dir %{_sysconfdir}/%{name}.d
 %config(noreplace) %{_sysconfdir}/%{name}.d/bdii.conf
 %config(noreplace) %{_sysconfdir}/%{name}.d/gfal2_core.conf
-%config(noreplace) %{_sysconfdir}/%{name}.d/x509.conf
 
 %{_mandir}/man1/gfal2_version.1*
 %dir %{_pkgdocdir}
@@ -364,12 +358,10 @@ make DESTDIR=%{buildroot} install
 %{_pkgdocdir}/README_PLUGIN_SFTP
 %config(noreplace) %{_sysconfdir}/%{name}.d/sftp_plugin.conf
 
-%if %{?_with_mock_plugin:1}%{!?_with_mock_plugin:0}
 %files plugin-mock
 %{_libdir}/%{name}-plugins/libgfal_plugin_mock.so*
 %{_pkgdocdir}/README_PLUGIN_MOCK
 %config(noreplace) %{_sysconfdir}/%{name}.d/mock_plugin.conf
-%endif
 
 %if %{?_with_tests:1}%{!?_with_tests:0}
 %files tests
@@ -381,8 +373,47 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
-* Fri Nov 06 2015 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.10.1-1
-- Upgraded to upstream release 2.10.1
+* Mon Feb 20 2017 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.13.1-1
+- Upgraded to upstream release 2.13.1
+
+* Fri Feb 10 2017 Fedora Release Engineering <releng@fedoraproject.org> - 2.12.3-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
+
+* Thu Jan 26 2017 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.12.3-3
+- Remove trailing whitespaces on pkgconfig file
+
+* Mon Nov 14 2016 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.12.3-2
+- Enable build of mock plugin
+
+* Thu Nov 10 2016 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.12.3-1
+- Upgraded to upstream release 2.12.3
+
+* Wed Oct 26 2016 Richard Shaw <hobbes1069@gmail.com> - 2.12.2-2.el7.1
+- Rebuild to fix soname dependency on aarch64.
+
+* Thu Sep 29 2016 Richard Shaw <hobbes1069@gmail.com> - 2.12.2-2
+- Rebuild for pugixml with c++11 support required by mkvtoonix.
+
+* Thu Sep 22 2016 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.12.2-1
+- Upgraded to upstream release 2.12.2
+
+* Wed Jul 20 2016 Richard Shaw <hobbes1069@gmail.com> - 2.11.1-2
+- Rebuild for new pugixml.
+
+* Tue Apr 19 2016 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.11.1-1
+- Upgraded to upstream release 2.11.1
+
+* Mon Mar 07 2016 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.11.0-1
+- Upgraded to upstream release 2.11.0
+
+* Wed Feb 03 2016 Fedora Release Engineering <releng@fedoraproject.org> - 2.10.3-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
+
+* Wed Dec 09 2015 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.10.3-1
+- Upgraded to upstream release 2.10.3
+
+* Fri Nov 06 2015 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.10.2-1
+- Upgraded to upstream release 2.10.2
 
 * Fri Jul 03 2015 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.9.3-1
 - Upgraded to upstream release 2.9.3
@@ -459,7 +490,7 @@ make DESTDIR=%{buildroot} install
 
 * Mon Apr 29 2013 Michail Salichos <msalicho at cern.ch> - 2.2.0-5
  - make all gridftp ops async to avoid stalling processes
-
+ 
 * Fri Apr 26 2013 Michail Salichos <msalicho at cern.ch> - 2.2.0-4
  - replace gass stat with gridftp stat
 
@@ -471,7 +502,7 @@ make DESTDIR=%{buildroot} install
 
 * Mon Mar 25 2013 Michail Salichos <msalicho at cern.ch> - 2.2.0-1
  - fix memory leaks in bringonline SRM op
-
+ 
 * Wed Mar 20 2013 Adrien Devresse <adevress at cern.ch> - 2.2.0-0
  - fix thread safety issue with gsiftp plugin
  - add the bring online API
@@ -562,7 +593,7 @@ make DESTDIR=%{buildroot} install
  - Improve gridftp plugin with severals other calls
  - Correct dcap/rfio/srm bugs related to error report
  - big work on the documentation
-
+ 
 * Mon Dec 12 2011 Adrien Devresse <adevress at cern.ch> - 2.0.0-0.6.2012041515snap
  - Initial gfal 2.0 preview release
 
