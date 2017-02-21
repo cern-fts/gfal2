@@ -81,8 +81,9 @@ GridFTPSessionHandler::GridFTPSessionHandler(GridFTPFactory* f, const std::strin
     this->session = f->get_session(this->hostname);
 
     GridFTPRequestState req(this);
-    globus_ftp_client_feat(&this->session->handle_ftp, (char*)uri.c_str(), &this->session->operation_attr_ftp,
+    globus_result_t result = globus_ftp_client_feat(&this->session->handle_ftp, (char*)uri.c_str(), &this->session->operation_attr_ftp,
                            &this->session->ftp_features, globus_ftp_client_done_callback, &req);
+    gfal_globus_check_result(GFAL_GLOBUS_DONE_SCOPE, result);
     req.wait(GFAL_GLOBUS_DONE_SCOPE);
 }
 
@@ -578,7 +579,6 @@ void gfal_globus_check_error(GQuark scope, globus_object_t * error)
 void gfal_globus_check_result(GQuark scope, globus_result_t res)
 {
     if (res != GLOBUS_SUCCESS) {
-
         globus_object_t * error = globus_error_get(res); // get error from result code
         if (error == NULL)
             throw Gfal::CoreException(scope, EINVAL,
