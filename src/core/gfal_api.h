@@ -31,6 +31,7 @@
 
 /* global context operations */
 #include <common/gfal_common.h>
+#include <common/gfal_cred_mapping.h>
 
 /* parameter and configuration API */
 #include <common/gfal_config.h>

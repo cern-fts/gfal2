@@ -57,6 +57,9 @@ struct gfal_handle_ {
     GMutex* mux_cancel;
     GHookList cancel_hooks;
 
+	// Credential mapping
+    GList *cred_mapping;
+
     // client information
     char* agent_name;
     char* agent_version;

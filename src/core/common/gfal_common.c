@@ -165,8 +165,8 @@ void gfal2_context_free(gfal2_context_t context)
     g_free(context->agent_name);
     g_free(context->agent_version);
     g_ptr_array_foreach(context->client_info, gfal_free_keyvalue, NULL);
+    gfal2_cred_clean(context, NULL);
     g_free(context);
-    context = NULL;
 }
 
 

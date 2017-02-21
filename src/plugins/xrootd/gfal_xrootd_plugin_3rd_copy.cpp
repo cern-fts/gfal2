@@ -169,7 +169,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         checksumValue, sizeof(checksumValue), NULL);
 
     XrdCl::CopyProcess copy_process;
-#if XrdMajorVNUM(XrdVNUMBER) == 4
+#if XrdMajorVNUM(XrdVNUMBER) == 4 ||  XrdMajorVNUM(XrdVNUMBER) == 100
     std::vector<XrdCl::PropertyList> results;
     for (size_t i = 0; i < nbfiles; ++i) {
         results.push_back(XrdCl::PropertyList());
@@ -184,7 +184,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         gfal_xrootd_3rd_init_url(context, source_url, srcs[i], src_spacetoken);
         gfal_xrootd_3rd_init_url(context, dest_url, dsts[i], dst_spacetoken);
 
-#if XrdMajorVNUM(XrdVNUMBER) == 4
+#if XrdMajorVNUM(XrdVNUMBER) == 4 || XrdMajorVNUM(XrdVNUMBER) == 100
         XrdCl::PropertyList job;
 
         job.Set("source", source_url.GetURL());
@@ -237,7 +237,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
                 g_free(defaultChecksumType);
             }
 
-#if XrdMajorVNUM(XrdVNUMBER) == 4
+#if XrdMajorVNUM(XrdVNUMBER) == 4 ||  XrdMajorVNUM(XrdVNUMBER) == 100
             switch (checksumMode) {
                 case GFALT_CHECKSUM_BOTH:
                     job.Set("checkSumMode", "end2end");
@@ -259,7 +259,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
 #endif
         }
 
-#if XrdMajorVNUM(XrdVNUMBER) == 4
+#if XrdMajorVNUM(XrdVNUMBER) == 4 || XrdMajorVNUM(XrdVNUMBER) == 100
         copy_process.AddJob(job, &(results[i]));
 #else
         copy_process.AddJob(&job);
@@ -268,7 +268,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
     }
 
     // Configuration job
-#if XrdMajorVNUM(XrdVNUMBER) == 4
+#if XrdMajorVNUM(XrdVNUMBER) == 4 ||  XrdMajorVNUM(XrdVNUMBER) == 100
     int parallel = gfal2_get_opt_integer_with_default(context,
             XROOTD_CONFIG_GROUP, XROOTD_PARALLEL_COPIES,
             20);

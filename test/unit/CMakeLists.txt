@@ -5,6 +5,7 @@ include_directories(
 
 add_subdirectory(cancel)
 add_subdirectory(config)
+add_subdirectory(cred)
 add_subdirectory(global)
 add_subdirectory(mds)
 add_subdirectory(transfer)

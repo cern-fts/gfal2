@@ -391,7 +391,7 @@ public:
                 StatInfo2Stat(stinfo, st);
             }
             else {
-#if XrdMajorVNUM(XrdVNUMBER) == 4
+#if XrdMajorVNUM(XrdVNUMBER) == 4 || XrdMajorVNUM(XrdVNUMBER) == 100
                 stinfo = new XrdCl::StatInfo();
 #else
                 stinfo = new XrdCl::StatInfo("");
