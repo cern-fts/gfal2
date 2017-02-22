@@ -182,7 +182,7 @@ int lfc_chmodG(plugin_handle handle, const char *path, mode_t mode, GError **err
     int ret = -1;
     char *url_path = NULL, *url_host = NULL;
     if ((ret = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
-        ret = lfc_configure_environment(ops, url_host, &tmp_err);
+        ret = lfc_configure_environment(ops, url_host, path, &tmp_err);
         if (!tmp_err) {
             gfal_auto_maintain_session(ops, &tmp_err);
             ret = ops->chmod(url_path, mode);
@@ -216,7 +216,7 @@ int lfc_accessG(plugin_handle handle, const char *lfn, int mode, GError **err)
     char *url_path = NULL, *url_host = NULL;
 
     if ((ret = url_converter(handle, lfn, &url_host, &url_path, &tmp_err)) == 0) {
-        ret = lfc_configure_environment(ops, url_host, &tmp_err);
+        ret = lfc_configure_environment(ops, url_host, lfn, &tmp_err);
         if (!tmp_err) {
             gfal_auto_maintain_session(ops, &tmp_err);
             ret = ops->access(url_path, mode);
@@ -253,7 +253,7 @@ int lfc_renameG(plugin_handle handle, const char *oldpath, const char *newpath, 
 
     if ((ret = url_converter(handle, oldpath, &source_url_host, &source_url_path, &tmp_err)) == 0
         && (ret = url_converter(handle, newpath, &dest_url_host, &dest_url_path, &tmp_err)) == 0) {
-        ret = lfc_configure_environment(ops, source_url_host, &tmp_err);
+        ret = lfc_configure_environment(ops, source_url_host, oldpath, &tmp_err);
         if (!tmp_err) {
             gfal_auto_maintain_session(ops, &tmp_err);
             ret = ops->rename(source_url_path, dest_url_path);
@@ -293,7 +293,7 @@ int lfc_symlinkG(plugin_handle handle, const char *oldpath, const char *newpath,
 
     if ((ret = url_converter(handle, oldpath, &url_host, &url_path, &tmp_err)) == 0
         && (ret = url_converter(handle, newpath, &link_url_host, &link_url_path, &tmp_err)) == 0) {
-        ret = lfc_configure_environment(ops, url_host, &tmp_err);
+        ret = lfc_configure_environment(ops, url_host, oldpath, &tmp_err);
         if (!tmp_err) {
             gfal_auto_maintain_session(ops, &tmp_err);
             ret = ops->symlink(url_path, link_url_path);
@@ -323,7 +323,7 @@ int lfc_statG(plugin_handle handle, const char *path, struct stat *st, GError **
     char *url_path = NULL, *url_host = NULL;
 
     if ((ret = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
-        ret = lfc_configure_environment(ops, url_host, &tmp_err);
+        ret = lfc_configure_environment(ops, url_host, path, &tmp_err);
         if (!tmp_err) {
             gfal_auto_maintain_session(ops, &tmp_err);
             struct lfc_filestatg statbuf;
@@ -352,7 +352,7 @@ static int lfc_lstatG(plugin_handle handle, const char *path, struct stat *st, G
     char *url_path = NULL, *url_host = NULL;
 
     if ((ret = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
-        ret = lfc_configure_environment(ops, url_host, &tmp_err);
+        ret = lfc_configure_environment(ops, url_host, path, &tmp_err);
         if (!tmp_err) {
             struct lfc_filestat statbuf;
 
@@ -396,7 +396,7 @@ static int lfc_mkdirpG(plugin_handle handle, const char *path, mode_t mode, gboo
     char *url_path = NULL, *url_host = NULL;
 
     if ((ret = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
-        ret = lfc_configure_environment(ops, url_host, &tmp_err);
+        ret = lfc_configure_environment(ops, url_host, path, &tmp_err);
         if (!tmp_err) {
             gfal_auto_maintain_session(ops, &tmp_err);
             ret = gfal_lfc_ifce_mkdirpG(ops, url_path, mode, pflag, &tmp_err);
@@ -420,7 +420,7 @@ static int lfc_rmdirG(plugin_handle handle, const char *path, GError **err)
     char *url_path = NULL, *url_host = NULL;
 
     if ((ret = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
-        ret = lfc_configure_environment(ops, url_host, &tmp_err);
+        ret = lfc_configure_environment(ops, url_host, path, &tmp_err);
         if (!tmp_err) {
             ret = ops->rmdir(url_path);
             if (ret < 0) {
@@ -449,7 +449,7 @@ static gfal_file_handle lfc_opendirG(plugin_handle handle, const char *path, GEr
     char *url_path = NULL, *url_host = NULL;
 
     if (url_converter(handle, path, &url_host, &url_path, &tmp_err) == 0) {
-        lfc_configure_environment(ops, url_host, &tmp_err);
+        lfc_configure_environment(ops, url_host, path, &tmp_err);
         if (!tmp_err) {
             gfal_auto_maintain_session(ops, &tmp_err);
 
@@ -571,7 +571,7 @@ char **lfc_getSURLG(plugin_handle handle, const char *path, GError **err)
     char *url_path = NULL, *url_host = NULL;
 
     if ((url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
-        (void) lfc_configure_environment(ops, url_host, &tmp_err);
+        (void) lfc_configure_environment(ops, url_host, path, &tmp_err);
         if (!tmp_err) {
             resu = gfal_lfc_getSURL(ops, url_path, &tmp_err);
         }
@@ -609,7 +609,7 @@ ssize_t lfc_getxattr_getguid(plugin_handle handle, const char *path, void *buff,
     char *url_path = NULL, *url_host = NULL;
 
     if ((res = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
-        res = lfc_configure_environment(ops, url_host, &tmp_err);
+        res = lfc_configure_environment(ops, url_host, path, &tmp_err);
         if (!tmp_err) {
             if (size == 0 || buff == NULL) { // just return the size of a guid
                 res = sizeof(char) * 36; // strng uuid are 36 bytes long
@@ -642,7 +642,7 @@ ssize_t lfc_getxattr_comment(plugin_handle handle, const char *path, void *buff,
     char *url_path = NULL, *url_host = NULL;
 
     if ((res = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
-        res = lfc_configure_environment(ops, url_host, &tmp_err);
+        res = lfc_configure_environment(ops, url_host, path, &tmp_err);
         if (!tmp_err) {
             res = gfal_lfc_getComment(ops, url_path, buff, size, &tmp_err);
         }
@@ -722,7 +722,7 @@ int lfc_setxattr_comment(plugin_handle handle, const char *path, const char *nam
     char *url_path = NULL, *url_host = NULL;
 
     if ((res = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
-        res = lfc_configure_environment(ops, url_host, &tmp_err);
+        res = lfc_configure_environment(ops, url_host, path, &tmp_err);
         if (!tmp_err) {
             res = gfal_lfc_setComment(ops, url_path, value, size, &tmp_err);
         }
@@ -802,7 +802,7 @@ char *lfc_resolve_guid(plugin_handle handle, const char *guid, GError **err)
     struct lfc_ops *ops = (struct lfc_ops *) handle;
 
     if (url_converter(handle, guid, &url_host, &url_path, &tmp_err) == 0) {
-        lfc_configure_environment(ops, url_host, &tmp_err);
+        lfc_configure_environment(ops, url_host, guid, &tmp_err);
         if (!tmp_err) {
             res = url_path;
         }
@@ -821,7 +821,7 @@ static int lfc_unlinkG(plugin_handle handle, const char *path, GError **err)
     int ret = -1;
 
     if ((ret = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
-        ret = lfc_configure_environment(ops, url_host, &tmp_err);
+        ret = lfc_configure_environment(ops, url_host, path, &tmp_err);
         if (!tmp_err) {
             int nreplies = 0;
             int *replies = NULL;
@@ -869,7 +869,7 @@ static ssize_t lfc_readlinkG(plugin_handle handle, const char *path, char *buff,
     char *url_path = NULL, *url_host = NULL;
 
     if ((ret = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
-        ret = lfc_configure_environment(ops, url_host, &tmp_err);
+        ret = lfc_configure_environment(ops, url_host, path, &tmp_err);
         if (!tmp_err) {
             ret = ops->readlink(url_path, res_buff, LFC_BUFF_SIZE);
             if (ret == -1) {
@@ -925,8 +925,6 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError **err)
     ops->lfc_conn_try_int = (char *) g_getenv(LFC_ENV_VAR_CONRETRYINT);
     ops->lfc_conn_timeout = (char *) g_getenv(LFC_ENV_VAR_CONNTIMEOUT);
     ops->handle = handle;
-
-    lfc_configure_environment(ops, NULL, err);
 
     ops->cache_stat = gsimplecache_new(5000, &internal_stat_copy, sizeof(struct stat));
     gfal_lfc_regex_compile(&(ops->rex), err);

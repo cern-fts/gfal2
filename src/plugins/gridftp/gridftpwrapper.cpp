@@ -24,6 +24,7 @@
 #include <uri/gfal2_uri.h>
 #include <exceptions/gfalcoreexception.hpp>
 #include <globus_ftp_client_debug_plugin.h>
+#include <exceptions/gerror_to_cpp.h>
 #include "gridftp_plugin.h"
 #include "gridftpwrapper.h"
 #include "gridftp_pasv_plugin.h"
@@ -75,10 +76,9 @@ GassCopyAttrHandler::~GassCopyAttrHandler()
 }
 
 
-GridFTPSessionHandler::GridFTPSessionHandler(GridFTPFactory* f, const std::string &uri) :
-        factory(f), hostname(gridftp_hostname_from_url(uri))
+GridFTPSessionHandler::GridFTPSessionHandler(GridFTPFactory* f, const std::string &uri): factory(f)
 {
-    this->session = f->get_session(this->hostname);
+    this->session = f->get_session(uri);
 
     GridFTPRequestState req(this);
     globus_result_t result = globus_ftp_client_feat(&this->session->handle_ftp, (char*)uri.c_str(), &this->session->operation_attr_ftp,
@@ -104,8 +104,8 @@ GridFTPSessionHandler::~GridFTPSessionHandler()
 }
 
 
-GridFTPSession::GridFTPSession(gfal2_context_t context, const std::string& hostname):
-        hostname(hostname), cred_id(NULL), pasv_plugin(NULL), context(context), params(NULL)
+GridFTPSession::GridFTPSession(gfal2_context_t context, const std::string& baseurl):
+        baseurl(baseurl), cred_id(NULL), pasv_plugin(NULL), context(context), params(NULL)
 {
     globus_result_t res;
 
@@ -265,18 +265,30 @@ void GridFTPSession::set_udt(bool udt)
 }
 
 
-void gfal_globus_set_credentials(gfal2_context_t context, const char *url, gss_cred_id_t *cred_id,
-    globus_ftp_client_operationattr_t* opattr)
+std::string gfal_gridftp_get_credentials(gfal2_context_t context, const std::string &url,
+    gchar **ucert, gchar **ukey, gchar **user, gchar **passwd)
 {
-    // X509
-    gchar* ucert = gfal2_get_opt_string(context, "X509", "CERT", NULL);
-    gchar* ukey = gfal2_get_opt_string(context, "X509", "KEY", NULL);
+    GError *error = NULL;
+    const char *baseurl;
+
+    *ucert = gfal2_cred_get(context, GFAL_CRED_X509_CERT, url.c_str(), &baseurl, &error);
+    Gfal::gerror_to_cpp(&error);
+
+    *ukey = gfal2_cred_get(context, GFAL_CRED_X509_KEY, url.c_str(), &baseurl, &error);
+    Gfal::gerror_to_cpp(&error);
 
     // User/password
-    gchar *user = NULL, *passwd = NULL;
-    if (strncmp(url, "ftp://", 6) == 0) {
-        user = gfal2_get_opt_string_with_default(context, "FTP", "USER", "anonymous");
-        passwd = gfal2_get_opt_string_with_default(context, "FTP", "PASSWORD", "anonymous");
+    if (strncmp(url.c_str(), "ftp://", 6) == 0) {
+        *user = gfal2_cred_get(context, GFAL_CRED_USER, url.c_str(), &baseurl, &error);
+        Gfal::gerror_to_cpp(&error);
+        if (!*user) {
+            *user = gfal2_get_opt_string_with_default(context, "FTP", "USER", "anonymous");
+        }
+        *passwd = gfal2_cred_get(context, GFAL_CRED_PASSWD, url.c_str(), &baseurl, &error);
+        Gfal::gerror_to_cpp(&error);
+        if (!*passwd) {
+            *passwd = gfal2_get_opt_string_with_default(context, "FTP", "PASSWORD", "anonymous");
+        }
     }
 
     // Set credentials
@@ -290,13 +302,11 @@ void gfal_globus_set_credentials(gfal2_context_t context, const char *url, gss_c
         gfal2_log(G_LOG_LEVEL_DEBUG, "FTP using user %s", user);
     }
 
-    gfal_globus_set_credentials(ucert, ukey, user, passwd, cred_id, opattr);
+    if (baseurl != NULL && baseurl[0] != '\0') {
+        return baseurl;
+    }
 
-    // Release memory
-    g_free(ucert);
-    g_free(ukey);
-    g_free(user);
-    g_free(passwd);
+    return gridftp_hostname_from_url(url);
 }
 
 
@@ -405,8 +415,7 @@ GridFTPFactory* GridFTPSessionHandler::get_factory()
 }
 
 
-GridFTPFactory::GridFTPFactory(gfal2_context_t handle) :
-        gfal2_context(handle)
+GridFTPFactory::GridFTPFactory(gfal2_context_t handle): gfal2_context(handle)
 {
     GError * tmp_err = NULL;
     session_reuse = gfal2_get_opt_boolean(gfal2_context, GRIDFTP_CONFIG_GROUP,
@@ -439,38 +448,38 @@ void GridFTPFactory::recycle_session(GridFTPSession* session)
 {
     globus_mutex_lock(&mux_cache);
 
-    if (session_cache.size() > size_cache)
+    if (session_cache.size() > size_cache) {
         clear_cache();
+    }
 
-    gfal2_log(G_LOG_LEVEL_DEBUG, "insert gridftp session for %s in cache ...", session->hostname.c_str());
-    session_cache.insert(std::pair<std::string, GridFTPSession*>(session->hostname, session));
+    gfal2_log(G_LOG_LEVEL_DEBUG, "insert gridftp session for %s in cache ...", session->baseurl.c_str());
+    session_cache.insert(std::pair<std::string, GridFTPSession*>(session->baseurl, session));
     globus_mutex_unlock(&mux_cache);
 }
 
 
 // recycle a gridftp session object from cache if exist, return NULL else
-GridFTPSession* GridFTPFactory::get_recycled_handle(
-        const std::string & hostname)
+GridFTPSession* GridFTPFactory::get_recycled_handle(const std::string &baseurl)
 {
     globus_mutex_lock(&mux_cache);
 
     GridFTPSession* session = NULL;
     // try to find a session explicitly associated with this handle
-    std::multimap<std::string, GridFTPSession*>::iterator it = session_cache.find(hostname);
+    std::multimap<std::string, GridFTPSession*>::iterator it = session_cache.find(baseurl);
 
     // if no session found, take a generic one
     if (it == session_cache.end()) {
         gfal2_log(G_LOG_LEVEL_DEBUG,
-                "no session associated with this hostname, try find generic one .... ");
+                "no session associated with this baseurl, try find generic one .... ");
         it = session_cache.begin();
     }
     if (it != session_cache.end()) {
-        gfal2_log(G_LOG_LEVEL_DEBUG,"gridftp session for: %s found in  cache !", hostname.c_str());
+        gfal2_log(G_LOG_LEVEL_DEBUG,"gridftp session for: %s found in  cache !", baseurl.c_str());
         session = (*it).second;
         session_cache.erase(it);
     }
     else {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "no session found in cache for %s!", hostname.c_str());
+        gfal2_log(G_LOG_LEVEL_DEBUG, "no session found in cache for %s!", baseurl.c_str());
     }
 
     globus_mutex_unlock(&mux_cache);
@@ -588,7 +597,7 @@ void gfal_globus_check_result(GQuark scope, globus_result_t res)
 }
 
 
-GridFTPSession* GridFTPFactory::get_new_handle(const std::string &hostname)
+GridFTPSession* GridFTPFactory::get_new_handle(const std::string &baseurl)
 {
 
     bool gridftp_v2 = gfal2_get_opt_boolean_with_default(gfal2_context, GRIDFTP_CONFIG_GROUP,
@@ -600,24 +609,34 @@ GridFTPSession* GridFTPFactory::get_new_handle(const std::string &hostname)
     bool dcau = gfal2_get_opt_boolean_with_default(gfal2_context, GRIDFTP_CONFIG_GROUP,
             GRIDFTP_CONFIG_DCAU, false);
 
-    std::auto_ptr<GridFTPSession> session(new GridFTPSession(gfal2_context, hostname));
+    std::auto_ptr<GridFTPSession> session(new GridFTPSession(gfal2_context, baseurl));
 
     session->set_gridftpv2(gridftp_v2);
     session->set_dcau(dcau);
     session->set_ipv6(ipv6);
     session->set_delayed_pass(delay_passv);
 
-    gfal_globus_set_credentials(gfal2_context, hostname.c_str(), &session->cred_id, &session->operation_attr_ftp);
-
     return session.release();
 }
 
 
-GridFTPSession* GridFTPFactory::get_session(const std::string &hostname)
+GridFTPSession* GridFTPFactory::get_session(const std::string &url)
 {
+    gchar *ucert = NULL, *ukey = NULL;
+    gchar *user = NULL, *passwd = NULL;
+    std::string baseurl = gfal_gridftp_get_credentials(gfal2_context, url, &ucert, &ukey, &user, &passwd);
+
     GridFTPSession* session = NULL;
-    if ((session = get_recycled_handle(hostname)) == NULL)
-        session = get_new_handle(hostname);
+    if ((session = get_recycled_handle(baseurl)) == NULL) {
+        session = get_new_handle(baseurl);
+    }
+
+    gfal_globus_set_credentials(ucert, ukey, user, passwd, &session->cred_id, &session->operation_attr_ftp);
+    g_free(ucert);
+    g_free(ukey);
+    g_free(user);
+    g_free(passwd);
+
     return session;
 }
 
@@ -629,7 +648,7 @@ void GridFTPFactory::release_session(GridFTPSession* session)
         recycle_session(session);
     }
     else {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "destroy gridftp session for %s ...", session->hostname.c_str());
+        gfal2_log(G_LOG_LEVEL_DEBUG, "destroy gridftp session for %s ...", session->baseurl.c_str());
         delete session;
     }
 }

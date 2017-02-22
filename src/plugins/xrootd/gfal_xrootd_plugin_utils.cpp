@@ -77,14 +77,20 @@ void reset_stat(struct stat& st)
 }
 
 
-static std::string credentials_query(gfal2_context_t context)
+static std::string credentials_query(gfal2_context_t context, const char *url)
 {
-    gchar* ucert = gfal2_get_opt_string(context, "X509", "CERT", NULL);
-    gchar* ukey = gfal2_get_opt_string(context, "X509", "KEY", NULL);
-    if (!ucert)
+    GError *error = NULL;
+    gchar *ucert = gfal2_cred_get(context, GFAL_CRED_X509_CERT, url, NULL, &error);
+    g_clear_error(&error);
+    gchar *ukey = gfal2_cred_get(context, GFAL_CRED_X509_KEY, url, NULL, &error);
+    g_clear_error(&error);
+
+    if (!ucert) {
         return std::string();
-    if (!ukey)
+    }
+    if (!ukey) {
         ukey = ucert;
+    }
 
     std::ostringstream args;
 
@@ -130,7 +136,7 @@ std::string normalize_url(gfal2_context_t context, const char* url)
         g_free(p);
     }
 
-    std::string creds = credentials_query(context);
+    std::string creds = credentials_query(context, url);
     if (!creds.empty()) {
         if (uri->query != NULL) {
             char *p = uri->query;

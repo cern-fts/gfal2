@@ -97,10 +97,10 @@ struct GassCopyAttrHandler {
 
 class GridFTPSession {
 public:
-    GridFTPSession(gfal2_context_t context, const std::string& hostname);
+    GridFTPSession(gfal2_context_t context, const std::string& baseurl);
     ~GridFTPSession();
 
-    std::string hostname;
+    std::string baseurl;
 
     gss_cred_id_t cred_id;
     globus_ftp_client_handle_t handle_ftp;
@@ -155,7 +155,6 @@ public:
 
 private:
     GridFTPFactory* factory;
-    std::string hostname;
 };
 
 
@@ -166,7 +165,7 @@ public:
 
     /** Get a suitable session, new or reused
      **/
-    GridFTPSession* get_session(const std::string &hostname);
+    GridFTPSession* get_session(const std::string &url);
 
     /** Release the session, and close it if should not be reused
      **/
@@ -185,8 +184,8 @@ private:
 
     void recycle_session(GridFTPSession* sess);
     void clear_cache();
-    GridFTPSession* get_recycled_handle(const std::string &hostname);
-    GridFTPSession* get_new_handle(const std::string &hostname);
+    GridFTPSession* get_recycled_handle(const std::string &baseurl);
+    GridFTPSession* get_new_handle(const std::string &baseurl);
 };
 
 
@@ -215,7 +214,7 @@ int gfal_globus_error_convert(globus_object_t * error, char ** str_error);
 
 // throw Glib::Error if error associated with this result
 void gfal_globus_check_result(GQuark scope, globus_result_t res);
-
+/*
 void gfal_globus_set_credentials(gfal2_context_t context, const char *url,
     gss_cred_id_t *cred_id, globus_ftp_client_operationattr_t* opattr);
 
@@ -223,5 +222,6 @@ void gfal_globus_set_credentials(const char* ucert, const char* ukey,
     const char *user, const char *passwd,
     gss_cred_id_t *cred_id,
     globus_ftp_client_operationattr_t* opattr);
+*/
 
 #endif /* GRIDFTPWRAPPER_H */

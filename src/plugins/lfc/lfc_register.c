@@ -239,7 +239,7 @@ int gfal_lfc_register(plugin_handle handle, gfal2_context_t context,
     }
 
     // Set up LFC environment
-    ret_status = lfc_configure_environment(ops, lfc_host, &tmp_err);
+    ret_status = lfc_configure_environment(ops, lfc_host, dst_url, &tmp_err);
     if (ret_status != 0) {
         goto register_end;
     }
@@ -322,7 +322,7 @@ int gfal_lfc_unregister(plugin_handle handle, const char *url, const char *sfn, 
         goto unregister_end;
     }
 
-    ret_status = lfc_configure_environment(ops, lfc_host, &tmp_err);
+    ret_status = lfc_configure_environment(ops, lfc_host, url, &tmp_err);
     if (ret_status != 0) {
         goto unregister_end;
     }

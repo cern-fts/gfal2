@@ -154,6 +154,7 @@ gfal_srm_easy_t gfal_srm_ifce_easy_context(gfal_srmv2_opt *opts,
 {
     GError *nested_error = NULL;
     char full_endpoint[GFAL_URL_MAX_LEN];
+    const char *baseurl;
     enum gfal_srm_proto srm_types;
 
     if (gfal_srm_determine_endpoint(opts, surl, full_endpoint, sizeof(full_endpoint), &srm_types, &nested_error) < 0) {
@@ -161,18 +162,29 @@ gfal_srm_easy_t gfal_srm_ifce_easy_context(gfal_srmv2_opt *opts,
         return NULL;
     }
 
-    gchar *ucert = gfal2_get_opt_string(opts->handle, "X509", "CERT", NULL);
-    gchar *ukey = gfal2_get_opt_string(opts->handle, "X509", "KEY", NULL);
+    gchar *ucert = gfal2_cred_get(opts->handle, GFAL_CRED_X509_CERT, surl, &baseurl, err);
+    if (*err) {
+        return NULL;
+    }
+
+    gchar *ukey = gfal2_cred_get(opts->handle, GFAL_CRED_X509_KEY, surl, &baseurl, err);
+    if (*err) {
+        return NULL;
+    }
+
+    if (!baseurl || !*baseurl) {
+        baseurl = full_endpoint;
+    }
 
     g_static_rec_mutex_lock(&opts->srm_context_mutex);
 
     // Try with existing one
     if (opts->srm_context) {
-        if (is_same_context(opts, full_endpoint, ucert, ukey)) {
-            gfal2_log(G_LOG_LEVEL_DEBUG, "SRM context recycled for %s", full_endpoint);
+        if (is_same_context(opts, baseurl, ucert, ukey)) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "SRM context recycled for %s", baseurl);
         }
         else {
-            gfal2_log(G_LOG_LEVEL_DEBUG, "SRM context invalidated for %s", full_endpoint);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "SRM context invalidated for %s", baseurl);
             srm_context_free(opts->srm_context);
             opts->srm_context = NULL;
         }

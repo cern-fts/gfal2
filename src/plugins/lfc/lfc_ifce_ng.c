@@ -81,7 +81,7 @@ const char *lfc_plugin_get_lfc_env(struct lfc_ops *ops, const char *var_name)
 }
 
 
-int lfc_configure_environment(struct lfc_ops *ops, const char *host, GError **err)
+int lfc_configure_environment(struct lfc_ops *ops, const char *host, const char *url, GError **err)
 {
     gfal_lfc_init_thread(ops);
 
@@ -149,8 +149,15 @@ int lfc_configure_environment(struct lfc_ops *ops, const char *host, GError **er
     }
 
     // Set credentials
-    gchar *ucert = gfal2_get_opt_string(ops->handle, "X509", "CERT", NULL);
-    gchar *ukey = gfal2_get_opt_string(ops->handle, "X509", "KEY", NULL);
+    gchar *ucert = gfal2_cred_get(ops->handle, GFAL_CRED_X509_CERT, url, NULL, err);
+    if (*err) {
+        return -1;
+    }
+    gchar *ukey = gfal2_cred_get(ops->handle, GFAL_CRED_X509_KEY, url, NULL, err);
+    if (*err) {
+        return -1;
+    }
+
     if (ucert && ukey) {
         gfal2_log(G_LOG_LEVEL_DEBUG, "lfc plugin : using certificate %s", ucert);
         gfal2_log(G_LOG_LEVEL_DEBUG, "lfc plugin : using private key %s", ukey);

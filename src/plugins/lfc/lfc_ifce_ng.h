@@ -101,7 +101,7 @@ struct lfc_ops {
 };
 
 
-int lfc_configure_environment(struct lfc_ops * ops, const char* host, GError** err);
+int lfc_configure_environment(struct lfc_ops * ops, const char* host, const char *url, GError** err);
 
 const char* lfc_plugin_get_lfc_env(struct lfc_ops* ops, const char* var_name);
 

@@ -52,14 +52,20 @@ static int get_corresponding_davix_log_level()
 
 
 /// Authn implementation
-static void gfal_http_get_ucert(RequestParams & params, gfal2_context_t handle)
+static void gfal_http_get_ucert(const Davix::Uri &url, RequestParams & params, gfal2_context_t handle)
 {
     std::string ukey, ucert;
-    DavixError* tmp_err=NULL;
+    DavixError* tmp_err = NULL;
+    GError *error = NULL;
 
     // Try user defined first
-    gchar *ucert_p = gfal2_get_opt_string(handle, "X509", "CERT", NULL);
-    gchar *ukey_p = gfal2_get_opt_string(handle, "X509", "KEY", NULL);
+    std::string url_string = url.getString();
+
+    gchar *ucert_p = gfal2_cred_get(handle, GFAL_CRED_X509_CERT, url_string.c_str(), NULL, &error);
+    g_clear_error(&error);
+    gchar *ukey_p = gfal2_cred_get(handle, GFAL_CRED_X509_KEY, url_string.c_str(), NULL, &error);
+    g_clear_error(&error);
+
     if (ucert_p) {
         ucert.assign(ucert_p);
         ukey= (ukey_p != NULL)?(std::string(ukey_p)):(ucert);
@@ -153,7 +159,7 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davi
     if (insecure_mode) {
         req_params->setSSLCAcheck(false);
     }
-    gfal_http_get_ucert(*req_params, handle);
+    gfal_http_get_ucert(uri, *req_params, handle);
     gfal_http_get_aws(*req_params, handle, uri);
 
     if (uri.getProtocol().compare(0, 4, "http") == 0 || uri.getProtocol().compare(0, 3, "dav") == 0) {
