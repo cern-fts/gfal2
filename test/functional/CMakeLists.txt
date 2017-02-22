@@ -227,6 +227,13 @@ if(FUNCTIONAL_TESTS)
             add_test(gfalt_test_pasv_${name} gfalt_test_pasv ${src_dir} ${dst_dir})
         endfunction(test_pasv name src_dir dst_dir)
 
+        add_test_executable(gfalt_test_double_cred "gfalt_test_double_cred.cpp")
+        target_link_libraries(gfalt_test_double_cred ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} gfal2_test_shared)
+
+        function(test_double_cred name src_dir dst_dir)
+            add_test(gfalt_test_double_cred_{name} gfalt_test_double_cred ${src_dir} ${dst_dir})
+        endfunction(test_double_cred name src_dir dst_dir)
+
     endif(MAIN_TRANSFER)
 
     include(functional-test-parameters.cmake)

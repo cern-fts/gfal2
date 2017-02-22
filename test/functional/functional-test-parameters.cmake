@@ -314,4 +314,7 @@ IF (MAIN_TRANSFER)
         # Passive plugin, which only makes sense for GridFTP
         test_pasv("PASV" ${gsiftp_prefix_dpm} ${gsiftp_prefix_dpm})
 
+        # Same for double credentials
+        test_double_cred("GSIFTP" ${gsiftp_prefix_dpm} ${gsiftp_prefix_dpm})
+
 ENDIF (MAIN_TRANSFER)
