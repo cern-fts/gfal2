@@ -42,6 +42,7 @@ static void gfal2_ftp_client_pasv_plugin_destroy(globus_ftp_client_plugin_t* plu
         void* plugin_specific)
 {
     globus_ftp_client_plugin_destroy(plugin);
+    globus_free(plugin);
 }
 
 

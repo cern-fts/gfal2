@@ -175,6 +175,7 @@ GridFTPSession::~GridFTPSession()
     globus_gass_copy_handleattr_destroy(&gass_handle_attr);
     globus_ftp_client_handleattr_destroy(&attr_handle);
     globus_ftp_client_features_destroy(&this->ftp_features);
+    globus_ftp_client_plugin_destroy(&this->pasv_plugin);
     OM_uint32 minor_status;
     gss_release_cred(&minor_status, &this->cred_id);
 }
