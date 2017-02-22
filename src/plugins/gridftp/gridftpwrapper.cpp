@@ -57,7 +57,7 @@ static std::string gridftp_hostname_from_url(const std::string& url)
 }
 
 
-GassCopyAttrHandler::GassCopyAttrHandler(globus_ftp_client_operationattr_t* ftp_operation_attr)
+GassCopyAttrHandler::GassCopyAttrHandler(globus_ftp_client_operationattr_t* ftp_operation_attr): cred_id(NULL)
 {
     // initialize gass copy attr
     globus_result_t res = globus_gass_copy_attr_init(&(attr_gass));
@@ -73,6 +73,10 @@ GassCopyAttrHandler::GassCopyAttrHandler(globus_ftp_client_operationattr_t* ftp_
 GassCopyAttrHandler::~GassCopyAttrHandler()
 {
     globus_ftp_client_operationattr_destroy(&(operation_attr_ftp_for_gass));
+    if (cred_id) {
+        OM_uint32 minor_status;
+        gss_release_cred(&minor_status, &cred_id);
+    }
 }
 
 
@@ -629,9 +633,9 @@ GridFTPSession* GridFTPFactory::get_session(const std::string &url)
     GridFTPSession* session = NULL;
     if ((session = get_recycled_handle(baseurl)) == NULL) {
         session = get_new_handle(baseurl);
+        gfal_globus_set_credentials(ucert, ukey, user, passwd, &session->cred_id, &session->operation_attr_ftp);
     }
 
-    gfal_globus_set_credentials(ucert, ukey, user, passwd, &session->cred_id, &session->operation_attr_ftp);
     g_free(ucert);
     g_free(ukey);
     g_free(user);

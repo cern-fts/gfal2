@@ -220,6 +220,33 @@ void gridftp_bulk_destroy_perf_cb(void * user_specific)
 
 
 static
+void gridftp_pipeline_init_operationattr(globus_ftp_client_operationattr_t *ftp_operation_attr,
+    const globus_ftp_client_operationattr_t *original,
+    gss_cred_id_t *cred_id,
+    gfal2_context_t context, bool udt, const char *url, GError **op_error)
+{
+    globus_ftp_client_operationattr_copy(ftp_operation_attr, original);
+    globus_ftp_client_operationattr_set_mode(ftp_operation_attr, GLOBUS_FTP_CONTROL_MODE_EXTENDED_BLOCK);
+    globus_ftp_client_operationattr_set_delayed_pasv(ftp_operation_attr, GLOBUS_FALSE);
+
+    if (udt) {
+        globus_ftp_client_operationattr_set_net_stack(ftp_operation_attr, "udt");
+    }
+    else {
+        globus_ftp_client_operationattr_set_net_stack(ftp_operation_attr, "default");
+    }
+
+    gchar *ucert = gfal2_cred_get(context, GFAL_CRED_X509_CERT, url, NULL, op_error);
+    gchar *ukey = gfal2_cred_get(context, GFAL_CRED_X509_KEY, url, NULL, op_error);
+
+    gfal_globus_set_credentials(ucert,ukey, NULL, NULL, cred_id, ftp_operation_attr);
+
+    g_free(ucert);
+    g_free(ukey);
+}
+
+
+static
 int gridftp_pipeline_transfer(plugin_handle plugin_data,
         gfal2_context_t context, bool udt, GridFTPBulkData* pairs, GError** op_error)
 {
@@ -228,7 +255,8 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
 
     globus_ftp_client_plugin_t throughput_plugin;
     globus_ftp_client_handle_t ftp_handle;
-    globus_ftp_client_operationattr_t ftp_operation_attr;
+    globus_ftp_client_operationattr_t ftp_operation_attr_src, ftp_operation_attr_dst;
+    gss_cred_id_t cred_id_src = NULL, cred_id_dst = NULL;
     globus_ftp_client_handleattr_t* ftp_handle_attr = handler.get_ftp_client_handleattr();
 
     // First viable pair goes with the globus call
@@ -254,15 +282,15 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
 
     globus_ftp_client_handleattr_set_pipeline(ftp_handle_attr, 0, gridftp_pipeline_callback, pairs);
     globus_ftp_client_handle_init(&ftp_handle, ftp_handle_attr);
-    globus_ftp_client_operationattr_init(&ftp_operation_attr);
-    globus_ftp_client_operationattr_copy(&ftp_operation_attr, handler.get_ftp_client_operationattr());
-    globus_ftp_client_operationattr_set_mode(&ftp_operation_attr, GLOBUS_FTP_CONTROL_MODE_EXTENDED_BLOCK);
-    globus_ftp_client_operationattr_set_delayed_pasv(&ftp_operation_attr, GLOBUS_FALSE);
 
-    if (udt)
-        globus_ftp_client_operationattr_set_net_stack(&ftp_operation_attr, "udt");
-    else
-        globus_ftp_client_operationattr_set_net_stack(&ftp_operation_attr, "default");
+
+    gridftp_pipeline_init_operationattr(
+        &ftp_operation_attr_src, handler.get_ftp_client_operationattr(), &cred_id_src,
+        context, udt, pairs->srcs[pairs->index], op_error);
+    gridftp_pipeline_init_operationattr(
+        &ftp_operation_attr_dst, handler.get_ftp_client_operationattr(), &cred_id_dst,
+        context, udt, pairs->dsts[pairs->index], op_error);
+
 
     int nbstreams = gfalt_get_nbstreams(pairs->params, NULL);
     guint64 buffer_size = gfalt_get_tcp_buffer_size(pairs->params, NULL);
@@ -272,13 +300,18 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
     if (nbstreams > 1) {
         parallelism.fixed.size = nbstreams;
         parallelism.mode = GLOBUS_FTP_CONTROL_PARALLELISM_FIXED;
-        globus_ftp_client_operationattr_set_mode(&ftp_operation_attr, GLOBUS_FTP_CONTROL_MODE_EXTENDED_BLOCK);
-        globus_ftp_client_operationattr_set_parallelism(&ftp_operation_attr, &parallelism);
+
+        globus_ftp_client_operationattr_set_mode(&ftp_operation_attr_src, GLOBUS_FTP_CONTROL_MODE_EXTENDED_BLOCK);
+        globus_ftp_client_operationattr_set_parallelism(&ftp_operation_attr_src, &parallelism);
+        globus_ftp_client_operationattr_set_mode(&ftp_operation_attr_dst, GLOBUS_FTP_CONTROL_MODE_EXTENDED_BLOCK);
+        globus_ftp_client_operationattr_set_parallelism(&ftp_operation_attr_dst, &parallelism);
     }
+
     if (buffer_size > 0) {
         tcp_buffer_size.mode = GLOBUS_FTP_CONTROL_TCPBUFFER_FIXED;
         tcp_buffer_size.fixed.size = buffer_size;
-        globus_ftp_client_operationattr_set_tcp_buffer(&ftp_operation_attr, &tcp_buffer_size);
+        globus_ftp_client_operationattr_set_tcp_buffer(&ftp_operation_attr_src, &tcp_buffer_size);
+        globus_ftp_client_operationattr_set_tcp_buffer(&ftp_operation_attr_dst, &tcp_buffer_size);
     }
 
 
@@ -290,8 +323,8 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
         globus_result_t globus_return;
 
         globus_return = globus_ftp_client_third_party_transfer(&ftp_handle,
-                pairs->srcs[pairs->index], &ftp_operation_attr,
-                pairs->dsts[pairs->index], &ftp_operation_attr,
+                pairs->srcs[pairs->index], &ftp_operation_attr_src,
+                pairs->dsts[pairs->index], &ftp_operation_attr_dst,
                 GLOBUS_NULL, gridftp_done_callback, pairs);
         gfal_globus_check_result(GSIFTP_BULK_DOMAIN, globus_return);
 
@@ -338,8 +371,13 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
     globus_ftp_client_throughput_plugin_destroy(&throughput_plugin);
 
     globus_ftp_client_handle_destroy(&ftp_handle);
-    globus_ftp_client_operationattr_destroy(&ftp_operation_attr);
+    globus_ftp_client_operationattr_destroy(&ftp_operation_attr_src);
+    globus_ftp_client_operationattr_destroy(&ftp_operation_attr_dst);
     globus_ftp_client_handleattr_set_pipeline(ftp_handle_attr, 0, NULL, NULL);
+
+    OM_uint32 minor_status;
+    gss_release_cred(&minor_status, &cred_id_src);
+    gss_release_cred(&minor_status, &cred_id_dst);
 
     return res;
 }

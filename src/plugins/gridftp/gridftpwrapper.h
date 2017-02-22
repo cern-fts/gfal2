@@ -92,6 +92,7 @@ struct GassCopyAttrHandler {
     ~GassCopyAttrHandler();
     globus_gass_copy_attr_t attr_gass;
     globus_ftp_client_operationattr_t operation_attr_ftp_for_gass;
+    gss_cred_id_t cred_id;
 };
 
 
@@ -214,14 +215,10 @@ int gfal_globus_error_convert(globus_object_t * error, char ** str_error);
 
 // throw Glib::Error if error associated with this result
 void gfal_globus_check_result(GQuark scope, globus_result_t res);
-/*
-void gfal_globus_set_credentials(gfal2_context_t context, const char *url,
-    gss_cred_id_t *cred_id, globus_ftp_client_operationattr_t* opattr);
 
 void gfal_globus_set_credentials(const char* ucert, const char* ukey,
     const char *user, const char *passwd,
     gss_cred_id_t *cred_id,
     globus_ftp_client_operationattr_t* opattr);
-*/
 
 #endif /* GRIDFTPWRAPPER_H */

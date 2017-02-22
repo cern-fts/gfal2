@@ -327,6 +327,24 @@ void gsiftp_3rd_callback(void* user_args, globus_gass_copy_handle_t* handle,
 }
 
 
+void gridftp_set_credentials(gfal2_context_t context, GassCopyAttrHandler &gass_attr, const char *url)
+{
+    GError *error = NULL;
+    const char *baseurl;
+
+    gchar *ucert = gfal2_cred_get(context, GFAL_CRED_X509_CERT, url, &baseurl, &error);
+    Gfal::gerror_to_cpp(&error);
+    gchar *ukey = gfal2_cred_get(context, GFAL_CRED_X509_KEY, url, &baseurl, &error);
+    Gfal::gerror_to_cpp(&error);
+
+    gfal_globus_set_credentials(ucert, ukey, NULL, NULL, &gass_attr.cred_id, gass_attr.attr_gass.ftp_attr);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Using %s:%s for %s", ucert, ukey, baseurl);
+
+    g_free(ucert);
+    g_free(ukey);
+}
+
+
 static
 void gridftp_do_copy_inner(GridFTPModule* module, GridFTPFactory* factory,
         gfalt_params_t params, const char* src, const char* dst,
@@ -341,6 +359,10 @@ void gridftp_do_copy_inner(GridFTPModule* module, GridFTPFactory* factory,
 
     // Required for the PASV plugin to be able to trigger events
     req.handler->session->params = params;
+
+    // Override source/destination credentials with specifics
+    gridftp_set_credentials(factory->get_gfal2_context(), gass_attr_src, src);
+    gridftp_set_credentials(factory->get_gfal2_context(), gass_attr_dst, dst);
 
     try {
         globus_result_t res = globus_gass_copy_register_url_to_url(
