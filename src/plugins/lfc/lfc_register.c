@@ -296,13 +296,14 @@ int gfal_lfc_register(plugin_handle handle, gfal2_context_t context,
         gfal2_log(G_LOG_LEVEL_DEBUG, "lfc register: done");
     }
 
-    register_end:
+register_end:
     if (tmp_err) {
         gfal2_propagate_prefixed_error(error, tmp_err, __func__);
     }
     g_free(lfc_host);
     g_free(lfc_path);
     g_free(src_host);
+    lfc_unset_environment(ops);
     return ret_status;
 }
 
@@ -350,11 +351,12 @@ int gfal_lfc_unregister(plugin_handle handle, const char *url, const char *sfn, 
 
     gfal2_log(G_LOG_LEVEL_DEBUG, "lfc unregister: replica %s unregistered", sfn);
 
-    unregister_end:
+unregister_end:
     g_free(lfc_host);
     g_free(lfc_path);
     if (tmp_err) {
         gfal2_propagate_prefixed_error(error, tmp_err, __func__);
     }
+    lfc_unset_environment(ops);
     return ret_status;
 }

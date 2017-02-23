@@ -56,6 +56,10 @@ struct lfc_ops {
     regex_t rex; // regular expression compiled
     gfal2_context_t handle;
     GSimpleCache* cache_stat;
+
+    // Store X509_USER_* environment prior to setenv calls so it can be restored
+    char *env_user_cert, *env_user_key, *env_user_proxy;
+
 #if defined(_REENTRANT) || defined(_THREAD_SAFE) || (defined(_WIN32) && (defined(_MT) || defined(_DLL)))
     int*    (*get_serrno)(void);
 #else
@@ -102,6 +106,8 @@ struct lfc_ops {
 
 
 int lfc_configure_environment(struct lfc_ops * ops, const char* host, const char *url, GError** err);
+
+void lfc_unset_environment(struct lfc_ops *ops);
 
 const char* lfc_plugin_get_lfc_env(struct lfc_ops* ops, const char* var_name);
 

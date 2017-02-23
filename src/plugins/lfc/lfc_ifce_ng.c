@@ -158,20 +158,47 @@ int lfc_configure_environment(struct lfc_ops *ops, const char *host, const char 
         return -1;
     }
 
+    ops->env_user_cert = getenv("X509_USER_CERT");
+    ops->env_user_key = getenv("X509_USER_KEY");
+    ops->env_user_proxy = getenv("X509_USER_PROXY");
+
     if (ucert && ukey) {
         gfal2_log(G_LOG_LEVEL_DEBUG, "lfc plugin : using certificate %s", ucert);
         gfal2_log(G_LOG_LEVEL_DEBUG, "lfc plugin : using private key %s", ukey);
-        lfc_plugin_set_lfc_env(ops, "X509_USER_CERT", ucert);
-        lfc_plugin_set_lfc_env(ops, "X509_USER_KEY", ukey);
+        setenv("X509_USER_CERT", ucert, 1);
+        setenv("X509_USER_KEY", ukey, 1);
     }
     else if (ucert) {
         gfal2_log(G_LOG_LEVEL_DEBUG, "lfc plugin : using proxy %s", ucert);
-        lfc_plugin_set_lfc_env(ops, "X509_USER_PROXY", ucert);
+        setenv("X509_USER_PROXY", ucert, 1);
     }
     g_free(ucert);
     g_free(ukey);
 
     G_RETURN_ERR(ret, tmp_err, err);
+}
+
+
+void lfc_unset_environment(struct lfc_ops *ops)
+{
+    if (ops->env_user_cert) {
+        setenv("X509_USER_CERT", ops->env_user_cert, 1);
+    }
+    else {
+        unsetenv("X509_USER_CERT");
+    }
+    if (ops->env_user_key) {
+        setenv("X509_USER_KEY", ops->env_user_key, 1);
+    }
+    else {
+        unsetenv("X509_USER_KEY");
+    }
+    if (ops->env_user_proxy) {
+        setenv("X509_USER_PROXY", ops->env_user_proxy, 1);
+    }
+    else {
+        unsetenv("X509_USER_PROXY");
+    }
 }
 
 

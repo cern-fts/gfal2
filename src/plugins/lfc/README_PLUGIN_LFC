@@ -3,6 +3,6 @@
 - features :
 
  * meta-data management
- * redirection to dcap / rfio for the data access 
+ * redirection to dcap / rfio for the data access
 
-
+Note this plugin can *not* be used in a thread safe manner.

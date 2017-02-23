@@ -199,6 +199,7 @@ int lfc_chmodG(plugin_handle handle, const char *path, mode_t mode, GError **err
     }
     g_free(url_path);
     g_free(url_host);
+    lfc_unset_environment(ops);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -231,6 +232,7 @@ int lfc_accessG(plugin_handle handle, const char *lfn, int mode, GError **err)
     }
     g_free(url_path);
     g_free(url_host);
+    lfc_unset_environment(ops);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -271,6 +273,7 @@ int lfc_renameG(plugin_handle handle, const char *oldpath, const char *newpath, 
     g_free(source_url_host);
     g_free(dest_url_path);
     g_free(dest_url_host);
+    lfc_unset_environment(ops);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -306,6 +309,7 @@ int lfc_symlinkG(plugin_handle handle, const char *oldpath, const char *newpath,
     }
     g_free(url_path);
     g_free(url_host);
+    lfc_unset_environment(ops);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -336,6 +340,7 @@ int lfc_statG(plugin_handle handle, const char *path, struct stat *st, GError **
     }
     g_free(url_path);
     g_free(url_host);
+    lfc_unset_environment(ops);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -380,6 +385,7 @@ static int lfc_lstatG(plugin_handle handle, const char *path, struct stat *st, G
     }
     g_free(url_path);
     g_free(url_host);
+    lfc_unset_environment(ops);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -404,6 +410,7 @@ static int lfc_mkdirpG(plugin_handle handle, const char *path, mode_t mode, gboo
     }
     g_free(url_path);
     g_free(url_host);
+    lfc_unset_environment(ops);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -433,6 +440,7 @@ static int lfc_rmdirG(plugin_handle handle, const char *path, GError **err)
     }
     g_free(url_path);
     g_free(url_host);
+    lfc_unset_environment(ops);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -467,6 +475,9 @@ static gfal_file_handle lfc_opendirG(plugin_handle handle, const char *path, GEr
     }
     g_free(url_path);
     g_free(url_host);
+    if (d == NULL) {
+        lfc_unset_environment(ops);
+    }
     G_RETURN_ERR(((d) ? (gfal_file_handle_new2(lfc_getName(), (gpointer) d, (gpointer) oh, path)) : NULL), tmp_err,
         err);
 }
@@ -556,6 +567,7 @@ static int lfc_closedirG(plugin_handle handle, gfal_file_handle fh, GError **err
         g_free(gfal_file_handle_get_user_data(fh));
         gfal_file_handle_delete(fh);
     }
+    lfc_unset_environment(ops);
     return ret;
 }
 
@@ -578,6 +590,7 @@ char **lfc_getSURLG(plugin_handle handle, const char *path, GError **err)
     }
     g_free(url_path);
     g_free(url_host);
+    lfc_unset_environment(ops);
     G_RETURN_ERR(resu, tmp_err, err);
 }
 
@@ -627,6 +640,7 @@ ssize_t lfc_getxattr_getguid(plugin_handle handle, const char *path, void *buff,
     }
     g_free(url_path);
     g_free(url_host);
+    lfc_unset_environment(ops);
     G_RETURN_ERR(res, tmp_err, err);
 }
 
@@ -649,6 +663,7 @@ ssize_t lfc_getxattr_comment(plugin_handle handle, const char *path, void *buff,
     }
     g_free(url_path);
     g_free(url_host);
+    lfc_unset_environment(ops);
     G_RETURN_ERR(res, tmp_err, err);
 }
 
@@ -729,6 +744,7 @@ int lfc_setxattr_comment(plugin_handle handle, const char *path, const char *nam
     }
     g_free(url_path);
     g_free(url_host);
+    lfc_unset_environment(ops);
     return res;
 }
 
@@ -808,6 +824,7 @@ char *lfc_resolve_guid(plugin_handle handle, const char *guid, GError **err)
         }
     }
     g_free(url_host);
+    lfc_unset_environment(ops);
     G_RETURN_ERR(res, tmp_err, err);
 }
 
@@ -850,6 +867,7 @@ static int lfc_unlinkG(plugin_handle handle, const char *path, GError **err)
     }
     g_free(url_path);
     g_free(url_host);
+    lfc_unset_environment(ops);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -892,6 +910,7 @@ static ssize_t lfc_readlinkG(plugin_handle handle, const char *path, char *buff,
     }
     g_free(url_path);
     g_free(url_host);
+    lfc_unset_environment(ops);
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
