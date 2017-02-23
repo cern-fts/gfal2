@@ -77,6 +77,9 @@ void gfal2_cred_free(gfal2_cred_t *cred)
 
 gfal2_cred_t* gfal2_cred_dup(const gfal2_cred_t *cred)
 {
+    if (cred == NULL) {
+        return NULL;
+    }
     return gfal2_cred_new(cred->type, cred->value);
 }
 

@@ -297,14 +297,14 @@ std::string gfal_gridftp_get_credentials(gfal2_context_t context, const std::str
     }
 
     // Set credentials
-    if (ucert) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "GSIFTP using certificate %s", ucert);
+    if (*ucert) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "GSIFTP using certificate %s", *ucert);
     }
-    if (ukey) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "GSIFTP using private key %s", ukey);
+    if (*ukey) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "GSIFTP using private key %s", *ukey);
     }
-    if (user) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "FTP using user %s", user);
+    if (*user) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "FTP using user %s", *user);
     }
 
     if (baseurl != NULL && baseurl[0] != '\0') {

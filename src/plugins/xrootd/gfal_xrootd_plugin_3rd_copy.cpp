@@ -343,7 +343,7 @@ int gfal_xrootd_3rd_copy(plugin_handle plugin_data, gfal2_context_t context,
         if (op_error) {
             gfal2_propagate_prefixed_error(err, op_error, __func__);
         }
-        else {
+        else if (file_error) {
             gfal2_propagate_prefixed_error(err, file_error[0], __func__);
             g_free(file_error);
         }
