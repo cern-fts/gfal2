@@ -170,7 +170,7 @@ gfal_file_handle GridFTPModule::open(const char* url, int flag, mode_t mode)
     GridFTPStreamState* stream = new GridFTPStreamState(handler);
     GridFTPRequestState* request = new GridFTPRequestState(handler);
 
-    std::auto_ptr<GridFTPFileDesc> desc(new GridFTPFileDesc(handler, request, stream, url, flag));
+    std::unique_ptr<GridFTPFileDesc> desc(new GridFTPFileDesc(handler, request, stream, url, flag));
 
     gfal2_log(G_LOG_LEVEL_DEBUG, " -> [GridFTPModule::open] ");
     globus_result_t res;

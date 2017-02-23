@@ -614,7 +614,7 @@ GridFTPSession* GridFTPFactory::get_new_handle(const std::string &baseurl)
     bool dcau = gfal2_get_opt_boolean_with_default(gfal2_context, GRIDFTP_CONFIG_GROUP,
             GRIDFTP_CONFIG_DCAU, false);
 
-    std::auto_ptr<GridFTPSession> session(new GridFTPSession(gfal2_context, baseurl));
+    std::unique_ptr<GridFTPSession> session(new GridFTPSession(gfal2_context, baseurl));
 
     session->set_gridftpv2(gridftp_v2);
     session->set_dcau(dcau);
