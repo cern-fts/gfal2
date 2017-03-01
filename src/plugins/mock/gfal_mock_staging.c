@@ -23,11 +23,18 @@
 #include <uuid/uuid.h>
 
 
+static GHashTable *staging_end_table;
+
+__attribute__((constructor))
+static void init() {
+    staging_end_table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+}
+
+
 int gfal_plugin_mock_bring_online(plugin_handle plugin_data, const char *url,
     time_t pintime, time_t timeout, char *token, size_t tsize, int async,
     GError **err)
 {
-    MockPluginData *mdata = plugin_data;
     char arg_buffer[64];
 
     // Bring online errno
@@ -39,7 +46,7 @@ int gfal_plugin_mock_bring_online(plugin_handle plugin_data, const char *url,
     time_t *staging_end = g_new0(time_t, 1);
     *staging_end = time(NULL) + gfal_plugin_mock_get_int_from_str(arg_buffer);
 
-    g_hash_table_insert(mdata->staging_end, g_strdup(url), staging_end);
+    g_hash_table_insert(staging_end_table, g_strdup(url), staging_end);
 
     // Fake token
     if (tsize > 36) {
@@ -67,13 +74,11 @@ int gfal_plugin_mock_bring_online(plugin_handle plugin_data, const char *url,
 int gfal_plugin_mock_bring_online_poll(plugin_handle plugin_data,
     const char *url, const char *token, GError **err)
 {
-    MockPluginData *mdata = plugin_data;
-
     char arg_buffer[64];
     gfal_plugin_mock_get_value(url, "staging_errno", arg_buffer, sizeof(arg_buffer));
     int staging_errno = gfal_plugin_mock_get_int_from_str(arg_buffer);
 
-    time_t *staging_end = g_hash_table_lookup(mdata->staging_end, url);
+    time_t *staging_end = g_hash_table_lookup(staging_end_table, url);
 
     if (staging_end == NULL || *staging_end <= time(NULL)) {
         if (staging_errno) {

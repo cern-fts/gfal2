@@ -127,8 +127,6 @@ gboolean gfal_plugin_mock_check_url_transfer(plugin_handle handle, gfal2_context
 
 void gfal_plugin_mock_delete(plugin_handle plugin_data)
 {
-    MockPluginData *mdata = (MockPluginData*)plugin_data;
-    g_hash_table_destroy(mdata->staging_end);
     free(plugin_data);
 }
 
@@ -143,7 +141,6 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError **err)
 
     MockPluginData *mdata = calloc(1, sizeof(MockPluginData));
     mdata->handle = handle;
-    mdata->staging_end = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 
     mock_plugin.plugin_data = mdata;
     mock_plugin.plugin_delete = gfal_plugin_mock_delete;
