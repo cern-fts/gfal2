@@ -108,7 +108,7 @@ static void gfal_initCredentialLocation(gfal2_context_t handle)
         }
     }
     // No idea!
-    gfal2_log(G_LOG_LEVEL_WARNING, "Could not find the credentials in any of the known locations");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Could not find the credentials in any of the known locations");
 }
 
 gfal2_context_t gfal2_context_new(GError **err)
