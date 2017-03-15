@@ -514,6 +514,14 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
             NULL);
     }
 
+    gboolean skip_source_checksum = gfal2_get_opt_boolean(
+        _handle_factory->get_gfal2_context(),
+        GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_TRANSFER_SKIP_CHECKSUM,
+        NULL);
+    if (skip_source_checksum) {
+        checksum_mode = gfalt_checksum_mode_t(checksum_mode & ~GFALT_CHECKSUM_SOURCE);
+    }
+
     if (checksum_mode) {
         if (checksum_user_defined[0] == '\0' && checksum_type[0] == '\0') {
             GError *get_default_error = NULL;
