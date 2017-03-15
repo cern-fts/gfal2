@@ -45,7 +45,7 @@ set (OUTPUT_NAME_TRANSFER "gfal_transfer")
 
 set (VERSION_MAJOR  2)
 set (VERSION_MINOR  13)
-set (VERSION_PATCH  1)
+set (VERSION_PATCH  2)
 set (VERSION_STRING ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 add_definitions(-DVERSION="${VERSION_STRING}")
@@ -67,7 +67,7 @@ include_directories (${CMAKE_SOURCE_DIR}/src/utils)
 
 # Core and plugins
 if (NOT ONLY_TESTS)
-    
+
     # general parameters for configuration
     add_definitions ( -DGFAL_PLUGIN_DIR_DEFAULT="${PLUGIN_INSTALL_DIR}" )
     add_definitions ( -DGFAL_CONFIG_DIR_DEFAULT="${SYSCONF_INSTALL_DIR}" )
@@ -77,7 +77,7 @@ if (NOT ONLY_TESTS)
     #install doc license
     install (FILES "LICENSE" "README.md" "RELEASE-NOTES" "DESCRIPTION" "readme.html"
 			 DESTINATION ${DOC_INSTALL_DIR})
-			
+
     # install global configuration files
     list (APPEND lst_conf_files "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/gfal2_core.conf" "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/bdii.conf")
     install (FILES ${lst_conf_files}
