@@ -225,6 +225,10 @@ static int srm_get_checksum_config(gfal2_context_t context, gfalt_params_t param
     GError **err)
 {
     *mode = gfalt_get_checksum(params, algorithm, algorithm_size, user_checksum, user_checksum_size, NULL);
+    gboolean allow_empty_source = gfal2_get_opt_boolean(context, "SRM PLUGIN", "ALLOW_EMPTY_SOURCE_CHECKSUM", NULL);
+    if (allow_empty_source) {
+        *mode = *mode & ~GFALT_CHECKSUM_SOURCE;
+    }
 
     if (algorithm[0] == '\0') {
         const char *configured;
