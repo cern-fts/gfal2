@@ -476,7 +476,7 @@ static int srm_do_transfer(plugin_handle handle, gfal2_context_t context,
     params_turl = gfalt_params_handle_copy(params, NULL);
 
     // checksum check done here!
-    if (gfalt_set_checksum(params, GFALT_CHECKSUM_NONE, NULL, NULL, err) < 0) {
+    if (gfalt_set_checksum(params_turl, GFALT_CHECKSUM_NONE, NULL, NULL, err) < 0) {
         return -1;
     }
 
