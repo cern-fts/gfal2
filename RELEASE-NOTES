@@ -1,6 +1,10 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Fri Mar 17 2017 Alejandro Alvarez <aalvarez at cern.ch> - 2.13.3
+### Bug
+- [DMC-924] - gfal2 breaks backwards compatibility for checksums
+
 ## Mon Feb 20 2017 Alejandro Alvarez <aalvarez at cern.ch> - 2.13.1
 ### Bug
 - [DMC-919] - Remove calls to globus_module_deactivate
@@ -56,9 +60,9 @@ GFAL2 RELEASE-NOTES
 - [DMC-827] - GridFTP Plugin: Allow to configure blocksize
 - [DMC-849] - GridFTP Plugin: Fire an event if IPv6 is used
 - [DMC-866] - Expand '-' to stdout when used as destination for gfal-copy
-- [DMC-868] - GridFTP Plugin: Add spacetoken xattr 
+- [DMC-868] - GridFTP Plugin: Add spacetoken xattr
 ### Task
-- [DMC-852] - GridFTP: Workaround for Globus' higher priority to /etc/grid-security/hostcert.pem 
+- [DMC-852] - GridFTP: Workaround for Globus' higher priority to /etc/grid-security/hostcert.pem
 ### Improvement
 - [DMC-837] - When an operation is not supported, include the url on the error
 - [DMC-851] - Improve URI parser (breaks internal API)
@@ -116,7 +120,7 @@ GFAL2 RELEASE-NOTES
 - [DMC-717] - Remove Boost dependency from gfal2
 - [DMC-720] - SRM Plugin should handle transfers also for file:/path
 - [DMC-722] - LFC Plugin registers the TURL rather than the SURL into the catalog
-- [DMC-724] - XROOTD plugin: Case-insensitive checksum type comparison 
+- [DMC-724] - XROOTD plugin: Case-insensitive checksum type comparison
 - [DMC-731] - Segfault on xrootd 3rd party copies
 - [DMC-741] - Replace G_LOG_LEVEL_INFO with other levels
 - [DMC-742] - SRM Plugin: Convert UTC to local timestamp
@@ -261,7 +265,7 @@ GFAL2 RELEASE-NOTES
 - [LCGUTIL-169] - GFAL 2.0 : Enable tests for xrootd and http supports
 - [LCGUTIL-345] - GFAL 2.0: add support for dCache test bed for functional tests
 - [LCGUTIL-45] - GFAL 2.0 : non third party transfer should respect all transfers options
-- [LCGUTIL-166] - GFAL 2 : Update gfal 2.0 functional tests 
+- [LCGUTIL-166] - GFAL 2 : Update gfal 2.0 functional tests
 - [LCGUTIL-348] - gfal-copy produces misleading error
 - [LCGUTIL-355] - HTTP plugin does not do 3rd party copy when dav/davs is used as scheme
 - [LCGUTIL-359] - GFAL 2.0 : GFAL2 copy does not manage properly spacetoken in file <-> SRM transfer
@@ -438,7 +442,7 @@ GFAL2 RELEASE-NOTES
 - add SRM src/dst spacetoken management for gfal transfer
 - re-factor properly gfal-transfer and gfal2_context_t
 - generate a new clean documentation with log/transfer/context support
-- allow direct modification of the internal posix context 
+- allow direct modification of the internal posix context
 - fix memory leak with gsiftp error report
 
 
