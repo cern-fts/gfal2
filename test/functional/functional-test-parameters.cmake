@@ -307,6 +307,10 @@ IF (MAIN_TRANSFER)
         test_copy_file_full("STORM_TO_STORM"            ${srm_prefix_storm}  ${srm_prefix_storm})
         test_copy_file_full("STORM_TO_SRM_DPM"          ${srm_prefix_storm}  ${srm_valid_dir_root})
 
+        # particular cases, storm to gridftp (i.e. can't reuse turl)
+        test_copy_file_full("STORM_TO_GRIDFTP"          ${srm_prefix_storm} ${gsiftp_prefix_dpm})
+        test_copy_file_full("GRIDFTP_TO_STORM"          ${gsiftp_prefix_dpm} ${srm_prefix_storm})
+
         # bulk, only a subset, otherwise this takes too long
         test_copy_bulk("GSIFTP" ${gsiftp_prefix_dpm} ${gsiftp_prefix_dpm})
         test_copy_bulk("SRM" ${srm_valid_dir_root} ${srm_valid_dcache_dir_root})
