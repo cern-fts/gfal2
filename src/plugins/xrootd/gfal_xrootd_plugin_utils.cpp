@@ -77,8 +77,10 @@ void reset_stat(struct stat& st)
 }
 
 
-static std::string credentials_query(gfal2_context_t context, const char *url)
+static std::string query_args(gfal2_context_t context, const char *url)
 {
+    bool prev_args = false;
+
     GError *error = NULL;
     gchar *ucert = gfal2_cred_get(context, GFAL_CRED_X509_CERT, url, NULL, &error);
     g_clear_error(&error);
@@ -97,14 +99,45 @@ static std::string credentials_query(gfal2_context_t context, const char *url)
     // Certificate == key, assume proxy
     if (strcmp(ucert, ukey) == 0) {
         args << "xrd.gsiusrpxy=" << ucert;
+        prev_args = true;
     }
     else {
         args << "xrd.gsiusrcrt=" << ucert << '&' << "xrd.gsiusrkey=" << ukey;
+        prev_args = true;
     }
 
     g_free(ucert);
     if (ucert != ukey)
         g_free(ukey);
+
+    // Additional keys
+    gsize keyCount;
+    gchar **keys = gfal2_get_opt_keys(context, "XROOTD PLUGIN", &keyCount, &error);
+    if (keys != NULL) {
+        for (gsize keyIndex =0; keyIndex < keyCount; ++keyIndex) {
+            if (g_str_has_prefix(keys[keyIndex], "XRD.")) {
+                gchar *lowercase = g_utf8_strdown(keys[keyIndex], -1);
+                gchar *value = gfal2_get_opt_string_with_default(context, "XROOTD PLUGIN", keys[keyIndex], "");
+
+                // Note: When value is a list, value may have ';', which should be replaced with ','
+                for (gsize i = 0; value[i] != '\0'; ++i) {
+                    if (value[i] == ';') {
+                        value[i] = ',';
+                    }
+                }
+
+                if (prev_args) {
+                    args << "&";
+                }
+                args << lowercase << "=" << value;
+                prev_args = true;
+                g_free(lowercase);
+                g_free(value);
+            }
+        }
+    }
+    g_clear_error(&error);
+    g_strfreev(keys);
 
     return args.str();
 }
@@ -136,14 +169,14 @@ std::string normalize_url(gfal2_context_t context, const char* url)
         g_free(p);
     }
 
-    std::string creds = credentials_query(context, url);
-    if (!creds.empty()) {
+    std::string args = query_args(context, url);
+    if (!args.empty()) {
         if (uri->query != NULL) {
             char *p = uri->query;
-            uri->query = g_strconcat(uri->query, "&", creds.c_str(), NULL);
+            uri->query = g_strconcat(uri->query, "&", args.c_str(), NULL);
             g_free(p);
         } else {
-            uri->query = g_strdup(creds.c_str());
+            uri->query = g_strdup(args.c_str());
         }
     }
 
