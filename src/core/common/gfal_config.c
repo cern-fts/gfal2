@@ -324,6 +324,12 @@ gint gfal2_load_opts_from_file(gfal2_context_t context, const char *path,
 }
 
 
+gchar **gfal2_get_opt_keys(gfal2_context_t context, const gchar *group_name, gsize *length, GError **error)
+{
+    return g_key_file_get_keys(context->config, group_name, length, error);
+}
+
+
 gint gfal2_set_user_agent(gfal2_context_t handle, const char *user_agent,
     const char *version, GError **error)
 {

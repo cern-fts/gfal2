@@ -232,12 +232,20 @@ gchar ** gfal2_get_opt_string_list(gfal2_context_t context, const gchar *group_n
 gchar ** gfal2_get_opt_string_list_with_default(gfal2_context_t context, const gchar *group_name,
                                           const gchar *key, gsize *length, char** default_value);
 
-
 /**
  * @brief load configuration parameters from the file specified by path
  */
 gint gfal2_load_opts_from_file(gfal2_context_t context, const char* path, GError** error);
 
+/**
+ * Get all keys defined for the given group_name
+ * @param context : context of gfal 2.0
+ * @param group_name : group name of the parameters
+ * @param length : the number of keys is stored here
+ * @param error : GError error report system
+ * @return NULL on error. A NULL-terminated array with the list of keys. Use g_strfreev() to free it.
+ */
+gchar **gfal2_get_opt_keys(gfal2_context_t context, const gchar *group_name, gsize *length, GError **error);
 
 /**
  * Set the user agent for those protocols that support this

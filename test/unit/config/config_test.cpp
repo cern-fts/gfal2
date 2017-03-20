@@ -95,3 +95,28 @@ TEST_F(ConfigFixture, Integer)
 
     EXPECT_EQ(43215, value);
 }
+
+
+TEST_F(ConfigFixture, KeyList)
+{
+    GError *error = NULL;
+    int ret = 0;
+
+    ret = gfal2_set_opt_string(context, "GROUP1", "KEY1", "abcd", &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+    ret = gfal2_set_opt_string(context, "GROUP1", "KEY2", "efgh", &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+    ret = gfal2_set_opt_string(context, "GROUP2", "KEY3", "1234", &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    gsize count = 0;
+    gchar **keys = gfal2_get_opt_keys(context, "GROUP1", &count, &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, 0, error);
+
+    EXPECT_EQ(2, count);
+    EXPECT_STREQ("KEY1", keys[0]);
+    EXPECT_STREQ("KEY2", keys[1]);
+    EXPECT_EQ(NULL, keys[2]);
+
+    g_strfreev(keys);
+}
