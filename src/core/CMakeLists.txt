@@ -68,8 +68,6 @@ install (FILES "common/gfal_cancel.h"
                "common/gfal_file_handle.h"
                "common/gfal_plugin_interface.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/common)
-install (FILES "g_config_manager/g_config_manager.h"
-         DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/g_config_manager)
 install (FILES "file/gfal_file_api.h"
          DESTINATION ${INCLUDE_INSTALL_DIR}/gfal2/file)
 

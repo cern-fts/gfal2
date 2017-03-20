@@ -122,8 +122,8 @@ gfal2_context_t gfal2_context_new(GError **err)
     }
 
     context->initiated = TRUE;
-    context->conf = gfal2_init_config(&tmp_err);
-    if (!context->conf) {
+    context->config = gfal2_init_config(&tmp_err);
+    if (!context->config) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
         g_free(context);
         return NULL;
@@ -135,7 +135,7 @@ gfal2_context_t gfal2_context_new(GError **err)
     int ret = gfal_plugins_instance(context, &tmp_err);
     if (ret <= 0 && tmp_err) {
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
-        g_config_manager_delete(context->conf);
+        g_key_file_free(context->config);
         g_free(context);
         return NULL;
     }
@@ -158,7 +158,7 @@ void gfal2_context_free(gfal2_context_t context)
 
     gfal_plugins_delete(context, NULL);
     gfal_file_descriptor_handle_destroy(context->fdescs);
-    g_config_manager_delete(context->conf);
+    g_key_file_free(context->config);
     g_list_free(context->plugin_opt.sorted_plugin);
     g_mutex_free(context->mux_cancel);
     g_hook_list_clear(&context->cancel_hooks);

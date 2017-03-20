@@ -30,18 +30,6 @@ const gchar *config_env_var = GFAL_CONFIG_DIR_ENV;
 const gchar *default_config_dir = GFAL_CONFIG_DIR_DEFAULT "/" GFAL_CONFIG_DIR_SUFFIX "/";
 
 
-typedef struct _gfal_conf_elem {
-    GKeyFile *key_file;
-} *gfal_conf_elem_t;
-
-typedef struct _gfal_conf {
-    GMutex *mux;
-    GKeyFile *running_config;
-    GConfigManager_t static_manager;
-    GConfigManager_t running_manager;
-} *gfal_conf_t;
-
-
 typedef struct _gfal_key_value {
     char *key, *value;
 } *gfal_key_value_t;
@@ -88,24 +76,48 @@ static gchar *check_configuration_dir(GError **err)
 }
 
 
-int gfal_load_configuration_to_conf_manager(GConfigManager_t manager,
+int gfal_load_configuration_to_conf_manager(GKeyFile *dest,
     const gchar *path, GError **err)
 {
-    GKeyFile *conf_file = g_key_file_new();
-    int res = 0;
-    GError *tmp_err1 = NULL, *tmp_err2 = NULL;
-    if (g_key_file_load_from_file(conf_file, path, G_KEY_FILE_NONE, &tmp_err1) == FALSE) {
-        res = -1;
-        g_set_error(&tmp_err2, gfal2_get_config_quark(), EFAULT,
+    GError *tmp_err;
+    GKeyFile *new_conf = g_key_file_new();
+    int groupIndex, keyIndex;
+
+    if (g_key_file_load_from_file(new_conf, path, G_KEY_FILE_NONE, &tmp_err) == FALSE) {
+        gfal2_propagate_prefixed_error_extended(err, tmp_err, __func__,
             "Error while loading configuration file %s : %s", path,
-            tmp_err1->message);
-        g_clear_error(&tmp_err1);
-    }
-    else {
-        g_config_manager_prepend_keyvalue(manager, conf_file);
+            tmp_err->message);
+        return -1;
     }
 
-    G_RETURN_ERR(res, tmp_err2, err);
+    gsize nGroups = 0;
+    gchar **groups = g_key_file_get_groups(new_conf, &nGroups);
+    for (groupIndex = 0; groupIndex < nGroups; ++groupIndex) {
+        gsize nKeys = 0;
+        GError *tmp_err = NULL;
+
+        gchar **keys = g_key_file_get_keys(new_conf, groups[groupIndex], &nKeys, &tmp_err);
+        if (keys == NULL) {
+            g_clear_error(&tmp_err);
+            continue;
+        }
+
+        for (keyIndex = 0; keyIndex < nKeys; ++keyIndex) {
+            gchar *value = g_key_file_get_value(new_conf, groups[groupIndex], keys[keyIndex], &tmp_err);
+            if (value == NULL) {
+                g_clear_error(&tmp_err);
+                continue;
+            }
+            g_key_file_set_value(dest, groups[groupIndex], keys[keyIndex], value);
+            g_free(value);
+        }
+
+        g_strfreev(keys);
+    }
+
+    g_strfreev(groups);
+    g_key_file_free(new_conf);
+    return 0;
 }
 
 
@@ -121,11 +133,12 @@ gboolean is_config_dir(const char *conffile)
 }
 
 
-GConfigManager_t gfal2_init_config(GError **err)
+GKeyFile* gfal2_init_config(GError **err)
 {
     GError *tmp_err = NULL;
     gchar *dir_config = NULL;
-    GConfigManager_t res = g_config_manager_new();
+    GKeyFile *res = g_key_file_new();
+
     if ((dir_config = check_configuration_dir(&tmp_err)) != NULL) {
         DIR *d = opendir(dir_config);
         struct dirent *dirinfo;
@@ -150,9 +163,10 @@ GConfigManager_t gfal2_init_config(GError **err)
         g_free(dir_config);
     }
     if (tmp_err) {
-        g_config_manager_delete_full(res);
+        g_key_file_free(res);
         res = NULL;
     }
+
     G_RETURN_ERR(res, tmp_err, err);
 }
 
@@ -161,7 +175,7 @@ gchar *gfal2_get_opt_string(gfal2_context_t context, const gchar *group_name,
     const gchar *key, GError **error)
 {
     g_assert(context != NULL);
-    return g_config_manager_get_string(context->conf, group_name, key, error);
+    return g_key_file_get_string(context->config, group_name, key, error);
 }
 
 
@@ -187,7 +201,8 @@ gint gfal2_set_opt_string(gfal2_context_t context, const gchar *group_name,
     const gchar *key, const gchar *value, GError **error)
 {
     g_assert(context != NULL);
-    return g_config_manager_set_string(context->conf, group_name, key, value, error);
+    g_key_file_set_string(context->config, group_name, key, value);
+    return 0;
 }
 
 
@@ -195,7 +210,7 @@ gint gfal2_get_opt_integer(gfal2_context_t context, const gchar *group_name,
     const gchar *key, GError **error)
 {
     g_assert(context != NULL);
-    return g_config_manager_get_integer(context->conf, group_name, key, error);
+    return g_key_file_get_integer(context->config, group_name, key, error);
 }
 
 
@@ -220,7 +235,8 @@ gint gfal2_set_opt_integer(gfal2_context_t context, const gchar *group_name,
     const gchar *key, gint value, GError **error)
 {
     g_assert(context != NULL);
-    return g_config_manager_set_integer(context->conf, group_name, key, value, error);
+    g_key_file_set_integer(context->config, group_name, key, value);
+    return 0;
 }
 
 
@@ -228,7 +244,7 @@ gboolean gfal2_get_opt_boolean(gfal2_context_t context, const gchar *group_name,
     const gchar *key, GError **error)
 {
     g_assert(context != NULL);
-    return g_config_manager_get_boolean(context->conf, group_name, key, error);
+    return g_key_file_get_boolean(context->config, group_name, key, error);
 }
 
 
@@ -254,7 +270,8 @@ gint gfal2_set_opt_boolean(gfal2_context_t context, const gchar *group_name,
     const gchar *key, gboolean value, GError **error)
 {
     g_assert(context != NULL);
-    return g_config_manager_set_boolean(context->conf, group_name, key, value, error);
+    g_key_file_set_boolean(context->config, group_name, key, value);
+    return 0;
 }
 
 
@@ -263,7 +280,7 @@ gchar **gfal2_get_opt_string_list(gfal2_context_t context,
     GError **error)
 {
     g_assert(context != NULL);
-    return g_config_manager_get_string_list(context->conf, group_name, key, length, error);
+    return g_key_file_get_string_list(context->config, group_name, key, length, error);
 }
 
 
@@ -272,7 +289,8 @@ gint gfal2_set_opt_string_list(gfal2_context_t context, const gchar *group_name,
     GError **error)
 {
     g_assert(context != NULL);
-    return g_config_manager_set_string_list(context->conf, group_name, key, list, length, error);
+    g_key_file_set_string_list(context->config, group_name, key, list, length);
+    return 0;
 }
 
 
@@ -302,7 +320,7 @@ gchar **gfal2_get_opt_string_list_with_default(gfal2_context_t context,
 gint gfal2_load_opts_from_file(gfal2_context_t context, const char *path,
     GError **error)
 {
-    return gfal_load_configuration_to_conf_manager(context->conf, path, error);
+    return gfal_load_configuration_to_conf_manager(context->config, path, error);
 }
 
 

@@ -27,7 +27,6 @@
 #endif
 
 #include "gfal_plugin_interface.h"
-#include <g_config_manager/g_config_manager.h>
 
 /* enforce proper calling convention */
 #ifdef __cplusplus
@@ -50,7 +49,7 @@ struct gfal_handle_ {
     gfal_plugin_opts plugin_opt;
 	//struct for the file descriptors
 	gfal_file_handle_container fdescs;
-	GConfigManager_t conf;
+	GKeyFile *config;
     // cancel logic
     volatile gint running_ops;
     gboolean cancel;

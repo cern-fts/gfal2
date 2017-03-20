@@ -22,10 +22,10 @@
 #ifndef GFAL_CONFIG_INTERNAL_H_
 #define GFAL_CONFIG_INTERNAL_H_
 
-#include <g_config_manager/g_config_manager.h>
+#include <glib.h>
 
 // create or delete configuration manager for gfal 2.0, internal
-GConfigManager_t gfal2_init_config(GError **err);
+GKeyFile* gfal2_init_config(GError **err);
 
 void gfal_free_keyvalue(gpointer data, gpointer user_data);
 
