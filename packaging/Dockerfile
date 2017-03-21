@@ -25,6 +25,11 @@ RUN yum install -y epel-release
 RUN yum install -y gfal2-all gfal2-tests
 RUN yum install -y git gfal2-devel
 
+# Comes handy...
+RUN yum install -y golang
+RUN mkdir /go
+ENV GOPATH=/
+
 # Leave yum cache clean
 RUN yum clean all
 
