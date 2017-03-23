@@ -27,6 +27,7 @@
 // Configuration options
 #define GRIDFTP_CONFIG_GROUP          "GRIDFTP PLUGIN"
 #define GRIDFTP_CONFIG_IPV6           "IPV6"
+#define GRIDFTP_CONFIG_SPAS           "SPAS"
 #define GRIDFTP_CONFIG_V2             "GRIDFTP_V2"
 #define GRIDFTP_CONFIG_SESSION_REUSE  "SESSION_REUSE"
 #define GRIDFTP_CONFIG_OP_TIMEOUT     "OPERATION_TIMEOUT"

@@ -114,59 +114,96 @@ static int parse_28(const char *, char *, size_t, unsigned *, bool*)
     return -1;
 }
 
-
-// Entering Extended Passive Mode (|protocol|ip|port|).
-// Parenthesis are standardized
-static int parse_29(const char *msg, char *ip, size_t ip_size, unsigned *port, bool *is_ipv6)
+// Parse IPv6 replies
+static int parse_29_ipv6(const char *msg, char *ip, size_t ip_size, unsigned *port, bool *is_ipv6)
 {
-    const char *p = strchr(msg, '(');
+    regex_t ipv6regex;
+    int retregex = regcomp(&ipv6regex, "\\|([0-9]*)\\|([^|]*)\\|([0-9]+)\\|", REG_EXTENDED);
+    g_assert(retregex == 0);
 
-    // Asume no IPv6, or unknown
-    *is_ipv6 = false;
+    regmatch_t matches[4];
+    retregex = regexec(&ipv6regex, msg, 4, matches, 0);
+    regfree(&ipv6regex);
 
-    if (p) {
-        regex_t preg;
-        int retregex = regcomp(&preg, "\\(\\|([0-9]*)\\|([^|]*)\\|([0-9]+)\\|\\)", REG_EXTENDED);
-        assert(retregex == 0);
-        regmatch_t matches[4];
-        retregex = regexec(&preg, p, 4, matches, 0);
-        regfree(&preg);
+    if (retregex == REG_NOMATCH) {
+        return -1;
+    }
 
-        if (retregex == REG_NOMATCH) {
-            gfal2_log(G_LOG_LEVEL_WARNING, "The passive mode response could not be parsed: %s", p);
-            return -1;
-        }
-        else {
-            // Type
-            if (matches[1].rm_eo != matches[1].rm_so) {
-                int type = atol(p + matches[1].rm_so);
-                if (type == 2) {
-                    *is_ipv6 = true;
-                }
-            }
-            // Ip
-            if (matches[2].rm_eo != matches[2].rm_so) {
-                size_t len = matches[2].rm_eo - matches[2].rm_so;
-                if (len > ip_size) {
-                    len = ip_size;
-                }
-                if (*is_ipv6) {
-                    char *buffer = g_strndup(p + matches[2].rm_so, len);
-                    snprintf(ip, ip_size, "[%s]", buffer);
-                    g_free(buffer);
-                } else {
-                    g_strlcpy(ip, p + matches[2].rm_so, len);
-                }
-            }
-            // Port
-            *port = atoi(p + matches[3].rm_so);
-            return 0;
+    // Type
+    if (matches[1].rm_eo != matches[1].rm_so) {
+        int type = atol(msg + matches[1].rm_so);
+        if (type == 2) {
+            *is_ipv6 = true;
         }
     }
+    // Ip
+    if (matches[2].rm_eo != matches[2].rm_so) {
+        size_t len = matches[2].rm_eo - matches[2].rm_so;
+        if (len > ip_size) {
+            len = ip_size;
+        }
+        if (*is_ipv6) {
+            char *buffer = g_strndup(msg + matches[2].rm_so, len);
+            snprintf(ip, ip_size, "[%s]", buffer);
+            g_free(buffer);
+        }
+        else {
+            g_strlcpy(ip, msg + matches[2].rm_so, len);
+        }
+    }
+    // Port
+    *port = atoi(msg + matches[3].rm_so);
+
+    return 0;
+}
+
+// Parse IPv4 replies
+static int parse_29_ipv4(const char *msg, char *ip, size_t ip_size, unsigned *port, bool *is_ipv6)
+{
+    regex_t ipv4regex;
+    int retregex = regcomp(&ipv4regex, "([0-9]+),([0-9]+),([0-9]+),([0-9]+),([0-9]+),([0-9]+)", REG_EXTENDED);
+    g_assert(retregex == 0);
+
+    regmatch_t matches[6];
+    retregex = regexec(&ipv4regex, msg, 6, matches, 0);
+    regfree(&ipv4regex);
+
+    if (retregex == REG_NOMATCH) {
+        return -1;
+    }
+
+    *is_ipv6 = false;
+
+    unsigned h1, h2, h3, h4, p1, p2;
+    h1 = atoi(msg + matches[0].rm_so);
+    h2 = atoi(msg + matches[1].rm_so);
+    h3 = atoi(msg + matches[2].rm_so);
+    h4 = atoi(msg + matches[3].rm_so);
+    p1 = atoi(msg + matches[4].rm_so);
+    p2 = atoi(msg + matches[5].rm_so);
+
+    snprintf(ip, ip_size, "%u.%u.%u.%u", h1, h2, h3, h4);
+    *port = (p1 * 256) + p2;
+    return 0;
+}
+
+// Entering Extended Passive Mode (|protocol|ip|port|).
+// Parenthesis are standardized for EPSV, but they are not for SPAS
+static int parse_29(const char *msg, char *ip, size_t ip_size, unsigned *port, bool *is_ipv6)
+{
+    *is_ipv6 = false;
+    if (parse_29_ipv6(msg, ip, ip_size, port, is_ipv6) == 0) {
+        return 0;
+    }
+    else if (parse_29_ipv4(msg, ip, ip_size, port, is_ipv6) == 0) {
+        return 0;
+    }
+    gfal2_log(G_LOG_LEVEL_WARNING, "The passive mode response could not be parsed: %s", msg);
     return -1;
 }
 
 
+// Handle PASV responses
 static void gfal2_ftp_client_pasv_response(globus_ftp_client_plugin_t* plugin,
         void* plugin_specific, globus_ftp_client_handle_t* handle, const char* url,
         globus_object_t* error, const globus_ftp_control_response_t* ftp_response)

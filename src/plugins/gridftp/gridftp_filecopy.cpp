@@ -360,6 +360,14 @@ void gridftp_do_copy_inner(GridFTPModule* module, GridFTPFactory* factory,
     // Required for the PASV plugin to be able to trigger events
     req.handler->session->params = params;
 
+    // If we are using IPv6, use Striped Passive
+    gfal2_context_t context = module->get_session_factory()->get_gfal2_context();
+    bool spasEnabled = gfal2_get_opt_boolean_with_default(context, GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_SPAS, FALSE);
+    if (spasEnabled) {
+        globus_ftp_client_operationattr_set_striped(gass_attr_src.attr_gass.ftp_attr, GLOBUS_TRUE);
+        globus_ftp_client_operationattr_set_striped(gass_attr_dst.attr_gass.ftp_attr, GLOBUS_TRUE);
+    }
+
     // Override source/destination credentials with specifics
     gridftp_set_credentials(factory->get_gfal2_context(), gass_attr_src, src);
     gridftp_set_credentials(factory->get_gfal2_context(), gass_attr_dst, dst);
