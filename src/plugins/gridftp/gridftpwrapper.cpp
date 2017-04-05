@@ -89,6 +89,15 @@ GridFTPSessionHandler::GridFTPSessionHandler(GridFTPFactory* f, const std::strin
                            &this->session->ftp_features, globus_ftp_client_done_callback, &req);
     gfal_globus_check_result(GFAL_GLOBUS_DONE_SCOPE, result);
     req.wait(GFAL_GLOBUS_DONE_SCOPE);
+
+    // Enable SPAS if configured and supported
+    gboolean spasEnabled = gfal2_get_opt_boolean_with_default(f->get_gfal2_context(), GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_SPAS, FALSE);
+    globus_ftp_client_tristate_t spasSupported;
+    globus_ftp_client_is_feature_supported(&this->session->ftp_features, &spasSupported, GLOBUS_FTP_CLIENT_FEATURE_MLST);
+
+    if (spasEnabled && spasSupported == GLOBUS_FTP_CLIENT_TRUE) {
+        globus_ftp_client_operationattr_set_striped(&this->session->operation_attr_ftp, GLOBUS_TRUE);
+    }
 }
 
 
