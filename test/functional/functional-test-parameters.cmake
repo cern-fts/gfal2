@@ -9,7 +9,7 @@ SET(TEST_ENVIRONMENT "PRODUCTION"
         CACHE STRING "Define the target for functional test")
 
 ## Global environment
-SET(ftp_prefix "ftp://ftp.free.fr/mirrors/ftp.ubuntu.com/")
+SET(ftp_prefix "ftp://mirror.switch.ch/mirror/centos/")
 
 IF(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
@@ -50,10 +50,10 @@ SET(lfc_host_name "lfc-puppet01.cern.ch")
 SET(gsiftp_prefix_dpm "gsiftp://hepgrid11.ph.liv.ac.uk/dpm/ph.liv.ac.uk/home/${MY_VO}/gfal2-tests/")
 SET(srm_prefix_dpm "srm://ipnsedpm.in2p3.fr:8446/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
 SET(sftp_prefix "sftp://gfal2@arioch.cern.ch/home/gfal2/gfal2-tests")
+SET(root_prefix_dpm "root://hepgrid11.ph.liv.ac.uk/dpm/ph.liv.ac.uk/home/${MY_VO}/gfal2-tests")
 
 # Need to find something better!
 SET(davs_prefix_dpm "davs+3rd://dpmhead-rc.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
-SET(root_prefix_dpm "root://marsedpm.in2p3.fr/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests")
 
 ENDIF(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
