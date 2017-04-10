@@ -2,6 +2,7 @@
 set -ex
 
 export HOME=/
+export X509_USER_PROXY=/tmp/x509up_u`id -u`
 
 VOMS=${VOMS:=dteam}
 PASSWD=$1
@@ -18,5 +19,5 @@ EOF
 
 echo "${PASSWD}" | voms-proxy-init --rfc --voms "${VOMS}" --pwstdin
 cd /usr/share/gfal2/tests
-ctest -T test 
+ctest -T test
 
