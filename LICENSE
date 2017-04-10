@@ -1,19 +1,42 @@
-/*
- * Copyright (c) CERN 2013-2017
- *
- * Copyright (c) Members of the EMI Collaboration. 2010-2013
- *  See  http://www.eu-emi.eu/partners for details on the copyright
- *  holders.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+Copyright (c) CERN 2013-2017
+Copyright (c) Members of the EMI Collaboration. 2010-2013
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+
+Members of the EMI Collaboration
+--------------------------------
+European Organization for Nuclear Research (CERN)                       Switzerland
+Centro de Supercomputación de Galicia (CESGA)                           Spain
+CESNET, zajmove sdruzeni pravnickych osob                               Czech Republic
+CINECA - Consorzio Interuniversitario                                   Italy
+Agencia Estatal Consejo Superior de Investigaciones Cientificas (CSIC)  Spain
+Deutsches Elektronen-Synchrotron (DESY)                                 Germany
+Fundamenteel Onderzoek der Materie (FOM)                                The Netherlands
+Forschungszentrum Jülich GmbH (FZJ)                                     Germany
+Greek Research and Technology Network SA (GRNET)                        Greece
+Istituto Nazionale di Fisica Nucleare (INFN)                            Italy
+Lunds Universitet (LU)                                                  Sweden
+National Information Infrastructure Development Institute (NIIF)        Hungary
+Science and Technology Facilities Council (STFC)                        United Kingdom
+Teleinformatikdienste fuer Lehre und Forschung (SWITCH)                 Switzerland
+Trinity College Dublin (TCD)                                            Ireland
+Technische Universität Dresden (TUD)                                    Germany
+University of Copenhagen (UCPH)                                         Denmark
+University of Helsinki – Helsinki institute of Physics (UH.HIP)         Finland
+Universitetet i Oslo (UiO)                                              Norway
+Univerzita Pavla Jozefa Šafarika V Kosiciach (UPJS)                     Slovak Republic
+Uppsala Universitet (UU)                                                Sweden
+Uniwersytet Warszawski (UWAR)                                           Poland
+Korea Institute of Science and Technology Information (KISTI)           South Korea
+Academia Sinica Grid Computing (ASGC)                                   Taiwan
