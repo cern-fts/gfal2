@@ -18,7 +18,7 @@ pushd /tmp/build
 # Build
 CFLAGS=--coverage CXXFLAGS=--coverage cmake "/gfal2" \
     -DUNIT_TESTS=ON -DFUNCTIONAL_TESTS=ON -DPLUGIN_MOCK=ON
-make -j
+make -j2
 
 # Static checkers
 cppcheck -v --enable=all \
