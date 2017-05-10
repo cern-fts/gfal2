@@ -1,6 +1,6 @@
 
 SET(MAIN_DOC TRUE
-	CACHE STRING "enable installation of the main library documentation")	
+	CACHE STRING "enable installation of the main library documentation")
 
 IF(MAIN_DOC)
 
@@ -17,8 +17,5 @@ ENDIF(MAIN_DOC)
 
 
 
-install(FILES "mans/gfal2_version.1"
-		DESTINATION ${MAN_INSTALL_DIR}/man1/) # install examples 
-
-
-
+install(FILES "man/gfal2_version.1"
+		DESTINATION ${MAN_INSTALL_DIR}/man1/) # install examples
