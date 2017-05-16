@@ -21,13 +21,11 @@
 #include <regex.h>
 #include <pthread.h>
 #include <errno.h>
-#include <sys/types.h>
 #include <dirent.h>
 #include <attr/xattr.h>
 
 #include "gfal_lfc.h"
 #include "gfal_lfc_open.h"
-#include "lfc_ifce_ng.h"
 
 
 static gboolean init_thread = FALSE;
@@ -40,6 +38,7 @@ typedef struct _lfc_opendir_handle {
 
 static char *file_xattr[] = {
     GFAL_XATTR_GUID, GFAL_XATTR_REPLICA, GFAL_XATTR_COMMENT,
+    GFAL_XATTR_CHKSUM_TYPE, GFAL_XATTR_CHKSUM_VALUE,
     NULL
 };
 
@@ -571,6 +570,67 @@ static int lfc_closedirG(plugin_handle handle, gfal_file_handle fh, GError **err
     return ret;
 }
 
+
+static int lfc_checksumG(plugin_handle handle, const char *path, const char *check_type,
+    char *checksum_buffer, size_t buffer_length,
+    off_t start_offset, size_t data_length,
+    GError **err)
+{
+    g_return_val_err_if_fail(handle && path && checksum_buffer, -1, err,
+        "[lfc_checksumG] Invalid value in args handle/path/stat");
+    struct lfc_ops *ops = (struct lfc_ops *) handle;
+    GError *tmp_err = NULL;
+    ssize_t ret = -1;
+    gfal_auto_maintain_session(ops, &tmp_err);
+
+    char *url_path = NULL, *url_host = NULL;
+
+    if ((ret = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
+        ret = lfc_configure_environment(ops, url_host, path, &tmp_err);
+        if (!tmp_err) {
+            lfc_checksum checksum_st;
+            ret = gfal_lfc_getChecksum(ops, url_path, &checksum_st, &tmp_err);
+            if (ret == 0) {
+                g_strlcpy(checksum_buffer, checksum_st.value, buffer_length);
+            }
+        }
+    }
+    g_free(url_path);
+    g_free(url_host);
+    lfc_unset_environment(ops);
+    G_RETURN_ERR(ret, tmp_err, err);
+}
+
+
+static int lfc_checksumTypeG(plugin_handle handle, const char *path,
+    char *checksum_buffer, size_t buffer_length,
+    GError **err)
+{
+    g_return_val_err_if_fail(handle && path && checksum_buffer, -1, err,
+        "[lfc_checksumG] Invalid value in args handle/path/stat");
+    struct lfc_ops *ops = (struct lfc_ops *) handle;
+    GError *tmp_err = NULL;
+    ssize_t ret = -1;
+    gfal_auto_maintain_session(ops, &tmp_err);
+
+    char *url_path = NULL, *url_host = NULL;
+
+    if ((ret = url_converter(handle, path, &url_host, &url_path, &tmp_err)) == 0) {
+        ret = lfc_configure_environment(ops, url_host, path, &tmp_err);
+        if (!tmp_err) {
+            lfc_checksum checksum_st;
+            ret = gfal_lfc_getChecksum(ops, url_path, &checksum_st, &tmp_err);
+            if (ret == 0) {
+                g_strlcpy(checksum_buffer, checksum_st.type, buffer_length);
+            }
+        }
+    }
+    g_free(url_path);
+    g_free(url_host);
+    lfc_unset_environment(ops);
+    G_RETURN_ERR(ret, tmp_err, err);
+}
+
 /*
  * resolve the lfc link to the surls
  */
@@ -684,6 +744,12 @@ ssize_t lfc_getxattrG(plugin_handle handle, const char *path, const char *name, 
     }
     else if (strncmp(name, GFAL_XATTR_COMMENT, LFC_MAX_XATTR_LEN) == 0) {
         res = lfc_getxattr_comment(handle, path, buff, size, &tmp_err);
+    }
+    else if (strncmp(name, GFAL_XATTR_CHKSUM_TYPE, LFC_MAX_XATTR_LEN) == 0) {
+        res = lfc_checksumTypeG(handle, path, buff, size, &tmp_err);
+    }
+    else if (strncmp(name, GFAL_XATTR_CHKSUM_VALUE, LFC_MAX_XATTR_LEN) == 0) {
+        res = lfc_checksumG(handle, path, "", buff, size, 0, 0, &tmp_err);
     }
     else {
         gfal2_set_error(&tmp_err, gfal2_get_plugin_lfc_quark(), ENOATTR, __func__, "axttr not found");
@@ -970,6 +1036,7 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError **err)
     lfc_plugin.readlinkG = &lfc_readlinkG;
     lfc_plugin.unlinkG = &lfc_unlinkG;
     lfc_plugin.readdirppG = &lfc_readdirppG;
+    lfc_plugin.checksum_calcG = &lfc_checksumG;
 
     // Copy (as register)
     lfc_plugin.check_plugin_url_transfer = gfal_lfc_register_check;
@@ -1016,6 +1083,7 @@ gboolean gfal_lfc_check_lfn_url(plugin_handle handle, const char *url, plugin_mo
         case GFAL_PLUGIN_LISTXATTR:
         case GFAL_PLUGIN_SETXATTR:
         case GFAL_PLUGIN_UNLINK:
+        case GFAL_PLUGIN_CHECKSUM:
             ret = regexec(&(ops->rex), url, 0, NULL, 0);
             return (!ret || gfal_checker_guid(url, err)) ? TRUE : FALSE;
 
