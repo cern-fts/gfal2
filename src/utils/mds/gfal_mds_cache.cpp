@@ -84,7 +84,7 @@ int gfal_mds_cache_resolve_endpoint(gfal2_context_t handle, const char* host,
     g_free(cache_file);
 
     if (loadResult.status != pugi::status_ok) {
-        gfal2_log(G_LOG_LEVEL_WARNING, "Could not load BDII CACHE_FILE: %s",
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Could not load BDII CACHE_FILE: %s",
                 loadResult.description());
         return 0;
     }
