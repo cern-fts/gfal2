@@ -283,6 +283,10 @@ int perform_local_copy(gfal2_context_t context, gfalt_params_t params,
             error);
     }
 
+    if (checksum_type[0] == '\0') {
+        g_strlcpy(checksum_type, "ADLER32", sizeof(checksum_type));
+    }
+
     // Source checksum
     if (checksum_mode & GFALT_CHECKSUM_SOURCE) {
         plugin_trigger_event(params, local_copy_domain(), GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER, "");
