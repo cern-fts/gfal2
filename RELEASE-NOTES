@@ -1,6 +1,10 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Mon May 29 2017 Alejandro Alvarez <aalvarez at cern.ch> - 2.13.4
+### Bug
+- [DMC-951] - Default checksum for local copy was removed
+
 ## Fri Mar 17 2017 Alejandro Alvarez <aalvarez at cern.ch> - 2.13.3
 ### Bug
 - [DMC-924] - gfal2 breaks backwards compatibility for checksums
