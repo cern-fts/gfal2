@@ -80,7 +80,7 @@ char *gfal2_srm_get_decoded_path(const char *surl)
     char *path = gfal2_srm_surl_find_path(parsed);
     gfal2_urldecode(path);
 
-    char *decoded = g_strconcat("srm://", parsed->host, "/", path, NULL);
+    char *decoded = g_strconcat("srm://", parsed->host, path, NULL);
 
     gfal2_free_uri(parsed);
     return decoded;
