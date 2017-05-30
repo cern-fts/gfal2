@@ -21,10 +21,7 @@
 #include <gtest/gtest.h>
 
 #include <gfal_api.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <utils/exceptions/gerror_to_cpp.h>
-#include <transfer/gfal_transfer.h>
 
 #include <common/gfal_lib_test.h>
 #include <common/gfal_gtest_asserts.h>
@@ -80,7 +77,9 @@ public:
 
     virtual void TearDown() {
         gfal_unlink(source);
+        gfal_posix_clear_error();
         gfal_unlink(destination);
+        gfal_posix_clear_error();
     }
 };
 
@@ -188,6 +187,24 @@ TEST_F(CopyTestUserChecksum, CopyRightUserChecksumDisabledBad)
     ret = gfalt_copy_file(handle, params, source, destination, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
 }
+
+// Set source or destination, with empty user defined
+TEST_F(CopyTestUserChecksum, CopyBadChecksumValue)
+{
+    GError* error = NULL;
+    int ret = gfalt_set_checksum(params, GFALT_CHECKSUM_SOURCE, "ADLER32", "", &error);
+    EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, error, EINVAL);
+    g_clear_error(&error);
+
+    ret = gfalt_set_checksum(params, GFALT_CHECKSUM_TARGET, "ADLER32", "", &error);
+    EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, error, EINVAL);
+    g_clear_error(&error);
+
+    ret = gfalt_set_checksum(params, GFALT_CHECKSUM_BOTH, "ADLER32", "", &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+    g_clear_error(&error);
+}
+
 
 
 int main(int argc, char** argv)
