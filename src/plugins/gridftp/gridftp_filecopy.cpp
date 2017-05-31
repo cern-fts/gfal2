@@ -574,6 +574,10 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
             GFAL_EVENT_TRANSFER_ENTER, "(%s) %s => (%s) %s",
             return_host_and_port(src, use_ipv6).c_str(), src,
             return_host_and_port(dst, use_ipv6).c_str(), dst);
+    plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
+        GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_TYPE,
+        "%s", GFAL_TRANSFER_TYPE_PUSH);
+
     try {
         gridftp_filecopy_copy_file_internal(this, _handle_factory, params, src, dst);
     }

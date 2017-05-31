@@ -94,6 +94,9 @@ int gfal_plugin_mock_filecopy(plugin_handle plugin_data,
 
     plugin_trigger_event(params, gfal2_get_plugin_mock_quark(), GFAL_EVENT_NONE,
         GFAL_EVENT_TRANSFER_ENTER, "Mock copy start, sleep %d", seconds);
+    plugin_trigger_event(params, gfal2_get_plugin_mock_quark(),
+        GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_TYPE, "mock");
+
     while (seconds > 0) {
         sleep(1);
         --seconds;

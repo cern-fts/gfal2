@@ -159,6 +159,9 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
     plugin_trigger_event(params, local_copy_domain(),
             GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
             "%s => %s", src, dst);
+    plugin_trigger_event(params, local_copy_domain(),
+        GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_TYPE,
+        "%s", GFAL_TRANSFER_TYPE_STREAMED);
 
     size_t alignment = gfal2_get_opt_integer_with_default(context, "CORE", "COPY_BUFFER_ALIGNMENT", 512);
     size_t buffersize = gfal2_get_opt_integer_with_default(context, "CORE", "COPY_BUFFERSIZE", DEFAULT_BUFFER_SIZE);

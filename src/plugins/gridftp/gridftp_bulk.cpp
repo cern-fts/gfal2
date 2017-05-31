@@ -171,6 +171,9 @@ static void gridftp_bulk_begin_cb(void * user_specific,
             "(%s) %s => (%s) %s",
             return_host_and_port(source_url, pd->ipv6).c_str(), source_url,
             return_host_and_port(dest_url, pd->ipv6).c_str(), dest_url);
+    plugin_trigger_event(pd->params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
+        GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_TYPE,
+        "%s", GFAL_TRANSFER_TYPE_PUSH);
 }
 
 

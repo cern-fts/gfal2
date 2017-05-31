@@ -41,6 +41,7 @@ GQuark GFAL_EVENT_OVERWRITE_DESTINATION;
 GQuark GFAL_EVENT_LIST_ENTER;
 GQuark GFAL_EVENT_LIST_ITEM;
 GQuark GFAL_EVENT_LIST_EXIT;
+GQuark GFAL_EVENT_TRANSFER_TYPE;
 
 
 __attribute__((constructor))
@@ -59,6 +60,7 @@ static void init_event_quarks() {
     GFAL_EVENT_LIST_ENTER = g_quark_from_static_string("LIST:ENTER");
     GFAL_EVENT_LIST_ITEM = g_quark_from_static_string("LIST:ITEM");
     GFAL_EVENT_LIST_EXIT = g_quark_from_static_string("LIST:EXIT");
+    GFAL_EVENT_TRANSFER_TYPE = g_quark_from_static_string("TRANSFER:TYPE");
 }
 
 

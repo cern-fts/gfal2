@@ -83,6 +83,14 @@ extern GQuark GFAL_EVENT_OVERWRITE_DESTINATION; /**< Triggered before overwritin
 extern GQuark GFAL_EVENT_LIST_ENTER;      /**< Triggered before listing the urls to be transferred */
 extern GQuark GFAL_EVENT_LIST_ITEM;       /**< Triggered once per url pair to be transferred */
 extern GQuark GFAL_EVENT_LIST_EXIT;       /**< Triggered after listing the urls to be transferred */
+extern GQuark GFAL_EVENT_TRANSFER_TYPE;   /**< Triggered to register the transfer type being done */
+
+/**
+ * Types for for GFAL_EVENT_TRANSFER_TYPE
+ */
+#define GFAL_TRANSFER_TYPE_STREAMED "streamed"
+#define GFAL_TRANSFER_TYPE_PUSH "3rd push"
+#define GFAL_TRANSFER_TYPE_PULL "3rd pull"
 
 /** Trigger of the event */
 typedef enum {

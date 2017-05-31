@@ -33,8 +33,8 @@
 class CopyFeedback: public XrdCl::CopyProgressHandler
 {
 public:
-    CopyFeedback(gfal2_context_t context, gfalt_params_t p) :
-            context(context), params(p), startTime(0)
+    CopyFeedback(gfal2_context_t context, gfalt_params_t p, bool isThirdParty) :
+            context(context), params(p), startTime(0), isThirdParty(isThirdParty)
     {
         memset(&status, 0x00, sizeof(status));
     }
@@ -53,6 +53,15 @@ public:
         plugin_trigger_event(this->params, xrootd_domain, GFAL_EVENT_NONE,
                 GFAL_EVENT_TRANSFER_ENTER, "%s => %s", this->source.c_str(),
                 this->destination.c_str());
+
+        if (this->isThirdParty) {
+            plugin_trigger_event(params, xrootd_domain,
+                GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_TYPE, GFAL_TRANSFER_TYPE_PULL);
+        }
+        else {
+            plugin_trigger_event(params, xrootd_domain,
+                GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_TYPE, GFAL_TRANSFER_TYPE_STREAMED);
+        }
     }
 
 #if XrdMajorVNUM(XrdVNUMBER) == 4
@@ -117,6 +126,7 @@ private:
     time_t startTime;
 
     std::string source, destination;
+    bool isThirdParty;
 };
 
 
@@ -164,6 +174,8 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
     GError* internalError = NULL;
     char checksumType[64] = { 0 };
     char checksumValue[512] = { 0 };
+    bool isThirdParty = false;
+
     gfalt_checksum_mode_t checksumMode = gfalt_get_checksum(params,
         checksumType, sizeof(checksumType),
         checksumValue, sizeof(checksumValue), NULL);
@@ -193,6 +205,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         job.Set("posc", true);
         if ((source_url.GetProtocol() == "root") && (dest_url.GetProtocol() == "root")) {
             job.Set("thirdParty", "only");
+            isThirdParty = true;
         }
         else {
             job.Set("thirdParty", "first");
@@ -209,6 +222,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         if ((source_url.GetProtocol() == "root") && (dest_url.GetProtocol() == "root")) {
             job.thirdParty = true;
             job.thirdPartyFallBack = false;
+            isThirdParty = true;
         }
         else {
             job.thirdParty = false;
@@ -287,7 +301,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         return -1;
     }
 
-    CopyFeedback feedback(context, params);
+    CopyFeedback feedback(context, params, isThirdParty);
     status = copy_process.Run(&feedback);
 
     // On bulk operations, even if there is one single failure we will get it

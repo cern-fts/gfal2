@@ -29,7 +29,7 @@
 
 typedef enum {HTTP_COPY_PUSH, HTTP_COPY_PULL, HTTP_COPY_STREAM, HTTP_COPY_END} CopyMode;
 const char* CopyModeStr[] = {
-    "Push", "Pull", "Stream", NULL
+    GFAL_TRANSFER_TYPE_PUSH, GFAL_TRANSFER_TYPE_PULL, GFAL_TRANSFER_TYPE_STREAMED, NULL
 };
 
 
@@ -585,6 +585,9 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         gfal2_log(G_LOG_LEVEL_MESSAGE,
             "Trying copying with mode %s",
             CopyModeStr[copy_mode]);
+        plugin_trigger_event(params, http_plugin_domain,
+            GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_TYPE,
+            "%s",  CopyModeStr[copy_mode]);
 
         if (copy_mode == HTTP_COPY_STREAM) {
             ret = gfal_http_streamed_copy(context, davix, src, dst, params, &nested_error);
