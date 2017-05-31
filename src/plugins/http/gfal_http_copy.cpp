@@ -603,7 +603,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         }
         else if (ret < 0) {
             // Recoverable error, try next mode
-            if (nested_error->code == EINVAL or nested_error->code == ENOSYS) {
+            if (nested_error->code == EINVAL or nested_error->code == ENOSYS || nested_error->code == EPERM) {
                 gfal2_log(G_LOG_LEVEL_WARNING,
                         "Copy failed with mode %s, will retry with the next available mode: %s",
                         CopyModeStr[copy_mode], nested_error->message);
