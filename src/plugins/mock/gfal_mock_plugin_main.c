@@ -130,6 +130,41 @@ void gfal_plugin_mock_delete(plugin_handle plugin_data)
     free(plugin_data);
 }
 
+/*
+ * This is a super ugly hack to allow gfal2 mock plugin to kill self
+ * on instantiation time. It peeks the arguments looking for a "magic"
+ * string
+ */
+static void gfal_mock_seppuku_hook()
+{
+    static const char mock_load_time_signal_str[] = "MOCK_LOAD_TIME_SIGNAL";
+
+    FILE *fd = fopen("/proc/self/cmdline", "r");
+    if (!fd) {
+        return;
+    }
+
+    char *value = NULL;
+    size_t len = 0;
+    const char *signal_str = NULL;
+
+    while (getdelim(&value, &len, '\0', fd) != -1) {
+        signal_str = strstr(value, mock_load_time_signal_str);
+        if (signal_str) {
+            break;
+        }
+    }
+
+    fclose(fd);
+
+    if (signal_str) {
+        signal_str += sizeof(mock_load_time_signal_str) - 1;
+        int signal_number = gfal_plugin_mock_get_int_from_str(signal_str);
+        raise(signal_number);
+    }
+
+    free(value);
+}
 
 /*
  * Init function, called before all
@@ -141,6 +176,11 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError **err)
 
     MockPluginData *mdata = calloc(1, sizeof(MockPluginData));
     mdata->handle = handle;
+    mdata->enable_signals = gfal2_get_opt_boolean_with_default(handle, "MOCK PLUGIN", "SIGNALS", FALSE);
+
+    if (mdata->enable_signals) {
+        gfal_mock_seppuku_hook();
+    }
 
     mock_plugin.plugin_data = mdata;
     mock_plugin.plugin_delete = gfal_plugin_mock_delete;

@@ -18,7 +18,7 @@ Supported arguments:
 - checksum
     Checksum value
 - time
-    Time that a copy will take. To be specified on the destination URL. 
+    Time that a copy will take. To be specified on the destination URL.
 - errno
     Trigger an error with this errno number
 - transfer_errno
@@ -31,7 +31,12 @@ Supported arguments:
     Fail the release with this error number
 - signal
     Raise the signal specified as an integer
-    
+
+Also, if the string MOCK_LOAD_TIME_SIGNAL is found on any parameter for the current process (obtained reading
+/proc/self/cmdline), the following digits will be used to raise a signal at instantiation time.
+
+By default, signals are disabled. They have to be enabled setting SIGNALS to 1.
+
 Examples
 --------
 
@@ -40,9 +45,9 @@ Fail with a ENOENT
 
 Stat a regular file with a size of 1000 bytes
     gfal-stat mock://host/path?size=1000
-    
+
 Trigger a copy that will take 5 seconds
     gfal-copy "mock://host/path?size=1000" "mock://host/path2?errno=2&size_pre=0&size_post=1000&time=5"
-    
+
 Trigger a segfault
     gfal-ls "mock://host/path?signal=11"

@@ -34,6 +34,7 @@ typedef enum {
 typedef struct {
     gfal2_context_t handle;
     StatStage stat_stage;
+    char enable_signals;
 } MockPluginData;
 
 

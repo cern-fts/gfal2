@@ -46,7 +46,7 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char *path, struct st
     // Trigger signal
     gfal_plugin_mock_get_value(path, "signal", arg_buffer, sizeof(arg_buffer));
     signum = gfal_plugin_mock_get_int_from_str(arg_buffer);
-    if (signum > 0) {
+    if (signum > 0 && mdata->enable_signals) {
         sleep(1);
         raise(signum);
     }
