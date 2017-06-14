@@ -330,6 +330,13 @@ gchar **gfal2_get_opt_keys(gfal2_context_t context, const gchar *group_name, gsi
 }
 
 
+gboolean gfal2_remove_opt(gfal2_context_t context, const gchar *group_name,
+    const gchar *key, GError **error)
+{
+    return g_key_file_remove_key(context->config, group_name, key, error);
+}
+
+
 gint gfal2_set_user_agent(gfal2_context_t handle, const char *user_agent,
     const char *version, GError **error)
 {

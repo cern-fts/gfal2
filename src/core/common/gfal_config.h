@@ -247,6 +247,18 @@ gint gfal2_load_opts_from_file(gfal2_context_t context, const char* path, GError
  */
 gchar **gfal2_get_opt_keys(gfal2_context_t context, const gchar *group_name, gsize *length, GError **error);
 
+
+/**
+ * Removes a key from the settings
+ * @param context : context of gfal 2.0
+ * @param group_name : group name of the parameters
+ * @param key : key of the parameter
+ * @param error : GError error report system
+ * @return TRUE if the key was removed, FALSE otherwise
+ */
+gboolean gfal2_remove_opt(gfal2_context_t context, const gchar *group_name,
+    const gchar *key, GError **error);
+
 /**
  * Set the user agent for those protocols that support this
  */

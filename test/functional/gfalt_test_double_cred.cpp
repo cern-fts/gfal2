@@ -59,6 +59,10 @@ public:
         ret = gfal2_cred_clean(handle, &error);
         ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
 
+        // Clear automatic setup
+        gfal2_remove_opt(handle, "X509", "CERT", NULL);
+        gfal2_remove_opt(handle, "X509", "KEY", NULL);
+
         // Set configured values
         ret = gfal2_cred_set(handle, source_root, source_cred, &error);
         ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
