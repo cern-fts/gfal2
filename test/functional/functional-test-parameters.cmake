@@ -47,7 +47,7 @@ SET(srm_prefix_storm "srm://stormfe1.pi.infn.it:8444/srm/managerv2?SFN=/${MY_VO_
 SET(srm_prefix_dcache "srm://dcache-se-cms.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/${MY_VO}/gfal2-tests/")
 SET(lfc_prefix "lfn:/grid/${MY_VO}/gfal2-tests/")
 SET(lfc_host_name "lfc-puppet01.cern.ch")
-SET(gsiftp_prefix_dpm "gsiftp://hepgrid11.ph.liv.ac.uk/dpm/ph.liv.ac.uk/home/${MY_VO}/gfal2-tests/")
+SET(gsiftp_prefix_dpm "gsiftp://dpm1.egee.cesnet.cz/dpm/cesnet.cz/home/${MY_VO}/gfal2-tests/")
 SET(srm_prefix_dpm "srm://ipnsedpm.in2p3.fr:8446/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
 SET(sftp_prefix "sftp://gfal2@arioch.cern.ch/home/gfal2/gfal2-tests")
 SET(root_prefix_dpm "root://hepgrid11.ph.liv.ac.uk/dpm/ph.liv.ac.uk/home/${MY_VO}/gfal2-tests")
