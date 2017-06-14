@@ -27,7 +27,7 @@
 
 
 /*
- * Next gen request srm system for gfal 2.0
+ * Next gen request srm system for gfal2
  * Come with srm-ifce 2.0
  * */
 

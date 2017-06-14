@@ -24,7 +24,7 @@
 
 #include <glib.h>
 
-// create or delete configuration manager for gfal 2.0, internal
+// create or delete configuration manager for gfal2, internal
 GKeyFile* gfal2_init_config(GError **err);
 
 void gfal_free_keyvalue(gpointer data, gpointer user_data);

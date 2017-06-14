@@ -217,7 +217,7 @@ void gfal_lfc_init_thread(struct lfc_ops *ops)
 // REASONS : unstable, can just fail forever in case of connexion drop
 int gfal_lfc_startSession(struct lfc_ops *ops, GError **err)
 {
-    /*if (ops->startsess (ops->lfc_endpoint, "gfal 2.0 auto-session") < 0){
+    /*if (ops->startsess (ops->lfc_endpoint, "gfal2 auto-session") < 0){
 		int sav_errno = gfal_lfc_get_errno(ops);
         gfal2_set_error(err, gfal2_get_plugin_lfc_quark(), sav_errno, __func__,
             "Error while start session with lfc, lfc_endpoint: %s, Error : %s ",
@@ -263,7 +263,7 @@ void lfc_set_session_timeout(int timeout)
 
 static int gfal_lfc_startTransaction(struct lfc_ops *ops, GError **err)
 {
-    /*if (ops->starttrans(ops->lfc_endpoint, "gfal 2.0 auto-trans")){
+    /*if (ops->starttrans(ops->lfc_endpoint, "gfal2 auto-trans")){
 		int sav_errno = gfal_lfc_get_errno(ops);
         gfal2_set_error(err, gfal2_get_plugin_lfc_quark() ,sav_errno, __func__,
             "Error while start transaction with lfc, lfc_endpoint: %s, Error : %s ",

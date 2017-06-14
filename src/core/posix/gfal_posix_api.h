@@ -376,7 +376,7 @@ int gfal_flush(int fd);
  *
  *  Similar behavior to the POSIX pread  ( man 2 pread )
  *
- *  In gfal 2.0, this call is thread-safe and allows the usage of \
+ *  In gfal2, this call is thread-safe and allows the usage of \
  *  parallels read at the same time on the same file descriptor.
  *
  *  This is the recommended way to execute parallels transfers.
@@ -402,7 +402,7 @@ ssize_t gfal_pread(int fd, void *buff, size_t size, off_t offset);
  *
  *  Similar behavior to the POSIX pwrite  ( man 2 pwrite )
  *
- *  In gfal 2.0, this function is thread-safe and allows the usage of
+ *  In gfal2, this function is thread-safe and allows the usage of
  *  parallels write at the same time on the same file descriptor.
  *
  *  This is the recommended way to execute parallels transfers.
@@ -428,7 +428,7 @@ ssize_t gfal_pwrite(int fd, const void *buff, size_t size, off_t offset);
  *
  *  similar to the getxattr function
  *
- * In gfal 2.0, this is the standard way to interact \
+ * In gfal2, this is the standard way to interact \
  *   with advanced file properties
  *
  *  ex : gfal_getxattr("srm://myurl/endpoint", "user.replicas",
@@ -465,7 +465,7 @@ ssize_t gfal_listxattr(const char *url, char *list, size_t size);
  *
  *  similar to the listxattr function
  *
- *  In gfal 2.0, this is the standard way to interact \
+ *  In gfal2, this is the standard way to interact \
  *   with advanced file properties
  *
  *  ex : gfal_setxattr("srm://myurl/endpoint", "user.status",

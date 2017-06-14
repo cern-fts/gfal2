@@ -44,7 +44,7 @@ int gfal_compare_checksums(const char* chk1, const char* chk2, size_t len)
 
 // ----------------------------------------------------------------------------------------------------
 /*
- * Taken from public domain md5 implementation, converted to  ASL 2.0 license for gfal 2.0
+ * Taken from public domain md5 implementation, converted to  ASL 2.0 license for gfal2
  *
  * Homepage:
  * http://openwall.info/wiki/people/solar/software/public-domain-source-code/md5

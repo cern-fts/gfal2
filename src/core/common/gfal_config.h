@@ -49,8 +49,8 @@ extern "C"
     \defgroup config_group Parameter API
 
 
-    Allows to overwrite or/and define any parameter of gfal 2.0.
-    A complete list of parameter is accessible in the gfal 2.0 configuration files directory
+    Allows to overwrite or/and define any parameter of gfal2.
+    A complete list of parameter is accessible in the gfal2 configuration files directory
     ( by default : /etc/gfal2.d/  )
 
     Example ( enable IPv6 support for the gridFTP plugin ) :
@@ -66,9 +66,9 @@ extern "C"
 
 /**
  * @brief get a string parameter in the current GFAL 2.0 configuration
- *  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+ *  see gfal2.d configuration files or gfal2 documentation to know group/key/values
  *
- * @param context : context of gfal 2.0
+ * @param context : context of gfal2
  * @param group_name : group name of the parameter
  * @param key : key of the parameter
  * @param error : GError error report system
@@ -81,7 +81,7 @@ gchar * gfal2_get_opt_string(gfal2_context_t context, const gchar *group_name,
 * @brief similar to \ref gfal2_get_opt_string but return a default value if
 * an error occurs
  *
- * @param handle : context of gfal 2.0
+ * @param handle : context of gfal2
  * @param group_name : group name of the parameter
  * @param key : key of the parameter
  * @param default_value : Default value
@@ -92,9 +92,9 @@ gchar * gfal2_get_opt_string_with_default(gfal2_context_t handle, const gchar *g
 
 /**
  * @brief set a string parameter in the current GFAL 2.0 configuration
- *  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+ *  see gfal2.d configuration files or gfal2 documentation to know group/key/values
  *
- * @param context : context of gfal 2.0
+ * @param context : context of gfal2
  * @param group_name : group name of the parameter
  * @param key : key of the parameter
  * @param value : value to set
@@ -106,9 +106,9 @@ gint gfal2_set_opt_string(gfal2_context_t context, const gchar *group_name,
 
 /**
  * @brief get an integer parameter in the current GFAL 2.0 configuration
- *  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+ *  see gfal2.d configuration files or gfal2 documentation to know group/key/values
  *
- * @param context : context of gfal 2.0
+ * @param context : context of gfal2
  * @param group_name : group name of the parameter
  * @param key : key of the parameter
  * @param error : GError error report system
@@ -121,7 +121,7 @@ gint gfal2_get_opt_integer(gfal2_context_t context, const gchar *group_name,
 * @brief similar to \ref gfal2_get_opt_integer but return a default value if
 * an error occurs
 *
-* @param handle : context of gfal 2.0
+* @param handle : context of gfal2
 * @param group_name : group name of the parameter
 * @param key : key of the parameter
 * @param default_value : default value returned if not present
@@ -132,9 +132,9 @@ gint gfal2_get_opt_integer_with_default(gfal2_context_t handle, const gchar *gro
 
 /**
  * @brief set an integer parameter in the current GFAL 2.0 configuration
- *  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+ *  see gfal2.d configuration files or gfal2 documentation to know group/key/values
  *
- * @param context : context of gfal 2.0
+ * @param context : context of gfal2
  * @param group_name : group name of the parameter
  * @param key : key of the parameter
  * @param value : value to set
@@ -146,9 +146,9 @@ gint gfal2_set_opt_integer(gfal2_context_t context, const gchar *group_name,
                                   GError** error);
 /**
  * @brief set a boolean parameter in the current GFAL 2.0 configuration
- *  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+ *  see gfal2.d configuration files or gfal2 documentation to know group/key/values
  *
- * @param context : context of gfal 2.0
+ * @param context : context of gfal2
  * @param group_name : group name of the parameter
  * @param key : key of the parameter
  * @param value : value to set
@@ -160,9 +160,9 @@ gint gfal2_set_opt_boolean(gfal2_context_t context, const gchar *group_name,
 
 /**
 * @brief get a boolean parameter in the current GFAL 2.0 configuration
-*  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+*  see gfal2.d configuration files or gfal2 documentation to know group/key/values
 *
-* @param context : context of gfal 2.0
+* @param context : context of gfal2
 * @param group_name : group name of the parameter
 * @param key : key of the parameter
 * @param error : GError error report system
@@ -176,7 +176,7 @@ gboolean gfal2_get_opt_boolean(gfal2_context_t context, const gchar *group_name,
 * @brief similar to \ref gfal2_get_opt_boolean but return a default value if
 * an error occures
 *
-* @param context : context of gfal 2.0
+* @param context : context of gfal2
 * @param group_name : group name of the parameter
 * @param key : key of the parameter
 * @param default_value : default value returned if not present
@@ -188,9 +188,9 @@ gboolean gfal2_get_opt_boolean_with_default(gfal2_context_t context, const gchar
 
 /**
  * @brief set a list of string parameter in the current GFAL 2.0 configuration
- *  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+ *  see gfal2.d configuration files or gfal2 documentation to know group/key/values
  *
- * @param context : context of gfal 2.0
+ * @param context : context of gfal2
  * @param group_name : group name of the parameter
  * @param key : key of the parameter
  * @param list : list of strings
@@ -206,9 +206,9 @@ gint gfal2_set_opt_string_list(gfal2_context_t context, const gchar *group_name,
 
 /**
 * @brief get a list of string parameter in the current GFAL 2.0 configuration
-*  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+*  see gfal2.d configuration files or gfal2 documentation to know group/key/values
 *
-* @param context : context of gfal 2.0
+* @param context : context of gfal2
 * @param group_name : group name of the parameter
 * @param key : key of the parameter
 * @param length : the length of the string is stored here
@@ -220,9 +220,9 @@ gchar ** gfal2_get_opt_string_list(gfal2_context_t context, const gchar *group_n
 
 /**
 * @brief get a list of string parameter in the current GFAL 2.0 configuration
-*  see gfal2.d configuration files or gfal 2.0 documentation to know group/key/values
+*  see gfal2.d configuration files or gfal2 documentation to know group/key/values
 *
-* @param context : context of gfal 2.0
+* @param context : context of gfal2
 * @param group_name : group name of the parameter
 * @param key : key of the parameter
 * @param length : the length of the string is stored here
@@ -239,7 +239,7 @@ gint gfal2_load_opts_from_file(gfal2_context_t context, const char* path, GError
 
 /**
  * Get all keys defined for the given group_name
- * @param context : context of gfal 2.0
+ * @param context : context of gfal2
  * @param group_name : group name of the parameters
  * @param length : the number of keys is stored here
  * @param error : GError error report system
@@ -250,7 +250,7 @@ gchar **gfal2_get_opt_keys(gfal2_context_t context, const gchar *group_name, gsi
 
 /**
  * Removes a key from the settings
- * @param context : context of gfal 2.0
+ * @param context : context of gfal2
  * @param group_name : group name of the parameters
  * @param key : key of the parameter
  * @param error : GError error report system
