@@ -10,11 +10,11 @@ Summary:            Grid file access library 2.0
 Group:              Applications/Internet
 License:            ASL 2.0
 URL:                http://dmc.web.cern.ch/projects/gfal-2/home
-# git clone --depth=1 --branch master https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.13.1
-# pushd gfal2-2.13.1
-# git checkout v2.13.1
+# git clone --depth=1 --branch master https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.14.0
+# pushd gfal2-2.14.0
+# git checkout v2.14.0
 # popd
-# tar czf gfal2-2.13.1.tar.gz --exclude-vcs gfal2-2.13.1
+# tar czf gfal2-2.14.0.tar.gz --exclude-vcs gfal2-2.14.0
 Source0:            %{name}-%{version}.tar.gz
 BuildRoot:          %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
