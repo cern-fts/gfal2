@@ -21,15 +21,14 @@
 #include <gtest/gtest.h>
 
 #include <gfal_api.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <utils/exceptions/gerror_to_cpp.h>
-#include <transfer/gfal_transfer.h>
 
 #include <common/gfal_lib_test.h>
 #include <common/gfal_gtest_asserts.h>
 
 #include <list>
+
+static void event_callback(const gfalt_event_t e, gpointer user_data);
 
 
 class CopyTestMkdir: public testing::Test {
@@ -41,6 +40,7 @@ public:
     char destination[2048];
     gfal2_context_t handle;
     gfalt_params_t params;
+    bool isThirdPartyCopy, mustBeThirdPartyCopy;
 
     std::list<std::string> directories;
 
@@ -50,6 +50,8 @@ public:
         Gfal::gerror_to_cpp(&error);
         params = gfalt_params_handle_new(NULL);
         gfalt_set_create_parent_dir(params, TRUE, NULL);
+        gfalt_add_event_callback(params, &event_callback, this, NULL, NULL);
+        mustBeThirdPartyCopy = is_same_scheme(source_root, destination_root);
     }
 
     virtual ~CopyTestMkdir() {
@@ -58,6 +60,7 @@ public:
     }
 
     virtual void SetUp() {
+        isThirdPartyCopy = false;
         generate_random_uri(source_root, "copyfile_replace_source", source, 2048);
 
         RecordProperty("Source", source);
@@ -77,7 +80,27 @@ public:
             gfal_rmdir(i->c_str());
         directories.clear();
     }
+
+    void VerifyThirdPartyCopy() {
+        if (mustBeThirdPartyCopy) {
+            EXPECT_TRUE(isThirdPartyCopy);
+        }
+        else {
+            EXPECT_FALSE(isThirdPartyCopy);
+        }
+    }
 };
+
+
+void event_callback(const gfalt_event_t e, gpointer user_data)
+{
+    CopyTestMkdir *copyTest = static_cast<CopyTestMkdir*>(user_data);
+    if (e->stage == GFAL_EVENT_TRANSFER_TYPE) {
+        copyTest->isThirdPartyCopy = (strncmp(e->description, "3rd", 3) == 0);
+        gfal2_log(G_LOG_LEVEL_INFO, "Third party copy");
+    }
+}
+
 
 const char* CopyTestMkdir::source_root;
 const char* CopyTestMkdir::destination_root;
@@ -103,6 +126,7 @@ TEST_F(CopyTestMkdir, CopyNested)
 
     ret = gfalt_copy_file(handle, params, source, destination, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+    VerifyThirdPartyCopy();
 }
 
 
@@ -115,6 +139,7 @@ TEST_F(CopyTestMkdir, CopyAtRoot)
 
     ret = gfalt_copy_file(handle, params, source, destination, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+    VerifyThirdPartyCopy();
 }
 
 

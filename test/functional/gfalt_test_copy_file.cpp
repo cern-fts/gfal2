@@ -21,13 +21,13 @@
 #include <gtest/gtest.h>
 
 #include <gfal_api.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <utils/exceptions/gerror_to_cpp.h>
-#include <transfer/gfal_transfer.h>
 
 #include <common/gfal_lib_test.h>
 #include <common/gfal_gtest_asserts.h>
+
+
+static void event_callback(const gfalt_event_t e, gpointer user_data);
 
 
 class CopyTest: public testing::Test {
@@ -38,18 +38,31 @@ public:
     char source[2048];
     char destination[2048];
     gfal2_context_t handle;
+    gfalt_params_t params;
+
+    bool isThirdPartyCopy, mustBeThirdPartyCopy;
 
     CopyTest() {
         GError *error = NULL;
         handle =  gfal2_context_new(&error);
         Gfal::gerror_to_cpp(&error);
+        params = gfalt_params_handle_new(&error);
+        Gfal::gerror_to_cpp(&error);
+
+        gfalt_add_event_callback(params, event_callback, this, NULL, &error);
+        Gfal::gerror_to_cpp(&error);
+
+        mustBeThirdPartyCopy = is_same_scheme(source_root, destination_root);
     }
 
     virtual ~CopyTest() {
         gfal2_context_free(handle);
+        gfalt_params_handle_delete(params, NULL);
     }
 
     virtual void SetUp() {
+        isThirdPartyCopy = false;
+
         generate_random_uri(source_root, "copyfile_source", source, 2048);
         generate_random_uri(destination_root, "copyfile", destination, 2048);
 
@@ -65,7 +78,27 @@ public:
         gfal_unlink(source);
         gfal_unlink(destination);
     }
+
+    void VerifyThirdPartyCopy() {
+        if (mustBeThirdPartyCopy) {
+            EXPECT_TRUE(isThirdPartyCopy);
+        }
+        else {
+            EXPECT_FALSE(isThirdPartyCopy);
+        }
+    }
 };
+
+
+static void event_callback(const gfalt_event_t e, gpointer user_data)
+{
+    CopyTest *copyTest = static_cast<CopyTest*>(user_data);
+    if (e->stage == GFAL_EVENT_TRANSFER_TYPE) {
+        copyTest->isThirdPartyCopy = (strncmp(e->description, "3rd", 3) == 0);
+        gfal2_log(G_LOG_LEVEL_INFO, "Third party copy");
+    }
+}
+
 
 const char* CopyTest::source_root;
 const char* CopyTest::destination_root;
@@ -73,8 +106,10 @@ const char* CopyTest::destination_root;
 TEST_F(CopyTest, SimpleFileCopy)
 {
     GError* error = NULL;
-    int ret = gfalt_copy_file(handle, NULL, source, destination, &error);
+    int ret = gfalt_copy_file(handle, params, source, destination, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    VerifyThirdPartyCopy();
 }
 
 
@@ -84,7 +119,7 @@ TEST_F(CopyTest, SimpleFileCopyENOENT)
     int ret = gfal2_unlink(handle, source, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
 
-    ret = gfalt_copy_file(handle, NULL, source, destination, &error);
+    ret = gfalt_copy_file(handle, params, source, destination, &error);
     EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, error, ENOENT);
 }
 

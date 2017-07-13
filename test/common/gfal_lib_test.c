@@ -29,7 +29,7 @@
 #include <unistd.h>
 
 #include "gfal_lib_test.h"
-
+#include <uri/gfal2_uri.h>
 
 char* generate_random_uri(const char* uri_dir, const char* prefix, char* buff,
         size_t s_buff)
@@ -130,6 +130,16 @@ int clean_file(const char* surl)
     return 0;
 }
 
+
+int is_same_scheme(const char *url1, const char *url2)
+{
+    gfal2_uri *uri1 = gfal2_parse_uri(url1, NULL);
+    gfal2_uri *uri2 = gfal2_parse_uri(url2, NULL);
+    int is_same = (g_strcmp0(uri1->scheme, uri2->scheme) == 0);
+    gfal2_free_uri(uri1);
+    gfal2_free_uri(uri2);
+    return is_same;
+}
 
 
 static void dump_stack(int sig)

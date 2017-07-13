@@ -27,13 +27,7 @@
 #include <common/gfal_gtest_asserts.h>
 
 
-void event_callback(const gfalt_event_t e, gpointer user_data)
-{
-    bool *transfer_happened = static_cast<bool*>(user_data);
-    if (e->stage == GFAL_EVENT_TRANSFER_ENTER) {
-        *transfer_happened = true;
-    }
-}
+static void event_callback(const gfalt_event_t e, gpointer user_data);
 
 
 class CopyTestUserChecksum: public testing::Test {
@@ -46,13 +40,15 @@ public:
     gfal2_context_t handle;
     gfalt_params_t params;
     bool transfer_happened;
+    bool isThirdPartyCopy, mustBeThirdPartyCopy;
 
     CopyTestUserChecksum(): transfer_happened(false) {
         GError *error = NULL;
         handle =  gfal2_context_new(&error);
         Gfal::gerror_to_cpp(&error);
         params = gfalt_params_handle_new(NULL);
-        gfalt_add_event_callback(params, &event_callback, &transfer_happened, NULL, NULL);
+        gfalt_add_event_callback(params, &event_callback, this, NULL, NULL);
+        mustBeThirdPartyCopy = is_same_scheme(source_root, destination_root);
     }
 
     virtual ~CopyTestUserChecksum() {
@@ -61,6 +57,7 @@ public:
     }
 
     virtual void SetUp() {
+        isThirdPartyCopy = false;
         transfer_happened = false;
         gfalt_set_checksum(params, GFALT_CHECKSUM_BOTH, NULL, NULL, NULL);
 
@@ -81,7 +78,30 @@ public:
         gfal_unlink(destination);
         gfal_posix_clear_error();
     }
+
+    void VerifyThirdPartyCopy() {
+        if (mustBeThirdPartyCopy) {
+            EXPECT_TRUE(isThirdPartyCopy);
+        }
+        else {
+            EXPECT_FALSE(isThirdPartyCopy);
+        }
+    }
 };
+
+
+void event_callback(const gfalt_event_t e, gpointer user_data)
+{
+    CopyTestUserChecksum *copyTest = static_cast<CopyTestUserChecksum*>(user_data);
+    if (e->stage == GFAL_EVENT_TRANSFER_ENTER) {
+        copyTest->transfer_happened = true;
+    }
+    if (e->stage == GFAL_EVENT_TRANSFER_TYPE) {
+        copyTest->isThirdPartyCopy = (strncmp(e->description, "3rd", 3) == 0);
+        gfal2_log(G_LOG_LEVEL_INFO, "Third party copy");
+    }
+}
+
 
 const char* CopyTestUserChecksum::source_root;
 const char* CopyTestUserChecksum::destination_root;
@@ -101,6 +121,8 @@ TEST_F(CopyTestUserChecksum, CopyRightUserChecksum)
 
     ret = gfalt_copy_file(handle, params, source, destination, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    VerifyThirdPartyCopy();
 }
 
 // Enabling checksum with a wrong checksum, the copy must fail
@@ -131,6 +153,7 @@ TEST_F(CopyTestUserChecksum, CopyRightUserChecksumSource)
 
     ret = gfalt_copy_file(handle, params, source, destination, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+    VerifyThirdPartyCopy();
 }
 
 // Enabling checksum for the destination only with the correct checksum, the copy must succeed
@@ -147,6 +170,7 @@ TEST_F(CopyTestUserChecksum, CopyRightUserChecksumDestination)
 
     ret = gfalt_copy_file(handle, params, source, destination, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+    VerifyThirdPartyCopy();
 }
 
 // Enabling checksum for the source only with a wrong checksum, the copy must fail
@@ -174,6 +198,7 @@ TEST_F(CopyTestUserChecksum, CopyRightUserChecksumDestinationBad)
     ret = gfalt_copy_file(handle, params, source, destination, &error);
     EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, error, EIO);
     EXPECT_TRUE(transfer_happened);
+    VerifyThirdPartyCopy();
 }
 
 // Disabling checksum with a wrong checksum, the copy must succeed
@@ -186,6 +211,7 @@ TEST_F(CopyTestUserChecksum, CopyRightUserChecksumDisabledBad)
 
     ret = gfalt_copy_file(handle, params, source, destination, &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+    VerifyThirdPartyCopy();
 }
 
 // Set source or destination, with empty user defined

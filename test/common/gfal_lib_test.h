@@ -49,6 +49,11 @@ int generate_file_if_not_exists2(const char* surl);
  */
 int clean_file(const char* surl);
 
+/**
+ * Return 1 if url1 and url2 share the same scheme
+ */
+int is_same_scheme(const char *url1, const char *url2);
+
 #ifdef __cplusplus
 }
 #endif
