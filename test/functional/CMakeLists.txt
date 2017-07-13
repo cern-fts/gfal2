@@ -181,9 +181,6 @@ if(FUNCTIONAL_TESTS)
         add_test_executable(gfalt_test_copy_file "gfalt_test_copy_file.cpp")
         target_link_libraries(gfalt_test_copy_file ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} gfal2_test_shared)
 
-        add_test_executable(gfalt_test_copy_file_thead_safety "gfalt_test_copy_file_thead_safety.cpp")
-        target_link_libraries(gfalt_test_copy_file_thead_safety ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} gfal2_test_shared)
-
         add_test_executable(gfalt_test_copy_file_timeout "gfalt_test_copy_file_timeout.cpp")
         target_link_libraries(gfalt_test_copy_file_timeout ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} gfal2_test_shared)
 
