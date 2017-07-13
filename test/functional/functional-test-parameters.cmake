@@ -22,7 +22,7 @@ SET(lfc_prefix "lfn:/grid/${MY_VO}/gfal2-tests/")
 SET(lfc_host_name "lfc-puppet01.cern.ch")
 SET(gsiftp_prefix_dpm "gsiftp://dpmhead-rc.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(srm_prefix_dpm "srm://dpmhead-rc.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
-SET(davs_prefix_dpm "davs+3rd://dpmhead-rc.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
+SET(davs_prefix_dpm "davs://dpmhead-rc.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(root_prefix_dpm "root://dpmhead-rc.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(sftp_prefix "sftp://gfal2@arioch.cern.ch/home/gfal2/gfal2-tests")
 
@@ -37,7 +37,7 @@ SET(lfc_prefix "lfn:/grid/${MY_VO}/gfal2-tests/")
 SET(lfc_host_name "lfc-puppet01.cern.ch")
 SET(gsiftp_prefix_dpm "gsiftp://dpmhead-trunk.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(srm_prefix_dpm "srm://dpmhead-trunk.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
-SET(davs_prefix_dpm "davs+3rd://dpmhead-trunk.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
+SET(davs_prefix_dpm "davs://dpmhead-trunk.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(root_prefix_dpm "root://dpmhead-trunk.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(sftp_prefix "sftp://gfal2@arioch.cern.ch/home/gfal2/gfal2-tests")
 
@@ -56,7 +56,7 @@ SET(sftp_prefix "sftp://gfal2@arioch.cern.ch/home/gfal2/gfal2-tests")
 SET(root_prefix_dpm "root://hepgrid11.ph.liv.ac.uk/dpm/ph.liv.ac.uk/home/${MY_VO}/gfal2-tests")
 
 # Need to find something better!
-SET(davs_prefix_dpm "davs+3rd://dpmhead-rc.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
+SET(davs_prefix_dpm "davs://dpmhead-rc.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 
 ENDIF(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 

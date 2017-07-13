@@ -71,11 +71,7 @@ static int is_dav(const char* surl)
     return strncmp(surl, "dav:", 4) == 0 ||
            strncmp(surl, "davs:", 5) == 0 ||
            strncmp(surl, "http:", 5) == 0 ||
-           strncmp(surl, "https:", 6) == 0 ||
-           strncmp(surl, "dav+3rd:", 8) == 0 ||
-           strncmp(surl, "davs+3rd:", 9) == 0 ||
-           strncmp(surl, "http+3rd:", 9) == 0 ||
-           strncmp(surl, "https+3rd:", 9) == 0;
+           strncmp(surl, "https:", 6) == 0;
 }
 
 

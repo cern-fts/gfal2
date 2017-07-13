@@ -45,7 +45,7 @@ struct PerfCallbackData {
 };
 
 
-static bool is_streamed_scheme(const char* url)
+static bool is_http_scheme(const char* url)
 {
     const char *schemes[] = {"http:", "https:", "dav:", "davs:", "s3:", "s3s:", NULL};
     const char *colon = strchr(url, ':');
@@ -56,38 +56,18 @@ static bool is_streamed_scheme(const char* url)
         if (strncmp(url, schemes[i], scheme_len) == 0)
             return true;
     }
-    return false;
-}
-
-
-static bool is_3rd_scheme(const char* url)
-{
-    const char *schemes[] = {"http+3rd:", "https+3rd:", "dav+3rd:", "davs+3rd:", NULL};
-    const char *colon = strchr(url, ':');
-    if (!colon)
-        return false;
-    size_t scheme_len = colon - url + 1;
-    for (size_t i = 0; schemes[i] != NULL; ++i) {
-        if (strncmp(url, schemes[i], scheme_len) == 0)
-            return true;
-    }
-    return false;
-}
-
-
-static bool is_http_scheme(const char* url)
-{
-    return is_streamed_scheme(url) || is_3rd_scheme(url);
-}
+    return false;}
 
 
 static bool is_http_3rdcopy_enabled(gfal2_context_t context)
 {
-    GError *err = NULL;
-    bool enabled = gfal2_get_opt_boolean(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", &err);
-    if (err)
-        g_error_free(err);
-    return enabled;
+    return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", TRUE);
+}
+
+
+static bool is_http_streamed_enabled(gfal2_context_t context)
+{
+    return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "ENABLE_STREAM_COPY", TRUE);
 }
 
 
@@ -465,6 +445,7 @@ void strip_3rd_from_url(const char* url_full, char* url, size_t url_size)
             len = url_size;
         g_strlcpy(url, url_full, len);
         g_strlcat(url, colon, url_size);
+        gfal2_log(G_LOG_LEVEL_WARNING, "+3rd schemes deprecated");
     }
 }
 
@@ -481,8 +462,6 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
 
     // Determine if urls are 3rd party, and strip the +3rd if they are
     char src[GFAL_URL_MAX_LEN], dst[GFAL_URL_MAX_LEN];
-    bool src_is_3rd = is_3rd_scheme(src_full);
-    bool dst_is_3rd = is_3rd_scheme(dst_full);;
     strip_3rd_from_url(src_full, src, sizeof(src));
     strip_3rd_from_url(dst_full, dst, sizeof(dst));
 
@@ -559,23 +538,9 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     // Initial copy mode
     CopyMode copy_mode = HTTP_COPY_PUSH;
 
-    // If source is not 3rd, but dst is explicitly 3rd, skip PUSH
-    if (!src_is_3rd && dst_is_3rd) {
-        copy_mode = HTTP_COPY_PULL;
-    }
-
     // If source is not even http, go straight to streamed
-    if (!is_http_scheme(src)) {
-        copy_mode = HTTP_COPY_STREAM;
-    }
-
-    // If none is third, go to streamed
-    if (!src_is_3rd && !dst_is_3rd) {
-        copy_mode = HTTP_COPY_STREAM;
-    }
-
-    // If third party copy is disabled, go straight to streamed
-    if (!is_http_3rdcopy_enabled(context)) {
+    // or if third party copy is disabled, go straight to streamed
+    if (!is_http_scheme(src) || !is_http_3rdcopy_enabled(context)) {
         copy_mode = HTTP_COPY_STREAM;
     }
 
@@ -590,7 +555,14 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
             "%s",  CopyModeStr[copy_mode]);
 
         if (copy_mode == HTTP_COPY_STREAM) {
-            ret = gfal_http_streamed_copy(context, davix, src, dst, params, &nested_error);
+            if (is_http_streamed_enabled(context)) {
+                ret = gfal_http_streamed_copy(context, davix, src, dst, params, &nested_error);
+            }
+            else {
+                gfalt_set_error(err, http_plugin_domain, EIO, __func__,
+                    GFALT_ERROR_TRANSFER, "STREAMED DISABLED",
+                    "Trying to fallback to a streamed copy, but they are disabled");
+            }
         }
         else {
             ret = gfal_http_third_party_copy(davix, src, dst, copy_mode, params, &nested_error);
