@@ -133,10 +133,14 @@ TEST_F(BringonlineTest, TwoBringOnlineAsync)
     };
 
     ret = gfal2_bring_online_list(handle, 2, surls, 10, 28800, token, sizeof(token), TRUE, error);
+
     if (ret == 0) {
         ASSERT_NE(0, token[0]);
         while (ret == 0) {
             sleep(1);
+            g_clear_error(&error[0]);
+            g_clear_error(&error[1]);
+
             printf("Poll\n");
             ret = gfal2_bring_online_poll_list(handle, 2, surls, token, error);
             if (error[0] != NULL) {
@@ -176,6 +180,7 @@ TEST_F(BringonlineTest, SingleReleaseSync)
 }
 
 // Asynchronous call, two files, abort
+// Note that Castor returns an error (EIO) when a file has been processed before the abort
 TEST_F(BringonlineTest, TwoAbort)
 {
     GError* error[2] = {NULL, NULL};
@@ -191,10 +196,11 @@ TEST_F(BringonlineTest, TwoAbort)
     };
 
     ret = gfal2_bring_online_list(handle, 2, surls, 10, 28800, token, sizeof(token), TRUE, error);
+
     if (ret == 0 && token[0]) {
         ret = gfal2_abort_files(handle, 2, surls, token, error);
-        ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error[0]);
-        ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error[1]);
+        ASSERT_TRUE(error[0] == NULL || error[0]->code == ENOENT);
+        ASSERT_TRUE(error[1] == NULL || error[1]->code == EIO);
 
         while (ret == 0) {
             sleep(1);
@@ -204,9 +210,8 @@ TEST_F(BringonlineTest, TwoAbort)
             ret = gfal2_bring_online_poll_list(handle, 2, surls, token, error);
         }
 
-        ASSERT_EQ(1, ret);
         ASSERT_TRUE(error[0]->code == ECANCELED || error[0]->code == ENOENT);
-        ASSERT_TRUE(error[1]->code == ECANCELED || error[1]->code == 0);
+        ASSERT_TRUE(error[1]->code == ECANCELED || error[1]->code == 0 || error[1]->code == EIO);
     }
 }
 
@@ -266,12 +271,18 @@ TEST_F(BringonlineTest, DuplicatedSURLs)
 
     ret = gfal2_bring_online_list(handle, nbfiles, surls,
             10, 28800, token, sizeof(token), TRUE, error);
+
     if (ret == 0) {
         ASSERT_NE(0, token[0]);
         while (ret == 0) {
             sleep(1);
+            for (int i = 0; i < nbfiles; ++i) {
+                g_clear_error(&error[i]);
+            }
+
             printf("Poll\n");
             ret = gfal2_bring_online_poll_list(handle, nbfiles, surls, token, error);
+
             for (int i = 0; i < nbfiles; ++i) {
                 if (error[i] != NULL) {
                     if (i % 2 == 0) {
