@@ -131,14 +131,43 @@ int clean_file(const char* surl)
 }
 
 
-int is_same_scheme(const char *url1, const char *url2)
+int expect_third_party_copy(const char *url1, const char *url2)
 {
+    int expect = 0;
     gfal2_uri *uri1 = gfal2_parse_uri(url1, NULL);
     gfal2_uri *uri2 = gfal2_parse_uri(url2, NULL);
+
+    // If file is involved, surely not
+    if (g_strcmp0(uri1->scheme, "file") == 0 || g_strcmp0(uri2->scheme, "file") == 0) {
+        expect = 0;
+        goto done_expect;
+    }
+
+    // If SRM involved, let's assume yes
+    if (g_strcmp0(uri1->scheme, "srm") == 0 || g_strcmp0(uri2->scheme, "srm") == 0) {
+        expect = 1;
+        goto done_expect;
+    }
+
+    // If both are the same, depending on the protocol
     int is_same = (g_strcmp0(uri1->scheme, uri2->scheme) == 0);
+    if (is_same) {
+        expect = g_strcmp0(uri1->scheme, "gsiftp") == 0 ||
+            g_strcmp0(uri1->scheme, "root") == 0 ||
+            g_strcmp0(uri1->scheme, "davs") == 0;
+        goto done_expect;
+    }
+
+    // Otherwise, not expected
+    // Mind that there are other combinations here that could happen, and even
+    // some protocols can do copies both with third party or not, depending on the storages involved
+    // (i.e. davs, s3, root), so this is an incomplete heuristic only suitable for the storages normally
+    // involved on the tests
+
+done_expect:
     gfal2_free_uri(uri1);
     gfal2_free_uri(uri2);
-    return is_same;
+    return expect;
 }
 
 

@@ -51,7 +51,7 @@ public:
         params = gfalt_params_handle_new(NULL);
         gfalt_set_create_parent_dir(params, TRUE, NULL);
         gfalt_add_event_callback(params, &event_callback, this, NULL, NULL);
-        mustBeThirdPartyCopy = is_same_scheme(source_root, destination_root);
+        mustBeThirdPartyCopy = expect_third_party_copy(source_root, destination_root);
     }
 
     virtual ~CopyTestMkdir() {

@@ -52,7 +52,7 @@ public:
         gfalt_add_event_callback(params, event_callback, this, NULL, &error);
         Gfal::gerror_to_cpp(&error);
 
-        mustBeThirdPartyCopy = is_same_scheme(source_root, destination_root);
+        mustBeThirdPartyCopy = expect_third_party_copy(source_root, destination_root);
     }
 
     virtual ~CopyTest() {
