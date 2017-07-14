@@ -1,6 +1,10 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Fri Jul 14 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.14.1
+### Bug
+- [DMC-973] - SRM Plugin: Revert multiple slash addition
+
 ## Wed Jun 21 2017 Alejandro Alvarez <aalvarez at cern.ch> - 2.14.0
 ### Bug
 - [DMC-918] - LFC Plugin: Doesn't work with [X509] CERT and KEY configuration
