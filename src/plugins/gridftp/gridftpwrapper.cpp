@@ -30,14 +30,6 @@
 #include "gridftp_pasv_plugin.h"
 
 
-struct RwStatus
-{
-    off_t init;
-    off_t finish;
-    bool ops_state;
-};
-
-
 static const GQuark GFAL_GRIDFTP_SCOPE_REQ_STATE = g_quark_from_static_string("GridFTPModule::RequestState");
 static const GQuark GFAL_GRIDFTP_GASS_COPY_HANDLER = g_quark_from_static_string("GridFTPModule::GassCopyAttrHandler");
 static const GQuark GFAL_GRIDFTP_SESSION = g_quark_from_static_string("GridFTPModule::GridFTPSession");
