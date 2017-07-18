@@ -274,12 +274,15 @@ int gfal_srm_getTURL_checksum(plugin_handle ch, const char *surl, char *buff_tur
 {
     gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
     gfal_srm_result *resu = NULL;
+    char **sup_protocols = NULL;
     GError *tmp_err = NULL;
     int ret = -1;
 
     gfal_srm_params_t params = gfal_srm_params_new(opts);
     if (params != NULL) {
-        gfal_srm_params_set_protocols(params, srm_get_3rdparty_turls_sup_protocol(opts->handle));
+    	sup_protocols = srm_get_3rdparty_turls_sup_protocol(opts->handle);
+    	reorder_rd3_sup_protocols(sup_protocols, surl);
+        gfal_srm_params_set_protocols(params, sup_protocols);
         ret = gfal_srm_mTURLS_internal(opts, params, SRM_GET, surl, &resu, &tmp_err);
         if (ret > 0) {
             if (resu->err_code == 0) {
@@ -305,14 +308,16 @@ int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char *surl,
 {
     gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
     gfal_srm_result *resu = NULL;
+	char **sup_protocols = NULL;
     GError *tmp_err = NULL;
     int ret = -1;
 
     gfal_srm_params_t params = gfal_srm_params_new(opts);
     if (params != NULL) {
         gfal_srm_params_set_spacetoken(params, gfalt_get_src_spacetoken(p, NULL));
-        gfal_srm_params_set_protocols(params,
-            srm_get_3rdparty_turls_sup_protocol(opts->handle));
+        sup_protocols = srm_get_3rdparty_turls_sup_protocol(opts->handle);
+        reorder_rd3_sup_protocols(sup_protocols, surl);
+        gfal_srm_params_set_protocols(params, sup_protocols);
 
         ret = gfal_srm_mTURLS_internal(opts, params, SRM_GET, surl, &resu, &tmp_err);
         if (ret >= 0) {
@@ -336,6 +341,7 @@ int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char *surl,
 }
 
 
+
 //  execute a put for thirdparty transfer turl
 int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t p, const char *surl,
     size_t surl_file_size, char *buff_turl, int size_turl,
@@ -344,14 +350,16 @@ int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t p, const char *surl,
 {
     gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
     gfal_srm_result *resu = NULL;
+	char **sup_protocols = NULL;
     GError *tmp_err = NULL;
     int ret = -1;
 
     gfal_srm_params_t params = gfal_srm_params_new(opts);
     if (params != NULL) {
         gfal_srm_params_set_spacetoken(params, gfalt_get_dst_spacetoken(p, NULL));
-        gfal_srm_params_set_protocols(params,
-            srm_get_3rdparty_turls_sup_protocol(opts->handle));
+        sup_protocols = srm_get_3rdparty_turls_sup_protocol(opts->handle);
+        reorder_rd3_sup_protocols(sup_protocols, surl);
+        gfal_srm_params_set_protocols(params, sup_protocols);
         gfal_srm_params_set_size(params, surl_file_size);
 
         ret = gfal_srm_mTURLS_internal(opts, params, SRM_PUT, surl, &resu, &tmp_err);
@@ -407,6 +415,27 @@ int gfal_srm_putTURLS_plugin(plugin_handle ch, const char *surl, char *buff_turl
     }
 
     G_RETURN_ERR(ret, tmp_err, err);
+}
+
+// the surl protocol is considered in the first position of the supported protocols
+int reorder_rd3_sup_protocols(char **sup_protocols, const char *surl)
+{
+    int n_protocols = g_strv_length(sup_protocols);
+    char *protocol;
+    int pos_protocol;
+    // Check the turl protocol is in the request list
+    int matching_protocol = 0;
+    int j;
+    for (j = 0; j < n_protocols; ++j) {
+    	size_t proto_len = strlen(sup_protocols[j]);
+        if (strncmp(sup_protocols[j], surl, proto_len) == 0 && surl[proto_len] == ':') {
+            matching_protocol = 1;
+            g_strlcpy (sup_protocols[j], sup_protocols[0], strlen(sup_protocols[0]));
+            g_strlcpy (sup_protocols[0], surl, proto_len);
+            break;
+        }
+    }
+    return 0;
 }
 
 // execute a srm put done on the specified surl and token, return 0 if success else -1 and errno is set

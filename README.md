@@ -27,7 +27,7 @@ Build
 On a clean SLCX/fedora/EL system the following 'extra' packages are needed to be installed:
 
 ```bash
-yum install cmake doxygen glib2-devel libattr-devel openldap-devel zlib-devel lfc-devel dpm-devel srm-ifce-devel dcap-devel globus-gass-copy-devel davix-devel xrootd-client-devel gtest-devel
+yum install cmake doxygen glib2-devel libattr-devel openldap-devel zlib-devel lfc-devel dpm-devel srm-ifce-devel dcap-devel globus-gass-copy-devel davix-devel xrootd-client-devel libssh2-devel gtest-devel
 ```
 Additionally, `e2fsprogs-devel` on SLC5, or `libuuid-devel` on higher versions.
 
