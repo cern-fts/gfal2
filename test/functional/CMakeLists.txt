@@ -174,7 +174,13 @@ if(FUNCTIONAL_TESTS)
 
     # Tests for file transfer
     if(MAIN_TRANSFER)
-
+        
+		add_test_executable(gfalt_test_rd3_reorder_protocols "gfalt_test_rd3_reorder_protocols.cpp")
+        target_link_libraries(gfalt_test_rd3_reorder_protocols ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} gfal2_test_shared)
+        function(test_rd3_reorder_protocols name src_dir dst_dir)
+            add_test(rd3_reorder_protocols_${name} gfalt_test_rd3_reorder_protocols ${src_dir} ${dst_dir})
+        endfunction(test_rd3_reorder_protocols name dst_dir)
+        
         add_test_executable(gfalt_test_copy_file_cancel "gfalt_test_copy_file_cancel.cpp")
         target_link_libraries(gfalt_test_copy_file_cancel ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} pthread)
 
