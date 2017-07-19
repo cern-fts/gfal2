@@ -288,9 +288,10 @@ int gfal_srm_getTURL_checksum(plugin_handle ch, const char *surl, char *buff_tur
             if (resu->err_code == 0) {
                 g_strlcpy(buff_turl, resu->turl, size_turl);
                 ret = 0;
+
             } else {
                 gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), resu->err_code, __func__,
-                    "error on the turl request : %s ", resu->err_str);
+                    "error on the turl %s request : %s ", resu->turl, resu->err_str);
                 ret = -1;
             }
             free(resu);
@@ -301,7 +302,7 @@ int gfal_srm_getTURL_checksum(plugin_handle ch, const char *surl, char *buff_tur
 }
 
 //  execute a get for thirdparty transfer turl
-int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char *surl,
+int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char *surl, const char *other_surl,
     char *buff_turl, int size_turl,
     char *reqtoken, size_t size_reqtoken,
     GError **err)
@@ -316,7 +317,7 @@ int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char *surl,
     if (params != NULL) {
         gfal_srm_params_set_spacetoken(params, gfalt_get_src_spacetoken(p, NULL));
         sup_protocols = srm_get_3rdparty_turls_sup_protocol(opts->handle);
-        reorder_rd3_sup_protocols(sup_protocols, surl);
+        reorder_rd3_sup_protocols(sup_protocols, surl, other_surl);
         gfal_srm_params_set_protocols(params, sup_protocols);
 
         ret = gfal_srm_mTURLS_internal(opts, params, SRM_GET, surl, &resu, &tmp_err);
@@ -330,7 +331,7 @@ int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char *surl,
             else {
                 gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
                     resu->err_code, __func__,
-                    "error on the turl request : %s ", resu->err_str);
+                    "error on the turl %s request : %s ", resu->turl, resu->err_str);
                 ret = -1;
             }
             free(resu);
@@ -343,7 +344,7 @@ int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char *surl,
 
 
 //  execute a put for thirdparty transfer turl
-int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t p, const char *surl,
+int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t p, const char *surl, const char *other_surl,
     size_t surl_file_size, char *buff_turl, int size_turl,
     char *reqtoken, size_t size_reqtoken,
     GError **err)
@@ -358,7 +359,7 @@ int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t p, const char *surl,
     if (params != NULL) {
         gfal_srm_params_set_spacetoken(params, gfalt_get_dst_spacetoken(p, NULL));
         sup_protocols = srm_get_3rdparty_turls_sup_protocol(opts->handle);
-        reorder_rd3_sup_protocols(sup_protocols, surl);
+        reorder_rd3_sup_protocols(sup_protocols, surl, other_surl);
         gfal_srm_params_set_protocols(params, sup_protocols);
         gfal_srm_params_set_size(params, surl_file_size);
 
@@ -374,7 +375,7 @@ int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t p, const char *surl,
             else {
                 gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(),
                     resu->err_code, __func__,
-                    "error on the turl request : %s ", resu->err_str);
+                    "error on the turl %s request : %s ", resu->turl, resu->err_str);
                 ret = -1;
             }
 
@@ -404,6 +405,7 @@ int gfal_srm_putTURLS_plugin(plugin_handle ch, const char *surl, char *buff_turl
                 if (reqtoken)
                     *reqtoken = resu->reqtoken;
                 ret = 0;
+
             } else {
                 gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), resu->err_code, __func__,
                     "error on the turl request : %s ", resu->err_str);
@@ -418,8 +420,9 @@ int gfal_srm_putTURLS_plugin(plugin_handle ch, const char *surl, char *buff_turl
 }
 
 // the surl protocol is considered in the first position of the supported protocols
-int reorder_rd3_sup_protocols(char **sup_protocols, const char *surl)
+int reorder_rd3_sup_protocols(char **sup_protocols, const char *surl, const char *other_surl)
 {
+	GError *tmp_err = NULL;
     int n_protocols = g_strv_length(sup_protocols);
     char *protocol;
     int pos_protocol;
@@ -428,13 +431,14 @@ int reorder_rd3_sup_protocols(char **sup_protocols, const char *surl)
     int j;
     for (j = 0; j < n_protocols; ++j) {
     	size_t proto_len = strlen(sup_protocols[j]);
-        if (strncmp(sup_protocols[j], surl, proto_len) == 0 && surl[proto_len] == ':') {
+        if (strncmp(sup_protocols[j], other_surl, proto_len) == 0 && other_surl[proto_len] == ':') {
             matching_protocol = 1;
-            g_strlcpy (sup_protocols[j], sup_protocols[0], strlen(sup_protocols[0]));
-            g_strlcpy (sup_protocols[0], surl, proto_len);
+            g_strlcpy (sup_protocols[j], sup_protocols[0], strlen(sup_protocols[0])+1);
+            g_strlcpy (sup_protocols[0], other_surl, proto_len+1);
             break;
         }
     }
+
     return 0;
 }
 

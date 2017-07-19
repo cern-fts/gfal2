@@ -144,17 +144,23 @@ int expect_third_party_copy(const char *url1, const char *url2)
     }
 
     // If SRM involved, let's assume yes
-    if (g_strcmp0(uri1->scheme, "srm") == 0 || g_strcmp0(uri2->scheme, "srm") == 0) {
+    if (g_strcmp0(uri1->scheme, "srm") == 0 && g_strcmp0(uri2->scheme, "gsiftp") == 0) {
         expect = 1;
         goto done_expect;
+    }
+
+    if (g_strcmp0(uri1->scheme, "gsiftp") == 0 && g_strcmp0(uri2->scheme, "srm") == 0) {
+           expect = 1;
+           goto done_expect;
     }
 
     // If both are the same, depending on the protocol
     int is_same = (g_strcmp0(uri1->scheme, uri2->scheme) == 0);
     if (is_same) {
-        expect = g_strcmp0(uri1->scheme, "gsiftp") == 0 ||
-            g_strcmp0(uri1->scheme, "root") == 0 ||
-            g_strcmp0(uri1->scheme, "davs") == 0;
+        expect = g_strcmp0(uri1->scheme, "srm") == 0 ||
+        		g_strcmp0(uri1->scheme, "gsiftp") == 0 ||
+				g_strcmp0(uri1->scheme, "root") == 0 ||
+				g_strcmp0(uri1->scheme, "davs") == 0;
         goto done_expect;
     }
 

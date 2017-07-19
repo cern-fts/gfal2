@@ -159,6 +159,12 @@ IF(PLUGIN_SRM)
         test_xattr("CASTOR" ${srm_prefix_castor})
 
         test_space("DPM" ${srm_prefix_dpm})
+        
+        test_rd3_reorder_protocols("GRIDFTP_TO_SRM" ${gsiftp_prefix_dpm} ${srm_prefix_dcache})
+        test_rd3_reorder_protocols("SRM_TO_GRIDFTP" ${srm_prefix_dcache} ${gsiftp_prefix_dpm})
+        test_rd3_reorder_protocols("SRM_TO_SRM" ${srm_prefix_dcache} ${srm_prefix_dcache})
+        test_rd3_reorder_protocols("XROOTD_TO_SRM" ${root_prefix_dpm} ${srm_prefix_dcache})
+        
 ENDIF(PLUGIN_SRM)
 
 IF(PLUGIN_LFC)

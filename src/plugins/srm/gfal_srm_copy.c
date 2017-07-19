@@ -142,7 +142,7 @@ static int srm_plugin_prepare_dest_put(plugin_handle handle,
 
 
 static int srm_resolve_get_turl(plugin_handle handle, gfalt_params_t params,
-    const char *surl,
+    const char *surl, const char *other_surl,
     char *turl, size_t turl_size,
     char *token, size_t token_size,
     GError **err)
@@ -152,7 +152,7 @@ static int srm_resolve_get_turl(plugin_handle handle, gfalt_params_t params,
     int res = 0;
     if (srm_check_url(surl)) {
         gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tGET surl -> turl resolution start");
-        res = gfal_srm_get_rd3_turl(handle, params, surl, turl, turl_size, token, token_size, &tmp_err);
+        res = gfal_srm_get_rd3_turl(handle, params, surl, other_surl, turl, turl_size, token, token_size, &tmp_err);
         if (res >= 0) {
             gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tGET surl -> turl resolution finished: %s -> %s (%s)",
                 surl, turl, token);
@@ -177,7 +177,7 @@ static int srm_resolve_get_turl(plugin_handle handle, gfalt_params_t params,
 // > 0 if surl is not an srm endpoint
 static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
     gfalt_params_t params,
-    const char *surl, off_t file_size_surl,
+    const char *surl, const char *other_surl, off_t file_size_surl,
     char *turl, size_t turl_size,
     char *token, size_t token_size,
     GError **err)
@@ -189,7 +189,7 @@ static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
         gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tPUT surl -> turl resolution start ");
         res = srm_plugin_prepare_dest_put(handle, context, params, surl, &tmp_err);
         if (res == 0) {
-            res = gfal_srm_put_rd3_turl(handle, params, surl, file_size_surl,
+            res = gfal_srm_put_rd3_turl(handle, params, surl, other_surl, file_size_surl,
                 turl, turl_size,
                 token, token_size,
                 &tmp_err);
@@ -440,7 +440,7 @@ static int srm_resolve_turls(plugin_handle handle, gfal2_context_t context,
         tmp_err = NULL;
     }
 
-    srm_resolve_get_turl(handle, params, source,
+    srm_resolve_get_turl(handle, params, source, dest,
         turl_source, GFAL_URL_MAX_LEN,
         token_source, GFAL_URL_MAX_LEN,
         &tmp_err);
@@ -450,7 +450,7 @@ static int srm_resolve_turls(plugin_handle handle, gfal2_context_t context,
     }
 
     srm_resolve_put_turl(handle, context, params,
-        dest, stat_source.st_size,
+        dest, source, stat_source.st_size,
         turl_destination, GFAL_URL_MAX_LEN,
         token_destination, GFAL_URL_MAX_LEN,
         &tmp_err);
