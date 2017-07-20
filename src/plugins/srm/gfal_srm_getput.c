@@ -281,7 +281,6 @@ int gfal_srm_getTURL_checksum(plugin_handle ch, const char *surl, char *buff_tur
     gfal_srm_params_t params = gfal_srm_params_new(opts);
     if (params != NULL) {
     	sup_protocols = srm_get_3rdparty_turls_sup_protocol(opts->handle);
-    	reorder_rd3_sup_protocols(sup_protocols, surl);
         gfal_srm_params_set_protocols(params, sup_protocols);
         ret = gfal_srm_mTURLS_internal(opts, params, SRM_GET, surl, &resu, &tmp_err);
         if (ret > 0) {
