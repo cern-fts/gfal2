@@ -35,7 +35,7 @@ void reset_stat(struct stat& st);
 
 /// Return the same URL, but making sure the path is always relative
 /// and adding the user credentials appended as keywords
-std::string normalize_url(gfal2_context_t context, const char* url);
+std::string prepare_url(gfal2_context_t context, const char *url);
 
 /// If the checksum type is one of the predefined ones, always lowercase
 /// @note adler32, crc32, md5

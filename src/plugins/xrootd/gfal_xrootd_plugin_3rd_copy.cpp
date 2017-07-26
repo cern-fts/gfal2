@@ -156,7 +156,7 @@ int gfal_xrootd_3rdcopy_check(plugin_handle plugin_data,
 static void gfal_xrootd_3rd_init_url(gfal2_context_t context, XrdCl::URL& xurl,
         const char* url, const char* token)
 {
-    xurl.FromString(normalize_url(context, url));
+    xurl.FromString(prepare_url(context, url));
     if (token) {
         XrdCl::URL::ParamsMap params;
         params.insert(std::make_pair("svcClass", token));

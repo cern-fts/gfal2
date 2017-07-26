@@ -27,6 +27,7 @@
 
 #include <uri/gfal2_uri.h>
 #include "gfal_xrootd_plugin_utils.h"
+#include "gfal_xrootd_plugin_interface.h"
 
 GQuark xrootd_domain = g_quark_from_static_string("xroot");
 
@@ -142,16 +143,28 @@ static std::string query_args(gfal2_context_t context, const char *url)
     return args.str();
 }
 
-
-std::string normalize_url(gfal2_context_t context, const char* url)
+/**
+ * Add to the URL query any argument required to make the configuration effective
+ */
+static void fill_query(gfal_handle_ *context, const char *url, gfal2_uri *uri)
 {
-    GError *error = NULL;
-    gfal2_uri *uri = gfal2_parse_uri(url, &error);
-    if (error != NULL) {
-        g_clear_error(&error);
-        return url;
+    std::string args = query_args(context, url);
+    if (!args.empty()) {
+        if (uri->query != NULL) {
+            char *p = uri->query;
+            uri->query = g_strconcat(uri->query, "&", args.c_str(), NULL);
+            g_free(p);
+        } else {
+            uri->query = g_strdup(args.c_str());
+        }
     }
+}
 
+/**
+ *  Normalize the URL, so the path starts with the right number of slashes
+ */
+static void normalize_path(gfal2_uri *uri)
+{
     if (uri->path == NULL) {
         uri->path = g_strdup("///");
     }
@@ -168,17 +181,24 @@ std::string normalize_url(gfal2_context_t context, const char* url)
         uri->path = g_strconcat("//", uri->path, NULL);
         g_free(p);
     }
+}
 
-    std::string args = query_args(context, url);
-    if (!args.empty()) {
-        if (uri->query != NULL) {
-            char *p = uri->query;
-            uri->query = g_strconcat(uri->query, "&", args.c_str(), NULL);
-            g_free(p);
-        } else {
-            uri->query = g_strdup(args.c_str());
-        }
+
+std::string prepare_url(gfal2_context_t context, const char *url)
+{
+    GError *error = NULL;
+    gfal2_uri *uri = gfal2_parse_uri(url, &error);
+    if (error != NULL) {
+        g_clear_error(&error);
+        return url;
     }
+
+    gboolean normalize = gfal2_get_opt_boolean_with_default(context,
+        XROOTD_CONFIG_GROUP, XROOTD_NORMALIZE_PATH, TRUE);
+    if (normalize) {
+        normalize_path(uri);
+    }
+    fill_query(context, url, uri);
 
     // Url-decode path
     // XRootD and SRM expect the path to be url-decoded, while dav and gsiftp expect the opposite
@@ -190,6 +210,7 @@ std::string normalize_url(gfal2_context_t context, const char* url)
     g_free(new_url);
     return sanitized;
 }
+
 
 std::string predefined_checksum_type_to_lower(const std::string& type)
 {

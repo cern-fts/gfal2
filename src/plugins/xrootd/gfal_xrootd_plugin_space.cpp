@@ -29,7 +29,7 @@
 ssize_t gfal_xrootd_space_reporting(plugin_handle plugin_data, const char *url,
     const char *key, void *buff, size_t s_buf, GError **err)
 {
-    std::string sanitizedUrl = normalize_url((gfal2_context_t)plugin_data, url);
+    std::string sanitizedUrl = prepare_url((gfal2_context_t) plugin_data, url);
     XrdCl::FileSystem fs(sanitizedUrl);
     XrdCl::FileSystemUtils::SpaceInfo *space = NULL;
 

@@ -89,7 +89,7 @@ int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
 
     std::vector<std::string> fileList;
     for (int i = 0; i < nbfiles; ++i) {
-        XrdCl::URL file(normalize_url(context, urls[i]));
+        XrdCl::URL file(prepare_url(context, urls[i]));
         fileList.emplace_back(file.GetPath());
     }
 
@@ -133,7 +133,7 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
         handlers.emplace_back(condVar, &err[i], finishedCounter, errCounter, notAnsweredCounter);
     }
     for (int i = 0; i < nbfiles; ++i) {
-        XrdCl::URL file(normalize_url(context, urls[i]));
+        XrdCl::URL file(prepare_url(context, urls[i]));
         XrdCl::Status st = fs.Stat(file.GetPath(), &handlers[i]);
         if (!st.IsOK()) {
             condVar.Lock();
