@@ -361,7 +361,7 @@ void gridftp_do_copy_inner(GridFTPModule* module, GridFTPFactory* factory,
     req.handler->session->params = params;
 
     // Override source/destination credentials with specifics
-    gridftp_set_credentials(factory->get_gfal2_context(), gass_attr_src, src);
+    // Source is properly set up already, as the session is retrieved using it
     gridftp_set_credentials(factory->get_gfal2_context(), gass_attr_dst, dst);
 
     try {
