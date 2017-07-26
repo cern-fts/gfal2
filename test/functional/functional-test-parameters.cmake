@@ -159,12 +159,12 @@ IF(PLUGIN_SRM)
         test_xattr("CASTOR" ${srm_prefix_castor})
 
         test_space("DPM" ${srm_prefix_dpm})
-        
+
         test_rd3_reorder_protocols("GRIDFTP_TO_SRM" ${gsiftp_prefix_dpm} ${srm_prefix_dcache})
         test_rd3_reorder_protocols("SRM_TO_GRIDFTP" ${srm_prefix_dcache} ${gsiftp_prefix_dpm})
         test_rd3_reorder_protocols("SRM_TO_SRM" ${srm_prefix_dcache} ${srm_prefix_dcache})
         test_rd3_reorder_protocols("XROOTD_TO_SRM" ${root_prefix_dpm} ${srm_prefix_dcache})
-        
+
 ENDIF(PLUGIN_SRM)
 
 IF(PLUGIN_LFC)
@@ -289,6 +289,9 @@ IF (MAIN_TRANSFER)
 
         test_copy_file_full("STORM_TO_STORM"            ${srm_prefix_storm}  ${srm_prefix_storm})
         test_copy_file_full("STORM_TO_SRM_DPM"          ${srm_prefix_storm}  ${srm_prefix_dpm})
+
+        test_copy_file_full("SRM_DPM_TO_CASTOR"         ${srm_prefix_dpm} ${srm_prefix_castor})
+        test_copy_file_full("SRM_CASTOR_TO_DPM"         ${srm_prefix_castor} ${srm_prefix_dpm})
 
         # particular cases, storm to gridftp (i.e. can't reuse turl)
         test_copy_file_full("STORM_TO_GRIDFTP"          ${srm_prefix_storm} ${gsiftp_prefix_dpm})
