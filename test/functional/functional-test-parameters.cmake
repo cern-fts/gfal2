@@ -284,6 +284,9 @@ IF (MAIN_TRANSFER)
         test_copy_file_full("STORM_TO_STORM"            ${srm_prefix_storm}  ${srm_prefix_storm})
         test_copy_file_full("STORM_TO_SRM_DPM"          ${srm_prefix_storm}  ${srm_prefix_dpm})
 
+        test_copy_file_full("SRM_DPM_TO_CASTOR"         ${srm_prefix_dpm} ${srm_prefix_castor})
+        test_copy_file_full("SRM_CASTOR_TO_DPM"         ${srm_prefix_castor} ${srm_prefix_dpm})
+
         # particular cases, storm to gridftp (i.e. can't reuse turl)
         test_copy_file_full("STORM_TO_GRIDFTP"          ${srm_prefix_storm} ${gsiftp_prefix_dpm})
         test_copy_file_full("GRIDFTP_TO_STORM"          ${gsiftp_prefix_dpm} ${srm_prefix_storm})
