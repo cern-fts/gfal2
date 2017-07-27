@@ -1,7 +1,11 @@
 GFAL2 RELEASE-NOTES
 ===================
 
-## Fri Jul 14 2014 Alejandro Alvarez <aalvarez at cern.ch> - 2.14.1
+## Wed Jul 26 2017 Alejandro Alvarez <aalvarez at cern.ch> - 2.14.2
+#### Bug
+- [DMC-976] - DMC-878 breaks GridFTP towards Castor
+
+## Fri Jul 14 2017 Alejandro Alvarez <aalvarez at cern.ch> - 2.14.1
 ### Bug
 - [DMC-973] - SRM Plugin: Revert multiple slash addition
 
