@@ -163,7 +163,7 @@ static ssize_t gfal_srm_space_token_descr_info(srm_context_t context,
                 ret_size = -1;
                 break;
             }
-            offset += (s - 1); // String \0
+            offset += s;
             json_putc(buff, s_buff, ',', &offset);
         }
         if (ret_size >= 0) {
