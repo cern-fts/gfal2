@@ -74,7 +74,7 @@ size_t gfal2_space_generate_json(struct space_report *report, char *buffer, size
     }
 
     if (report->lifetime_assigned) {
-        json_object_object_add(root, "totalsize", json_object_new_int(*report->lifetime_assigned));
+        json_object_object_add(root, "lifetimeassigned", json_object_new_int(*report->lifetime_assigned));
     }
     if (report->lifetime_left) {
         json_object_object_add(root, "lifetimeleft", json_object_new_int(*report->lifetime_left));
