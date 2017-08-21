@@ -95,8 +95,12 @@ static size_t gfal_rw_get_root_length(const char *surl)
     regex_t rx;
     regmatch_t matches[1];
     regcomp(&rx, "(\\w+://[^/]*/)", REG_EXTENDED);
-    regexec(&rx, surl, 1, matches, 0);
-    return matches[0].rm_eo - matches[0].rm_so;
+    if (regexec(&rx, surl, 1, matches, 0) == 0) {
+        return matches[0].rm_eo - matches[0].rm_so;
+    }
+    else {
+        return 0;
+    }
 }
 
 

@@ -60,7 +60,9 @@ public:
             gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "Not online");
         }
         if (notAnsweredCounter <= 0) {
+            condVar.UnLock();
             condVar.Signal();
+            condVar.Lock();
         }
 
         condVar.UnLock();
@@ -101,7 +103,7 @@ int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
         GError *tmp_err = NULL;
         gfal2_set_error(&tmp_err, xrootd_domain, xrootd_errno_to_posix_errno(st.errNo),
             __func__, "%s", st.ToString().c_str());
-        for (int i = 0; i < 0; ++i) {
+        for (int i = 0; i < nbfiles; ++i) {
             err[i] = g_error_copy(tmp_err);
         }
         g_error_free(tmp_err);
@@ -173,7 +175,7 @@ int gfal_xrootd_bring_online(plugin_handle plugin_data,
     const char* const urls[1] = {url};
     int ret = gfal_xrootd_bring_online_list(plugin_data, 1, urls, pintime, timeout, token, tsize, async, errors);
     if (errors[0] != NULL) {
-        *err = errors[1];
+        *err = errors[0];
     }
     return ret;
 }
@@ -199,7 +201,7 @@ int gfal_xrootd_release_file(plugin_handle plugin_data,
     const char* const urls[1] = {url};
     int ret = gfal_xrootd_release_file_list(plugin_data, 1, urls, token, errors);
     if (errors[0] != NULL) {
-        *err = errors[1];
+        *err = errors[0];
     }
     return ret;
 }
