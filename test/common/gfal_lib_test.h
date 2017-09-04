@@ -31,23 +31,11 @@ extern "C" {
 char* generate_random_uri(const char* uri_dir, const char* prefix, char* buff,
         size_t s_buff);
 
-char * generate_random_string_content(size_t size);
-
 /**
  * If surl does not exist, it creates it putting the content of src.
  */
 int generate_file_if_not_exists(gfal2_context_t handle, const char* surl,
         const char* src, GError** error);
-
-/** Same thing, without a handle
- */
-int generate_file_if_not_exists2(const char* surl);
-
-/**
- * Clean up file, logging errors if there is
- * If error != ENOENT, it will be considered fatal and this method will abort!
- */
-int clean_file(const char* surl);
 
 /**
  * Return 1 if the copy from url1 to url2 should be third party copy

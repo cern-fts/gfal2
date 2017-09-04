@@ -50,17 +50,6 @@ char* generate_random_uri(const char* uri_dir, const char* prefix, char* buff,
     return buff;
 }
 
-char * generate_random_string_content(size_t size)
-{
-    char * res = (char*)malloc(size * sizeof(char));
-    size_t i = 0;
-    while (i < size) {
-        res[i] = (char) (((rand() % 2) ? 65 : 97) + (rand() % 26));
-        i++;
-    }
-    return res;
-}
-
 int generate_file_if_not_exists(gfal2_context_t handle, const char* surl,
         const char* src, GError** error)
 {
@@ -116,20 +105,6 @@ static void getFileAndLine(void* addr, const char* sname,
         buffer[1] = '\0';
     }
 }
-
-int clean_file(const char* surl)
-{
-    if (gfal_unlink(surl) < 0) {
-        if (gfal_posix_code_error() != ENOENT) {
-            char errbuf[512];
-            gfal_posix_strerror_r(errbuf, sizeof(errbuf));
-            printf("%s\n", errbuf);
-            g_assert_not_reached();
-        }
-    }
-    return 0;
-}
-
 
 int expect_third_party_copy(const char *url1, const char *url2)
 {
