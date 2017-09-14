@@ -235,7 +235,7 @@ struct CallbackHandler {
             << " seconds has been exceeded, or all performance markers during that period indicated zero bytes transferred";
 
         try {
-            args->req->cancel(GFAL_GRIDFTP_SCOPE_FILECOPY, msg.str());
+            args->req->cancel(GFAL_GRIDFTP_SCOPE_FILECOPY, msg.str(), ETIMEDOUT);
         }
         catch (Gfal::CoreException& e) {
             gfal2_log(G_LOG_LEVEL_WARNING,

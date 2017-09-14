@@ -62,7 +62,7 @@ class GridFTPRequestState {
 	virtual ~GridFTPRequestState();
 
 	void wait(GQuark scope, time_t timeout = -1);
-	void cancel(GQuark scope, const std::string& msg);
+	void cancel(GQuark scope, const std::string& msg, int errcode);
 
 	GridFTPSessionHandler* handler;
 	GridFTPRequestType request_type;

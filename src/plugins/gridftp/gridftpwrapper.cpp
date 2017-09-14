@@ -723,7 +723,8 @@ GridFTPRequestState::~GridFTPRequestState()
 {
     if (!done) {
         this->cancel(GFAL_GRIDFTP_SCOPE_REQ_STATE,
-                "GridFTPRequestState destructor called before the operation finished!");
+                "GridFTPRequestState destructor called before the operation finished!",
+                ECANCELED);
     }
     globus_mutex_destroy(&mutex);
     globus_cond_destroy(&cond);
@@ -735,7 +736,7 @@ static
 void gridftp_cancel(gfal2_context_t context, void* userdata)
 {
     GridFTPRequestState* state = (GridFTPRequestState*)userdata;
-    state->cancel(gfal_cancel_quark(), "Operation canceled from gfal2_cancel");
+    state->cancel(gfal_cancel_quark(), "Operation canceled from gfal2_cancel", ECANCELED);
 }
 
 
@@ -793,7 +794,7 @@ void GridFTPRequestState::wait(GQuark scope, time_t timeout)
 }
 
 
-void GridFTPRequestState::cancel(GQuark scope, const std::string& msg)
+void GridFTPRequestState::cancel(GQuark scope, const std::string& msg, int errcode)
 {
     if (request_type == GRIDFTP_REQUEST_FTP) {
         globus_ftp_client_abort(handler->get_ftp_client_handle());
@@ -802,7 +803,7 @@ void GridFTPRequestState::cancel(GQuark scope, const std::string& msg)
         globus_gass_copy_cancel(handler->get_gass_copy_handle(),
                 globus_gass_client_done_callback, this);
     }
-    error = new Gfal::CoreException(scope, ECANCELED, msg);
+    error = new Gfal::CoreException(scope, errcode, msg);
 }
 
 
