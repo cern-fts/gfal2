@@ -236,7 +236,6 @@ struct CallbackHandler {
 
         try {
             args->req->cancel(GFAL_GRIDFTP_SCOPE_FILECOPY, msg.str());
-            fprintf(stderr, "ALL COOL\n");
         }
         catch (Gfal::CoreException& e) {
             gfal2_log(G_LOG_LEVEL_WARNING,
