@@ -372,6 +372,7 @@ static dav_ssize_t gfal_http_streamed_provider(void *userdata,
 static int gfal_http_streamed_copy(gfal2_context_t context,
         GfalHttpPluginData* davix,
         const char* src, const char* dst,
+        gfalt_checksum_mode_t checksum_mode, const char *checksum_type, const char *user_checksum,
         gfalt_params_t params,
         GError** err)
 {
@@ -404,8 +405,13 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
     davix->get_params(&req_params, dst_uri);
     if (dst_uri.getProtocol() == "s3" || dst_uri.getProtocol() == "s3s")
         req_params.setProtocol(Davix::RequestProtocol::AwsS3);
-    request.setParameters(req_params);
 
+    // Set MD5 header on the PUT
+    if (checksum_mode & GFALT_CHECKSUM_TARGET && strcasecmp(checksum_type, "md5") == 0 && user_checksum[0]) {
+        req_params.addHeader("Content-MD5", user_checksum);
+    }
+
+    request.setParameters(req_params);
     HttpStreamProvider provider(src, dst, context, source_fd, params);
 
     request.setRequestBody(gfal_http_streamed_provider, src_stat.st_size, &provider);
@@ -556,7 +562,9 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
 
         if (copy_mode == HTTP_COPY_STREAM) {
             if (is_http_streamed_enabled(context)) {
-                ret = gfal_http_streamed_copy(context, davix, src, dst, params, &nested_error);
+                ret = gfal_http_streamed_copy(context, davix, src, dst,
+                    checksum_mode, checksum_type, user_checksum,
+                    params, &nested_error);
             }
             else {
                 gfalt_set_error(err, http_plugin_domain, EIO, __func__,
