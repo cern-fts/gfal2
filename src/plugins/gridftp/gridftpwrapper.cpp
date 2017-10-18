@@ -637,6 +637,9 @@ GridFTPSession* GridFTPFactory::get_session(const std::string &url)
         session = get_new_handle(baseurl);
         gfal_globus_set_credentials(ucert, ukey, user, passwd, &session->cred_id, &session->operation_attr_ftp);
     }
+    else if (session->baseurl != baseurl) {
+        gfal_globus_set_credentials(ucert, ukey, user, passwd, &session->cred_id, &session->operation_attr_ftp);
+    }
 
     g_free(ucert);
     g_free(ukey);
