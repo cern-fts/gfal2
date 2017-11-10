@@ -221,4 +221,8 @@ void gfal_globus_set_credentials(const char* ucert, const char* ukey,
     gss_cred_id_t *cred_id,
     globus_ftp_client_operationattr_t* opattr);
 
+// Obtain credentials for the given URL and return the matching prefix
+std::string gfal_gridftp_get_credentials(gfal2_context_t context, const std::string &url,
+    gchar **ucert, gchar **ukey, gchar **user, gchar **passwd);
+
 #endif /* GRIDFTPWRAPPER_H */
