@@ -212,6 +212,10 @@ void GridFTPSession::set_dcau(bool dcau)
 
 void GridFTPSession::set_nb_streams(unsigned int nbstream)
 {
+    // plain FTP urls do not support mode
+    if (baseurl.compare(0, 3, "ftp") == 0) {
+        return;
+    }
     if (nbstream == 0) {
         parallelism.fixed.size = 1;
         parallelism.mode = GLOBUS_FTP_CONTROL_PARALLELISM_NONE;
