@@ -34,7 +34,7 @@ if(FUNCTIONAL_TESTS)
     endfunction(test_checksum_simple name valid_file algo)
 
     # Stat tests
-    add_test_executable(gfal_test_stat "gfal_test_stat.c")
+    add_test_executable(gfal_test_stat "gfal_test_stat.cpp")
     target_link_libraries(gfal_test_stat ${GFAL2_LIBRARIES} gfal2_test_shared)
 
     function(test_stat_all name valid)
@@ -58,26 +58,12 @@ if(FUNCTIONAL_TESTS)
     endfunction(test_xattr name dir_path)
 
     # Deletion tests
-    add_test_executable(gfal_test_del_nonex "gfal_test_del_nonex.c")
-    target_link_libraries(gfal_test_del_nonex ${GFAL2_LIBRARIES} gfal2_test_shared)
-
     add_test_executable(gfal_test_del "gfal_test_del.cpp")
     target_link_libraries(gfal_test_del ${GFAL2_LIBRARIES} gfal2_test_shared)
-
-    add_test_executable(gfal_test_mkdir_unlink "gfal_test_mkdir_unlink.c")
-    target_link_libraries(gfal_test_mkdir_unlink ${GFAL2_LIBRARIES} gfal2_test_shared)
-
-    function(test_del_nonex name dir_path)
-        add_test(gfal_test_del_nonex_${name} gfal_test_del_nonex ${dir_path})
-    endfunction(test_del_nonex name path)
 
     function(test_del name dir_path)
         add_test(gfal_test_del_${name} gfal_test_del ${dir_path})
     endfunction(test_del name path)
-
-    function (test_mkdir_unlink name dir_path)
-        add_test(gfal_test_mkdir_unlink_${name} gfal_test_mkdir_unlink ${dir_path})
-    endfunction (test_mkdir_unlink name path)
 
     # Rename tests
     add_test_executable(gfal_test_rename "gfal_test_rename.cpp")
@@ -150,8 +136,8 @@ if(FUNCTIONAL_TESTS)
     endfunction(test_register name origin lfc)
 
     # Set credentials test
-    add_test_executable(gfal_test_set_creds "gfal_test_set_creds.c")
-    target_link_libraries(gfal_test_set_creds ${GFAL2_LIBRARIES})
+    add_test_executable(gfal_test_set_creds "gfal_test_set_creds.cpp")
+    target_link_libraries(gfal_test_set_creds ${GFAL2_LIBRARIES} gfal2_test_shared)
 
     function(gfal_test_set_credentials name prefix)
         add_test(gfal_test_set_credentials_${name} gfal_test_set_creds ${prefix})
@@ -174,13 +160,13 @@ if(FUNCTIONAL_TESTS)
 
     # Tests for file transfer
     if(MAIN_TRANSFER)
-        
+
 		add_test_executable(gfalt_test_rd3_reorder_protocols "gfalt_test_rd3_reorder_protocols.cpp")
         target_link_libraries(gfalt_test_rd3_reorder_protocols ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} gfal2_test_shared)
         function(test_rd3_reorder_protocols name src_dir dst_dir)
             add_test(rd3_reorder_protocols_${name} gfalt_test_rd3_reorder_protocols ${src_dir} ${dst_dir})
         endfunction(test_rd3_reorder_protocols name dst_dir)
-        
+
         add_test_executable(gfalt_test_copy_file_cancel "gfalt_test_copy_file_cancel.cpp")
         target_link_libraries(gfalt_test_copy_file_cancel ${GFAL2_TRANSFER_LINK} ${GFAL2_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} pthread)
 

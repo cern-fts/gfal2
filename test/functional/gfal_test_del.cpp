@@ -87,6 +87,30 @@ public:
     }
 };
 
+
+TEST_F(DeleteTest, DeleteEnoent)
+{
+    char buff[2048];
+    snprintf(buff, sizeof(buff), "%s/testfileunlink_enoent", root);
+
+    GError *err = NULL;
+    int ret = gfal2_unlink(context, buff, &err);
+    EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, err, ENOENT);
+}
+
+TEST_F(DeleteTest, DeleteIsDir)
+{
+    GError *err = NULL;
+    int ret = gfal2_unlink(context, files[0], &err);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, err);
+
+    ret = gfal2_mkdir(context, files[0], 0775, &err);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, err);
+
+    ret = gfal2_unlink(context, files[0], &err);
+    EXPECT_PRED_FORMAT3(AssertGfalErrno, ret, err, EISDIR);
+}
+
 TEST_F(DeleteTest, DeleteSequential)
 {
     int ret;
