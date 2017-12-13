@@ -106,11 +106,16 @@ public:
     }
 
     virtual void TearDown() {
+        GError *error = NULL;
         for (size_t i = 0; i < NBPAIRS; ++i) {
-            gfal_unlink(sources[i]);
-            gfal_unlink(destinations[i]);
-            gfal_unlink(nested[i]);
-            gfal_rmdir(destinations[i]);
+            gfal2_unlink(handle, sources[i], &error);
+            g_clear_error(&error);
+            gfal2_unlink(handle, destinations[i], &error);
+            g_clear_error(&error);
+            gfal2_unlink(handle, nested[i], &error);
+            g_clear_error(&error);
+            gfal2_rmdir(handle, destinations[i], &error);
+            g_clear_error(&error);
         }
     }
 };

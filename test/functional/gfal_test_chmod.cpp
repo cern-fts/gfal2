@@ -115,8 +115,6 @@ int main(int argc, char** argv)
         }
     }
 
-//    gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE | GFAL_VERBOSE_DEBUG);
-
     int result = RUN_ALL_TESTS();
     delete[] ChmodTest::modes;
     return result;

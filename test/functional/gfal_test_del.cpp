@@ -72,11 +72,17 @@ public:
     }
 
     virtual void TearDown() {
-        if (nested_file[0])
-            gfal_unlink(nested_file);
+        GError *error = NULL;
+        if (nested_file[0]) {
+            gfal2_unlink(context, nested_file, &error);
+            g_clear_error(&error);
+        }
         for (int i = 0; i < N_FILES; ++i) {
-            if (gfal_unlink(files[i]) < 0)
-                gfal_rmdir(files[i]);
+            if (gfal2_unlink(context, files[i], &error) < 0) {
+                g_clear_error(&error);
+                gfal2_rmdir(context, files[i], &error);
+                g_clear_error(&error);
+            }
         }
     }
 };
@@ -194,8 +200,6 @@ int main(int argc, char** argv)
     }
 
     DeleteTest::root = argv[1];
-
-//    gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE | GFAL_VERBOSE_DEBUG);
 
     return RUN_ALL_TESTS();
 }

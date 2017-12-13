@@ -72,12 +72,17 @@ public:
     }
 
     virtual void TearDown() {
-        gfal_unlink(source);
-        gfal_unlink(destination);
+        GError *error = NULL;
+        gfal2_unlink(handle, source, &error);
+        g_clear_error(&error);
+        gfal2_unlink(handle, destination, &error);
+        g_clear_error(&error);
 
         std::list<std::string>::const_iterator i;
-        for (i = directories.begin(); i != directories.end(); ++i)
-            gfal_rmdir(i->c_str());
+        for (i = directories.begin(); i != directories.end(); ++i) {
+            gfal2_rmdir(handle, i->c_str(), &error);
+            g_clear_error(&error);
+        }
         directories.clear();
     }
 

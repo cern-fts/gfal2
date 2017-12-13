@@ -73,10 +73,11 @@ public:
     }
 
     virtual void TearDown() {
-        gfal_unlink(source);
-        gfal_posix_clear_error();
-        gfal_unlink(destination);
-        gfal_posix_clear_error();
+        GError *error = NULL;
+        gfal2_unlink(handle, source, &error);
+        g_clear_error(&error);
+        gfal2_unlink(handle, destination, &error);
+        g_clear_error(&error);
     }
 
     void VerifyThirdPartyCopy() {

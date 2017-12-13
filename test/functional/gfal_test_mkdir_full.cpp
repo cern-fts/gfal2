@@ -94,7 +94,5 @@ int main(int argc, char** argv)
 
     MkDirTest::root = argv[1];
 
-//    gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE | GFAL_VERBOSE_DEBUG);
-
     return RUN_ALL_TESTS();
 }

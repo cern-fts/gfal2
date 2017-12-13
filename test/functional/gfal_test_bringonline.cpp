@@ -58,7 +58,9 @@ public:
     }
 
     virtual void TearDown() {
-        gfal_unlink(surl);
+        GError *error = NULL;
+        gfal2_unlink(handle, surl, &error);
+        g_clear_error(&error);
     }
 };
 

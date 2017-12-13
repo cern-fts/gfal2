@@ -117,7 +117,5 @@ int main(int argc, char** argv)
     RwFullTest::root = argv[1];
     RwFullTest::size = atol(argv[2]);
 
-//    gfal_set_verbose(GFAL_VERBOSE_TRACE | GFAL_VERBOSE_VERBOSE | GFAL_VERBOSE_DEBUG);
-
     return RUN_ALL_TESTS();
 }
