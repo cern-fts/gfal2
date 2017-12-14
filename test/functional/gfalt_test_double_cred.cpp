@@ -91,8 +91,6 @@ public:
     void TearDown() {
         GError *error = NULL;
         gfalt_params_handle_delete(params, NULL);
-        gfal2_context_free(handle);
-
         {
             setenv("X509_USER_PROXY", source_proxy, 1);
             gfal2_unlink(handle, source, &error);
@@ -105,6 +103,7 @@ public:
             g_clear_error(&error);
             unsetenv("X509_USER_PROXY");
         }
+        gfal2_context_free(handle);
     }
 };
 
