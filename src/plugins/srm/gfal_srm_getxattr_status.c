@@ -46,6 +46,9 @@ void gfal_srm_status_copy(TFileLocality loc, char *buff, size_t s_buff)
         case GFAL_LOCALITY_ONLINE_USCOREAND_USCORENEARLINE:
             org_string = GFAL_XATTR_STATUS_NEARLINE_ONLINE;
             break;
+        case GFAL_LOCALITY_NONE_:
+            org_string = GFAL_XATTR_STATUS_NONE;
+            break;
         default:
             org_string = GFAL_XATTR_STATUS_UNKNOWN;
             break;
