@@ -47,7 +47,7 @@ void gfal_srm_status_copy(TFileLocality loc, char *buff, size_t s_buff)
             org_string = GFAL_XATTR_STATUS_NEARLINE_ONLINE;
             break;
         default:
-            org_string = GFAL_XATTR_STATUS_UNKNOW;
+            org_string = GFAL_XATTR_STATUS_UNKNOWN;
             break;
     }
     g_strlcpy(buff, org_string, s_buff);

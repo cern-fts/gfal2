@@ -40,7 +40,7 @@
 enum status_type {DEFAULT_STATUS = 0, MD_STATUS, PIN_STATUS};
 
 enum se_type {TYPE_NONE = 0, TYPE_SRM, TYPE_SRMv2, TYPE_SE};
-enum gfal_srm_proto {PROTO_SRM=0, PROTO_SRMv2, PROTO_ERROR_UNKNOW};
+enum gfal_srm_proto {PROTO_SRM=0, PROTO_SRMv2, PROTO_ERROR_UNKNOWN};
 
 
 // SRM plugin GQuark

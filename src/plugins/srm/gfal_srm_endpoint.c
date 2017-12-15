@@ -29,7 +29,7 @@
 #include "gfal_srm_internal_layer.h"
 
 
-static enum gfal_srm_proto gfal_proto_list_prefG[] = {PROTO_SRMv2, PROTO_SRM, PROTO_ERROR_UNKNOW};
+static enum gfal_srm_proto gfal_proto_list_prefG[] = {PROTO_SRMv2, PROTO_SRM, PROTO_ERROR_UNKNOWN};
 
 
 // construct a default service endpoint format, Guessing that the service endpoint follows the default DPM/dCache convention
@@ -109,7 +109,7 @@ static enum gfal_srm_proto gfal_convert_proto_from_bdii(const char *se_type_bdii
     } else if (strcmp(se_type_bdii, "srm_v2") == 0) {
         resu = PROTO_SRMv2;
     } else {
-        resu = PROTO_ERROR_UNKNOW;
+        resu = PROTO_ERROR_UNKNOWN;
     }
     return resu;
 }
@@ -127,7 +127,7 @@ static int gfal_select_best_protocol_and_endpointG(gfal_srmv2_opt *opts,
         "[gfal_select_best_protocol_and_endpoint] Invalid value");
     char **pse = tab_se_type;
     enum gfal_srm_proto *p_pref = &(opts->srm_proto_type);
-    while (*p_pref != PROTO_ERROR_UNKNOW) {
+    while (*p_pref != PROTO_ERROR_UNKNOWN) {
         while (*pse != NULL && *tab_endpoint != NULL) {
             if (*p_pref ==
                 gfal_convert_proto_from_bdii(*pse)) { // test if the response is the actual preferred response
