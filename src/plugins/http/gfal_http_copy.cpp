@@ -266,7 +266,7 @@ static int gfal_http_third_party_copy(GfalHttpPluginData* davix,
     Davix::Uri dst_uri(canonical_dst);
 
     Davix::RequestParams req_params;
-    davix->get_params(&req_params, src_uri);
+    davix->get_tpc_params(mode, &req_params, src_uri, dst_uri);
     if (mode == HTTP_COPY_PUSH) {
         req_params.setCopyMode(Davix::CopyMode::Push);
     }
@@ -403,6 +403,7 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
 
     Davix::RequestParams req_params;
     davix->get_params(&req_params, dst_uri);
+
     if (dst_uri.getProtocol() == "s3" || dst_uri.getProtocol() == "s3s")
         req_params.setProtocol(Davix::RequestProtocol::AwsS3);
 

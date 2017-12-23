@@ -50,6 +50,36 @@ static int get_corresponding_davix_log_level()
     return davix_log_level;
 }
 
+/// Token-based authorization.
+//  If this returns `true`, the RequestParams have been successfully
+//  configured to utilize a bearer token.  In such a case, no other
+//  authorization mechanism (such as user certs) should be used.
+static bool gfal_http_get_token(RequestParams & params,
+                                const Davix::Uri &src_url,
+                                bool secondary_endpoint,
+                                gfal2_context_t handle)
+{
+    GError *error = NULL;
+    gchar *token = gfal2_cred_get(handle, GFAL_CRED_BEARER, src_url.getString().c_str(),
+                                  NULL, &error);
+    g_clear_error(&error);  // for now, ignore the error messages.
+
+    if (!token) {
+        return false;
+    }
+
+    std::stringstream ss;
+    ss << "Bearer " << token;
+
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Using bearer token for HTTPS request authorization");
+
+    if (secondary_endpoint) {
+        params.addHeader("TransferHeaderAuthorization", ss.str());
+    } else {
+        params.addHeader("Authorization", ss.str());
+    }
+    return true;
+}
 
 /// Authn implementation
 static void gfal_http_get_ucert(const Davix::Uri &url, RequestParams & params, gfal2_context_t handle)
@@ -152,15 +182,43 @@ static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, co
     g_free(region);
 }
 
-void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davix::Uri& uri)
+void GfalHttpPluginData::get_tpc_params(bool push_mode,
+                                        Davix::RequestParams * req_params,
+                                        const Davix::Uri& src_uri,
+                                        const Davix::Uri& dst_uri)
 {
-    *req_params = reference_params;
+    // IMPORTANT: get_params overwrites req_params whenever secondary_endpoint=false.
+    // Hence, the primary endpoint MUST go first here!
+    if (push_mode) {
+        get_params(req_params, src_uri, false);
+        get_params(req_params, dst_uri, true);
+    } else {  // Pull mode
+        get_params(req_params, dst_uri, false);
+        get_params(req_params, src_uri, true);
+    }
+}
+
+void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
+                                    const Davix::Uri& uri,
+                                    bool secondary_endpoint)
+{
+    if (!secondary_endpoint)
+        *req_params = reference_params;
+
+    // Only utilize GSI or AWS tokens if a bearer token isn't available.
+    if (!gfal_http_get_token(*req_params, uri, secondary_endpoint, handle)) {
+        gfal_http_get_ucert(uri, *req_params, handle);
+        gfal_http_get_aws(*req_params, handle, uri);
+    }
+
+    // Remainder of method only neededs to alter the req_params for the
+    // primary endpoint.
+    if (secondary_endpoint) return;
+
     gboolean insecure_mode = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "INSECURE", FALSE);
     if (insecure_mode) {
         req_params->setSSLCAcheck(false);
     }
-    gfal_http_get_ucert(uri, *req_params, handle);
-    gfal_http_get_aws(*req_params, handle, uri);
 
     if (uri.getProtocol().compare(0, 4, "http") == 0 || uri.getProtocol().compare(0, 3, "dav") == 0) {
         req_params->setProtocol(Davix::RequestProtocol::Auto);
