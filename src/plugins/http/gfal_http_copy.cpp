@@ -266,7 +266,7 @@ static int gfal_http_third_party_copy(GfalHttpPluginData* davix,
     Davix::Uri dst_uri(canonical_dst);
 
     Davix::RequestParams req_params;
-    davix->get_tpc_params(mode, &req_params, src_uri, dst_uri);
+    davix->get_tpc_params(mode == HTTP_COPY_PUSH, &req_params, src_uri, dst_uri);
     if (mode == HTTP_COPY_PUSH) {
         req_params.setCopyMode(Davix::CopyMode::Push);
     }
