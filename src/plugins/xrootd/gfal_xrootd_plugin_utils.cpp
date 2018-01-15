@@ -88,28 +88,30 @@ static std::string query_args(gfal2_context_t context, const char *url)
     gchar *ukey = gfal2_cred_get(context, GFAL_CRED_X509_KEY, url, NULL, &error);
     g_clear_error(&error);
 
-    if (!ucert) {
-        return std::string();
-    }
-    if (!ukey) {
-        ukey = ucert;
-    }
-
     std::ostringstream args;
 
-    // Certificate == key, assume proxy
-    if (strcmp(ucert, ukey) == 0) {
-        args << "xrd.gsiusrpxy=" << ucert;
-        prev_args = true;
-    }
-    else {
-        args << "xrd.gsiusrcrt=" << ucert << '&' << "xrd.gsiusrkey=" << ukey;
-        prev_args = true;
-    }
+    if (ucert) {
+    
+        if (!ukey) {
+            ukey = ucert;
+        }
 
-    g_free(ucert);
-    if (ucert != ukey)
-        g_free(ukey);
+
+        // Certificate == key, assume proxy
+        if (strcmp(ucert, ukey) == 0) {
+           args << "xrd.gsiusrpxy=" << ucert;
+           prev_args = true;
+        }
+        else {
+           args << "xrd.gsiusrcrt=" << ucert << '&' << "xrd.gsiusrkey=" << ukey;
+           prev_args = true;
+        }
+     
+        g_free(ucert);
+    
+        if (ucert != ukey)
+            g_free(ukey);
+    }
 
     // Additional keys
     gsize keyCount;
@@ -158,6 +160,7 @@ static void fill_query(gfal_handle_ *context, const char *url, gfal2_uri *uri)
             uri->query = g_strdup(args.c_str());
         }
     }
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Xrootd Query URI: %s", uri->query);
 }
 
 /**
