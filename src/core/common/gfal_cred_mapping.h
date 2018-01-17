@@ -36,8 +36,10 @@ extern "C"
 #define GFAL_CRED_X509_KEY "X509_KEY"
 /// User, usually combined with GFAL_CRED_PASSWD
 #define GFAL_CRED_USER "USER"
-//// Password, usually combined with GFAL_CRED_USER
+/// Password, usually combined with GFAL_CRED_USER
 #define GFAL_CRED_PASSWD "PASSWORD"
+/// Bearer token-type credential
+#define GFAL_CRED_BEARER "BEARER"
 
 /**
  * Stores a credential value together with its type

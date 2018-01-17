@@ -131,8 +131,11 @@ char *gfal2_cred_get(gfal2_context_t handle, const char *type, const char *url, 
     if (strncmp(type, GFAL_CRED_X509_CERT, type_len) == 0) {
         return gfal2_get_opt_string_with_default(handle, "X509", "CERT", NULL);
     }
-    if (strncmp(type, GFAL_CRED_X509_KEY, type_len) == 0) {
+    else if (strncmp(type, GFAL_CRED_X509_KEY, type_len) == 0) {
         return gfal2_get_opt_string_with_default(handle, "X509", "KEY", NULL);
+    }
+    else if (strncmp(type, GFAL_CRED_BEARER, type_len) == 0) {
+        return gfal2_get_opt_string_with_default(handle, "BEARER", "TOKEN", NULL);
     }
     return NULL;
 }

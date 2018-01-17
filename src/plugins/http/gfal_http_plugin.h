@@ -26,7 +26,6 @@
 
 #include <davix.hpp>
 
-
 class GfalHttpPluginData {
 public:
     GfalHttpPluginData(gfal2_context_t);
@@ -35,7 +34,15 @@ public:
     Davix::DavPosix posix;
     gfal2_context_t handle;
 
-    void get_params(Davix::RequestParams*, const Davix::Uri& uri);
+    // Setup the Davix request parameters for a given URL.
+    // The "secondary endpoint" parameter should be set to true if this is the URL
+    // in a TPC that the client does *not* contact.
+    void get_params(Davix::RequestParams*, const Davix::Uri& uri, bool secondary_endpoint=false);
+
+    // Put together parameters for the TPC, which may depend on both URLs in the transfer
+    // Further, the request headers depend on the transfer mode that will be used.
+    void get_tpc_params(bool push_mode, Davix::RequestParams*,
+                        const Davix::Uri& src_uri, const Davix::Uri& dst_uri);
 
 private:
     Davix::RequestParams reference_params;
