@@ -1,6 +1,16 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Thu Feb 01 2018 Alejandro Alvarez <aalvarez at cern.ch> - 2.15.1
+### Bug
+- [DMC-998] - XRootD plugin: xrootd is not recognised as a valid prefix for copies
+- [DMC-999] - GridFTP Plugin: Third party copy does not work for ftp => gridftp
+- [DMC-1000] - GridFTP Plugin: Disable multistreams for plain FTP
+- [DMC-1003] - Fix typo UNKNOW => UNKNOWN for replica locality
+- [DMC-1004] - SRM Plugin: Map "None" locality
+- [DMC-1006] - if GFAL_CRED_X509_CERT is not defined, the XROOTD PLUGIN options are skipped
+- [DMC-1007] - Wrong default values in configuration files (TRUE instead of true)
+
 ## Thu Nov 09 2017 Alejandro Alvarez <aalvarez at cern.ch> - 2.15.0
 ### Bug
 - [DMC-977] - Missing closing bracket on the space reporting output
