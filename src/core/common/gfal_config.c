@@ -79,14 +79,13 @@ static gchar *check_configuration_dir(GError **err)
 int gfal_load_configuration_to_conf_manager(GKeyFile *dest,
     const gchar *path, GError **err)
 {
-    GError *tmp_err;
+    GError *tmp_err = NULL;
     GKeyFile *new_conf = g_key_file_new();
     int groupIndex, keyIndex;
 
     if (g_key_file_load_from_file(new_conf, path, G_KEY_FILE_NONE, &tmp_err) == FALSE) {
         gfal2_propagate_prefixed_error_extended(err, tmp_err, __func__,
-            "Error while loading configuration file %s : %s", path,
-            tmp_err->message);
+            "Error while loading configuration file %s: ", path);
         return -1;
     }
 
