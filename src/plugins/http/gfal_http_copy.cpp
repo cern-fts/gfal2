@@ -223,11 +223,15 @@ static int gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GE
 }
 
 // Only http or https
-// See LCGUTIL-473
+// See DMC-473 and DMC-1010
 static std::string get_canonical_uri(const std::string& original)
 {
     std::string scheme;
     char last_scheme;
+
+    if (original.compare(0, 2, "s3") == 0) {
+        return original;
+    }
 
     size_t plus_pos = original.find('+');
     size_t colon_pos = original.find(':');
@@ -259,11 +263,8 @@ static int gfal_http_third_party_copy(GfalHttpPluginData* davix,
             params, src, dst
     );
 
-    std::string canonical_dst = get_canonical_uri(dst);
-    gfal2_log(G_LOG_LEVEL_DEBUG, "Normalize destination to %s", canonical_dst.c_str());
-
-    Davix::Uri src_uri(src);
-    Davix::Uri dst_uri(canonical_dst);
+    Davix::Uri src_uri(get_canonical_uri(src));
+    Davix::Uri dst_uri(get_canonical_uri(dst));
 
     Davix::RequestParams req_params;
     davix->get_tpc_params(mode == HTTP_COPY_PUSH, &req_params, src_uri, dst_uri);
