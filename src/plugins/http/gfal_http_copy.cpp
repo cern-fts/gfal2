@@ -561,7 +561,9 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         plugin_trigger_event(params, http_plugin_domain,
             GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_TYPE,
             "%s",  CopyModeStr[copy_mode]);
-
+        if (nested_error != NULL) {
+            g_clear_error(&nested_error);
+        }
         if (copy_mode == HTTP_COPY_STREAM) {
             if (is_http_streamed_enabled(context)) {
                 ret = gfal_http_streamed_copy(context, davix, src, dst,
@@ -589,7 +591,6 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                 gfal2_log(G_LOG_LEVEL_WARNING,
                         "Copy failed with mode %s, will retry with the next available mode: %s",
                         CopyModeStr[copy_mode], nested_error->message);
-                g_clear_error(&nested_error);
             }
             // Non-recoverable error, break the loop
             else {
