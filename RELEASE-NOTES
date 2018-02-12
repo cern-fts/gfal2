@@ -1,6 +1,12 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Mon Feb 12 2018 Alejandro Alvarez <aalvarez at cern.ch> - 2.15.2
+#### Bug
+- [DMC-1009] - Segfault on gfal_load_configuration_to_conf_manager when there is an error loading the configuration file
+- [DMC-1010] - HTTP Plugin: Normalisation of destination url breaks S3 support for push third party copy
+- [DMC-1011] - HTTP transfers wrongly reported with success
+
 ## Thu Feb 01 2018 Alejandro Alvarez <aalvarez at cern.ch> - 2.15.1
 ### Bug
 - [DMC-998] - XRootD plugin: xrootd is not recognised as a valid prefix for copies
