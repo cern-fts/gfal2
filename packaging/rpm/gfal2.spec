@@ -4,8 +4,8 @@
 %bcond_with tests
 
 Name:               gfal2
-Version:            2.15.1
-Release:            2%{?dist}
+Version:            2.15.2
+Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 Group:              Applications/Internet
 License:            ASL 2.0
