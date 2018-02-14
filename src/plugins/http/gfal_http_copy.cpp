@@ -544,7 +544,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          "%s => %s", src_full, dst_full);
 
     // Initial copy mode
-    CopyMode copy_mode = HTTP_COPY_PUSH;
+    CopyMode copy_mode = HTTP_COPY_PULL;
 
     // If source is not even http, go straight to streamed
     // or if third party copy is disabled, go straight to streamed
