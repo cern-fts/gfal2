@@ -26,10 +26,18 @@
 #include <cstring>
 #include "gfal_http_plugin.h"
 
-
-typedef enum {HTTP_COPY_PUSH, HTTP_COPY_PULL, HTTP_COPY_STREAM, HTTP_COPY_END} CopyMode;
+// An enumeration of the different HTTP third-party-copy strategies.
+// NOTE: we loop through strategies from beginning to end, meaning the default
+// strategy should always be listed first.
+typedef enum {HTTP_COPY_DEFAULT=0,
+              HTTP_COPY_PULL=0,
+              HTTP_COPY_PUSH,
+              HTTP_COPY_STREAM,
+              HTTP_COPY_END} CopyMode;
+// The human-readable strings corresponding to the above enum; changes to the two
+// lists must be synchronized.
 const char* CopyModeStr[] = {
-    GFAL_TRANSFER_TYPE_PUSH, GFAL_TRANSFER_TYPE_PULL, GFAL_TRANSFER_TYPE_STREAMED, NULL
+    GFAL_TRANSFER_TYPE_PULL, GFAL_TRANSFER_TYPE_PUSH, GFAL_TRANSFER_TYPE_STREAMED, NULL
 };
 
 
@@ -544,7 +552,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          "%s => %s", src_full, dst_full);
 
     // Initial copy mode
-    CopyMode copy_mode = HTTP_COPY_PULL;
+    CopyMode copy_mode = HTTP_COPY_DEFAULT;
 
     // If source is not even http, go straight to streamed
     // or if third party copy is disabled, go straight to streamed
