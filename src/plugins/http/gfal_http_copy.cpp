@@ -586,19 +586,9 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
             break;
         }
         else if (ret < 0) {
-            // Recoverable error, try next mode
-            if (nested_error->code == EINVAL or nested_error->code == ENOSYS || nested_error->code == EPERM) {
                 gfal2_log(G_LOG_LEVEL_WARNING,
                         "Copy failed with mode %s, will retry with the next available mode: %s",
                         CopyModeStr[copy_mode], nested_error->message);
-            }
-            // Non-recoverable error, break the loop
-            else {
-                gfal2_log(G_LOG_LEVEL_WARNING,
-                        "Copy failed with mode %s, skip other attempts: %s",
-                        CopyModeStr[copy_mode], nested_error->message);
-                break;
-            }
         }
 
         copy_mode = (CopyMode)((int)copy_mode + 1);
