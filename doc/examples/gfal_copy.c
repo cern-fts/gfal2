@@ -77,13 +77,12 @@ int main(int argc, char** argv)
     gfalt_set_timeout(params, 60, &error);                  // 60 seconds timeout
     gfalt_set_dst_spacetoken(params, "TOKEN", &error);      // Destination space token, support depends on the plugin (SRM, XROOTD do support this)
     gfalt_set_replace_existing_file(params, FALSE, &error); // Just in case, do not overwrite
-    gfalt_set_checksum_check(params, TRUE, &error);         // Do checksum validation
-    gfalt_set_user_defined_checksum(params, "ADLER32", NULL, &error); // Use Adler32
+    gfalt_set_checksum(params, GFALT_CHECKSUM_NONE, NULL, NULL, NULL); // No checksum
     gfalt_set_create_parent_dir(params, TRUE, &error);      // Create the parent directory if needed
 
     // Callbacks
-    gfalt_set_event_callback(params, my_event_callback, &error);     // Called when some event is triggered
-    gfalt_set_monitor_callback(params, my_monitor_callback, &error); // Performance monitor
+    gfalt_add_event_callback(params, my_event_callback, NULL, NULL, &error);     // Called when some event is triggered
+    gfalt_add_monitor_callback(params, my_monitor_callback, NULL, NULL, &error); // Performance monitor
 
     // Do the copy
     gfalt_copy_file(context, params, source, destination, &error);
