@@ -296,6 +296,11 @@ static int gfal_http_third_party_copy(GfalHttpPluginData* davix,
         g_clear_error(err);
     }
 
+    // add timeout
+    struct timespec opTimeout;
+    opTimeout.tv_sec = gfalt_get_timeout(params, NULL);
+    req_params.setOperationTimeout(&opTimeout);
+
     Davix::DavixCopy copy(davix->context, &req_params);
 
     copy.setPerformanceCallback(gfal_http_3rdcopy_perfcallback, &perfCallbackData);
@@ -420,6 +425,10 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
     if (checksum_mode & GFALT_CHECKSUM_TARGET && strcasecmp(checksum_type, "md5") == 0 && user_checksum[0]) {
         req_params.addHeader("Content-MD5", user_checksum);
     }
+    //add timeout
+    struct timespec opTimeout;
+    opTimeout.tv_sec = gfalt_get_timeout(params, NULL);
+    req_params.setOperationTimeout(&opTimeout);
 
     request.setParameters(req_params);
     HttpStreamProvider provider(src, dst, context, source_fd, params);
