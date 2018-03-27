@@ -78,6 +78,7 @@ static bool gfal_http_get_token(RequestParams & params,
     } else {
         params.addHeader("Authorization", ss.str());
     }
+    g_free(token);
     return true;
 }
 
