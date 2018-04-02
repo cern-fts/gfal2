@@ -588,7 +588,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                     params, &nested_error);
             }
             else {
-                gfalt_set_error(err, http_plugin_domain, EIO, __func__,
+                gfalt_set_error(&nested_error, http_plugin_domain, EIO, __func__,
                     GFALT_ERROR_TRANSFER, "STREAMED DISABLED",
                     "Trying to fallback to a streamed copy, but they are disabled");
             }
