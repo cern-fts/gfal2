@@ -1,5 +1,11 @@
 GFAL2 RELEASE-NOTES
 ===================
+## Thu Apr 05 2018 Andrea Manzi <amanzi at cern.ch> - 2.15.4
+#### Bug
+- [DMC-1027] - DAVIX operation timeout incorrect for HTTP-based transfers 
+- [DMC-1031] - gfal_http_get_token does not free the gchar* token
+- [DMC-1034] - When ENABLE_STREAM_COPY is disabled the http copy process crashes
+
 ## Mon March 12 2018 Andrea Manzi <amanzi at cern.ch> - 2.15.3
 ### Bug
 - [DMC-1017] - gfal2 examples don't compile

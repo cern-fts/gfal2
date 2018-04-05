@@ -374,6 +374,9 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Thu Apr 05 2018 Andrea Manzi <amanzi at cern.ch> - 2.15.4-1
+- New upstrem release
+
 * Mon Mar 12 2018 Andrea Manzi <amanzi at cern.ch> - 2.15.3-1
 - New upstrem release
 
