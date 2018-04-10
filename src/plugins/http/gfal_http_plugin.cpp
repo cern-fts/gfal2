@@ -60,7 +60,7 @@ static bool gfal_http_get_token(RequestParams & params,
                                 gfal2_context_t handle)
 {
     GError *error = NULL;
-    gchar *token = gfal2_cred_get(handle, GFAL_CRED_BEARER, src_url.getString().c_str(),
+    gchar *token = gfal2_cred_get(handle, GFAL_CRED_BEARER, src_url.getHost().c_str(),
                                   NULL, &error);
     g_clear_error(&error);  // for now, ignore the error messages.
 
