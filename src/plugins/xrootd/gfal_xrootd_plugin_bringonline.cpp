@@ -205,3 +205,40 @@ int gfal_xrootd_release_file(plugin_handle plugin_data,
     }
     return ret;
 }
+
+int gfal_xrootd_abort_files(plugin_handle plugin_data,
+    int nbfiles, const char* const* urls, const char* token, GError** err)
+{
+    if (nbfiles <= 0) {
+        return 1;
+    }
+    gfal2_context_t context = (gfal2_context_t)plugin_data;
+
+    XrdCl::URL endpoint(urls[0]);
+    endpoint.SetPath(std::string());
+    XrdCl::FileSystem fs(endpoint);
+
+    std::vector<std::string> fileList;
+    for (int i = 0; i < nbfiles; ++i) {
+        XrdCl::URL file(prepare_url(context, urls[i]));
+        fileList.emplace_back(file.GetPath());
+    }
+
+    XrdCl::Buffer *reponsePtr;
+    //TODO : we use Fresh as a flag now, to change to Abort once it's implemented in xrootd
+    XrdCl::Status st = fs.Prepare(fileList, XrdCl::PrepareFlags::Flags::Fresh, 0, reponsePtr);
+    std::unique_ptr<XrdCl::Buffer> response(reponsePtr);
+
+    if (!st.IsOK()) {
+        GError *tmp_err = NULL;
+        gfal2_set_error(&tmp_err, xrootd_domain, xrootd_errno_to_posix_errno(st.errNo),
+            __func__, "%s", st.ToString().c_str());
+        for (int i = 0; i < nbfiles; ++i) {
+            err[i] = g_error_copy(tmp_err);
+        }
+        g_error_free(tmp_err);
+        return -1;
+    }
+    return 0;
+}
+
