@@ -235,6 +235,8 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
 #endif
 
         if (checksumMode) {
+            checksumType[0] = '\0';
+            checksumValue[0] = '\0';
             char **chks = g_strsplit(checksums[i], ":", 2);
             g_strstrip(chks[0]);
             g_strstrip(chks[1]);
