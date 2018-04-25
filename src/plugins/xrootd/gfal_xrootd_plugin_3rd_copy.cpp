@@ -235,7 +235,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
 #endif
 
         if (checksumMode) {
-	    char checksumType[64] = { 0 };
+            char checksumType[64] = { 0 };
             char checksumValue[512] = { 0 };
             char **chks = g_strsplit(checksums[i], ":", 2);
             strncpy(checksumType, chks[0], sizeof(chks[0]));
