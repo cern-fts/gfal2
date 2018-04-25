@@ -235,11 +235,14 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
 #endif
 
         if (checksumMode) {
-            checksumType[0] = '\0';
-            checksumValue[0] = '\0';
-            sscanf(checksums[i], "%63s:%511s", checksumType, checksumValue);
-            checksumType[63] = checksumValue[511] = '\0';
-
+            char **chks = g_strsplit(checksums[i], ":", 2);
+            g_strstrip(chks[0]);
+            g_strstrip(chks[1]);
+            strncpy(chks[0],checksumType, sizeof(chks[0]));
+            strncpy(chks[1],checksumValue, sizeof(chks[1]));
+            g_strfreev(chks);
+	    gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Type: %s", checksumType);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Value: %s", checksumValue);
             if (!checksumType[0] || !checksumValue[0]) {
                 char* defaultChecksumType = gfal2_get_opt_string(context, XROOTD_CONFIG_GROUP, XROOTD_DEFAULT_CHECKSUM, &internalError);
                 if (internalError) {
