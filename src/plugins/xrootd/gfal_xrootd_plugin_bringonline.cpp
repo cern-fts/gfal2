@@ -22,16 +22,15 @@
 #include <XrdCl/XrdClFileSystem.hh>
 #include <XrdSys/XrdSysPthread.hh>
 
-
 class PollResponseHandler: public XrdCl::ResponseHandler {
 private:
     XrdSysCondVar &condVar;
     GError **error;
     int &finishedCounter, &errCounter, &notAnsweredCounter;
-
+    const char* url;
 public:
-    PollResponseHandler(XrdSysCondVar &condVar, GError **error, int &finishedCounter, int &errCounter, int &notAnsweredCounter):
-        condVar(condVar), error(error), finishedCounter(finishedCounter), errCounter(errCounter), notAnsweredCounter(notAnsweredCounter) {
+    PollResponseHandler(const char* url, XrdSysCondVar &condVar, GError **error, int &finishedCounter, int &errCounter, int &notAnsweredCounter):
+        url(url),condVar(condVar), error(error), finishedCounter(finishedCounter), errCounter(errCounter), notAnsweredCounter(notAnsweredCounter) {
     }
 
     ~PollResponseHandler() {
@@ -44,7 +43,7 @@ public:
                 xrootd_errno_to_posix_errno(status->errNo), __func__, "%s", status->GetErrorMessage().c_str());
         }
         delete status;
-
+        
         XrdCl::StatInfo *info = (XrdCl::StatInfo*)(response);
 
         condVar.Lock();
@@ -57,8 +56,43 @@ public:
             ++finishedCounter;
         }
         else {
-            gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "Not online");
+            //invoke the query for the error attribute
+            XrdCl::Buffer arg;
+            XrdCl::Buffer *reponsePtr;
+            XrdCl::URL endpoint(url);
+            endpoint.SetPath(std::string());
+            XrdCl::FileSystem fs(endpoint);
+            //build the opaque
+            std::ostringstream sstr;
+            sstr <<  "mgm.pcmd=xattr&mgm.subcmd=get&mgm.xattrname=sys.retrieve.error";
+            arg.FromString(sstr.str());
+
+            XrdCl::Status st = fs.Query(XrdCl::QueryCode::Code::OpaqueFile ,arg, reponsePtr, 0);
+            std::unique_ptr<XrdCl::Buffer> response(reponsePtr);
+	    
+            //TODO:what happens if the query fails?
+            if (!st.IsOK()) {
+                gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "Not online");
+            } else {
+                //TODO: what we do if the response is empty
+	        if (!response->GetBuffer()) {
+                } 
+                int retc;
+                char tag[1024];
+                char error_string[1024];
+                sscanf(response->GetBuffer(),
+                       "%s retc=%d value=%s",
+                       tag, &retc, error_string);
+	        //check the error string if it's not empty.
+	        if (!(retc ) && (error_string != "")) {
+              	     gfal2_set_error(error, xrootd_domain, EIO, __func__, error_string);
+                     ++finishedCounter;
+                } else {
+                      gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "Not online");
+               }
+            }
         }
+
         if (notAnsweredCounter <= 0) {
             condVar.UnLock();
             condVar.Signal();
@@ -132,7 +166,7 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
 
     // Make sure all handlers are in place before calling async code
     for (int i = 0; i < nbfiles; ++i) {
-        handlers.emplace_back(condVar, &err[i], finishedCounter, errCounter, notAnsweredCounter);
+        handlers.emplace_back(urls[i], condVar, &err[i], finishedCounter, errCounter, notAnsweredCounter);
     }
     for (int i = 0; i < nbfiles; ++i) {
         XrdCl::URL file(prepare_url(context, urls[i]));
