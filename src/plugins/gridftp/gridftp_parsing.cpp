@@ -200,7 +200,9 @@ globus_result_t parse_mlst_line(char *line, struct stat *stat_info, char *filena
         }
 
         if (strcmp(startfact, "type") == 0) {
-            if (strcasecmp(factval, "dir") == 0) {
+            if ((strcasecmp(factval, "dir") == 0) 
+              || (strcasecmp(factval, "pdir") == 0)
+              || (strcasecmp(factval, "cdir") == 0))  {
                 type = GLOBUS_GASS_COPY_GLOB_ENTRY_DIR;
             }
             else if (strcasecmp(factval, "file") == 0) {
@@ -242,7 +244,7 @@ globus_result_t parse_mlst_line(char *line, struct stat *stat_info, char *filena
     stat_info->st_mtime = -1;
 
     if (mode_s) {
-        stat_info->st_mode = strtoul(mode_s, NULL, 0);
+        stat_info->st_mode = strtoul(mode_s, NULL, 8);
         if (type == GLOBUS_GASS_COPY_GLOB_ENTRY_DIR) {
             stat_info->st_mode |= S_IFDIR;
         }
