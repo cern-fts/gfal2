@@ -39,6 +39,7 @@ public:
     void HandleResponse(XrdCl::XRootDStatus *status, XrdCl::AnyObject *response) {
         if (!status->IsOK()) {
             ++errCounter;
+             gfal2_log(G_LOG_LEVEL_DEBUG, "Error doing the query");
             gfal2_set_error(error, xrootd_domain,
                 xrootd_errno_to_posix_errno(status->errNo), __func__, "%s", status->GetErrorMessage().c_str());
         }
@@ -52,14 +53,15 @@ public:
         if (*error) {
             ++errCounter;
         }
-        else if (!(info->TestFlags(XrdCl::StatInfo::Offline))) {
-             gfal2_log(G_LOG_LEVEL_INFO, "File Online") ;
-            ++finishedCounter;
-        }
+        //else if (!(info->TestFlags(XrdCl::StatInfo::Offline))) {
+        //    gfal2_log(G_LOG_LEVEL_DEBUG, "file online");  
+        //   ++finishedCounter;
+        //}
         else {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute");
             //invoke the query for the error attribute
             XrdCl::Buffer arg;
-            XrdCl::Buffer *reponsePtr;
+            XrdCl::Buffer *responsePtr;
             XrdCl::URL endpoint(url);
             endpoint.SetPath(std::string());
             XrdCl::FileSystem fs(endpoint);
@@ -67,41 +69,45 @@ public:
             std::ostringstream sstr;
             sstr <<  "mgm.pcmd=xattr&mgm.subcmd=get&mgm.xattrname=sys.retrieve.error";
             arg.FromString(sstr.str());
-
-            XrdCl::Status st = fs.Query(XrdCl::QueryCode::Code::OpaqueFile ,arg, reponsePtr, 0);
-            std::unique_ptr<XrdCl::Buffer> response(reponsePtr);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "attributes: %s", sstr.str().c_str());
+            XrdCl::Status st = fs.Query(XrdCl::QueryCode::Code::OpaqueFile ,arg, responsePtr);
 	    
             //TODO:what happens if the query fails?
             if (!st.IsOK()) {
-                gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "Not online");
+                gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute 2");
+                gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
+                gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute 3");
             } else {
                 //TODO: what we do if the response is empty
-	        if (!response->GetBuffer()) {
+	        if (!responsePtr->GetBuffer()) {
                 } 
                 int retc;
                 char tag[1024];
                 char error_string[1024];
-                sscanf(response->GetBuffer(),
+                sscanf(responsePtr->GetBuffer(),
                        "%s retc=%d value=%s",
                        tag, &retc, error_string);
 	        //check the error string if it's not empty.
 	        if (!(retc ) && (error_string != "")) {
-              	     gfal2_set_error(error, xrootd_domain, EIO, __func__, error_string);
+              	     gfal2_set_error(error, xrootd_domain, EIO, __func__, "%s",error_string);
                      ++finishedCounter;
                 } else {
-                      gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "Not online");
+                      gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
                }
             }
+            //delete responsePtr;
         }
+        gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute 4");
 
         if (notAnsweredCounter <= 0) {
             condVar.UnLock();
             condVar.Signal();
             condVar.Lock();
         }
-
+        gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute 5");
         condVar.UnLock();
         delete info;
+        gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute 6");
     }
 
     // std::vector expects an = operator, and the default one is no good
@@ -171,6 +177,7 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
     }
     for (int i = 0; i < nbfiles; ++i) {
         XrdCl::URL file(prepare_url(context, urls[i]));
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Doing file stat to check if the file is online: %s ", file.GetPath().c_str());
         XrdCl::Status st = fs.Stat(file.GetPath(), &handlers[i]);
         if (!st.IsOK()) {
             condVar.Lock();
