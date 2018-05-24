@@ -52,7 +52,8 @@ public:
         if (*error) {
             ++errCounter;
         }
-        else if (!info->TestFlags(XrdCl::StatInfo::Offline)) {
+        else if (!(info->TestFlags(XrdCl::StatInfo::Offline))) {
+             gfal2_log(G_LOG_LEVEL_INFO, "File Online") ;
             ++finishedCounter;
         }
         else {
