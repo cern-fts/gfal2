@@ -39,13 +39,14 @@ public:
     void HandleResponse(XrdCl::XRootDStatus *status, XrdCl::AnyObject *response) {
         if (!status->IsOK()) {
             ++errCounter;
-             gfal2_log(G_LOG_LEVEL_DEBUG, "Error doing the query");
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Error doing the query");
             gfal2_set_error(error, xrootd_domain,
-                xrootd_errno_to_posix_errno(status->errNo), __func__, "%s", status->GetErrorMessage().c_str());
+               xrootd_errno_to_posix_errno(status->errNo), __func__, "%s", status->GetErrorMessage().c_str());
         }
         delete status;
         
-        XrdCl::StatInfo *info = (XrdCl::StatInfo*)(response);
+        XrdCl::StatInfo *info = 0;
+        response->Get(info);
 
         condVar.Lock();
 
@@ -53,61 +54,62 @@ public:
         if (*error) {
             ++errCounter;
         }
-        //else if (!(info->TestFlags(XrdCl::StatInfo::Offline))) {
-        //    gfal2_log(G_LOG_LEVEL_DEBUG, "file online");  
-        //   ++finishedCounter;
-        //}
+        else if (!(info->TestFlags(XrdCl::StatInfo::Offline))) {
+           gfal2_log(G_LOG_LEVEL_DEBUG, "file online");  
+           ++finishedCounter;
+        }
         else {
-            gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute");
+            gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute for file: %s", url);
             //invoke the query for the error attribute
             XrdCl::Buffer arg;
             XrdCl::Buffer *responsePtr;
             XrdCl::URL endpoint(url);
-            endpoint.SetPath(std::string());
             XrdCl::FileSystem fs(endpoint);
             //build the opaque
+            //
             std::ostringstream sstr;
-            sstr <<  "mgm.pcmd=xattr&mgm.subcmd=get&mgm.xattrname=sys.retrieve.error";
+            sstr << endpoint.GetPath() << "?mgm.pcmd=xattr&mgm.subcmd=get&mgm.xattrname=sys.retrieve.error";
             arg.FromString(sstr.str());
             gfal2_log(G_LOG_LEVEL_DEBUG, "attributes: %s", sstr.str().c_str());
-            XrdCl::Status st = fs.Query(XrdCl::QueryCode::Code::OpaqueFile ,arg, responsePtr);
-	    
+            XrdCl::Status st = fs.Query(XrdCl::QueryCode::Code::OpaqueFile , arg, responsePtr);
+
+	    std::unique_ptr<XrdCl::Buffer> res(responsePtr);
+ 
             //TODO:what happens if the query fails?
             if (!st.IsOK()) {
-                gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute 2");
+                gfal2_log(G_LOG_LEVEL_DEBUG, "Error submitting query for extended attribute");
                 gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
-                gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute 3");
             } else {
                 //TODO: what we do if the response is empty
-	        if (!responsePtr->GetBuffer()) {
+	        if (!res->GetBuffer()) {
+                  gfal2_log(G_LOG_LEVEL_DEBUG, "Query for Extended Attribute is Empty");
                 } 
                 int retc;
                 char tag[1024];
                 char error_string[1024];
-                sscanf(responsePtr->GetBuffer(),
+                gfal2_log(G_LOG_LEVEL_DEBUG, "Response: %s", res->GetBuffer());
+                sscanf(res->GetBuffer(),
                        "%s retc=%d value=%s",
                        tag, &retc, error_string);
 	        //check the error string if it's not empty.
-	        if (!(retc ) && (error_string != "")) {
+	        if (retc && (error_string != "")) {
+                     gfal2_log(G_LOG_LEVEL_DEBUG, "Error reported: %s ", error_string);
               	     gfal2_set_error(error, xrootd_domain, EIO, __func__, "%s",error_string);
                      ++finishedCounter;
                 } else {
-                      gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
+                     gfal2_log(G_LOG_LEVEL_DEBUG, "No error reported");
+                     gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
                }
             }
-            //delete responsePtr;
         }
-        gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute 4");
 
         if (notAnsweredCounter <= 0) {
             condVar.UnLock();
             condVar.Signal();
             condVar.Lock();
         }
-        gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute 5");
         condVar.UnLock();
-        delete info;
-        gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute 6");
+        delete response;
     }
 
     // std::vector expects an = operator, and the default one is no good
