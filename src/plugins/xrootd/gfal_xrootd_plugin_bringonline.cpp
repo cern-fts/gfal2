@@ -92,10 +92,10 @@ public:
                        "%s retc=%d value=%s",
                        tag, &retc, error_string);
 	        //check the error string if it's not empty.
-	        if (retc && (error_string != "")) {
+	        if (retc || (error_string != "")) {
                      gfal2_log(G_LOG_LEVEL_DEBUG, "Error reported: %s ", error_string);
               	     gfal2_set_error(error, xrootd_domain, EIO, __func__, "%s",error_string);
-                     ++finishedCounter;
+                     ++errCounter;
                 } else {
                      gfal2_log(G_LOG_LEVEL_DEBUG, "No error reported");
                      gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
