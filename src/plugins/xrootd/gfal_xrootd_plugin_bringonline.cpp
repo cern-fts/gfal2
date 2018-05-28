@@ -22,16 +22,15 @@
 #include <XrdCl/XrdClFileSystem.hh>
 #include <XrdSys/XrdSysPthread.hh>
 
-
 class PollResponseHandler: public XrdCl::ResponseHandler {
 private:
     XrdSysCondVar &condVar;
     GError **error;
     int &finishedCounter, &errCounter, &notAnsweredCounter;
-
+    const char* url;
 public:
-    PollResponseHandler(XrdSysCondVar &condVar, GError **error, int &finishedCounter, int &errCounter, int &notAnsweredCounter):
-        condVar(condVar), error(error), finishedCounter(finishedCounter), errCounter(errCounter), notAnsweredCounter(notAnsweredCounter) {
+    PollResponseHandler(const char* url, XrdSysCondVar &condVar, GError **error, int &finishedCounter, int &errCounter, int &notAnsweredCounter):
+        url(url),condVar(condVar), error(error), finishedCounter(finishedCounter), errCounter(errCounter), notAnsweredCounter(notAnsweredCounter) {
     }
 
     ~PollResponseHandler() {
@@ -40,12 +39,14 @@ public:
     void HandleResponse(XrdCl::XRootDStatus *status, XrdCl::AnyObject *response) {
         if (!status->IsOK()) {
             ++errCounter;
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Error doing the query");
             gfal2_set_error(error, xrootd_domain,
-                xrootd_errno_to_posix_errno(status->errNo), __func__, "%s", status->GetErrorMessage().c_str());
+               xrootd_errno_to_posix_errno(status->errNo), __func__, "%s", status->GetErrorMessage().c_str());
         }
         delete status;
-
-        XrdCl::StatInfo *info = (XrdCl::StatInfo*)(response);
+        
+        XrdCl::StatInfo *info = 0;
+        response->Get(info);
 
         condVar.Lock();
 
@@ -53,20 +54,62 @@ public:
         if (*error) {
             ++errCounter;
         }
-        else if (!info->TestFlags(XrdCl::StatInfo::Offline)) {
-            ++finishedCounter;
+        else if (!(info->TestFlags(XrdCl::StatInfo::Offline))) {
+           gfal2_log(G_LOG_LEVEL_DEBUG, "file online");  
+           ++finishedCounter;
         }
         else {
-            gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "Not online");
+            gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute for file: %s", url);
+            //invoke the query for the error attribute
+            XrdCl::Buffer arg;
+            XrdCl::Buffer *responsePtr;
+            XrdCl::URL endpoint(url);
+            XrdCl::FileSystem fs(endpoint);
+            //build the opaque
+            //
+            std::ostringstream sstr;
+            sstr << endpoint.GetPath() << "?mgm.pcmd=xattr&mgm.subcmd=get&mgm.xattrname=sys.retrieve.error";
+            arg.FromString(sstr.str());
+            gfal2_log(G_LOG_LEVEL_DEBUG, "attributes: %s", sstr.str().c_str());
+            XrdCl::Status st = fs.Query(XrdCl::QueryCode::Code::OpaqueFile , arg, responsePtr);
+
+	    std::unique_ptr<XrdCl::Buffer> res(responsePtr);
+ 
+            //TODO:what happens if the query fails?
+            if (!st.IsOK()) {
+                gfal2_log(G_LOG_LEVEL_DEBUG, "Error submitting query for extended attribute");
+                gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
+            } else {
+                //TODO: what we do if the response is empty
+	        if (!res->GetBuffer()) {
+                  gfal2_log(G_LOG_LEVEL_DEBUG, "Query for Extended Attribute is Empty");
+                } 
+                int retc;
+                char tag[1024];
+                char error_string[1024];
+                gfal2_log(G_LOG_LEVEL_DEBUG, "Response: %s", res->GetBuffer());
+                sscanf(res->GetBuffer(),
+                       "%s retc=%d value=%s",
+                       tag, &retc, error_string);
+	        //check the error string if it's not empty.
+	        if (retc || (error_string != "")) {
+                     gfal2_log(G_LOG_LEVEL_DEBUG, "Error reported: %s ", error_string);
+              	     gfal2_set_error(error, xrootd_domain, EIO, __func__, "%s",error_string);
+                     ++errCounter;
+                } else {
+                     gfal2_log(G_LOG_LEVEL_DEBUG, "No error reported");
+                     gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
+               }
+            }
         }
+
         if (notAnsweredCounter <= 0) {
             condVar.UnLock();
             condVar.Signal();
             condVar.Lock();
         }
-
         condVar.UnLock();
-        delete info;
+        delete response;
     }
 
     // std::vector expects an = operator, and the default one is no good
@@ -132,10 +175,11 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
 
     // Make sure all handlers are in place before calling async code
     for (int i = 0; i < nbfiles; ++i) {
-        handlers.emplace_back(condVar, &err[i], finishedCounter, errCounter, notAnsweredCounter);
+        handlers.emplace_back(urls[i], condVar, &err[i], finishedCounter, errCounter, notAnsweredCounter);
     }
     for (int i = 0; i < nbfiles; ++i) {
         XrdCl::URL file(prepare_url(context, urls[i]));
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Doing file stat to check if the file is online: %s ", file.GetPath().c_str());
         XrdCl::Status st = fs.Stat(file.GetPath(), &handlers[i]);
         if (!st.IsOK()) {
             condVar.Lock();
@@ -205,3 +249,40 @@ int gfal_xrootd_release_file(plugin_handle plugin_data,
     }
     return ret;
 }
+
+int gfal_xrootd_abort_files(plugin_handle plugin_data,
+    int nbfiles, const char* const* urls, const char* token, GError** err)
+{
+    if (nbfiles <= 0) {
+        return 1;
+    }
+    gfal2_context_t context = (gfal2_context_t)plugin_data;
+
+    XrdCl::URL endpoint(urls[0]);
+    endpoint.SetPath(std::string());
+    XrdCl::FileSystem fs(endpoint);
+
+    std::vector<std::string> fileList;
+    for (int i = 0; i < nbfiles; ++i) {
+        XrdCl::URL file(prepare_url(context, urls[i]));
+        fileList.emplace_back(file.GetPath());
+    }
+
+    XrdCl::Buffer *reponsePtr;
+    //TODO : we use Fresh as a flag now, to change to Abort once it's implemented in xrootd
+    XrdCl::Status st = fs.Prepare(fileList, XrdCl::PrepareFlags::Flags::Fresh, 0, reponsePtr);
+    std::unique_ptr<XrdCl::Buffer> response(reponsePtr);
+
+    if (!st.IsOK()) {
+        GError *tmp_err = NULL;
+        gfal2_set_error(&tmp_err, xrootd_domain, xrootd_errno_to_posix_errno(st.errNo),
+            __func__, "%s", st.ToString().c_str());
+        for (int i = 0; i < nbfiles; ++i) {
+            err[i] = g_error_copy(tmp_err);
+        }
+        g_error_free(tmp_err);
+        return -1;
+    }
+    return 0;
+}
+

@@ -26,6 +26,7 @@
 #include "gfal_srm_request.h"
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_endpoint.h"
+#include "gfal_srm_getput.h"
 
 
 // Make sure the TURL returned by the endpoint is one of the requested protocols

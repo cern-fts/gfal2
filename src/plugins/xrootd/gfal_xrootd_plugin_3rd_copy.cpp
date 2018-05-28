@@ -174,13 +174,13 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         GError*** file_errors)
 {
     GError* internalError = NULL;
-    char checksumType[64] = { 0 };
-    char checksumValue[512] = { 0 };
+    char _checksumType[64] = { 0 };
+    char _checksumValue[512] = { 0 };
     bool isThirdParty = false;
 
     gfalt_checksum_mode_t checksumMode = gfalt_get_checksum(params,
-        checksumType, sizeof(checksumType),
-        checksumValue, sizeof(checksumValue), NULL);
+        _checksumType, sizeof(_checksumType),
+        _checksumValue, sizeof(_checksumValue), NULL);
 
     XrdCl::CopyProcess copy_process;
 #if XrdMajorVNUM(XrdVNUMBER) == 4 ||  XrdMajorVNUM(XrdVNUMBER) == 100
@@ -235,11 +235,15 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
 #endif
 
         if (checksumMode) {
-            checksumType[0] = '\0';
-            checksumValue[0] = '\0';
-            sscanf(checksums[i], "%63s:%511s", checksumType, checksumValue);
+            char checksumType[64] = { 0 };
+            char checksumValue[512] = { 0 };
+            char **chks = g_strsplit(checksums[i], ":", 2);
+            strncpy(checksumType, chks[0], sizeof(chks[0]));
+            strncpy(checksumValue,chks[1],  sizeof(chks[1]));
             checksumType[63] = checksumValue[511] = '\0';
-
+            g_strfreev(chks);
+	    gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Type: %s", checksumType);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Value: %s", checksumValue);
             if (!checksumType[0] || !checksumValue[0]) {
                 char* defaultChecksumType = gfal2_get_opt_string(context, XROOTD_CONFIG_GROUP, XROOTD_DEFAULT_CHECKSUM, &internalError);
                 if (internalError) {
