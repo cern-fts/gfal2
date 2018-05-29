@@ -48,8 +48,10 @@ public:
         condVar.Lock();
 
         --notAnsweredCounter;
-         
-        const char *response = (const char *) res;
+        
+        std::string * response= 0;
+        res->Get(response);
+
         if (*error) {
             ++errCounter;
         } else  {
@@ -57,7 +59,7 @@ public:
             char tag[1024];
             char error_string[1024];
             gfal2_log(G_LOG_LEVEL_DEBUG, "Response: %s", response);
-            sscanf(response,
+            sscanf(response->c_str(),
                 "%s retc=%d value=%s",
                 tag, &retc, error_string);
             if (retc || (error_string != "")) {
