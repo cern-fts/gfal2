@@ -22,6 +22,71 @@
 #include <XrdCl/XrdClFileSystem.hh>
 #include <XrdSys/XrdSysPthread.hh>
 
+class PollErrorResponseHandler: public XrdCl::ResponseHandler {
+private:
+    XrdSysCondVar &condVar;
+    GError **error;
+    int &finishedCounter, &errCounter, &notAnsweredCounter;
+public:
+    PollErrorResponseHandler( XrdSysCondVar &condVar, GError **error, int &finishedCounter, int &errCounter, int &notAnsweredCounter):
+        condVar(condVar), error(error), finishedCounter(finishedCounter), errCounter(errCounter), notAnsweredCounter(notAnsweredCounter) {
+    }
+
+    ~PollErrorResponseHandler() {
+    }
+
+    void HandleResponse(XrdCl::XRootDStatus *status, XrdCl::AnyObject *res) {
+        if (!status->IsOK()) {
+            ++errCounter;
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Error doing the query");
+            gfal2_set_error(error, xrootd_domain,
+               xrootd_errno_to_posix_errno(status->errNo), __func__, "%s", status->GetErrorMessage().c_str());
+        }
+        delete status;
+
+        
+        condVar.Lock();
+
+        --notAnsweredCounter;
+         
+        const char *response = (const char *) res;
+        if (*error) {
+            ++errCounter;
+        } else  {
+            int retc;
+            char tag[1024];
+            char error_string[1024];
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Response: %s", response);
+            sscanf(response,
+                "%s retc=%d value=%s",
+                tag, &retc, error_string);
+            if (retc || (error_string != "")) {
+                gfal2_log(G_LOG_LEVEL_DEBUG, "Error reported: %s ", error_string);
+                gfal2_set_error(error, xrootd_domain, EIO, __func__, "%s",error_string);
+                ++errCounter;
+             } else {
+               gfal2_log(G_LOG_LEVEL_DEBUG, "No error reported");
+               gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
+             }
+        }
+        if (notAnsweredCounter <= 0) {
+            condVar.UnLock();
+            condVar.Signal();
+            condVar.Lock();
+        }
+        condVar.UnLock();
+
+        delete res;
+    }
+
+    // std::vector expects an = operator, and the default one is no good
+    const PollErrorResponseHandler operator = (const PollErrorResponseHandler &b) {
+        return *this;
+    }
+
+};
+
+
 class PollResponseHandler: public XrdCl::ResponseHandler {
 private:
     XrdSysCondVar &condVar;
@@ -29,7 +94,7 @@ private:
     int &finishedCounter, &errCounter, &notAnsweredCounter;
     const char* url;
 public:
-    PollResponseHandler(const char* url, XrdSysCondVar &condVar, GError **error, int &finishedCounter, int &errCounter, int &notAnsweredCounter):
+    PollResponseHandler( XrdSysCondVar &condVar, GError **error, int &finishedCounter, int &errCounter, int &notAnsweredCounter):
         url(url),condVar(condVar), error(error), finishedCounter(finishedCounter), errCounter(errCounter), notAnsweredCounter(notAnsweredCounter) {
     }
 
@@ -58,51 +123,9 @@ public:
            gfal2_log(G_LOG_LEVEL_DEBUG, "file online");  
            ++finishedCounter;
         }
-        else {
-            gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute for file: %s", url);
-            //invoke the query for the error attribute
-            XrdCl::Buffer arg;
-            XrdCl::Buffer *responsePtr;
-            XrdCl::URL endpoint(url);
-            XrdCl::FileSystem fs(endpoint);
-            //build the opaque
-            //
-            std::ostringstream sstr;
-            sstr << endpoint.GetPath() << "?mgm.pcmd=xattr&mgm.subcmd=get&mgm.xattrname=sys.retrieve.error";
-            arg.FromString(sstr.str());
-            gfal2_log(G_LOG_LEVEL_DEBUG, "attributes: %s", sstr.str().c_str());
-            XrdCl::Status st = fs.Query(XrdCl::QueryCode::Code::OpaqueFile , arg, responsePtr);
-
-	    std::unique_ptr<XrdCl::Buffer> res(responsePtr);
- 
-            //TODO:what happens if the query fails?
-            if (!st.IsOK()) {
-                gfal2_log(G_LOG_LEVEL_DEBUG, "Error submitting query for extended attribute");
-                gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
-            } else {
-                //TODO: what we do if the response is empty
-	        if (!res->GetBuffer()) {
-                  gfal2_log(G_LOG_LEVEL_DEBUG, "Query for Extended Attribute is Empty");
-                } 
-                int retc;
-                char tag[1024];
-                char error_string[1024];
-                gfal2_log(G_LOG_LEVEL_DEBUG, "Response: %s", res->GetBuffer());
-                sscanf(res->GetBuffer(),
-                       "%s retc=%d value=%s",
-                       tag, &retc, error_string);
-	        //check the error string if it's not empty.
-	        if (retc || (error_string != "")) {
-                     gfal2_log(G_LOG_LEVEL_DEBUG, "Error reported: %s ", error_string);
-              	     gfal2_set_error(error, xrootd_domain, EIO, __func__, "%s",error_string);
-                     ++errCounter;
-                } else {
-                     gfal2_log(G_LOG_LEVEL_DEBUG, "No error reported");
-                     gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
-               }
-            }
+        else { 
+           gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
         }
-
         if (notAnsweredCounter <= 0) {
             condVar.UnLock();
             condVar.Signal();
@@ -174,10 +197,10 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
     XrdSysCondVar condVar(0);
 
     // Make sure all handlers are in place before calling async code
-    for (int i = 0; i < nbfiles; ++i) {
-        handlers.emplace_back(urls[i], condVar, &err[i], finishedCounter, errCounter, notAnsweredCounter);
+    for (int i = 0; i < nbfiles; i++) {
+        handlers.emplace_back(condVar, &err[i], finishedCounter, errCounter, notAnsweredCounter);
     }
-    for (int i = 0; i < nbfiles; ++i) {
+    for (int i = 0; i < nbfiles; i++) {
         XrdCl::URL file(prepare_url(context, urls[i]));
         gfal2_log(G_LOG_LEVEL_DEBUG, "Doing file stat to check if the file is online: %s ", file.GetPath().c_str());
         XrdCl::Status st = fs.Stat(file.GetPath(), &handlers[i]);
@@ -193,7 +216,51 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
     condVar.Lock();
     condVar.Wait(300);
     condVar.UnLock();
+ 
+    notAnsweredCounter = 0;
+   
+    std::vector<PollErrorResponseHandler> errorHandlers;
+    for (int i = 0; i < nbfiles; i++) {
+        if (err[i]){
+            gfal2_log(G_LOG_LEVEL_DEBUG, "not answered");
+            notAnsweredCounter++;
+        } 
+    }
+   
+    
+    if (notAnsweredCounter > 0) {
+      for (int i = 0; i < nbfiles; i++) {
+          errorHandlers.emplace_back(condVar, &err[i], finishedCounter, errCounter, notAnsweredCounter);
+      } 
+      for (int i = 0 ; i < nbfiles; i++) {
+          if (!err[i]) {
+            continue;
+          }
+        
+          gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute for file: %s", urls[i]);
+          //invoke the query for the error attribute
+          XrdCl::Buffer arg; 
+          XrdCl::URL file(prepare_url(context, urls[i]));
+          //build the opaque
+          std::ostringstream sstr;
+          sstr << file.GetPath() << "?mgm.pcmd=xattr&mgm.subcmd=get&mgm.xattrname=sys.retrieve.error";
+          arg.FromString(sstr.str());
+          gfal2_log(G_LOG_LEVEL_DEBUG, "attributes: %s", sstr.str().c_str());
+          XrdCl::Status status = fs.Query(XrdCl::QueryCode::Code::OpaqueFile , arg, &errorHandlers[i]);
 
+          //TODO:what happens if the query fails?
+          if (!status.IsOK()) {
+                gfal2_log(G_LOG_LEVEL_DEBUG, "Error submitting query for extended attribute");
+                gfal2_set_error(&err[i], xrootd_domain, EAGAIN, __func__, "%s","Not online");
+          } 
+      
+      } 
+    
+      condVar.Lock();
+      condVar.Wait(300);
+      condVar.UnLock();
+     
+    }
     if (finishedCounter == nbfiles) {
         return 1;
     }
