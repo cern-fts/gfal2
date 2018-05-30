@@ -44,32 +44,33 @@ public:
         }
         delete status;
 
-        
         condVar.Lock();
-
         --notAnsweredCounter;
         
-        std::string * response= 0;
+        XrdCl::Buffer * response= 0;
         res->Get(response);
 
         if (*error) {
             ++errCounter;
-        } else  {
+        } else if (response->GetBuffer() != NULL)  { 
             int retc;
             char tag[1024];
             char error_string[1024];
-            gfal2_log(G_LOG_LEVEL_DEBUG, "Response: %s", response);
-            sscanf(response->c_str(),
-                "%s retc=%d value=%s",
+            error_string[0] = 0;
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Response: %s", response->GetBuffer());
+            sscanf(response->GetBuffer(),
+                "%s retc=%i value=%s",
                 tag, &retc, error_string);
-            if (retc || (error_string != "")) {
-                gfal2_log(G_LOG_LEVEL_DEBUG, "Error reported: %s ", error_string);
+            if (retc || (strlen(error_string) != 0 )) {
+                gfal2_log(G_LOG_LEVEL_DEBUG, "Error reported: %s", error_string);
                 gfal2_set_error(error, xrootd_domain, EIO, __func__, "%s",error_string);
                 ++errCounter;
-             } else {
+            } else {
                gfal2_log(G_LOG_LEVEL_DEBUG, "No error reported");
                gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
-             }
+            }
+        } else {
+             gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
         }
         if (notAnsweredCounter <= 0) {
             condVar.UnLock();
@@ -221,16 +222,14 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
  
     notAnsweredCounter = 0;
    
-    std::vector<PollErrorResponseHandler> errorHandlers;
     for (int i = 0; i < nbfiles; i++) {
         if (err[i]){
-            gfal2_log(G_LOG_LEVEL_DEBUG, "not answered");
             notAnsweredCounter++;
         } 
     }
-   
     
     if (notAnsweredCounter > 0) {
+      std::vector<PollErrorResponseHandler> errorHandlers;
       for (int i = 0; i < nbfiles; i++) {
           errorHandlers.emplace_back(condVar, &err[i], finishedCounter, errCounter, notAnsweredCounter);
       } 
@@ -238,8 +237,8 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
           if (!err[i]) {
             continue;
           }
-        
-          gfal2_log(G_LOG_LEVEL_DEBUG, "invoke the query for the error attribute for file: %s", urls[i]);
+          g_clear_error(&err[i]); 
+          gfal2_log(G_LOG_LEVEL_DEBUG, "Invoke the query for the error attribute for file: %s", urls[i]);
           //invoke the query for the error attribute
           XrdCl::Buffer arg; 
           XrdCl::URL file(prepare_url(context, urls[i]));
@@ -247,10 +246,8 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
           std::ostringstream sstr;
           sstr << file.GetPath() << "?mgm.pcmd=xattr&mgm.subcmd=get&mgm.xattrname=sys.retrieve.error";
           arg.FromString(sstr.str());
-          gfal2_log(G_LOG_LEVEL_DEBUG, "attributes: %s", sstr.str().c_str());
           XrdCl::Status status = fs.Query(XrdCl::QueryCode::Code::OpaqueFile , arg, &errorHandlers[i]);
 
-          //TODO:what happens if the query fails?
           if (!status.IsOK()) {
                 gfal2_log(G_LOG_LEVEL_DEBUG, "Error submitting query for extended attribute");
                 gfal2_set_error(&err[i], xrootd_domain, EAGAIN, __func__, "%s","Not online");
