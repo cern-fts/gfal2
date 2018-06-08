@@ -365,6 +365,11 @@ int gfal2_release_file(gfal2_context_t context, const char* url,
                        const char* token, GError ** err);
 
 /**
+ * @brief Check QoS classes available
+ */
+int gfal2_qos_check_classes(gfal2_context_t context, const char* url, GError ** err);
+
+/**
  * @brief Bring online a file
  *
  * @param context : gfal2 handle, see \ref gfal2_context_new

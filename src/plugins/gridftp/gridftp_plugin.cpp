@@ -131,7 +131,6 @@ const char *gridftp_plugin_name()
 gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)
 {
     GError* tmp_err = NULL;
-
     gfal_plugin_interface ret;
     memset(&ret, 0, sizeof(gfal_plugin_interface));
     plugin_handle r = gridftp_plugin_load(handle, &tmp_err);
