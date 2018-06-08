@@ -120,7 +120,6 @@ gfal2_context_t gfal2_context_new(GError **err)
             "[%s] bad allocation, no more memory free", __func__);
         return NULL;
     }
-
     context->initiated = TRUE;
     context->config = gfal2_init_config(&tmp_err);
     if (!context->config) {
@@ -128,9 +127,7 @@ gfal2_context_t gfal2_context_new(GError **err)
         g_free(context);
         return NULL;
     }
-
     gfal_initCredentialLocation(context);
-
     context->plugin_opt.plugin_number = 0;
     int ret = gfal_plugins_instance(context, &tmp_err);
     if (ret <= 0 && tmp_err) {
@@ -139,7 +136,6 @@ gfal2_context_t gfal2_context_new(GError **err)
         g_free(context);
         return NULL;
     }
-
     context->client_info = g_ptr_array_new();
     context->mux_cancel = g_mutex_new();
     g_hook_list_init(&context->cancel_hooks, sizeof(GHook));

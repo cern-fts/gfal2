@@ -79,7 +79,8 @@ typedef enum _plugin_mode {
     GFAL_PLUGIN_UNLINK,
     GFAL_PLUGIN_CHECKSUM,
     GFAL_PLUGIN_MKDIR_REC,
-    GFAL_PLUGIN_BRING_ONLINE
+    GFAL_PLUGIN_BRING_ONLINE,
+	GFAL_PLUGIN_QOS_CHECK_CLASSES
 } plugin_mode;
 
 /**
@@ -154,6 +155,16 @@ struct _gfal_plugin_interface {
 	 *  @return must return TRUE if the operation is compatible with this plugin, else FALSE
 	 */
 	gboolean (*check_plugin_url)(plugin_handle plugin_data, const char* url,  plugin_mode operation, GError** err);
+
+	/**
+	 *  OPTIONAL: Check what kind of QoS classes exist on the CDMI-enabled url provided
+	 *
+	 *  @param plugin_data : internal plugin data
+	 *  @param url : CDMI-enabled URL to check for the protocol compatibility
+	 *  @param err : error handle, should be used ONLY in case of major failure.
+	 *  @return comma-separated list of QoS classes existing on url, empty string if none/error
+	 */
+	void (*check_qos_classes)(plugin_handle plugin_data, const char* url, GError** err);
 
 	/**
 	 *  OPTIONAL : gfal_access function  support
@@ -657,6 +668,8 @@ int gfal_plugin_release_file_listG(gfal2_context_t handle, int nbfiles, const ch
 int gfal_plugin_unlink_listG(gfal2_context_t handle, int nbfiles, const char* const* uris, GError ** errors);
 
 int gfal_plugin_abort_filesG(gfal2_context_t handle, int nbfiles, const char* const* uris, const char* token, GError ** err);
+
+int gfal_plugin_qos_check_classes(gfal2_context_t handle, const char* uri, GError ** err);
 
 //! @endcond
 

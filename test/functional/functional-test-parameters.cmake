@@ -210,6 +210,7 @@ IF(PLUGIN_HTTP)
         test_rwt_all("DAVS" ${davs_prefix_dpm} 4578)
         test_rwt_all("DAVS_single" ${davs_prefix_dpm} 1)
         # sequencial writes not supported
+	test_qos("FIRST")
 ENDIF(PLUGIN_HTTP)
 
 IF(PLUGIN_XROOTD)
