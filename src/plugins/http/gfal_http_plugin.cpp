@@ -186,18 +186,22 @@ static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, co
 
 static void gfal_http_get_gcloud(RequestParams & params, gfal2_context_t handle, const Davix::Uri& uri)
 {
-    gchar *gcloud_file;
+    gchar *gcloud_json_file, *gcloud_json_string;
     std::string group_label("GCLOUD");
     
-    gfal2_log(G_LOG_LEVEL_DEBUG, "trying to read gcloud file location"); 
-    gcloud_file = gfal2_get_opt_string_with_default(handle, group_label.c_str(), "JSON_AUTH_FILE", "/root/google.json");
-    gfal2_log(G_LOG_LEVEL_DEBUG, "file read: %s", gcloud_file);
-    if (gcloud_file) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "Setting gcloud credential file");
-        gcloud::CredentialProvider provider;
-        params.setGcloudCredentials(provider.fromFile(std::string(gcloud_file)));
+    gcloud_json_file = gfal2_get_opt_string(handle, group_label.c_str(), "JSON_AUTH_FILE", NULL);
+    gcloud_json_string = gfal2_get_opt_string(handle, group_label.c_str(), "JSON_AUTH_STRING", NULL);
+    gcloud::CredentialProvider provider;
+    if (gcloud_json_file) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Using gcloud json credential file");
+        params.setGcloudCredentials(provider.fromFile(std::string(gcloud_json_file)));
+    } else if (gcloud_json_string) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Using gcloud json credential string");
+        params.setGcloudCredentials(provider.fromJSONString (std::string(gcloud_json_string)));      
     }
-    g_free(gcloud_file);
+       
+    g_free(gcloud_json_file);
+    g_free(gcloud_json_string);
 }
 
 void GfalHttpPluginData::get_tpc_params(bool push_mode,
