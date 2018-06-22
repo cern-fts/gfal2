@@ -155,7 +155,7 @@ int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
 
     gfal2_context_t context = (gfal2_context_t)plugin_data;
 
-    XrdCl::URL endpoint(urls[0]);
+    XrdCl::URL endpoint(prepare_url(context, urls[0]));
     endpoint.SetPath(std::string());
     XrdCl::FileSystem fs(endpoint);
 
@@ -199,7 +199,7 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
     }
     gfal2_context_t context = (gfal2_context_t)plugin_data;
 
-    XrdCl::URL endpoint(urls[0]);
+    XrdCl::URL endpoint(prepare_url(context, urls[0]));
     endpoint.SetPath(std::string());
     XrdCl::FileSystem fs(endpoint);
     std::vector<PollResponseHandler> handlers;
@@ -331,7 +331,7 @@ int gfal_xrootd_abort_files(plugin_handle plugin_data,
     }
     gfal2_context_t context = (gfal2_context_t)plugin_data;
 
-    XrdCl::URL endpoint(urls[0]);
+    XrdCl::URL endpoint(prepare_url(context, urls[0]));
     endpoint.SetPath(std::string());
     XrdCl::FileSystem fs(endpoint);
 
