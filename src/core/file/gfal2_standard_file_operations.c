@@ -373,7 +373,7 @@ int gfal2_release_file(gfal2_context_t context, const char *url, const char *tok
 }
 
 
-int gfal2_qos_check_classes(gfal2_context_t context, const char *url, GError **err)
+int gfal2_qos_check_classes(gfal2_context_t context, const char *url, const char *type, GError **err)
 {
     GError *tmp_err = NULL;
     int res = -1;
@@ -382,7 +382,7 @@ int gfal2_qos_check_classes(gfal2_context_t context, const char *url, GError **e
         g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context or/and url are incorrect arguments");
     }
     else {
-        res = gfal_plugin_qos_check_classes(context, url, &tmp_err);
+        res = gfal_plugin_qos_check_classes(context, url, type, &tmp_err);
     }
     GFAL2_END_SCOPE_CANCEL(context);
     G_RETURN_ERR(res, tmp_err, err);

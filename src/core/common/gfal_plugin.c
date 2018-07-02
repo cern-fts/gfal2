@@ -891,14 +891,14 @@ int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri, time_t pi
     G_RETURN_ERR(resu, tmp_err, err);
 }
 
-int gfal_plugin_qos_check_classes(gfal2_context_t handle, const char* uri, GError ** err)
+int gfal_plugin_qos_check_classes(gfal2_context_t handle, const char *url, const char* type, GError ** err)
 {
 	//GFAL_PLUGIN_QOS_CHECK_CLASSES
 	GError* tmp_err = NULL;
 	int resu = -1;
-	gfal_plugin_interface* p = gfal_find_plugin(handle, uri, GFAL_PLUGIN_QOS_CHECK_CLASSES, &tmp_err);
+	gfal_plugin_interface* p = gfal_find_plugin(handle, url, GFAL_PLUGIN_QOS_CHECK_CLASSES, &tmp_err);
 	if (p)
-		/*resu = */p->check_qos_classes(gfal_get_plugin_handle(p), uri, &tmp_err);
+		/*resu = */p->check_qos_classes(gfal_get_plugin_handle(p), url, type, &tmp_err);
     G_RETURN_ERR(/*resu*/1, tmp_err, err);
 }
 

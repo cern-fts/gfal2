@@ -164,7 +164,7 @@ struct _gfal_plugin_interface {
 	 *  @param err : error handle, should be used ONLY in case of major failure.
 	 *  @return comma-separated list of QoS classes existing on url, empty string if none/error
 	 */
-	void (*check_qos_classes)(plugin_handle plugin_data, const char* url, GError** err);
+	void (*check_qos_classes)(plugin_handle plugin_data, const char *url, const char* type, GError** err);
 
 	/**
 	 *  OPTIONAL : gfal_access function  support
@@ -669,7 +669,7 @@ int gfal_plugin_unlink_listG(gfal2_context_t handle, int nbfiles, const char* co
 
 int gfal_plugin_abort_filesG(gfal2_context_t handle, int nbfiles, const char* const* uris, const char* token, GError ** err);
 
-int gfal_plugin_qos_check_classes(gfal2_context_t handle, const char* uri, GError ** err);
+int gfal_plugin_qos_check_classes(gfal2_context_t handle, const char *url, const char* type, GError ** err);
 
 //! @endcond
 
