@@ -59,7 +59,7 @@ public:
 TEST_F(QosTest, TestSimpleCase)
 {
 	GError *err = NULL;
-	gfal2_qos_check_classes(context, "http://www.google.com", &err);
+	gfal2_qos_check_classes(context, "https://dcache-xdc.desy.de:6443", "dataobject", &err);
 	EXPECT_EQ(NULL, err);
 }
 

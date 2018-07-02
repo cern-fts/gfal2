@@ -24,24 +24,47 @@
 #include <checksums/checksums.h>
 #include <cstdio>
 #include <cstring>
+#include <sstream>
+#include <json/json.h>
 #include "gfal_http_plugin.h"
 
 using namespace Davix;
 
-void gfal_http_check_classes(plugin_handle plugin_data, const char *url, GError** err)
+void gfal_http_check_classes(plugin_handle plugin_data, const char *url, const char *type, GError** err)
 {
-	DavixError* tmp_err=NULL;
-	Context c;
-	HttpRequest r(c, url, &tmp_err);
+	if (type != NULL && (strcmp(type, "dataobject") == 0 || strcmp(type, "container") == 0 )) {
+		DavixError* tmp_err=NULL;
+		Context c;
 
-	if(!tmp_err)
-		r.executeRequest(&tmp_err);
-	if(tmp_err){
-		std::cerr << " error in request : " << tmp_err->getErrMsg() << std::endl;
-	}else{
-		std::vector<char> body = r.getAnswerContentVec();
-		std::string v(body.begin(), body.end());
-		std::cout << "content "<< v << std::endl;
+
+		std::string uri(url);
+		uri += "/cdmi_capabilities/";
+		uri += type;
+		HttpRequest r(c, uri, &tmp_err);
+		Davix::RequestParams req_params = new RequestParams();
+		//get_params(req_params, const Davix::Uri& uri, false)
+
+		std::stringstream ss;
+		ss << "Bearer " << "eyJraWQiOiJyc2ExIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJmZWE1ZTZlMi0wYjlmLTQwZjUtYjE5OC00YmI3YWU0YjIzNGEiLCJpc3MiOiJodHRwczpcL1wvaWFtLmV4dHJlbWUtZGF0YWNsb3VkLmV1XC8iLCJleHAiOjE1MzA1NDY1OTksImlhdCI6MTUzMDU0Mjk5OSwianRpIjoiNDQ4YzgzZGMtNTRhYi00NmU5LWIwZDEtN2FmYTY4NThmZGFkIn0.HUNcbt5fF9368XdjNxP1eltAMu3auFUOabTo8ZoDOcpL7E7b1d_Z-Uz-x6vkRUAG80koPtkeGXwN34vkujE512vMF-FaGJkmlw-eo65U4OxnkT9w_UJesk4ZbDVlP7-fNepg0AJeEzkzp8UE5dE81B2K40K9s9uclwBQuhukV-s";
+		req_params.addHeader("Authorization", ss.str());
+		r.setParameters(req_params);
+
+		if(!tmp_err)
+			r.executeRequest(&tmp_err);
+		if(tmp_err){
+			std::cerr << " error in request : " << tmp_err->getErrMsg() << std::endl;
+		}else{
+			std::vector<char> body = r.getAnswerContentVec();
+			std::string response(body.begin(), body.end());
+			json_object *info = json_tokener_parse(response.c_str());
+
+			std::string classes = json_object_get_string(json_object_object_get(info, "children"));
+			std::cout << "QoS classes: "<< classes << std::endl;
+
+			std::cout << "content "<< response << std::endl;
+		}
+	} else {
+		gfal2_set_error(err, http_plugin_domain, EINVAL, __func__, "type argument should be either dataobject or container");
 	}
 }
 
