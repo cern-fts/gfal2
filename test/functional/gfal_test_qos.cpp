@@ -36,7 +36,6 @@ public:
     static const char *token;
 
     gfal2_context_t context;
-    gfal2_context_t handle;
     gfalt_params_t params;
     gfal2_cred_t *cred;
 
