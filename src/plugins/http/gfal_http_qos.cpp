@@ -33,6 +33,7 @@ using namespace Davix;
 void gfal_http_check_classes(plugin_handle plugin_data, const char *url, const char *type, GError** err)
 {
 	if (type != NULL && (strcmp(type, "dataobject") == 0 || strcmp(type, "container") == 0 )) {
+		GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
 		DavixError* tmp_err=NULL;
 		Context c;
 
@@ -41,12 +42,12 @@ void gfal_http_check_classes(plugin_handle plugin_data, const char *url, const c
 		uri += "/cdmi_capabilities/";
 		uri += type;
 		HttpRequest r(c, uri, &tmp_err);
-		Davix::RequestParams req_params = new RequestParams();
-		//get_params(req_params, const Davix::Uri& uri, false)
+		Davix::RequestParams req_params;// = new RequestParams();
+		davix->get_params(&req_params, Davix::Uri(url), false);
 
-		std::stringstream ss;
-		ss << "Bearer " << "eyJraWQiOiJyc2ExIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJmZWE1ZTZlMi0wYjlmLTQwZjUtYjE5OC00YmI3YWU0YjIzNGEiLCJpc3MiOiJodHRwczpcL1wvaWFtLmV4dHJlbWUtZGF0YWNsb3VkLmV1XC8iLCJleHAiOjE1MzA1NDY1OTksImlhdCI6MTUzMDU0Mjk5OSwianRpIjoiNDQ4YzgzZGMtNTRhYi00NmU5LWIwZDEtN2FmYTY4NThmZGFkIn0.HUNcbt5fF9368XdjNxP1eltAMu3auFUOabTo8ZoDOcpL7E7b1d_Z-Uz-x6vkRUAG80koPtkeGXwN34vkujE512vMF-FaGJkmlw-eo65U4OxnkT9w_UJesk4ZbDVlP7-fNepg0AJeEzkzp8UE5dE81B2K40K9s9uclwBQuhukV-s";
-		req_params.addHeader("Authorization", ss.str());
+		//std::stringstream ss;
+		//ss << "Bearer " << "eyJraWQiOiJyc2ExIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJmZWE1ZTZlMi0wYjlmLTQwZjUtYjE5OC00YmI3YWU0YjIzNGEiLCJpc3MiOiJodHRwczpcL1wvaWFtLmV4dHJlbWUtZGF0YWNsb3VkLmV1XC8iLCJleHAiOjE1MzA2MDc0ODgsImlhdCI6MTUzMDYwMzg4OCwianRpIjoiMTgwNmFkOTktZTQzMi00MzQwLWFjZTctOTk3YzIxMjkzMDYxIn0.gL3pg3_0A7Qwkqg79Mp2lTO3HgSrCQkqHundHJEjS5LZsl52zmCFumXD6qa3EHL0v-BBJhe6rGaTvwCEBrDNTOjZl_uQ-kZj9TGGGzklCZ0qZsKnYarZnpuWYRpAh82MaQMq-Jk3gOGLnlY6_yeoH4by7kE-EVX8Jw4EmN6Xnt4";
+		//req_params.addHeader("Authorization", ss.str());
 		r.setParameters(req_params);
 
 		if(!tmp_err)
@@ -59,6 +60,13 @@ void gfal_http_check_classes(plugin_handle plugin_data, const char *url, const c
 			json_object *info = json_tokener_parse(response.c_str());
 
 			std::string classes = json_object_get_string(json_object_object_get(info, "children"));
+
+			// Remove all extra chars and create a comma separated string to return
+			classes.erase(std::remove(classes.begin(), classes.end(), '['), classes.end());
+			classes.erase(std::remove(classes.begin(), classes.end(), ']'), classes.end());
+			classes.erase(std::remove(classes.begin(), classes.end(), ' '), classes.end());
+			classes.erase(std::remove(classes.begin(), classes.end(), '"'), classes.end());
+
 			std::cout << "QoS classes: "<< classes << std::endl;
 
 			std::cout << "content "<< response << std::endl;
