@@ -59,7 +59,7 @@ public:
             error_string[0] = 0;
             gfal2_log(G_LOG_LEVEL_DEBUG, "Response: %s", response->GetBuffer());
             sscanf(response->GetBuffer(),
-                "%s retc=%i value=%s",
+                "%s retc=%i value=%[^\n]",
                 tag, &retc, error_string);
             if (retc || (strlen(error_string) != 0 )) {
                 gfal2_log(G_LOG_LEVEL_DEBUG, "Error reported: %s", error_string);
