@@ -238,8 +238,10 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
             char checksumType[64] = { 0 };
             char checksumValue[512] = { 0 };
             char **chks = g_strsplit(checksums[i], ":", 2);
+            char *s = chks[1];
+            while (*s && *s == '0') s++;
             strncpy(checksumType, chks[0], sizeof(chks[0]));
-            strncpy(checksumValue,chks[1],  sizeof(chks[1]));
+            strncpy(checksumValue, s, sizeof(s));
             checksumType[63] = checksumValue[511] = '\0';
             g_strfreev(chks);
 	    gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Type: %s", checksumType);
