@@ -388,6 +388,21 @@ int gfal2_qos_check_classes(gfal2_context_t context, const char *url, const char
     G_RETURN_ERR(res, tmp_err, err);
 }
 
+const char* gfal2_check_file_qos(gfal2_context_t context, const char *fileUrl, GError ** err)
+{
+    GError *tmp_err = NULL;
+    const char* res;
+    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
+    if (fileUrl == NULL || context == NULL) {
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context or/and url are incorrect arguments");
+    }
+    else {
+        res = gfal_plugin_check_file_qos(context, fileUrl, &tmp_err);
+    }
+    GFAL2_END_SCOPE_CANCEL(context);
+    G_RETURN_ERR(res, tmp_err, err);
+}
+
 int gfal2_bring_online_list(gfal2_context_t context, int nbfiles,
     const char *const *urls, time_t pintime, time_t timeout, char *token,
     size_t tsize, int async, GError **errors)

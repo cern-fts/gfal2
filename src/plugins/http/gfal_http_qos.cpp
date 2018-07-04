@@ -53,7 +53,7 @@ void gfal_http_check_classes(plugin_handle plugin_data, const char *url, const c
 		if(!tmp_err)
 			r.executeRequest(&tmp_err);
 		if(tmp_err){
-			std::cerr << " error in request : " << tmp_err->getErrMsg() << std::endl;
+			std::cerr << " error in request of getting available QoS classes: " << tmp_err->getErrMsg() << std::endl;
 		}else{
 			std::vector<char> body = r.getAnswerContentVec();
 			std::string response(body.begin(), body.end());
@@ -76,3 +76,33 @@ void gfal_http_check_classes(plugin_handle plugin_data, const char *url, const c
 	}
 }
 
+const char* gfal_http_check_file_qos(plugin_handle plugin_data, const char *fileUrl, GError** err)
+{
+	GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
+	DavixError* tmp_err=NULL;
+	Context c;
+
+	std::string uri(fileUrl);
+	HttpRequest r(c, uri, &tmp_err);
+	Davix::RequestParams req_params;
+	davix->get_params(&req_params, Davix::Uri(fileUrl), false);
+	r.setParameters(req_params);
+
+	if(!tmp_err)
+		r.executeRequest(&tmp_err);
+	if(tmp_err){
+		std::cerr << " error in request of checking file QoS: " << tmp_err->getErrMsg() << std::endl;
+	}else{
+		std::vector<char> body = r.getAnswerContentVec();
+		std::string response(body.begin(), body.end());
+
+		json_object *info = json_tokener_parse(response.c_str());
+		std::string qos_class = json_object_get_string(json_object_object_get(info, "capabilitiesURI"));
+		qos_class.erase(std::remove(qos_class.begin(), qos_class.end(), '"'), qos_class.end());
+
+		//std::cout << "QoS class of file: "<< qos_class << std::endl;
+		//std::cout << "content "<< response << std::endl;
+		return qos_class.c_str();
+	}
+	return NULL;
+}
