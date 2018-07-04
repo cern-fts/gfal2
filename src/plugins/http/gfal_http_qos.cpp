@@ -30,7 +30,7 @@
 
 using namespace Davix;
 
-void gfal_http_check_classes(plugin_handle plugin_data, const char *url, const char *type, GError** err)
+const char* gfal_http_check_classes(plugin_handle plugin_data, const char *url, const char *type, GError** err)
 {
 	if (type != NULL && (strcmp(type, "dataobject") == 0 || strcmp(type, "container") == 0 )) {
 		GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
@@ -67,13 +67,27 @@ void gfal_http_check_classes(plugin_handle plugin_data, const char *url, const c
 			classes.erase(std::remove(classes.begin(), classes.end(), ' '), classes.end());
 			classes.erase(std::remove(classes.begin(), classes.end(), '"'), classes.end());
 
-			std::cout << "QoS classes: "<< classes << std::endl;
+			//Adding prefix of cdmi capabilitiesURI
+			std::string stype(type);
+			std::string prefix = "/cdmi_capabilities/" + stype + "/";
+			std::istringstream iss(classes);
+			std::string classToken;
+			classes="";
+			while (std::getline(iss, classToken, ','))
+			{
+				classes += prefix + classToken + ",";
+			}
+			//remove final ,
+			classes.erase(classes.size()-1);
+			//std::cout << "QoS classes: "<< classes << std::endl;
 
-			std::cout << "content "<< response << std::endl;
+			//std::cout << "content "<< response << std::endl;
+			return classes.c_str();
 		}
 	} else {
 		gfal2_set_error(err, http_plugin_domain, EINVAL, __func__, "type argument should be either dataobject or container");
 	}
+	return NULL;
 }
 
 const char* gfal_http_check_file_qos(plugin_handle plugin_data, const char *fileUrl, GError** err)

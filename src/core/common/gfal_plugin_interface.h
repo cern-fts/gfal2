@@ -165,7 +165,7 @@ struct _gfal_plugin_interface {
 	 *  @param err : error handle, should be used ONLY in case of major failure.
 	 *  @return comma-separated list of QoS classes existing on url, empty string if none/error
 	 */
-	void (*check_qos_classes)(plugin_handle plugin_data, const char *url, const char* type, GError** err);
+	const char* (*check_qos_classes)(plugin_handle plugin_data, const char *url, const char* type, GError** err);
 
 	/**
 		 *  OPTIONAL: Check the QoS of a file with the CDMI-enabled url provided
@@ -680,7 +680,7 @@ int gfal_plugin_unlink_listG(gfal2_context_t handle, int nbfiles, const char* co
 
 int gfal_plugin_abort_filesG(gfal2_context_t handle, int nbfiles, const char* const* uris, const char* token, GError ** err);
 
-int gfal_plugin_qos_check_classes(gfal2_context_t handle, const char *url, const char* type, GError ** err);
+const char* gfal_plugin_qos_check_classes(gfal2_context_t handle, const char *url, const char* type, GError ** err);
 
 const char* gfal_plugin_check_file_qos(gfal2_context_t handle, const char *fileUrl, GError** err);
 

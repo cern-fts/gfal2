@@ -367,7 +367,7 @@ int gfal2_release_file(gfal2_context_t context, const char* url,
 /**
  * @brief Check QoS classes available
  */
-int gfal2_qos_check_classes(gfal2_context_t context, const char *url, const char* type, GError ** err);
+const char* gfal2_qos_check_classes(gfal2_context_t context, const char *url, const char* type, GError ** err);
 
 /**
  * @brief Check Qos of File
