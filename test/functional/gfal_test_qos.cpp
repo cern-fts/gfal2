@@ -128,6 +128,6 @@ int main(int argc, char** argv)
 
     /*QosTest::root = argv[1];*/
     QosTest::root = "https://dcache-xdc.desy.de:6443";
-    QosTest::token = "eyJraWQiOiJyc2ExIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJmZWE1ZTZlMi0wYjlmLTQwZjUtYjE5OC00YmI3YWU0YjIzNGEiLCJpc3MiOiJodHRwczpcL1wvaWFtLmV4dHJlbWUtZGF0YWNsb3VkLmV1XC8iLCJleHAiOjE1MzA3MDYzMjEsImlhdCI6MTUzMDcwMjcyMSwianRpIjoiYTRhM2JiY2MtM2E0ZC00ZGEyLWIyMzYtYzEyZjExYmVhODE4In0.J7i6lwA7mTyFMcDv9rwHdqaGwxfDSXELVAW_JiSuZl5Gwi9Vbm7cU4OIzomkNVUPYJYMoxKT6mZYOH4TpOr_0SZZAyKAGzazYy-HMk8W25wfrjLn4vdf-4NGreVrTZQAoRTkAqhh95tDYHfnIHredL6OqTDsCt_xSwXd-2isuAw";
+    QosTest::token = "eyJraWQiOiJyc2ExIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJmZWE1ZTZlMi0wYjlmLTQwZjUtYjE5OC00YmI3YWU0YjIzNGEiLCJpc3MiOiJodHRwczpcL1wvaWFtLmV4dHJlbWUtZGF0YWNsb3VkLmV1XC8iLCJleHAiOjE1MzA3MTc5MTAsImlhdCI6MTUzMDcxNDMxMCwianRpIjoiOGRlNDU1YzAtMjk5YS00MTZmLThhMDMtZDljM2ExZjJhNDVjIn0.AnUisFPXHM5E-BHoXxLlp-MOlwN86Q-yHjEsOP0as7eiwmjHe_640fJiNOhO2uJELz-2kOX8dVxDwSemQGOa9IrfyuW3CJr6q5duTTUWBFpU-HsELY1A4vh0ebBf3h90mPDFAOyl4bnwpnJrUMX11hhQzhH_cvdqS2zrwbAHAFM";
     return RUN_ALL_TESTS();
 }

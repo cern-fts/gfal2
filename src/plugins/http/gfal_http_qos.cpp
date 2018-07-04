@@ -42,12 +42,9 @@ const char* gfal_http_check_classes(plugin_handle plugin_data, const char *url, 
 		uri += "/cdmi_capabilities/";
 		uri += type;
 		HttpRequest r(c, uri, &tmp_err);
-		Davix::RequestParams req_params;// = new RequestParams();
+		Davix::RequestParams req_params;
 		davix->get_params(&req_params, Davix::Uri(url), false);
 
-		//std::stringstream ss;
-		//ss << "Bearer " << "eyJraWQiOiJyc2ExIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJmZWE1ZTZlMi0wYjlmLTQwZjUtYjE5OC00YmI3YWU0YjIzNGEiLCJpc3MiOiJodHRwczpcL1wvaWFtLmV4dHJlbWUtZGF0YWNsb3VkLmV1XC8iLCJleHAiOjE1MzA2MDc0ODgsImlhdCI6MTUzMDYwMzg4OCwianRpIjoiMTgwNmFkOTktZTQzMi00MzQwLWFjZTctOTk3YzIxMjkzMDYxIn0.gL3pg3_0A7Qwkqg79Mp2lTO3HgSrCQkqHundHJEjS5LZsl52zmCFumXD6qa3EHL0v-BBJhe6rGaTvwCEBrDNTOjZl_uQ-kZj9TGGGzklCZ0qZsKnYarZnpuWYRpAh82MaQMq-Jk3gOGLnlY6_yeoH4by7kE-EVX8Jw4EmN6Xnt4";
-		//req_params.addHeader("Authorization", ss.str());
 		r.setParameters(req_params);
 
 		if(!tmp_err)
@@ -79,8 +76,8 @@ const char* gfal_http_check_classes(plugin_handle plugin_data, const char *url, 
 			}
 			//remove final ,
 			classes.erase(classes.size()-1);
-			//std::cout << "QoS classes: "<< classes << std::endl;
 
+			//std::cout << "QoS classes: "<< classes << std::endl;
 			//std::cout << "content "<< response << std::endl;
 			return classes.c_str();
 		}
@@ -158,3 +155,34 @@ const char* gfal_http_check_qos_available_transitions(plugin_handle plugin_data,
 		}
 		return NULL;
 }
+
+
+/*
+ TODO: Have all get requests being done in a separate method, at the moment there is an issue with the second level json reading of gfal_http_check_qos_available_transitions
+ 	   when all tests are running
+
+std::string response = execute_get_request_to_cdmi(plugin_data, qosClassUrl);
+
+std::string execute_get_request_to_cdmi(plugin_handle plugin_data, const char *url)
+{
+	GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
+	Context c;
+	DavixError* tmp_err=NULL;
+
+	std::string uri(url);
+	HttpRequest r(c, uri, &tmp_err);
+	Davix::RequestParams req_params;
+	davix->get_params(&req_params, Davix::Uri(url), false);
+	r.setParameters(req_params);
+
+	if(!tmp_err)
+		r.executeRequest(&tmp_err);
+	if(tmp_err){
+			std::cerr << " ERROR on get Request to the CDMI server: " << tmp_err->getErrMsg() << std::endl;
+	} else {
+		std::vector<char> body = r.getAnswerContentVec();
+		std::string response(body.begin(), body.end());
+		return response;
+	}
+	return "";
+}*/
