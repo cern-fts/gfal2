@@ -373,10 +373,10 @@ int gfal2_release_file(gfal2_context_t context, const char *url, const char *tok
 }
 
 
-int gfal2_qos_check_classes(gfal2_context_t context, const char *url, const char *type, GError **err)
+const char* gfal2_qos_check_classes(gfal2_context_t context, const char *url, const char *type, GError **err)
 {
     GError *tmp_err = NULL;
-    int res = -1;
+    const char* res;
     GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
     if (url == NULL || context == NULL) {
         g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context or/and url are incorrect arguments");
