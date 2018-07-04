@@ -115,5 +115,6 @@ int gfal_http_copy_check(plugin_handle plugin_data, gfal2_context_t context,
 
 // QoS
 void gfal_http_check_classes(plugin_handle plugin_data, const char *url, const char *type, GError** err);
+const char* gfal_http_check_file_qos(plugin_handle plugin_data, const char *fileUrl, GError** err);
 
 #endif //_GFAL_HTTP_PLUGIN_H

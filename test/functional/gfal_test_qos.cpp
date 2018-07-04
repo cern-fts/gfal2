@@ -83,10 +83,19 @@ public:
 const char *QosTest::root = NULL;
 const char *QosTest::token = NULL;
 
-TEST_F(QosTest, TestSimpleCase)
+TEST_F(QosTest, TestQosClasses)
 {
 	GError *err = NULL;
 	gfal2_qos_check_classes(context, root, "dataobject", &err);
+	EXPECT_EQ(NULL, err);
+}
+
+TEST_F(QosTest, TestCheckFileQos)
+{
+	GError *err = NULL;
+	const char* result = gfal2_check_file_qos(context, "https://dcache-xdc.desy.de:6443/Users/paul/test-1", &err);
+	std::string str(result);
+	std::cout << str << std::endl;
 	EXPECT_EQ(NULL, err);
 }
 
@@ -102,6 +111,6 @@ int main(int argc, char** argv)
 
     /*QosTest::root = argv[1];*/
     QosTest::root = "https://dcache-xdc.desy.de:6443";
-    QosTest::token = "eyJraWQiOiJyc2ExIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJmZWE1ZTZlMi0wYjlmLTQwZjUtYjE5OC00YmI3YWU0YjIzNGEiLCJpc3MiOiJodHRwczpcL1wvaWFtLmV4dHJlbWUtZGF0YWNsb3VkLmV1XC8iLCJleHAiOjE1MzA2MjAxMTksImlhdCI6MTUzMDYxNjUxOSwianRpIjoiODU0ODdhNDQtZWRlNS00NzcxLTg0MTctYjJkMTM3YzAxNmExIn0.AH-epaG5325e8Sq4X5oEe9-otB6fB_-JDRr6A7D5lLu1AHqThgWdT7Elr9T7Q-T6-d7UYjhy0xuoS_ojavjMu6OPnss1YvDZyVj6gny_ihtjgI5h6VNe-x8Jqbj-hyAijuMLdNNRbnBf9NeZEnyFBrJmLQrJP3pJUMk83y6xmO4";
+    QosTest::token = "eyJraWQiOiJyc2ExIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJmZWE1ZTZlMi0wYjlmLTQwZjUtYjE5OC00YmI3YWU0YjIzNGEiLCJpc3MiOiJodHRwczpcL1wvaWFtLmV4dHJlbWUtZGF0YWNsb3VkLmV1XC8iLCJleHAiOjE1MzA2OTgxNjksImlhdCI6MTUzMDY5NDU2OSwianRpIjoiNjczNmM3MTEtYzIxZS00ODk4LWEwNzYtM2M2ZGRlMmVlNzIyIn0.Nq4JG6M9wm_r71nvpyDPnFboePFCh7jpX97wAdzmoFasC9yyVkSS9Hn3mUrdx-mtpGat57KCwqnygWyZZB_u8R8BCTCV4KbjTq9hhwfXpY61xM1Hs1ZMUiXp1Dy9ilNUGktU6ic1cq1gLILNQg_xo-VYTbP0MlCxycbDsUpwctk";
     return RUN_ALL_TESTS();
 }

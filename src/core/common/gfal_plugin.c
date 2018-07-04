@@ -902,6 +902,17 @@ int gfal_plugin_qos_check_classes(gfal2_context_t handle, const char *url, const
     G_RETURN_ERR(/*resu*/1, tmp_err, err);
 }
 
+const char* gfal_plugin_check_file_qos(gfal2_context_t handle, const char *fileUrl, GError ** err)
+{
+	//GFAL_PLUGIN_QOS_CHECK_CLASSES
+	GError* tmp_err = NULL;
+	const char* resu;
+	gfal_plugin_interface* p = gfal_find_plugin(handle, fileUrl, GFAL_PLUGIN_CHECK_FILE_QOS, &tmp_err);
+	if (p)
+		resu = p->check_file_qos(gfal_get_plugin_handle(p), fileUrl, &tmp_err);
+    G_RETURN_ERR(resu, tmp_err, err);
+}
+
 int gfal_plugin_bring_online_pollG(gfal2_context_t handle, const char* uri, const char* token,
         GError ** err)
 {

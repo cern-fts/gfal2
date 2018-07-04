@@ -338,6 +338,8 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
     switch(operation){
     	case GFAL_PLUGIN_QOS_CHECK_CLASSES:
     		return true;
+    	case GFAL_PLUGIN_CHECK_FILE_QOS:
+    		return true;
         case GFAL_PLUGIN_ACCESS:
         case GFAL_PLUGIN_OPEN:
         case GFAL_PLUGIN_STAT:
@@ -526,5 +528,6 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError
 
     // QoS
     http_plugin.check_qos_classes = &gfal_http_check_classes;
+    http_plugin.check_file_qos = &gfal_http_check_file_qos;
     return http_plugin;
 }
