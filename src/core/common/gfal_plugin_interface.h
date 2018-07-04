@@ -81,7 +81,8 @@ typedef enum _plugin_mode {
     GFAL_PLUGIN_MKDIR_REC,
     GFAL_PLUGIN_BRING_ONLINE,
 	GFAL_PLUGIN_QOS_CHECK_CLASSES,
-	GFAL_PLUGIN_CHECK_FILE_QOS
+	GFAL_PLUGIN_CHECK_FILE_QOS,
+	GFAL_PLUGIN_CHECK_QOS_AVAILABLE_TRANSITIONS
 } plugin_mode;
 
 /**
@@ -176,6 +177,16 @@ struct _gfal_plugin_interface {
 		 *  @return QoS class of the file
 		 */
 	const char* (*check_file_qos)(plugin_handle plugin_data, const char *fileUrl, GError** err);
+
+	/**
+	 *  OPTIONAL: Check the available transitions of a QoS class to other QoS classes
+	 *
+	 *  @param plugin_data : internal plugin data
+	 *  @param qosClassUrl : CDMI-enabled URL of QoS class
+	 *  @param err : error handle, should be used ONLY in case of major failure.
+	 *  @return comma-separated list of available transitions to other QoS classes for a specific QoS
+	 */
+	const char* (*check_qos_available_transitions)(plugin_handle plugin_data, const char *qosClassUrl, GError** err);
 
 	/**
 	 *  OPTIONAL : gfal_access function  support
@@ -683,6 +694,8 @@ int gfal_plugin_abort_filesG(gfal2_context_t handle, int nbfiles, const char* co
 const char* gfal_plugin_qos_check_classes(gfal2_context_t handle, const char *url, const char* type, GError ** err);
 
 const char* gfal_plugin_check_file_qos(gfal2_context_t handle, const char *fileUrl, GError** err);
+
+const char* gfal_plugin_check_qos_available_transitions(gfal2_context_t handle, const char *qosClassUrl, GError** err);
 
 //! @endcond
 
