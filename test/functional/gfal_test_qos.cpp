@@ -105,6 +105,17 @@ TEST_F(QosTest, TestCheckFileQos)
 	EXPECT_EQ(NULL, err);
 }
 
+TEST_F(QosTest, TestCheckQoSTransitions)
+{
+	GError *err = NULL;
+	const char* result = gfal2_check_available_qos_transitions(context, "https://dcache-xdc.desy.de:6443/cdmi_capabilities/dataobject/disk", &err);
+	if (result != NULL) {
+		std::string str(result);
+		std::cout << str << std::endl;
+	}
+	EXPECT_EQ(NULL, err);
+}
+
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
@@ -117,6 +128,6 @@ int main(int argc, char** argv)
 
     /*QosTest::root = argv[1];*/
     QosTest::root = "https://dcache-xdc.desy.de:6443";
-    QosTest::token = "eyJraWQiOiJyc2ExIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJmZWE1ZTZlMi0wYjlmLTQwZjUtYjE5OC00YmI3YWU0YjIzNGEiLCJpc3MiOiJodHRwczpcL1wvaWFtLmV4dHJlbWUtZGF0YWNsb3VkLmV1XC8iLCJleHAiOjE1MzA3MDIxNzYsImlhdCI6MTUzMDY5ODU3NiwianRpIjoiMWY5ZmUyOGUtYjdiNC00OTk1LWE5YzYtZWY3ZDE0MmFjMDVmIn0.BJM0qupuZp66oQj52qWeFjlV26h3R328Ykk67xRqRsf7Nijerhczg1XZuNf2mB6dabFbmdjo-Ibfm5vyRdT4KdFBeHrhiSnHioHltpjkaeRvh8L5konY73kBj5ZrRe_CX6qMQVAWXUiI9XKNSbnVrnRL_-cL7y5-ctrzbgaQj80";
+    QosTest::token = "eyJraWQiOiJyc2ExIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJmZWE1ZTZlMi0wYjlmLTQwZjUtYjE5OC00YmI3YWU0YjIzNGEiLCJpc3MiOiJodHRwczpcL1wvaWFtLmV4dHJlbWUtZGF0YWNsb3VkLmV1XC8iLCJleHAiOjE1MzA3MDYzMjEsImlhdCI6MTUzMDcwMjcyMSwianRpIjoiYTRhM2JiY2MtM2E0ZC00ZGEyLWIyMzYtYzEyZjExYmVhODE4In0.J7i6lwA7mTyFMcDv9rwHdqaGwxfDSXELVAW_JiSuZl5Gwi9Vbm7cU4OIzomkNVUPYJYMoxKT6mZYOH4TpOr_0SZZAyKAGzazYy-HMk8W25wfrjLn4vdf-4NGreVrTZQAoRTkAqhh95tDYHfnIHredL6OqTDsCt_xSwXd-2isuAw";
     return RUN_ALL_TESTS();
 }
