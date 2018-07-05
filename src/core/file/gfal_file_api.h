@@ -31,7 +31,11 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#ifdef __APPLE__
+#include <errno.h>
+#ifndef ENOATTR
+#define ENOATTR ENODATA
+#endif
+#if ( defined __GLIBC_PREREQ && __GLIBC_PREREQ(2,27) ) || defined __APPLE__
 #include <sys/xattr.h>
 #else
 #include <attr/xattr.h>
