@@ -375,9 +375,14 @@ const char* gfal2_qos_check_classes(gfal2_context_t context, const char *url, co
 const char* gfal2_check_file_qos(gfal2_context_t context, const char *fileUrl, GError ** err);
 
 /**
- * @brief Check Qos of File
+ * @brief Check available QoS transitions of a QoS class
  */
 const char* gfal2_check_available_qos_transitions(gfal2_context_t context, const char *qosClassUrl, GError ** err);
+
+/**
+ * @brief Check target QoS of a file/dir
+ */
+const char* gfal2_check_target_qos(gfal2_context_t context, const char *fileUrl, GError ** err);
 
 /**
  * @brief Bring online a file

@@ -140,7 +140,7 @@ const char* gfal_http_check_qos_available_transitions(plugin_handle plugin_data,
 
 			json_object *info = json_tokener_parse(response.c_str());
 			json_object *metadata = json_object_object_get(info, "metadata");
-			std::string transitions = json_object_get_string(json_object_object_get(metadata, "cdmi_capabilities_allowed"));//cdmi_capabilities_allowed
+			std::string transitions = json_object_get_string(json_object_object_get(metadata, "cdmi_capabilities_allowed"));
 
 			// Remove all extra chars and create a comma separated string to return
 			transitions.erase(std::remove(transitions.begin(), transitions.end(), '['), transitions.end());
@@ -186,3 +186,44 @@ std::string execute_get_request_to_cdmi(plugin_handle plugin_data, const char *u
 	}
 	return "";
 }*/
+
+const char* gfal_http_check_target_qos(plugin_handle plugin_data, const char *fileUrl, GError** err)
+{
+	GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
+	DavixError* tmp_err=NULL;
+	Context c;
+
+	std::string uri(fileUrl);
+	HttpRequest r(c, uri, &tmp_err);
+	Davix::RequestParams req_params;
+	davix->get_params(&req_params, Davix::Uri(fileUrl), false);
+	r.setParameters(req_params);
+
+	if(!tmp_err)
+		r.executeRequest(&tmp_err);
+	if(tmp_err){
+		std::cerr << " error in request of checking file QoS: " << tmp_err->getErrMsg() << std::endl;
+	}else{
+		std::vector<char> body = r.getAnswerContentVec();
+		std::string response(body.begin(), body.end());
+
+		json_object *info = json_tokener_parse(response.c_str());
+		json_object *metadata = json_object_object_get(info, "metadata");
+		json_object *target = json_object_object_get(metadata, "cdmi_capabilities_target");
+		if (target != NULL) {
+			std::string targetQoS = json_object_get_string(target);
+
+			// Remove all extra chars and create a comma separated string to return
+			targetQoS.erase(std::remove(targetQoS.begin(), targetQoS.end(), '['), targetQoS.end());
+			targetQoS.erase(std::remove(targetQoS.begin(), targetQoS.end(), ']'), targetQoS.end());
+			targetQoS.erase(std::remove(targetQoS.begin(), targetQoS.end(), ' '), targetQoS.end());
+			targetQoS.erase(std::remove(targetQoS.begin(), targetQoS.end(), '"'), targetQoS.end());
+			targetQoS.erase(std::remove(targetQoS.begin(), targetQoS.end(), '\\'), targetQoS.end());
+			return targetQoS.c_str();
+		}
+
+		//std::cout << "The thing is empty "<< targetQoS << std::endl;
+		//std::cout << "content "<< response << std::endl;
+	}
+	return NULL;
+}
