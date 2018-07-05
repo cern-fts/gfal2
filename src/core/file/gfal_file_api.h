@@ -376,6 +376,11 @@ const char* gfal2_check_available_qos_transitions(gfal2_context_t context, const
 const char* gfal2_check_target_qos(gfal2_context_t context, const char *fileUrl, GError ** err);
 
 /**
+ * @brief Change the QoS of a CDMI object
+ */
+int gfal2_change_object_qos(gfal2_context_t context, const char *fileUrl, const char *newQosClass, GError ** err);
+
+/**
  * @brief Bring online a file
  *
  * @param context : gfal2 handle, see \ref gfal2_context_new

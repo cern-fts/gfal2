@@ -340,6 +340,7 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
     	case GFAL_PLUGIN_CHECK_FILE_QOS:
     	case GFAL_PLUGIN_CHECK_QOS_AVAILABLE_TRANSITIONS:
     	case GFAL_PLUGIN_CHECK_TARGET_QOS:
+    	case GFAL_PLUGIN_CHANGE_OBJECT_QOS:
     		return true;
         case GFAL_PLUGIN_ACCESS:
         case GFAL_PLUGIN_OPEN:
@@ -532,5 +533,7 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError
     http_plugin.check_file_qos = &gfal_http_check_file_qos;
     http_plugin.check_qos_available_transitions = &gfal_http_check_qos_available_transitions;
     http_plugin.check_target_qos = &gfal_http_check_target_qos;
+    http_plugin.change_object_qos = &gfal_http_change_object_qos;
+
     return http_plugin;
 }

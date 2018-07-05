@@ -51,7 +51,7 @@ const char* gfal_http_check_classes(plugin_handle plugin_data, const char *url, 
 			r.executeRequest(&tmp_err);
 		if(tmp_err){
 			std::cerr << " error in request of getting available QoS classes: " << tmp_err->getErrMsg() << std::endl;
-		}else{
+		} else {
 			std::vector<char> body = r.getAnswerContentVec();
 			std::string response(body.begin(), body.end());
 			json_object *info = json_tokener_parse(response.c_str());
@@ -103,7 +103,7 @@ const char* gfal_http_check_file_qos(plugin_handle plugin_data, const char *file
 		r.executeRequest(&tmp_err);
 	if(tmp_err){
 		std::cerr << " error in request of checking file QoS: " << tmp_err->getErrMsg() << std::endl;
-	}else{
+	} else {
 		std::vector<char> body = r.getAnswerContentVec();
 		std::string response(body.begin(), body.end());
 
@@ -134,7 +134,7 @@ const char* gfal_http_check_qos_available_transitions(plugin_handle plugin_data,
 			r.executeRequest(&tmp_err);
 		if(tmp_err){
 			std::cerr << " error in request of checking file QoS: " << tmp_err->getErrMsg() << std::endl;
-		}else{
+		} else {
 			std::vector<char> body = r.getAnswerContentVec();
 			std::string response(body.begin(), body.end());
 
@@ -195,6 +195,7 @@ const char* gfal_http_check_target_qos(plugin_handle plugin_data, const char *fi
 
 	std::string uri(fileUrl);
 	HttpRequest r(c, uri, &tmp_err);
+
 	Davix::RequestParams req_params;
 	davix->get_params(&req_params, Davix::Uri(fileUrl), false);
 	r.setParameters(req_params);
@@ -203,7 +204,7 @@ const char* gfal_http_check_target_qos(plugin_handle plugin_data, const char *fi
 		r.executeRequest(&tmp_err);
 	if(tmp_err){
 		std::cerr << " error in request of checking file QoS: " << tmp_err->getErrMsg() << std::endl;
-	}else{
+	} else {
 		std::vector<char> body = r.getAnswerContentVec();
 		std::string response(body.begin(), body.end());
 
@@ -226,4 +227,45 @@ const char* gfal_http_check_target_qos(plugin_handle plugin_data, const char *fi
 		//std::cout << "content "<< response << std::endl;
 	}
 	return NULL;
+}
+
+int gfal_http_change_object_qos(plugin_handle plugin_data, const char *fileUrl, const char* newQosClass, GError** err)
+{
+	GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
+	DavixError* tmp_err=NULL;
+	Context c;
+
+	std::string uri(fileUrl);
+
+	std::stringstream body;
+	body << "{\"capabilitiesURI\":\"" << newQosClass << "\"}";
+	std::cout << "Body: "<< body.str() << std::endl;
+	PutRequest pr(c, uri, &tmp_err);
+	Davix::RequestParams req_params;
+	davix->get_params(&req_params, Davix::Uri(fileUrl), false);
+	pr.setParameters(req_params);
+	pr.setRequestBody(body.str());
+
+	if(!tmp_err){
+		pr.executeRequest(&tmp_err);
+	}
+	std::cout << "Request Return Code: "<< pr.getRequestCode() << std::endl;
+	if(tmp_err || httpcodeIsValid(pr.getRequestCode()) == false){
+		std::cerr << " error in request of checking file QoS: " << tmp_err->getErrMsg() << std::endl;
+	} else {
+		return 0;
+	}
+	return -1;
+}
+
+bool httpcodeIsValid(int code)
+{	/* Should expect 204 as per CDMI document page 8 for a PUT request */
+    switch (code) {
+        case 200:           /* OK */
+        case 202:           /* Accepted */
+        case 204:           /* No Content */
+            return true;
+        default:
+            return false;
+    }
 }

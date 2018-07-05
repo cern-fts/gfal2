@@ -83,7 +83,8 @@ typedef enum _plugin_mode {
 	GFAL_PLUGIN_QOS_CHECK_CLASSES,
 	GFAL_PLUGIN_CHECK_FILE_QOS,
 	GFAL_PLUGIN_CHECK_QOS_AVAILABLE_TRANSITIONS,
-	GFAL_PLUGIN_CHECK_TARGET_QOS
+	GFAL_PLUGIN_CHECK_TARGET_QOS,
+	GFAL_PLUGIN_CHANGE_OBJECT_QOS
 } plugin_mode;
 
 /**
@@ -193,11 +194,23 @@ struct _gfal_plugin_interface {
 	 *  OPTIONAL: Check the target QoS of a file/dir and return it. Return NULL if there is None
 	 *
 	 *  @param plugin_data : internal plugin data
-	 *  @param fileUrl : CDMI-enabled URL to check for the protocol compatibility
+	 *  @param fileUrl : CDMI-enabled URL of a file/dir
 	 *  @param err : error handle, should be used ONLY in case of major failure.
 	 *  @return target QoS class of the file or NULL if there exists none
 	 */
 	const char* (*check_target_qos)(plugin_handle plugin_data, const char *fileUrl, GError** err);
+
+	/**
+	 *  OPTIONAL: Check the QoS of a file with the CDMI-enabled url provided
+	 *
+	 *  @param plugin_data : internal plugin data
+	 *  @param fileUrl : CDMI-enabled URL of a file/dir
+	 *  @param err : error handle, should be used ONLY in case of major failure.
+	 *  @param newQosClass: the QoS class that this file will be set to
+	 *  @return 0 or -1 if error occurs,
+	 *          err MUST be set in case of error
+	 */
+	int (*change_object_qos)(plugin_handle plugin_data, const char *fileUrl, const char* newQosClass, GError** err);
 
 	/**
 	 *  OPTIONAL : gfal_access function  support
@@ -709,6 +722,8 @@ const char* gfal_plugin_check_file_qos(gfal2_context_t handle, const char *fileU
 const char* gfal_plugin_check_qos_available_transitions(gfal2_context_t handle, const char *qosClassUrl, GError** err);
 
 const char* gfal_plugin_check_target_qos(gfal2_context_t handle, const char *fileUrl, GError** err);
+
+int gfal_plugin_change_object_qos(gfal2_context_t handle, const char *fileUrl, const char* newQosClass, GError** err);
 
 //! @endcond
 
