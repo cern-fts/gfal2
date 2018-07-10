@@ -55,7 +55,7 @@ struct PerfCallbackData {
 
 static bool is_http_scheme(const char* url)
 {
-    const char *schemes[] = {"http:", "https:", "dav:", "davs:", "s3:", "s3s:", NULL};
+    const char *schemes[] = {"http:", "https:", "dav:", "davs:", "s3:", "s3s:", "gcloud:", "gclouds:", NULL};
     const char *colon = strchr(url, ':');
     if (!colon)
         return false;
@@ -237,7 +237,7 @@ static std::string get_canonical_uri(const std::string& original)
     std::string scheme;
     char last_scheme;
 
-    if (original.compare(0, 2, "s3") == 0) {
+    if ((original.compare(0, 2, "s3") == 0)  || original.compare(0, 6, "gcloud")) {
         return original;
     }
 
@@ -289,7 +289,7 @@ static int gfal_http_third_party_copy(GfalHttpPluginData* davix,
 
     // dCache requires RequireChecksumVerification to be explicitly false if no checksums
     // are to be used
-    if (mode == HTTP_COPY_PULL && strncmp(dst, "s3", 2) != 0) {
+    if (mode == HTTP_COPY_PULL && strncmp(dst, "s3", 2) != 0 && strncmp(dst, "gcloud", 6) != 0) {
         if (!(gfalt_get_checksum_mode(params, err) & GFALT_CHECKSUM_TARGET)) {
             req_params.addHeader("RequireChecksumVerification", "false");
         }
@@ -420,7 +420,9 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
 
     if (dst_uri.getProtocol() == "s3" || dst_uri.getProtocol() == "s3s")
         req_params.setProtocol(Davix::RequestProtocol::AwsS3);
-
+     else if (dst_uri.getProtocol() == "gcloud" ||  dst_uri.getProtocol() ==  "gclouds") {
+        req_params.setProtocol(Davix::RequestProtocol::Gcloud);
+    }
     // Set MD5 header on the PUT
     if (checksum_mode & GFALT_CHECKSUM_TARGET && strcasecmp(checksum_type, "md5") == 0 && user_checksum[0]) {
         req_params.addHeader("Content-MD5", user_checksum);

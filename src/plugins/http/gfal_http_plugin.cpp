@@ -24,6 +24,7 @@
 #include <sstream>
 #include <davix.hpp>
 #include <errno.h>
+#include <davix/utils/davix_gcloud_utils.hpp>
 
 using namespace Davix;
 
@@ -183,6 +184,26 @@ static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, co
     g_free(region);
 }
 
+static void gfal_http_get_gcloud(RequestParams & params, gfal2_context_t handle, const Davix::Uri& uri)
+{
+    gchar *gcloud_json_file, *gcloud_json_string;
+    std::string group_label("GCLOUD");
+    
+    gcloud_json_file = gfal2_get_opt_string(handle, group_label.c_str(), "JSON_AUTH_FILE", NULL);
+    gcloud_json_string = gfal2_get_opt_string(handle, group_label.c_str(), "JSON_AUTH_STRING", NULL);
+    gcloud::CredentialProvider provider;
+    if (gcloud_json_file) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Using gcloud json credential file");
+        params.setGcloudCredentials(provider.fromFile(std::string(gcloud_json_file)));
+    } else if (gcloud_json_string) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Using gcloud json credential string");
+        params.setGcloudCredentials(provider.fromJSONString (std::string(gcloud_json_string)));      
+    }
+       
+    g_free(gcloud_json_file);
+    g_free(gcloud_json_string);
+}
+
 void GfalHttpPluginData::get_tpc_params(bool push_mode,
                                         Davix::RequestParams * req_params,
                                         const Davix::Uri& src_uri,
@@ -206,10 +227,11 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
     if (!secondary_endpoint)
         *req_params = reference_params;
 
-    // Only utilize GSI or AWS tokens if a bearer token isn't available.
+    // Only utilize GSI or AWS or GCLOUD tokens if a bearer token isn't available.
     if (!gfal_http_get_token(*req_params, uri, secondary_endpoint, handle)) {
         gfal_http_get_ucert(uri, *req_params, handle);
         gfal_http_get_aws(*req_params, handle, uri);
+        gfal_http_get_gcloud(*req_params, handle, uri);
     }
 
     // Remainder of method only neededs to alter the req_params for the
@@ -226,6 +248,9 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
     }
     else if (uri.getProtocol().compare(0, 2, "s3") == 0) {
         req_params->setProtocol(Davix::RequestProtocol::AwsS3);
+    } 
+    else if (uri.getProtocol().compare(0, 6, "gcloud") == 0) {
+        req_params->setProtocol(Davix::RequestProtocol::Gcloud);
     }
     else {
         req_params->setProtocol(Davix::RequestProtocol::Auto);
@@ -348,6 +373,7 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
             return (strncmp("http:", url, 5) == 0 || strncmp("https:", url, 6) == 0 ||
                  strncmp("dav:", url, 4) == 0 || strncmp("davs:", url, 5) == 0 ||
                  strncmp("s3:", url, 3) == 0 || strncmp("s3s:", url, 4) == 0 ||
+                 strncmp("gcloud:", url, 7) == 0 || strncmp("gclouds:", url, 8) == 0 ||
                  strncmp("http+3rd:", url, 9) == 0 || strncmp("https+3rd:", url, 10) == 0 ||
                  strncmp("dav+3rd:", url, 8) == 0 || strncmp("davs+3rd:", url, 9) == 0);
       default:
