@@ -166,6 +166,28 @@ static void gfal_xrootd_3rd_init_url(gfal2_context_t context, XrdCl::URL& xurl,
     }
 }
 
+/// Clean dst, update err if failed during cleanup with something else than ENOENT,
+/// returns always -1 for convenience
+static int gfal_xrootd_copy_cleanup(plugin_handle plugin_data, const char* dst, GError** err)
+{
+    GError *unlink_err = NULL;
+    if ((*err)->code != EEXIST) {
+        if (gfal_xrootd_unlinkG(plugin_data, dst, &unlink_err) != 0) {
+            if (unlink_err->code != ENOENT) {
+                gfal2_log(G_LOG_LEVEL_WARNING,
+                         "When trying to clean the destination: %s", unlink_err->message);
+            }
+            g_error_free(unlink_err);
+        }
+        else {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Destination file removed");
+        }
+    }
+    else {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "The transfer failed because the file exists. Do not clean!");
+    }
+    return -1;
+}
 
 int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         gfal2_context_t context, gfalt_params_t params, size_t nbfiles,
@@ -318,7 +340,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         gfal2_set_error(op_error, xrootd_domain,
                 xrootd_errno_to_posix_errno(status.errNo), __func__,
                 "Error on XrdCl::CopyProcess::Run(): %s", status.ToStr().c_str());
-        return -1;
+        return gfal_xrootd_copy_cleanup(plugin_data, dsts[0],op_error);
     }
 
     // For bulk operations, here we do get the actual status per file
@@ -331,6 +353,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
             gfal2_set_error(&((*file_errors)[i]), xrootd_domain,
                     xrootd_errno_to_posix_errno(status.errNo), __func__,
                     "Error on XrdCl::CopyProcess::Run(): %s", status.ToStr().c_str());
+            gfal_xrootd_copy_cleanup(plugin_data, dsts[i],file_errors[i]);
             ++n_failed;
         }
     }
