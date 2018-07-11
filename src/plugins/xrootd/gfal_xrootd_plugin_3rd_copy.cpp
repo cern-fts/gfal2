@@ -180,7 +180,7 @@ static int gfal_xrootd_copy_cleanup(plugin_handle plugin_data, const char* dst, 
             g_error_free(unlink_err);
         }
         else {
-            gfal2_log(G_LOG_LEVEL_DEBUG, "Destination file removed");
+            gfal2_log(G_LOG_LEVEL_INFO, "Destination file removed");
         }
     }
     else {
