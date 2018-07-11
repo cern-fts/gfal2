@@ -214,7 +214,7 @@ const char* gfal_http_check_target_qos(plugin_handle plugin_data, const char *fi
 		if (target != NULL) {
 			std::string targetQoS = json_object_get_string(target);
 
-			// Remove all extra chars and create a comma separated string to return
+			// Remove all extra chars
 			targetQoS.erase(std::remove(targetQoS.begin(), targetQoS.end(), '['), targetQoS.end());
 			targetQoS.erase(std::remove(targetQoS.begin(), targetQoS.end(), ']'), targetQoS.end());
 			targetQoS.erase(std::remove(targetQoS.begin(), targetQoS.end(), ' '), targetQoS.end());
@@ -239,7 +239,7 @@ int gfal_http_change_object_qos(plugin_handle plugin_data, const char *fileUrl, 
 
 	std::stringstream body;
 	body << "{\"capabilitiesURI\":\"" << newQosClass << "\"}";
-	std::cout << "Body: "<< body.str() << std::endl;
+	//std::cout << "Body: "<< body.str() << std::endl;
 	PutRequest pr(c, uri, &tmp_err);
 	Davix::RequestParams req_params;
 	davix->get_params(&req_params, Davix::Uri(fileUrl), false);
