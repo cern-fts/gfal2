@@ -204,6 +204,10 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         _checksumType, sizeof(_checksumType),
         _checksumValue, sizeof(_checksumValue), NULL);
 
+    //set GFALT_CHECKSUM_BOTH by default if it's not set by the user but the user passes either the type or the value
+    if ((!checksumMode) && (_checksumType[0] || _checksumValue[0])) {
+        checksumMode = GFALT_CHECKSUM_BOTH;
+    }
     XrdCl::CopyProcess copy_process;
 #if XrdMajorVNUM(XrdVNUMBER) == 4 ||  XrdMajorVNUM(XrdVNUMBER) == 100
     std::vector<XrdCl::PropertyList> results;
@@ -268,7 +272,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
             g_strfreev(chks);
 	    gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Type: %s", checksumType);
             gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Value: %s", checksumValue);
-            if (!checksumType[0] || !checksumValue[0]) {
+            if (!checksumType[0]) {
                 char* defaultChecksumType = gfal2_get_opt_string(context, XROOTD_CONFIG_GROUP, XROOTD_DEFAULT_CHECKSUM, &internalError);
                 if (internalError) {
                     gfal2_set_error(op_error, xrootd_domain, internalError->code, __func__,
