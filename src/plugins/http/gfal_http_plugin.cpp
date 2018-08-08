@@ -227,9 +227,12 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
     if (!secondary_endpoint)
         *req_params = reference_params;
 
-    // Only utilize GSI or AWS or GCLOUD tokens if a bearer token isn't available.
+    gfal_http_get_ucert(uri, *req_params, handle);
+    // Only utilize AWS or GCLOUD tokens if a bearer token isn't available.
+    // We still setup GSI in case the storage endpoint tries to fall back to GridSite delegation.
+    // That does mean that we might contact the endpoint with both X509 and token auth -- but seems
+    // to be an acceptable compromise.
     if (!gfal_http_get_token(*req_params, uri, secondary_endpoint, handle)) {
-        gfal_http_get_ucert(uri, *req_params, handle);
         gfal_http_get_aws(*req_params, handle, uri);
         gfal_http_get_gcloud(*req_params, handle, uri);
     }
