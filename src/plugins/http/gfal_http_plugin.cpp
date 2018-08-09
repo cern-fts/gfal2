@@ -76,6 +76,9 @@ static bool gfal_http_get_token(RequestParams & params,
 
     if (secondary_endpoint) {
         params.addHeader("TransferHeaderAuthorization", ss.str());
+        // If we have a valid token for the destination, we explicitly disable credential
+        // delegation.
+        params.addHeader("Credential", "none");
     } else {
         params.addHeader("Authorization", ss.str());
     }
