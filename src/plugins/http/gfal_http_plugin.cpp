@@ -102,6 +102,7 @@ static void gfal_http_get_ucert(const Davix::Uri &url, RequestParams & params, g
     g_clear_error(&error);
 
     if (ucert_p) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Using client X509 for HTTPS session authorization");
         ucert.assign(ucert_p);
         ukey= (ukey_p != NULL)?(std::string(ukey_p)):(ucert);
 
@@ -220,6 +221,26 @@ void GfalHttpPluginData::get_tpc_params(bool push_mode,
     } else {  // Pull mode
         get_params(req_params, dst_uri, false);
         get_params(req_params, src_uri, true);
+    }
+    // The TPC request should be explicit in terms of how the active endpoint should manage credentials,
+    // as it can be ambiguous from the request (i.e., client X509 authenticated by Macaroon present or
+    // Macaroon present at an endpoint that supports OIDC).
+    // If a token is present for the inactive endpoint, then we set `Credential: none` earlier; hence,
+    // if that header is missing, we explicitly chose `gridsite` here.
+    if ((req_params->getProtocol() == RequestProtocol::Auto) || (req_params->getProtocol() == RequestProtocol::Webdav )) {
+        const HeaderVec &headers = req_params->getHeaders();
+        bool set_credential = false;
+        for (HeaderVec::const_iterator iter = headers.begin();
+             iter != headers.end();
+             iter++)
+        {
+            if (!strcasecmp(iter->first.c_str(), "Credential")) {
+                set_credential = true;
+            }
+        }
+        if (!set_credential) {
+            req_params->addHeader("Credential", "gridsite");
+        }
     }
 }
 
