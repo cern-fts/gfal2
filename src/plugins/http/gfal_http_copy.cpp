@@ -606,8 +606,16 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         }
         else if (ret < 0) {
                 gfal2_log(G_LOG_LEVEL_WARNING,
-                        "Copy failed with mode %s, will retry with the next available mode: %s",
+                        "Copy failed with mode %s, will delete destination and retry with the next available mode: %s",
                         CopyModeStr[copy_mode], nested_error->message);
+                // Delete any potential destination file.
+                GError *unlink_err = NULL;
+                if ((gfal_http_unlinkG(plugin_data, dst, &unlink_err) != 0) &&
+                    (unlink_err->code != ENOENT)) {
+                    gfal2_log(G_LOG_LEVEL_WARNING,
+                             "When trying to clean the destination from prior attempt: %s", unlink_err->message);
+                }
+                g_error_free(unlink_err);
         }
 
         copy_mode = (CopyMode)((int)copy_mode + 1);
