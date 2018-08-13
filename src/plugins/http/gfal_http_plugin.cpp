@@ -76,6 +76,9 @@ static bool gfal_http_get_token(RequestParams & params,
 
     if (secondary_endpoint) {
         params.addHeader("TransferHeaderAuthorization", ss.str());
+        // If we have a valid token for the destination, we explicitly disable credential
+        // delegation.
+        params.addHeader("Credential", "none");
     } else {
         params.addHeader("Authorization", ss.str());
     }
@@ -99,6 +102,7 @@ static void gfal_http_get_ucert(const Davix::Uri &url, RequestParams & params, g
     g_clear_error(&error);
 
     if (ucert_p) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Using client X509 for HTTPS session authorization");
         ucert.assign(ucert_p);
         ukey= (ukey_p != NULL)?(std::string(ukey_p)):(ucert);
 
@@ -218,6 +222,26 @@ void GfalHttpPluginData::get_tpc_params(bool push_mode,
         get_params(req_params, dst_uri, false);
         get_params(req_params, src_uri, true);
     }
+    // The TPC request should be explicit in terms of how the active endpoint should manage credentials,
+    // as it can be ambiguous from the request (i.e., client X509 authenticated by Macaroon present or
+    // Macaroon present at an endpoint that supports OIDC).
+    // If a token is present for the inactive endpoint, then we set `Credential: none` earlier; hence,
+    // if that header is missing, we explicitly chose `gridsite` here.
+    if ((req_params->getProtocol() == RequestProtocol::Auto) || (req_params->getProtocol() == RequestProtocol::Webdav )) {
+        const HeaderVec &headers = req_params->getHeaders();
+        bool set_credential = false;
+        for (HeaderVec::const_iterator iter = headers.begin();
+             iter != headers.end();
+             iter++)
+        {
+            if (!strcasecmp(iter->first.c_str(), "Credential")) {
+                set_credential = true;
+            }
+        }
+        if (!set_credential) {
+            req_params->addHeader("Credential", "gridsite");
+        }
+    }
 }
 
 void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
@@ -227,9 +251,12 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
     if (!secondary_endpoint)
         *req_params = reference_params;
 
-    // Only utilize GSI or AWS or GCLOUD tokens if a bearer token isn't available.
+    gfal_http_get_ucert(uri, *req_params, handle);
+    // Only utilize AWS or GCLOUD tokens if a bearer token isn't available.
+    // We still setup GSI in case the storage endpoint tries to fall back to GridSite delegation.
+    // That does mean that we might contact the endpoint with both X509 and token auth -- but seems
+    // to be an acceptable compromise.
     if (!gfal_http_get_token(*req_params, uri, secondary_endpoint, handle)) {
-        gfal_http_get_ucert(uri, *req_params, handle);
         gfal_http_get_aws(*req_params, handle, uri);
         gfal_http_get_gcloud(*req_params, handle, uri);
     }
