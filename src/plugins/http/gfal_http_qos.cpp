@@ -251,7 +251,12 @@ int gfal_http_change_object_qos(plugin_handle plugin_data, const char *fileUrl, 
 	}
 	std::cout << "Request Return Code: "<< pr.getRequestCode() << std::endl;
 	if(tmp_err || httpcodeIsValid(pr.getRequestCode()) == false){
-		std::cerr << " error in request of checking file QoS: " << tmp_err->getErrMsg() << std::endl;
+		if (tmp_err) {
+			std::cerr << " error in request of checking file QoS: " << tmp_err->getErrMsg() << std::endl;
+		}
+		else {
+			std::cerr << " error in request of checking file QoS " << std::endl;
+		}
 	} else {
 		return 0;
 	}
@@ -262,6 +267,7 @@ bool httpcodeIsValid(int code)
 {	/* Should expect 204 as per CDMI document page 8 for a PUT request */
     switch (code) {
         case 200:           /* OK */
+        case 201:           /* OK */
         case 202:           /* Accepted */
         case 204:           /* No Content */
             return true;
