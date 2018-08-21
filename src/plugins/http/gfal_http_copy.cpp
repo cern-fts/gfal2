@@ -29,8 +29,7 @@
 // An enumeration of the different HTTP third-party-copy strategies.
 // NOTE: we loop through strategies from beginning to end, meaning the default
 // strategy should always be listed first.
-typedef enum {HTTP_COPY_DEFAULT=0,
-              HTTP_COPY_PULL=0,
+typedef enum {HTTP_COPY_PULL=0,
               HTTP_COPY_PUSH,
               HTTP_COPY_STREAM,
               HTTP_COPY_END} CopyMode;
@@ -39,6 +38,15 @@ typedef enum {HTTP_COPY_DEFAULT=0,
 const char* CopyModeStr[] = {
     GFAL_TRANSFER_TYPE_PULL, GFAL_TRANSFER_TYPE_PUSH, GFAL_TRANSFER_TYPE_STREAMED, NULL
 };
+
+static const CopyMode getCopyModeFromString(const char * copyModeStr) { 
+    if (!strcmp(copyModeStr, GFAL_TRANSFER_TYPE_PULL))  
+        return HTTP_COPY_PULL;
+    if (!strcmp(copyModeStr, GFAL_TRANSFER_TYPE_PUSH)) 
+        return HTTP_COPY_PUSH;
+     if (!strcmp(copyModeStr, GFAL_TRANSFER_TYPE_STREAMED))
+        return HTTP_COPY_STREAM;
+}
 
 
 struct PerfCallbackData {
@@ -64,8 +72,8 @@ static bool is_http_scheme(const char* url)
         if (strncmp(url, schemes[i], scheme_len) == 0)
             return true;
     }
-    return false;}
-
+    return false;
+}
 
 static bool is_http_3rdcopy_enabled(gfal2_context_t context)
 {
@@ -78,6 +86,10 @@ static bool is_http_streamed_enabled(gfal2_context_t context)
     return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "ENABLE_STREAM_COPY", TRUE);
 }
 
+static CopyMode get_default_copy_mode(gfal2_context_t context)
+{
+    return getCopyModeFromString(gfal2_get_opt_string_with_default(context, "HTTP PLUGIN", "DEFAULT_COPY_MODE", GFAL_TRANSFER_TYPE_PULL));
+}
 
 static int gfal_http_exists(plugin_handle plugin_data,
         const char* url, GError** err)
@@ -398,7 +410,7 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
         gfal2_propagate_prefixed_error(err, nested_err, __func__);
         return -1;
     }
-
+    
     int source_fd = gfal2_open(context, src, O_RDONLY, &nested_err);
     if (source_fd < 0) {
         gfal2_propagate_prefixed_error(err, nested_err, __func__);
@@ -434,7 +446,6 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
 
     request.setParameters(req_params);
     HttpStreamProvider provider(src, dst, context, source_fd, params);
-
     request.setRequestBody(gfal_http_streamed_provider, src_stat.st_size, &provider);
     request.executeRequest(&dav_error);
 
@@ -563,7 +574,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          "%s => %s", src_full, dst_full);
 
     // Initial copy mode
-    CopyMode copy_mode = HTTP_COPY_DEFAULT;
+    CopyMode copy_mode = get_default_copy_mode(context);
 
     // If source is not even http, go straight to streamed
     // or if third party copy is disabled, go straight to streamed
