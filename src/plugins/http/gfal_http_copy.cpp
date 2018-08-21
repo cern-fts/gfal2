@@ -46,6 +46,7 @@ static const CopyMode getCopyModeFromString(const char * copyModeStr) {
         return HTTP_COPY_PUSH;
      if (!strcmp(copyModeStr, GFAL_TRANSFER_TYPE_STREAMED))
         return HTTP_COPY_STREAM;
+     return HTTP_COPY_PULL;
 }
 
 
