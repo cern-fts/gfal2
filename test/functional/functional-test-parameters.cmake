@@ -15,7 +15,7 @@ IF(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
 ## Testbed environment
 SET(file_base_path "/tmp/")
-SET(srm_prefix_storm "srm://stormfe1.pi.infn.it:8444/srm/managerv2?SFN=/${MY_VO_STORM}/gfal2-tests/")
+SET(srm_prefix_storm "srm://se01.esc.qmul.ac.uk:8444/srm/managerv2?SFN=/${MY_VO_STORM}/gfal2-tests/")
 SET(srm_prefix_dcache "srm://dcache-se-cms.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/${MY_VO}/gfal2-tests/")
 SET(srm_prefix_castor "srm://srm-public.cern.ch:8443/srm/managerv2?SFN=/castor/cern.ch/grid/${MY_VO}/gfal2-tests/")
 SET(lfc_prefix "lfn:/grid/${MY_VO}/gfal2-tests/")
@@ -30,7 +30,7 @@ ELSEIF(TEST_ENVIRONMENT STREQUAL "TESTBED_TRUNK")
 
 ## Testbed trunk environment
 SET(file_base_path "/tmp/")
-SET(srm_prefix_storm "srm://stormfe1.pi.infn.it:8444/srm/managerv2?SFN=/${MY_VO_STORM}/gfal2-tests/")
+SET(srm_prefix_storm "srm://se01.esc.qmul.ac.uk:8444/srm/managerv2?SFN=/${MY_VO_STORM}/gfal2-tests/")
 SET(srm_prefix_dcache "srm://vm-dcache-deploy6.desy.de:8443/data/${MY_VO}/gfal2-tests")
 SET(srm_prefix_castor "srm://srm-public.cern.ch:8443/srm/managerv2?SFN=/castor/cern.ch/grid/${MY_VO}/gfal2-tests/")
 SET(lfc_prefix "lfn:/grid/${MY_VO}/gfal2-tests/")
@@ -45,7 +45,7 @@ ELSE(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
 
 ## Production environment : default
 SET(file_base_path "/tmp/")
-SET(srm_prefix_storm "srm://stormfe1.pi.infn.it:8444/srm/managerv2?SFN=/${MY_VO_STORM}/gfal2-tests/")
+SET(srm_prefix_storm "srm://se01.esc.qmul.ac.uk:8444/srm/managerv2?SFN=/${MY_VO_STORM}/gfal2-tests/")
 SET(srm_prefix_dcache "srm://dcache-se-cms.desy.de:8443/srm/managerv2?SFN=/pnfs/desy.de/${MY_VO}/gfal2-tests/")
 SET(srm_prefix_castor "srm://srm-public.cern.ch:8443/srm/managerv2?SFN=/castor/cern.ch/grid/${MY_VO}/gfal2-tests/")
 SET(lfc_prefix "lfn:/grid/${MY_VO}/gfal2-tests/")
