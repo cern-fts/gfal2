@@ -26,7 +26,7 @@
 #include <fcntl.h>
 #include <glib.h>
 #include <errno.h>
-#if ( defined __GLIBC_PREREQ && __GLIBC_PREREQ(2,27) ) || defined __APPLE__
+#if defined __APPLE__ || ( defined __GLIBC_PREREQ && __GLIBC_PREREQ(2,27) )
 #include <sys/xattr.h>
 #else
 #include <attr/xattr.h>
