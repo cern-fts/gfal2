@@ -25,6 +25,7 @@ SET(srm_prefix_dpm "srm://dpmhead-rc.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/gfal
 SET(davs_prefix_dpm "davs://dpmhead-rc.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(davs_prefix_dcache "davs://prometheus.desy.de/VOs/${MY_VO}/gfal2-tests")
 SET(root_prefix_dpm "root://dpmhead-rc.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
+SET(root_prefix_eos "root://eospps.cern.ch//eos/opstest/gfal2-tests")
 SET(sftp_prefix "sftp://gfal2@arioch.cern.ch/home/gfal2/gfal2-tests")
 
 ELSEIF(TEST_ENVIRONMENT STREQUAL "TESTBED_TRUNK")
@@ -41,6 +42,7 @@ SET(srm_prefix_dpm "srm://dpmhead-trunk.cern.ch:8446/dpm/cern.ch/home/${MY_VO}/g
 SET(davs_prefix_dpm "davs://dpmhead-trunk.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(davs_prefix_dcache "davs://prometheus.desy.de/VOs/${MY_VO}/gfal2-tests")
 SET(root_prefix_dpm "root://dpmhead-trunk.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
+SET(root_prefix_eos "root://eospps.cern.ch//eos/opstest/tpc/gfal2-tests")
 SET(sftp_prefix "sftp://gfal2@arioch.cern.ch/home/gfal2/gfal2-tests")
 
 ELSE(TEST_ENVIRONMENT STREQUAL "TESTBED_RC")
@@ -56,7 +58,7 @@ SET(gsiftp_prefix_dpm "gsiftp://t2-dpm-01.na.infn.it/dpm/na.infn.it/home/${MY_VO
 SET(srm_prefix_dpm "srm://ipnsedpm.in2p3.fr:8446/dpm/in2p3.fr/home/${MY_VO}/gfal2-tests/")
 SET(sftp_prefix "sftp://gfal2@arioch.cern.ch/home/gfal2/gfal2-tests")
 SET(root_prefix_dpm "root://dpmhead-rc.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
-
+SET(root_prefix_eos "root://eospps.cern.ch//eos/opstest/tpc/gfal2-tests")
 # Need to find something better!
 SET(davs_prefix_dpm "davs://dpmhead-rc.cern.ch/dpm/cern.ch/home/${MY_VO}/gfal2-tests")
 SET(davs_prefix_dcache "davs://prometheus.desy.de/VOs/${MY_VO}/gfal2-tests")
@@ -228,28 +230,41 @@ ENDIF(PLUGIN_HTTP)
 
 IF(PLUGIN_XROOTD)
     test_del("XROOTD_DPM" ${root_prefix_dpm})
-    test_stat_all("XROOTD" ${root_prefix_dpm})
-    # Doesn't work with EOS
-    # test_access("XROOTD" ${root_prefix_dpm})
-    test_rename("XROOTD" ${root_prefix_dpm})
-
+    test_del("XROOTD_EOS" ${root_prefix_eos})
+    test_stat_all("XROOTD_DPM" ${root_prefix_dpm})
+    test_stat_all("XROOTD_EOS" ${root_prefix_eos})
+    test_access("XROOTD_DPM" ${root_prefix_dpm})
+    test_access("XROOTD_EOS" ${root_prefix_eos})
+    test_rename("XROOTD_DPM" ${root_prefix_dpm})
+    test_rename("XROOTD_EOS" ${root_prefix_eos})
     # Checksum not supported yet in the XrdCl library
     # Chmod does not work in posix-style, so the test can not be used
-    test_mkdir_all("XROOTD" ${root_prefix_dpm})
-    test_rmdir_all("XROOTD" ${root_prefix_dpm})
-    test_readdir_full("XROOTD" ${root_prefix_dpm})
-    test_rwt_all("XROOTD" ${root_prefix_dpm} 4578)
-    test_rwt_all("XROOTD_single" ${root_prefix_dpm} 1)
-    test_rwt_seq("XROOTD" ${root_prefix_dpm} 100 4560)
-    test_rwt_seq("XROOTD_single" ${root_prefix_dpm} 1 10)
-    test_rwt_seek("XROOTD" ${root_prefix_dpm} 100 4560)
+    test_mkdir_all("XROOTD_DPM" ${root_prefix_dpm})
+    test_mkdir_all("XROOTD_EOS" ${root_prefix_eos})
+    test_rmdir_all("XROOTD_DPM" ${root_prefix_dpm})
+    test_rmdir_all("XROOTD_EOS" ${root_prefix_eos})
+    test_readdir_full("XROOTD_DPM" ${root_prefix_dpm})
+    test_readdir_full("XROOTD_EOS" ${root_prefix_eos})
+    test_rwt_all("XROOTD_DPM" ${root_prefix_dpm} 4578)
+    test_rwt_all("XROOTD_EOS" ${root_prefix_eos} 4578)
+    test_rwt_all("XROOTD_DPM_single" ${root_prefix_dpm} 1)
+    test_rwt_all("XROOTD_EOS_single" ${root_prefix_eos} 1)
+    test_rwt_seq("XROOTD_DPM" ${root_prefix_dpm} 100 4560)
+    test_rwt_seq("XROOTD_EOS" ${root_prefix_eos} 100 4560)
+    test_rwt_seq("XROOTD_DPM_single" ${root_prefix_dpm} 1 10)
+    test_rwt_seq("XROOTD_EOS_single" ${root_prefix_eos} 1 10)
+    test_rwt_seek("XROOTD_DPM" ${root_prefix_dpm} 100 4560)
+    test_rwt_seek("XROOTD_EOS" ${root_prefix_eos} 100 4560)
 
-    test_space("XROOTD" ${root_prefix_dpm})
+    test_space("XROOTD_DPM" ${root_prefix_dpm})
+    test_space("XROOTD_EOS" ${root_prefix_eos})
 
     # Copies
     IF (MAIN_TRANSFER)
-        test_copy_file_no_checksum("XROOTD" ${root_prefix_dpm} ${root_prefix_dpm})
-        test_copy_bulk("XROOTD" ${root_prefix_dpm} ${root_prefix_dpm})
+        test_copy_file_no_checksum("XROOTD_DPM" ${root_prefix_dpm} ${root_prefix_dpm})
+        test_copy_file_no_checksum("XROOTD_EOS" ${root_prefix_eos} ${root_prefix_eos})
+        test_copy_bulk("XROOTD_DPM" ${root_prefix_dpm} ${root_prefix_dpm})
+        test_copy_bulk("XROOTD_EOS" ${root_prefix_eos} ${root_prefix_eos})
     ENDIF (MAIN_TRANSFER)
 ENDIF()
 
