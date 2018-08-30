@@ -264,7 +264,7 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
     // Remainder of method only neededs to alter the req_params for the
     // primary endpoint.
     if (secondary_endpoint) return;
-
+    
     gboolean insecure_mode = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "INSECURE", FALSE);
     if (insecure_mode) {
         req_params->setSSLCAcheck(false);
@@ -282,7 +282,6 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
     else {
         req_params->setProtocol(Davix::RequestProtocol::Auto);
     }
-
     // Keep alive
     gboolean keep_alive = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "KEEP_ALIVE", TRUE);
     req_params->setKeepAlive(keep_alive);

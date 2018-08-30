@@ -250,7 +250,7 @@ static std::string get_canonical_uri(const std::string& original)
     std::string scheme;
     char last_scheme;
 
-    if ((original.compare(0, 2, "s3") == 0)  || original.compare(0, 6, "gcloud")) {
+    if ((original.compare(0, 2, "s3") == 0)  || (original.compare(0, 6, "gcloud") == 0 )) {
         return original;
     }
 
