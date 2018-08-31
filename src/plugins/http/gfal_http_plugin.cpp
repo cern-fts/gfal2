@@ -37,6 +37,19 @@ const char* gfal_http_get_name(void)
     return GFAL2_PLUGIN_VERSIONED("http", VERSION);;
 }
 
+// this is to understand if the active storage in TPC needs gridsite delegation
+// if the destination does not need tls we avoid it
+static bool delegation_required(const Davix::Uri& uri) {
+   bool needs_delegation = false;
+
+   if ((uri.getProtocol().compare(0, 5, "https") == 0) || 
+      (uri.getProtocol().compare(0, 4, "davs") == 0) ||
+      (uri.getProtocol().compare(0, 3, "s3s") == 0)  ||
+      (uri.getProtocol().compare(0, 7, "gclouds") == 0)) {
+          needs_delegation = true;
+   }
+   return needs_delegation; 
+}
 
 static int get_corresponding_davix_log_level()
 {
@@ -213,21 +226,25 @@ void GfalHttpPluginData::get_tpc_params(bool push_mode,
                                         const Davix::Uri& src_uri,
                                         const Davix::Uri& dst_uri)
 {
+    bool do_delegation = false;
     // IMPORTANT: get_params overwrites req_params whenever secondary_endpoint=false.
     // Hence, the primary endpoint MUST go first here!
     if (push_mode) {
         get_params(req_params, src_uri, false);
         get_params(req_params, dst_uri, true);
+        do_delegation = delegation_required(dst_uri);
     } else {  // Pull mode
         get_params(req_params, dst_uri, false);
         get_params(req_params, src_uri, true);
+        do_delegation = delegation_required(src_uri);
     }
     // The TPC request should be explicit in terms of how the active endpoint should manage credentials,
     // as it can be ambiguous from the request (i.e., client X509 authenticated by Macaroon present or
     // Macaroon present at an endpoint that supports OIDC).
     // If a token is present for the inactive endpoint, then we set `Credential: none` earlier; hence,
-    // if that header is missing, we explicitly chose `gridsite` here.
-    if ((req_params->getProtocol() == RequestProtocol::Auto) || (req_params->getProtocol() == RequestProtocol::Webdav )) {
+    // if that header is missing, we explicitly chose `gridsite` here. We should first check if source/dest 
+    // needs delegation
+    if (do_delegation) {
         const HeaderVec &headers = req_params->getHeaders();
         bool set_credential = false;
         for (HeaderVec::const_iterator iter = headers.begin();
@@ -237,11 +254,14 @@ void GfalHttpPluginData::get_tpc_params(bool push_mode,
             if (!strcasecmp(iter->first.c_str(), "Credential")) {
                 set_credential = true;
             }
-        }
+        } 
         if (!set_credential) {
             req_params->addHeader("Credential", "gridsite");
-        }
+       }
+    } else {
+        req_params->addHeader("Credential", "none");
     }
+    
 }
 
 void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
