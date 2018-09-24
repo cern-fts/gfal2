@@ -4,17 +4,17 @@
 %bcond_with tests
 
 Name:               gfal2
-Version:            2.15.5
-Release:            2%{?dist}
+Version:            2.16.0
+Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 Group:              Applications/Internet
 License:            ASL 2.0
 URL:                http://dmc.web.cern.ch/projects/gfal-2/home
-# git clone --depth=1 --branch master https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.15.2
-# pushd gfal2-2.15.2
-# git checkout v2.15.2
+# git clone --depth=1 --branch master https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.16.0
+# pushd gfal2-2.16.0
+# git checkout v2.16.0
 # popd
-# tar czf gfal2-2.15.2.tar.gz --exclude-vcs gfal2-2.15.2
+# tar czf gfal2-2.16.0.tar.gz --exclude-vcs gfal2-2.16.0
 Source0:            %{name}-%{version}.tar.gz
 BuildRoot:          %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
@@ -54,7 +54,7 @@ BuildRequires:      dcap-devel
 #gridftp plugin dependencies
 BuildRequires:      globus-gass-copy-devel
 #http plugin dependencies
-BuildRequires:      davix-devel >= 0.4.2
+BuildRequires:      davix-devel >= 0.6.8
 #xrootd plugin dependencies
 BuildRequires:      xrootd-client-devel >= 1:4.1.1
 # sftp plugin dependencies
@@ -169,7 +169,7 @@ the third party transfer support on the GSIFTP URLs.
 Summary:            Provides the HTTP/DAV support for %{name}
 Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
-Requires:           davix-libs >= 0.4.2
+Requires:           davix-libs >= 0.6.8
 
 %description plugin-http
 Provides the HTTP (http[s]://) and WevDAV (dav[s]://) support for %{name}.
@@ -374,6 +374,9 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Mon Sep 24 2018 Andrea Manzi <amanzi at cern.ch> - 2.16.0-1
+- New upstrem release
+
 * Thu Apr 05 2018 Andrea Manzi <amanzi at cern.ch> - 2.15.4-1
 - New upstrem release
 

@@ -301,6 +301,9 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
     opTimeout.tv_sec = gfal2_get_opt_integer_with_default(davix->handle,
         CORE_CONFIG_GROUP, CORE_CONFIG_CHECKSUM_TIMEOUT, 300);
     req_params.setOperationTimeout(&opTimeout);
+    // thois is needed by DPM + DOME as it implements a queue for checksum calculation
+    req_params.setAcceptedRetry(100);
+    req_params.setAcceptedRetryDelay(15);
 
     Davix::File f(davix->context, Davix::Uri(stripped_url));
     if(f.checksum(&req_params, buffer_chk, check_type, &daverr) <0 ){
