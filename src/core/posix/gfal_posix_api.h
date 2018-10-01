@@ -37,10 +37,14 @@
 #ifndef ENOATTR
 #define ENOATTR ENODATA
 #endif
-#if defined __APPLE__  || ( defined __GLIBC_PREREQ && __GLIBC_PREREQ(2,27) )
+#if defined __APPLE__ 
+#include <sys/xattr.h>
+#else
+#if defined __GLIBC_PREREQ && __GLIBC_PREREQ(2,27)
 #include <sys/xattr.h>
 #else
 #include <attr/xattr.h>
+#endif
 #endif
 
 #include <common/gfal_common.h>
