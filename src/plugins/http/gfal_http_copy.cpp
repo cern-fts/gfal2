@@ -421,7 +421,6 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
     }
 
     Davix::Uri dst_uri(dst);
-    Davix::DavixError* dav_error = NULL;
     Davix::RequestParams req_params;
 
     davix->get_params(&req_params, dst_uri);
@@ -437,8 +436,7 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
 
     if (dst_uri.getProtocol() == "s3" || dst_uri.getProtocol() == "s3s")
     	req_params.setProtocol(Davix::RequestProtocol::AwsS3);
-
-    if (dst_uri.getProtocol() == "gcloud" ||  dst_uri.getProtocol() ==  "gclouds")
+    else if (dst_uri.getProtocol() == "gcloud" ||  dst_uri.getProtocol() ==  "gclouds")
     	req_params.setProtocol(Davix::RequestProtocol::Gcloud);
 
     Davix::DavFile dest(davix->context,req_params, dst_uri );
