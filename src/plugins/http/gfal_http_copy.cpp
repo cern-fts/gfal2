@@ -20,6 +20,7 @@
 
 #include <davix.hpp>
 #include <copy/davixcopy.hpp>
+#include <status/davixstatusrequest.hpp>
 #include <unistd.h>
 #include <checksums/checksums.h>
 #include <cstdio>
@@ -354,7 +355,7 @@ struct HttpStreamProvider {
 
 
 static dav_ssize_t gfal_http_streamed_provider(void *userdata,
-        char *buffer, dav_size_t buflen)
+        void *buffer, dav_size_t buflen)
 {
     GError* error = NULL;
     HttpStreamProvider* data = static_cast<HttpStreamProvider*>(userdata);
@@ -396,6 +397,7 @@ static dav_ssize_t gfal_http_streamed_provider(void *userdata,
 }
 
 
+
 static int gfal_http_streamed_copy(gfal2_context_t context,
         GfalHttpPluginData* davix,
         const char* src, const char* dst,
@@ -419,54 +421,43 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
     }
 
     Davix::Uri dst_uri(dst);
-
     Davix::DavixError* dav_error = NULL;
-    Davix::PutRequest request(davix->context, dst_uri, &dav_error);
-    if (dav_error != NULL) {
-        davix2gliberr(dav_error, err);
-        Davix::DavixError::clearError(&dav_error);
-        return -1;
-    }
-
     Davix::RequestParams req_params;
-    davix->get_params(&req_params, dst_uri);
 
-    if (dst_uri.getProtocol() == "s3" || dst_uri.getProtocol() == "s3s")
-        req_params.setProtocol(Davix::RequestProtocol::AwsS3);
-     else if (dst_uri.getProtocol() == "gcloud" ||  dst_uri.getProtocol() ==  "gclouds") {
-        req_params.setProtocol(Davix::RequestProtocol::Gcloud);
-    }
-    // Set MD5 header on the PUT
-    if (checksum_mode & GFALT_CHECKSUM_TARGET && strcasecmp(checksum_type, "md5") == 0 && user_checksum[0]) {
-        req_params.addHeader("Content-MD5", user_checksum);
-    }
+    davix->get_params(&req_params, dst_uri);
     //add timeout
     struct timespec opTimeout;
     opTimeout.tv_sec = gfalt_get_timeout(params, NULL);
     req_params.setOperationTimeout(&opTimeout);
 
-    request.setParameters(req_params);
+    // Set MD5 header on the PUT
+    if (checksum_mode & GFALT_CHECKSUM_TARGET && strcasecmp(checksum_type, "md5") == 0 && user_checksum[0]) {
+    	req_params.addHeader("Content-MD5", user_checksum);
+    }
+
+    if (dst_uri.getProtocol() == "s3" || dst_uri.getProtocol() == "s3s")
+    	req_params.setProtocol(Davix::RequestProtocol::AwsS3);
+
+    if (dst_uri.getProtocol() == "gcloud" ||  dst_uri.getProtocol() ==  "gclouds")
+    	req_params.setProtocol(Davix::RequestProtocol::Gcloud);
+
+    Davix::DavFile dest(davix->context,req_params, dst_uri );
+
     HttpStreamProvider provider(src, dst, context, source_fd, params);
-    request.setRequestBody(gfal_http_streamed_provider, src_stat.st_size, &provider);
-    request.executeRequest(&dav_error);
+
+    try {
+    	dest.put(&req_params, std::bind(&gfal_http_streamed_provider,&provider,
+        		  std::placeholders::_1, std::placeholders::_2), src_stat.st_size);
+
+    } catch(Davix::DavixException &ex) {
+    	http2gliberr(err, ex.code(), __func__, "Failed to PUT the file");
+    }
 
     gfal2_close(context, source_fd, &nested_err);
     // Throw away this error
     if (nested_err)
         g_error_free(nested_err);
 
-    if (dav_error != NULL) {
-        davix2gliberr(dav_error, err);
-        Davix::DavixError::clearError(&dav_error);
-        return -1;
-    }
-
-    // Double check the HTTP code
-    if (request.getRequestCode() >= 400) {
-        http2gliberr(err, request.getRequestCode(), __func__, "Failed to PUT the file");
-    }
-
-    gfal2_log(G_LOG_LEVEL_DEBUG, "HTTP code %d", request.getRequestCode());
     return *err == NULL ? 0 : -1;
 }
 
