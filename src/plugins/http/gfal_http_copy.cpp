@@ -448,7 +448,10 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
         		  std::placeholders::_1, std::placeholders::_2), src_stat.st_size);
 
     } catch(Davix::DavixException &ex) {
-    	http2gliberr(err, ex.code(), __func__, "Failed to PUT the file");
+    	Davix::DavixError* daverr = NULL;
+        ex.toDavixError(&daverr);
+        davix2gliberr(daverr, err);
+        Davix::DavixError::clearError(&daverr);
     }
 
     gfal2_close(context, source_fd, &nested_err);
