@@ -578,6 +578,10 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     // Re-try different approaches
     int ret = 0;
     while (copy_mode < HTTP_COPY_END) {
+        // The real, actual, copy
+        plugin_trigger_event(params, http_plugin_domain,
+                                     GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
+                               "%s => %s", src_full, dst_full);
         gfal2_log(G_LOG_LEVEL_MESSAGE,
             "Trying copying with mode %s",
             CopyModeStr[copy_mode]);
@@ -609,8 +613,9 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
             break;
         }
         else if (ret < 0) {
-                gfal2_log(G_LOG_LEVEL_WARNING,
-                        "Copy failed with mode %s, will delete destination and retry with the next available mode: %s",
+               plugin_trigger_event(params, http_plugin_domain,
+                         GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
+                        "ERROR: Copy failed with mode %s, will delete destination and retry with the next available mode: %s",
                         CopyModeStr[copy_mode], nested_error->message);
                 // Delete any potential destination file.
                 gfal_http_copy_cleanup(plugin_data, dst, &nested_error);
