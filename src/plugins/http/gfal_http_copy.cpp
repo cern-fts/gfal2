@@ -567,11 +567,6 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_EXIT,
                          "%s => %s", src_full, dst_full);
 
-    // The real, actual, copy
-    plugin_trigger_event(params, http_plugin_domain,
-                         GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
-                         "%s => %s", src_full, dst_full);
-
     // Initial copy mode
     CopyMode copy_mode = get_default_copy_mode(context);
 
