@@ -348,7 +348,7 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
 
     // Timeout
     struct timespec opTimeout;
-    opTimeout.tv_sec = gfal2_get_opt_integer_with_default(handle, CORE_CONFIG_GROUP, CORE_CONFIG_NAMESPACE_TIMEOUT, 60);
+    opTimeout.tv_sec = gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", HTTP_CONFIG_OP_TIMEOUT, 8000);
     req_params->setOperationTimeout(&opTimeout);
 }
 
