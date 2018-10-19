@@ -303,11 +303,17 @@ static int gfal_http_third_party_copy(GfalHttpPluginData* davix,
 
     // dCache requires RequireChecksumVerification to be explicitly false if no checksums
     // are to be used
-    if (mode == HTTP_COPY_PULL && strncmp(dst, "s3", 2) != 0 && strncmp(dst, "gcloud", 6) != 0) {
-        if (!(gfalt_get_checksum_mode(params, err) & GFALT_CHECKSUM_TARGET)) {
-            req_params.addHeader("RequireChecksumVerification", "false");
-        }
-        g_clear_error(err);
+    gfalt_checksum_mode_t checksum_mode = gfalt_get_checksum_mode(params, err);
+    if (*err) {
+	g_clear_error(err);
+    } else {
+        if (mode == HTTP_COPY_PUSH) {
+	    if ((checksum_mode == GFALT_CHECKSUM_SOURCE) || (checksum_mode == GFALT_CHECKSUM_NONE) )
+                req_params.addHeader("RequireChecksumVerification", "false");
+	} else if (mode == HTTP_COPY_PULL) {
+		if ((checksum_mode == GFALT_CHECKSUM_TARGET) || (checksum_mode == GFALT_CHECKSUM_NONE) )
+		    req_params.addHeader("RequireChecksumVerification", "false");
+	} 
     }
 
     // add timeout
