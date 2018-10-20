@@ -387,7 +387,7 @@ static dav_ssize_t gfal_http_streamed_provider(void *userdata,
             data->perf.bytes_transfered += data->read_instant;
             data->perf.transfer_time = now - data->start;
             data->perf.average_baudrate = data->perf.bytes_transfered / data->perf.transfer_time;
-            data->perf.instant_baudrate = data->read_instant / now - data->last_update;
+            data->perf.instant_baudrate = data->read_instant / (now - data->last_update);
 
             data->last_update = now;
             data->read_instant = 0;
