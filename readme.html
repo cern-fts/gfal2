@@ -32,11 +32,14 @@
 			Differents file systems are supported by a collections of GFAL 2 plugins, this is a non complete list:
 		</p>
 		<ul>
+			<li>GRIDFTP with gsiftp://</li>
 			<li>LFC (Logical File Catalog), with lfn://</li>
 			<li>SRM (Storage Resource Manager) with srm://</li>
 			<li>RFIO (Remote File I/O) with rfio://</li>
 			<li>DCAP (Remote FTP for dCache ) with gsidcap://</li>
-			<li>HTTP/Webdav with cluster, third party copy and client side credential support.</li>
+			<li>HTTP/Webdav with cluster, third party copy and client side credential support</li>
+			<li>XRootD protocll with root://</li>
+			<li>S3 and Google Cloud, with s3:// and gcloud://.</li>
 		</ul>
 
 		</p>
@@ -47,11 +50,15 @@
 			support for a given protocol, its corresponding plugin needs to be installed.
 		</p>
 		<ul>
+			<li>gfal2-plugin-gridftp</li>
 			<li>gfal2-plugin-lfc</li>
 			<li>gfal2-plugin-srm</li>
 			<li>gfal2-plugin-rfio</li>
 			<li>gfal2-plugin-dcap</li>
 			<li>gfal2-plugin-http</li>
+                        <li>gfal2-plugin-xrootd</li>
+			<li>gfal2-plugin-file</li>
+			<li>gfal2-plugin-mock</li>
 		</ul>
 		<p>
 			For convenience we provide a package called gfal2-all, which will trigger the installation of all these packages.<br />
@@ -59,9 +66,6 @@
 			A typical installation can be done as easy as bellow:
 		</p>
 		<pre>yum install gfal2-all gfal2-devel</pre>
-		<p>
-			Shipped separatly there is also available a plugin for XRootD (root://) protocol: gfal2-plugin-xrootd
-		</p>
 		
 		<h2>API Documentation</h2>
 		<p>
@@ -86,7 +90,7 @@
 		</p>
 		<dl>
 			<dt>Tracker</dt>
-			<dd><a href="https://its.cern.ch/jira/browse/DMC/component/10808">https://its.cern.ch/jira/browse/DMC/component/10808</a></dd>
+			<dd><a href="https://its.cern.ch/jira/projects/DMC/">https://its.cern.ch/jira/projects/DMC/</a></dd>
 			<dt>Mailing list</dt>
 			<dd><a href="mailto:dmc-support@cern.ch">dmc-support@cern.ch</a></dd>
 		</dl>

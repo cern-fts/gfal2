@@ -1,8 +1,9 @@
 /**
 	\mainpage GFAL 2.0  Documentation
-    \author Data Management Clients support, CERN IT-SDC-ID ( dmc-support@cern.ch )
+    \author Data Management Clients support, CERN IT-ST ( dmc-support@cern.ch )
 	\author Devresse Adrien ( adrien.devresse@cern.ch )
 	\author Alejandro Alvarez Ayllon  ( Alejandro.Alvarez.Ayllon@cern.ch )
+        \author Andres Manzi ( andrea.manzi.cern.ch)
 
 <h2>GFAL 2.0 Wiki:</h2>
 - <a href="http://dmc.web.cern.ch/">Data Management Clients web page</a>
@@ -35,7 +36,7 @@ Main file : gfal_api.h
 
 <h2>How to compile locally GFAL 2.0</h2>
 - Compile :
-	- " 1. svn export http://svnweb.cern.ch/guest/lcgutil/gfal2/trunk gfal2 "
+	- " 1. git clone  https://gitlab.cern.ch/dmc/gfal2 "
 	- " 2. cd gfal2 "
 	- " 3. mkdir build; cd build"
 	- " 4. cmake −D CMAKE_INSTALL_PREFIX=/usr"
@@ -46,7 +47,6 @@ Main file : gfal_api.h
 	- " 5.  make; make test"	
 	
 - make RPMS :
-	- ./packaging/bin/packager_rpm.sh ./packaging/rpm/specs/ ./
-	- mock -r [mycfg] RPMS/gfal2-.....
+	- cd packaging/; make rpm
 	
 */
