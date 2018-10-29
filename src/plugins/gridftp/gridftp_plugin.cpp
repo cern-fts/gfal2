@@ -39,6 +39,11 @@ static bool is_gridftp_uri(const char* src)
     );
 }
 
+static bool is_file_uri(const char* src)
+{
+    static const char file_prefix[] = "file://";
+    return ( strncmp(src, file_prefix, sizeof(file_prefix) - 1) == 0);
+}
 
 
 gboolean gridftp_check_url_transfer(plugin_handle handle, gfal2_context_t context, const char* src,
@@ -48,7 +53,7 @@ gboolean gridftp_check_url_transfer(plugin_handle handle, gfal2_context_t contex
     gboolean res = FALSE;
 
     if( src != NULL && dst != NULL){
-        bool is_gridftp_transfer = is_gridftp_uri(src) && is_gridftp_uri(dst);
+        bool is_gridftp_transfer = ( is_gridftp_uri(dst) && (is_gridftp_uri(src) || is_file_uri(src)));
         if (type == GFAL_FILE_COPY || type == GFAL_BULK_COPY)
             res = is_gridftp_transfer;
     }
