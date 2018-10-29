@@ -379,13 +379,49 @@ void gridftp_do_copy_inner(GridFTPModule* module, GridFTPFactory* factory,
     }
 }
 
+static
+void gridftp_do_copy_inner_from_file(GridFTPModule* module, GridFTPFactory* factory,
+        gfalt_params_t params, const char* src, const char* dst,
+        GridFTPRequestState& req, time_t timeout)
+{
+    GassCopyAttrHandler gass_attr_dst(req.handler->get_ftp_client_operationattr());
+
+    gfal2_log(G_LOG_LEVEL_DEBUG,
+            "[GridFTPFileCopyModule::filecopy] start gridftp transfer %s -> %s",
+            src, dst);
+
+    req.handler->session->params = params;
+
+    gridftp_set_credentials(factory->get_gfal2_context(), gass_attr_dst, dst);
+
+    try {
+        globus_result_t res = globus_gass_copy_register_url_to_url(
+                req.handler->get_gass_copy_handle(),
+                (char*) src, NULL,
+                (char*) dst, &(gass_attr_dst.attr_gass),
+                globus_gass_client_done_callback, &req);
+
+        gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_FILECOPY, res);
+        req.wait(GFAL_GRIDFTP_SCOPE_FILECOPY, timeout);
+        req.handler->session->params = NULL;
+    }
+    catch (...) {
+        req.handler->session->params = NULL;
+        throw;
+    }
+}
 
 static
 void gridftp_do_copy(GridFTPModule* module, GridFTPFactory* factory,
     gfalt_params_t params, const char* src, const char* dst,
     GridFTPRequestState& req, time_t timeout)
 {
-    if (strncmp(src, "ftp:", 4) == 0 || strncmp(dst, "ftp:", 4) == 0) {
+	if (strncmp(src, "file:", 4) == 0 ){
+	    gfal2_log(G_LOG_LEVEL_DEBUG,
+	              "[GridFTPFileCopyModule::filecopy] start gridftp transfer from file without performance markers");
+	    gridftp_do_copy_inner_from_file(module, factory, params, src, dst, req, timeout);
+	}
+	else if (strncmp(src, "ftp:", 4) == 0 || strncmp(dst, "ftp:", 4) == 0) {
         gfal2_log(G_LOG_LEVEL_DEBUG,
                   "[GridFTPFileCopyModule::filecopy] start gridftp transfer without performance markers");
         gridftp_do_copy_inner(module, factory, params, src, dst, req, timeout);
@@ -424,14 +460,14 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
             gridftp_create_parent_copy(module, params, dst);
     }
 
-    GridFTPSessionHandler handler(factory, src);
+    GridFTPSessionHandler handler(factory, dst);
     GridFTPRequestState req(&handler, GRIDFTP_REQUEST_GASS);
 
     const unsigned int nb_streams_from_conf = gfal2_get_opt_integer_with_default(
           factory->get_gfal2_context(), GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_NB_STREAM, 0);
 
     
-    //if the number of streams in the config file is 0 use the one passed by paramameter
+    //if the number of streams in the config file is 0 use the one passed by parameter
     if (nb_streams_from_conf !=0 ) {
         nbstream = nb_streams_from_conf;
     }
