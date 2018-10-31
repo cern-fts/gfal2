@@ -598,8 +598,9 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
         plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
             GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_ENTER, "%s",
             checksum_type);
-
-        checksum(src, checksum_type, checksum_src, sizeof(checksum_src), 0, 0);
+        GError * tmp_err = NULL;
+        gfal_gridftp_checksumG(_handle_factory->get_gfal2_context(),
+        		src, checksum_type, checksum_src, sizeof(checksum_src), 0, 0,&tmp_err);
 
         plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
             GFAL_EVENT_SOURCE, GFAL_EVENT_CHECKSUM_EXIT, "%s=%s",

@@ -37,18 +37,25 @@ extern "C" int gfal_gridftp_checksumG(plugin_handle handle, const char* url,
         off_t start_offset, size_t data_length, GError ** err)
 {
     g_return_val_err_if_fail(handle != NULL && url != NULL, -1, err,
-            "[gfal_gridftp_checksumG][gridftp] Invalid parameeters");
+            "[gfal_gridftp_checksumG][gridftp] Invalid parameters");
 
     GError * tmp_err = NULL;
     int ret = -1;
-    gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_checksumG]");
-    CPP_GERROR_TRY
-        (static_cast<GridFTPModule*>(handle))->checksum(url, check_type,
-                checksum_buffer, buffer_length, start_offset,
-                data_length);
-        ret = 0;
-    CPP_GERROR_CATCH(&tmp_err);
-    gfal2_log(G_LOG_LEVEL_DEBUG, "  [gfal_gridftp_checksumG] <-");
+
+    if (strncmp(url, "file:", 4) == 0 ){
+    	gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_file_checksumG]");
+    	ret = gfal2_checksum((gfal2_context_t) handle, url, check_type, 0, 0, checksum_buffer, buffer_length, &tmp_err);
+    	gfal2_log(G_LOG_LEVEL_DEBUG, "  [gfal_gridftp_file_checksumG] <-");
+    } else {
+		gfal2_log(G_LOG_LEVEL_DEBUG, "  -> [gfal_gridftp_checksumG]");
+		CPP_GERROR_TRY
+			(static_cast<GridFTPModule*>(handle))->checksum(url, check_type,
+					checksum_buffer, buffer_length, start_offset,
+					data_length);
+			ret = 0;
+		CPP_GERROR_CATCH(&tmp_err);
+		gfal2_log(G_LOG_LEVEL_DEBUG, "  [gfal_gridftp_checksumG] <-");
+    }
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
@@ -70,13 +77,14 @@ void GridFTPModule::checksum(const char* url, const char* check_type,
     gfal2_log(G_LOG_LEVEL_DEBUG, " Checksum calculation %s for url %s",
             check_type, url);
 
-    GridFTPSessionHandler handler(_handle_factory, url);
-    GridFTPRequestState req(&handler, GRIDFTP_REQUEST_FTP);
 
-    if (buffer_length < 16) {
-        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_CHECKSUM, ENOBUFS,
-                "buffer length for checksum calculation is not enough");
-    }
+	GridFTPSessionHandler handler(_handle_factory, url);
+	GridFTPRequestState req(&handler, GRIDFTP_REQUEST_FTP);
+
+        if (buffer_length < 16) {
+                throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_CHECKSUM, ENOBUFS,
+                                        "buffer length for checksum calculation is not enough");
+        }
 
     globus_result_t res = globus_ftp_client_cksm(req.handler->get_ftp_client_handle(),
             url, req.handler->get_ftp_client_operationattr(),
@@ -103,4 +111,5 @@ void GridFTPModule::checksum(const char* url, const char* check_type,
     } 
 	
     gfal2_log(G_LOG_LEVEL_DEBUG, " <- [GridFTPModule::checksum] ");
+
 }
