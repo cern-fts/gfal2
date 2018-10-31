@@ -88,8 +88,9 @@ static bool gfal_http_get_token(RequestParams & params,
                                 gfal2_context_t handle)
 {
 
-    if (isS3SignedURL(src_url));
+    if (isS3SignedURL(src_url)) {
 	return false;
+    }
 
     GError *error = NULL;
     gchar *token = gfal2_cred_get(handle, GFAL_CRED_BEARER, src_url.getHost().c_str(),
