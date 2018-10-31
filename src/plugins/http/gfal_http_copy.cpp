@@ -20,6 +20,7 @@
 
 #include <davix.hpp>
 #include <copy/davixcopy.hpp>
+#include <status/davixstatusrequest.hpp>
 #include <unistd.h>
 #include <checksums/checksums.h>
 #include <cstdio>
@@ -302,11 +303,17 @@ static int gfal_http_third_party_copy(GfalHttpPluginData* davix,
 
     // dCache requires RequireChecksumVerification to be explicitly false if no checksums
     // are to be used
-    if (mode == HTTP_COPY_PULL && strncmp(dst, "s3", 2) != 0 && strncmp(dst, "gcloud", 6) != 0) {
-        if (!(gfalt_get_checksum_mode(params, err) & GFALT_CHECKSUM_TARGET)) {
-            req_params.addHeader("RequireChecksumVerification", "false");
-        }
-        g_clear_error(err);
+    gfalt_checksum_mode_t checksum_mode = gfalt_get_checksum_mode(params, err);
+    if (*err) {
+	g_clear_error(err);
+    } else {
+        if (mode == HTTP_COPY_PUSH) {
+	    if ((checksum_mode == GFALT_CHECKSUM_SOURCE) || (checksum_mode == GFALT_CHECKSUM_NONE) )
+                req_params.addHeader("RequireChecksumVerification", "false");
+	} else if (mode == HTTP_COPY_PULL) {
+		if ((checksum_mode == GFALT_CHECKSUM_TARGET) || (checksum_mode == GFALT_CHECKSUM_NONE) )
+		    req_params.addHeader("RequireChecksumVerification", "false");
+	} 
     }
 
     // add timeout
@@ -354,7 +361,7 @@ struct HttpStreamProvider {
 
 
 static dav_ssize_t gfal_http_streamed_provider(void *userdata,
-        char *buffer, dav_size_t buflen)
+        void *buffer, dav_size_t buflen)
 {
     GError* error = NULL;
     HttpStreamProvider* data = static_cast<HttpStreamProvider*>(userdata);
@@ -380,7 +387,7 @@ static dav_ssize_t gfal_http_streamed_provider(void *userdata,
             data->perf.bytes_transfered += data->read_instant;
             data->perf.transfer_time = now - data->start;
             data->perf.average_baudrate = data->perf.bytes_transfered / data->perf.transfer_time;
-            data->perf.instant_baudrate = data->read_instant / now - data->last_update;
+            data->perf.instant_baudrate = data->read_instant / (now - data->last_update);
 
             data->last_update = now;
             data->read_instant = 0;
@@ -394,6 +401,7 @@ static dav_ssize_t gfal_http_streamed_provider(void *userdata,
 
     return ret;
 }
+
 
 
 static int gfal_http_streamed_copy(gfal2_context_t context,
@@ -419,54 +427,44 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
     }
 
     Davix::Uri dst_uri(dst);
-
-    Davix::DavixError* dav_error = NULL;
-    Davix::PutRequest request(davix->context, dst_uri, &dav_error);
-    if (dav_error != NULL) {
-        davix2gliberr(dav_error, err);
-        Davix::DavixError::clearError(&dav_error);
-        return -1;
-    }
-
     Davix::RequestParams req_params;
-    davix->get_params(&req_params, dst_uri);
 
-    if (dst_uri.getProtocol() == "s3" || dst_uri.getProtocol() == "s3s")
-        req_params.setProtocol(Davix::RequestProtocol::AwsS3);
-     else if (dst_uri.getProtocol() == "gcloud" ||  dst_uri.getProtocol() ==  "gclouds") {
-        req_params.setProtocol(Davix::RequestProtocol::Gcloud);
-    }
-    // Set MD5 header on the PUT
-    if (checksum_mode & GFALT_CHECKSUM_TARGET && strcasecmp(checksum_type, "md5") == 0 && user_checksum[0]) {
-        req_params.addHeader("Content-MD5", user_checksum);
-    }
+    davix->get_params(&req_params, dst_uri);
     //add timeout
     struct timespec opTimeout;
     opTimeout.tv_sec = gfalt_get_timeout(params, NULL);
     req_params.setOperationTimeout(&opTimeout);
 
-    request.setParameters(req_params);
+    // Set MD5 header on the PUT
+    if (checksum_mode & GFALT_CHECKSUM_TARGET && strcasecmp(checksum_type, "md5") == 0 && user_checksum[0]) {
+    	req_params.addHeader("Content-MD5", user_checksum);
+    }
+
+    if (dst_uri.getProtocol() == "s3" || dst_uri.getProtocol() == "s3s")
+    	req_params.setProtocol(Davix::RequestProtocol::AwsS3);
+    else if (dst_uri.getProtocol() == "gcloud" ||  dst_uri.getProtocol() ==  "gclouds")
+    	req_params.setProtocol(Davix::RequestProtocol::Gcloud);
+
+    Davix::DavFile dest(davix->context,req_params, dst_uri );
+
     HttpStreamProvider provider(src, dst, context, source_fd, params);
-    request.setRequestBody(gfal_http_streamed_provider, src_stat.st_size, &provider);
-    request.executeRequest(&dav_error);
+
+    try {
+    	dest.put(&req_params, std::bind(&gfal_http_streamed_provider,&provider,
+        		  std::placeholders::_1, std::placeholders::_2), src_stat.st_size);
+
+    } catch(Davix::DavixException &ex) {
+    	Davix::DavixError* daverr = NULL;
+        ex.toDavixError(&daverr);
+        davix2gliberr(daverr, err);
+        Davix::DavixError::clearError(&daverr);
+    }
 
     gfal2_close(context, source_fd, &nested_err);
     // Throw away this error
     if (nested_err)
         g_error_free(nested_err);
 
-    if (dav_error != NULL) {
-        davix2gliberr(dav_error, err);
-        Davix::DavixError::clearError(&dav_error);
-        return -1;
-    }
-
-    // Double check the HTTP code
-    if (request.getRequestCode() >= 400) {
-        http2gliberr(err, request.getRequestCode(), __func__, "Failed to PUT the file");
-    }
-
-    gfal2_log(G_LOG_LEVEL_DEBUG, "HTTP code %d", request.getRequestCode());
     return *err == NULL ? 0 : -1;
 }
 
@@ -569,11 +567,6 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_EXIT,
                          "%s => %s", src_full, dst_full);
 
-    // The real, actual, copy
-    plugin_trigger_event(params, http_plugin_domain,
-                         GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
-                         "%s => %s", src_full, dst_full);
-
     // Initial copy mode
     CopyMode copy_mode = get_default_copy_mode(context);
 
@@ -586,6 +579,10 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     // Re-try different approaches
     int ret = 0;
     while (copy_mode < HTTP_COPY_END) {
+        // The real, actual, copy
+        plugin_trigger_event(params, http_plugin_domain,
+                                     GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
+                               "%s => %s", src_full, dst_full);
         gfal2_log(G_LOG_LEVEL_MESSAGE,
             "Trying copying with mode %s",
             CopyModeStr[copy_mode]);
@@ -617,8 +614,9 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
             break;
         }
         else if (ret < 0) {
-                gfal2_log(G_LOG_LEVEL_WARNING,
-                        "Copy failed with mode %s, will delete destination and retry with the next available mode: %s",
+               plugin_trigger_event(params, http_plugin_domain,
+                         GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
+                        "ERROR: Copy failed with mode %s, will delete destination and retry with the next available mode: %s",
                         CopyModeStr[copy_mode], nested_error->message);
                 // Delete any potential destination file.
                 gfal_http_copy_cleanup(plugin_data, dst, &nested_error);

@@ -39,7 +39,8 @@ const char* gfal_http_get_name(void)
 
 // this is to understand if the active storage in TPC needs gridsite delegation
 // if the destination does not need tls we avoid it
-static bool delegation_required(const Davix::Uri& uri) {
+static bool delegation_required(const Davix::Uri& uri) 
+{
    bool needs_delegation = false;
 
    if ((uri.getProtocol().compare(0, 5, "https") == 0) || 
@@ -64,6 +65,19 @@ static int get_corresponding_davix_log_level()
     return davix_log_level;
 }
 
+static bool isS3SignedURL(const Davix::Uri &url) 
+{
+    if(url.queryParamExists("AWSAccessKeyId") && url.queryParamExists("Signature")) {
+    	return true;
+    }
+
+    if(url.queryParamExists("X-Amz-Credential") && url.queryParamExists("X-Amz-Signature")) {
+    	return true;
+    }
+
+    return false;
+}
+
 /// Token-based authorization.
 //  If this returns `true`, the RequestParams have been successfully
 //  configured to utilize a bearer token.  In such a case, no other
@@ -73,6 +87,11 @@ static bool gfal_http_get_token(RequestParams & params,
                                 bool secondary_endpoint,
                                 gfal2_context_t handle)
 {
+
+    if (isS3SignedURL(src_url)) {
+	return false;
+    }
+
     GError *error = NULL;
     gchar *token = gfal2_cred_get(handle, GFAL_CRED_BEARER, src_url.getHost().c_str(),
                                   NULL, &error);
@@ -348,7 +367,7 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
 
     // Timeout
     struct timespec opTimeout;
-    opTimeout.tv_sec = gfal2_get_opt_integer_with_default(handle, CORE_CONFIG_GROUP, CORE_CONFIG_NAMESPACE_TIMEOUT, 60);
+    opTimeout.tv_sec = gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", HTTP_CONFIG_OP_TIMEOUT, 8000);
     req_params->setOperationTimeout(&opTimeout);
 }
 

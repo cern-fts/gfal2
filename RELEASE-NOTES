@@ -1,5 +1,39 @@
 GFAL2 RELEASE-NOTES
 ===================
+## Wed Oct 31 2018 Andrea Manzi <amanzi at cern.ch> - 2.16.1
+###Bug
+- [DMC-1099] - Checksum comparison in Xrootd is wrongly enabled for FTS transfers
+- [DMC-1106] - HTTP to HTTP streamed transfers timeout after 300 secs
+- [DMC-1107] - The instant throughut for HTTP Streamed transfers is wrongly calculated
+- [DMC-1109] - HTTP TPC failures are not logged at INFO level
+- [DMC-1110] - RequireChecksumVerification set to false only for HTTP TPC PULL
+- [DMC-1112] - Setting BEARER_TOKEN breaks pre-signed URLa
+
+###Task
+- [DMC-1095] - Refactor http streamed copy to support s3 multipart upload via Davix
+            
+## Mon Seo 28 2018 Andrea Manzi <amanzi at cern.ch> - 2.16.0
+### Bug 
+- [DMC-1048] - Xrootd plugin: the query for the EOS-CTA extended attribute "sys.retrieve.error" should be asynchronous
+- [DMC-1055] - The Xrootd checksum preset should not contain leading 0s
+- [DMC-1057] - xattr.h is in glibc-headers >= 2.27
+- [DMC-1066] - gfal-sum does not honour HTTP 202 responses
+- [DMC-1067] - Xrootd plugin does not pass the checksum type
+- [DMC-1068] - Remove file after error in HTTP COPY
+- [DMC-1069] - Work with endpoints that support HTTP macaroons but not for COPY
+- [DMC-1084] - TPC with destination/source http are not working with dCache
+
+### Task
+
+- [DMC-1046] - add support for gCloud in gfal2 http plugin
+- [DMC-1060] - xrootd plugin should clean destination on failure
+- [DMC-1064] - Add possibility to pass a BEARER token via ENV var
+
+### Improvement
+
+- [DMC-1028] - RD_NB_STREAM in /etc/gfal2.d/gsiftp_plugin.conf has no effect
+- [DMC-1074] - Add DEFAULT_COPY_MODE to gfal2 http conf
+
 ## Mon May 28 2018 Andrea Manzi <amanzi at cern.ch> - 2.15.5
 ### Bug
 - [DMC-1023] - Xrootd plugin:The checksum string provided by the user is not correctly parsed
