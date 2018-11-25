@@ -51,6 +51,8 @@ const char* gfal_http_check_classes(plugin_handle plugin_data, const char *url, 
 			r.executeRequest(&tmp_err);
 		if(tmp_err){
 			std::cerr << " error in request of getting available QoS classes: " << tmp_err->getErrMsg() << std::endl;
+            davix2gliberr(tmp_err, err);
+            Davix::DavixError::clearError(&tmp_err);
 		} else {
 			std::vector<char> body = r.getAnswerContentVec();
 			std::string response(body.begin(), body.end());
@@ -103,6 +105,8 @@ const char* gfal_http_check_file_qos(plugin_handle plugin_data, const char *file
 		r.executeRequest(&tmp_err);
 	if(tmp_err){
 		std::cerr << " error in request of checking file QoS: " << tmp_err->getErrMsg() << std::endl;
+        davix2gliberr(tmp_err, err);
+        Davix::DavixError::clearError(&tmp_err);
 	} else {
 		std::vector<char> body = r.getAnswerContentVec();
 		std::string response(body.begin(), body.end());
@@ -134,6 +138,8 @@ const char* gfal_http_check_qos_available_transitions(plugin_handle plugin_data,
 			r.executeRequest(&tmp_err);
 		if(tmp_err){
 			std::cerr << " error in request of checking file QoS: " << tmp_err->getErrMsg() << std::endl;
+            davix2gliberr(tmp_err, err);
+            Davix::DavixError::clearError(&tmp_err);
 		} else {
 			std::vector<char> body = r.getAnswerContentVec();
 			std::string response(body.begin(), body.end());
@@ -204,6 +210,8 @@ const char* gfal_http_check_target_qos(plugin_handle plugin_data, const char *fi
 		r.executeRequest(&tmp_err);
 	if(tmp_err){
 		std::cerr << " error in request of checking file QoS: " << tmp_err->getErrMsg() << std::endl;
+        davix2gliberr(tmp_err, err);
+        Davix::DavixError::clearError(&tmp_err);
 	} else {
 		std::vector<char> body = r.getAnswerContentVec();
 		std::string response(body.begin(), body.end());
@@ -223,7 +231,6 @@ const char* gfal_http_check_target_qos(plugin_handle plugin_data, const char *fi
 			return targetQoS.c_str();
 		}
 
-		//std::cout << "The thing is empty "<< targetQoS << std::endl;
 		//std::cout << "content "<< response << std::endl;
 	}
 	return NULL;
@@ -253,6 +260,8 @@ int gfal_http_change_object_qos(plugin_handle plugin_data, const char *fileUrl, 
 	if(tmp_err || httpcodeIsValid(pr.getRequestCode()) == false){
 		if (tmp_err) {
 			std::cerr << " error in request of checking file QoS: " << tmp_err->getErrMsg() << std::endl;
+			davix2gliberr(tmp_err, err);
+			Davix::DavixError::clearError(&tmp_err);
 		}
 		else {
 			std::cerr << " error in request of checking file QoS " << std::endl;
