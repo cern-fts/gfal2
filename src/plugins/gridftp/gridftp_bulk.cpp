@@ -294,8 +294,12 @@ int gridftp_pipeline_transfer(plugin_handle plugin_data,
         &ftp_operation_attr_dst, handler.get_ftp_client_operationattr(), &cred_id_dst,
         context, udt, pairs->dsts[pairs->index], op_error);
 
+    int nbstreams = gfal2_get_opt_integer_with_default(context, GRIDFTP_CONFIG_GROUP,
+            GRIDFTP_CONFIG_NB_STREAM, 0);
 
-    int nbstreams = gfalt_get_nbstreams(pairs->params, NULL);
+    if (nbstreams == 0) {
+        nbstreams = gfalt_get_nbstreams(pairs->params, NULL);
+    }
     guint64 buffer_size = gfalt_get_tcp_buffer_size(pairs->params, NULL);
     globus_ftp_control_parallelism_t parallelism;
     globus_ftp_control_tcpbuffer_t tcp_buffer_size;

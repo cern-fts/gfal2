@@ -67,9 +67,23 @@ static void gfal_setCredentialLocation(const char *where, gfal2_context_t handle
     gfal2_log(G_LOG_LEVEL_DEBUG, "Private key: %s", key);
 }
 
+static void gfal_setBearerToken(gfal2_context_t handle, const char *token)
+{
+    GError *error = NULL;
+    gfal2_set_opt_string(handle, "BEARER", "TOKEN", token, &error);
+    g_clear_error(&error);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Using BEARER token credentials from the env"); 
+}
+
 // Setup default credentials depending on the environment
 static void gfal_initCredentialLocation(gfal2_context_t handle)
 {
+    //check first if BEARER is on the env
+    const char *token = getenv("BEARER_TOKEN");
+    if (token != NULL) {
+        gfal_setBearerToken(handle, token);
+        return;
+    }
     // X509_USER_PROXY
     const char *proxy = getenv("X509_USER_PROXY");
     if (proxy != NULL) {

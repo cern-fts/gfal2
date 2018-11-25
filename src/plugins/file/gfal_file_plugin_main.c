@@ -26,10 +26,14 @@
 #include <fcntl.h>
 #include <glib.h>
 #include <errno.h>
-#ifdef __APPLE__
+#if defined __APPLE__ 
+#include <sys/xattr.h>
+#else
+#if defined __GLIBC_PREREQ && __GLIBC_PREREQ(2,27)
 #include <sys/xattr.h>
 #else
 #include <attr/xattr.h>
+#endif
 #endif
 #include <zlib.h>
 

@@ -22,9 +22,9 @@
 #define _GFAL_HTTP_PLUGIN_H
 
 #include <gfal_plugins_api.h>
-
-
 #include <davix.hpp>
+
+#define HTTP_CONFIG_OP_TIMEOUT     "OPERATION_TIMEOUT"
 
 class GfalHttpPluginData {
 public:

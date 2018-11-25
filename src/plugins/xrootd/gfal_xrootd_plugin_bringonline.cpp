@@ -59,7 +59,7 @@ public:
             error_string[0] = 0;
             gfal2_log(G_LOG_LEVEL_DEBUG, "Response: %s", response->GetBuffer());
             sscanf(response->GetBuffer(),
-                "%s retc=%i value=%s",
+                "%s retc=%i value=%[^\n]",
                 tag, &retc, error_string);
             if (retc || (strlen(error_string) != 0 )) {
                 gfal2_log(G_LOG_LEVEL_DEBUG, "Error reported: %s", error_string);
@@ -152,9 +152,10 @@ int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
     if (nbfiles <= 0) {
         return 1;
     }
+
     gfal2_context_t context = (gfal2_context_t)plugin_data;
 
-    XrdCl::URL endpoint(urls[0]);
+    XrdCl::URL endpoint(prepare_url(context, urls[0]));
     endpoint.SetPath(std::string());
     XrdCl::FileSystem fs(endpoint);
 
@@ -164,9 +165,8 @@ int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
         fileList.emplace_back(file.GetPath());
     }
 
-    XrdCl::Buffer *reponsePtr;
-    XrdCl::Status st = fs.Prepare(fileList, XrdCl::PrepareFlags::Flags::Stage, 0, reponsePtr, timeout);
-    std::unique_ptr<XrdCl::Buffer> response(reponsePtr);
+    XrdCl::Buffer *responsePtr;
+    XrdCl::Status st = fs.Prepare(fileList, XrdCl::PrepareFlags::Flags::Stage, 0, responsePtr, timeout);
 
     if (!st.IsOK()) {
         GError *tmp_err = NULL;
@@ -176,10 +176,17 @@ int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
             err[i] = g_error_copy(tmp_err);
         }
         g_error_free(tmp_err);
+        delete responsePtr;
         return -1;
     }
-
-    g_strlcpy(token, response->ToString().c_str(), tsize);
+    if (responsePtr && responsePtr->GetBuffer()) {
+        g_strlcpy(token, responsePtr->GetBuffer(), tsize);
+    } else {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Empty response from the server");
+        delete responsePtr;
+        return -1;
+    }
+    delete responsePtr;
     return 0;
 }
 
@@ -192,7 +199,7 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
     }
     gfal2_context_t context = (gfal2_context_t)plugin_data;
 
-    XrdCl::URL endpoint(urls[0]);
+    XrdCl::URL endpoint(prepare_url(context, urls[0]));
     endpoint.SetPath(std::string());
     XrdCl::FileSystem fs(endpoint);
     std::vector<PollResponseHandler> handlers;
@@ -324,7 +331,7 @@ int gfal_xrootd_abort_files(plugin_handle plugin_data,
     }
     gfal2_context_t context = (gfal2_context_t)plugin_data;
 
-    XrdCl::URL endpoint(urls[0]);
+    XrdCl::URL endpoint(prepare_url(context, urls[0]));
     endpoint.SetPath(std::string());
     XrdCl::FileSystem fs(endpoint);
 

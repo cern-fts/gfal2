@@ -20,9 +20,20 @@
 
 #include <regex.h>
 #include <pthread.h>
-#include <errno.h>
 #include <dirent.h>
+#include <errno.h>
+#ifndef ENOATTR
+#define ENOATTR ENODATA
+#endif
+#if defined __APPLE__ 
+#include <sys/xattr.h>
+#else
+#if defined __GLIBC_PREREQ && __GLIBC_PREREQ(2,27)
+#include <sys/xattr.h>
+#else
 #include <attr/xattr.h>
+#endif
+#endif
 
 #include "gfal_lfc.h"
 #include "gfal_lfc_open.h"

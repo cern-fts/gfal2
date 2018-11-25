@@ -42,9 +42,12 @@ gfal_file_handle gfal_http_fopen(plugin_handle plugin_data, const char* url, int
 
     GfalHTTPFD* fd = new GfalHTTPFD();
     davix->get_params(&fd->req_params, Davix::Uri(stripped_url));
-    if (strncmp("s3:", url, 3) == 0 || strncmp("s3s:", url, 4) == 0)
+    if (strncmp("s3:", url, 3) == 0 || strncmp("s3s:", url, 4) == 0) {
         fd->req_params.setProtocol(Davix::RequestProtocol::AwsS3);
-
+    }
+    else if (strncmp("gcloud:", url, 7) == 0 || strncmp("gclouds:", url, 8) == 0) {
+        fd->req_params.setProtocol(Davix::RequestProtocol::Gcloud);
+    }
     fd->davix_fd = davix->posix.open(&fd->req_params, stripped_url, flag, &daverr);
 
     if (fd->davix_fd == NULL) {

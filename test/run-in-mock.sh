@@ -80,7 +80,7 @@ else
 fi
 
 # Install tests
-mock_cmd install cmake gfal2-tests lcg-CA voms-clients voms-config-vo-dteam
+mock_cmd install cmake gfal2-tests ca-policy-egi-core voms-clients voms-config-vo-dteam
 
 # Push certificate and key
 MOCK_HOME="/builddir"

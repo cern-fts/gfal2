@@ -413,7 +413,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
     const time_t timeout = gfalt_get_timeout(params, &tmp_err);
     Gfal::gerror_to_cpp(&tmp_err);
 
-    const unsigned int nbstream = gfalt_get_nbstreams(params, &tmp_err);
+    unsigned int nbstream = gfalt_get_nbstreams(params, &tmp_err);
     Gfal::gerror_to_cpp(&tmp_err);
     const guint64 tcp_buffer_size = gfalt_get_tcp_buffer_size(params, &tmp_err);
     Gfal::gerror_to_cpp(&tmp_err);
@@ -427,7 +427,17 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
     GridFTPSessionHandler handler(factory, src);
     GridFTPRequestState req(&handler, GRIDFTP_REQUEST_GASS);
 
+    const unsigned int nb_streams_from_conf = gfal2_get_opt_integer_with_default(
+          factory->get_gfal2_context(), GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_NB_STREAM, 0);
+
+    
+    //if the number of streams in the config file is 0 use the one passed by paramameter
+    if (nb_streams_from_conf !=0 ) {
+        nbstream = nb_streams_from_conf;
+    }
+
     handler.session->set_nb_streams(nbstream);
+
     gfal2_log(G_LOG_LEVEL_DEBUG,
             "   [GridFTPFileCopyModule::filecopy] setup gsiftp number of streams to %d",
             nbstream);
