@@ -235,6 +235,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
             job.Set("thirdParty", "first");
         }
         job.Set("tpcTimeout", gfalt_get_timeout(params, NULL));
+        job.Set("delegate", true);
 #else
         XrdCl::JobDescriptor job;
 
