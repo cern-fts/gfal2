@@ -93,6 +93,11 @@ static CopyMode get_default_copy_mode(gfal2_context_t context)
     return getCopyModeFromString(gfal2_get_opt_string_with_default(context, "HTTP PLUGIN", "DEFAULT_COPY_MODE", GFAL_TRANSFER_TYPE_PULL));
 }
 
+static bool is_http_3rdcopy_fallback_enabled(gfal2_context_t context)
+{
+    return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "ENABLE_FALLBACK_TPC_COPY", TRUE);
+}
+
 static int gfal_http_exists(plugin_handle plugin_data,
         const char* url, GError** err)
 {
@@ -578,7 +583,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
 
     // Re-try different approaches
     int ret = 0;
-    while (copy_mode < HTTP_COPY_END) {
+    do {
         // The real, actual, copy
         plugin_trigger_event(params, http_plugin_domain,
                                      GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
@@ -614,16 +619,18 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
             break;
         }
         else if (ret < 0) {
+               
                plugin_trigger_event(params, http_plugin_domain,
                          GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
-                        "ERROR: Copy failed with mode %s, will delete destination and retry with the next available mode: %s",
+                        "ERROR: Copy failed with mode %s,  with error: %s",
                         CopyModeStr[copy_mode], nested_error->message);
-                // Delete any potential destination file.
-                gfal_http_copy_cleanup(plugin_data, dst, &nested_error);
+               // Delete any potential destination file.
+               gfal_http_copy_cleanup(plugin_data, dst, &nested_error);
         }
 
         copy_mode = (CopyMode)((int)copy_mode + 1);
-    }
+
+    } while ((copy_mode < HTTP_COPY_END) && is_http_3rdcopy_fallback_enabled(context));
 
 
     plugin_trigger_event(params, http_plugin_domain,
