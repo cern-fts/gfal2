@@ -259,12 +259,12 @@ int gfal_http_change_object_qos(plugin_handle plugin_data, const char *fileUrl, 
 	std::cout << "Request Return Code: "<< pr.getRequestCode() << std::endl;
 	if(tmp_err || httpcodeIsValid(pr.getRequestCode()) == false){
 		if (tmp_err) {
-			std::cerr << " error in request of checking file QoS: " << tmp_err->getErrMsg() << std::endl;
+			std::cerr << " error in request of changing file QoS: " << tmp_err->getErrMsg() << std::endl;
 			davix2gliberr(tmp_err, err);
 			Davix::DavixError::clearError(&tmp_err);
 		}
 		else {
-			std::cerr << " error in request of checking file QoS " << std::endl;
+			std::cerr << " error in request of changing file QoS " << std::endl;
 		}
 	} else {
 		return 0;
