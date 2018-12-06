@@ -113,6 +113,7 @@ static void set_copy_mode_from_urls(gfal2_context_t context, const char * src_ur
     gfal2_uri *uri = gfal2_parse_uri(src_url, &error);
     if (error != NULL) {
         g_clear_error(&error);
+        gfal2_free_uri(uri);
         return;
     }
     bool done = false;
