@@ -25,6 +25,7 @@
 #include <checksums/checksums.h>
 #include <cstdio>
 #include <cstring>
+#include <uri/gfal2_uri.h>
 #include "gfal_http_plugin.h"
 
 // An enumeration of the different HTTP third-party-copy strategies.
@@ -40,12 +41,12 @@ const char* CopyModeStr[] = {
     GFAL_TRANSFER_TYPE_PULL, GFAL_TRANSFER_TYPE_PUSH, GFAL_TRANSFER_TYPE_STREAMED, NULL
 };
 
-static const CopyMode getCopyModeFromString(const char * copyModeStr) { 
-    if (!strcmp(copyModeStr, GFAL_TRANSFER_TYPE_PULL))  
+static const CopyMode get_copy_mode_from_string(const char * copy_mode_str) { 
+    if (!strcmp(copy_mode_str, GFAL_TRANSFER_TYPE_PULL))  
         return HTTP_COPY_PULL;
-    if (!strcmp(copyModeStr, GFAL_TRANSFER_TYPE_PUSH)) 
+    if (!strcmp(copy_mode_str, GFAL_TRANSFER_TYPE_PUSH)) 
         return HTTP_COPY_PUSH;
-     if (!strcmp(copyModeStr, GFAL_TRANSFER_TYPE_STREAMED))
+     if (!strcmp(copy_mode_str, GFAL_TRANSFER_TYPE_STREAMED))
         return HTTP_COPY_STREAM;
      return HTTP_COPY_PULL;
 }
@@ -62,6 +63,84 @@ struct PerfCallbackData {
     }
 };
 
+static bool set_copy_mode(gfal2_context_t context,const std::string&  copy_mode) {
+    bool set = true;   
+    GError *error = NULL;
+    if (copy_mode.compare ("push" ) == 0) {
+        gfal2_set_opt_boolean(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", TRUE, &error);
+        gfal2_set_opt_string(context, "HTTP PLUGIN", "DEFAULT_COPY_MODE", GFAL_TRANSFER_TYPE_PUSH, &error);
+        gfal2_set_opt_boolean(context, "HTTP PLUGIN", "ENABLE_FALLBACK_TPC_COPY", FALSE, &error);
+        if (error != NULL) {
+            g_clear_error(&error);
+            set =false;
+        }
+    } else if (copy_mode.compare ("pull") == 0 ) {
+        gfal2_set_opt_boolean(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", TRUE, &error);
+        gfal2_set_opt_string(context, "HTTP PLUGIN", "DEFAULT_COPY_MODE", GFAL_TRANSFER_TYPE_PULL, &error);
+        gfal2_set_opt_boolean(context, "HTTP PLUGIN", "ENABLE_FALLBACK_TPC_COPY", FALSE, &error);
+        if (error != NULL) {
+            g_clear_error(&error);
+            set =false;
+        }
+    } else {
+        set =false;
+    }
+    return set;
+}
+
+static std::string extract_query_parameter(const std::string& query_param, const std::string& uristring) {
+     
+    std::string value = "";
+    if (uristring.find(query_param) != std::string::npos) {
+        int pos = uristring.find(query_param);
+        if (uristring.find("=",pos+ query_param.length()) != std::string::npos) {
+            int pos_next_parameter = uristring.find('&',pos + query_param.length() +1);
+            if (pos_next_parameter != std::string::npos) {
+                value= uristring.substr(pos + query_param.length() + 1 ,pos_next_parameter);
+            }
+            else {
+                value= uristring.substr(pos + query_param.length() + 1 );
+            }
+       }
+   }
+   return value;
+}
+
+static void set_copy_mode_from_urls(gfal2_context_t context, const char * src_url, const char * dst_url)
+{
+    GError *error = NULL;
+    std::string copymode = "";
+    gfal2_uri *uri = gfal2_parse_uri(src_url, &error);
+    if (error != NULL) {
+        g_clear_error(&error);
+        return;
+    }
+    bool done = false;
+
+    if (uri->query != NULL) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Source Query String %s", uri->query);
+        std::string uristring(uri->query);
+        copymode = extract_query_parameter("copy_mode", uristring);
+        if (copymode != "") {
+            gfal2_log(G_LOG_LEVEL_INFO,"Source copy mode is %s", copymode.c_str());
+            done= set_copy_mode(context, copymode); 
+        }
+    }
+    
+    if (!done) {
+        uri = gfal2_parse_uri(dst_url, &error);
+        if (uri->query != NULL) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Destination Query String %s", uri->query);
+            std::string uristring(uri->query);
+            copymode = extract_query_parameter("copy_mode", uristring);
+            if (copymode != "") {
+		gfal2_log(G_LOG_LEVEL_INFO,"Destination copy mode is %s", copymode.c_str());
+                done= set_copy_mode(context,copymode);
+            }        
+        }
+    }
+    gfal2_free_uri(uri);
+}
 
 static bool is_http_scheme(const char* url)
 {
@@ -90,7 +169,7 @@ static bool is_http_streamed_enabled(gfal2_context_t context)
 
 static CopyMode get_default_copy_mode(gfal2_context_t context)
 {
-    return getCopyModeFromString(gfal2_get_opt_string_with_default(context, "HTTP PLUGIN", "DEFAULT_COPY_MODE", GFAL_TRANSFER_TYPE_PULL));
+    return get_copy_mode_from_string(gfal2_get_opt_string_with_default(context, "HTTP PLUGIN", "DEFAULT_COPY_MODE", GFAL_TRANSFER_TYPE_PULL));
 }
 
 static bool is_http_3rdcopy_fallback_enabled(gfal2_context_t context)
@@ -572,6 +651,8 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_EXIT,
                          "%s => %s", src_full, dst_full);
 
+
+    set_copy_mode_from_urls(context,src_full, dst_full);
     // Initial copy mode
     CopyMode copy_mode = get_default_copy_mode(context);
 
