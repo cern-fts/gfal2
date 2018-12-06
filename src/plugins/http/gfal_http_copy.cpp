@@ -118,14 +118,14 @@ static void set_copy_mode_from_urls(gfal2_context_t context, const char * src_ur
     char copy_mode[64] = {0};
     bool done = false;
     extract_query_parameter(src_url, "copy_mode", copy_mode,sizeof(copy_mode));
-    if (copy_mode != NULL) {
+    if (copy_mode[0] != '\0') {
             gfal2_log(G_LOG_LEVEL_INFO,"Source copy mode is %s", copy_mode);
             done= set_copy_mode(context, copy_mode); 
     }
     
     if (!done) {
         extract_query_parameter(dst_url, "copy_mode", copy_mode,sizeof(copy_mode));
-        if (copy_mode != NULL) {
+        if (copy_mode[0] != '\0') {
 	    gfal2_log(G_LOG_LEVEL_INFO,"Destination copy mode is %s", copy_mode);
             set_copy_mode(context,copy_mode);
                   
