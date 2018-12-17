@@ -435,7 +435,10 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
     if (nb_streams_from_conf !=0 ) {
         nbstream = nb_streams_from_conf;
     }
-
+    //always set streams = 0 if source or dest are ftp, this disables the  GLOBUS_FTP_CONTROL_MODE_EXTENDED_BLOCK
+    if (strncmp(src, "ftp:", 4) == 0 || strncmp(dst, "ftp:", 4) == 0) {
+    	nbstream = 0;
+    }
     handler.session->set_nb_streams(nbstream);
 
     gfal2_log(G_LOG_LEVEL_DEBUG,
