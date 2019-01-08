@@ -646,31 +646,22 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     set_copy_mode_from_urls(context,src_full, dst_full);
     // Initial copy mode
     CopyMode copy_mode = get_default_copy_mode(context);
-    
-    bool only_streaming = false;
+
     // If source is not even http, go straight to streamed
     // or if third party copy is disabled, go straight to streamed
     if (!is_http_scheme(src) || !is_http_3rdcopy_enabled(context)) {
         copy_mode = HTTP_COPY_STREAM;
-        only_streaming = true;
     }
 
     // Re-try different approaches
     int ret = 0;
-
-    CopyMode end_copy_mode = HTTP_COPY_END;
-
-    //if streaming is disabled stop the loop before
-    if (!is_http_streamed_enabled(context)) {
-        end_copy_mode = HTTP_COPY_STREAM;
-    }
-   
     do {
         // The real, actual, copy
         plugin_trigger_event(params, http_plugin_domain,
                                      GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
                                "%s => %s", src_full, dst_full);
-        gfal2_log(G_LOG_LEVEL_MESSAGE, "Trying copying with mode %s",
+        gfal2_log(G_LOG_LEVEL_MESSAGE,
+            "Trying copying with mode %s",
             CopyModeStr[copy_mode]);
         plugin_trigger_event(params, http_plugin_domain,
             GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_TYPE,
@@ -684,8 +675,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                     checksum_mode, checksum_type, user_checksum,
                     params, &nested_error);
             }
-            else if (only_streaming) {
-                ret = -1;
+            else {
                 gfalt_set_error(&nested_error, http_plugin_domain, EIO, __func__,
                     GFALT_ERROR_TRANSFER, "STREAMED DISABLED",
                     "Trying to fallback to a streamed copy, but they are disabled");
@@ -701,17 +691,18 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
             break;
         }
         else if (ret < 0) {
-            g_prefix_error(&nested_error, "ERROR: Copy failed with mode %s, with error: ",CopyModeStr[copy_mode]);
-            plugin_trigger_event(params, http_plugin_domain,
-               GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
-                nested_error->message);
+               
+               plugin_trigger_event(params, http_plugin_domain,
+                         GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
+                        "ERROR: Copy failed with mode %s,  with error: %s",
+                        CopyModeStr[copy_mode], nested_error->message);
                // Delete any potential destination file.
-            gfal_http_copy_cleanup(plugin_data, dst, &nested_error);
+               gfal_http_copy_cleanup(plugin_data, dst, &nested_error);
         }
 
         copy_mode = (CopyMode)((int)copy_mode + 1);
 
-    } while ((copy_mode < end_copy_mode) && is_http_3rdcopy_fallback_enabled(context));
+    } while ((copy_mode < HTTP_COPY_END) && is_http_3rdcopy_fallback_enabled(context));
 
 
     plugin_trigger_event(params, http_plugin_domain,
