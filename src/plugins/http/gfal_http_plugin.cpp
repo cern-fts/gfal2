@@ -529,7 +529,7 @@ void davix2gliberr(const DavixError* daverr, GError** err)
 {
 
     std::string error_string= g_utf8_validate(daverr->getErrMsg().c_str(), daverr->getErrMsg().length(),NULL) ? 
-	daverr->getErrMsg().c_str(): "Error string contains not UTF8 chars";
+	daverr->getErrMsg().c_str(): "Error string contains not valid UTF-8 chars";
     gfal2_set_error(err, http_plugin_domain, davix2errno(daverr->getStatus()), __func__,
               "%s", error_string.c_str());
 }
