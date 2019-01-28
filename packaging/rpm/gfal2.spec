@@ -5,7 +5,7 @@
 
 Name:               gfal2
 Version:            2.17.0
-Release:            1%{?dist}
+Release:            2%{?dist}
 Summary:            Grid file access library 2.0
 Group:              Applications/Internet
 License:            ASL 2.0
@@ -374,6 +374,19 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Mon Jan 28 2019 Andrea Manzi <amanzi at cern.ch> - 2.17.0-2
+- New Minor release
+- added support for CDMI
+
+* Thu Nov 01 2018 Andrea Manzi <amanzi at cern.ch> - 2.16.1-1
+- Upgraded to upstream release 2.16.1
+
+* Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 2.15.5-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
+
+* Fri Jul 06 2018 Andrea Manzi <amanzi at cern.ch> - 2.15.5-2
+- Upgraded to upstream release 2.15.5-2
+
 * Thu Apr 05 2018 Andrea Manzi <amanzi at cern.ch> - 2.15.4-1
 - New upstrem release
 
