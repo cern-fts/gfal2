@@ -89,7 +89,7 @@ public:
                   const char *name,
                   void *buff, size_t s_buff);
 
-    void autoCleanFileCopy(gfalt_params_t params, GError* checked_error,
+    void autoCleanFileCopy(gfalt_params_t params, int code,
             const char* dst);
 
     // Execute a file transfer operation for gridftp URLs
