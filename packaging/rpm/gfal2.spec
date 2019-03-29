@@ -56,7 +56,7 @@ BuildRequires:      globus-gass-copy-devel
 #http plugin dependencies
 BuildRequires:      davix-devel >= 0.6.8
 #xrootd plugin dependencies
-BuildRequires:      xrootd-client-devel >= 1:4.1.1
+BuildRequires:      xrootd-client-devel >= 1:4.9.0
 # sftp plugin dependencies
 BuildRequires:      libssh2-devel
 #tests dependencies
