@@ -590,7 +590,6 @@ ssize_t gfal_xrootd_getxattrG(plugin_handle plugin_data, const char* url, const 
             return -1;
         }
         
-        memset(buff, 0x00, s_buff);
         StatInfo2Xattr(info,(char*)buff);
         len = strnlen((char*)buff, s_buff);
         delete info;       
