@@ -579,7 +579,7 @@ ssize_t gfal_xrootd_getxattrG(plugin_handle plugin_data, const char* url, const 
     } else if (strcmp(key, GFAL_XATTR_STATUS) == 0) {
  
         std::string sanitizedUrl = prepare_url((gfal2_context_t) plugin_data, url);
-        XrdCl::URL parsed(url);
+        XrdCl::URL parsed(sanitizedUrl);
         XrdCl::FileSystem fs(parsed);
         XrdCl::StatInfo * info;
         XrdCl::XRootDStatus st = fs.Stat( parsed.GetPath(), info );
