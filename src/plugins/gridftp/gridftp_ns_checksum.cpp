@@ -22,6 +22,8 @@
 
 #include "gridftp_namespace.h"
 #include "gridftp_plugin.h"
+#include <iostream>
+#include <algorithm>
 
 
 static const GQuark GFAL_GRIDFTP_SCOPE_CHECKSUM = g_quark_from_static_string("GridFTPModule::checksum");
@@ -50,7 +52,11 @@ extern "C" int gfal_gridftp_checksumG(plugin_handle handle, const char* url,
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
-
+bool string_is_valid(const std::string &str)
+{
+    return find_if(str.begin(), str.end(),
+        [](char c) { return !isalnum(c); }) == str.end();
+}
 void GridFTPModule::checksum(const char* url, const char* check_type,
         char * checksum_buffer, size_t buffer_length, off_t start_offset,
         size_t data_length)
@@ -85,5 +91,11 @@ void GridFTPModule::checksum(const char* url, const char* check_type,
 
 
     req.wait(GFAL_GRIDFTP_SCOPE_CHECKSUM, timeout);
+
+    if (string_is_valid(checksum_buffer) != 1) {
+        std::string s(buffer_length, '0');
+	strncpy(checksum_buffer, s.c_str(), buffer_length);
+    } 
+	
     gfal2_log(G_LOG_LEVEL_DEBUG, " <- [GridFTPModule::checksum] ");
 }
