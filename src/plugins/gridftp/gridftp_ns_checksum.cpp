@@ -98,7 +98,7 @@ void GridFTPModule::checksum(const char* url, const char* check_type,
     req.wait(GFAL_GRIDFTP_SCOPE_CHECKSUM, timeout);
 
     if (string_is_valid(checksum_buffer) != 1) {
-        std::string s(buffer_length, '0');
+        std::string s(16, '0');
 	strncpy(checksum_buffer, s.c_str(), buffer_length);
     } 
 	
