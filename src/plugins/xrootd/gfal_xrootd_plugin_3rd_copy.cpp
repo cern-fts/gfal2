@@ -113,7 +113,7 @@ public:
         plugin_trigger_monitor(this->params, &this->status, this->source.c_str(), this->destination.c_str());
     }
 
-    bool ShouldCancel()
+    bool ShouldCancel(uint16_t jobNum)
     {
         return gfal2_is_canceled(this->context);
     }
@@ -230,6 +230,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         if ((source_url.GetProtocol() == "root") && (dest_url.GetProtocol() == "root")) {
             job.Set("thirdParty", "only");
             isThirdParty = true;
+            job.Set("delegate", true);
         }
         else {
             job.Set("thirdParty", "first");

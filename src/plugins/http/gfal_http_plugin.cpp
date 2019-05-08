@@ -309,8 +309,11 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
         req_params->setSSLCAcheck(false);
     }
 
-    if (uri.getProtocol().compare(0, 4, "http") == 0 || uri.getProtocol().compare(0, 3, "dav") == 0) {
-        req_params->setProtocol(Davix::RequestProtocol::Auto);
+    if (uri.getProtocol().compare(0, 4, "http") == 0 )  {
+        req_params->setProtocol(Davix::RequestProtocol::Http);
+    } 
+    else if (uri.getProtocol().compare(0, 3, "dav") == 0) {
+        req_params->setProtocol(Davix::RequestProtocol::Webdav);
     }
     else if (uri.getProtocol().compare(0, 2, "s3") == 0) {
         req_params->setProtocol(Davix::RequestProtocol::AwsS3);
@@ -533,8 +536,11 @@ static int davix2errno(StatusCode::Code code)
 
 void davix2gliberr(const DavixError* daverr, GError** err)
 {
+
+    std::string error_string= g_utf8_validate(daverr->getErrMsg().c_str(), daverr->getErrMsg().length(),NULL) ? 
+	daverr->getErrMsg().c_str(): "Error string contains not valid UTF-8 chars";
     gfal2_set_error(err, http_plugin_domain, davix2errno(daverr->getStatus()), __func__,
-              "%s", daverr->getErrMsg().c_str());
+              "%s", error_string.c_str());
 }
 
 
