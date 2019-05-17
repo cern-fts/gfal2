@@ -336,14 +336,14 @@ int gfal_xrootd_abort_files(plugin_handle plugin_data,
     XrdCl::FileSystem fs(endpoint);
 
     std::vector<std::string> fileList;
+    fileList.emplace_back(token);
     for (int i = 0; i < nbfiles; ++i) {
         XrdCl::URL file(prepare_url(context, urls[i]));
         fileList.emplace_back(file.GetPath());
     }
 
     XrdCl::Buffer *reponsePtr;
-    //TODO : we use Fresh as a flag now, to change to Abort once it's implemented in xrootd
-    XrdCl::Status st = fs.Prepare(fileList, XrdCl::PrepareFlags::Flags::Fresh, 0, reponsePtr);
+    XrdCl::Status st = fs.Prepare(fileList, XrdCl::PrepareFlags::Flags::Cancel, 0, reponsePtr);
     std::unique_ptr<XrdCl::Buffer> response(reponsePtr);
 
     if (!st.IsOK()) {

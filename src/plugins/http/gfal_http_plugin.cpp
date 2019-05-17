@@ -309,8 +309,11 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
         req_params->setSSLCAcheck(false);
     }
 
-    if (uri.getProtocol().compare(0, 4, "http") == 0 || uri.getProtocol().compare(0, 3, "dav") == 0) {
-        req_params->setProtocol(Davix::RequestProtocol::Auto);
+    if (uri.getProtocol().compare(0, 4, "http") == 0 )  {
+        req_params->setProtocol(Davix::RequestProtocol::Http);
+    } 
+    else if (uri.getProtocol().compare(0, 3, "dav") == 0) {
+        req_params->setProtocol(Davix::RequestProtocol::Webdav);
     }
     else if (uri.getProtocol().compare(0, 2, "s3") == 0) {
         req_params->setProtocol(Davix::RequestProtocol::AwsS3);

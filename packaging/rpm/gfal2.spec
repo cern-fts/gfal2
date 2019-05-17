@@ -4,7 +4,7 @@
 %bcond_with tests
 
 Name:               gfal2
-Version:            2.16.2
+Version:            2.16.3
 Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 Group:              Applications/Internet
@@ -56,7 +56,7 @@ BuildRequires:      globus-gass-copy-devel
 #http plugin dependencies
 BuildRequires:      davix-devel >= 0.6.8
 #xrootd plugin dependencies
-BuildRequires:      xrootd-client-devel >= 1:4.1.1
+BuildRequires:      xrootd-client-devel >= 1:4.9.0
 # sftp plugin dependencies
 BuildRequires:      libssh2-devel
 #tests dependencies

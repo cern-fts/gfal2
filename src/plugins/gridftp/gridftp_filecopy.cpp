@@ -489,10 +489,10 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
 
 // clear dest if error occures in transfer, does not clean if dest file if set as already exist before any transfer
 void GridFTPModule::autoCleanFileCopy(gfalt_params_t params,
-        GError* checked_error, const char* dst)
+        int code, const char* dst)
 {
-    if (checked_error && checked_error->code != EEXIST) {
-        gfal2_log(G_LOG_LEVEL_DEBUG,
+    if (code != EEXIST) {
+        gfal2_log(G_LOG_LEVEL_INFO,
                 "\t\tError in transfer, clean destination file %s ", dst);
         try {
             this->unlink(dst);
@@ -579,8 +579,6 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
         }
     }
 
-    // Transfer
-    GError* transfer_error = NULL;
     plugin_trigger_event(params, GFAL_GRIDFTP_DOMAIN_GSIFTP, GFAL_EVENT_NONE,
             GFAL_EVENT_TRANSFER_ENTER, "(%s) %s => (%s) %s",
             return_host_and_port(src, use_ipv6).c_str(), src,
@@ -593,20 +591,21 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
         gridftp_filecopy_copy_file_internal(this, _handle_factory, params, src, dst);
     }
     catch (Gfal::TransferException & e) {
+        
         throw;
     }
     catch (const Gfal::CoreException & e) {
-        autoCleanFileCopy(params, transfer_error, dst);
+        autoCleanFileCopy(params, e.code(), dst);
         throw Gfal::TransferException(e.domain(), e.code(), e.what(),
                 GFALT_ERROR_TRANSFER);
     }
     catch (std::exception & e) {
-        autoCleanFileCopy(params, transfer_error, dst);
+        autoCleanFileCopy(params, EIO, dst);
         throw Gfal::TransferException(GFAL_GRIDFTP_DOMAIN_GSIFTP, EIO, e.what(),
                 GFALT_ERROR_TRANSFER, "UNEXPECTED");
     }
     catch (...) {
-        autoCleanFileCopy(params, transfer_error, dst);
+        autoCleanFileCopy(params, EIO, dst);
         throw;
     }
 

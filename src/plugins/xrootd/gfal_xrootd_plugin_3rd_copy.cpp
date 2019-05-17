@@ -113,7 +113,7 @@ public:
         plugin_trigger_monitor(this->params, &this->status, this->source.c_str(), this->destination.c_str());
     }
 
-    bool ShouldCancel()
+    bool ShouldCancel(uint16_t jobNum)
     {
         return gfal2_is_canceled(this->context);
     }

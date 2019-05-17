@@ -81,7 +81,9 @@ int plugin_trigger_event(gfalt_params_t params, GQuark domain, gfal_event_side_t
     char buffer[512] = { 0 };
     va_list msg_args;
     va_start(msg_args, fmt);
-    vsnprintf(buffer, sizeof(buffer), fmt, msg_args);
+    if (fmt) {
+        vsnprintf(buffer, sizeof(buffer), fmt, msg_args);
+    }
     va_end(msg_args);
 
     struct _gfalt_event event;
