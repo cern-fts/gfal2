@@ -449,7 +449,19 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
     }
 }
 
+gboolean shouldFallBack(int errorcode)
+{
 
+	switch(errorcode) {
+	    case ENOSYS:
+	    case EPERM:
+	    case EACCES:
+	    	return true;
+	default:
+	    return false;
+
+	}
+}
 
 static int davix2errno(StatusCode::Code code)
 {
@@ -508,6 +520,7 @@ static int davix2errno(StatusCode::Code code)
         case StatusCode::CredentialNotFound:
         case StatusCode::CredDecryptionError:
         case StatusCode::SSLError:
+        case StatusCode::DelegationError:
             errcode = EACCES;
             break;
 
@@ -518,7 +531,9 @@ static int davix2errno(StatusCode::Code code)
         case StatusCode::FileExist:
             errcode = EEXIST;
             break;
-
+        case StatusCode::Canceled:
+        	errcode = ECANCELED;
+        	break;
         default:
             errcode = EIO;
             break;

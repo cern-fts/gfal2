@@ -713,6 +713,9 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                 nested_error->message);
                // Delete any potential destination file.
             gfal_http_copy_cleanup(plugin_data, dst, &nested_error);
+            if (!shouldFallBack(nested_error->code)){
+            	break;
+            }
         }
 
         copy_mode = (CopyMode)((int)copy_mode + 1);
