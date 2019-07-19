@@ -419,11 +419,8 @@ public:
                 StatInfo2Stat(stinfo, st);
             }
             else {
-#if XrdMajorVNUM(XrdVNUMBER) == 4 || XrdMajorVNUM(XrdVNUMBER) == 100
+
                 stinfo = new XrdCl::StatInfo();
-#else
-                stinfo = new XrdCl::StatInfo("");
-#endif
                 std::string fullPath = url.GetPath() + "/" + dbuffer.d_name;
                 XrdCl::XRootDStatus status = this->fs.Stat(fullPath, stinfo);
                 if (!status.IsOK()) {
