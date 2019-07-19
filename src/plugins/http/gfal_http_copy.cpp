@@ -782,6 +782,6 @@ int gfal_http_copy_check(plugin_handle plugin_data, gfal2_context_t context, con
         return 0;
     // This plugin handles everything that writes into an http endpoint
     // It will try to decide if it is better to do a third party copy, or a streamed copy later on
-    return is_http_scheme(dst);
+    return (is_http_scheme(dst) && ((strncmp(src, "file://", 7) == 0) || is_http_scheme(src)));
 }
 
