@@ -449,16 +449,14 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
     }
 }
 
-gboolean shouldFallBack(int errorcode)
+gboolean gfal_should_fallback(int error_code)
 {
 
-	switch(errorcode) {
-	    case ENOSYS:
-	    case EPERM:
-	    case EACCES:
-	    	return true;
+	switch(error_code) {
+	    case ECANCELED:
+	    	return false;
 	default:
-	    return false;
+	    return true;
 
 	}
 }
@@ -532,8 +530,8 @@ static int davix2errno(StatusCode::Code code)
             errcode = EEXIST;
             break;
         case StatusCode::Canceled:
-        	errcode = ECANCELED;
-        	break;
+            errcode = ECANCELED;
+            break;
         default:
             errcode = EIO;
             break;
