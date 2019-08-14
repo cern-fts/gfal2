@@ -412,7 +412,7 @@ static ssize_t adler32_update(void *chk_handler, const char *buffer, size_t s)
 static int adler32_getResult(void *chk_handler, char *resu, size_t s_b)
 {
     unsigned long *lp = (unsigned long *) chk_handler;
-    snprintf(resu, s_b, "%lx", *lp);
+    snprintf(resu, s_b, "%08lx", *lp);
     free(lp);
     return 0;
 }
