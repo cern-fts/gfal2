@@ -165,7 +165,7 @@ int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
         fileList.emplace_back(file.GetPath());
     }
 
-    XrdCl::Buffer *responsePtr;
+    XrdCl::Buffer *responsePtr = 0;
     XrdCl::Status st = fs.Prepare(fileList, XrdCl::PrepareFlags::Flags::Stage, 0, responsePtr, timeout);
 
     if (!st.IsOK()) {
@@ -342,7 +342,7 @@ int gfal_xrootd_abort_files(plugin_handle plugin_data,
         fileList.emplace_back(file.GetPath());
     }
 
-    XrdCl::Buffer *reponsePtr;
+    XrdCl::Buffer *reponsePtr = 0;
     XrdCl::Status st = fs.Prepare(fileList, XrdCl::PrepareFlags::Flags::Cancel, 0, reponsePtr);
     std::unique_ptr<XrdCl::Buffer> response(reponsePtr);
 
