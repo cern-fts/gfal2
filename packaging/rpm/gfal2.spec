@@ -264,6 +264,14 @@ export CC=/usr/bin/gcc44
 export CXX=/usr/bin/g++44
 %endif
 
+%if %{?fedora}%{!?fedora:0} <= 30 || %{?rhel}%{!?rhel:0} <= 7
+%cmake \
+    -DDOC_INSTALL_DIR=%{_pkgdocdir} \
+    -DUNIT_TESTS=TRUE \
+    -DPLUGIN_MOCK=TRUE \
+    -DFUNCTIONAL_TESTS=%{?with_tests:ON}%{?!with_tests:OFF} \
+    .
+%else
 %cmake \
     -DDOC_INSTALL_DIR=%{_pkgdocdir} \
     -DUNIT_TESTS=TRUE \
@@ -272,6 +280,8 @@ export CXX=/usr/bin/g++44
     -DPLUGIN_LFC=FALSE \
     -DFUNCTIONAL_TESTS=%{?with_tests:ON}%{?!with_tests:OFF} \
     .
+%endif
+
 make %{?_smp_mflags}
 make doc
 
