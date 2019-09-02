@@ -43,10 +43,12 @@ BuildRequires:      libuuid-devel
 %endif
 #file plugin dependencies
 BuildRequires:      zlib-devel
+%if %{?fedora}%{!?fedora:0} <= 30 || %{?rhel}%{!?rhel:0} <= 7
 #lfc plugin dependencies
 BuildRequires:      lfc-devel
 #rfio plugin dependencies
 BuildRequires:      dpm-devel
+%endif
 #srm plugin dependencies
 BuildRequires:      srm-ifce-devel >= 1.23.1
 #dcap plugin dependencies
@@ -106,6 +108,7 @@ Provides the file support (file://) for %{name}.
 The file plugin provides local file operations, as copying from local
 to remote or the other way around.
 
+%if %{?fedora}%{!?fedora:0} <= 30 || %{?rhel}%{!?rhel:0} <= 7
 %package plugin-lfc
 Summary:            Provides the lfc support for %{name}
 Group:              Applications/Internet
@@ -128,7 +131,7 @@ Provides the rfio support (rfio://) for %{name}.
 The rfio plugin provides the POSIX operations for 
 the rfio URLs, the rfio protocol is used on the DPM 
 and on the Castor storage systems.
-
+%endif
 
 %package plugin-dcap
 Summary:            Provides the support access for %{name}
@@ -212,10 +215,12 @@ Summary:            Meta package for GFAL 2.0 install
 Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-file%{?_isa} = %{version}-%{release}
+%if %{?fedora}%{!?fedora:0} <= 30 || %{?rhel}%{!?rhel:0} <= 7
 Requires:           %{name}-plugin-lfc%{?_isa} = %{version}-%{release}
+Requires:           %{name}-plugin-rfio%{?_isa} = %{version}-%{release}
+%endif
 Requires:           %{name}-plugin-dcap%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-srm%{?_isa} = %{version}-%{release}
-Requires:           %{name}-plugin-rfio%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-gridftp%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-http%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-xrootd%{?_isa} = %{version}-%{release}
@@ -263,6 +268,8 @@ export CXX=/usr/bin/g++44
     -DDOC_INSTALL_DIR=%{_pkgdocdir} \
     -DUNIT_TESTS=TRUE \
     -DPLUGIN_MOCK=TRUE \
+    -DPLUGIN_RFIO=FALSE \
+    -DPLUGIN_LFC=FALSE \
     -DFUNCTIONAL_TESTS=%{?with_tests:ON}%{?!with_tests:OFF} \
     .
 make %{?_smp_mflags}
@@ -319,6 +326,7 @@ make DESTDIR=%{buildroot} install
 %{_libdir}/%{name}-plugins/libgfal_plugin_file.so*
 %{_pkgdocdir}/README_PLUGIN_FILE
 
+%if %{?fedora}%{!?fedora:0} <= 30 || %{?rhel}%{!?rhel:0} <= 7
 %files plugin-lfc
 %{_libdir}/%{name}-plugins/libgfal_plugin_lfc.so*
 %{_pkgdocdir}/README_PLUGIN_LFC
@@ -328,6 +336,7 @@ make DESTDIR=%{buildroot} install
 %{_libdir}/%{name}-plugins/libgfal_plugin_rfio.so*
 %{_pkgdocdir}/README_PLUGIN_RFIO
 %config(noreplace) %{_sysconfdir}/%{name}.d/rfio_plugin.conf
+%endif
 
 %files plugin-dcap
 %{_libdir}/%{name}-plugins/libgfal_plugin_dcap.so*
