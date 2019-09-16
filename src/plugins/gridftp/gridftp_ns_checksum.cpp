@@ -87,21 +87,20 @@ void GridFTPModule::checksum(const char* url, const char* check_type,
     }
 
     globus_result_t res = globus_ftp_client_cksm(req.handler->get_ftp_client_handle(),
-            url, req.handler->get_ftp_client_operationattr(),
-            checksum_buffer, start_offset,
-            ((data_length) ? (data_length) : (-1)), check_type,
-            globus_ftp_client_done_callback, &req);
+		url, req.handler->get_ftp_client_operationattr(),
+		checksum_buffer, start_offset,
+		((data_length) ? (data_length) : (-1)), check_type,
+		globus_ftp_client_done_callback, &req);
     gfal_globus_check_result(GFAL_GRIDFTP_SCOPE_CHECKSUM, res);
     // wait for answer with a timeout
     const time_t global_timeout = gfal2_get_opt_integer_with_default(
-        _handle_factory->get_gfal2_context(),
-        CORE_CONFIG_GROUP, CORE_CONFIG_CHECKSUM_TIMEOUT, 1800
+		_handle_factory->get_gfal2_context(),
+	        CORE_CONFIG_GROUP, CORE_CONFIG_CHECKSUM_TIMEOUT, 1800
     );
 
     const time_t timeout = gfal2_get_opt_integer_with_default(
-            _handle_factory->get_gfal2_context(),
-            GRIDFTP_CONFIG_GROUP, gridftp_checksum_calc_timeout, global_timeout);
-
+		_handle_factory->get_gfal2_context(),
+		GRIDFTP_CONFIG_GROUP, gridftp_checksum_calc_timeout, global_timeout);
 
     req.wait(GFAL_GRIDFTP_SCOPE_CHECKSUM, timeout);
 
