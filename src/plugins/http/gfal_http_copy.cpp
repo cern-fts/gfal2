@@ -279,6 +279,10 @@ static int gfal_http_copy_make_parent(plugin_handle plugin_data,
     }
 }
 
+static bool gfal_http_cancellationcopy_callback(void* data)
+{
+    return gfal2_is_canceled(*static_cast<gfal2_context_t*>(data));
+}
 
 static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfData, void* data)
 {
@@ -348,7 +352,8 @@ static std::string get_canonical_uri(const std::string& original)
 }
 
 
-static int gfal_http_third_party_copy(GfalHttpPluginData* davix,
+static int gfal_http_third_party_copy(gfal2_context_t context,
+        GfalHttpPluginData* davix,
         const char* src, const char* dst,
         CopyMode mode,
         gfalt_params_t params,
@@ -399,6 +404,7 @@ static int gfal_http_third_party_copy(GfalHttpPluginData* davix,
     Davix::DavixCopy copy(davix->context, &req_params);
 
     copy.setPerformanceCallback(gfal_http_3rdcopy_perfcallback, &perfCallbackData);
+    copy.setCancellationCallback(gfal_http_cancellationcopy_callback, &context);
 
     Davix::DavixError* davError = NULL;
     copy.copy(src_uri, dst_uri,
@@ -692,7 +698,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
             }
         }
         else {
-            ret = gfal_http_third_party_copy(davix, src, dst, copy_mode, params, &nested_error);
+            ret = gfal_http_third_party_copy(context, davix, src, dst, copy_mode, params, &nested_error);
         }
 
         if (ret == 0) {
@@ -707,6 +713,9 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                 nested_error->message);
                // Delete any potential destination file.
             gfal_http_copy_cleanup(plugin_data, dst, &nested_error);
+            if (!gfal_should_fallback(nested_error->code)){
+            	break;
+            }
         }
 
         copy_mode = (CopyMode)((int)copy_mode + 1);

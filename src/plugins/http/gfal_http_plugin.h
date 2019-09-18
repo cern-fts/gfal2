@@ -113,4 +113,6 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context, gfalt_par
 int gfal_http_copy_check(plugin_handle plugin_data, gfal2_context_t context,
         const char* src, const char* dst, gfal_url2_check check);
 
+gboolean gfal_should_fallback(int error_code);
+
 #endif //_GFAL_HTTP_PLUGIN_H
