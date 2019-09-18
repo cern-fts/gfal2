@@ -1,5 +1,36 @@
 GFAL2 RELEASE-NOTES
 ===================
+
+## Wed Sep 18 2019 Andrea Manzi <amanzi at cern.ch> - 2.16.4
+###Bug
+- [DMC-1173] - The xrootd plugin ignores the make parent option
+
+###Task
+- [DMC-1159] - Implement Xrootd prepare evict on sources when Xrootd TPC transfers succeed
+- [DMC-1160] - Remove conditional compilation code to still support xrootd v3 on xrootd plugin
+- [DMC-1166] - Add support for canceling HTTP TPC transfers 
+
+## Fri May 17 2019 Andrea Manzi <amanzi at cern.ch> - 2.16.3
+###Bug
+- [DMC-1026] - gfal-copy segmentation fault on MacOSx
+- [DMC-1137] - gfal2.Gfal2Context.cancel issue for Xrootd transfers
+- [DMC-1147] - The autoCleanFileCopy function in gridftp plugin never executes the file unlink
+- [DMC-1155] - gfal-rm with signed https URL gives 401 error
+
+###Task
+- [DMC-1152] - Map stat file flags for Xrootd to SRM user.status xattr
+- [DMC-1156] - Sanitize gridftp checksum returned by globus 
+- [DMC-1157] - Integrate new API for staging canceling in Xrootd
+
+## Thu Feb 21 2019 Andrea Manzi <amanzi at cern.ch> - 2.16.2
+###Bug
+- [DMC-1131] - Transfers gridftp->ftp fail as GLOBUS_FTP_CONTROL_MODE_EXTENDED_BLOCK is not supported on FTP
+
+###Task
+- [DMC-1123] - Add ENABLE_FALLBACK_COPY variable to http plugin
+- [DMC-1125] - Add X509 delegation to Xrootd TPC job properties
+- [DMC-1129] - Add a query parameter to HTTP urls for the configuration of the copy mode
+
 ## Wed Oct 31 2018 Andrea Manzi <amanzi at cern.ch> - 2.16.1
 ###Bug
 - [DMC-1099] - Checksum comparison in Xrootd is wrongly enabled for FTS transfers
