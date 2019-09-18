@@ -5,7 +5,7 @@
 
 Name:               gfal2
 Version:            2.16.4
-Release:            1%{?dist}
+Release:            2%{?dist}
 Summary:            Grid file access library 2.0
 Group:              Applications/Internet
 License:            ASL 2.0
@@ -374,6 +374,9 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Wed Sep 18 2019 Andrea Manzi <amanzi at cern.ch> - 2.16.4-2
+- New upstrem release
+
 * Fri May 17 2019 Andrea Manzi <amanzi at cern.ch> - 2.16.3-1
 - New upstrem release
 
