@@ -258,6 +258,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         job.Set("target", dest_url.GetURL());
         job.Set("force", gfalt_get_replace_existing_file(params, NULL));
         job.Set("makeDir", gfalt_get_create_parent_dir(params, NULL));
+        job.Set("SubStreamsPerChannel", gfalt_get_nbstreams(params, NULL));
         job.Set("posc", true);
         if ((source_url.GetProtocol() == "root") && (dest_url.GetProtocol() == "root")) {
             job.Set("thirdParty", "only");
