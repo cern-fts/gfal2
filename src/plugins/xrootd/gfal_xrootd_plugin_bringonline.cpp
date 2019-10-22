@@ -270,7 +270,7 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
     if (finishedCounter == nbfiles) {
         return 1;
     }
-    else if (errCounter > 0) {
+    else if (errCounter == nbfiles) {
         return -1;
     }
     return 0;
