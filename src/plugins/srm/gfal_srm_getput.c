@@ -36,9 +36,11 @@ static int validate_turls(int n_results, gfal_srm_result **resu,
     int failed = 0;
     int n_protocols = g_strv_length(params->protocols);
     int i, j;
-
+    gfal2_log(G_LOG_LEVEL_MESSAGE, "Got TURL");
     for (i = 0; i < n_results && !failed; ++i) {
+        gfal2_log(G_LOG_LEVEL_MESSAGE, "Got TURL 2");
         const char *turl = (*resu)[i].turl;
+	gfal2_log(G_LOG_LEVEL_MESSAGE, "Got TURL %s", turl);
 
         if (turl[0] == '/') {
             failed = -1;
@@ -176,6 +178,11 @@ int gfal_srm_getTURLS_srmv2_internal(srm_context_t context, gfal_srmv2_opt *opts
     preparetoget_input.protocols = gfal_srm_params_get_protocols(params);
     preparetoget_input.spacetokendesc = gfal_srm_params_get_spacetoken(params);
     preparetoget_input.surls = &surl;
+    preparetoget_input.nbextrainfo = 1;
+    struct srm_key_value preparetoget_input_key_value;
+    g_strlcpy(preparetoget_input_key_value.key,"stage", 6);
+    g_strlcpy(preparetoget_input_key_value.value,"deny", 5);
+    preparetoget_input.extrainfo = &preparetoget_input_key_value;
 
     ret = gfal_srmv2_get_global(opts, params, context, &preparetoget_input, resu, &tmp_err);
     G_RETURN_ERR(ret, tmp_err, err);
