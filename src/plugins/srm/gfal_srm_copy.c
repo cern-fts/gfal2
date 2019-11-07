@@ -428,7 +428,7 @@ static int srm_resolve_turls(plugin_handle handle, gfal2_context_t context,
     GError **err)
 {
     GError *tmp_err = NULL;
-
+    char buffer[1024];
     struct stat stat_source;
     memset(&stat_source, 0, sizeof(stat_source));
     if (gfal2_stat(context, source, &stat_source, &tmp_err) != 0) {
@@ -439,6 +439,31 @@ static int srm_resolve_turls(plugin_handle handle, gfal2_context_t context,
         g_clear_error(&tmp_err);
         tmp_err = NULL;
     }
+
+    //check if the source file is online in case the SRM_COPY_FAIL_NEARLINE is set
+    gboolean fail_nearline = gfal2_get_opt_boolean_with_default(context, "SRM PLUGIN", "COPY_FAIL_NEARLINE", FALSE);
+    if (fail_nearline && srm_check_url(source)) {
+        ssize_t ret = gfal2_getxattr(context,  source, GFAL_XATTR_STATUS, buffer, sizeof(buffer), &tmp_err);
+        if (ret > 0 && strlen(buffer) > 0 && tmp_err == NULL) {
+	    if (strncmp(buffer, GFAL_XATTR_STATUS_NEARLINE, sizeof(GFAL_XATTR_STATUS_NEARLINE)) == 0) {
+	    	gfal2_log(G_LOG_LEVEL_DEBUG, "The source file is not ONLINE");
+		gfalt_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
+                    GFALT_ERROR_SOURCE, "SRM_GET_TURL", "The source file is not ONLINE");
+                gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+                return -1;
+            }
+        } else {
+            if (tmp_err != NULL) {
+                gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+                return -1;
+            } else {
+	        gfalt_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
+                    GFALT_ERROR_SOURCE, "SRM_GET_TURL", "Error while checking if the source file is ONLINE");
+	        gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+                return -1;
+            }
+        }
+    }	
 
     srm_resolve_get_turl(handle, params, source, dest,
         turl_source, GFAL_URL_MAX_LEN,
