@@ -4,7 +4,7 @@
 %bcond_with tests
 
 Name:               gfal2
-Version:            2.17.0
+Version:            2.17.1
 Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 Group:              Applications/Internet
@@ -393,6 +393,9 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Thu Nov 07 2019 Andrea Manzi <amanzi at cern.ch> - 2.17.1-1
+- New upstrem release
+
 * Thu Apr 05 2018 Andrea Manzi <amanzi at cern.ch> - 2.15.4-1
 - New upstrem release
 
