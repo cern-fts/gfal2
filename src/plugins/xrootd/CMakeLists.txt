@@ -4,7 +4,7 @@ if (PLUGIN_XROOTD)
 
     find_package(XROOTD REQUIRED)
 
-    include_directories(${XROOTD_INCLUDE_DIR})
+    include_directories(${XROOTD_INCLUDE_DIR} ${JSONC_INCLUDE_DIRS})
 
     file (GLOB src_xrootd "*.cpp")
 
@@ -15,11 +15,13 @@ if (PLUGIN_XROOTD)
         ${GFAL2_PKG_LIBRARIES}
         gfal2_transfer
         ${XROOTD_LIBRARIES}
+        ${JSONC_LIBRARIES}
     )
     target_link_libraries(plugin_xrootd_static
         ${GFAL2_PKG_LIBRARIES}
         gfal2_transfer
         ${XROOTD_LIBRARIES}
+        ${JSONC_LIBRARIES}
     )
     
     set_target_properties(plugin_xrootd PROPERTIES
