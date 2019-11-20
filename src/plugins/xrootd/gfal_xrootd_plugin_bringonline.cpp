@@ -20,8 +20,8 @@
 
 #include <memory>
 #include <set>
+#include <algorithm>
 #include <json.h>
-#include <boost/algorithm/string.hpp>
 #include <XrdCl/XrdClFileSystem.hh>
 #include <XrdSys/XrdSysPthread.hh>
 
@@ -76,7 +76,7 @@ inline bool to_bool( struct json_object *boolobj )
   if( !boolobj ) return false;
   static const std::string str_true( "true" );
   std::string str_bool = json_object_get_string( boolobj );
-  boost::algorithm::to_lower( str_bool );
+  std::transform( str_bool.begin(), str_bool.end(), str_bool.begin(), tolower );
   return ( str_bool == str_true );
 }
 
@@ -94,7 +94,7 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
 
     std::set<std::string> paths;
     std::string strarg = token;
-    for( size_t i = 0; i < nbfiles; ++i )
+    for( int i = 0; i < nbfiles; ++i )
     {
       strarg += '\n';
       XrdCl::URL url( prepare_url( context, urls[i] ) );
@@ -142,8 +142,8 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
       return -1;
     }
 
-    size_t onlinecnt = 0;
-    size_t errorcnt  = 0;
+    int onlinecnt = 0;
+    int errorcnt  = 0;
 
     // now iterate over the file list
     struct json_object *responses = 0;
