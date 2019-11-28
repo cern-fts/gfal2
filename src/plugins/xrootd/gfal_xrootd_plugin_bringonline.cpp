@@ -19,130 +19,11 @@
 #include "gfal_xrootd_plugin_utils.h"
 
 #include <memory>
+#include <set>
+#include <algorithm>
+#include <json.h>
 #include <XrdCl/XrdClFileSystem.hh>
 #include <XrdSys/XrdSysPthread.hh>
-
-class PollErrorResponseHandler: public XrdCl::ResponseHandler {
-private:
-    XrdSysCondVar &condVar;
-    GError **error;
-    int &finishedCounter, &errCounter, &notAnsweredCounter;
-public:
-    PollErrorResponseHandler( XrdSysCondVar &condVar, GError **error, int &finishedCounter, int &errCounter, int &notAnsweredCounter):
-        condVar(condVar), error(error), finishedCounter(finishedCounter), errCounter(errCounter), notAnsweredCounter(notAnsweredCounter) {
-    }
-
-    ~PollErrorResponseHandler() {
-    }
-
-    void HandleResponse(XrdCl::XRootDStatus *status, XrdCl::AnyObject *res) {
-        if (!status->IsOK()) {
-            ++errCounter;
-            gfal2_log(G_LOG_LEVEL_DEBUG, "Error doing the query");
-            gfal2_set_error(error, xrootd_domain,
-               xrootd_errno_to_posix_errno(status->errNo), __func__, "%s", status->GetErrorMessage().c_str());
-        }
-        delete status;
-
-        condVar.Lock();
-        --notAnsweredCounter;
-        
-        XrdCl::Buffer * response= 0;
-        res->Get(response);
-
-        if (*error) {
-            ++errCounter;
-        } else if (response->GetBuffer() != NULL)  { 
-            int retc;
-            char tag[1024];
-            char error_string[1024];
-            error_string[0] = 0;
-            gfal2_log(G_LOG_LEVEL_DEBUG, "Response: %s", response->GetBuffer());
-            sscanf(response->GetBuffer(),
-                "%s retc=%i value=%[^\n]",
-                tag, &retc, error_string);
-            if (retc || (strlen(error_string) != 0 )) {
-                gfal2_log(G_LOG_LEVEL_DEBUG, "Error reported: %s", error_string);
-                gfal2_set_error(error, xrootd_domain, EIO, __func__, "%s",error_string);
-                ++errCounter;
-            } else {
-               gfal2_log(G_LOG_LEVEL_DEBUG, "No error reported");
-               gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
-            }
-        } else {
-             gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
-        }
-        if (notAnsweredCounter <= 0) {
-            condVar.UnLock();
-            condVar.Signal();
-            condVar.Lock();
-        }
-        condVar.UnLock();
-
-        delete res;
-    }
-
-    // std::vector expects an = operator, and the default one is no good
-    const PollErrorResponseHandler operator = (const PollErrorResponseHandler &b) {
-        return *this;
-    }
-
-};
-
-
-class PollResponseHandler: public XrdCl::ResponseHandler {
-private:
-    XrdSysCondVar &condVar;
-    GError **error;
-    int &finishedCounter, &errCounter, &notAnsweredCounter;
-    const char* url;
-public:
-    PollResponseHandler( XrdSysCondVar &condVar, GError **error, int &finishedCounter, int &errCounter, int &notAnsweredCounter):
-        url(url),condVar(condVar), error(error), finishedCounter(finishedCounter), errCounter(errCounter), notAnsweredCounter(notAnsweredCounter) {
-    }
-
-    ~PollResponseHandler() {
-    }
-
-    void HandleResponse(XrdCl::XRootDStatus *status, XrdCl::AnyObject *response) {
-        if (!status->IsOK()) {
-            ++errCounter;
-            gfal2_log(G_LOG_LEVEL_DEBUG, "Error doing the query");
-            gfal2_set_error(error, xrootd_domain,
-               xrootd_errno_to_posix_errno(status->errNo), __func__, "%s", status->GetErrorMessage().c_str());
-        }
-        delete status;
-        
-        XrdCl::StatInfo *info = 0;
-        response->Get(info);
-
-        condVar.Lock();
-
-        --notAnsweredCounter;
-        if (*error) {
-            ++errCounter;
-        }
-        else if (!(info->TestFlags(XrdCl::StatInfo::Offline))) {
-           gfal2_log(G_LOG_LEVEL_DEBUG, "file online");  
-           ++finishedCounter;
-        }
-        else { 
-           gfal2_set_error(error, xrootd_domain, EAGAIN, __func__, "%s","Not online");
-        }
-        if (notAnsweredCounter <= 0) {
-            condVar.UnLock();
-            condVar.Signal();
-            condVar.Lock();
-        }
-        condVar.UnLock();
-        delete response;
-    }
-
-    // std::vector expects an = operator, and the default one is no good
-    const PollResponseHandler operator = (const PollResponseHandler &b) {
-        return *this;
-    }
-};
 
 
 int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
@@ -190,6 +71,14 @@ int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
     return 0;
 }
 
+inline bool to_bool( struct json_object *boolobj )
+{
+  if( !boolobj ) return false;
+  static const std::string str_true( "true" );
+  std::string str_bool = json_object_get_string( boolobj );
+  std::transform( str_bool.begin(), str_bool.end(), str_bool.begin(), tolower );
+  return ( str_bool == str_true );
+}
 
 int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
     int nbfiles, const char* const* urls, const char* token, GError** err)
@@ -202,77 +91,180 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
     XrdCl::URL endpoint(prepare_url(context, urls[0]));
     endpoint.SetPath(std::string());
     XrdCl::FileSystem fs(endpoint);
-    std::vector<PollResponseHandler> handlers;
-    int finishedCounter = 0, errCounter = 0, notAnsweredCounter = nbfiles;
-    XrdSysCondVar condVar(0);
 
-    // Make sure all handlers are in place before calling async code
-    for (int i = 0; i < nbfiles; i++) {
-        handlers.emplace_back(condVar, &err[i], finishedCounter, errCounter, notAnsweredCounter);
-    }
-    for (int i = 0; i < nbfiles; i++) {
-        XrdCl::URL file(prepare_url(context, urls[i]));
-        gfal2_log(G_LOG_LEVEL_DEBUG, "Doing file stat to check if the file is online: %s ", file.GetPath().c_str());
-        XrdCl::Status st = fs.Stat(file.GetPath(), &handlers[i]);
-        if (!st.IsOK()) {
-            condVar.Lock();
-            errCounter++;
-            condVar.UnLock();
-            gfal2_set_error(&err[i], xrootd_domain, xrootd_errno_to_posix_errno(st.errNo),
-                __func__, "%s", st.ToString().c_str());
-        }
+    std::set<std::string> paths;
+    std::string strarg = token;
+    for( int i = 0; i < nbfiles; ++i )
+    {
+      strarg += '\n';
+      XrdCl::URL url( prepare_url( context, urls[i] ) );
+      std::string path = url.GetPath();
+      // as gfal is currently adding triple slash (///) add the front of
+      // the path we need to collapse those redundant slashes
+      if( path[0] == '/' && path[1] == '/' ) path = path.substr( 1 );
+      strarg += path;
+      paths.insert( path );
     }
 
-    condVar.Lock();
-    condVar.Wait(300);
-    condVar.UnLock();
- 
-    notAnsweredCounter = 0;
-   
-    for (int i = 0; i < nbfiles; i++) {
-        if (err[i]){
-            notAnsweredCounter++;
-        } 
-    }
-    
-    if (notAnsweredCounter > 0) {
-      std::vector<PollErrorResponseHandler> errorHandlers;
-      for (int i = 0; i < nbfiles; i++) {
-          errorHandlers.emplace_back(condVar, &err[i], finishedCounter, errCounter, notAnsweredCounter);
-      } 
-      for (int i = 0 ; i < nbfiles; i++) {
-          if (!err[i]) {
-            continue;
-          }
-          g_clear_error(&err[i]); 
-          gfal2_log(G_LOG_LEVEL_DEBUG, "Invoke the query for the error attribute for file: %s", urls[i]);
-          //invoke the query for the error attribute
-          XrdCl::Buffer arg; 
-          XrdCl::URL file(prepare_url(context, urls[i]));
-          //build the opaque
-          std::ostringstream sstr;
-          sstr << file.GetPath() << "?mgm.pcmd=xattr&mgm.subcmd=get&mgm.xattrname=sys.retrieve.error";
-          arg.FromString(sstr.str());
-          XrdCl::Status status = fs.Query(XrdCl::QueryCode::Code::OpaqueFile , arg, &errorHandlers[i]);
+    XrdCl::Buffer  arg; arg.FromString( strarg );
+    XrdCl::Buffer *resp = 0;
 
-          if (!status.IsOK()) {
-                gfal2_log(G_LOG_LEVEL_DEBUG, "Error submitting query for extended attribute");
-                gfal2_set_error(&err[i], xrootd_domain, EAGAIN, __func__, "%s","Not online");
-          } 
-      
-      } 
-    
-      condVar.Lock();
-      condVar.Wait(300);
-      condVar.UnLock();
-     
+    gfal2_log( G_LOG_LEVEL_DEBUG, "Issuing query prepare." );
+    XrdCl::XRootDStatus st = fs.Query( XrdCl::QueryCode::Prepare, arg, resp );
+
+    if( !st.IsOK() )
+    {
+      gfal2_log( G_LOG_LEVEL_ERROR, "Query prepare failed: %s", st.ToString().c_str() );
+      for( int i = 0; i < nbfiles; ++i )
+        gfal2_set_error( &err[i], xrootd_domain, xrootd_errno_to_posix_errno( st.errNo ),
+                        __func__, "%s", st.ToString().c_str() );
+      return -1;
     }
-    if (finishedCounter == nbfiles) {
-        return 1;
+
+    std::string jsonresp = resp->ToString();
+    delete resp;
+
+    struct json_object *parsed_json = json_tokener_parse( jsonresp.c_str() );
+    if( !parsed_json )
+    {
+      for( int i = 0; i < nbfiles; ++i )
+        gfal2_set_error( &err[i], xrootd_domain, ENOMSG, __func__, "Malformed server response." );
+      return -1;
     }
-    else if (errCounter == nbfiles) {
-        return -1;
+
+    struct json_object *request_id;
+    json_object_object_get_ex( parsed_json, "request_id", &request_id );
+    std::string reqid = request_id ? json_object_get_string( request_id ) : "";
+    if( reqid.empty() || reqid != token )
+    {
+      for( int i = 0; i < nbfiles; ++i )
+        gfal2_set_error( &err[i], xrootd_domain, ENOMSG, __func__, "%s", "Request ID mismatch." );
+      return -1;
     }
+
+    int onlinecnt = 0;
+    int errorcnt  = 0;
+
+    // now iterate over the file list
+    struct json_object *responses = 0;
+    json_object_object_get_ex( parsed_json, "responses", &responses );
+    int size = responses ? json_object_array_length( responses ) : 0;
+    if( size != nbfiles )
+    {
+      for( int i = 0; i < nbfiles; ++i )
+        gfal2_set_error( &err[0], xrootd_domain, ENOMSG, __func__,
+                         "Number of files in the request does not match!" );
+      return -1;
+    }
+
+    for( int i = 0; i < size; ++i )
+    {
+      // get the i-th object in the array
+      struct json_object *arrobj = json_object_array_get_idx( responses, i );
+      if( !arrobj )
+      {
+        ++errorcnt;
+        gfal2_set_error(&err[i], xrootd_domain, ENOMSG, __func__, "Malformed server response." );
+        continue;
+      }
+
+      // get the path attribute
+      struct json_object *arrobj_path = 0;
+      json_object_object_get_ex( arrobj, "path", &arrobj_path );
+      std::string path = arrobj_path ? json_object_get_string( arrobj_path ) : "";
+      if( path.empty() || !paths.count( path ) )
+      { // it's not our file, this is an error
+        ++errorcnt;
+        gfal2_set_error(&err[i], xrootd_domain, ENOMSG, __func__, "Wrong path: %s", path.c_str() );
+        continue;
+      }
+
+      // get the exists attribute
+      struct json_object *arrobj_exists = 0;
+      json_object_object_get_ex( arrobj, "exists", &arrobj_exists );
+      bool exists = to_bool( arrobj_exists );
+      if( !exists )
+      {
+        ++errorcnt;
+        gfal2_set_error(&err[i], xrootd_domain, ENOENT, __func__, "File does not exist: %s", path.c_str() );
+        continue;
+      }
+
+      // get the online attribute
+      struct json_object *arrobj_online = 0;
+      json_object_object_get_ex( arrobj, "online", &arrobj_online );
+      bool online = to_bool( arrobj_online );
+      if( online )
+      {
+        ++onlinecnt;
+        continue;
+      }
+
+      // get the requested attribute
+      struct json_object *arrobj_requested = 0;
+      json_object_object_get_ex( arrobj, "requested", &arrobj_requested );
+      bool requested = to_bool( arrobj_requested );
+      if( !requested )
+      {
+        ++errorcnt;
+        gfal2_set_error( &err[i], xrootd_domain, ENOMSG, __func__,
+                         "File is not being brought online: %s", path.c_str() );
+        continue;
+      }
+
+      // get the has_reqid attribute
+      struct json_object *arrobj_has_reqid = 0;
+      json_object_object_get_ex( arrobj, "has_reqid", &arrobj_has_reqid );
+      bool has_reqid = to_bool( arrobj_has_reqid );
+      if( !has_reqid )
+      {
+        ++errorcnt;
+        gfal2_set_error( &err[i], xrootd_domain, ENOMSG, __func__,
+                         "File (%s) is not included in the bring online request: %s",
+                         path.c_str(), token );
+        continue;
+      }
+
+      // get the req_time attribute
+      struct json_object *arrobj_req_time = 0;
+      json_object_object_get_ex( arrobj, "req_time", &arrobj_req_time );
+      std::string req_time = arrobj_req_time ? json_object_get_string( arrobj_req_time ) : "";
+      if( !req_time.empty() )
+        gfal2_log( G_LOG_LEVEL_DEBUG, "File (%s) has been requested at: %s",
+                   path.c_str(), req_time.c_str() );
+      else
+      {
+        ++errorcnt;
+        gfal2_set_error( &err[i], xrootd_domain, ENOMSG, __func__, "Bring-online timestamp missing." );
+        continue;
+      }
+
+      // get the req_time attribute
+      struct json_object *arrobj_error_text = 0;
+      json_object_object_get_ex( arrobj, "error_text", &arrobj_error_text );
+      std::string error_text = arrobj_error_text ? json_object_get_string( arrobj_error_text ) :
+                                                   "Error attribute missing.";
+
+      if( !error_text.empty() )
+      {
+        ++errorcnt;
+        gfal2_set_error(&err[i], xrootd_domain, ENOMSG, __func__, "%s", error_text.c_str() );
+        continue;
+      }
+
+      // if there is no error but the file is not online set EAGAIN
+      if( !online )
+        gfal2_set_error( &err[i], xrootd_domain, EAGAIN, __func__,
+                         "File (%s) is not yet online.", path.c_str() );
+    }
+
+    // if all files are online return 1
+    if( onlinecnt == nbfiles ) return 1;
+
+    // if there were errors return -1
+    if( errorcnt == nbfiles ) return -1;
+
+    // otherwise 0 means user still needs to wait
     return 0;
 }
 
