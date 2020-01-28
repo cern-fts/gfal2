@@ -80,6 +80,26 @@ inline bool to_bool( struct json_object *boolobj )
   return ( str_bool == str_true );
 }
 
+void collapse_slashes( std::string &path )
+{
+  std::string::iterator itr = path.begin(), store = path.begin();
+  ++itr;
+
+  while( itr != path.end() )
+  {
+    if( *store != '/' || *itr != '/' )
+    {
+      ++store;
+      *store = *itr;
+    }
+    ++itr;
+  }
+
+  size_t size = store - path.begin() + 1;
+  if( path.size() != size )
+    path.resize( size );
+}
+
 int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
     int nbfiles, const char* const* urls, const char* token, GError** err)
 {
@@ -99,9 +119,8 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
       strarg += '\n';
       XrdCl::URL url( prepare_url( context, urls[i] ) );
       std::string path = url.GetPath();
-      // as gfal is currently adding triple slash (///) add the front of
-      // the path we need to collapse those redundant slashes
-      if( path[0] == '/' && path[1] == '/' ) path = path.substr( 1 );
+      // collapse redundant slashes
+      collapse_slashes( path );
       strarg += path;
       paths.insert( path );
     }
@@ -172,6 +191,8 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
       struct json_object *arrobj_path = 0;
       json_object_object_get_ex( arrobj, "path", &arrobj_path );
       std::string path = arrobj_path ? json_object_get_string( arrobj_path ) : "";
+      // collapse redundant slashes
+      collapse_slashes( path );
       if( path.empty() || !paths.count( path ) )
       { // it's not our file, this is an error
         ++errorcnt;
