@@ -83,7 +83,8 @@ static bool isS3SignedURL(const Davix::Uri &url)
 static bool gfal_http_get_token(RequestParams & params,
                                 gfal2_context_t handle,
                                 const Davix::Uri &url,
-                                const char *token_type)
+                                const char *token_type,
+                                bool secondary_endpoint)
 {
 
     if (isS3SignedURL(url)) {
@@ -98,7 +99,7 @@ static bool gfal_http_get_token(RequestParams & params,
 
     if (!token && strcmp(GFAL_CRED_BEARER, token_type) != 0) {
         // if we don't have specific token for TPC passive
-        // party use token stored its hostname
+        // party use token stored for hostname (compatibility)
         token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
                                url.getHost().c_str(),
                                NULL, &error);
@@ -112,9 +113,10 @@ static bool gfal_http_get_token(RequestParams & params,
     std::stringstream ss;
     ss << "Bearer " << token;
 
-    gfal2_log(G_LOG_LEVEL_DEBUG, "Using bearer token for HTTPS request authorization");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Using bearer token for HTTPS request authorization%s",
+              secondary_endpoint ? "" : " (passive TPC)");
 
-    if (strcmp(GFAL_CRED_BEARER, token_type) != 0) {
+    if (secondary_endpoint) {
         params.addHeader("TransferHeaderAuthorization", ss.str());
         // If we have a valid token for the destination, we explicitly disable credential
         // delegation.
@@ -248,17 +250,93 @@ static void gfal_http_get_gcloud(RequestParams & params, gfal2_context_t handle,
     g_free(gcloud_json_string);
 }
 
-static void gfal_http_get_cred(RequestParams & params, gfal2_context_t handle, const Davix::Uri& uri, const char *token_type)
+static void gfal_http_get_cred(RequestParams & params,
+                               gfal2_context_t handle,
+                               const Davix::Uri& uri,
+                               const char *token_type = GFAL_CRED_BEARER,
+                               bool secondary_endpoint = false)
 {
     gfal_http_get_ucert(uri, params, handle);
     // Only utilize AWS or GCLOUD tokens if a bearer token isn't available.
     // We still setup GSI in case the storage endpoint tries to fall back to GridSite delegation.
     // That does mean that we might contact the endpoint with both X509 and token auth -- but seems
     // to be an acceptable compromise.
-    if (!gfal_http_get_token(params, handle, uri, token_type)) {
+    if (!gfal_http_get_token(params, handle, uri, token_type, secondary_endpoint)) {
         gfal_http_get_aws(params, handle, uri);
         gfal_http_get_gcloud(params, handle, uri);
     }
+}
+
+static void gfal_http_get_params(RequestParams & params, gfal2_context_t handle, const Davix::Uri& uri)
+{
+    gboolean insecure_mode = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "INSECURE", FALSE);
+    if (insecure_mode) {
+        params.setSSLCAcheck(false);
+    }
+
+    if (uri.getProtocol().compare(0, 4, "http") == 0 )  {
+        params.setProtocol(Davix::RequestProtocol::Http);
+    }
+    else if (uri.getProtocol().compare(0, 3, "dav") == 0) {
+        params.setProtocol(Davix::RequestProtocol::Webdav);
+    }
+    else if (uri.getProtocol().compare(0, 2, "s3") == 0) {
+        params.setProtocol(Davix::RequestProtocol::AwsS3);
+    }
+    else if (uri.getProtocol().compare(0, 6, "gcloud") == 0) {
+        params.setProtocol(Davix::RequestProtocol::Gcloud);
+    }
+    else {
+        params.setProtocol(Davix::RequestProtocol::Auto);
+    }
+    // Keep alive
+    gboolean keep_alive = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "KEEP_ALIVE", TRUE);
+    params.setKeepAlive(keep_alive);
+
+    // Reset here the verbosity level
+    davix_set_log_level(get_corresponding_davix_log_level());
+
+    // Avoid retries
+    params.setOperationRetry(0);
+
+    // User agent
+    const char *agent, *version;
+    gfal2_get_user_agent(handle, &agent, &version);
+
+    std::ostringstream user_agent;
+    if (agent) {
+        user_agent << agent << "/" << version << " " << "gfal2/" << gfal2_version();
+    }
+    else {
+        user_agent << "gfal2/" << gfal2_version();
+    }
+    params.setUserAgent(user_agent.str());
+
+    // Client information
+    char* client_info = gfal2_get_client_info_string(handle);
+    if (client_info) {
+        params.addHeader("ClientInfo", client_info);
+    }
+    g_free(client_info);
+
+    // Custom headers
+    gsize headers_length = 0;
+    char **headers = gfal2_get_opt_string_list_with_default(handle, "HTTP PLUGIN", "HEADERS", &headers_length, NULL);
+    if (headers) {
+        for (char **hi = headers; *hi != NULL; ++hi) {
+            char **kv = g_strsplit(*hi, ":", 2);
+            g_strstrip(kv[0]);
+            g_strstrip(kv[1]);
+            params.addHeader(kv[0], kv[1]);
+            g_strfreev(kv);
+        }
+        g_strfreev(headers);
+    }
+
+    // Timeout
+    struct timespec opTimeout;
+    opTimeout.tv_sec = gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", HTTP_CONFIG_OP_TIMEOUT, 8000);
+    params.setOperationTimeout(&opTimeout);
 }
 
 void GfalHttpPluginData::get_tpc_params(bool push_mode,
@@ -266,16 +344,18 @@ void GfalHttpPluginData::get_tpc_params(bool push_mode,
                                         const Davix::Uri& src_uri,
                                         const Davix::Uri& dst_uri)
 {
+    *req_params = reference_params;
+
     bool do_delegation = false;
-    // IMPORTANT: get_params overwrites req_params
-    // Hence, the primary endpoint MUST go first here!
     if (push_mode) {
-        get_params(req_params, src_uri);
-        gfal_http_get_cred(*req_params, handle, dst_uri, GFAL_CRED_BEARER_DST);
+        gfal_http_get_params(*req_params, handle, src_uri);
+        gfal_http_get_cred(*req_params, handle, src_uri, GFAL_CRED_BEARER_SRC);
+        gfal_http_get_cred(*req_params, handle, dst_uri, GFAL_CRED_BEARER_DST, true);
         do_delegation = delegation_required(dst_uri);
     } else {  // Pull mode
-        get_params(req_params, dst_uri);
-        gfal_http_get_cred(*req_params, handle, src_uri, GFAL_CRED_BEARER_SRC);
+        gfal_http_get_params(*req_params, handle, dst_uri);
+        gfal_http_get_cred(*req_params, handle, src_uri, GFAL_CRED_BEARER_SRC, true);
+        gfal_http_get_cred(*req_params, handle, dst_uri, GFAL_CRED_BEARER_DST);
         do_delegation = delegation_required(src_uri);
     }
     // The TPC request should be explicit in terms of how the active endpoint should manage credentials,
@@ -310,76 +390,8 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
 {
     *req_params = reference_params;
 
-    gfal_http_get_cred(*req_params, handle, uri, GFAL_CRED_BEARER);
-
-    gboolean insecure_mode = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "INSECURE", FALSE);
-    if (insecure_mode) {
-        req_params->setSSLCAcheck(false);
-    }
-
-    if (uri.getProtocol().compare(0, 4, "http") == 0 )  {
-        req_params->setProtocol(Davix::RequestProtocol::Http);
-    }
-    else if (uri.getProtocol().compare(0, 3, "dav") == 0) {
-        req_params->setProtocol(Davix::RequestProtocol::Webdav);
-    }
-    else if (uri.getProtocol().compare(0, 2, "s3") == 0) {
-        req_params->setProtocol(Davix::RequestProtocol::AwsS3);
-    }
-    else if (uri.getProtocol().compare(0, 6, "gcloud") == 0) {
-        req_params->setProtocol(Davix::RequestProtocol::Gcloud);
-    }
-    else {
-        req_params->setProtocol(Davix::RequestProtocol::Auto);
-    }
-    // Keep alive
-    gboolean keep_alive = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "KEEP_ALIVE", TRUE);
-    req_params->setKeepAlive(keep_alive);
-
-    // Reset here the verbosity level
-    davix_set_log_level(get_corresponding_davix_log_level());
-
-    // Avoid retries
-    req_params->setOperationRetry(0);
-
-    // User agent
-    const char *agent, *version;
-    gfal2_get_user_agent(handle, &agent, &version);
-
-    std::ostringstream user_agent;
-    if (agent) {
-        user_agent << agent << "/" << version << " " << "gfal2/" << gfal2_version();
-    }
-    else {
-        user_agent << "gfal2/" << gfal2_version();
-    }
-    req_params->setUserAgent(user_agent.str());
-
-    // Client information
-    char* client_info = gfal2_get_client_info_string(handle);
-    if (client_info) {
-        req_params->addHeader("ClientInfo", client_info);
-    }
-    g_free(client_info);
-
-    // Custom headers
-    gsize headers_length = 0;
-    char **headers = gfal2_get_opt_string_list_with_default(handle, "HTTP PLUGIN", "HEADERS", &headers_length, NULL);
-    if (headers) {
-        for (char **hi = headers; *hi != NULL; ++hi) {
-            char **kv = g_strsplit(*hi, ":", 2);
-            g_strstrip(kv[0]);
-            g_strstrip(kv[1]);
-            req_params->addHeader(kv[0], kv[1]);
-            g_strfreev(kv);
-        }
-        g_strfreev(headers);
-    }
-
-    // Timeout
-    struct timespec opTimeout;
-    opTimeout.tv_sec = gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", HTTP_CONFIG_OP_TIMEOUT, 8000);
-    req_params->setOperationTimeout(&opTimeout);
+    gfal_http_get_cred(*req_params, handle, uri);
+    gfal_http_get_params(*req_params, handle, uri);
 }
 
 
