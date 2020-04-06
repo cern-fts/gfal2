@@ -81,19 +81,29 @@ static bool isS3SignedURL(const Davix::Uri &url)
 //  configured to utilize a bearer token.  In such a case, no other
 //  authorization mechanism (such as user certs) should be used.
 static bool gfal_http_get_token(RequestParams & params,
-                                const Davix::Uri &src_url,
-                                bool secondary_endpoint,
-                                gfal2_context_t handle)
+                                gfal2_context_t handle,
+                                const Davix::Uri &url,
+                                const char *token_type)
 {
 
-    if (isS3SignedURL(src_url)) {
+    if (isS3SignedURL(url)) {
 	return false;
     }
 
     GError *error = NULL;
-    gchar *token = gfal2_cred_get(handle, GFAL_CRED_BEARER, src_url.getHost().c_str(),
+    gchar *token = gfal2_cred_get(handle, token_type,
+                                  url.getString().c_str(),
                                   NULL, &error);
     g_clear_error(&error);  // for now, ignore the error messages.
+
+    if (!token && strcmp(GFAL_CRED_BEARER, token_type) != 0) {
+        // if we don't have specific token for TPC passive
+        // party use token stored its hostname
+        token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
+                               url.getHost().c_str(),
+                               NULL, &error);
+        g_clear_error(&error);  // for now, ignore the error messages.
+    }
 
     if (!token) {
         return false;
@@ -104,7 +114,7 @@ static bool gfal_http_get_token(RequestParams & params,
 
     gfal2_log(G_LOG_LEVEL_DEBUG, "Using bearer token for HTTPS request authorization");
 
-    if (secondary_endpoint) {
+    if (strcmp(GFAL_CRED_BEARER, token_type) != 0) {
         params.addHeader("TransferHeaderAuthorization", ss.str());
         // If we have a valid token for the destination, we explicitly disable credential
         // delegation.
@@ -238,21 +248,34 @@ static void gfal_http_get_gcloud(RequestParams & params, gfal2_context_t handle,
     g_free(gcloud_json_string);
 }
 
+static void gfal_http_get_cred(RequestParams & params, gfal2_context_t handle, const Davix::Uri& uri, const char *token_type)
+{
+    gfal_http_get_ucert(uri, params, handle);
+    // Only utilize AWS or GCLOUD tokens if a bearer token isn't available.
+    // We still setup GSI in case the storage endpoint tries to fall back to GridSite delegation.
+    // That does mean that we might contact the endpoint with both X509 and token auth -- but seems
+    // to be an acceptable compromise.
+    if (!gfal_http_get_token(params, handle, uri, token_type)) {
+        gfal_http_get_aws(params, handle, uri);
+        gfal_http_get_gcloud(params, handle, uri);
+    }
+}
+
 void GfalHttpPluginData::get_tpc_params(bool push_mode,
                                         Davix::RequestParams * req_params,
                                         const Davix::Uri& src_uri,
                                         const Davix::Uri& dst_uri)
 {
     bool do_delegation = false;
-    // IMPORTANT: get_params overwrites req_params whenever secondary_endpoint=false.
+    // IMPORTANT: get_params overwrites req_params
     // Hence, the primary endpoint MUST go first here!
     if (push_mode) {
-        get_params(req_params, src_uri, false);
-        get_params(req_params, dst_uri, true);
+        get_params(req_params, src_uri);
+        gfal_http_get_cred(*req_params, handle, dst_uri, GFAL_CRED_BEARER_DST);
         do_delegation = delegation_required(dst_uri);
     } else {  // Pull mode
-        get_params(req_params, dst_uri, false);
-        get_params(req_params, src_uri, true);
+        get_params(req_params, dst_uri);
+        gfal_http_get_cred(*req_params, handle, src_uri, GFAL_CRED_BEARER_SRC);
         do_delegation = delegation_required(src_uri);
     }
     // The TPC request should be explicit in terms of how the active endpoint should manage credentials,
@@ -283,25 +306,11 @@ void GfalHttpPluginData::get_tpc_params(bool push_mode,
 }
 
 void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
-                                    const Davix::Uri& uri,
-                                    bool secondary_endpoint)
+                                    const Davix::Uri& uri)
 {
-    if (!secondary_endpoint)
-        *req_params = reference_params;
+    *req_params = reference_params;
 
-    gfal_http_get_ucert(uri, *req_params, handle);
-    // Only utilize AWS or GCLOUD tokens if a bearer token isn't available.
-    // We still setup GSI in case the storage endpoint tries to fall back to GridSite delegation.
-    // That does mean that we might contact the endpoint with both X509 and token auth -- but seems
-    // to be an acceptable compromise.
-    if (!gfal_http_get_token(*req_params, uri, secondary_endpoint, handle)) {
-        gfal_http_get_aws(*req_params, handle, uri);
-        gfal_http_get_gcloud(*req_params, handle, uri);
-    }
-
-    // Remainder of method only neededs to alter the req_params for the
-    // primary endpoint.
-    if (secondary_endpoint) return;
+    gfal_http_get_cred(*req_params, handle, uri, GFAL_CRED_BEARER);
 
     gboolean insecure_mode = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "INSECURE", FALSE);
     if (insecure_mode) {
