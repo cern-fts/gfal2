@@ -54,13 +54,12 @@ extern "C" int gfal_gridftp_checksumG(plugin_handle handle, const char* url,
 
 bool string_is_valid(const std::string &str)
 {
-     for(int i=0; i < str.length(); i++){
+    for(size_t i=0; i < str.length(); i++){
         if(!isalnum(str[i])){
-        return 0;
+            return 0;
         }
-        return 1;    
     }
-
+    return 1;
 }
 void GridFTPModule::checksum(const char* url, const char* check_type,
         char * checksum_buffer, size_t buffer_length, off_t start_offset,
