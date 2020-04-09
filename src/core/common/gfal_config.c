@@ -303,7 +303,7 @@ gchar **gfal2_get_opt_string_list_with_default(gfal2_context_t context,
 
     if (tmp_err) {
         if (gfal2_log_get_level() >= G_LOG_LEVEL_DEBUG) {
-            gchar *list_default = g_strjoinv(",", default_value);
+            gchar *list_default = default_value ? g_strjoinv(",", default_value) : NULL;
             gfal2_log(G_LOG_LEVEL_DEBUG,
                 "Impossible to get string_list parameter %s:%s, set to a default value %s, err %s",
                 group_name, key, list_default, tmp_err->message);
