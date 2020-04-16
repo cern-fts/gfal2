@@ -40,6 +40,10 @@ extern "C"
 #define GFAL_CRED_PASSWD "PASSWORD"
 /// Bearer token-type credential
 #define GFAL_CRED_BEARER "BEARER"
+/// Bearer token-type credential for TPC source
+#define GFAL_CRED_BEARER_SRC "BEARER_SRC"
+/// Bearer token-type credential for TPC destination
+#define GFAL_CRED_BEARER_DST "BEARER_DST"
 
 /**
  * Stores a credential value together with its type
