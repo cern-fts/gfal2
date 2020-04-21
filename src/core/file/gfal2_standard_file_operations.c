@@ -141,6 +141,7 @@ int gfal2_mkdir_rec(gfal2_context_t context, const char *url, mode_t mode,
         g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context or/and url are incorrect arguments");
     }
     else {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "execute directory creation for %s", url);
         res = gfal_plugin_mkdirp(context, url, mode, TRUE, &tmp_err);
         if (tmp_err) {
             if (tmp_err->code == EEXIST) {
@@ -148,7 +149,7 @@ int gfal2_mkdir_rec(gfal2_context_t context, const char *url, mode_t mode,
                 res = 0;
             }
             else if (tmp_err->code == ENOENT) {
-                gfal2_log(G_LOG_LEVEL_DEBUG, "execute recusive directory creation for %s", url);
+                gfal2_log(G_LOG_LEVEL_DEBUG, "execute step-by-step recursive directory creation for %s", url);
                 GList *stack_url = NULL;
                 char current_url[GFAL_URL_MAX_LEN];
                 g_strlcpy(current_url, url, GFAL_URL_MAX_LEN);
@@ -172,19 +173,24 @@ int gfal2_mkdir_rec(gfal2_context_t context, const char *url, mode_t mode,
                         res = gfal_plugin_mkdirp(context, current_url, mode,
                             FALSE, &tmp_err);
                         if (res == 0) {
-                            gfal2_log(G_LOG_LEVEL_DEBUG, "create directory %s", current_url);
+                            gfal2_log(G_LOG_LEVEL_DEBUG, "created directory %s", current_url);
                         }
                     }
+                }
 
+                // Directory might have been created by a separate process
+                if (tmp_err && tmp_err->code == EEXIST) {
+                    g_clear_error(&tmp_err);
                 }
 
                 if (!tmp_err) {
+                    gfal2_log(G_LOG_LEVEL_DEBUG, "recursive directory create from stack root %s", current_url);
                     res = 0;
                     GList *tmp_list = stack_url;
                     while (tmp_list != NULL && res == 0) {
                         res = gfal_plugin_mkdirp(context, (char *) tmp_list->data, mode, FALSE, &tmp_err);
                         if (res == 0) {
-                            gfal2_log(G_LOG_LEVEL_DEBUG, "create directory %s", current_url);
+                            gfal2_log(G_LOG_LEVEL_DEBUG, "created directory %s", (char *) tmp_list->data);
                         }
                             // Due to a race condition, maybe someone else created the directory
                         else if (tmp_err->code == EEXIST) {
