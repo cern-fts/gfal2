@@ -83,7 +83,6 @@ static bool isS3SignedURL(const Davix::Uri &url)
 static bool gfal_http_get_token(RequestParams & params,
                                 gfal2_context_t handle,
                                 const Davix::Uri &url,
-                                const char *token_type,
                                 bool secondary_endpoint)
 {
 
@@ -92,14 +91,17 @@ static bool gfal_http_get_token(RequestParams & params,
     }
 
     GError *error = NULL;
-    gchar *token = gfal2_cred_get(handle, token_type,
+    gchar *token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
                                   url.getString().c_str(),
                                   NULL, &error);
     g_clear_error(&error);  // for now, ignore the error messages.
 
-    if (!token && strcmp(GFAL_CRED_BEARER, token_type) != 0) {
-        // if we don't have specific token for TPC passive
-        // party use token stored for hostname (compatibility)
+    if (!token) {
+        // if we don't have specific token for requested URL fallback
+        // to token stored for hostname (for TPC with macaroon tokens
+        // we need at least BEARER set for full source URL and hostname
+        // BEARER for destination because that one could be also used
+        // to create all missing parent directories)
         token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
                                url.getHost().c_str(),
                                NULL, &error);
@@ -114,7 +116,7 @@ static bool gfal_http_get_token(RequestParams & params,
     ss << "Bearer " << token;
 
     gfal2_log(G_LOG_LEVEL_DEBUG, "Using bearer token for HTTPS request authorization%s",
-              secondary_endpoint ? "" : " (passive TPC)");
+              secondary_endpoint ? " (passive TPC)" : "");
 
     if (secondary_endpoint) {
         params.addHeader("TransferHeaderAuthorization", ss.str());
@@ -253,7 +255,6 @@ static void gfal_http_get_gcloud(RequestParams & params, gfal2_context_t handle,
 static void gfal_http_get_cred(RequestParams & params,
                                gfal2_context_t handle,
                                const Davix::Uri& uri,
-                               const char *token_type = GFAL_CRED_BEARER,
                                bool secondary_endpoint = false)
 {
     gfal_http_get_ucert(uri, params, handle);
@@ -261,7 +262,7 @@ static void gfal_http_get_cred(RequestParams & params,
     // We still setup GSI in case the storage endpoint tries to fall back to GridSite delegation.
     // That does mean that we might contact the endpoint with both X509 and token auth -- but seems
     // to be an acceptable compromise.
-    if (!gfal_http_get_token(params, handle, uri, token_type, secondary_endpoint)) {
+    if (!gfal_http_get_token(params, handle, uri, secondary_endpoint)) {
         gfal_http_get_aws(params, handle, uri);
         gfal_http_get_gcloud(params, handle, uri);
     }
@@ -349,13 +350,13 @@ void GfalHttpPluginData::get_tpc_params(bool push_mode,
     bool do_delegation = false;
     if (push_mode) {
         gfal_http_get_params(*req_params, handle, src_uri);
-        gfal_http_get_cred(*req_params, handle, src_uri, GFAL_CRED_BEARER_SRC);
-        gfal_http_get_cred(*req_params, handle, dst_uri, GFAL_CRED_BEARER_DST, true);
+        gfal_http_get_cred(*req_params, handle, src_uri);
+        gfal_http_get_cred(*req_params, handle, dst_uri, true);
         do_delegation = delegation_required(dst_uri);
     } else {  // Pull mode
         gfal_http_get_params(*req_params, handle, dst_uri);
-        gfal_http_get_cred(*req_params, handle, src_uri, GFAL_CRED_BEARER_SRC, true);
-        gfal_http_get_cred(*req_params, handle, dst_uri, GFAL_CRED_BEARER_DST);
+        gfal_http_get_cred(*req_params, handle, src_uri, true);
+        gfal_http_get_cred(*req_params, handle, dst_uri);
         do_delegation = delegation_required(src_uri);
     }
     // The TPC request should be explicit in terms of how the active endpoint should manage credentials,
