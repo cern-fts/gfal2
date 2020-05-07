@@ -1,6 +1,15 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Thu May 07 2020 Mihai Patrascoiu <mipatras at cern.ch> - 2.17.3
+###Bug
+- [DMC-1203] - gfal attempts delegation with S3 / gcloud during third party copy
+- [DMC-1210] - gfal2 recursive mkdir fails with file exist
+- Fix incorrect parenthesis in GridFTP checksum validation
+- Token credentials support for same-host HTTP TPC transfers
+
+* Thank you to Petr Vokac for same-host HTTP TPC support using token credentials
+
 ## Tue Jan 28 2020 Michal Simon <msimon at cern.ch> - 2.17.2
 ###Bug
 - [DMC-1198] - bring_online_poll_list: collapse redundant slashes in the path.

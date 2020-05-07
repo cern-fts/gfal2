@@ -112,12 +112,11 @@ int gfal2_cred_set(gfal2_context_t handle, const char *url_prefix, const gfal2_c
 
 char *gfal2_cred_get(gfal2_context_t handle, const char *type, const char *url, char const** baseurl, GError **error)
 {
-    size_t type_len = strlen(type);
     // Pick the first, which is the longest match, since the list is sorted
     GList *item;
     for (item = g_list_first(handle->cred_mapping); item != NULL; item = g_list_next(item)) {
         gfal2_cred_node_t *node = item->data;
-        if (strncmp(node->cred->type, type, type_len) == 0 && strncmp(node->url_prefix, url, node->prefix_len) == 0) {
+        if (strcmp(node->cred->type, type) == 0 && strncmp(node->url_prefix, url, node->prefix_len) == 0) {
             if (baseurl) {
                 *baseurl = (char const*)(node->url_prefix);
             }
@@ -128,13 +127,13 @@ char *gfal2_cred_get(gfal2_context_t handle, const char *type, const char *url, 
         *baseurl = "";
     }
     // If there is no match, use the config
-    if (strncmp(type, GFAL_CRED_X509_CERT, type_len) == 0) {
+    if (strcmp(type, GFAL_CRED_X509_CERT) == 0) {
         return gfal2_get_opt_string_with_default(handle, "X509", "CERT", NULL);
     }
-    else if (strncmp(type, GFAL_CRED_X509_KEY, type_len) == 0) {
+    else if (strcmp(type, GFAL_CRED_X509_KEY) == 0) {
         return gfal2_get_opt_string_with_default(handle, "X509", "KEY", NULL);
     }
-    else if (strncmp(type, GFAL_CRED_BEARER, type_len) == 0) {
+    else if (strcmp(type, GFAL_CRED_BEARER) == 0) {
         return gfal2_get_opt_string_with_default(handle, "BEARER", "TOKEN", NULL);
     }
     return NULL;

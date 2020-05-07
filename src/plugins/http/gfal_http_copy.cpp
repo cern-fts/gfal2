@@ -365,11 +365,8 @@ static int gfal_http_third_party_copy(gfal2_context_t context,
             params, src, dst
     );
 
-    Davix::Uri src_uri(get_canonical_uri(src));
-    Davix::Uri dst_uri(get_canonical_uri(dst));
-
     Davix::RequestParams req_params;
-    davix->get_tpc_params(mode == HTTP_COPY_PUSH, &req_params, src_uri, dst_uri);
+    davix->get_tpc_params(mode == HTTP_COPY_PUSH, &req_params, Davix::Uri(src), Davix::Uri(dst));
     if (mode == HTTP_COPY_PUSH) {
         req_params.setCopyMode(Davix::CopyMode::Push);
     }
@@ -400,6 +397,9 @@ static int gfal_http_third_party_copy(gfal2_context_t context,
     struct timespec opTimeout;
     opTimeout.tv_sec = gfalt_get_timeout(params, NULL);
     req_params.setOperationTimeout(&opTimeout);
+
+    Davix::Uri src_uri(get_canonical_uri(src));
+    Davix::Uri dst_uri(get_canonical_uri(dst));
 
     Davix::DavixCopy copy(davix->context, &req_params);
 
