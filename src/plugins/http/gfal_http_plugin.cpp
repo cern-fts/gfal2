@@ -223,8 +223,10 @@ static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, co
         gfal2_log(G_LOG_LEVEL_DEBUG, "Using region %s", region);
         params.setAwsRegion(region);
     }
-
-    params.setAwsAlternate(alternate_url);
+    if (alternate_url) {
+      gfal2_log(G_LOG_LEVEL_DEBUG, "Using S3 alternate URL");
+      params.setAwsAlternate(alternate_url);
+    }
 
     g_free(secret_key);
     g_free(access_key);
