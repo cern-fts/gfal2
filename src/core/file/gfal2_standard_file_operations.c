@@ -25,7 +25,6 @@
 #include <common/gfal_error.h>
 #include <common/gfal_cancel.h>
 
-
 int gfal2_access(gfal2_context_t context, const char *url, int amode, GError **err)
 {
     int res = -1;
@@ -379,6 +378,81 @@ int gfal2_release_file(gfal2_context_t context, const char *url, const char *tok
     G_RETURN_ERR(res, tmp_err, err);
 }
 
+
+const char* gfal2_qos_check_classes(gfal2_context_t context, const char *url, const char *type, GError **err)
+{
+    GError *tmp_err = NULL;
+    const char* res;
+    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
+    if (url == NULL || context == NULL) {
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context or/and url are incorrect arguments");
+    }
+    else {
+        res = gfal_plugin_qos_check_classes(context, url, type, &tmp_err);
+    }
+    GFAL2_END_SCOPE_CANCEL(context);
+    G_RETURN_ERR(res, tmp_err, err);
+}
+
+const char* gfal2_check_file_qos(gfal2_context_t context, const char *fileUrl, GError ** err)
+{
+    GError *tmp_err = NULL;
+    const char* res;
+    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
+    if (fileUrl == NULL || context == NULL) {
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context or/and url are incorrect arguments");
+    }
+    else {
+        res = gfal_plugin_check_file_qos(context, fileUrl, &tmp_err);
+    }
+    GFAL2_END_SCOPE_CANCEL(context);
+    G_RETURN_ERR(res, tmp_err, err);
+}
+
+const char* gfal2_check_available_qos_transitions(gfal2_context_t context, const char *qosClassUrl, GError ** err)
+{
+    GError *tmp_err = NULL;
+    const char* res;
+    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
+    if (qosClassUrl == NULL || context == NULL) {
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context or/and url are incorrect arguments");
+    }
+    else {
+        res = gfal_plugin_check_qos_available_transitions(context, qosClassUrl, &tmp_err);
+    }
+    GFAL2_END_SCOPE_CANCEL(context);
+    G_RETURN_ERR(res, tmp_err, err);
+}
+
+const char* gfal2_check_target_qos(gfal2_context_t context, const char *fileUrl, GError ** err)
+{
+    GError *tmp_err = NULL;
+    const char* res;
+    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
+    if (fileUrl == NULL || context == NULL) {
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context or/and url are incorrect arguments");
+    }
+    else {
+        res = gfal_plugin_check_target_qos(context, fileUrl, &tmp_err);
+    }
+    GFAL2_END_SCOPE_CANCEL(context);
+    G_RETURN_ERR(res, tmp_err, err);
+}
+
+int gfal2_change_object_qos(gfal2_context_t context, const char *fileUrl, const char *newQosClass, GError ** err)
+{
+    GError *tmp_err = NULL;
+    int res = -1;
+    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
+    if (fileUrl == NULL || context == NULL) {
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context or/and url are incorrect arguments");
+    }
+    else {
+        res = gfal_plugin_change_object_qos(context, fileUrl, newQosClass, &tmp_err);
+    }
+    GFAL2_END_SCOPE_CANCEL(context);
+    G_RETURN_ERR(res, tmp_err, err);
+}
 
 int gfal2_bring_online_list(gfal2_context_t context, int nbfiles,
     const char *const *urls, time_t pintime, time_t timeout, char *token,

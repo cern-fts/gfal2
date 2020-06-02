@@ -226,6 +226,7 @@ IF(PLUGIN_HTTP)
         test_rwt_all("DAVS_DPM_single" ${davs_prefix_dpm} 1)
         test_rwt_all("DAVS_DCACHE_single" ${davs_prefix_dcache} 1)
         # sequencial writes not supported
+	test_qos("FIRST")
 ENDIF(PLUGIN_HTTP)
 
 IF(PLUGIN_XROOTD)

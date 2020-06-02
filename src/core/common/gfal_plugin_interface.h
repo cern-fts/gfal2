@@ -79,7 +79,12 @@ typedef enum _plugin_mode {
     GFAL_PLUGIN_UNLINK,
     GFAL_PLUGIN_CHECKSUM,
     GFAL_PLUGIN_MKDIR_REC,
-    GFAL_PLUGIN_BRING_ONLINE
+    GFAL_PLUGIN_BRING_ONLINE,
+	GFAL_PLUGIN_QOS_CHECK_CLASSES,
+	GFAL_PLUGIN_CHECK_FILE_QOS,
+	GFAL_PLUGIN_CHECK_QOS_AVAILABLE_TRANSITIONS,
+	GFAL_PLUGIN_CHECK_TARGET_QOS,
+	GFAL_PLUGIN_CHANGE_OBJECT_QOS
 } plugin_mode;
 
 /**
@@ -154,6 +159,58 @@ struct _gfal_plugin_interface {
 	 *  @return must return TRUE if the operation is compatible with this plugin, else FALSE
 	 */
 	gboolean (*check_plugin_url)(plugin_handle plugin_data, const char* url,  plugin_mode operation, GError** err);
+
+	/**
+	 *  OPTIONAL: Check what kind of QoS classes exist on the CDMI-enabled url provided
+	 *
+	 *  @param plugin_data : internal plugin data
+	 *  @param url : CDMI-enabled URL to check for the protocol compatibility
+	 *  @param err : error handle, should be used ONLY in case of major failure.
+	 *  @return comma-separated list of QoS classes existing on url, empty string if none/error
+	 */
+	const char* (*check_qos_classes)(plugin_handle plugin_data, const char *url, const char* type, GError** err);
+
+	/**
+		 *  OPTIONAL: Check the QoS of a file with the CDMI-enabled url provided
+		 *
+		 *  @param plugin_data : internal plugin data
+		 *  @param fileUrl : CDMI-enabled URL to check for the protocol compatibility
+		 *  @param err : error handle, should be used ONLY in case of major failure.
+		 *  @return QoS class of the file
+		 */
+	const char* (*check_file_qos)(plugin_handle plugin_data, const char *fileUrl, GError** err);
+
+	/**
+	 *  OPTIONAL: Check the available transitions of a QoS class to other QoS classes
+	 *
+	 *  @param plugin_data : internal plugin data
+	 *  @param qosClassUrl : CDMI-enabled URL of QoS class
+	 *  @param err : error handle, should be used ONLY in case of major failure.
+	 *  @return comma-separated list of available transitions to other QoS classes for a specific QoS
+	 */
+	const char* (*check_qos_available_transitions)(plugin_handle plugin_data, const char *qosClassUrl, GError** err);
+
+	/**
+	 *  OPTIONAL: Check the target QoS of a file/dir and return it. Return NULL if there is None
+	 *
+	 *  @param plugin_data : internal plugin data
+	 *  @param fileUrl : CDMI-enabled URL of a file/dir
+	 *  @param err : error handle, should be used ONLY in case of major failure.
+	 *  @return target QoS class of the file or NULL if there exists none
+	 */
+	const char* (*check_target_qos)(plugin_handle plugin_data, const char *fileUrl, GError** err);
+
+	/**
+	 *  OPTIONAL: Check the QoS of a file with the CDMI-enabled url provided
+	 *
+	 *  @param plugin_data : internal plugin data
+	 *  @param fileUrl : CDMI-enabled URL of a file/dir
+	 *  @param err : error handle, should be used ONLY in case of major failure.
+	 *  @param newQosClass: the QoS class that this file will be set to
+	 *  @return 0 or -1 if error occurs,
+	 *          err MUST be set in case of error
+	 */
+	int (*change_object_qos)(plugin_handle plugin_data, const char *fileUrl, const char* newQosClass, GError** err);
 
 	/**
 	 *  OPTIONAL : gfal_access function  support
@@ -657,6 +714,16 @@ int gfal_plugin_release_file_listG(gfal2_context_t handle, int nbfiles, const ch
 int gfal_plugin_unlink_listG(gfal2_context_t handle, int nbfiles, const char* const* uris, GError ** errors);
 
 int gfal_plugin_abort_filesG(gfal2_context_t handle, int nbfiles, const char* const* uris, const char* token, GError ** err);
+
+const char* gfal_plugin_qos_check_classes(gfal2_context_t handle, const char *url, const char* type, GError ** err);
+
+const char* gfal_plugin_check_file_qos(gfal2_context_t handle, const char *fileUrl, GError** err);
+
+const char* gfal_plugin_check_qos_available_transitions(gfal2_context_t handle, const char *qosClassUrl, GError** err);
+
+const char* gfal_plugin_check_target_qos(gfal2_context_t handle, const char *fileUrl, GError** err);
+
+int gfal_plugin_change_object_qos(gfal2_context_t handle, const char *fileUrl, const char* newQosClass, GError** err);
 
 //! @endcond
 

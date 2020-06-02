@@ -1,0 +1,33 @@
+How to create a new method on a gfal plugin.
+
+The example used here will be with adding a QoS method on the http plugin 
+You can checkout the commit doing so here: https://gitlab.cern.ch/dmc/gfal2/commit/87ca30684d1e85c59edafa7935e830b9006f054f
+
+1) Choose the plugin you want to extend and create a new file that will hold the methods to be created
+    ex:  a) Create the src/plugins/http/gfal_http_qos.cpp file
+         b) Create the gfal_http_check_classes method
+
+2) The new method created has to be declared on the src/plugins/http/gfal_http_plugin.h file
+
+3) Since this method will be a plugin method, it needs to be added to the interface of the plugins
+   here: src/core/common/gfal_plugin_interface.h
+
+   A new mode has to be created for it as well (check example at gfal_plugin_interface.h)
+   In our case, GFAL_PLUGIN_QOS_CHECK_CLASSES will have to be added
+
+   A new method to generically access this plugin function has to be declared on this file:
+   gfal_plugin_qos_check_classes in our case.
+
+4) The aforementioned method has to be implemented on src/core/common/gfal_plugin.c 
+
+5) Since the methods before implement the functionality of distinguishing between plugins, another method has to be declared and used for generic 
+   usage of what we want to do. This is done at src/core/file/gfal_file_api.h  and src/core/file/gfal2_standard_file_operations.c
+
+6) We finally need to define the actual plugin behavior when this method is requested. This is done at: src/plugins/http/gfal_http_plugin.cpp
+   There, is also defined if this plugin supports this specific behavior (GFAL_PLUGIN_QOS_CHECK_CLASSES in our case).
+
+7) A functional test needs to be created in order to test these:
+    a) Create the test at: test/functional/gfal_test_qos.cpp
+    b) Declare the test at: test/functional/CMakeLists.txt and then test/functional/functional-test-parameters.cmake
+
+Complete example at https://gitlab.cern.ch/dmc/gfal2/commit/87ca30684d1e85c59edafa7935e830b9006f054f
