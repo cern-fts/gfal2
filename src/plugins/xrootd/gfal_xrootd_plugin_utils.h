@@ -21,6 +21,8 @@
 #ifndef GFAL_XROOTD_PLUGIN_UTILS_H_
 #define GFAL_XROOTD_PLUGIN_UTILS_H_
 
+#include <XrdCl/XrdClFileSystem.hh>
+
 #include <gfal_api.h>
 #include <string>
 #include <sys/stat.h>
@@ -28,7 +30,7 @@
 extern GQuark xrootd_domain;
 
 /// Convert file mode_t to ints
-void file_mode_to_xrootd_ints(mode_t mode, int& user, int& group, int& other);
+XrdCl::Access::Mode file_mode_to_xrdcl_access( mode_t mode );
 
 /// Initialize all stat fields to zero
 void reset_stat(struct stat& st);

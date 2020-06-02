@@ -24,6 +24,7 @@
 #include <fcntl.h>
 #include <sstream>
 #include <XProtocol/XProtocol.hh>
+#include <XrdCl/XrdClFileSystem.hh>
 
 #include <uri/gfal2_uri.h>
 #include "gfal_xrootd_plugin_utils.h"
@@ -32,31 +33,31 @@
 GQuark xrootd_domain = g_quark_from_static_string("xroot");
 
 
-void file_mode_to_xrootd_ints(mode_t mode, int& user, int& group, int& other)
+XrdCl::Access::Mode file_mode_to_xrdcl_access( mode_t mode )
 {
-    user = 0;
-    group = 0;
-    other = 0;
+  XrdCl::Access::Mode xrdcl_mode = XrdCl::Access::None;
+  if( mode & S_IRUSR )
+    xrdcl_mode |= XrdCl::Access::UR;
+  if( mode & S_IWUSR )
+    xrdcl_mode |= XrdCl::Access::UW;
+  if( mode & S_IXUSR )
+    xrdcl_mode |= XrdCl::Access::UX;
 
-    if (mode & S_IRUSR)
-        user += 4;
-    if (mode & S_IWUSR)
-        user += 2;
-    if (mode & S_IXUSR)
-        user += 1;
+  if( mode & S_IRGRP )
+    xrdcl_mode |= XrdCl::Access::GR;
+  if( mode & S_IWGRP )
+    xrdcl_mode |= XrdCl::Access::GW;
+  if( mode & S_IXGRP )
+    xrdcl_mode |= XrdCl::Access::GX;
 
-    if (mode & S_IRGRP)
-        group += 4;
-    if (mode & S_IWGRP)
-        group += 2;
-    if (mode & S_IXGRP)
-        group += 1;
+  if( mode & S_IROTH )
+    xrdcl_mode |= XrdCl::Access::OR;
+  if( mode & S_IWOTH )
+    xrdcl_mode |= XrdCl::Access::OW;
+  if( mode & S_IXOTH )
+    xrdcl_mode |= XrdCl::Access::OX;   
 
-    if (mode & S_IROTH)
-        other += 4;
-    if (mode & S_IWOTH)
-        other += 2;
-    if (mode & S_IXOTH) other += 1;
+  return xrdcl_mode;
 }
 
 
@@ -230,30 +231,7 @@ std::string predefined_checksum_type_to_lower(const std::string& type)
 // Copied from xrootd/src/XrdPosix/XrdPosixMap.cc
 int xrootd_errno_to_posix_errno(int rc)
 {
-    switch(rc)
-       {case kXR_ArgInvalid:    return EINVAL;
-        case kXR_ArgMissing:    return EINVAL;
-        case kXR_ArgTooLong:    return ENAMETOOLONG;
-        case kXR_FileLocked:    return EDEADLK;
-        case kXR_FileNotOpen:   return EBADF;
-        case kXR_FSError:       return EIO;
-        case kXR_InvalidRequest:return EEXIST;
-        case kXR_IOError:       return EIO;
-        case kXR_NoMemory:      return ENOMEM;
-        case kXR_NoSpace:       return ENOSPC;
-        case kXR_NotAuthorized: return EACCES;
-        case kXR_NotFound:      return ENOENT;
-        case kXR_ServerError:   return ENOMSG;
-        case kXR_Unsupported:   return ENOSYS;
-        case kXR_noserver:      return EHOSTUNREACH;
-        case kXR_NotFile:       return ENOTBLK;
-        case kXR_isDirectory:   return EISDIR;
-        case kXR_Cancelled:     return ECANCELED;
-        case kXR_ChkLenErr:     return EDOM;
-        case kXR_ChkSumErr:     return EDOM;
-        case kXR_inProgress:    return EINPROGRESS;
-        default:                return ENOMSG;
-       }
+  return XProtocol::toErrno( rc );
 }
 
 
