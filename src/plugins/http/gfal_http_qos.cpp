@@ -250,6 +250,7 @@ int gfal_http_change_object_qos(plugin_handle plugin_data, const char *fileUrl, 
 	PutRequest pr(c, uri, &tmp_err);
 	Davix::RequestParams req_params;
 	davix->get_params(&req_params, Davix::Uri(fileUrl));
+  req_params.addHeader("Content-Type", "application/cdmi-object");
 	pr.setParameters(req_params);
 	pr.setRequestBody(body.str());
 
