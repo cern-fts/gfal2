@@ -43,7 +43,7 @@ const char* gfal_http_check_classes(plugin_handle plugin_data, const char *url, 
 		uri += type;
 		HttpRequest r(c, uri, &tmp_err);
 		Davix::RequestParams req_params;
-		davix->get_params(&req_params, Davix::Uri(url), false);
+		davix->get_params(&req_params, Davix::Uri(url));
 
 		r.setParameters(req_params);
 
@@ -98,7 +98,7 @@ const char* gfal_http_check_file_qos(plugin_handle plugin_data, const char *file
 	std::string uri(fileUrl);
 	HttpRequest r(c, uri, &tmp_err);
 	Davix::RequestParams req_params;
-	davix->get_params(&req_params, Davix::Uri(fileUrl), false);
+	davix->get_params(&req_params, Davix::Uri(fileUrl));
 	r.setParameters(req_params);
 
 	if(!tmp_err)
@@ -131,7 +131,7 @@ const char* gfal_http_check_qos_available_transitions(plugin_handle plugin_data,
 		std::string uri(qosClassUrl);
 		HttpRequest r(c, uri, &tmp_err);
 		Davix::RequestParams req_params;
-		davix->get_params(&req_params, Davix::Uri(qosClassUrl), false);
+		davix->get_params(&req_params, Davix::Uri(qosClassUrl));
 		r.setParameters(req_params);
 
 		if(!tmp_err)
@@ -203,7 +203,7 @@ const char* gfal_http_check_target_qos(plugin_handle plugin_data, const char *fi
 	HttpRequest r(c, uri, &tmp_err);
 
 	Davix::RequestParams req_params;
-	davix->get_params(&req_params, Davix::Uri(fileUrl), false);
+	davix->get_params(&req_params, Davix::Uri(fileUrl));
 	r.setParameters(req_params);
 
 	if(!tmp_err)
@@ -249,7 +249,7 @@ int gfal_http_change_object_qos(plugin_handle plugin_data, const char *fileUrl, 
 	//std::cout << "Body: "<< body.str() << std::endl;
 	PutRequest pr(c, uri, &tmp_err);
 	Davix::RequestParams req_params;
-	davix->get_params(&req_params, Davix::Uri(fileUrl), false);
+	davix->get_params(&req_params, Davix::Uri(fileUrl));
 	pr.setParameters(req_params);
 	pr.setRequestBody(body.str());
 
