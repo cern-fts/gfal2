@@ -114,11 +114,13 @@ int gfal_http_copy_check(plugin_handle plugin_data, gfal2_context_t context,
 gboolean gfal_should_fallback(int error_code);
 
 // QoS
-const char* gfal_http_check_classes(plugin_handle plugin_data, const char *url, const char *type, GError** err);
-const char* gfal_http_check_file_qos(plugin_handle plugin_data, const char *fileUrl, GError** err);
-const char* gfal_http_check_qos_available_transitions(plugin_handle plugin_data, const char *qosClassUrl, GError** err);
-const char* gfal_http_check_target_qos(plugin_handle plugin_data, const char *fileUrl, GError** err);
-int gfal_http_change_object_qos(plugin_handle plugin_data, const char *fileUrl, const char* newQosClass, GError** err);
-bool httpcodeIsValid(int code);
+ssize_t gfal_http_check_classes(plugin_handle plugin_data, const char* url, const char* type,
+                                char* buff, size_t s_buff, GError** err);
+ssize_t gfal_http_check_file_qos(plugin_handle plugin_data, const char* url, char* buff, size_t s_buff, GError** err);
+ssize_t gfal_http_check_qos_available_transitions(plugin_handle plugin_data, const char* qos_class_url,
+                                                  char* buff, size_t s_buff, GError** err);
+ssize_t gfal_http_check_target_qos(plugin_handle plugin_data, const char* url, char* buff, size_t s_buff, GError** err);
+int gfal_http_change_object_qos(plugin_handle plugin_data, const char* url, const char* target_qos, GError** err);
+bool http_cdmi_code_is_valid(int code);
 
 #endif //_GFAL_HTTP_PLUGIN_H

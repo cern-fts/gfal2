@@ -145,9 +145,6 @@ struct _gfal_plugin_interface {
 	 */
 	void (*plugin_delete)(plugin_handle plugin_data);
 
-    // FILE API
-
-
 	/**
 	 *  OPTIONAL: Check the availability of the given operation on this plugin for the given URL
 	 *
@@ -158,59 +155,77 @@ struct _gfal_plugin_interface {
 	 *  @param err : error handle, should be used ONLY in case of major failure.
 	 *  @return must return TRUE if the operation is compatible with this plugin, else FALSE
 	 */
-	gboolean (*check_plugin_url)(plugin_handle plugin_data, const char* url,  plugin_mode operation, GError** err);
+	gboolean (*check_plugin_url)(plugin_handle plugin_data, const char* url, plugin_mode operation, GError** err);
 
-	/**
-	 *  OPTIONAL: Check what kind of QoS classes exist on the CDMI-enabled url provided
+    // QoS API
+
+  /**
+	 *  OPTIONAL: Check what kind of QoS classes exist on the CDMI-enabled URL provided
 	 *
 	 *  @param plugin_data : internal plugin data
 	 *  @param url : CDMI-enabled URL to check for the protocol compatibility
+	 *  @param type : CDMI-enabld type of QoS class
+	 *  @param buff : buffer for the QoS classes content
+	 *  @param s_buff : maximum buffer size
 	 *  @param err : error handle, should be used ONLY in case of major failure.
-	 *  @return comma-separated list of QoS classes existing on url, empty string if none/error
+	 *  @return number of bytes in buff in case of success or -1 if error occurs
+	 *
+	 *  @note Result is provided as a comma-separated list of available QoS classes
 	 */
-	const char* (*check_qos_classes)(plugin_handle plugin_data, const char *url, const char* type, GError** err);
+	ssize_t (*check_qos_classes)(plugin_handle plugin_data, const char* url, const char* type,
+                               char* buff, size_t s_buff, GError** err);
 
 	/**
-		 *  OPTIONAL: Check the QoS of a file with the CDMI-enabled url provided
-		 *
-		 *  @param plugin_data : internal plugin data
-		 *  @param fileUrl : CDMI-enabled URL to check for the protocol compatibility
-		 *  @param err : error handle, should be used ONLY in case of major failure.
-		 *  @return QoS class of the file
-		 */
-	const char* (*check_file_qos)(plugin_handle plugin_data, const char *fileUrl, GError** err);
+   *  OPTIONAL: Check the QoS of a file with the CDMI-enabled url provided
+   *
+   *  @param plugin_data : internal plugin data
+   *  @param url : CDMI-enabled URL to check for the protocol compatibility
+   *  @param buff : buffer for the QoS class content
+   *  @param s_buff : maximum buffer size
+   *  @param err : error handle, should be used ONLY in case of major failure.
+   *  @return number of bytes in buff in case of success or -1 if error occurs
+   */
+	ssize_t (*check_file_qos)(plugin_handle plugin_data, const char* url, char* buff, size_t s_buff, GError** err);
 
 	/**
 	 *  OPTIONAL: Check the available transitions of a QoS class to other QoS classes
 	 *
 	 *  @param plugin_data : internal plugin data
-	 *  @param qosClassUrl : CDMI-enabled URL of QoS class
+	 *  @param qos_class_url : CDMI-enabled URL of QoS class
+	 *  @param buff : buffer for the QoS class transitions content
+   *  @param s_buff : maximum buffer size
 	 *  @param err : error handle, should be used ONLY in case of major failure.
-	 *  @return comma-separated list of available transitions to other QoS classes for a specific QoS
+	 *  @return number of bytes in buff in case of success or -1 if error occurs
+	 *
+	 *  @note Result is provided as comma-separated list of available QoS class transitions
 	 */
-	const char* (*check_qos_available_transitions)(plugin_handle plugin_data, const char *qosClassUrl, GError** err);
+	ssize_t (*check_qos_available_transitions)(plugin_handle plugin_data, const char* qos_class_url,
+                                             char* buff, size_t s_buff, GError** err);
 
 	/**
-	 *  OPTIONAL: Check the target QoS of a file/dir and return it. Return NULL if there is None
+	 *  OPTIONAL: Check the target QoS of an entity
 	 *
 	 *  @param plugin_data : internal plugin data
-	 *  @param fileUrl : CDMI-enabled URL of a file/dir
+	 *  @param url : CDMI-enabled URL of an entity
+   *  @param buff : buffer for the target QoS class content
+   *  @param s_buff : maximum buffer size
 	 *  @param err : error handle, should be used ONLY in case of major failure.
-	 *  @return target QoS class of the file or NULL if there exists none
+	 *  @return number of bytes in buff in case of success or -1 if error occurs
 	 */
-	const char* (*check_target_qos)(plugin_handle plugin_data, const char *fileUrl, GError** err);
+	ssize_t (*check_target_qos)(plugin_handle plugin_data, const char* url, char* buff, size_t s_buff, GError** err);
 
 	/**
 	 *  OPTIONAL: Check the QoS of a file with the CDMI-enabled url provided
 	 *
 	 *  @param plugin_data : internal plugin data
-	 *  @param fileUrl : CDMI-enabled URL of a file/dir
+	 *  @param url : CDMI-enabled URL of an entity
+	 *  @param target_qos: the requested target QoS class
 	 *  @param err : error handle, should be used ONLY in case of major failure.
-	 *  @param newQosClass: the QoS class that this file will be set to
-	 *  @return 0 or -1 if error occurs,
-	 *          err MUST be set in case of error
+	 *  @return 0 or -1 if error occurs
 	 */
-	int (*change_object_qos)(plugin_handle plugin_data, const char *fileUrl, const char* newQosClass, GError** err);
+	int (*change_object_qos)(plugin_handle plugin_data, const char* url, const char* target_qos, GError** err);
+
+    // FILE API
 
 	/**
 	 *  OPTIONAL : gfal_access function  support
@@ -715,15 +730,13 @@ int gfal_plugin_unlink_listG(gfal2_context_t handle, int nbfiles, const char* co
 
 int gfal_plugin_abort_filesG(gfal2_context_t handle, int nbfiles, const char* const* uris, const char* token, GError ** err);
 
-const char* gfal_plugin_qos_check_classes(gfal2_context_t handle, const char *url, const char* type, GError ** err);
-
-const char* gfal_plugin_check_file_qos(gfal2_context_t handle, const char *fileUrl, GError** err);
-
-const char* gfal_plugin_check_qos_available_transitions(gfal2_context_t handle, const char *qosClassUrl, GError** err);
-
-const char* gfal_plugin_check_target_qos(gfal2_context_t handle, const char *fileUrl, GError** err);
-
-int gfal_plugin_change_object_qos(gfal2_context_t handle, const char *fileUrl, const char* newQosClass, GError** err);
+ssize_t gfal_plugin_qos_check_classes(gfal2_context_t handle, const char* url, const char* type,
+                                      char* buff, size_t s_buff, GError** err);
+ssize_t gfal_plugin_check_file_qos(gfal2_context_t handle, const char* url, char* buff, size_t s_buff, GError** err);
+ssize_t gfal_plugin_check_qos_available_transitions(gfal2_context_t handle, const char* qos_class_url,
+                                                    char* buff, size_t s_buff, GError** err);
+ssize_t gfal_plugin_check_target_qos(gfal2_context_t handle, const char* url, char* buff, size_t s_buff, GError** err);
+int gfal_plugin_change_object_qos(gfal2_context_t handle, const char* url, const char* target_qos, GError** err);
 
 //! @endcond
 

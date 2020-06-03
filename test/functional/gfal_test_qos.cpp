@@ -26,10 +26,10 @@
 #include <common/gfal_lib_test.h>
 #include <common/gfal_gtest_asserts.h>
 #include <utils/exceptions/gerror_to_cpp.h>
-#define BLKLEN 65536
 
 
 class QosTest: public testing::Test {
+
 public:
     static const char* root;
     static const char* file;
@@ -52,16 +52,13 @@ public:
     	unsetenv("X509_USER_CERT");
     	unsetenv("X509_USER_KEY");
 
-    	int ret;
-    	GError *error = NULL;
-
-    	Gfal::gerror_to_cpp(&error);
+    	GError* error = NULL;
     	params = gfalt_params_handle_new(&error);
     	Gfal::gerror_to_cpp(&error);
+
     	// Clear automatic setup
     	gfal2_remove_opt(context, "X509", "CERT", NULL);
     	gfal2_remove_opt(context, "X509", "KEY", NULL);
-    	// Set configured values
     }
 
     virtual void TearDown() {
@@ -69,76 +66,90 @@ public:
     }
 };
 
-const char *QosTest::root = NULL;
-const char *QosTest::file = NULL;
-
+const char* QosTest::root = NULL;
+const char* QosTest::file = NULL;
 
 TEST_F(QosTest, TestQosClasses)
 {
-	GError *err = NULL;
-	const char* result = gfal2_qos_check_classes(context, root, "dataobject", &err);
-	if (result != NULL) {
-		std::string str(result);
-		std::cout << str << std::endl;
+  char buff[2048];
+	GError* err = NULL;
+	ssize_t result = gfal2_qos_check_classes(context, root, "dataobject", buff, 2048, &err);
+
+	if (result > 0) {
+		std::cout << std::string(buff) << std::endl;
 	}
+
+	EXPECT_GT(result, 0);
 	EXPECT_EQ(NULL, err);
 }
 
 TEST_F(QosTest, TestCheckFileQos)
 {
-	GError *err = NULL;
-        std::string url = std::string(root) + std::string(file);
-	const char* result = gfal2_check_file_qos(context,url.c_str(), &err);
-	if (result != NULL) {
-		std::string str(result);
-		std::cout << str << std::endl;
+  char buff[2048];
+	GError* err = NULL;
+  std::string url = std::string(root) + std::string(file);
+	ssize_t result = gfal2_check_file_qos(context, url.c_str(), buff, 2048, &err);
+
+	if (result > 0) {
+		std::cout << std::string(buff) << std::endl;
 	}
+
+	EXPECT_GT(result, 0);
 	EXPECT_EQ(NULL, err);
 }
 
 TEST_F(QosTest, TestCheckQoSTransitions)
 {
-	GError *err = NULL;
-        std::string url = std::string(root) + std::string("/cdmi_capabilities/dataobject/disk");
-	const char* result = gfal2_check_available_qos_transitions(context, url.c_str(), &err);
-	if (result != NULL) {
-		std::string str(result);
-		std::cout << str << std::endl;
+  char buff[2048];
+	GError* err = NULL;
+  std::string url = std::string(root) + std::string("/cdmi_capabilities/dataobject/disk");
+	ssize_t result = gfal2_check_available_qos_transitions(context, url.c_str(), buff, 2048, &err);
+
+	if (result > 0) {
+		std::cout << std::string(buff) << std::endl;
 	}
+
+	EXPECT_GT(result, 0);
 	EXPECT_EQ(NULL, err);
 }
 
 TEST_F(QosTest, TestCheckTargetQoSOfFile)
 {
-	GError *err = NULL;
-         std::string url = std::string(root) + std::string(file);
-	const char* result = gfal2_check_target_qos(context, url.c_str(), &err);
-	if (result != NULL) {
-		std::string str(result);
-		std::cout << str << std::endl;
+  char buff[2048];
+	GError* err = NULL;
+  std::string url = std::string(root) + std::string(file);
+	ssize_t result = gfal2_check_target_qos(context, url.c_str(), buff, 2048, &err);
+
+	if (result > 0) {
+		std::cout << std::string(buff) << std::endl;
 	}
+
+	EXPECT_GT(result, 0);
 	EXPECT_EQ(NULL, err);
 }
 
 TEST_F(QosTest, TestChangeQosOfFile)
 {
-	GError *err = NULL;
-        std::string url = std::string(root) + std::string(file);
+	GError* err = NULL;
+  std::string url = std::string(root) + std::string(file);
 	int result = gfal2_change_object_qos(context, url.c_str(), "/cdmi_capabilities/dataobject/tape/", &err);
-	std::cout << result << std::endl;
+
+	EXPECT_EQ(0, result);
 	EXPECT_EQ(NULL, err);
 }
 
 int main(int argc, char** argv)
 {
-    testing::InitGoogleTest(&argc, argv);
+  testing::InitGoogleTest(&argc, argv);
 
-    if (argc < 3) {
-        printf("Missing parameters \n");
-        printf("\t%s [host] [file]\n", argv[0]);
-        return -1;
-    }
-    QosTest::root = argv[1];
-    QosTest::file = argv[2];
-    return RUN_ALL_TESTS();
+  if (argc < 3) {
+      printf("Missing parameters: \n");
+      printf("\t%s [host] [file]\n", argv[0]);
+      return -1;
+  }
+
+  QosTest::root = argv[1];
+  QosTest::file = argv[2];
+
+  return RUN_ALL_TESTS();
 }

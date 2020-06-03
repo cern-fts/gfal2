@@ -891,59 +891,61 @@ int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri, time_t pi
     G_RETURN_ERR(resu, tmp_err, err);
 }
 
-const char* gfal_plugin_qos_check_classes(gfal2_context_t handle, const char *url, const char* type, GError ** err)
+ssize_t gfal_plugin_qos_check_classes(gfal2_context_t handle, const char* url, const char* type,
+                                      char* buff, size_t s_buff, GError** err)
 {
-	//GFAL_PLUGIN_QOS_CHECK_CLASSES
-	GError* tmp_err = NULL;
-	const char* resu;
-	gfal_plugin_interface* p = gfal_find_plugin(handle, url, GFAL_PLUGIN_QOS_CHECK_CLASSES, &tmp_err);
-	if (p)
-		resu = p->check_qos_classes(gfal_get_plugin_handle(p), url, type, &tmp_err);
-    G_RETURN_ERR(resu, tmp_err, err);
+    // GFAL_PLUGIN_QOS_CHECK_CLASSES
+    GError* tmp_err = NULL;
+    ssize_t res = -1;
+    gfal_plugin_interface* p = gfal_find_plugin(handle, url, GFAL_PLUGIN_QOS_CHECK_CLASSES, &tmp_err);
+    if (p)
+      res = p->check_qos_classes(gfal_get_plugin_handle(p), url, type, buff, s_buff, &tmp_err);
+    G_RETURN_ERR(res, tmp_err, err);
 }
 
-const char* gfal_plugin_check_file_qos(gfal2_context_t handle, const char *fileUrl, GError ** err)
+ssize_t gfal_plugin_check_file_qos(gfal2_context_t handle, const char* url, char* buff, size_t s_buff, GError** err)
 {
-	//GFAL_PLUGIN_QOS_CHECK_CLASSES
-	GError* tmp_err = NULL;
-	const char* resu;
-	gfal_plugin_interface* p = gfal_find_plugin(handle, fileUrl, GFAL_PLUGIN_CHECK_FILE_QOS, &tmp_err);
-	if (p)
-		resu = p->check_file_qos(gfal_get_plugin_handle(p), fileUrl, &tmp_err);
-    G_RETURN_ERR(resu, tmp_err, err);
+    // GFAL_PLUGIN_CHECK_FILE_QOS
+    GError* tmp_err = NULL;
+    ssize_t res = -1;
+    gfal_plugin_interface* p = gfal_find_plugin(handle, url, GFAL_PLUGIN_CHECK_FILE_QOS, &tmp_err);
+    if (p)
+      res = p->check_file_qos(gfal_get_plugin_handle(p), url, buff, s_buff, &tmp_err);
+    G_RETURN_ERR(res, tmp_err, err);
 }
 
-const char* gfal_plugin_check_qos_available_transitions(gfal2_context_t handle, const char *qosClassUrl, GError ** err)
+ssize_t gfal_plugin_check_qos_available_transitions(gfal2_context_t handle, const char* qos_class_url,
+                                                    char* buff, size_t s_buff, GError** err)
 {
-	//GFAL_PLUGIN_QOS_CHECK_CLASSES
-	GError* tmp_err = NULL;
-	const char* resu;
-	gfal_plugin_interface* p = gfal_find_plugin(handle, qosClassUrl, GFAL_PLUGIN_CHECK_QOS_AVAILABLE_TRANSITIONS, &tmp_err);
-	if (p)
-		resu = p->check_qos_available_transitions(gfal_get_plugin_handle(p), qosClassUrl, &tmp_err);
-    G_RETURN_ERR(resu, tmp_err, err);
+    // GFAL_PLUGIN_CHECK_QOS_AVAILABLE_TRANSITIONS
+    GError* tmp_err = NULL;
+    ssize_t res = -1;
+    gfal_plugin_interface* p = gfal_find_plugin(handle, qos_class_url, GFAL_PLUGIN_CHECK_QOS_AVAILABLE_TRANSITIONS, &tmp_err);
+    if (p)
+      res = p->check_qos_available_transitions(gfal_get_plugin_handle(p), qos_class_url, buff, s_buff, &tmp_err);
+    G_RETURN_ERR(res, tmp_err, err);
 }
 
-const char* gfal_plugin_check_target_qos(gfal2_context_t handle, const char *fileUrl, GError ** err)
+ssize_t gfal_plugin_check_target_qos(gfal2_context_t handle, const char* url, char* buff, size_t s_buff, GError** err)
 {
-	//GFAL_PLUGIN_QOS_CHECK_CLASSES
-	GError* tmp_err = NULL;
-	const char* resu;
-	gfal_plugin_interface* p = gfal_find_plugin(handle, fileUrl, GFAL_PLUGIN_CHECK_TARGET_QOS, &tmp_err);
-	if (p)
-		resu = p->check_target_qos(gfal_get_plugin_handle(p), fileUrl, &tmp_err);
-    G_RETURN_ERR(resu, tmp_err, err);
+    // GFAL_PLUGIN_CHECK_TARGET_QOS
+    GError* tmp_err = NULL;
+    ssize_t res = -1;
+    gfal_plugin_interface* p = gfal_find_plugin(handle, url, GFAL_PLUGIN_CHECK_TARGET_QOS, &tmp_err);
+    if (p)
+      res = p->check_target_qos(gfal_get_plugin_handle(p), url, buff, s_buff, &tmp_err);
+    G_RETURN_ERR(res, tmp_err, err);
 }
 
-int gfal_plugin_change_object_qos(gfal2_context_t handle, const char *fileUrl, const char* newQosClass, GError** err)
+int gfal_plugin_change_object_qos(gfal2_context_t handle, const char* url, const char* target_qos, GError** err)
 {
-	//GFAL_PLUGIN_QOS_CHECK_CLASSES
-	GError* tmp_err = NULL;
-	int resu = -1;
-	gfal_plugin_interface* p = gfal_find_plugin(handle, fileUrl, GFAL_PLUGIN_CHANGE_OBJECT_QOS, &tmp_err);
-	if (p)
-		resu = p->change_object_qos(gfal_get_plugin_handle(p), fileUrl, newQosClass, &tmp_err);
-	G_RETURN_ERR(resu, tmp_err, err);
+    // GFAL_PLUGIN_CHANGE_OBJECT_QOS
+    GError* tmp_err = NULL;
+    int res = -1;
+    gfal_plugin_interface* p = gfal_find_plugin(handle, url, GFAL_PLUGIN_CHANGE_OBJECT_QOS, &tmp_err);
+    if (p)
+      res = p->change_object_qos(gfal_get_plugin_handle(p), url, target_qos, &tmp_err);
+    G_RETURN_ERR(res, tmp_err, err);
 }
 
 int gfal_plugin_bring_online_pollG(gfal2_context_t handle, const char* uri, const char* token,
