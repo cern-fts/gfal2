@@ -19,32 +19,35 @@
  */
 
 #include <gtest/gtest.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <gfal_api.h>
 #include <stdlib.h>
-#include <common/gfal_lib_test.h>
-#include <common/gfal_gtest_asserts.h>
+#include <gfal_api.h>
 #include <utils/exceptions/gerror_to_cpp.h>
 
 
 class QosTest: public testing::Test {
 
 public:
-    static const char* root;
+    static const char* host;
     static const char* file;
+    static const char* target_qos;
+    static const char* token;
 
     gfal2_context_t context;
-    gfalt_params_t params;
+    gfal2_cred_t* cred;
 
     QosTest() {
-        GError *error = NULL;
-        context = gfal2_context_new(&error);
-        Gfal::gerror_to_cpp(&error);
+      GError *error = NULL;
+      context = gfal2_context_new(&error);
+      Gfal::gerror_to_cpp(&error);
+
+      cred = gfal2_cred_new(GFAL_CRED_BEARER, token);
+      gfal2_cred_set(context, host, cred, &error);
+      Gfal::gerror_to_cpp(&error);
     }
 
     virtual ~QosTest() {
-        gfal2_context_free(context);
+      gfal2_cred_free(cred);
+      gfal2_context_free(context);
     }
 
     virtual void SetUp() {
@@ -52,28 +55,22 @@ public:
     	unsetenv("X509_USER_CERT");
     	unsetenv("X509_USER_KEY");
 
-    	GError* error = NULL;
-    	params = gfalt_params_handle_new(&error);
-    	Gfal::gerror_to_cpp(&error);
-
     	// Clear automatic setup
     	gfal2_remove_opt(context, "X509", "CERT", NULL);
     	gfal2_remove_opt(context, "X509", "KEY", NULL);
     }
-
-    virtual void TearDown() {
-        GError *error = NULL;
-    }
 };
 
-const char* QosTest::root = NULL;
+const char* QosTest::host = NULL;
 const char* QosTest::file = NULL;
+const char* QosTest::target_qos = NULL;
+const char* QosTest::token = NULL;
 
 TEST_F(QosTest, TestQosClasses)
 {
   char buff[2048];
 	GError* err = NULL;
-	ssize_t result = gfal2_qos_check_classes(context, root, "dataobject", buff, 2048, &err);
+	ssize_t result = gfal2_qos_check_classes(context, host, "dataobject", buff, 2048, &err);
 
 	if (result > 0) {
 		std::cout << std::string(buff) << std::endl;
@@ -87,7 +84,7 @@ TEST_F(QosTest, TestCheckFileQos)
 {
   char buff[2048];
 	GError* err = NULL;
-  std::string url = std::string(root) + std::string(file);
+  std::string url = std::string(host) + std::string(file);
 	ssize_t result = gfal2_check_file_qos(context, url.c_str(), buff, 2048, &err);
 
 	if (result > 0) {
@@ -102,7 +99,9 @@ TEST_F(QosTest, TestCheckQoSTransitions)
 {
   char buff[2048];
 	GError* err = NULL;
-  std::string url = std::string(root) + std::string("/cdmi_capabilities/dataobject/disk");
+  std::string url = std::string(host) +
+                    std::string("/cdmi_capabilities/dataobject/") +
+                    std::string(target_qos);
 	ssize_t result = gfal2_check_available_qos_transitions(context, url.c_str(), buff, 2048, &err);
 
 	if (result > 0) {
@@ -117,7 +116,7 @@ TEST_F(QosTest, TestCheckTargetQoSOfFile)
 {
   char buff[2048];
 	GError* err = NULL;
-  std::string url = std::string(root) + std::string(file);
+  std::string url = std::string(host) + std::string(file);
 	ssize_t result = gfal2_check_target_qos(context, url.c_str(), buff, 2048, &err);
 
 	if (result > 0) {
@@ -131,8 +130,9 @@ TEST_F(QosTest, TestCheckTargetQoSOfFile)
 TEST_F(QosTest, TestChangeQosOfFile)
 {
 	GError* err = NULL;
-  std::string url = std::string(root) + std::string(file);
-	int result = gfal2_change_object_qos(context, url.c_str(), "/cdmi_capabilities/dataobject/tape/", &err);
+  std::string url = std::string(host) + std::string(file);
+  std::string cdmi_target_qos = "/cdmi_capabilities/dataobject/" + std::string(target_qos);
+  int result = gfal2_change_object_qos(context, url.c_str(), cdmi_target_qos.c_str(), &err);
 
 	EXPECT_EQ(0, result);
 	EXPECT_EQ(NULL, err);
@@ -142,14 +142,16 @@ int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
 
-  if (argc < 3) {
+  if (argc < 5) {
       printf("Missing parameters: \n");
-      printf("\t%s [host] [file]\n", argv[0]);
+      printf("\t%s [host] [file] [target_qos] [token]\n", argv[0]);
       return -1;
   }
 
-  QosTest::root = argv[1];
+  QosTest::host = argv[1];
   QosTest::file = argv[2];
+  QosTest::target_qos = argv[3];
+  QosTest::token = argv[4];
 
   return RUN_ALL_TESTS();
 }
