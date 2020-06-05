@@ -4,7 +4,7 @@
 %bcond_with tests
 
 Name:               gfal2
-Version:            2.17.3
+Version:            2.18.0
 Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 Group:              Applications/Internet
@@ -393,6 +393,11 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Fri Jun 05 2020 Mihai Patrascoiu <mipatras at cern.ch> - 2.18.0-1
+- New upstream release
+- Compatibility ensured with XRootD v5
+- CDMI QoS interface implemented in HTTP plugin
+
 * Thu May 07 2020 Mihai Patrascoiu <mipatras at cern.ch> - 2.17.3-1
 - New upstream release
 
