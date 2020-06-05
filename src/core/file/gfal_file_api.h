@@ -37,10 +37,10 @@
 #endif
 #if defined __APPLE__ 
 #include <sys/xattr.h>
-#else 
+#else
 #if defined __GLIBC_PREREQ && __GLIBC_PREREQ(2,27)
 #include <sys/xattr.h>
-#else 
+#else
 #include <attr/xattr.h>
 #endif
 #endif
@@ -317,7 +317,7 @@ ssize_t gfal2_getxattr (gfal2_context_t context, const char *url, const char *na
  * @param name : key of the extended attribute to define/set
  * @param value : new value of the xattr
  * @param size : size of the data
- * @param flags:  xattr flag, XATTR_CREATE specifies a pure create, which fails if the named attribute exists already.  XATTR_REPLACE specifies a pure
+ * @param flags : xattr flag, XATTR_CREATE specifies a pure create, which fails if the named attribute exists already.  XATTR_REPLACE specifies a pure
  *       replace operation, which fails if the named attribute does not already exist.  By default (no flags), the extended attribute will be created if need be, or will  simply  replace  the  value  if  the
  *       attribute exists.
  *
@@ -351,7 +351,7 @@ int gfal2_bring_online(gfal2_context_t context, const char* url,
  *
  * @param context : gfal2 handle, see \ref gfal2_context_new
  * @param url : url of the file
- * @param token : As set by gfal2_bring_online
+ * @param token : as set by gfal2_bring_online
  * @param err : GError error report
  * @return 0 if the request is queued, > 0 if the file is pinned, < 0 on error
  */
@@ -360,9 +360,82 @@ int gfal2_bring_online_poll(gfal2_context_t context, const char* url,
 
 /**
  * @brief Release a file
+ *
+ * @param context : gfal2 handle, see \ref gfal2_context_new
+ * @param url : url of the file
+ * @param token : as set by gfal2_bring_online
+ * @param err : GError error report
+ * @return 0 if the file was released, < 0 on error
  */
 int gfal2_release_file(gfal2_context_t context, const char* url,
                        const char* token, GError ** err);
+
+/**
+ * @brief Check available QoS classes supported by the endpoint
+ *
+ * @param context : gfal2 handle, see \ref gfal2_context_new
+ * @param url : url of the endpoint
+ * @param type : QoS type of the entity
+ * @param buff : buffer for the QoS classes string
+ * @param s_buff : maximum size of the buffer to write
+ * @param err : GError error report
+ * @return the size of the QoS classes string in bytes if success, -1 if error
+ */
+ssize_t gfal2_qos_check_classes(gfal2_context_t context, const char *url, const char *type,
+                                char *buff, size_t s_buff, GError **err);
+
+/**
+ * @brief Check QoS of a file
+ *
+ * @param context : gfal2 handle, see \ref gfal2_context_new
+ * @param url : url of the file
+ * @param buff : buffer for the file QoS class
+ * @param s_buff : maximum size of the buffer to write
+ * @param err : GError error report
+ * @return the size of the QoS class value in bytes if sucess, -1 if error
+ */
+ssize_t gfal2_check_file_qos(gfal2_context_t context, const char *url,
+                             char *buff, size_t s_buff, GError **err);
+
+/**
+ * @brief Check available QoS transitions of a QoS class
+ *
+ * @param context : gfal2 handle, see \ref gfal2_context_new
+ * @param qos_class_url : url of the QoS class
+ * @param buff : buffer for the QoS transitions string
+ * @param s_buff : maximum size of the buffer to write
+ * @param err : GError error report
+ * @return the size of the QoS transitions string in bytes if success, -1 if error
+ */
+ssize_t gfal2_check_available_qos_transitions(gfal2_context_t context, const char *qos_class_url,
+                                              char *buff, size_t s_buff, GError **err);
+
+/**
+ * @brief Check target QoS of a file
+ *
+ * @param context : gfal2 handle, see \ref gfal2_context_new
+ * @param url : url of the file
+ * @param buff : buffer for the target QoS class
+ * @param s_buff : maximum size of the buffer to write
+ * @param err : GError error report
+ * @return the size of the target QoS class value in bytes if sucess, -1 if error
+ *
+ * @note Usually available during QoS transitions
+ */
+ssize_t gfal2_check_target_qos(gfal2_context_t context, const char *url,
+                               char *buff, size_t s_buff, GError **err);
+
+/**
+ * @brief Request the QoS transiton of a CDMI object
+ *
+ * @param context : gfal2 handle, see \ref gfal2_context_new
+ * @param url : url of the file
+ * @param target_qos : the target QoS class
+ * @param err : GError error report
+ * @return 0 if success, -1 if error
+ */
+int gfal2_change_object_qos(gfal2_context_t context, const char *url,
+                            const char *target_qos, GError **err);
 
 /**
  * @brief Bring online a file
@@ -400,7 +473,8 @@ int gfal2_bring_online_poll_list(gfal2_context_t context, int nbfiles, const cha
                             const char* token, GError ** errors);
 
 /**
- * @brief Release a file
+ * @brief Perform a bulk release file
+ *
  * @param context : gfal2 handle, see \ref gfal2_context_new
  * @param nbfiles : number of files
  * @param urls   : paths of the files to delete

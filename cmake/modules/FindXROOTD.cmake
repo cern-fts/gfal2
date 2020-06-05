@@ -16,11 +16,6 @@ find_library(XROOTD_CL
     HINTS ${XROOTD_LOCATION}/lib ${XROOTD_LOCATION}/lib64 ${XROOTD_LOCATION}/lib32
     DOC "xrootd cl"
 )
-find_library(XROOTD_CLIENT
-    NAMES XrdClient
-    HINTS ${XROOTD_LOCATION}/lib ${XROOTD_LOCATION}/lib64 ${XROOTD_LOCATION}/lib32
-    DOC "xrootd client"
-)
 find_library(XROOTD_POSIX
     NAMES XrdPosix
     HINTS ${XROOTD_LOCATION}/lib ${XROOTD_LOCATION}/lib64 ${XROOTD_LOCATION}/lib32
@@ -34,7 +29,6 @@ find_library(XROOTD_UTIL
 
 set(XROOTD_LIBRARIES
     ${XROOTD_CL}
-    ${XROOTD_CLIENT}
     ${XROOTD_POSIX}
     ${XROOTD_UTIL}
 )

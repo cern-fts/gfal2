@@ -1,6 +1,13 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Fri Jun 05 2020 Mihai Patrascoiu <mipatras at cern.ch> - 2.18.0
+###Bug
+- [DMC-1201] - gfal2-plugin-xrootd incompatible with the xrootd master (v5)
+
+###Task
+- [DMC-1059] - Extend the gfal2 HTTP plugin to implement CDMI QoS operations
+
 ## Thu May 07 2020 Mihai Patrascoiu <mipatras at cern.ch> - 2.17.3
 ###Bug
 - [DMC-1203] - gfal attempts delegation with S3 / gcloud during third party copy

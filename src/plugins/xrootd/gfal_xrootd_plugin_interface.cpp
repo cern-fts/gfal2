@@ -27,12 +27,15 @@
 #include <XrdPosix/XrdPosixXrootd.hh>
 
 // This header is required for chmod
-#include <XrdClient/XrdClientAdmin.hh>
+#include <XrdCl/XrdClFileSystem.hh>
 
 // For directory listing
 #include <XrdCl/XrdClFileSystem.hh>
 #include <XrdCl/XrdClXRootDResponses.hh>
 
+// For setting the log level
+#include <XrdCl/XrdClDefaultEnv.hh>
+ 
 #include <XrdVersion.hh>
 
 // TRUE and FALSE are defined in Glib and xrootd headers
@@ -47,20 +50,19 @@
 #include "gfal_xrootd_plugin_interface.h"
 #include "gfal_xrootd_plugin_utils.h"
 
-
 void set_xrootd_log_level()
 {
     // Note: xrootd lib logs to stderr
-    if (gfal2_log_get_level() >= G_LOG_LEVEL_DEBUG)
-        XrdPosixXrootd::setDebug(4);
-    else if (gfal2_log_get_level() >= G_LOG_LEVEL_INFO)
-        XrdPosixXrootd::setDebug(3);
-    else if (gfal2_log_get_level() >= G_LOG_LEVEL_MESSAGE)
-        XrdPosixXrootd::setDebug(2);
-    else if (gfal2_log_get_level() >= G_LOG_LEVEL_WARNING)
-        XrdPosixXrootd::setDebug(1);
+    if (gfal2_log_get_level() & G_LOG_LEVEL_DEBUG)
+      XrdCl::DefaultEnv::SetLogLevel( "Debug" );
+    else if (gfal2_log_get_level() & G_LOG_LEVEL_INFO)
+      XrdCl::DefaultEnv::SetLogLevel( "Info" );
+    else if (gfal2_log_get_level() & G_LOG_LEVEL_MESSAGE)
+      XrdCl::DefaultEnv::SetLogLevel( "Info" );
+    else if (gfal2_log_get_level() & G_LOG_LEVEL_WARNING)
+      XrdCl::DefaultEnv::SetLogLevel( "Warning" );
     else
-        XrdPosixXrootd::setDebug(0);
+      XrdCl::DefaultEnv::SetLogLevel( "Error" );
 }
 
 
@@ -192,23 +194,21 @@ int gfal_xrootd_chmodG(plugin_handle handle, const char *url, mode_t mode,
 {
     std::string sanitizedUrl = prepare_url((gfal2_context_t) handle, url);
 
-    XrdClientAdmin client(sanitizedUrl.c_str());
     set_xrootd_log_level();
 
-    if (!client.Connect()) {
-        gfal2_xrootd_set_error(err, errno, __func__, "Failed to connect to server");
-        return -1;
+    XrdCl::URL xrdcl_url( sanitizedUrl );
+    XrdCl::FileSystem fs( xrdcl_url );
+    XrdCl::Access::Mode xrdcl_mode = file_mode_to_xrdcl_access( mode );
+    XrdCl::XRootDStatus status = fs.ChMod( xrdcl_url.GetPath(), xrdcl_mode );
+
+    if( !status.IsOK() )
+    {
+      int errNo = status.errNo;
+      if( status.code == XrdCl::errErrorResponse ) errNo = xrootd_errno_to_posix_errno( errNo );
+      gfal2_xrootd_set_error( err, errNo, __func__, status.ToStr().c_str() );
+      return -1;
     }
 
-    int user, group, other;
-    file_mode_to_xrootd_ints(mode, user, group, other);
-
-    XrdClientUrlInfo xrdurl(sanitizedUrl.c_str());
-
-    if (!client.Chmod(xrdurl.File.c_str(), user, group, other)) {
-        gfal2_xrootd_set_error(err, errno, __func__, "Failed to change permissions");
-        return -1;
-    }
     return 0;
 }
 
