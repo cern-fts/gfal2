@@ -8,7 +8,7 @@ if (PLUGIN_HTTP)
 
     # Includes
     include_directories (${CMAKE_CURRENT_BINARY_DIR})
-    include_directories(${DAVIX_INCLUDE_DIR})
+    include_directories(${DAVIX_INCLUDE_DIR} ${JSONC_INCLUDE_DIRS})
 
     # definitions
     add_definitions (${DAVIX_CFLAGS})
@@ -20,6 +20,7 @@ if (PLUGIN_HTTP)
     target_link_libraries(plugin_http gfal2
           gfal2_transfer
           ${DAVIX_LIBRARIES}
+          ${JSONC_LIBRARIES}
     )
 
     set_target_properties(plugin_http   PROPERTIES  CLEAN_DIRECT_OUTPUT 1
@@ -30,7 +31,7 @@ if (PLUGIN_HTTP)
     install(TARGETS plugin_http
             LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
     install(FILES "README_PLUGIN_HTTP"
-            DESTINATION ${DOC_INSTALL_DIR})    
+            DESTINATION ${DOC_INSTALL_DIR})
 
     # install http configuration files
     LIST(APPEND http_conf_file "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/http_plugin.conf")
