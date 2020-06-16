@@ -25,7 +25,7 @@
 #include <cstdio>
 #include <cstring>
 #include <sstream>
-#include <json/json.h>
+#include <json.h>
 #include "gfal_http_plugin.h"
 
 using namespace Davix;

@@ -9,6 +9,7 @@ if (PLUGIN_HTTP)
     # Includes
     include_directories (${CMAKE_CURRENT_BINARY_DIR})
     include_directories(${DAVIX_INCLUDE_DIR})
+    include_directories(${JSONC_INCLUDE_DIRS})
 
     # definitions
     add_definitions (${DAVIX_CFLAGS})
@@ -20,6 +21,7 @@ if (PLUGIN_HTTP)
     target_link_libraries(plugin_http gfal2
           gfal2_transfer
           ${DAVIX_LIBRARIES}
+	  ${JSONC_LIBRARIES}
     )
 
     set_target_properties(plugin_http   PROPERTIES  CLEAN_DIRECT_OUTPUT 1
