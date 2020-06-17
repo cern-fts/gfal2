@@ -385,10 +385,10 @@ static int gfal_http_third_party_copy(gfal2_context_t context,
 	g_clear_error(err);
     } else {
         if (mode == HTTP_COPY_PUSH) {
-	    if ((checksum_mode == GFALT_CHECKSUM_SOURCE) || (checksum_mode == GFALT_CHECKSUM_NONE) )
+	    if ((checksum_mode & GFALT_CHECKSUM_SOURCE) || (checksum_mode == GFALT_CHECKSUM_NONE) )
                 req_params.addHeader("RequireChecksumVerification", "false");
 	} else if (mode == HTTP_COPY_PULL) {
-		if ((checksum_mode == GFALT_CHECKSUM_TARGET) || (checksum_mode == GFALT_CHECKSUM_NONE) )
+		if ((checksum_mode & GFALT_CHECKSUM_TARGET) || (checksum_mode == GFALT_CHECKSUM_NONE) )
 		    req_params.addHeader("RequireChecksumVerification", "false");
 	} 
     }
