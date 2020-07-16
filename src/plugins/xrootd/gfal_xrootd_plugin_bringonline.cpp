@@ -71,34 +71,6 @@ int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
     return 0;
 }
 
-inline bool to_bool( struct json_object *boolobj )
-{
-  if( !boolobj ) return false;
-  static const std::string str_true( "true" );
-  std::string str_bool = json_object_get_string( boolobj );
-  std::transform( str_bool.begin(), str_bool.end(), str_bool.begin(), tolower );
-  return ( str_bool == str_true );
-}
-
-void collapse_slashes( std::string &path )
-{
-  std::string::iterator itr = path.begin(), store = path.begin();
-  ++itr;
-
-  while( itr != path.end() )
-  {
-    if( *store != '/' || *itr != '/' )
-    {
-      ++store;
-      *store = *itr;
-    }
-    ++itr;
-  }
-
-  size_t size = store - path.begin() + 1;
-  if( path.size() != size )
-    path.resize( size );
-}
 
 int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
     int nbfiles, const char* const* urls, const char* token, GError** err)
@@ -205,12 +177,12 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
       //       Keep a fallback to "exists" for the time being.
       struct json_object *arrobj_exists = 0;
       json_object_object_get_ex( arrobj, "path_exists", &arrobj_exists );
-      bool path_exists = to_bool( arrobj_exists );
+      bool path_exists = json_obj_to_bool(arrobj_exists);
       if( !path_exists )
       {
         // Try "exists" fallback
         json_object_object_get_ex( arrobj, "exists", &arrobj_exists );
-        bool exists = to_bool( arrobj_exists );
+        bool exists = json_obj_to_bool(arrobj_exists);
         if ( !exists )
         {
           ++errorcnt;
@@ -222,7 +194,7 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
       // get the online attribute
       struct json_object *arrobj_online = 0;
       json_object_object_get_ex( arrobj, "online", &arrobj_online );
-      bool online = to_bool( arrobj_online );
+      bool online = json_obj_to_bool(arrobj_online);
       if( online )
       {
         ++onlinecnt;
@@ -232,7 +204,7 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
       // get the requested attribute
       struct json_object *arrobj_requested = 0;
       json_object_object_get_ex( arrobj, "requested", &arrobj_requested );
-      bool requested = to_bool( arrobj_requested );
+      bool requested = json_obj_to_bool(arrobj_requested);
       if( !requested )
       {
         ++errorcnt;
@@ -244,7 +216,7 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
       // get the has_reqid attribute
       struct json_object *arrobj_has_reqid = 0;
       json_object_object_get_ex( arrobj, "has_reqid", &arrobj_has_reqid );
-      bool has_reqid = to_bool( arrobj_has_reqid );
+      bool has_reqid = json_obj_to_bool(arrobj_has_reqid);
       if( !has_reqid )
       {
         ++errorcnt;

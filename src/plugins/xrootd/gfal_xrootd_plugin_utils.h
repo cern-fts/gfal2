@@ -24,6 +24,7 @@
 #include <XrdCl/XrdClFileSystem.hh>
 
 #include <gfal_api.h>
+#include <json.h>
 #include <string>
 #include <sys/stat.h>
 
@@ -42,6 +43,12 @@ std::string prepare_url(gfal2_context_t context, const char *url);
 /// If the checksum type is one of the predefined ones, always lowercase
 /// @note adler32, crc32, md5
 std::string predefined_checksum_type_to_lower(const std::string& type);
+
+/// Parse a JSON object into a boolean value
+bool json_obj_to_bool(struct json_object *boolobj);
+
+/// Collapse multiple consecutive slashes into a single one
+void collapse_slashes(std::string& path);
 
 /// Map an xrootd errno to a posix errno
 int xrootd_errno_to_posix_errno(int rc);
