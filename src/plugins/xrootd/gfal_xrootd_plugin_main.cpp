@@ -88,6 +88,8 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)
     xrootd_plugin.release_file = &gfal_xrootd_release_file;
     xrootd_plugin.release_file_list = &gfal_xrootd_release_file_list;
     xrootd_plugin.abort_files = &gfal_xrootd_abort_files;
+    xrootd_plugin.archive_poll = &gfal_xrootd_archive_poll;
+    xrootd_plugin.archive_poll_list = &gfal_xrootd_archive_poll_list;
 
     return xrootd_plugin;
 }
@@ -116,6 +118,7 @@ gboolean gfal_xrootd_check_url(plugin_handle ch, const char* url,
         case GFAL_PLUGIN_SETXATTR:
         case GFAL_PLUGIN_LISTXATTR:
         case GFAL_PLUGIN_BRING_ONLINE:
+        case GFAL_PLUGIN_ARCHIVE:
             ret = TRUE;
             break;
         default:

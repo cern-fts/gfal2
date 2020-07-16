@@ -117,6 +117,11 @@ int gfal_xrootd_release_file_list(plugin_handle plugin_data,
 int gfal_xrootd_abort_files(plugin_handle plugin_data,
     int nbfiles, const char* const* urls, const char* token, GError** err);
 
+int gfal_xrootd_archive_poll(plugin_handle plugin_data, const char* url, GError** err);
+
+int gfal_xrootd_archive_poll_list(plugin_handle plugin_data,
+    int nbfiles, const char* const* urls, GError** errors);
+
 const char* gfal_xrootd_getName();
 
 void set_xrootd_log_level();
