@@ -80,6 +80,7 @@ typedef enum _plugin_mode {
     GFAL_PLUGIN_CHECKSUM,
     GFAL_PLUGIN_MKDIR_REC,
     GFAL_PLUGIN_BRING_ONLINE,
+    GFAL_PLUGIN_ARCHIVE,
     GFAL_PLUGIN_QOS_CHECK_CLASSES,
     GFAL_PLUGIN_CHECK_FILE_QOS,
     GFAL_PLUGIN_CHECK_QOS_AVAILABLE_TRANSITIONS,
@@ -650,9 +651,30 @@ struct _gfal_plugin_interface {
    */
   int (*change_object_qos)(plugin_handle plugin_data, const char* url, const char* target_qos, GError** err);
 
+    // ARCHIVE API
+
+  /**
+  * OPTIONAL: Polling the archive request (mandatory if archiving is supported)
+  *
+  * @param url: the URL for which to check archive status
+  * @return -1 on error (and err is set). 0 on success. 1 if the file has been archived.
+  */
+  int (*archive_poll)(plugin_handle plugin_data, const char* url, GError** err);
+
+  /**
+  * OPTIONAL: Polling the archive request (mandatory if archiving is supported)
+  *
+  * @param nbfiles: number of files
+  * @param urls: the URLs for which to check archive status
+  * @return -1 on error (and err is set). 0 on success. 1 if the files have been archived.
+  *          2 if some files have bene archived, others encountered errors
+  */
+  int (*archive_poll_list)(plugin_handle plugin_data, int nbfiles,
+                           const char* const* urls, GError** err);
+
 	 // reserved for future usage
 	 //! @cond
-     void* future[9];
+     void* future[7];
 	 //! @endcond
 };
 
@@ -737,6 +759,10 @@ ssize_t gfal_plugin_check_qos_available_transitions(gfal2_context_t handle, cons
                                                     char* buff, size_t s_buff, GError** err);
 ssize_t gfal_plugin_check_target_qos(gfal2_context_t handle, const char* url, char* buff, size_t s_buff, GError** err);
 int gfal_plugin_change_object_qos(gfal2_context_t handle, const char* url, const char* target_qos, GError** err);
+
+int gfal_plugin_archive_pollG(gfal2_context_t handle, const char* uri, GError ** err);
+int gfal_plugin_archive_poll_listG(gfal2_context_t handle, int nbfiles, const char* const* uris,
+                                   GError ** err);
 
 //! @endcond
 
