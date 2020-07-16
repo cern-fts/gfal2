@@ -25,6 +25,14 @@ if(FUNCTIONAL_TESTS)
         add_test(gfal_test_bringonline_${name} gfal_test_bringonline ${dir_path})
     endfunction(test_bringonline name valid_file)
 
+    # Archive tests
+    add_test_executable(gfal_test_archive "gfal_test_archive.cpp")
+    target_link_libraries(gfal_test_archive ${GFAL2_LIBRARIES} gfal2_test_shared)
+
+    function(test_archive name dir_path)
+        add_test(gfal_test_archive_${name} gfal_test_archive ${dir_path})
+    endfunction(test_archive name dir_path)
+
     # Checksum tests
     add_test_executable(gfal_test_checksum "gfal_test_checksum.cpp")
     target_link_libraries(gfal_test_checksum ${GFAL2_LIBRARIES} gfal2_test_shared)
