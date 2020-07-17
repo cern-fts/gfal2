@@ -80,9 +80,11 @@ TEST_F(RwSeekTest, SeqWriteSeek)
         long j = ((i + block_size) < file_size) ? block_size : file_size - i;
 
         ret = gfal2_lseek(context, fd, i, SEEK_SET, &error);
+        ASSERT_NE(-1, ret);
         EXPECT_PRED_FORMAT2(AssertGfalSuccess, fd, error);
 
         nb = gfal2_write(context, fd, buffer + i, j, &error);
+        ASSERT_NE(-1, nb);
         EXPECT_PRED_FORMAT2(AssertGfalSuccess, fd, error);
 
         i += j;
@@ -103,6 +105,7 @@ TEST_F(RwSeekTest, ReadSeek)
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, fd, error);
 
     int ret = gfal2_write(context, fd, buffer, sizeof(buffer), &error);
+    ASSERT_NE(-1, ret);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, fd, error);
 
     ret = gfal2_close(context, fd, &error);
@@ -114,9 +117,11 @@ TEST_F(RwSeekTest, ReadSeek)
 
     off_t offset = file_size / 2;
     ret = gfal2_lseek(context, fd, offset, SEEK_SET, &error);
+    ASSERT_NE(-1, ret);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, fd, error);
 
     ret = gfal2_read(context, fd, buffer, sizeof(buffer), &error);
+    ASSERT_NE(-1, ret);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, fd, error);
 
     ret = gfal2_close(context, fd, &error);
