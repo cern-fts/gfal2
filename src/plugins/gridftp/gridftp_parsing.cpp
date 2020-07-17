@@ -240,7 +240,7 @@ globus_result_t parse_mlst_line(char *line, struct stat *stat_info, char *filena
 
     stat_info->st_nlink = 1;
     stat_info->st_mode = -1;
-    stat_info->st_size = -1;
+    stat_info->st_size = 0;
     stat_info->st_mtime = -1;
 
     if (mode_s) {
