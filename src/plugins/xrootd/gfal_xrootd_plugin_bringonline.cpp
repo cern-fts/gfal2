@@ -200,15 +200,23 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
         continue;
       }
 
-      // get the exists attribute
+      // get the path_exists attribute
+      // Note: CTA changed from "exists" to "path_exists".
+      //       Keep a fallback to "exists" for the time being.
       struct json_object *arrobj_exists = 0;
-      json_object_object_get_ex( arrobj, "exists", &arrobj_exists );
-      bool exists = to_bool( arrobj_exists );
-      if( !exists )
+      json_object_object_get_ex( arrobj, "path_exists", &arrobj_exists );
+      bool path_exists = to_bool( arrobj_exists );
+      if( !path_exists )
       {
-        ++errorcnt;
-        gfal2_set_error(&err[i], xrootd_domain, ENOENT, __func__, "File does not exist: %s", path.c_str() );
-        continue;
+        // Try "exists" fallback
+        json_object_object_get_ex( arrobj, "exists", &arrobj_exists );
+        bool exists = to_bool( arrobj_exists );
+        if ( !exists )
+        {
+          ++errorcnt;
+          gfal2_set_error(&err[i], xrootd_domain, ENOENT, __func__, "File does not exist: %s", path.c_str() );
+          continue;
+        }
       }
 
       // get the online attribute

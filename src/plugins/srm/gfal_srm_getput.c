@@ -422,17 +422,13 @@ int gfal_srm_putTURLS_plugin(plugin_handle ch, const char *surl, char *buff_turl
 // the surl protocol is considered in the first position of the supported protocols
 int reorder_rd3_sup_protocols(char **sup_protocols, const char *surl, const char *other_surl)
 {
-	GError *tmp_err = NULL;
     int n_protocols = g_strv_length(sup_protocols);
-    char *protocol;
-    int pos_protocol;
-    // Check the turl protocol is in the request list
-    int matching_protocol = 0;
     int j;
+
+    // Check the other_surl protocol is in the request list
     for (j = 0; j < n_protocols; ++j) {
     	size_t proto_len = strlen(sup_protocols[j]);
         if (strncmp(sup_protocols[j], other_surl, proto_len) == 0 && other_surl[proto_len] == ':') {
-            matching_protocol = 1;
             g_strlcpy (sup_protocols[j], sup_protocols[0], strlen(sup_protocols[0])+1);
             g_strlcpy (sup_protocols[0], other_surl, proto_len+1);
             break;

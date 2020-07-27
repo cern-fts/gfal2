@@ -28,6 +28,8 @@
 #include <json.h>
 #include "gfal_http_plugin.h"
 
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 using namespace Davix;
 
 ssize_t gfal_http_check_classes(plugin_handle plugin_data, const char* url, const char* type,
