@@ -1,3 +1,8 @@
+gfal2 (2.18.2-1) unstable; urgency=low
+  * New version
+
+ -- DMC Devel <dmc-devel@cern.ch> Mon, 27 Jul 2020 17:00
+
 gfal2 (2.18.1-1) unstable; urgency=low
   * New version
 

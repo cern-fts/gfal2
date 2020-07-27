@@ -1,6 +1,13 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Mon Jul 27 2020 Mihai Patrascoiu <mipatras at cern.ch> - 2.18.2
+###Bug
+- [DMC-1220] - Filesize of GridFTP incomplete files reported as -1
+
+###Task
+- [DMC-1216] - Modify gfal2 Xrdfs query prepare to recognize both path_exists and exists fields
+
 ## Wed Jun 17 2020 Mihai Patrascoiu <mipatras at cern.ch> - 2.18.1
 ###Bug
 - (DMC-1110) Set RequireChecksumVerification header to false also for checksum mode "both"
