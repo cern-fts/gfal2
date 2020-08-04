@@ -50,10 +50,8 @@ public:
     }
 
     virtual void TearDown() {
-        GError* error = NULL;
-        gfal2_unlink(handle, surl, &error);
+        clearFile(surl);
         unsetenv("XrdSecPROTOCOL");
-        g_clear_error(&error);
     }
 
 protected:
@@ -63,6 +61,14 @@ protected:
         GError* error = NULL;
         int ret = generate_file_if_not_exists(handle, surl, test_file, &error);
         EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+        g_clear_error(&error);
+    }
+
+    void clearFile(char* surl) {
+        GError* error = NULL;
+        int ret = gfal2_unlink(handle, surl, &error);
+        EXPECT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+        g_clear_error(&error);
     }
 };
 
@@ -177,6 +183,7 @@ TEST_F(ArchiveTest, ListPoll)
     for (int i = 1; i < nbfiles; i++) {
         ASSERT_PRED_FORMAT2(AssertGfalSuccess, 1, errors[i]);
     }
+    clearFile(surl_second);
 }
 
 
