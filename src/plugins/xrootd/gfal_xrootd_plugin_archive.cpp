@@ -180,7 +180,7 @@ int gfal_xrootd_archive_poll_list(plugin_handle plugin_data, int nbfiles, const 
         // In case of no errors but the file is not yet archived, set EAGAIN
         if (!ontape) {
             gfal2_set_error(&errors[i], xrootd_domain, EAGAIN, __func__,
-                            "File %s is not yet online", path.c_str());
+                            "File %s is not yet archived", path.c_str());
         }
     }
 

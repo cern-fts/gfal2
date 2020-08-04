@@ -38,6 +38,9 @@ int gfal_srm_archive_pollG(plugin_handle ch, const char* surl, GError** err)
         if ((strncmp(buffer, GFAL_XATTR_STATUS_NEARLINE, sizeof(GFAL_XATTR_STATUS_NEARLINE)) == 0) ||
             (strncmp(buffer, GFAL_XATTR_STATUS_NEARLINE_ONLINE, sizeof(GFAL_XATTR_STATUS_NEARLINE_ONLINE)) == 0)) {
             poll_result = 1;
+        } else {
+            gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EAGAIN, __func__,
+                            "File %s is not yet archived", surl);
         }
     } else if (ret == -1 || tmp_err) {
         poll_result = -1;
