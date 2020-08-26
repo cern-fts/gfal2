@@ -105,7 +105,7 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
 
     if( !st.IsOK() )
     {
-      gfal2_log( G_LOG_LEVEL_ERROR, "Query prepare failed: %s", st.ToString().c_str() );
+      gfal2_log( G_LOG_LEVEL_WARNING, "Query prepare failed: %s", st.ToString().c_str() );
       for( int i = 0; i < nbfiles; ++i )
         gfal2_set_error( &err[i], xrootd_domain, xrootd_errno_to_posix_errno( st.errNo ),
                         __func__, "%s", st.ToString().c_str() );

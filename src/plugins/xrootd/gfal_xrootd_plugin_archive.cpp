@@ -77,7 +77,7 @@ int gfal_xrootd_archive_poll_list(plugin_handle plugin_data, int nbfiles, const 
     XrdCl::XRootDStatus st = fs.Query(XrdCl::QueryCode::Prepare, query_args, resp);
 
     if (!st.IsOK()) {
-        gfal2_log(G_LOG_LEVEL_ERROR, "Query prepare failed: %s", st.ToString().c_str());
+        gfal2_log(G_LOG_LEVEL_WARNING, "Query prepare failed: %s", st.ToString().c_str());
         for (int i = 0; i < nbfiles; i++) {
             gfal2_set_error(&errors[i], xrootd_domain, xrootd_errno_to_posix_errno(st.errNo),
                             __func__, "%s", st.ToString().c_str());
