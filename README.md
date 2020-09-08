@@ -19,7 +19,7 @@ GFAL2 is under the Apache License 2.0
 
 Documentation 
 =============
- See http://dmc.web.cern.ch/projects/gfal-2/home for more details
+ See https://dmc-docs.web.cern.ch/dmc-docs/gfal2/gfal2.html for more details
 
 Build
 =====
