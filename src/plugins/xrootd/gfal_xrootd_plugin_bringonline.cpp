@@ -159,6 +159,21 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
         continue;
       }
 
+      // get the error_text attribute
+      // Note: if it exists, this text should be appened to all other error messages
+      struct json_object *arrobj_error_text = 0;
+      json_object_object_get_ex( arrobj, "error_text", &arrobj_error_text );
+      std::string error_text;
+
+      if( !arrobj_error_text )
+      {
+        ++errorcnt;
+        gfal2_set_error( &err[i], xrootd_domain, ENOMSG, __func__, "Error attribute missing." );
+        continue;
+      } else {
+        error_text = json_object_get_string( arrobj_error_text );
+      }
+
       // get the path attribute
       struct json_object *arrobj_path = 0;
       json_object_object_get_ex( arrobj, "path", &arrobj_path );
@@ -168,7 +183,8 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
       if( path.empty() || !paths.count( path ) )
       { // it's not our file, this is an error
         ++errorcnt;
-        gfal2_set_error(&err[i], xrootd_domain, ENOMSG, __func__, "Wrong path: %s", path.c_str() );
+        gfal2_xrootd_poll_set_error( &err[i], ENOMSG, __func__, error_text.c_str(),
+                                     "Wrong path: %s", path.c_str() );
         continue;
       }
 
@@ -186,7 +202,8 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
         if ( !exists )
         {
           ++errorcnt;
-          gfal2_set_error(&err[i], xrootd_domain, ENOENT, __func__, "File does not exist: %s", path.c_str() );
+          gfal2_xrootd_poll_set_error( &err[i], ENOENT, __func__, error_text.c_str(),
+                                       "File does not exist: %s", path.c_str() );
           continue;
         }
       }
@@ -208,8 +225,8 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
       if( !requested )
       {
         ++errorcnt;
-        gfal2_set_error( &err[i], xrootd_domain, ENOMSG, __func__,
-                         "File is not being brought online: %s", path.c_str() );
+        gfal2_xrootd_poll_set_error( &err[i], ENOMSG, __func__, error_text.c_str(),
+                                    "File is not being brought online: %s", path.c_str() );
         continue;
       }
 
@@ -220,9 +237,9 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
       if( !has_reqid )
       {
         ++errorcnt;
-        gfal2_set_error( &err[i], xrootd_domain, ENOMSG, __func__,
-                         "File (%s) is not included in the bring online request: %s",
-                         path.c_str(), token );
+        gfal2_xrootd_poll_set_error( &err[i], ENOMSG, __func__, error_text.c_str(),
+                                     "File (%s) is not included in the bring online request: %s",
+                                     path.c_str(), token );
         continue;
       }
 
@@ -236,20 +253,15 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
       else
       {
         ++errorcnt;
-        gfal2_set_error( &err[i], xrootd_domain, ENOMSG, __func__, "Bring-online timestamp missing." );
+        gfal2_xrootd_poll_set_error( &err[i], ENOMSG, __func__, error_text.c_str(),
+                                     "Bring-online timestamp missing." );
         continue;
       }
-
-      // get the req_time attribute
-      struct json_object *arrobj_error_text = 0;
-      json_object_object_get_ex( arrobj, "error_text", &arrobj_error_text );
-      std::string error_text = arrobj_error_text ? json_object_get_string( arrobj_error_text ) :
-                                                   "Error attribute missing.";
 
       if( !error_text.empty() )
       {
         ++errorcnt;
-        gfal2_set_error(&err[i], xrootd_domain, ENOMSG, __func__, "%s", error_text.c_str() );
+        gfal2_set_error( &err[i], xrootd_domain, ENOMSG, __func__, "%s", error_text.c_str() );
         continue;
       }
 

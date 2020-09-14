@@ -132,6 +132,20 @@ int gfal_xrootd_archive_poll_list(plugin_handle plugin_data, int nbfiles, const 
             continue;
         }
 
+        // Retrieve "error_text" attribute
+        // Note: if it exists, this text should be appended to all other error messages
+        struct json_object* fileobj_error_text = 0;
+        json_object_object_get_ex(fileobj, "error_text", &fileobj_error_text);
+        std::string error_text;
+
+        if (!fileobj_error_text) {
+          error_count++;
+          gfal2_set_error(&errors[i], xrootd_domain, ENOMSG, __func__, "Error attribute missing.");
+          continue;
+        } else {
+          error_text = json_object_get_string(fileobj_error_text);
+        }
+
         // Retrieve "path" attribute
         struct json_object* fileobj_path = 0;
         json_object_object_get_ex(fileobj, "path", &fileobj_path);
@@ -140,7 +154,8 @@ int gfal_xrootd_archive_poll_list(plugin_handle plugin_data, int nbfiles, const 
 
         if (path.empty() || !paths.count(path)) {
             error_count++;
-            gfal2_set_error(&errors[i], xrootd_domain, ENOMSG, __func__, "Wrong path: %s", path.c_str());
+            gfal2_xrootd_poll_set_error(&errors[i], ENOMSG, __func__, error_text.c_str(),
+                                        "Wrong path: %s", path.c_str());
             continue;
         }
 
@@ -151,7 +166,8 @@ int gfal_xrootd_archive_poll_list(plugin_handle plugin_data, int nbfiles, const 
 
         if (!path_exists) {
             error_count++;
-            gfal2_set_error(&errors[i], xrootd_domain, ENOENT, __func__, "File does not exist: %s", path.c_str());
+            gfal2_xrootd_poll_set_error(&errors[i], ENOENT, __func__, error_text.c_str(),
+                                        "File does not exist: %s", path.c_str());
             continue;
         }
 
@@ -164,12 +180,6 @@ int gfal_xrootd_archive_poll_list(plugin_handle plugin_data, int nbfiles, const 
             ontape_count++;
             continue;
         }
-
-        // Retrieve "error_text" attribute
-        struct json_object* fileobj_error_text = 0;
-        json_object_object_get_ex(fileobj, "error_text", &fileobj_error_text);
-        std::string error_text = fileobj_error_text ? json_object_get_string(fileobj_error_text)
-                                                    : "Error attribute missing.";
 
         if (!error_text.empty()) {
             error_count++;

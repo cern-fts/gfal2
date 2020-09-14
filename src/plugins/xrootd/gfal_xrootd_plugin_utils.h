@@ -56,5 +56,8 @@ int xrootd_errno_to_posix_errno(int rc);
 /// Set error code with errno description
 void gfal2_xrootd_set_error(GError **err, int errcode, const char *func, const char *desc, ...);
 
+/// Set error code during polling, providing additional reason
+void gfal2_xrootd_poll_set_error(GError **err, int errcode, const char *func, const char *err_reasno,
+                                 const char *format, ...);
 
 #endif /* GFAL_XROOTD_PLUGIN_UTILS_H_ */
