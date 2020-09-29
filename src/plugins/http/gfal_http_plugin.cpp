@@ -572,11 +572,44 @@ static int davix2errno(StatusCode::Code code)
 
 void davix2gliberr(const DavixError* daverr, GError** err)
 {
+    const char *str = daverr->getErrMsg().c_str();
+    size_t str_len = daverr->getErrMsg().length();
 
-    std::string error_string= g_utf8_validate(daverr->getErrMsg().c_str(), daverr->getErrMsg().length(),NULL) ?
-	daverr->getErrMsg().c_str(): "Error string contains not valid UTF-8 chars";
+    // allocate additional ~ +10% for output string to be able
+    // to encode special characters with escaped sequences
+    GString *escaped_str = g_string_sized_new(str_len+str_len/10+10);
+    const char *p = str;
+
+    while (p < str+str_len) {
+        if (escaped_str->len + 6 > escaped_str->allocated_len) {
+            // escaped string too long, truncate and add ...
+            g_string_append_printf(escaped_str, "...");
+            break;
+        }
+
+        gunichar uchar = g_utf8_get_char_validated(p, str_len-(p-str));
+
+        if (uchar == (gunichar) -1 || uchar == (gunichar) -2) {
+            g_string_append_printf(escaped_str, "\\x%02x", *(guint8 *) p);
+            p++;
+            continue;
+        }
+
+        if (uchar < 32) {
+            g_string_append_printf(escaped_str, "\\x%02x", uchar);
+        }
+        else {
+            g_string_append_unichar(escaped_str, uchar);
+        }
+
+        p = g_utf8_next_char(p);
+    }
+
+    std::string error_string(escaped_str->str);
     gfal2_set_error(err, http_plugin_domain, davix2errno(daverr->getStatus()), __func__,
               "%s", error_string.c_str());
+
+    g_string_free(escaped_str, TRUE);
 }
 
 
