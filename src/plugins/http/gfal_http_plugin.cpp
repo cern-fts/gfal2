@@ -595,8 +595,30 @@ void davix2gliberr(const DavixError* daverr, GError** err)
             continue;
         }
 
-        if (uchar < 32) {
-            g_string_append_printf(escaped_str, "\\x%02x", uchar);
+        if (uchar < 32 || uchar == '\\') {
+            switch (uchar) {
+            case '\b':
+                g_string_append(escaped_str, "\\b");
+                break;
+            case '\f':
+                g_string_append(escaped_str, "\\f");
+                break;
+            case '\n':
+                g_string_append(escaped_str, "\\n");
+                break;
+            case '\r':
+                g_string_append(escaped_str, "\\r");
+                break;
+            case '\t':
+                g_string_append(escaped_str, "\\t");
+                break;
+            case '\\':
+                g_string_append(escaped_str, "\\\\");
+                break;
+            default:
+                g_string_append_printf(escaped_str, "\\x%02x", uchar);
+                break;
+            }
         }
         else {
             g_string_append_unichar(escaped_str, uchar);
