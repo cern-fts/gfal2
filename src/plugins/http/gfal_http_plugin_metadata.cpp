@@ -41,6 +41,23 @@ int gfal_http_stat(plugin_handle plugin_data, const char* url,
     Davix::DavixError* daverr = NULL;
     Davix::RequestParams req_params;
     davix->get_params(&req_params, Davix::Uri(stripped_url));
+
+    // Attempt stat over WebDav first, then fallback to HTTP
+    if (req_params.getProtocol() == Davix::RequestProtocol::Http) {
+      gfal2_log(G_LOG_LEVEL_DEBUG, "Identified stat over HTTP protocol. Attempting stat over WebDav first");
+      req_params.setProtocol(Davix::RequestProtocol::Webdav);
+      Davix::StatInfo statInfo;
+
+      if (davix->posix.stat64(&req_params, stripped_url, &statInfo, &daverr) != 0) {
+        gfal2_log(G_LOG_LEVEL_MESSAGE, "Stat over WebDav failed with error: %s. Will fallback to HTTP protocol", daverr->getErrMsg().c_str());
+        Davix::DavixError::clearError(&daverr);
+        req_params.setProtocol(Davix::RequestProtocol::Http);
+      } else {
+        statInfo.toPosixStat(*buf);
+        return 0;
+      }
+    }
+
     if (davix->posix.stat64(&req_params, stripped_url, &info, &daverr) != 0) {
         davix2gliberr(daverr, err);
         Davix::DavixError::clearError(&daverr);
