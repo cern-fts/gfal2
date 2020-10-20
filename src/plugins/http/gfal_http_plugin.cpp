@@ -572,11 +572,60 @@ static int davix2errno(StatusCode::Code code)
 
 void davix2gliberr(const DavixError* daverr, GError** err)
 {
+    const char *str = daverr->getErrMsg().c_str();
+    size_t str_len = daverr->getErrMsg().length();
 
-    std::string error_string= g_utf8_validate(daverr->getErrMsg().c_str(), daverr->getErrMsg().length(),NULL) ?
-	daverr->getErrMsg().c_str(): "Error string contains not valid UTF-8 chars";
+    // allocate initial string size, but it is automatically
+    // reallocation in case final excaped string becomes
+    // longer than original input
+    GString *escaped_str = g_string_sized_new(str_len);
+    const char *p = str;
+
+    while (p < str+str_len) {
+        gunichar uchar = g_utf8_get_char_validated(p, str_len-(p-str));
+
+        if (uchar == (gunichar) -1 || uchar == (gunichar) -2) {
+            g_string_append_printf(escaped_str, "\\x%02x", *(guint8 *) p);
+            p++;
+            continue;
+        }
+
+        if (uchar < 32 || uchar == '\\') {
+            switch (uchar) {
+            case '\b':
+                g_string_append(escaped_str, "\\b");
+                break;
+            case '\f':
+                g_string_append(escaped_str, "\\f");
+                break;
+            case '\n':
+                g_string_append(escaped_str, "\\n");
+                break;
+            case '\r':
+                g_string_append(escaped_str, "\\r");
+                break;
+            case '\t':
+                g_string_append(escaped_str, "\\t");
+                break;
+            case '\\':
+                g_string_append(escaped_str, "\\\\");
+                break;
+            default:
+                g_string_append_printf(escaped_str, "\\x%02x", uchar);
+                break;
+            }
+        }
+        else {
+            g_string_append_unichar(escaped_str, uchar);
+        }
+
+        p = g_utf8_next_char(p);
+    }
+
     gfal2_set_error(err, http_plugin_domain, davix2errno(daverr->getStatus()), __func__,
-              "%s", error_string.c_str());
+              "%s", escaped_str->str);
+
+    g_string_free(escaped_str, TRUE);
 }
 
 
