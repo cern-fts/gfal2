@@ -86,7 +86,7 @@ int gfal_srm_archive_poll_listG(plugin_handle ch, int nbfiles, const char* const
 
         ret = gfal_srm_archive_pollG(ch, surls[i], &errors[i]);
 
-        if (errors[i]) {
+        if (errors[i] && errors[i]->code != EAGAIN) {
             error_count++;
         } else if (ret == 1) {
             ontape_count++;
