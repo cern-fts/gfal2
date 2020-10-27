@@ -243,7 +243,6 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         results.push_back(XrdCl::PropertyList());
     }
 
-
     const char* src_spacetoken =  gfalt_get_src_spacetoken(params, NULL);
     const char* dst_spacetoken =  gfalt_get_dst_spacetoken(params, NULL);
 
@@ -253,7 +252,6 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         gfal_xrootd_3rd_init_url(context, dest_url, dsts[i], dst_spacetoken);
 
         XrdCl::PropertyList job;
-
         job.Set("source", source_url.GetURL());
         job.Set("target", dest_url.GetURL());
         job.Set("force", gfalt_get_replace_existing_file(params, NULL));
@@ -263,13 +261,15 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         if ((source_url.GetProtocol() == "root") && (dest_url.GetProtocol() == "root")) {
             job.Set("thirdParty", "only");
             isThirdParty = true;
-            job.Set("delegate", true);
+            job.Set("delegate", gfalt_get_use_proxy_delegation(params, NULL));
         }
         else {
             job.Set("thirdParty", "first");
         }
         job.Set("tpcTimeout", gfalt_get_timeout(params, NULL));
-
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Copy job: tpc_only=%d tpc_delegation=%d tpc_timeout=%d", isThirdParty,
+                  gfalt_get_use_proxy_delegation(params, NULL),
+                  gfalt_get_timeout(params, NULL));
 
         if (checksumMode) {
             char checksumType[64] = { 0 };
@@ -281,7 +281,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
             strncpy(checksumValue, s, sizeof(s));
             checksumType[63] = checksumValue[511] = '\0';
             g_strfreev(chks);
-	        gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Type: %s", checksumType);
+	          gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Type: %s", checksumType);
             gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Value: %s", checksumValue);
             if (!checksumType[0]) {
                 char* defaultChecksumType = gfal2_get_opt_string(context, XROOTD_CONFIG_GROUP, XROOTD_DEFAULT_CHECKSUM, &internalError);
@@ -296,7 +296,6 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
                 g_free(defaultChecksumType);
             }
 
-
             switch (checksumMode) {
                 case GFALT_CHECKSUM_BOTH:
                     job.Set("checkSumMode", "end2end");
@@ -310,14 +309,12 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
                 default:
                     job.Set("checkSumMode", "none");
             }
+
             job.Set("checkSumType", predefined_checksum_type_to_lower(checksumType));
             job.Set("checkSumPreset", checksumValue);
-
         }
 
         copy_process.AddJob(job, &(results[i]));
-
-
     }
 
     // Configuration job
