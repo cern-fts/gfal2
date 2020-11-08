@@ -50,6 +50,60 @@ static bool delegation_required(const Davix::Uri& uri)
    return needs_delegation;
 }
 
+// Returns new string with utf-8 escaped data for str
+static gchar* utf8escape(const char *str, size_t str_len, char *ignore = NULL)
+{
+    // allocate initial string size and relay on automatic GString
+    // reallocations if it doesn't fit (input should be usually valid)
+    GString *escaped_str = g_string_sized_new(str_len);
+    const char *p = str;
+
+    while (p < str+str_len) {
+        gunichar uchar = g_utf8_get_char_validated(p, str_len-(p-str));
+
+        if (uchar == (gunichar) -1 || uchar == (gunichar) -2) {
+            g_string_append_printf(escaped_str, "\\x%02x", *(guint8 *) p);
+            p++;
+            continue;
+        }
+
+        if ((uchar < 32 || uchar == '\\') && (!ignore || !strchr(ignore, uchar))) {
+            switch (uchar) {
+            case '\b':
+                g_string_append(escaped_str, "\\b");
+                break;
+            case '\f':
+                g_string_append(escaped_str, "\\f");
+                break;
+            case '\n':
+                g_string_append(escaped_str, "\\n");
+                break;
+            case '\r':
+                g_string_append(escaped_str, "\\r");
+                break;
+            case '\t':
+                g_string_append(escaped_str, "\\t");
+                break;
+            case '\\':
+                g_string_append(escaped_str, "\\\\");
+                break;
+            default:
+                g_string_append_printf(escaped_str, "\\x%02x", uchar);
+                break;
+            }
+        }
+        else {
+            g_string_append_unichar(escaped_str, uchar);
+        }
+
+        p = g_utf8_next_char(p);
+    }
+
+    gchar *res = escaped_str->str;
+    g_string_free(escaped_str, FALSE);
+    return res;
+}
+
 static int get_corresponding_davix_log_level()
 {
     int davix_log_level = DAVIX_LOG_CRITICAL;
@@ -409,7 +463,10 @@ static void log_davix2gfal(void* userdata, int msg_level, const char* msg)
         default:
             gfal_level = G_LOG_LEVEL_INFO;
     }
-    gfal2_log(gfal_level, "Davix: %s", msg);
+
+    gchar *escaped_msg = utf8escape(msg, strlen(msg), "\n\r\t\\");
+    gfal2_log(gfal_level, "Davix: %s", escaped_msg);
+    g_free(escaped_msg);
 }
 
 
@@ -574,58 +631,12 @@ void davix2gliberr(const DavixError* daverr, GError** err)
 {
     const char *str = daverr->getErrMsg().c_str();
     size_t str_len = daverr->getErrMsg().length();
-
-    // allocate initial string size, but it is automatically
-    // reallocation in case final excaped string becomes
-    // longer than original input
-    GString *escaped_str = g_string_sized_new(str_len);
-    const char *p = str;
-
-    while (p < str+str_len) {
-        gunichar uchar = g_utf8_get_char_validated(p, str_len-(p-str));
-
-        if (uchar == (gunichar) -1 || uchar == (gunichar) -2) {
-            g_string_append_printf(escaped_str, "\\x%02x", *(guint8 *) p);
-            p++;
-            continue;
-        }
-
-        if (uchar < 32 || uchar == '\\') {
-            switch (uchar) {
-            case '\b':
-                g_string_append(escaped_str, "\\b");
-                break;
-            case '\f':
-                g_string_append(escaped_str, "\\f");
-                break;
-            case '\n':
-                g_string_append(escaped_str, "\\n");
-                break;
-            case '\r':
-                g_string_append(escaped_str, "\\r");
-                break;
-            case '\t':
-                g_string_append(escaped_str, "\\t");
-                break;
-            case '\\':
-                g_string_append(escaped_str, "\\\\");
-                break;
-            default:
-                g_string_append_printf(escaped_str, "\\x%02x", uchar);
-                break;
-            }
-        }
-        else {
-            g_string_append_unichar(escaped_str, uchar);
-        }
-
-        p = g_utf8_next_char(p);
-    }
+    gchar *escaped_str = utf8escape(str, str_len);
 
     gfal2_set_error(err, http_plugin_domain, davix2errno(daverr->getStatus()), __func__,
-              "%s", escaped_str->str);
+              "%s", escaped_str);
 
-    g_string_free(escaped_str, TRUE);
+    g_free(escaped_str);
 }
 
 
