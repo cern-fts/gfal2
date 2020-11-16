@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <cstring>
 #include <sstream>
+#include <list>
 #include <davix.hpp>
 #include <errno.h>
 #include <davix/utils/davix_gcloud_utils.hpp>
@@ -216,74 +217,92 @@ static void gfal_http_get_ucert(const Davix::Uri &url, RequestParams & params, g
     g_free(ukey_p);
 }
 
-
-/// AWS implementation
+/// AWS authorization
 static void gfal_http_get_aws_keys(gfal2_context_t handle, const std::string& group,
-        gchar** secret_key, gchar** access_key, gchar** token, gchar** region, bool *alternate_url)
+                                   gchar** secret_key, gchar** access_key,
+                                   gchar** token, gchar** region)
 {
-    *secret_key = gfal2_get_opt_string(handle, group.c_str(), "SECRET_KEY", NULL);
-    *access_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_KEY", NULL);
-    *token = gfal2_get_opt_string(handle, group.c_str(), "TOKEN", NULL);
-    *region = gfal2_get_opt_string(handle, group.c_str(), "REGION", NULL);
-    *alternate_url =gfal2_get_opt_boolean_with_default(handle, group.c_str(), "ALTERNATE", false);
+    *secret_key    = (*secret_key) ? *secret_key : gfal2_get_opt_string(handle, group.c_str(), "SECRET_KEY", NULL);
+    *access_key    = (*access_key) ? *access_key : gfal2_get_opt_string(handle, group.c_str(), "ACCESS_KEY", NULL);
+    *token         = (*token)      ? *token      : gfal2_get_opt_string(handle, group.c_str(), "TOKEN", NULL);
+    *region        = (*region)     ? *region     : gfal2_get_opt_string(handle, group.c_str(), "REGION", NULL);
 
     // For retrocompatibility
-    if (!*secret_key) {
-        *secret_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_TOKEN_SECRET", NULL);
-    }
-    if (!*access_key) {
+    if (!*access_key || !*secret_key) {
         *access_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_TOKEN", NULL);
+        *secret_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_TOKEN_SECRET", NULL);
     }
 }
 
-static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, const Davix::Uri& uri)
+/// AWS authorization + parameters
+static void gfal_http_get_aws(RequestParams& params, gfal2_context_t handle, const Davix::Uri& uri)
 {
-    // Try generic configuration
     bool alternate_url;
-    gchar *secret_key, *access_key, *token, *region;
+    gchar *access_key = NULL, *secret_key = NULL, *token = NULL, *region = NULL;
+    bool access_pair_set = false, token_set = false, region_set = false;
+    bool alternate_set = false;
 
-    // Try S3:HOST
-    std::string group_label("S3:");
-    group_label += uri.getHost();
+    std::list<std::string> group_labels;
+    std::string host = uri.getHost();
+
+    // Add S3:HOST group label
+    std::string group_label = std::string("S3:") + host;
     std::transform(group_label.begin(), group_label.end(), group_label.begin(), ::toupper);
-    gfal_http_get_aws_keys(handle, group_label, &secret_key, &access_key, &token, &region, &alternate_url);
+    group_labels.push_back(group_label);
 
-    // Try S3:host removing bucket
-    if (!secret_key) {
-        std::string group_label("S3:");
-        std::string host = uri.getHost();
-        size_t i = host.find('.');
-        if (i != std::string::npos) {
-            group_label += host.substr(i + 1);
-            std::transform(group_label.begin(), group_label.end(), group_label.begin(), ::toupper);
-            gfal_http_get_aws_keys(handle, group_label, &secret_key, &access_key, &token, &region, &alternate_url);
+    // Add S3:(no-bucket)HOST group label
+    size_t pos = host.find(".");
+    if (pos != std::string::npos) {
+        group_label = std::string("S3:") + host.substr(pos + 1);
+        std::transform(group_label.begin(), group_label.end(), group_label.begin(), ::toupper);
+        group_labels.push_back(group_label);
+    }
+
+    // ADD S3 group label
+    group_labels.push_back("S3");
+
+    // Extract data from the config options
+    // Order: Most specific group --> most generic group
+    // Mechanism: Once a property is set, it will not be overwritten by later groups
+    std::list<std::string>::const_iterator it;
+    for (it = group_labels.begin(); it != group_labels.end(); it++) {
+        gfal_http_get_aws_keys(handle, *it, &secret_key, &access_key, &token, &region);
+
+        if (!access_pair_set && secret_key && access_key) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Setting S3 key pair [%s]", it->c_str());
+            params.setAwsAuthorizationKeys(secret_key, access_key);
+            access_pair_set = true;
+        }
+
+        if (!token_set && token) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Using short-lived access token [%s]", it->c_str());
+            params.setAwsToken(token);
+            token_set = true;
+        }
+
+        if (!region_set && region) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Using region %s [%s]", region, it->c_str());
+            params.setAwsRegion(region);
+            region_set = true;
+        }
+
+        if (!alternate_set) {
+            GError *alternate_err = NULL;
+            alternate_url = gfal2_get_opt_boolean(handle, it->c_str(), "ALTERNATE", &alternate_err);
+
+            if (!alternate_err) {
+                gfal2_log(G_LOG_LEVEL_DEBUG, "Setting S3 alternate URL to: %s [%s]",
+                          (alternate_url) ? "true" : "false", it->c_str());
+                params.setAwsAlternate(alternate_url);
+                alternate_set = true;
+            }
+
+            g_clear_error(&alternate_err);
         }
     }
 
-    // Try default
-    if (!secret_key) {
-        gfal_http_get_aws_keys(handle, "S3", &secret_key, &access_key, &token, &region, &alternate_url);
-    }
-
-    if (secret_key && access_key) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "Setting S3 key pair");
-        params.setAwsAuthorizationKeys(secret_key, access_key);
-    }
-    if (token) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "Using short-lived access token");
-        params.setAwsToken(token);
-    }
-    if (region) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "Using region %s", region);
-        params.setAwsRegion(region);
-    }
-    if (alternate_url) {
-      gfal2_log(G_LOG_LEVEL_DEBUG, "Using S3 alternate URL");
-      params.setAwsAlternate(alternate_url);
-    }
-
-    g_free(secret_key);
     g_free(access_key);
+    g_free(secret_key);
     g_free(token);
     g_free(region);
 }
