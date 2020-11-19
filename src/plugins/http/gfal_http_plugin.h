@@ -34,17 +34,56 @@ public:
     Davix::DavPosix posix;
     gfal2_context_t handle;
 
-    // Setup the Davix request parameters for a given URL.
-    void get_params(Davix::RequestParams*, const Davix::Uri& uri);
+    // Setup the Davix request parameters for a given URL
+    // @param token_write_access flag to signal tokens with write access are needed
+    void get_params(Davix::RequestParams*, const Davix::Uri& uri,
+                    bool token_write_access = false);
 
     // Put together parameters for the TPC, which may depend on both URLs in the transfer
     // Further, the request headers depend on the transfer mode that will be used.
-    void get_tpc_params(bool push_mode, Davix::RequestParams*,
-                        const Davix::Uri& src_uri, const Davix::Uri& dst_uri);
+    void get_tpc_params(Davix::RequestParams*,
+                        const Davix::Uri& src_uri, const Davix::Uri& dst_uri,
+                        gfalt_params_t transfer_params,
+                        bool push_mode);
 
 private:
     Davix::RequestParams reference_params;
 
+    // Set up general request parameters
+    void get_params_internal(Davix::RequestParams& params, const Davix::Uri& uri);
+
+    // Obtain credentials for a given Uri and set those credentials in the Davix request parameters.
+    // @param token_write_access flag to signal tokens with write access are needed
+    // @param token_validity requested lifetime of the token in seconds
+    // @param secondary_endpoint signals whether this is the passive element in a TPC transfer
+    void get_credentials(Davix::RequestParams& params, const Davix::Uri& uri,
+                         bool token_write_access, unsigned token_validity = 180,
+                         bool secondary_endpoint = false);
+
+    // Obtain token credentials
+    // @param write_access flag to request write permission
+    // @param secondary_endpoint signals whether this is the passive element in a TPC transfer
+    // @param validity requested lifetime of the token in seconds
+    // @return true if a bearer for the provided Uri was set in the request params
+    bool get_token(Davix::RequestParams& params, const Davix::Uri& uri,
+                   bool write_access, unsigned validity,
+                   bool secondary_endpoint);
+
+    // Attempt to obtain a SE-issued token (by exchanging x509 certificate)
+    // @param write_access flag to request write permission
+    // @param validity lifetime of the token in seconds
+    // @return the SE-issued token or null
+    char* retrieve_se_token(const Davix::Uri& uri, bool write_access,
+                            unsigned validity);
+
+    // Obtain request parameters + credentials for an AWS endpoint
+    void get_aws_params(Davix::RequestParams& params, const Davix::Uri& uri);
+
+    // Obtain GCloud endpoint credentials
+    void get_gcloud_credentials(Davix::RequestParams& params, const Davix::Uri& uri);
+
+    // Obtain certificate credentials
+    void get_certificate(Davix::RequestParams& params, const Davix::Uri& uri);
 };
 
 const char* gfal_http_get_name(void);

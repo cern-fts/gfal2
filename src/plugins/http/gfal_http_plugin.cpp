@@ -26,6 +26,7 @@
 #include <list>
 #include <davix.hpp>
 #include <errno.h>
+#include <dlfcn.h>
 #include <davix/utils/davix_gcloud_utils.hpp>
 
 using namespace Davix;
@@ -34,13 +35,21 @@ static const char* http_module_name = "http_plugin";
 GQuark http_plugin_domain = g_quark_from_static_string(http_module_name);
 
 
+// dlopen-style handle to the token issuer library
+int (*g_x509_scitokens_issuer_init_p)(char **) = NULL;
+char* (*g_x509_scitokens_issuer_retrieve_p)(const char *, const char *, const char *,
+                                            char**) = NULL;
+char* (*g_x509_macaroon_issuer_retrieve_p)(const char *, const char *, const char *, int,
+                                           const char **, char **) = NULL;
+void *g_x509_scitokens_issuer_handle = NULL;
+
+
 const char* gfal_http_get_name(void)
 {
     return GFAL2_PLUGIN_VERSIONED("http", VERSION);;
 }
 
-// this is to understand if the active storage in TPC needs gridsite delegation
-// if the destination does not need tls we avoid it
+// The active storage in TPC needs gridsite delegation (avoid if not using TLS)
 static bool delegation_required(const Davix::Uri& uri)
 {
    bool needs_delegation = false;
@@ -65,49 +74,247 @@ static int get_corresponding_davix_log_level()
     return davix_log_level;
 }
 
-static bool isS3SignedURL(const Davix::Uri &url)
+static bool allowsBearerTokenRetrieve(const Davix::Uri& uri)
 {
-    if(url.queryParamExists("AWSAccessKeyId") && url.queryParamExists("Signature")) {
-    	return true;
-    }
-
-    if(url.queryParamExists("X-Amz-Credential") && url.queryParamExists("X-Amz-Signature")) {
-    	return true;
-    }
-
-    return false;
+    return (uri.getProtocol().rfind("https", 0) == 0) ||
+           (uri.getProtocol().rfind("davs", 0) == 0);
 }
 
-/// Token-based authorization.
-//  If this returns `true`, the RequestParams have been successfully
-//  configured to utilize a bearer token.  In such a case, no other
-//  authorization mechanism (such as user certs) should be used.
-static bool gfal_http_get_token(RequestParams & params,
-                                gfal2_context_t handle,
-                                const Davix::Uri &url,
-                                bool secondary_endpoint)
+static bool isS3SignedURL(const Davix::Uri& url)
 {
+    return (url.queryParamExists("AWSAccessKeyId") && url.queryParamExists("Signature")) ||
+           (url.queryParamExists("X-Amz-Credential") && url.queryParamExists("X-Amz-Signature"));
+}
 
-    if (isS3SignedURL(url)) {
-	return false;
+static bool gfal_http_init_token_library()
+{
+    if (g_x509_scitokens_issuer_handle) {
+        return true;
     }
 
-    GError *error = NULL;
-    gchar *token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
-                                  url.getString().c_str(),
+    char *error;
+    g_x509_scitokens_issuer_handle = dlopen("libX509SciTokensIssuer.so",
+                                            RTLD_NOW|RTLD_GLOBAL);
+    if (!g_x509_scitokens_issuer_handle) {
+        char *error = dlerror();
+        gfal2_log(G_LOG_LEVEL_INFO, "Failed to load the token issuer library: %s",
+                  error ? error : "(unknown)");
+        return false;
+    }
+
+    // Clear any potential error message
+    dlerror();
+
+    *(void **)(&g_x509_scitokens_issuer_init_p) = dlsym(g_x509_scitokens_issuer_handle,
+                                                        "x509_scitokens_issuer_init");
+    if ((error = dlerror()) != NULL) {
+        dlclose(g_x509_scitokens_issuer_handle);
+        g_x509_scitokens_issuer_handle = NULL;
+        gfal2_log(G_LOG_LEVEL_INFO, "Failed to load initializer handle: %s", error);
+        return false;
+    }
+    dlerror();
+
+    *(void **)(&g_x509_scitokens_issuer_retrieve_p) = dlsym(g_x509_scitokens_issuer_handle,
+                                                            "x509_scitokens_issuer_retrieve");
+    if ((error = dlerror()) != NULL) {
+        dlclose(g_x509_scitokens_issuer_handle);
+        g_x509_scitokens_issuer_init_p = NULL;
+        g_x509_scitokens_issuer_handle = NULL;
+        gfal2_log(G_LOG_LEVEL_INFO, "Failed to load the token retrieval handle: %s", error);
+        return false;
+    }
+    dlerror();
+
+    *(void **)(&g_x509_macaroon_issuer_retrieve_p) = dlsym(g_x509_scitokens_issuer_handle,
+                                                           "x509_macaroon_issuer_retrieve");
+    if ((error = dlerror()) != NULL)
+    {
+        dlclose(g_x509_scitokens_issuer_handle);
+        g_x509_scitokens_issuer_retrieve_p = NULL;
+        g_x509_scitokens_issuer_init_p = NULL;
+        g_x509_scitokens_issuer_handle = NULL;
+        gfal2_log(G_LOG_LEVEL_INFO, "Failed to load the macaroon retrieval handle: %s", error);
+        return false;
+    }
+    dlerror();
+
+    char *err = NULL;
+    if ((*g_x509_scitokens_issuer_init_p)(&err)) {
+        dlclose(g_x509_scitokens_issuer_handle);
+        g_x509_macaroon_issuer_retrieve_p = NULL;
+        g_x509_scitokens_issuer_retrieve_p = NULL;
+        g_x509_scitokens_issuer_init_p = NULL;
+        g_x509_scitokens_issuer_handle = NULL;
+        free(err);
+        gfal2_log(G_LOG_LEVEL_INFO, "Failed to initialize the client issuer library: %s", err);
+        return false;
+    }
+
+    return true;
+}
+
+
+static char* gfal_http_retrieve_scitoken(const char* issuer, const char* cert, const char* key)
+{
+    char *err = NULL;
+    char *token = (*g_x509_scitokens_issuer_retrieve_p)(issuer, cert, key, &err);
+
+    if (!token) {
+        gfal2_log(G_LOG_LEVEL_INFO, "Failed to retrieve scitoken: %s", err);
+        free(err);
+        return NULL;
+    }
+
+    return token;
+}
+
+
+static char* gfal_http_retrieve_macaroon(const char* url, const char* cert, const char* key,
+                                         const char** activities,
+                                         unsigned validity)
+{
+    char *err = NULL;
+    char *token = (*g_x509_macaroon_issuer_retrieve_p)(url, cert, key, validity, activities, &err);
+
+    if (!token) {
+        gfal2_log(G_LOG_LEVEL_INFO, "Failed to retrieve macaroon: %s", err);
+        free(err);
+        return NULL;
+    }
+
+    return token;
+}
+
+// Retrieve x509 certificate pair from credential mapping/config
+static bool gfal_http_get_x509_cert_pair(gfal2_context_t handle, const Davix::Uri& uri,
+                                         std::string& cert, std::string& key)
+{
+    bool certificate_pair = true;
+    GError* error = NULL;
+
+    // Extract certificate from credential map to give priority to user-set pair
+    gchar *cert_p = gfal2_cred_get(handle, GFAL_CRED_X509_CERT, uri.getString().c_str(), NULL, &error);
+    g_clear_error(&error);
+    gchar *key_p = gfal2_cred_get(handle, GFAL_CRED_X509_KEY, uri.getString().c_str(), NULL, &error);
+    g_clear_error(&error);
+
+    if (cert_p) {
+        cert.assign(cert_p);
+        key = (key_p != NULL) ? std::string(key_p) : cert;
+        certificate_pair = true;
+    }
+
+    g_free(cert_p);
+    g_free(key_p);
+
+    return certificate_pair;
+}
+
+char* GfalHttpPluginData::retrieve_se_token(const Davix::Uri& uri, bool write_access, unsigned validity)
+{
+    bool retrieve_token = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "RETRIEVE_BEARER_TOKEN", false);
+
+    if (!retrieve_token || !allowsBearerTokenRetrieve(uri)) {
+        return NULL;
+    }
+
+    if (!gfal_http_init_token_library()) {
+        return NULL;
+    }
+
+    // We should use the same cert/key as the one set in the Davix::RequestParams.setClientCertX509
+    // For that, we need the Davix::X509Credential to export the path of the cert/key files
+    // Since these function calls happen in succession, they should retrieve the same cert/key files
+    std::string cert, key;
+    bool certificate_pair = gfal_http_get_x509_cert_pair(handle, uri, cert, key);
+
+    if (!certificate_pair) {
+        gfal2_log(G_LOG_LEVEL_INFO, "Could not find certificate pair, which is needed for bearer token retrieval");
+        return NULL;
+    }
+
+    // Only macaroon implementation for now
+    // Note: Scitoken retrieval requires knowing the token issuer.
+    //       This means additional data that has to be passed to Gfal2
+    std::vector<std::string> activitiy;
+    activitiy.push_back("LIST");
+
+    if (write_access) {
+        activitiy.push_back("MANAGE");
+        activitiy.push_back("UPLOAD");
+        activitiy.push_back("DELETE");
+    } else {
+        activitiy.push_back("DOWNLOAD");
+    }
+
+    // Ugly cast to std::vector<const char*>
+    std::vector<const char*> activity_list;
+    for (std::vector<std::string>::const_iterator it = activitiy.begin();
+         it != activitiy.end(); it++) {
+        activity_list.push_back(it->c_str());
+    }
+    activity_list.push_back(NULL);
+
+    return gfal_http_retrieve_macaroon(uri.getString().c_str(),
+                                       cert.c_str(), key.c_str(),
+                                       activity_list.data(),
+                                       validity);
+}
+
+bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Uri& uri,
+                                   bool write_access, unsigned validity,
+                                   bool secondary_endpoint)
+{
+    if (isS3SignedURL(uri)) {
+	    return false;
+    }
+
+    GError* error = NULL;
+    gchar* token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
+                                  uri.getString().c_str(),
                                   NULL, &error);
     g_clear_error(&error);  // for now, ignore the error messages.
 
     if (!token) {
-        // if we don't have specific token for requested URL fallback
+        // If we don't have specific token for requested URL fallback
         // to token stored for hostname (for TPC with macaroon tokens
         // we need at least BEARER set for full source URL and hostname
         // BEARER for destination because that one could be also used
         // to create all missing parent directories)
         token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
-                               url.getHost().c_str(),
+                               uri.getHost().c_str(),
                                NULL, &error);
         g_clear_error(&error);  // for now, ignore the error messages.
+    }
+
+    if (!token) {
+        // No token for neither the URL or the hostname
+        // Attempt to obtain SE-issued token
+        token = retrieve_se_token(uri, write_access, validity);
+
+        if (token) {
+            // Note: Registering the token in the credential map has an obstacle ahead.
+            // Further calls for the same URL will be met with a token which might be read-only,
+            // whereas the new request requires write access.
+            // Ideally, we inspect the token and determine if it's suitable and if not, invalidate it.
+            // However, we're dealing with two independent technologies here: macaroons & scitokens
+            // A uniform inspection approach is needed.
+            // A more brute-force approach: we cache each gfal SE-issued token request and associate it
+            // with the corresponding token. This way, we don't know what's inside the token,
+            // but we know what was requested for it
+
+            // Register token in the credentials map
+            gfal2_cred_t* token_cred = gfal2_cred_new(GFAL_CRED_BEARER, token);
+            if (gfal2_cred_set(handle, uri.getString().c_str(), token_cred, &error) < 0) {
+                gfal2_log(G_LOG_LEVEL_DEBUG, "Failed to set bearer token in credential_map[%s] due to error: %s",
+                          uri.getString().c_str(), error->message);
+                g_clear_error(&error);
+            } else {
+                gfal2_log(G_LOG_LEVEL_DEBUG, "Set bearer token in credential_map[%s] (write=%s) (validity=%u)",
+                          uri.getString().c_str(), write_access ? "true" : "false" , validity);
+            }
+        }
     }
 
     if (!token) {
@@ -122,46 +329,35 @@ static bool gfal_http_get_token(RequestParams & params,
 
     if (secondary_endpoint) {
         params.addHeader("TransferHeaderAuthorization", ss.str());
-        // If we have a valid token for the destination, we explicitly disable credential
-        // delegation.
+        // Disable credential delegation if we have a valid token for the destination
         params.addHeader("Credential", "none");
     } else {
         params.addHeader("Authorization", ss.str());
     }
+
     g_free(token);
     return true;
 }
 
-/// Authn implementation
-static void gfal_http_get_ucert(const Davix::Uri &url, RequestParams & params, gfal2_context_t handle)
+void GfalHttpPluginData::get_certificate(Davix::RequestParams& params, const Davix::Uri& uri)
 {
-    std::string ukey, ucert;
-    DavixError* tmp_err = NULL;
-    GError *error = NULL;
+    DavixError* daverr = NULL;
+    std::string cert, key;
 
-    // Try user defined first
-    std::string url_string = url.getString();
+    bool certificate_pair = gfal_http_get_x509_cert_pair(handle, uri, cert, key);
 
-    gchar *ucert_p = gfal2_cred_get(handle, GFAL_CRED_X509_CERT, url_string.c_str(), NULL, &error);
-    g_clear_error(&error);
-    gchar *ukey_p = gfal2_cred_get(handle, GFAL_CRED_X509_KEY, url_string.c_str(), NULL, &error);
-    g_clear_error(&error);
-
-    if (ucert_p) {
+    if (certificate_pair) {
         gfal2_log(G_LOG_LEVEL_DEBUG, "Using client X509 for HTTPS session authorization");
-        ucert.assign(ucert_p);
-        ukey= (ukey_p != NULL)?(std::string(ukey_p)):(ucert);
 
         X509Credential cred;
-        if(cred.loadFromFilePEM(ukey,ucert,"", &tmp_err) <0){
-            gfal2_log(G_LOG_LEVEL_WARNING,
-                    "Could not load the user credentials: %s", tmp_err->getErrMsg().c_str());
-        }else{
+        if (cred.loadFromFilePEM(key, cert, "", &daverr) < 0 ) {
+            gfal2_log(G_LOG_LEVEL_WARNING, "Could not load the user credentials: %s",
+                      daverr->getErrMsg().c_str());
+            DavixError::clearError(&daverr);
+        } else {
             params.setClientCertX509(cred);
         }
     }
-    g_free(ucert_p);
-    g_free(ukey_p);
 }
 
 /// AWS authorization
@@ -181,8 +377,7 @@ static void gfal_http_get_aws_keys(gfal2_context_t handle, const std::string& gr
     }
 }
 
-/// AWS authorization + parameters
-static void gfal_http_get_aws(RequestParams& params, gfal2_context_t handle, const Davix::Uri& uri)
+void GfalHttpPluginData::get_aws_params(Davix::RequestParams& params, const Davix::Uri& uri)
 {
     bool alternate_url;
     gchar *access_key = NULL, *secret_key = NULL, *token = NULL, *region = NULL;
@@ -254,7 +449,7 @@ static void gfal_http_get_aws(RequestParams& params, gfal2_context_t handle, con
     g_free(region);
 }
 
-static void gfal_http_get_gcloud(RequestParams & params, gfal2_context_t handle, const Davix::Uri& uri)
+void GfalHttpPluginData::get_gcloud_credentials(Davix::RequestParams& params, const Davix::Uri& uri)
 {
     gchar *gcloud_json_file, *gcloud_json_string;
     std::string group_label("GCLOUD");
@@ -262,63 +457,63 @@ static void gfal_http_get_gcloud(RequestParams & params, gfal2_context_t handle,
     gcloud_json_file = gfal2_get_opt_string(handle, group_label.c_str(), "JSON_AUTH_FILE", NULL);
     gcloud_json_string = gfal2_get_opt_string(handle, group_label.c_str(), "JSON_AUTH_STRING", NULL);
     gcloud::CredentialProvider provider;
+
     if (gcloud_json_file) {
         gfal2_log(G_LOG_LEVEL_DEBUG, "Using gcloud json credential file");
         params.setGcloudCredentials(provider.fromFile(std::string(gcloud_json_file)));
     } else if (gcloud_json_string) {
         gfal2_log(G_LOG_LEVEL_DEBUG, "Using gcloud json credential string");
-        params.setGcloudCredentials(provider.fromJSONString (std::string(gcloud_json_string)));
+        params.setGcloudCredentials(provider.fromJSONString(std::string(gcloud_json_string)));
     }
 
     g_free(gcloud_json_file);
     g_free(gcloud_json_string);
 }
 
-static void gfal_http_get_cred(RequestParams & params,
-                               gfal2_context_t handle,
-                               const Davix::Uri& uri,
-                               bool secondary_endpoint = false)
+void GfalHttpPluginData::get_credentials(Davix::RequestParams& params, const Davix::Uri& uri,
+                                         bool token_write_access, unsigned token_validity,
+                                         bool secondary_endpoint)
 {
-    // We still setup GSI in case the storage endpoint tries to fall back to GridSite delegation.
-    // That does mean that we might contact the endpoint with both X509 and token auth -- but seems
-    // to be an acceptable compromise.
-    gfal_http_get_ucert(uri, params, handle);
+    // Setup GSI in case the storage endpoint tries to fall back to GridSite delegation.
+    // That does mean that we might contact the endpoint with both X509 and token auth,
+    // but seems to be an acceptable compromise
+    get_certificate(params, uri);
 
     // Explicit request for S3 or GCloud
     if (uri.getProtocol().compare(0, 2, "s3") == 0) {
-        gfal_http_get_aws(params, handle, uri);
+        get_aws_params(params, uri);
     } else if (uri.getProtocol().compare(0, 6, "gcloud") == 0) {
-        gfal_http_get_gcloud(params, handle, uri);
-    } // Use bearer token
-    else if (!gfal_http_get_token(params, handle, uri, secondary_endpoint)) {
+        get_gcloud_credentials(params, uri);
+    } // Use bearer token (other authentication mechanism should be disabled)
+      // Not the case for the moment, as certificates are still used (but should be unset in the future)
+    else if (!get_token(params, uri, token_write_access, token_validity,
+                        secondary_endpoint)) {
         // Utilize AWS or GCLOUD tokens if no bearer token is available (to be reviewed)
-        gfal_http_get_aws(params, handle, uri);
-        gfal_http_get_gcloud(params, handle, uri);
+        get_aws_params(params, uri);
+        get_gcloud_credentials(params,uri);
     }
 }
 
-static void gfal_http_get_params(RequestParams & params, gfal2_context_t handle, const Davix::Uri& uri)
+void GfalHttpPluginData::get_params_internal(Davix::RequestParams& params, const Davix::Uri& uri)
 {
+    if (uri.getProtocol().compare(0, 4, "http") == 0) {
+        params.setProtocol(Davix::RequestProtocol::Http);
+    } else if (uri.getProtocol().compare(0, 3, "dav") == 0) {
+        params.setProtocol(Davix::RequestProtocol::Webdav);
+    } else if (uri.getProtocol().compare(0, 2, "s3") == 0) {
+        params.setProtocol(Davix::RequestProtocol::AwsS3);
+    } else if (uri.getProtocol().compare(0, 6, "gcloud") == 0) {
+        params.setProtocol(Davix::RequestProtocol::Gcloud);
+    } else {
+        params.setProtocol(Davix::RequestProtocol::Auto);
+    }
+
+    // Insecure flag
     gboolean insecure_mode = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "INSECURE", FALSE);
     if (insecure_mode) {
         params.setSSLCAcheck(false);
     }
 
-    if (uri.getProtocol().compare(0, 4, "http") == 0 )  {
-        params.setProtocol(Davix::RequestProtocol::Http);
-    }
-    else if (uri.getProtocol().compare(0, 3, "dav") == 0) {
-        params.setProtocol(Davix::RequestProtocol::Webdav);
-    }
-    else if (uri.getProtocol().compare(0, 2, "s3") == 0) {
-        params.setProtocol(Davix::RequestProtocol::AwsS3);
-    }
-    else if (uri.getProtocol().compare(0, 6, "gcloud") == 0) {
-        params.setProtocol(Davix::RequestProtocol::Gcloud);
-    }
-    else {
-        params.setProtocol(Davix::RequestProtocol::Auto);
-    }
     // Keep alive
     gboolean keep_alive = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "KEEP_ALIVE", TRUE);
     params.setKeepAlive(keep_alive);
@@ -335,11 +530,9 @@ static void gfal_http_get_params(RequestParams & params, gfal2_context_t handle,
 
     std::ostringstream user_agent;
     if (agent) {
-        user_agent << agent << "/" << version << " " << "gfal2/" << gfal2_version();
+        user_agent << agent << "/" << version << " ";
     }
-    else {
-        user_agent << "gfal2/" << gfal2_version();
-    }
+    user_agent << "gfal2/" << gfal2_version();
     params.setUserAgent(user_agent.str());
 
     // Client information
@@ -369,25 +562,30 @@ static void gfal_http_get_params(RequestParams & params, gfal2_context_t handle,
     params.setOperationTimeout(&opTimeout);
 }
 
-void GfalHttpPluginData::get_tpc_params(bool push_mode,
-                                        Davix::RequestParams * req_params,
+void GfalHttpPluginData::get_tpc_params(Davix::RequestParams* req_params,
                                         const Davix::Uri& src_uri,
-                                        const Davix::Uri& dst_uri)
+                                        const Davix::Uri& dst_uri,
+                                        gfalt_params_t transfer_params,
+                                        bool push_mode)
 {
     *req_params = reference_params;
-
     bool do_delegation = false;
+
+    // Token validity
+    unsigned token_timeout = ((unsigned) (2 * gfalt_get_timeout(transfer_params, NULL)) / 60) + 10;
+
     if (push_mode) {
-        gfal_http_get_params(*req_params, handle, src_uri);
-        gfal_http_get_cred(*req_params, handle, src_uri);
-        gfal_http_get_cred(*req_params, handle, dst_uri, true);
+        get_params_internal(*req_params, src_uri);
+        get_credentials(*req_params, src_uri, false, token_timeout);
+        get_credentials(*req_params, dst_uri, true, token_timeout, true);
         do_delegation = delegation_required(dst_uri);
     } else {  // Pull mode
-        gfal_http_get_params(*req_params, handle, dst_uri);
-        gfal_http_get_cred(*req_params, handle, src_uri, true);
-        gfal_http_get_cred(*req_params, handle, dst_uri);
+        get_params_internal(*req_params, dst_uri);
+        get_credentials(*req_params, src_uri, false, token_timeout, true);
+        get_credentials(*req_params, dst_uri, true, token_timeout);
         do_delegation = delegation_required(src_uri);
     }
+
     // The TPC request should be explicit in terms of how the active endpoint should manage credentials,
     // as it can be ambiguous from the request (i.e., client X509 authenticated by Macaroon present or
     // Macaroon present at an endpoint that supports OIDC).
@@ -397,17 +595,16 @@ void GfalHttpPluginData::get_tpc_params(bool push_mode,
     if (do_delegation) {
         const HeaderVec &headers = req_params->getHeaders();
         bool set_credential = false;
-        for (HeaderVec::const_iterator iter = headers.begin();
-             iter != headers.end();
-             iter++)
-        {
+
+        for (HeaderVec::const_iterator iter = headers.begin(); iter != headers.end(); iter++) {
             if (!strcasecmp(iter->first.c_str(), "Credential")) {
                 set_credential = true;
             }
         }
+
         if (!set_credential) {
             req_params->addHeader("Credential", "gridsite");
-       }
+        }
     } else {
         req_params->addHeader("Credential", "none");
         req_params->addHeader("X-No-Delegate", "true");
@@ -416,12 +613,13 @@ void GfalHttpPluginData::get_tpc_params(bool push_mode,
 }
 
 void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
-                                    const Davix::Uri& uri)
+                                    const Davix::Uri& uri,
+                                    bool token_write_access)
 {
     *req_params = reference_params;
 
-    gfal_http_get_cred(*req_params, handle, uri);
-    gfal_http_get_params(*req_params, handle, uri);
+    get_params_internal(*req_params, uri);
+    get_credentials(*req_params, uri, token_write_access);
 }
 
 
@@ -510,13 +708,11 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
 
 gboolean gfal_should_fallback(int error_code)
 {
-
 	switch(error_code) {
 	    case ECANCELED:
-	    	return false;
-	default:
-	    return true;
-
+            return false;
+	    default:
+	        return true;
 	}
 }
 
@@ -607,7 +803,7 @@ void davix2gliberr(const DavixError* daverr, GError** err)
     gchar *escaped_str = gfal2_utf8escape_string(str, str_len, NULL);
 
     gfal2_set_error(err, http_plugin_domain, davix2errno(daverr->getStatus()), __func__,
-              "%s", escaped_str);
+                    "%s", escaped_str);
 
     g_free(escaped_str);
 }
