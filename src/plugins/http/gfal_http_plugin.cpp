@@ -332,12 +332,19 @@ static void gfal_http_get_cred(RequestParams & params,
                                const Davix::Uri& uri,
                                bool secondary_endpoint = false)
 {
-    gfal_http_get_ucert(uri, params, handle);
-    // Only utilize AWS or GCLOUD tokens if a bearer token isn't available.
     // We still setup GSI in case the storage endpoint tries to fall back to GridSite delegation.
     // That does mean that we might contact the endpoint with both X509 and token auth -- but seems
     // to be an acceptable compromise.
-    if (!gfal_http_get_token(params, handle, uri, secondary_endpoint)) {
+    gfal_http_get_ucert(uri, params, handle);
+
+    // Explicit request for S3 or GCloud
+    if (uri.getProtocol().compare(0, 2, "s3") == 0) {
+        gfal_http_get_aws(params, handle, uri);
+    } else if (uri.getProtocol().compare(0, 6, "gcloud") == 0) {
+        gfal_http_get_gcloud(params, handle, uri);
+    } // Use bearer token
+    else if (!gfal_http_get_token(params, handle, uri, secondary_endpoint)) {
+        // Utilize AWS or GCLOUD tokens if no bearer token is available (to be reviewed)
         gfal_http_get_aws(params, handle, uri);
         gfal_http_get_gcloud(params, handle, uri);
     }
