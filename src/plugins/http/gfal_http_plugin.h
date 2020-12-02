@@ -21,6 +21,8 @@
 #ifndef _GFAL_HTTP_PLUGIN_H
 #define _GFAL_HTTP_PLUGIN_H
 
+#include <map>
+
 #include <gfal_plugins_api.h>
 #include <davix.hpp>
 
@@ -47,7 +49,11 @@ public:
                         bool push_mode);
 
 private:
+    typedef std::map<std::string, bool> TokenAccessMap;
+    /// baseline Davix Request Parameters
     Davix::RequestParams reference_params;
+    /// map a token with read/write access flag
+    TokenAccessMap token_map;
 
     // Set up general request parameters
     void get_params_internal(Davix::RequestParams& params, const Davix::Uri& uri);

@@ -274,7 +274,7 @@ bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Ur
     gchar* token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
                                   uri.getString().c_str(),
                                   NULL, &error);
-    g_clear_error(&error);  // for now, ignore the error messages.
+    g_clear_error(&error);
 
     if (!token) {
         // If we don't have specific token for requested URL fallback
@@ -285,7 +285,29 @@ bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Ur
         token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
                                uri.getHost().c_str(),
                                NULL, &error);
-        g_clear_error(&error);  // for now, ignore the error messages.
+        g_clear_error(&error);
+    }
+
+    // Check token read/write access in RW access token map
+    if (token) {
+        // Poor man's token inspection for read/write access
+        // TODO: Replace with proper inspection of access (and validity) in the future
+        TokenAccessMap::iterator it = token_map.find(token);
+        if (it != token_map.end()) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Found token in credential_map[%s] (access=%s) (needed=%s)",
+                      uri.getString().c_str(), it->second ? "write" : "read",
+                      write_access ? "write" : "read");
+
+            if (write_access && it->second != write_access) {
+                gfal2_log(G_LOG_LEVEL_INFO, "Invalidating token for path=%s because write access is missing",
+                          uri.getString().c_str());
+                token_map.erase(it);
+                g_free(token);
+                token = NULL;
+            }
+        } else {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Retrieved token not in token access map (assuming user-set)");
+        }
     }
 
     if (!token) {
@@ -311,9 +333,13 @@ bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Ur
                           uri.getString().c_str(), error->message);
                 g_clear_error(&error);
             } else {
-                gfal2_log(G_LOG_LEVEL_DEBUG, "Set bearer token in credential_map[%s] (write=%s) (validity=%u)",
-                          uri.getString().c_str(), write_access ? "true" : "false" , validity);
+                gfal2_log(G_LOG_LEVEL_DEBUG, "Set bearer token in credential_map[%s] (access=%s) (validity=%u)",
+                          uri.getString().c_str(), write_access ? "write" : "read" , validity);
+                token_map[token] = write_access;
             }
+
+            // Clean resource after copying into the credential map
+            gfal2_cred_free(token_cred);
         }
     }
 
@@ -324,7 +350,7 @@ bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Ur
     std::stringstream ss;
     ss << "Bearer " << token;
 
-    gfal2_log(G_LOG_LEVEL_DEBUG, "Using bearer token for HTTPS request authorization%s",
+    gfal2_log(G_LOG_LEVEL_INFO, "Using bearer token for HTTPS request authorization%s",
               secondary_endpoint ? " (passive TPC)" : "");
 
     if (secondary_endpoint) {
@@ -642,7 +668,7 @@ static void log_davix2gfal(void* userdata, int msg_level, const char* msg)
 
 
 GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
-    context(), posix(&context), handle(handle), reference_params()
+    context(), posix(&context), handle(handle), reference_params(), token_map()
 {
     davix_set_log_handler(log_davix2gfal, NULL);
     int davix_level = get_corresponding_davix_log_level();
