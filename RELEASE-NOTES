@@ -1,6 +1,20 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Fri Dec 04 2020 Mihai Patrascoiu <mipatras at cern.ch> - 2.19.0
+###Bug
+- [DMC-1227] - gfal-ls with https/davs
+- [DMC-1231] - Do not use BEARER tokens when dealing with S3/GCloud endpoints
+
+###Task
+- [DMC-1217] - Implement gfal2 archived poll API using Xrdfs query prepare
+
+###Improvement
+- [DMC-1224] - Bringonline polling should always propagate the error_text field, if it exists
+- [DMC-1229] - Introduce Gfal2 transfer parameter to enable/disable proxy delegation
+- Refactor the way S3 request parameters are obtained from the loaded configuration
+- Non-UTF8 characters in Davix error and log messages are correctly handled in the HTTP plugin (attributed to Petr Vokac)
+
 ## Mon Jul 27 2020 Mihai Patrascoiu <mipatras at cern.ch> - 2.18.2
 ###Bug
 - [DMC-1220] - Filesize of GridFTP incomplete files reported as -1
