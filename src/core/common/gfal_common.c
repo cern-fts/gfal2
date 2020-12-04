@@ -102,7 +102,7 @@ static void gfal_initCredentialLocation(gfal2_context_t handle)
     cert = getenv("X509_USER_CERT");
     key = getenv("X509_USER_KEY");
     if (cert != NULL && key != NULL) {
-        gfal_setCredentialLocation("X590_USER_CERT and X509_USER_KEY", handle, cert, key);
+        gfal_setCredentialLocation("X509_USER_CERT and X509_USER_KEY", handle, cert, key);
         return;
     }
     // Default certificate location

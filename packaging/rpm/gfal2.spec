@@ -4,7 +4,7 @@
 %bcond_with tests
 
 Name:               gfal2
-Version:            2.18.2
+Version:            2.19.0
 Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 Group:              Applications/Internet
@@ -393,6 +393,10 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Fri Dec 04 2020 Mihai Patrascoiu <mipatras at cern.ch> - 2.19.0-1
+- New upstream release
+- Introduces Archiving API
+
 * Mon Jul 27 2020 Mihai Patrascoiu <mipatras at cern.ch> - 2.18.2-1
 - New upstream release
 

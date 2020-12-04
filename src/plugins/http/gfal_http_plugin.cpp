@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <cstring>
 #include <sstream>
+#include <list>
 #include <davix.hpp>
 #include <errno.h>
 #include <davix/utils/davix_gcloud_utils.hpp>
@@ -48,6 +49,60 @@ static bool delegation_required(const Davix::Uri& uri)
           needs_delegation = true;
    }
    return needs_delegation;
+}
+
+// Returns new string with utf-8 escaped data for str
+static gchar* utf8escape(const char *str, size_t str_len, char *ignore = NULL)
+{
+    // allocate initial string size and relay on automatic GString
+    // reallocations if it doesn't fit (input should be usually valid)
+    GString *escaped_str = g_string_sized_new(str_len);
+    const char *p = str;
+
+    while (p < str+str_len) {
+        gunichar uchar = g_utf8_get_char_validated(p, str_len-(p-str));
+
+        if (uchar == (gunichar) -1 || uchar == (gunichar) -2) {
+            g_string_append_printf(escaped_str, "\\x%02x", *(guint8 *) p);
+            p++;
+            continue;
+        }
+
+        if ((uchar < 32 || uchar == '\\') && (!ignore || !strchr(ignore, uchar))) {
+            switch (uchar) {
+            case '\b':
+                g_string_append(escaped_str, "\\b");
+                break;
+            case '\f':
+                g_string_append(escaped_str, "\\f");
+                break;
+            case '\n':
+                g_string_append(escaped_str, "\\n");
+                break;
+            case '\r':
+                g_string_append(escaped_str, "\\r");
+                break;
+            case '\t':
+                g_string_append(escaped_str, "\\t");
+                break;
+            case '\\':
+                g_string_append(escaped_str, "\\\\");
+                break;
+            default:
+                g_string_append_printf(escaped_str, "\\x%02x", uchar);
+                break;
+            }
+        }
+        else {
+            g_string_append_unichar(escaped_str, uchar);
+        }
+
+        p = g_utf8_next_char(p);
+    }
+
+    gchar *res = escaped_str->str;
+    g_string_free(escaped_str, FALSE);
+    return res;
 }
 
 static int get_corresponding_davix_log_level()
@@ -162,74 +217,92 @@ static void gfal_http_get_ucert(const Davix::Uri &url, RequestParams & params, g
     g_free(ukey_p);
 }
 
-
-/// AWS implementation
+/// AWS authorization
 static void gfal_http_get_aws_keys(gfal2_context_t handle, const std::string& group,
-        gchar** secret_key, gchar** access_key, gchar** token, gchar** region, bool *alternate_url)
+                                   gchar** secret_key, gchar** access_key,
+                                   gchar** token, gchar** region)
 {
-    *secret_key = gfal2_get_opt_string(handle, group.c_str(), "SECRET_KEY", NULL);
-    *access_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_KEY", NULL);
-    *token = gfal2_get_opt_string(handle, group.c_str(), "TOKEN", NULL);
-    *region = gfal2_get_opt_string(handle, group.c_str(), "REGION", NULL);
-    *alternate_url =gfal2_get_opt_boolean_with_default(handle, group.c_str(), "ALTERNATE", false);
+    *secret_key    = (*secret_key) ? *secret_key : gfal2_get_opt_string(handle, group.c_str(), "SECRET_KEY", NULL);
+    *access_key    = (*access_key) ? *access_key : gfal2_get_opt_string(handle, group.c_str(), "ACCESS_KEY", NULL);
+    *token         = (*token)      ? *token      : gfal2_get_opt_string(handle, group.c_str(), "TOKEN", NULL);
+    *region        = (*region)     ? *region     : gfal2_get_opt_string(handle, group.c_str(), "REGION", NULL);
 
     // For retrocompatibility
-    if (!*secret_key) {
-        *secret_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_TOKEN_SECRET", NULL);
-    }
-    if (!*access_key) {
+    if (!*access_key || !*secret_key) {
         *access_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_TOKEN", NULL);
+        *secret_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_TOKEN_SECRET", NULL);
     }
 }
 
-static void gfal_http_get_aws(RequestParams & params, gfal2_context_t handle, const Davix::Uri& uri)
+/// AWS authorization + parameters
+static void gfal_http_get_aws(RequestParams& params, gfal2_context_t handle, const Davix::Uri& uri)
 {
-    // Try generic configuration
     bool alternate_url;
-    gchar *secret_key, *access_key, *token, *region;
+    gchar *access_key = NULL, *secret_key = NULL, *token = NULL, *region = NULL;
+    bool access_pair_set = false, token_set = false, region_set = false;
+    bool alternate_set = false;
 
-    // Try S3:HOST
-    std::string group_label("S3:");
-    group_label += uri.getHost();
+    std::list<std::string> group_labels;
+    std::string host = uri.getHost();
+
+    // Add S3:HOST group label
+    std::string group_label = std::string("S3:") + host;
     std::transform(group_label.begin(), group_label.end(), group_label.begin(), ::toupper);
-    gfal_http_get_aws_keys(handle, group_label, &secret_key, &access_key, &token, &region, &alternate_url);
+    group_labels.push_back(group_label);
 
-    // Try S3:host removing bucket
-    if (!secret_key) {
-        std::string group_label("S3:");
-        std::string host = uri.getHost();
-        size_t i = host.find('.');
-        if (i != std::string::npos) {
-            group_label += host.substr(i + 1);
-            std::transform(group_label.begin(), group_label.end(), group_label.begin(), ::toupper);
-            gfal_http_get_aws_keys(handle, group_label, &secret_key, &access_key, &token, &region, &alternate_url);
+    // Add S3:(no-bucket)HOST group label
+    size_t pos = host.find(".");
+    if (pos != std::string::npos) {
+        group_label = std::string("S3:") + host.substr(pos + 1);
+        std::transform(group_label.begin(), group_label.end(), group_label.begin(), ::toupper);
+        group_labels.push_back(group_label);
+    }
+
+    // ADD S3 group label
+    group_labels.push_back("S3");
+
+    // Extract data from the config options
+    // Order: Most specific group --> most generic group
+    // Mechanism: Once a property is set, it will not be overwritten by later groups
+    std::list<std::string>::const_iterator it;
+    for (it = group_labels.begin(); it != group_labels.end(); it++) {
+        gfal_http_get_aws_keys(handle, *it, &secret_key, &access_key, &token, &region);
+
+        if (!access_pair_set && secret_key && access_key) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Setting S3 key pair [%s]", it->c_str());
+            params.setAwsAuthorizationKeys(secret_key, access_key);
+            access_pair_set = true;
+        }
+
+        if (!token_set && token) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Using short-lived access token [%s]", it->c_str());
+            params.setAwsToken(token);
+            token_set = true;
+        }
+
+        if (!region_set && region) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Using region %s [%s]", region, it->c_str());
+            params.setAwsRegion(region);
+            region_set = true;
+        }
+
+        if (!alternate_set) {
+            GError *alternate_err = NULL;
+            alternate_url = gfal2_get_opt_boolean(handle, it->c_str(), "ALTERNATE", &alternate_err);
+
+            if (!alternate_err) {
+                gfal2_log(G_LOG_LEVEL_DEBUG, "Setting S3 alternate URL to: %s [%s]",
+                          (alternate_url) ? "true" : "false", it->c_str());
+                params.setAwsAlternate(alternate_url);
+                alternate_set = true;
+            }
+
+            g_clear_error(&alternate_err);
         }
     }
 
-    // Try default
-    if (!secret_key) {
-        gfal_http_get_aws_keys(handle, "S3", &secret_key, &access_key, &token, &region, &alternate_url);
-    }
-
-    if (secret_key && access_key) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "Setting S3 key pair");
-        params.setAwsAuthorizationKeys(secret_key, access_key);
-    }
-    if (token) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "Using short-lived access token");
-        params.setAwsToken(token);
-    }
-    if (region) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "Using region %s", region);
-        params.setAwsRegion(region);
-    }
-    if (alternate_url) {
-      gfal2_log(G_LOG_LEVEL_DEBUG, "Using S3 alternate URL");
-      params.setAwsAlternate(alternate_url);
-    }
-
-    g_free(secret_key);
     g_free(access_key);
+    g_free(secret_key);
     g_free(token);
     g_free(region);
 }
@@ -259,12 +332,19 @@ static void gfal_http_get_cred(RequestParams & params,
                                const Davix::Uri& uri,
                                bool secondary_endpoint = false)
 {
-    gfal_http_get_ucert(uri, params, handle);
-    // Only utilize AWS or GCLOUD tokens if a bearer token isn't available.
     // We still setup GSI in case the storage endpoint tries to fall back to GridSite delegation.
     // That does mean that we might contact the endpoint with both X509 and token auth -- but seems
     // to be an acceptable compromise.
-    if (!gfal_http_get_token(params, handle, uri, secondary_endpoint)) {
+    gfal_http_get_ucert(uri, params, handle);
+
+    // Explicit request for S3 or GCloud
+    if (uri.getProtocol().compare(0, 2, "s3") == 0) {
+        gfal_http_get_aws(params, handle, uri);
+    } else if (uri.getProtocol().compare(0, 6, "gcloud") == 0) {
+        gfal_http_get_gcloud(params, handle, uri);
+    } // Use bearer token
+    else if (!gfal_http_get_token(params, handle, uri, secondary_endpoint)) {
+        // Utilize AWS or GCLOUD tokens if no bearer token is available (to be reviewed)
         gfal_http_get_aws(params, handle, uri);
         gfal_http_get_gcloud(params, handle, uri);
     }
@@ -409,7 +489,10 @@ static void log_davix2gfal(void* userdata, int msg_level, const char* msg)
         default:
             gfal_level = G_LOG_LEVEL_INFO;
     }
-    gfal2_log(gfal_level, "Davix: %s", msg);
+
+    gchar *escaped_msg = utf8escape(msg, strlen(msg), "\n\r\t\\");
+    gfal2_log(gfal_level, "Davix: %s", escaped_msg);
+    g_free(escaped_msg);
 }
 
 
@@ -572,11 +655,14 @@ static int davix2errno(StatusCode::Code code)
 
 void davix2gliberr(const DavixError* daverr, GError** err)
 {
+    const char *str = daverr->getErrMsg().c_str();
+    size_t str_len = daverr->getErrMsg().length();
+    gchar *escaped_str = utf8escape(str, str_len);
 
-    std::string error_string= g_utf8_validate(daverr->getErrMsg().c_str(), daverr->getErrMsg().length(),NULL) ?
-	daverr->getErrMsg().c_str(): "Error string contains not valid UTF-8 chars";
     gfal2_set_error(err, http_plugin_domain, davix2errno(daverr->getStatus()), __func__,
-              "%s", error_string.c_str());
+              "%s", escaped_str);
+
+    g_free(escaped_str);
 }
 
 

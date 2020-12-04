@@ -313,12 +313,22 @@ gfalt_checksum_mode_t gfalt_get_checksum_mode(gfalt_params_t params, GError **er
 /**
  * Enable or disable the destination parent directory creation
  */
-gint gfalt_set_create_parent_dir(gfalt_params_t, gboolean value, GError** err);
+gint gfalt_set_create_parent_dir(gfalt_params_t, gboolean create_parent, GError** err);
 
 /**
- Enable or disable the destination parent directory creation
+ * Get the parent directory creation value
  */
 gboolean gfalt_get_create_parent_dir(gfalt_params_t, GError** err);
+
+/**
+ * Enable or disable usage of TPC proxy delegation
+ */
+gint gfalt_set_use_proxy_delegation(gfalt_params_t, gboolean proxy_delegation, GError** err);
+
+/**
+ * Get the usage of TPC proxy delegation value
+ */
+gboolean gfalt_get_use_proxy_delegation(gfalt_params_t, GError** err);
 
 /**
  * @brief Add a new callback for monitoring the current transfer

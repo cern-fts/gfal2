@@ -565,6 +565,43 @@ int gfal2_abort_files(gfal2_context_t context, int nbfiles, const char *const *u
 }
 
 
+int gfal2_archive_poll(gfal2_context_t context, const char* url, GError ** err)
+{
+    GError *tmp_err = NULL;
+    int res = -1;
+    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
+    if (url == NULL || context == NULL) {
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context or/and url are incorrect arguments");
+    }
+    else {
+        res = gfal_plugin_archive_pollG(context, url, &tmp_err);
+    }
+    GFAL2_END_SCOPE_CANCEL(context);
+    G_RETURN_ERR(res, tmp_err, err);
+}
+
+
+int gfal2_archive_poll_list(gfal2_context_t context, int nbfiles, const char* const *urls,
+                            GError **errors)
+{
+    int res = -1;
+    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, errors);
+
+    if (urls == NULL || *urls == NULL || context == NULL) {
+        int i;
+        for (i = 0; i < nbfiles; ++i) {
+            g_set_error(&errors[i], gfal2_get_core_quark(), EFAULT, "context or/and urls are incorrect arguments");
+        }
+        res = -1;
+    }
+    else {
+        res = gfal_plugin_archive_poll_listG(context, nbfiles, urls, errors);
+    }
+    GFAL2_END_SCOPE_CANCEL(context);
+    return res;
+}
+
+
 int gfal2_checksum(gfal2_context_t handle, const char *url, const char *check_type,
     off_t start_offset, size_t data_length,
     char *checksum_buffer, size_t buffer_length, GError **err)

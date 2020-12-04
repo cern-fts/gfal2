@@ -711,7 +711,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
             g_prefix_error(&nested_error, "ERROR: Copy failed with mode %s, with error: ",CopyModeStr[copy_mode]);
             plugin_trigger_event(params, http_plugin_domain,
                GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
-                nested_error->message);
+	       "%s", nested_error->message);
                // Delete any potential destination file.
             gfal_http_copy_cleanup(plugin_data, dst, &nested_error);
             if (!gfal_should_fallback(nested_error->code)){

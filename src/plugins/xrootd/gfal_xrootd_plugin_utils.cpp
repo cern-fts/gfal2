@@ -228,6 +228,38 @@ std::string predefined_checksum_type_to_lower(const std::string& type)
         return type;
 }
 
+
+bool json_obj_to_bool(struct json_object *boolobj)
+{
+  if( !boolobj ) return false;
+  static const std::string str_true( "true" );
+  std::string str_bool = json_object_get_string( boolobj );
+  std::transform( str_bool.begin(), str_bool.end(), str_bool.begin(), tolower );
+  return ( str_bool == str_true );
+}
+
+
+void collapse_slashes(std::string& path)
+{
+  std::string::iterator itr = path.begin(), store = path.begin();
+  ++itr;
+
+  while( itr != path.end() )
+  {
+    if( *store != '/' || *itr != '/' )
+    {
+      ++store;
+      *store = *itr;
+    }
+    ++itr;
+  }
+
+  size_t size = store - path.begin() + 1;
+  if( path.size() != size )
+    path.resize( size );
+}
+
+
 // Copied from xrootd/src/XrdPosix/XrdPosixMap.cc
 int xrootd_errno_to_posix_errno(int rc)
 {
@@ -256,4 +288,25 @@ void gfal2_xrootd_set_error(GError **err, int errcode, const char *func, const c
     char buffer[512];
     snprintf(buffer, sizeof(buffer), "%s (%s)", err_msg, error_string_ptr);
     gfal2_set_error(err, xrootd_domain, errno, func, "%s", buffer);
+}
+
+
+void gfal2_xrootd_poll_set_error(GError **err, int errcode, const char *func, const char *err_reason,
+                                 const char *format, ...)
+{
+  char err_msg[256];
+  va_list args;
+  va_start(args, format);
+  vsnprintf(err_msg, sizeof(err_msg), format, args);
+  va_end(args);
+
+  char buffer[512];
+
+  if (err_reason != NULL) {
+    snprintf(buffer, sizeof(buffer), "%s (reason: %s)", err_msg, err_reason);
+  } else {
+    snprintf(buffer, sizeof(buffer), "%s", err_msg);
+  }
+
+  gfal2_set_error(err, xrootd_domain, errcode, func, "%s", buffer);
 }

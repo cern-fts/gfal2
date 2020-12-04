@@ -512,6 +512,30 @@ int gfal2_unlink_list(gfal2_context_t context, int nbfiles, const char* const* u
  */
 int gfal2_abort_files(gfal2_context_t context, int nbfiles, const char* const* urls, const char* token, GError ** errors);
 
+
+/**
+ * @brief Check status of an archive request
+ *
+ * @param context : gfal2 handle, see \ref gfal2_context_new
+ * @param url : url of the file
+ * @param err : GError error report
+ * @return 0 if the request is queued, > 0 if the file is archived, < 0 on error
+ */
+int gfal2_archive_poll(gfal2_context_t context, const char* url, GError ** err);
+
+/**
+ * @brief Check status for a list of archive requests
+ *
+ * @param context : gfal2 handle, see \ref gfal2_context_new
+ * @param nbfiles : number of files
+ * @param urls : urls of files
+ * @param errors : Preallocated array of nbfiles pointers to GError. User must allocate and free.
+ * @return 0 if the request is queued, > 0 if the file is archived, < 0 on error
+ * @note  Even if the result is > 0, you need to check each individual file status
+ */
+int gfal2_archive_poll_list(gfal2_context_t context, int nbfiles, const char* const* urls,
+                            GError ** errors);
+
 /**
  * @brief Open a file, return GFAL2 file descriptor
  *

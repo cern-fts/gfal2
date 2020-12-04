@@ -36,6 +36,7 @@ struct _gfalt_params_t {
     gboolean strict_mode;       // state of the strict copy mode
     gboolean local_transfers;   // local transfer authorized
     gboolean parent_dir_create; // force the creation of the parent dir
+    gboolean proxy_delegation;  // use TPC proxy delegation
     // spacetoken management for SRM
     gchar *src_space_token;
     gchar *dst_space_token;

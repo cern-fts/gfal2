@@ -1,22 +1,22 @@
 #
-# This module detects if SRM-IFCE is installed and determines where the
+# This module detects if Davix is installed and determines where the
 # include files and libraries are.
 #
 # This code sets the following variables:
 # 
-# DAVIX_LIBRARIES   = full path to the SRM-IFCE libraries
-# DAVIX_INCLUDE_DIR = include dir to be used when using the SRM-IFCE library
-# DAVIX_FOUND       = set to true if SRM-IFCE was found successfully
+# DAVIX_LIBRARIES   = full path to the Davix libraries
+# DAVIX_INCLUDE_DIR = include dir to be used when using the Davix library
+# DAVIX_FOUND       = set to true if Davix was found successfully
 #
 # DAVIX_LOCATION
-#   setting this enables search for SRM-IFCE libraries / headers in this location
+#   setting this enables search for Davix libraries / headers in this location
 
 # ----------------------------------------------------- 
 # Try with pkgconfig first
 # -----------------------------------------------------
 
-pkg_check_modules(DAVIX_PKG davix>=0.3.5)
-pkg_check_modules(DAVIX_COPY_PKG davix_copy>=0.3.5)
+pkg_check_modules(DAVIX_PKG davix>=0.7.6)
+pkg_check_modules(DAVIX_COPY_PKG davix_copy>=0.7.6)
 
 if (DAVIX_PKG_FOUND AND DAVIX_COPY_PKG_FOUND)
     set (DAVIX_INCLUDE_DIR "${DAVIX_PKG_INCLUDE_DIRS}" "${DAVIX_COPY_PKG_INCLUDE_DIRS}")

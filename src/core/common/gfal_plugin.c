@@ -1102,3 +1102,39 @@ int gfal_plugin_abort_filesG(gfal2_context_t handle, int nbfiles,
     }
     return resu;
 }
+
+
+int gfal_plugin_archive_pollG(gfal2_context_t handle, const char* uri, GError ** err)
+{
+    GError* tmp_err = NULL;
+    int resu = -1;
+    gfal_plugin_interface* p = gfal_find_plugin(handle, uri, GFAL_PLUGIN_ARCHIVE, &tmp_err);
+
+    if (p)
+        resu = p->archive_poll(gfal_get_plugin_handle(p), uri, &tmp_err);
+    G_RETURN_ERR(resu, tmp_err, err);
+}
+
+int gfal_plugin_archive_poll_listG(gfal2_context_t handle, int nbfiles, const char* const* uris,
+                                   GError ** errors)
+{
+    GError* tmp_err = NULL;
+    int resu = -1;
+    gfal_plugin_interface* p = gfal_find_plugin(handle, *uris, GFAL_PLUGIN_ARCHIVE, &tmp_err);
+
+    if (p && p->archive_poll_list) {
+        resu = p->archive_poll_list(gfal_get_plugin_handle(p), nbfiles, uris, errors);
+    }
+    else {
+        if (p && !p->archive_poll_list) {
+            gfal2_set_error(&tmp_err, gfal2_get_plugins_quark(), EPROTONOSUPPORT,
+                            __func__, "The plugin does not support bulk archive polling");
+        }
+        int i;
+        for (i = 0; i < nbfiles; ++i) {
+            errors[i] = g_error_copy(tmp_err);
+        }
+        g_error_free(tmp_err);
+    }
+    G_RETURN_ERR(resu, tmp_err, errors);
+}

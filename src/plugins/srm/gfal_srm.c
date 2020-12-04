@@ -25,6 +25,7 @@
 #include "gfal_srm.h"
 #include "gfal_srm_namespace.h"
 #include "gfal_srm_bringonline.h"
+#include "gfal_srm_archive.h"
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_opendir.h"
 #include "gfal_srm_open.h"
@@ -168,6 +169,7 @@ static gboolean gfal_srm_check_url(plugin_handle handle, const char *url,
         case GFAL_PLUGIN_MKDIR_REC:
         case GFAL_PLUGIN_BRING_ONLINE:
         case GFAL_PLUGIN_RENAME:
+        case GFAL_PLUGIN_ARCHIVE:
             return (gfal_surl_checker(handle, url, err) == 0);
         default:
             return FALSE;
@@ -254,6 +256,8 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError **err)
     srm_plugin.abort_files = &gfal_srm2_abort_filesG;
     srm_plugin.renameG = &gfal_srm_renameG;
     srm_plugin.unlink_listG = &gfal_srm_unlink_listG;
+    srm_plugin.archive_poll = &gfal_srm_archive_pollG;
+    srm_plugin.archive_poll_list = &gfal_srm_archive_poll_listG;
     return srm_plugin;
 }
 
