@@ -22,6 +22,7 @@
 #include <gfal_plugins_api.h>
 #include "gfal_xrootd_plugin_interface.h"
 #include "gfal_xrootd_plugin_utils.h"
+#include "uri/gfal2_parsing.h"
 
 #undef TRUE
 #undef FALSE
@@ -121,6 +122,19 @@ private:
 };
 
 
+static void xrootd2gliberr(GError** err, const char* func, const char* format,
+                           const XrdCl::XRootDStatus& status)
+{
+    std::string statusStr = status.ToStr();
+    const char *str = statusStr.c_str();
+    size_t str_len = statusStr.length();
+    gchar *escaped_str = gfal2_utf8escape_string(str, str_len, "\n\r\t\\");
+
+    gfal2_set_error(err, xrootd_domain,
+                    xrootd_errno_to_posix_errno(status.errNo), func,
+                    format, escaped_str);
+    g_free(escaped_str);
+}
 
 int gfal_xrootd_3rdcopy_check(plugin_handle plugin_data,
         gfal2_context_t context, const char* src, const char* dst,
@@ -281,7 +295,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
             strncpy(checksumValue, s, sizeof(s));
             checksumType[63] = checksumValue[511] = '\0';
             g_strfreev(chks);
-	          gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Type: %s", checksumType);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Type: %s", checksumType);
             gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Value: %s", checksumValue);
             if (!checksumType[0]) {
                 char* defaultChecksumType = gfal2_get_opt_string(context, XROOTD_CONFIG_GROUP, XROOTD_DEFAULT_CHECKSUM, &internalError);
@@ -330,9 +344,10 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
 
     XrdCl::XRootDStatus status = copy_process.Prepare();
     if (!status.IsOK()) {
-        gfal2_set_error(op_error, xrootd_domain,
-                xrootd_errno_to_posix_errno(status.errNo), __func__,
-                "Error on XrdCl::CopyProcess::Prepare(): %s", status.ToStr().c_str());
+        xrootd2gliberr(op_error, __func__, "Error on XrdCl::CopyProcess::Prepare(): %s", status);
+//        gfal2_set_error(op_error, xrootd_domain,
+//                xrootd_errno_to_posix_errno(status.errNo), __func__,
+//                "Error on XrdCl::CopyProcess::Prepare(): %s", status.ToStr().c_str());
         return -1;
     }
 
@@ -342,9 +357,10 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
     // On bulk operations, even if there is one single failure we will get it
     // here, so ignore!
     if (nbfiles == 1 && !status.IsOK()) {
-        gfal2_set_error(op_error, xrootd_domain,
-                xrootd_errno_to_posix_errno(status.errNo), __func__,
-                "Error on XrdCl::CopyProcess::Run(): %s", status.ToStr().c_str());
+        xrootd2gliberr(op_error, __func__, "Error on XrdCl::CopyProcess::Run(): %s", status);
+//        gfal2_set_error(op_error, xrootd_domain,
+//                xrootd_errno_to_posix_errno(status.errNo), __func__,
+//                "Error on XrdCl::CopyProcess::Run(): %s", status.ToStr().c_str());
         return gfal_xrootd_copy_cleanup(plugin_data, dsts[0],op_error);
     }
 
@@ -354,9 +370,10 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
     for (size_t i = 0; i < nbfiles; ++i) {
         status = results[i].Get<XrdCl::XRootDStatus>("status");
         if (!status.IsOK()) {
-            gfal2_set_error(&((*file_errors)[i]), xrootd_domain,
-                    xrootd_errno_to_posix_errno(status.errNo), __func__,
-                    "Error on XrdCl::CopyProcess::Run(): %s", status.ToStr().c_str());
+            xrootd2gliberr(&((*file_errors)[i]), __func__, "Error on XrdCl::CopyProcess::Run(): %s", status);
+//            gfal2_set_error(&((*file_errors)[i]), xrootd_domain,
+//                    xrootd_errno_to_posix_errno(status.errNo), __func__,
+//                    "Error on XrdCl::CopyProcess::Run(): %s", status.ToStr().c_str());
             gfal_xrootd_copy_cleanup(plugin_data, dsts[i],file_errors[i]);
             ++n_failed;
         }
