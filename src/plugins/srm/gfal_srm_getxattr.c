@@ -67,9 +67,37 @@ ssize_t gfal_srm_geturl_getxattrG(plugin_handle handle, const char *path,
     const char *name, void *buff, size_t s_buff, GError **err)
 {
     GError *tmp_err = NULL;
+    char tmp_buff[1024];
     ssize_t ret = -1;
     if (s_buff == 0 || buff == NULL)
         return GFAL_URL_MAX_LEN;
+
+    // If XATTR_FAIL_NEARLINE is set, obtain TURLs only if the file is ONLINE
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) handle;
+    gfal2_context_t context = opts->handle;
+    gboolean fail_nearline = gfal2_get_opt_boolean_with_default(context, "SRM PLUGIN", "XATTR_FAIL_NEARLINE", FALSE);
+
+    if (fail_nearline) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "XAttr-fail-nearline: querying status first");
+        ret = gfal_srm_status_getxattrG(handle, path, GFAL_XATTR_STATUS, tmp_buff, sizeof(tmp_buff), &tmp_err);
+
+        if (ret > 0 && strlen(tmp_buff) && tmp_err == NULL) {
+            if (strncmp(tmp_buff, GFAL_XATTR_STATUS_NEARLINE, sizeof(GFAL_XATTR_STATUS_NEARLINE)) == 0) {
+                gfal2_log(G_LOG_LEVEL_DEBUG, "XAttr-fail-nearline: source file is not ONLINE");
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
+                                "The source file is not ONLINE");
+                gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+                return -1;
+            }
+        } else {
+            if (tmp_err == NULL) {
+                gfal2_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
+                                "Error while checking if the source file is ONLINE");
+            }
+            gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+            return -1;
+        }
+    }
 
     ret = gfal_srm_getTURLS_plugin(handle, path, buff, s_buff, NULL, &tmp_err);
     if (ret >= 0) {
