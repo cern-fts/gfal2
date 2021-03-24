@@ -295,8 +295,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
             strncpy(checksumValue, s, sizeof(s));
             checksumType[63] = checksumValue[511] = '\0';
             g_strfreev(chks);
-            gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Type: %s", checksumType);
-            gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Value: %s", checksumValue);
+
             if (!checksumType[0]) {
                 char* defaultChecksumType = gfal2_get_opt_string(context, XROOTD_CONFIG_GROUP, XROOTD_DEFAULT_CHECKSUM, &internalError);
                 if (internalError) {
@@ -310,22 +309,30 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
                 g_free(defaultChecksumType);
             }
 
+            std::string sChecksumType = predefined_checksum_type_to_lower(checksumType);
+            std::string sChecksumValue(checksumValue);
+            std::transform(sChecksumValue.begin(), sChecksumValue.end(), sChecksumValue.begin(), ::tolower);
+            std::string sChecksumMode = "none";
+
             switch (checksumMode) {
                 case GFALT_CHECKSUM_BOTH:
-                    job.Set("checkSumMode", "end2end");
+                    sChecksumMode = "end2end";
                     break;
                 case GFALT_CHECKSUM_TARGET:
-                    job.Set("checkSumMode", "target");
+                    sChecksumMode = "target";
                     break;
                 case GFALT_CHECKSUM_SOURCE:
-                    job.Set("checkSumMode", "source");
+                    sChecksumMode = "source";
                     break;
-                default:
-                    job.Set("checkSumMode", "none");
             }
 
-            job.Set("checkSumType", predefined_checksum_type_to_lower(checksumType));
-            job.Set("checkSumPreset", checksumValue);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Mode: %s", sChecksumMode.c_str());
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Type: %s", sChecksumType.c_str());
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Predefined Checksum Value: %s", sChecksumValue.c_str());
+
+            job.Set("checkSumMode", sChecksumMode);
+            job.Set("checkSumType", sChecksumType);
+            job.Set("checkSumPreset", sChecksumValue);
         }
 
         copy_process.AddJob(job, &(results[i]));
