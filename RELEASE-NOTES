@@ -1,6 +1,15 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Thu Mar 25 2021 Mihai Patrascoiu <mipatras at cern.ch> - 2.19.1
+###Bug
+- [DMC-1237] - gfal-rm -r fails on HTTP endpoints
+- [DMC-1244] - XRootd copy failing when checksum value has uppercase characters
+
+###Improvement
+- [DMC-1194] - gfal-xattr should avoid triggering an srmPrepareToGet in case the file is not ONLINE
+- [DMC-1233] - UTF8 escape XRootd error messages
+
 ## Fri Dec 04 2020 Mihai Patrascoiu <mipatras at cern.ch> - 2.19.0
 ###Bug
 - [DMC-1227] - gfal-ls with https/davs
