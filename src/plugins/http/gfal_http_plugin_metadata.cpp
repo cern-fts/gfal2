@@ -114,27 +114,23 @@ int gfal_http_rmdirG(plugin_handle plugin_data, const char* url, GError** err)
 {
     char stripped_url[GFAL_URL_MAX_LEN];
     strip_3rd_from_url(url, stripped_url, sizeof(stripped_url));
+    struct stat st;
+
+    if (gfal_http_stat(plugin_data, stripped_url, &st, err) != 0) {
+        return -1;
+    }
+
+    if (!S_ISDIR(st.st_mode)) {
+        gfal2_set_error(err, http_plugin_domain, ENOTDIR, __func__,
+                        "Can not rmdir a file");
+        return -1;
+    }
 
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
 
     Davix::RequestParams req_params;
     davix->get_params(&req_params, Davix::Uri(stripped_url));
-
-    // Note: in WebDAV DELETE is recursive for directories, so check first if there is anything
-    // inside and fail in that case
-    struct stat st;
-    if (davix->posix.stat(&req_params, stripped_url, &st, &daverr) != 0) {
-      davix2gliberr(daverr, err);
-      Davix::DavixError::clearError(&daverr);
-      return -1;
-    }
-
-    if (!S_ISDIR(st.st_mode)) {
-        gfal2_set_error(err, http_plugin_domain, ENOTDIR, __func__,
-                  "Can not rmdir a file");
-        return -1;
-    }
 
     if (davix->posix.rmdir(&req_params, stripped_url, &daverr) != 0) {
       davix2gliberr(daverr, err);
