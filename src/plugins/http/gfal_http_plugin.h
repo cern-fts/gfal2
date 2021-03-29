@@ -26,6 +26,8 @@
 #include <gfal_plugins_api.h>
 #include <davix.hpp>
 
+#include "gfal_http_plugin_token.h"
+
 #define HTTP_CONFIG_OP_TIMEOUT     "OPERATION_TIMEOUT"
 
 class GfalHttpPluginData {
@@ -54,13 +56,15 @@ private:
     Davix::RequestParams reference_params;
     /// map a token with read/write access flag
     TokenAccessMap token_map;
+    /// token retriever object (can be chained)
+    std::unique_ptr<TokenRetriever> token_retriever_chain;
 
     // Set up general request parameters
     void get_params_internal(Davix::RequestParams& params, const Davix::Uri& uri);
 
     // Obtain credentials for a given Uri and set those credentials in the Davix request parameters.
     // @param token_write_access flag to signal tokens with write access are needed
-    // @param token_validity requested lifetime of the token in seconds
+    // @param token_validity requested lifetime of the token in minutes
     // @param secondary_endpoint signals whether this is the passive element in a TPC transfer
     void get_credentials(Davix::RequestParams& params, const Davix::Uri& uri,
                          bool token_write_access, unsigned token_validity = 180,
@@ -79,8 +83,8 @@ private:
     // @param write_access flag to request write permission
     // @param validity lifetime of the token in seconds
     // @return the SE-issued token or null
-    char* retrieve_se_token(const Davix::Uri& uri, bool write_access,
-                            unsigned validity);
+    char* retrieve_se_token(Davix::RequestParams& params, const Davix::Uri& uri,
+                            bool write_access, unsigned validity);
 
     // Obtain request parameters + credentials for an AWS endpoint
     void get_aws_params(Davix::RequestParams& params, const Davix::Uri& uri);
@@ -105,6 +109,9 @@ void davix2gliberr(const Davix::DavixError* daverr, GError** err);
 
 // Initializes a GError from an HTTP code
 void http2gliberr(GError** err, int http, const char* func, const char* msg);
+
+// Returns errno from Davix StatusCode
+int davix2errno(Davix::StatusCode::Code code);
 
 // Removes +3rd from the url, if there
 void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);

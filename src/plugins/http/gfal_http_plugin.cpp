@@ -19,6 +19,7 @@
  */
 
 #include "gfal_http_plugin.h"
+#include "gfal_http_plugin_token.h"
 #include "uri/gfal2_parsing.h"
 #include <cstdio>
 #include <cstring>
@@ -26,22 +27,13 @@
 #include <list>
 #include <davix.hpp>
 #include <errno.h>
-#include <dlfcn.h>
 #include <davix/utils/davix_gcloud_utils.hpp>
+#include <exceptions/gfalcoreexception.hpp>
 
 using namespace Davix;
 
 static const char* http_module_name = "http_plugin";
 GQuark http_plugin_domain = g_quark_from_static_string(http_module_name);
-
-
-// dlopen-style handle to the token issuer library
-int (*g_x509_scitokens_issuer_init_p)(char **) = NULL;
-char* (*g_x509_scitokens_issuer_retrieve_p)(const char *, const char *, const char *,
-                                            char**) = NULL;
-char* (*g_x509_macaroon_issuer_retrieve_p)(const char *, const char *, const char *, int,
-                                           const char **, char **) = NULL;
-void *g_x509_scitokens_issuer_handle = NULL;
 
 
 const char* gfal_http_get_name(void)
@@ -86,111 +78,11 @@ static bool isS3SignedURL(const Davix::Uri& url)
            (url.queryParamExists("X-Amz-Credential") && url.queryParamExists("X-Amz-Signature"));
 }
 
-static bool gfal_http_init_token_library()
-{
-    if (g_x509_scitokens_issuer_handle) {
-        return true;
-    }
-
-    char *error;
-    g_x509_scitokens_issuer_handle = dlopen("libX509SciTokensIssuer.so",
-                                            RTLD_NOW|RTLD_GLOBAL);
-    if (!g_x509_scitokens_issuer_handle) {
-        char *error = dlerror();
-        gfal2_log(G_LOG_LEVEL_INFO, "Failed to load the token issuer library: %s",
-                  error ? error : "(unknown)");
-        return false;
-    }
-
-    // Clear any potential error message
-    dlerror();
-
-    *(void **)(&g_x509_scitokens_issuer_init_p) = dlsym(g_x509_scitokens_issuer_handle,
-                                                        "x509_scitokens_issuer_init");
-    if ((error = dlerror()) != NULL) {
-        dlclose(g_x509_scitokens_issuer_handle);
-        g_x509_scitokens_issuer_handle = NULL;
-        gfal2_log(G_LOG_LEVEL_INFO, "Failed to load initializer handle: %s", error);
-        return false;
-    }
-    dlerror();
-
-    *(void **)(&g_x509_scitokens_issuer_retrieve_p) = dlsym(g_x509_scitokens_issuer_handle,
-                                                            "x509_scitokens_issuer_retrieve");
-    if ((error = dlerror()) != NULL) {
-        dlclose(g_x509_scitokens_issuer_handle);
-        g_x509_scitokens_issuer_init_p = NULL;
-        g_x509_scitokens_issuer_handle = NULL;
-        gfal2_log(G_LOG_LEVEL_INFO, "Failed to load the token retrieval handle: %s", error);
-        return false;
-    }
-    dlerror();
-
-    *(void **)(&g_x509_macaroon_issuer_retrieve_p) = dlsym(g_x509_scitokens_issuer_handle,
-                                                           "x509_macaroon_issuer_retrieve");
-    if ((error = dlerror()) != NULL)
-    {
-        dlclose(g_x509_scitokens_issuer_handle);
-        g_x509_scitokens_issuer_retrieve_p = NULL;
-        g_x509_scitokens_issuer_init_p = NULL;
-        g_x509_scitokens_issuer_handle = NULL;
-        gfal2_log(G_LOG_LEVEL_INFO, "Failed to load the macaroon retrieval handle: %s", error);
-        return false;
-    }
-    dlerror();
-
-    char *err = NULL;
-    if ((*g_x509_scitokens_issuer_init_p)(&err)) {
-        dlclose(g_x509_scitokens_issuer_handle);
-        g_x509_macaroon_issuer_retrieve_p = NULL;
-        g_x509_scitokens_issuer_retrieve_p = NULL;
-        g_x509_scitokens_issuer_init_p = NULL;
-        g_x509_scitokens_issuer_handle = NULL;
-        free(err);
-        gfal2_log(G_LOG_LEVEL_INFO, "Failed to initialize the client issuer library: %s", err);
-        return false;
-    }
-
-    return true;
-}
-
-
-static char* gfal_http_retrieve_scitoken(const char* issuer, const char* cert, const char* key)
-{
-    char *err = NULL;
-    char *token = (*g_x509_scitokens_issuer_retrieve_p)(issuer, cert, key, &err);
-
-    if (!token) {
-        gfal2_log(G_LOG_LEVEL_INFO, "Failed to retrieve scitoken: %s", err);
-        free(err);
-        return NULL;
-    }
-
-    return token;
-}
-
-
-static char* gfal_http_retrieve_macaroon(const char* url, const char* cert, const char* key,
-                                         const char** activities,
-                                         unsigned validity)
-{
-    char *err = NULL;
-    char *token = (*g_x509_macaroon_issuer_retrieve_p)(url, cert, key, validity, activities, &err);
-
-    if (!token) {
-        gfal2_log(G_LOG_LEVEL_INFO, "Failed to retrieve macaroon: %s", err);
-        free(err);
-        return NULL;
-    }
-
-    return token;
-}
-
 // Retrieve x509 certificate pair from credential mapping/config
 static bool gfal_http_get_x509_cert_pair(gfal2_context_t handle, const Davix::Uri& uri,
                                          std::string& cert, std::string& key)
 {
-    bool certificate_pair = true;
+    bool certificate_pair = false;
     GError* error = NULL;
 
     // Extract certificate from credential map to give priority to user-set pair
@@ -211,7 +103,8 @@ static bool gfal_http_get_x509_cert_pair(gfal2_context_t handle, const Davix::Ur
     return certificate_pair;
 }
 
-char* GfalHttpPluginData::retrieve_se_token(const Davix::Uri& uri, bool write_access, unsigned validity)
+char* GfalHttpPluginData::retrieve_se_token(Davix::RequestParams& params, const Davix::Uri& uri,
+                                            bool write_access, unsigned validity)
 {
     bool retrieve_token = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "RETRIEVE_BEARER_TOKEN", false);
 
@@ -219,47 +112,20 @@ char* GfalHttpPluginData::retrieve_se_token(const Davix::Uri& uri, bool write_ac
         return NULL;
     }
 
-    if (!gfal_http_init_token_library()) {
-        return NULL;
+    TokenRetriever* retriever = token_retriever_chain.get();
+    while (retriever != NULL) {
+        try {
+            gfal_http_token_s http_token = retriever->retrieve_token(uri, params, write_access, validity);
+            char *token = strdup(http_token.token.c_str());
+            return token;
+        } catch (const Gfal::CoreException &e) {
+            gfal2_log(G_LOG_LEVEL_INFO, "(SEToken) Error during token retrieval: %s", e.what());
+            retriever = retriever->next();
+        }
     }
 
-    // We should use the same cert/key as the one set in the Davix::RequestParams.setClientCertX509
-    // For that, we need the Davix::X509Credential to export the path of the cert/key files
-    // Since these function calls happen in succession, they should retrieve the same cert/key files
-    std::string cert, key;
-    bool certificate_pair = gfal_http_get_x509_cert_pair(handle, uri, cert, key);
-
-    if (!certificate_pair) {
-        gfal2_log(G_LOG_LEVEL_INFO, "Could not find certificate pair, which is needed for bearer token retrieval");
-        return NULL;
-    }
-
-    // Only macaroon implementation for now
-    // Note: Scitoken retrieval requires knowing the token issuer.
-    //       This means additional data that has to be passed to Gfal2
-    std::vector<std::string> activitiy;
-    activitiy.push_back("LIST");
-
-    if (write_access) {
-        activitiy.push_back("MANAGE");
-        activitiy.push_back("UPLOAD");
-        activitiy.push_back("DELETE");
-    } else {
-        activitiy.push_back("DOWNLOAD");
-    }
-
-    // Ugly cast to std::vector<const char*>
-    std::vector<const char*> activity_list;
-    for (std::vector<std::string>::const_iterator it = activitiy.begin();
-         it != activitiy.end(); it++) {
-        activity_list.push_back(it->c_str());
-    }
-    activity_list.push_back(NULL);
-
-    return gfal_http_retrieve_macaroon(uri.getString().c_str(),
-                                       cert.c_str(), key.c_str(),
-                                       activity_list.data(),
-                                       validity);
+    gfal2_log(G_LOG_LEVEL_WARNING, "(SEToken) Could not retrieve any token for %s", uri.getString().c_str());
+    return NULL;
 }
 
 bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Uri& uri,
@@ -277,68 +143,57 @@ bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Ur
     g_clear_error(&error);
 
     if (!token) {
-        // If we don't have specific token for requested URL fallback
-        // to token stored for hostname (for TPC with macaroon tokens
-        // we need at least BEARER set for full source URL and hostname
-        // BEARER for destination because that one could be also used
-        // to create all missing parent directories)
+        // If we don't have specific token for requested URL fallback to token stored for hostname.
+        // TPC with macaroon tokens needs at least BEARER set for full source URL
+        // and hostname BEARER for destination (needed to create missing parent directories)
         token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
                                uri.getHost().c_str(),
                                NULL, &error);
         g_clear_error(&error);
     }
 
-    // Check token read/write access in RW access token map
     if (token) {
-        // Poor man's token inspection for read/write access
-        // TODO: Replace with proper inspection of access (and validity) in the future
+        // Check token read/write access in TokenAccessMap
+        // TODO: Replace with inspection of access and validity in the future
         TokenAccessMap::iterator it = token_map.find(token);
         if (it != token_map.end()) {
-            gfal2_log(G_LOG_LEVEL_DEBUG, "Found token in credential_map[%s] (access=%s) (needed=%s)",
+            gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Found token in credential_map[%s] (access=%s) (needed=%s)",
                       uri.getString().c_str(), it->second ? "write" : "read",
                       write_access ? "write" : "read");
 
             if (write_access && it->second != write_access) {
-                gfal2_log(G_LOG_LEVEL_INFO, "Invalidating token for path=%s because write access is missing",
+                gfal2_log(G_LOG_LEVEL_INFO, "(SEToken) Invalidating token for path=%s because write access is missing",
                           uri.getString().c_str());
                 token_map.erase(it);
                 g_free(token);
                 token = NULL;
             }
         } else {
-            gfal2_log(G_LOG_LEVEL_DEBUG, "Retrieved token not in token access map (assuming user-set)");
+            gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Retrieved token not in token access map (assuming user-set)");
         }
     }
 
     if (!token) {
         // No token for neither the URL or the hostname
         // Attempt to obtain SE-issued token
-        token = retrieve_se_token(uri, write_access, validity);
+        token = retrieve_se_token(params, uri, write_access, validity);
 
         if (token) {
-            // Note: Registering the token in the credential map has an obstacle ahead.
-            // Further calls for the same URL will be met with a token which might be read-only,
-            // whereas the new request requires write access.
-            // Ideally, we inspect the token and determine if it's suitable and if not, invalidate it.
-            // However, we're dealing with two independent technologies here: macaroons & scitokens
-            // A uniform inspection approach is needed.
-            // A more brute-force approach: we cache each gfal SE-issued token request and associate it
-            // with the corresponding token. This way, we don't know what's inside the token,
-            // but we know what was requested for it
+            // Treat tokens as opaque. To handle validity and write access,
+            // cache the token in the TokenAccessMap together with write access and validity info
 
             // Register token in the credentials map
             gfal2_cred_t* token_cred = gfal2_cred_new(GFAL_CRED_BEARER, token);
             if (gfal2_cred_set(handle, uri.getString().c_str(), token_cred, &error) < 0) {
-                gfal2_log(G_LOG_LEVEL_DEBUG, "Failed to set bearer token in credential_map[%s] due to error: %s",
+                gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Failed to set bearer token in credential_map[%s] due to error: %s",
                           uri.getString().c_str(), error->message);
                 g_clear_error(&error);
             } else {
-                gfal2_log(G_LOG_LEVEL_DEBUG, "Set bearer token in credential_map[%s] (access=%s) (validity=%u)",
+                gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Set bearer token in credential_map[%s] (access=%s) (validity=%u)",
                           uri.getString().c_str(), write_access ? "write" : "read" , validity);
                 token_map[token] = write_access;
             }
 
-            // Clean resource after copying into the credential map
             gfal2_cred_free(token_cred);
         }
     }
@@ -396,7 +251,7 @@ static void gfal_http_get_aws_keys(gfal2_context_t handle, const std::string& gr
     *token         = (*token)      ? *token      : gfal2_get_opt_string(handle, group.c_str(), "TOKEN", NULL);
     *region        = (*region)     ? *region     : gfal2_get_opt_string(handle, group.c_str(), "REGION", NULL);
 
-    // For retrocompatibility
+    // For retro-compatibility
     if (!*access_key || !*secret_key) {
         *access_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_TOKEN", NULL);
         *secret_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_TOKEN_SECRET", NULL);
@@ -681,6 +536,14 @@ GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
     reference_params.setTransparentRedirectionSupport(true);
     reference_params.setUserAgent("gfal2::http");
     context.loadModule("grid");
+
+    // TODO: read token issuer value
+    // if (!issuer.empty()) {
+    //     token_retriever_chain.reset(new SciTokensRetriever(issuer));
+    //     token_retriever_chain->add(new MacaroonRetriever());
+    // }
+
+    token_retriever_chain.reset(new MacaroonRetriever());
 }
 
 
@@ -742,7 +605,7 @@ gboolean gfal_should_fallback(int error_code)
 	}
 }
 
-static int davix2errno(StatusCode::Code code)
+int davix2errno(StatusCode::Code code)
 {
     int errcode;
 
