@@ -85,7 +85,8 @@ typedef enum _plugin_mode {
     GFAL_PLUGIN_CHECK_FILE_QOS,
     GFAL_PLUGIN_CHECK_QOS_AVAILABLE_TRANSITIONS,
     GFAL_PLUGIN_CHECK_TARGET_QOS,
-    GFAL_PLUGIN_CHANGE_OBJECT_QOS
+    GFAL_PLUGIN_CHANGE_OBJECT_QOS,
+    GFAL_PLUGIN_TOKEN
 } plugin_mode;
 
 /**
@@ -654,27 +655,50 @@ struct _gfal_plugin_interface {
     // ARCHIVE API
 
   /**
-  * OPTIONAL: Polling the archive request (mandatory if archiving is supported)
-  *
-  * @param url: the URL for which to check archive status
-  * @return -1 on error (and err is set). 0 on success. 1 if the file has been archived.
-  */
+   * OPTIONAL: Polling the archive request (mandatory if archiving is supported)
+   *
+   * @param plugin_data: internal plugin data
+   * @param url: the URL for which to check archive status
+   * @param err: error handle
+   * @return -1 on error (and err is set). 0 on success. 1 if the file has been archived.
+   */
   int (*archive_poll)(plugin_handle plugin_data, const char* url, GError** err);
 
   /**
-  * OPTIONAL: Polling the archive request (mandatory if archiving is supported)
-  *
-  * @param nbfiles: number of files
-  * @param urls: the URLs for which to check archive status
-  * @return -1 on error (and err is set). 0 on success. 1 if the files have been archived.
-  *          2 if some files have bene archived, others encountered errors
-  */
+   * OPTIONAL: Polling the archive request (mandatory if archiving is supported)
+   *
+   * @param plugin_data: internal plugin data
+   * @param nbfiles: number of files
+   * @param urls: the URLs for which to check archive status
+   * @param err: error handle
+   * @return -1 on error (and err is set). 0 on success. 1 if the files have been archived.
+   *          2 if some files have bene archived, others encountered errors
+   */
   int (*archive_poll_list)(plugin_handle plugin_data, int nbfiles,
                            const char* const* urls, GError** err);
 
-	 // reserved for future usage
+    // TOKEN API
+
+  /**
+   * OPTIONAL: Retrieve a token from Storage Element for a given resource
+   *
+   * @param plugin_data: internal plugin data
+   * @param url: the URL of the resource
+   * @param issuer: the token issuer endpoint (optional)
+   * @param write_access: write access flag
+   * @param validity: token validity time in minutes
+   * @param buff : buffer for the token content
+   * @param s_buff : maximum buffer size
+   * @param err : error handle
+   * @return number of bytes in buff in case of success or -1 if error occurs
+   */
+  ssize_t (*token_retrieve)(plugin_handle plugin_data, const char* url, const char* issuer,
+                            gboolean write_access, unsigned validity,
+                            char* buff, size_t s_buff, GError** err);
+
+      // reserved for future usage
 	 //! @cond
-     void* future[7];
+     void* future[6];
 	 //! @endcond
 };
 
@@ -763,6 +787,10 @@ int gfal_plugin_change_object_qos(gfal2_context_t handle, const char* url, const
 int gfal_plugin_archive_pollG(gfal2_context_t handle, const char* uri, GError ** err);
 int gfal_plugin_archive_poll_listG(gfal2_context_t handle, int nbfiles, const char* const* uris,
                                    GError ** err);
+
+ssize_t gfal_plugin_token_retrieveG(gfal2_context_t handle, const char* url, const char* issuer,
+                                    gboolean write_access, unsigned validity,
+                                    char* buff, size_t s_buff, GError** err);
 
 //! @endcond
 

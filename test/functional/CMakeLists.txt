@@ -81,6 +81,14 @@ if(FUNCTIONAL_TESTS)
         add_test(gfal_test_qos_${name} gfal_test_qos)
     endfunction(test_qos name)
 
+    # Token tests
+    add_test_executable(gfal_test_token "gfal_test_token.cpp")
+    target_link_libraries(gfal_test_token ${GFAL2_LIBRARIES} gfal2_test_shared)
+
+    function(test_token name)
+      add_test(gfal_test_token_${name} gfal_test_token)
+    endfunction(test_token name)
+
     # Rename tests
     add_test_executable(gfal_test_rename "gfal_test_rename.cpp")
     target_link_libraries(gfal_test_rename ${GFAL2_LIBRARIES} gfal2_test_shared)

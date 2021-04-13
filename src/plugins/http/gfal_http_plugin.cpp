@@ -584,6 +584,7 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
         case GFAL_PLUGIN_UNLINK:
         case GFAL_PLUGIN_CHECKSUM:
         case GFAL_PLUGIN_RENAME:
+        case GFAL_PLUGIN_TOKEN:
             return (strncmp("http:", url, 5) == 0 || strncmp("https:", url, 6) == 0 ||
                  strncmp("dav:", url, 4) == 0 || strncmp("davs:", url, 5) == 0 ||
                  strncmp("s3:", url, 3) == 0 || strncmp("s3s:", url, 4) == 0 ||
@@ -785,6 +786,9 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError
     http_plugin.check_qos_available_transitions = &gfal_http_check_qos_available_transitions;
     http_plugin.check_target_qos = &gfal_http_check_target_qos;
     http_plugin.change_object_qos = &gfal_http_change_object_qos;
+
+    // Token
+    http_plugin.token_retrieve = &gfal_http_token_retrieve;
 
     return http_plugin;
 }
