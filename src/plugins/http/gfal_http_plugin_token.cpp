@@ -19,6 +19,7 @@
  */
 
 #include <sstream>
+#include <cstring>
 #include "json.h"
 
 #include "gfal_http_plugin.h"
@@ -34,6 +35,56 @@
  */
 
 using namespace Davix;
+
+ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, const char* issuer,
+                                 gboolean write_access, unsigned validity,
+                                 char* buff, size_t s_buff, GError** err)
+{
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
+    TokenRetriever* retriever_chain = NULL;
+    ssize_t ret = -1;
+
+    Davix::RequestParams params;
+    // Emulate GfalHttpPluginData::get_params(..) without the get_credentials(..) part
+    params = davix->reference_params;
+    davix->get_params_internal(params, Davix::Uri(url));
+
+    if (issuer && *issuer) {
+        retriever_chain = new SciTokensRetriever(issuer);
+        retriever_chain->add(new MacaroonRetriever(issuer));
+    } else {
+        retriever_chain = new MacaroonRetriever();
+    }
+
+    std::string token;
+    TokenRetriever* retriever = retriever_chain;
+
+    while (retriever != NULL) {
+        try {
+            gfal_http_token_t http_token = retriever->retrieve_token(Davix::Uri(url),
+                                                                     params, write_access, validity);
+            token = http_token.token;
+            break;
+        } catch (const Gfal::CoreException& e) {
+            gfal2_log(G_LOG_LEVEL_INFO, "(SEToken) Error during token retrieval: %s", e.what());
+            retriever = retriever->next();
+        }
+    }
+
+    if (token.empty()) {
+        gfal2_set_error(err, http_plugin_domain, ENODATA, __func__,
+                        "Could not retrieve token for %s", url);
+    } else if (token.size() >= s_buff) {
+        gfal2_set_error(err, http_plugin_domain, ENOMEM, __func__,
+                        "response larger than allocated buffer size [%ld]", s_buff);
+    } else {
+        std::strcpy(buff, token.c_str());
+        ret = token.size() + 1;
+    }
+
+    delete retriever_chain;
+    return ret;
+}
 
 // --------------------------------------------------------
 // General Token Retrieval implementation

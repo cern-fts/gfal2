@@ -50,6 +50,10 @@ public:
                         gfalt_params_t transfer_params,
                         bool push_mode);
 
+    friend ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, const char* issuer,
+                                            gboolean write_access, unsigned validity,
+                                            char* buff, size_t s_buff, GError** err);
+
 private:
     typedef std::map<std::string, bool> TokenAccessMap;
     /// baseline Davix Request Parameters
@@ -174,5 +178,10 @@ ssize_t gfal_http_check_qos_available_transitions(plugin_handle plugin_data, con
 ssize_t gfal_http_check_target_qos(plugin_handle plugin_data, const char* url, char* buff, size_t s_buff, GError** err);
 int gfal_http_change_object_qos(plugin_handle plugin_data, const char* url, const char* target_qos, GError** err);
 bool http_cdmi_code_is_valid(int code);
+
+// Token
+ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, const char* issuer,
+                                 gboolean write_access, unsigned validity,
+                                 char* buff, size_t s_buff, GError** err);
 
 #endif //_GFAL_HTTP_PLUGIN_H

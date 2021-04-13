@@ -115,10 +115,10 @@ char* GfalHttpPluginData::retrieve_se_token(Davix::RequestParams& params, const 
     TokenRetriever* retriever = token_retriever_chain.get();
     while (retriever != NULL) {
         try {
-            gfal_http_token_s http_token = retriever->retrieve_token(uri, params, write_access, validity);
+            gfal_http_token_t http_token = retriever->retrieve_token(uri, params, write_access, validity);
             char *token = strdup(http_token.token.c_str());
             return token;
-        } catch (const Gfal::CoreException &e) {
+        } catch (const Gfal::CoreException& e) {
             gfal2_log(G_LOG_LEVEL_INFO, "(SEToken) Error during token retrieval: %s", e.what());
             retriever = retriever->next();
         }
