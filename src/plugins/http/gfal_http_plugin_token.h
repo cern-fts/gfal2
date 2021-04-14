@@ -64,7 +64,8 @@ public:
     gfal_http_token_t retrieve_token(const Davix::Uri& _url,
                                      const Davix::RequestParams& _params,
                                      bool write_access,
-                                     unsigned validity);
+                                     unsigned validity,
+                                     const char* const* activities = NULL);
 
 
 
@@ -88,9 +89,12 @@ protected:
      * @param path the resource to access
      * @param write_access flag to signal write access needed
      * @params validity token validity expressed in minutes
+     * @params activities activities for access request.
+     *         If null, they will be created according to write access
      */
     virtual void prepare_request(Davix::HttpRequest& request, const std::string& path,
-                                 bool write_access, unsigned validity) = 0;
+                                 bool write_access, unsigned validity,
+                                 const char* const* activities = NULL) = 0;
 
     /**
      * Perform an HTTP request.
@@ -162,7 +166,7 @@ protected:
      * @param validity token validity expressed in minutes
      */
     void prepare_request(Davix::HttpRequest& request, const std::string& path,
-                         bool write_access, unsigned validity) override;
+                         bool write_access, unsigned validity, const char* const* activities) override;
 
     /**
      * Override for the base class perform HTTP request.
@@ -175,17 +179,18 @@ protected:
 
 
 private:
-    // Create macaroon request content for the given write access and validity
-    std::string macaroon_request_content(bool write_access, unsigned validity);
+    // Create macaroon request content for the given validity and activities
+    std::string macaroon_request_content(unsigned validity, const std::vector<std::string>& activities);
 
-    // Create oauth-type request content for the given path, write access and validity
-    std::string oauth_request_content(const std::string& path, bool write_access,
-                                      unsigned validity);
+    // Create oauth-type request content for the given path, validity and activities
+    std::string oauth_request_content(const std::string& path, unsigned validity,
+                                      const std::vector<std::string>& activities);
 
-    // Utility function to generate activities needed for read/write access
-    std::vector<std::string> _activities(bool write_access);
+    // Utility function to generate activities container
+    // based on a list of activities or read/write access flag
+    std::vector<std::string> _activities(bool write_access, const char* const* activities);
 
-    /// OAuth macaroon issuer
+    /// OAuth macaroon issuer flag
     bool is_oauth;
 };
 
@@ -207,7 +212,7 @@ protected:
      * @param validity token validity expressed in minutes
      */
     void prepare_request(Davix::HttpRequest& request, const std::string& path,
-                         bool write_access, unsigned validity) override;
+                         bool write_access, unsigned validity, const char* const* activities) override;
 };
 
 #endif //_GFAL_HTTP_PLUGIN_TOKEN_H

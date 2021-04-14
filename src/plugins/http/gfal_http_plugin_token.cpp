@@ -37,7 +37,7 @@
 using namespace Davix;
 
 ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, const char* issuer,
-                                 gboolean write_access, unsigned validity,
+                                 gboolean write_access, unsigned validity, const char* const* activities,
                                  char* buff, size_t s_buff, GError** err)
 {
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
@@ -61,8 +61,8 @@ ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, con
 
     while (retriever != NULL) {
         try {
-            gfal_http_token_t http_token = retriever->retrieve_token(Davix::Uri(url),
-                                                                     params, write_access, validity);
+            gfal_http_token_t http_token = retriever->retrieve_token(Davix::Uri(url), params,
+                                                                     write_access, validity, activities);
             token = http_token.token;
             break;
         } catch (const Gfal::CoreException& e) {
@@ -247,7 +247,8 @@ std::string TokenRetriever::perform_request(HttpRequest& request, std::string de
 gfal_http_token_t TokenRetriever::retrieve_token(const Uri& _url,
                                                  const RequestParams& _params,
                                                  bool write_access,
-                                                 unsigned validity)
+                                                 unsigned validity,
+                                                 const char* const* activities)
 {
     Uri url = format_protocol(_url);
     RequestParams params(_params);
@@ -271,7 +272,7 @@ gfal_http_token_t TokenRetriever::retrieve_token(const Uri& _url,
     request.setParameters(params);
 
     // Let sub-classes prepare the request
-    prepare_request(request, path, write_access, validity);
+    prepare_request(request, path, write_access, validity, activities);
 
     std::string response = perform_request(request);
     std::string stoken = parse_json_response(response, token_key);
@@ -308,15 +309,17 @@ bool MacaroonRetriever::validate_endpoint(std::string& endpoint, const Uri& url)
 }
 
 void MacaroonRetriever::prepare_request(HttpRequest& request, const std::string& path,
-                                        bool write_access, unsigned validity)
+                                        bool write_access, unsigned validity, const char* const* activities)
 {
+    std::vector<std::string> v_activities = _activities(write_access, activities);
+
     if (is_oauth) {
         request.addHeaderField("Content-Type", "application/x-www-form-urlencoded");
         request.addHeaderField("Accept", "application/json");
-        request.setRequestBody(oauth_request_content(path, write_access, validity));
+        request.setRequestBody(oauth_request_content(path, validity, v_activities));
     } else {
         request.addHeaderField("Content-Type", "application/macaroon-request");
-        request.setRequestBody(macaroon_request_content(write_access, validity));
+        request.setRequestBody(macaroon_request_content(validity, v_activities));
     }
 
     token_key = (is_oauth) ? "access_token" : "macaroon";
@@ -372,13 +375,14 @@ std::string MacaroonRetriever::perform_request(HttpRequest& request, std::string
     return std::string(buffer);
 }
 
-std::string MacaroonRetriever::macaroon_request_content(bool write_access, unsigned validity)
+std::string MacaroonRetriever::macaroon_request_content(unsigned validity,
+                                                        const std::vector<std::string>& activities)
+
 {
-    std::vector<std::string> activities = _activities(write_access);
     std::stringstream content;
     content << "{\"caveats\": [\"activity:";
 
-    std::vector<std::string>::iterator it;
+    std::vector<std::string>::const_iterator it;
     for (it = activities.begin(); it != activities.end(); it++) {
         if (it != activities.begin()) {
             content << ",";
@@ -390,13 +394,12 @@ std::string MacaroonRetriever::macaroon_request_content(bool write_access, unsig
     return content.str();
 }
 
-std::string MacaroonRetriever::oauth_request_content(const std::string& path, bool write_access,
-                                                     unsigned validity)
+std::string MacaroonRetriever::oauth_request_content(const std::string& path, unsigned validity,
+                                                     const std::vector<std::string>& activities)
 {
-    std::vector<std::string> activities = _activities(write_access);
     std::stringstream scopes;
 
-    std::vector<std::string>::iterator it;
+    std::vector<std::string>::const_iterator it;
     for (it = activities.begin(); it != activities.end(); it++) {
         if (it != activities.begin()) {
             scopes << " ";
@@ -411,20 +414,31 @@ std::string MacaroonRetriever::oauth_request_content(const std::string& path, bo
     return content.str();
 }
 
-std::vector<std::string> MacaroonRetriever::_activities(bool write_access)
+std::vector<std::string> MacaroonRetriever::_activities(bool write_access, const char* const* activities)
 {
-    std::vector<std::string> activities;
-    activities.emplace_back("LIST");
+    std::vector<std::string> v_activities;
 
-    if (write_access) {
-        activities.emplace_back("MANAGE");
-        activities.emplace_back("UPLOAD");
-        activities.emplace_back("DELETE");
-    } else {
-        activities.emplace_back("DOWNLOAD");
+    // User-provided activities
+    if (activities && activities[0]) {
+        for (int idx = 0; activities[idx]; idx++) {
+            v_activities.emplace_back(activities[idx]);
+        }
+
+        return v_activities;
     }
 
-    return activities;
+    // Construct activities based on read/write flag
+    v_activities.emplace_back("LIST");
+
+    if (write_access) {
+        v_activities.emplace_back("MANAGE");
+        v_activities.emplace_back("UPLOAD");
+        v_activities.emplace_back("DELETE");
+    } else {
+        v_activities.emplace_back("DOWNLOAD");
+    }
+
+    return v_activities;
 }
 
 // --------------------------------------------------------
@@ -442,7 +456,7 @@ bool SciTokensRetriever::validate_endpoint(std::string& endpoint, const Davix::U
 }
 
 void SciTokensRetriever::prepare_request(HttpRequest& request, const std::string& path,
-                                         bool write_access, unsigned validity)
+                                         bool write_access, unsigned validity, const char* const* activities)
 {
     request.addHeaderField("Accept", "application/json");
     request.addHeaderField("Content-Type", "application/x-www-form-urlencoded");

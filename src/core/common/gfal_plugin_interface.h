@@ -687,13 +687,14 @@ struct _gfal_plugin_interface {
    * @param issuer: the token issuer endpoint (optional)
    * @param write_access: write access flag
    * @param validity: token validity time in minutes
+   * @param activities: array of activities for access request
    * @param buff : buffer for the token content
    * @param s_buff : maximum buffer size
    * @param err : error handle
    * @return number of bytes in buff in case of success or -1 if error occurs
    */
   ssize_t (*token_retrieve)(plugin_handle plugin_data, const char* url, const char* issuer,
-                            gboolean write_access, unsigned validity,
+                            gboolean write_access, unsigned validity, const char* const* activities,
                             char* buff, size_t s_buff, GError** err);
 
       // reserved for future usage
@@ -789,7 +790,7 @@ int gfal_plugin_archive_poll_listG(gfal2_context_t handle, int nbfiles, const ch
                                    GError ** err);
 
 ssize_t gfal_plugin_token_retrieveG(gfal2_context_t handle, const char* url, const char* issuer,
-                                    gboolean write_access, unsigned validity,
+                                    gboolean write_access, unsigned validity, const char* const* activities,
                                     char* buff, size_t s_buff, GError** err);
 
 //! @endcond

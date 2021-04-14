@@ -1140,7 +1140,7 @@ int gfal_plugin_archive_poll_listG(gfal2_context_t handle, int nbfiles, const ch
 }
 
 ssize_t gfal_plugin_token_retrieveG(gfal2_context_t handle, const char* url, const char* issuer,
-                                    gboolean write_access, unsigned validity,
+                                    gboolean write_access, unsigned validity, const char* const* activities,
                                     char* buff, size_t s_buff, GError** err)
 {
     GError* tmp_err = NULL;
@@ -1149,6 +1149,6 @@ ssize_t gfal_plugin_token_retrieveG(gfal2_context_t handle, const char* url, con
 
     if (p)
         resu = p->token_retrieve(gfal_get_plugin_handle(p), url, issuer,
-                                 write_access, validity, buff, s_buff, err);
+                                 write_access, validity, activities, buff, s_buff, err);
     G_RETURN_ERR(resu, tmp_err, err);
 }

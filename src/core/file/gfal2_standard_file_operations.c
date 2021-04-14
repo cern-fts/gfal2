@@ -457,7 +457,7 @@ int gfal2_change_object_qos(gfal2_context_t context, const char *url, const char
 }
 
 ssize_t gfal2_token_retrieve(gfal2_context_t context, const char* url, const char* issuer,
-                             gboolean write_access, unsigned validity,
+                             gboolean write_access, unsigned validity, const char* const* activities,
                              char* buff, size_t s_buff, GError ** err)
 {
     GError *tmp_err = NULL;
@@ -467,7 +467,8 @@ ssize_t gfal2_token_retrieve(gfal2_context_t context, const char* url, const cha
         g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context, buff or/and resource url are incorrect arguments");
     }
     else {
-        res = gfal_plugin_token_retrieveG(context, url, issuer, write_access, validity, buff, s_buff, &tmp_err);
+        res = gfal_plugin_token_retrieveG(context, url, issuer, write_access, validity, activities,
+                                          buff, s_buff, &tmp_err);
     }
     GFAL2_END_SCOPE_CANCEL(context);
     G_RETURN_ERR(res, tmp_err, err);

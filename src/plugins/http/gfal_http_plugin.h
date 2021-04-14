@@ -51,7 +51,7 @@ public:
                         bool push_mode);
 
     friend ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, const char* issuer,
-                                            gboolean write_access, unsigned validity,
+                                            gboolean write_access, unsigned validity, const char* const* activities,
                                             char* buff, size_t s_buff, GError** err);
 
 private:
@@ -181,7 +181,7 @@ bool http_cdmi_code_is_valid(int code);
 
 // Token
 ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, const char* issuer,
-                                 gboolean write_access, unsigned validity,
+                                 gboolean write_access, unsigned validity, const char* const* activities,
                                  char* buff, size_t s_buff, GError** err);
 
 #endif //_GFAL_HTTP_PLUGIN_H

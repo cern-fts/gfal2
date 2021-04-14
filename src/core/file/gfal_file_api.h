@@ -445,13 +445,14 @@ int gfal2_change_object_qos(gfal2_context_t context, const char *url,
  * @param issuer : the token issuer endpoint (optional)
  * @param write_access : write access flag
  * @param validity : token validity in minutes
+ * @param activities : array of activities for access request
  * @param buff : buffer for the token content
  * @param s_buff : maximum buffer size
  * @param err : GError error report
  * @return the size of the token value in bytes if success, -1 if error
  */
 ssize_t gfal2_token_retrieve(gfal2_context_t context, const char* url, const char* issuer,
-                             gboolean write_access, unsigned validity,
+                             gboolean write_access, unsigned validity, const char* const* activities,
                              char* buff, size_t s_buff, GError** err);
 
 /**

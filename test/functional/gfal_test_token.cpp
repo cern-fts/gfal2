@@ -48,7 +48,7 @@ TEST_F(TokenTest, TestRetrieveNoIssuer)
 {
     char buff[2048];
     GError* err = NULL;
-    ssize_t result = gfal2_token_retrieve(context, url, "", true, 60, buff, 2048, &err);
+    ssize_t result = gfal2_token_retrieve(context, url, "", true, 60, NULL, buff, 2048, &err);
 
     EXPECT_GT(result, 0);
     EXPECT_EQ(NULL, err);
@@ -58,7 +58,7 @@ TEST_F(TokenTest, TestRetrieveIssuer)
 {
     char buff[2048];
     GError* err = NULL;
-    ssize_t result = gfal2_token_retrieve(context, url, issuer, true, 60, buff, 2048, &err);
+    ssize_t result = gfal2_token_retrieve(context, url, issuer, true, 60, NULL, buff, 2048, &err);
 
     EXPECT_GT(result, 0);
     EXPECT_EQ(NULL, err);
