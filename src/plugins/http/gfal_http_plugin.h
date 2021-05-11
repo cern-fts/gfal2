@@ -98,6 +98,9 @@ private:
 
     // Obtain certificate credentials
     void get_certificate(Davix::RequestParams& params, const Davix::Uri& uri);
+
+    // Obtain request parameters + credentials for a Swift endpoint
+    void get_swift_params(Davix::RequestParams &params, const Davix::Uri &uri);
 };
 
 const char* gfal_http_get_name(void);
