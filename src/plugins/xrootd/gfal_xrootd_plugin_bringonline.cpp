@@ -51,8 +51,8 @@ int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
 
     if (!st.IsOK()) {
         GError *tmp_err = NULL;
-        gfal2_set_error(&tmp_err, xrootd_domain, xrootd_errno_to_posix_errno(st.errNo),
-            __func__, "%s", st.ToString().c_str());
+        gfal2_set_error(&tmp_err, xrootd_domain, xrootd_errno_to_posix_errno(st.errNo), __func__,
+            "Bringonline request failed. One or more files failed with: %s", st.ToString().c_str());
         for (int i = 0; i < nbfiles; ++i) {
             err[i] = g_error_copy(tmp_err);
         }
