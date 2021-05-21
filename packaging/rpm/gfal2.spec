@@ -43,7 +43,7 @@ BuildRequires:      libuuid-devel
 %endif
 #file plugin dependencies
 BuildRequires:      zlib-devel
-%if %{?fedora}%{!?fedora:0} <= 30 || %{?rhel}%{!?rhel:0} <= 7
+%if (0%{?fedora} && 0%{?fedora} <= 30) || (0%{?rhel} && 0%{?rhel} <= 7)
 #lfc plugin dependencies
 BuildRequires:      lfc-devel
 #rfio plugin dependencies
@@ -108,7 +108,7 @@ Provides the file support (file://) for %{name}.
 The file plugin provides local file operations, as copying from local
 to remote or the other way around.
 
-%if %{?fedora}%{!?fedora:0} <= 30 || %{?rhel}%{!?rhel:0} <= 7
+%if (0%{?fedora} && 0%{?fedora} <= 30) || (0%{?rhel} && 0%{?rhel} <= 7)
 %package plugin-lfc
 Summary:            Provides the lfc support for %{name}
 Group:              Applications/Internet
@@ -215,7 +215,7 @@ Summary:            Meta package for GFAL 2.0 install
 Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-file%{?_isa} = %{version}-%{release}
-%if %{?fedora}%{!?fedora:0} <= 30 || %{?rhel}%{!?rhel:0} <= 7
+%if (0%{?fedora} && 0%{?fedora} <= 30) || (0%{?rhel} && 0%{?rhel} <= 7)
 Requires:           %{name}-plugin-lfc%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-rfio%{?_isa} = %{version}-%{release}
 %endif
@@ -264,7 +264,7 @@ export CC=/usr/bin/gcc44
 export CXX=/usr/bin/g++44
 %endif
 
-%if %{?fedora}%{!?fedora:0} <= 30 || %{?rhel}%{!?rhel:0} <= 7
+%if (0%{?fedora} && 0%{?fedora} <= 30) || (0%{?rhel} && 0%{?rhel} <= 7)
 %cmake \
     -DDOC_INSTALL_DIR=%{_pkgdocdir} \
     -DUNIT_TESTS=TRUE \
@@ -336,7 +336,7 @@ make DESTDIR=%{buildroot} install
 %{_libdir}/%{name}-plugins/libgfal_plugin_file.so*
 %{_pkgdocdir}/README_PLUGIN_FILE
 
-%if %{?fedora}%{!?fedora:0} <= 30 || %{?rhel}%{!?rhel:0} <= 7
+%if (0%{?fedora} && 0%{?fedora} <= 30) || (0%{?rhel} && 0%{?rhel} <= 7)
 %files plugin-lfc
 %{_libdir}/%{name}-plugins/libgfal_plugin_lfc.so*
 %{_pkgdocdir}/README_PLUGIN_LFC
@@ -498,7 +498,7 @@ make DESTDIR=%{buildroot} install
 * Mon Dec 15 2014 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.7.8-3
 - Applied patch moving buffer to heap to avoid SIGSEGV when the stack size is limited
 
-* Mon Dec 02 2014 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.7.8-2
+* Tue Dec 02 2014 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.7.8-2
 - Patched a bug in a call to gfal2_set_error
 
 * Mon Nov 17 2014 Alejandro Alvarez Ayllon <aalvarez at cern.ch> - 2.7.8-1
@@ -661,4 +661,3 @@ make DESTDIR=%{buildroot} install
  
 * Mon Dec 12 2011 Adrien Devresse <adevress at cern.ch> - 2.0.0-0.6.2012041515snap
  - Initial gfal 2.0 preview release
-
