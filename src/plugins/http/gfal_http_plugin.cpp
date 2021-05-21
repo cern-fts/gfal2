@@ -342,10 +342,8 @@ static void gfal_http_get_swift_credentials(gfal2_context_t handle, const std::s
 
 void GfalHttpPluginData::get_swift_params(Davix::RequestParams& params, const Davix::Uri& uri)
 {
-    bool alternate_url;
     gchar *os_token = NULL, *os_project_id = NULL, *swift_account = NULL;
     bool token_set = false, project_id_set = false, swift_account_set = false;
-    bool alternate_set = false;
 
     std::list<std::string> group_labels;
     std::string host = uri.getHost();
