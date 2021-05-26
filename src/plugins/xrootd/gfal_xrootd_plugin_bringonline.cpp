@@ -51,8 +51,8 @@ int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
 
     if (!st.IsOK()) {
         GError *tmp_err = NULL;
-        gfal2_set_error(&tmp_err, xrootd_domain, xrootd_errno_to_posix_errno(st.errNo),
-            __func__, "%s", st.ToString().c_str());
+        gfal2_set_error(&tmp_err, xrootd_domain, xrootd_errno_to_posix_errno(st.errNo), __func__,
+            "Bringonline request failed. One or more files failed with: %s", st.ToString().c_str());
         for (int i = 0; i < nbfiles; ++i) {
             err[i] = g_error_copy(tmp_err);
         }
@@ -270,6 +270,9 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
         gfal2_set_error( &err[i], xrootd_domain, EAGAIN, __func__,
                          "File (%s) is not yet online.", path.c_str() );
     }
+
+    // Free the top JSON object
+    json_object_put(parsed_json);
 
     // if all files are online return 1
     if( onlinecnt == nbfiles ) return 1;

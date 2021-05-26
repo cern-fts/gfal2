@@ -73,7 +73,7 @@ int gfal_xrootd_archive_poll_list(plugin_handle plugin_data, int nbfiles, const 
     XrdCl::Buffer query_args;
     query_args.FromString(str_query_args);
 
-    gfal2_log(G_LOG_LEVEL_DEBUG, "Issueing query prepare: %s", query_args.ToString().c_str());
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Issuing query prepare: %s", query_args.ToString().c_str());
     XrdCl::XRootDStatus st = fs.Query(XrdCl::QueryCode::Prepare, query_args, resp);
 
     if (!st.IsOK()) {
@@ -193,6 +193,9 @@ int gfal_xrootd_archive_poll_list(plugin_handle plugin_data, int nbfiles, const 
                             "File %s is not yet archived", path.c_str());
         }
     }
+
+    // Free the top JSON object
+    json_object_put(parsed_json);
 
     // All files are on tape: return 1
     if (ontape_count == nbfiles) {
