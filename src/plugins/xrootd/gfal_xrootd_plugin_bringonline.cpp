@@ -271,6 +271,9 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
                          "File (%s) is not yet online.", path.c_str() );
     }
 
+    // Free the top JSON object
+    json_object_put(parsed_json);
+
     // if all files are online return 1
     if( onlinecnt == nbfiles ) return 1;
 
