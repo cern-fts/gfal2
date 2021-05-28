@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-cp -v ci/repo/dmc-devel-el7.repo /etc/yum.repos.d/
+VERSION=`rpm --eval %{centos_ver}`
+
+cp -v ci/repo/dmc-devel-el${VERSION}.repo /etc/yum.repos.d/
 
 TIMESTAMP=`date +%y%m%d%H%M`
 GITREF=`git rev-parse --short HEAD`
