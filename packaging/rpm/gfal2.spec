@@ -68,7 +68,6 @@ Obsoletes:          %{name}-core < %{version}-%{release}
 Provides:           %{name}-core = %{version}-%{release}
 Obsoletes:          %{name}-transfer < %{version}-%{release}
 Provides:           %{name}-transfer = %{version}-%{release}
-Obsoletes:          gfal2-plugin-xrootd-debuginfo
 
 %description
 GFAL 2.0 offers an a single and simple POSIX-like API 
