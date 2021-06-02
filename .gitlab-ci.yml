@@ -1,5 +1,6 @@
 stages:
   - build
+  - test
 
 cc7:
   stage: build
@@ -24,3 +25,12 @@ centos8:
   artifacts:
     paths:
       - "$CI_JOB_NAME"
+
+cc7-test:
+  stage: test
+  image: gitlab-registry.cern.ch/linuxsupport/cc7-base
+  dependencies:
+    - cc7
+  script:
+    - yum install -y cc7/RPMS/*/*.rpm
+    - gfal2-unit-tests

@@ -230,7 +230,6 @@ Requires:           %{name}-plugin-sftp%{?_isa} = %{version}-%{release}
 Meta-package for complete install of GFAL2 
 with all the protocol plugins.
 
-%if %{?_with_tests:1}%{!?_with_tests:0}
 %package tests
 Summary:            gfal2 tests
 Group:              Applications/Internet
@@ -239,7 +238,6 @@ Requires:           gfal2-plugin-mock%{?_isa} = %{version}-%{release}
 
 %description tests
 gfal2 tests
-%endif
 
 %clean
 rm -rf %{buildroot};
@@ -284,15 +282,6 @@ export CXX=/usr/bin/g++44
 
 make %{?_smp_mflags}
 make doc
-
-%check
-export GFAL_PLUGIN_DIR=${PWD}/plugins/
-export GFAL_CONFIG_DIR=${PWD}/test/conf_test/
-export LD_LIBRARY_PATH=${PWD}/src/core:${LD_LIBRARY_PATH}
-export LD_LIBRARY_PATH=${PWD}/plugins:${LD_LIBRARY_PATH}
-export LD_LIBRARY_PATH=${PWD}/test/common:${LD_LIBRARY_PATH}
-cd test/unit
-ctest -V
 
 %install
 rm -rf %{buildroot}
@@ -383,11 +372,9 @@ make DESTDIR=%{buildroot} install
 %{_pkgdocdir}/README_PLUGIN_MOCK
 %config(noreplace) %{_sysconfdir}/%{name}.d/mock_plugin.conf
 
-%if %{?_with_tests:1}%{!?_with_tests:0}
 %files tests
-%{_datadir}/gfal2/tests/*
+%{_bindir}/gfal2-unit-tests
 %{_libdir}/libgfal2_test_shared.so
-%endif
 
 %files all
 
