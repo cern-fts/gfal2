@@ -41,5 +41,6 @@ centos8-test:
   dependencies:
     - centos8
   script:
+    - dnf install -y epel-release
     - dnf install -y centos8/RPMS/*/*.rpm
     - gfal2-unit-tests
