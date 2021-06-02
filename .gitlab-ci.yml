@@ -34,3 +34,12 @@ cc7-test:
   script:
     - yum install -y cc7/RPMS/*/*.rpm
     - gfal2-unit-tests
+
+centos8-test:
+  stage: test
+  image: gitlab-registry.cern.ch/linuxsupport/c8-base
+  dependencies:
+    - centos8
+  script:
+    - dnf install -y centos8/RPMS/*/*.rpm
+    - gfal2-unit-tests
