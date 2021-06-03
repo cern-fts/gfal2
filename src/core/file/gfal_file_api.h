@@ -392,7 +392,7 @@ ssize_t gfal2_qos_check_classes(gfal2_context_t context, const char *url, const 
  * @param buff : buffer for the file QoS class
  * @param s_buff : maximum size of the buffer to write
  * @param err : GError error report
- * @return the size of the QoS class value in bytes if sucess, -1 if error
+ * @return the size of the QoS class value in bytes if success, -1 if error
  */
 ssize_t gfal2_check_file_qos(gfal2_context_t context, const char *url,
                              char *buff, size_t s_buff, GError **err);
@@ -418,7 +418,7 @@ ssize_t gfal2_check_available_qos_transitions(gfal2_context_t context, const cha
  * @param buff : buffer for the target QoS class
  * @param s_buff : maximum size of the buffer to write
  * @param err : GError error report
- * @return the size of the target QoS class value in bytes if sucess, -1 if error
+ * @return the size of the target QoS class value in bytes if success, -1 if error
  *
  * @note Usually available during QoS transitions
  */
@@ -426,7 +426,7 @@ ssize_t gfal2_check_target_qos(gfal2_context_t context, const char *url,
                                char *buff, size_t s_buff, GError **err);
 
 /**
- * @brief Request the QoS transiton of a CDMI object
+ * @brief Request the QoS transition of a CDMI object
  *
  * @param context : gfal2 handle, see \ref gfal2_context_new
  * @param url : url of the file
@@ -436,6 +436,24 @@ ssize_t gfal2_check_target_qos(gfal2_context_t context, const char *url,
  */
 int gfal2_change_object_qos(gfal2_context_t context, const char *url,
                             const char *target_qos, GError **err);
+
+/**
+ * @brief Retrieve a Storage Element token for a given resource
+ *
+ * @param context : gfal2 handle, see \ref gfal2_context_new
+ * @param url : url of the resource
+ * @param issuer : the token issuer endpoint (optional)
+ * @param write_access : write access flag
+ * @param validity : token validity in minutes
+ * @param activities : array of activities for access request
+ * @param buff : buffer for the token content
+ * @param s_buff : maximum buffer size
+ * @param err : GError error report
+ * @return the size of the token value in bytes if success, -1 if error
+ */
+ssize_t gfal2_token_retrieve(gfal2_context_t context, const char* url, const char* issuer,
+                             gboolean write_access, unsigned validity, const char* const* activities,
+                             char* buff, size_t s_buff, GError** err);
 
 /**
  * @brief Bring online a file
