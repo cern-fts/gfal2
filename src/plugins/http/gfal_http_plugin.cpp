@@ -330,6 +330,63 @@ void GfalHttpPluginData::get_aws_params(Davix::RequestParams& params, const Davi
     g_free(region);
 }
 
+/// Swift authorization
+static void gfal_http_get_swift_credentials(gfal2_context_t handle, const std::string& group,
+                                   gchar** os_token, gchar** os_project_id,
+                                   gchar** swift_account)
+{
+    *os_token         = (*os_token)      ? *os_token      : gfal2_get_opt_string(handle, group.c_str(), "OS_TOKEN", NULL);
+    *os_project_id    = (*os_project_id) ? *os_project_id : gfal2_get_opt_string(handle, group.c_str(), "OS_PROJECT_ID", NULL);
+    *swift_account    = (*swift_account) ? *swift_account : gfal2_get_opt_string(handle, group.c_str(), "SWIFT_ACCOUNT", NULL);
+}
+
+void GfalHttpPluginData::get_swift_params(Davix::RequestParams& params, const Davix::Uri& uri)
+{
+    gchar *os_token = NULL, *os_project_id = NULL, *swift_account = NULL;
+    bool token_set = false, project_id_set = false, swift_account_set = false;
+
+    std::list<std::string> group_labels;
+    std::string host = uri.getHost();
+
+    // Add SWIFT:HOST group label
+    std::string group_label = std::string("SWIFT:") + host;
+    std::transform(group_label.begin(), group_label.end(), group_label.begin(), ::toupper);
+    group_labels.push_back(group_label);
+
+    // ADD SWIFT group label
+    group_labels.push_back("SWIFT");
+
+    // Extract data from the config options
+    // Order: Most specific group --> most generic group
+    // Mechanism: Once a property is set, it will not be overwritten by later groups
+    std::list<std::string>::const_iterator it;
+    for (it = group_labels.begin(); it != group_labels.end(); it++) {
+        gfal_http_get_swift_credentials(handle, *it, &os_token, &os_project_id, &swift_account);
+
+        if (!token_set && os_token) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Setting OS token [%s]", it->c_str());
+            params.setOSToken(os_token);
+            token_set = true;
+        }
+
+        if (!project_id_set && os_project_id) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Setting OS project id [%s]", it->c_str());
+            params.setOSProjectID(os_project_id);
+            project_id_set = true;
+        }
+
+        if (!swift_account_set && swift_account) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Using Swift account %s [%s]", swift_account, it->c_str());
+            params.setSwiftAccount(swift_account);
+            swift_account_set = true;
+        }
+    }
+
+    g_free(os_token);
+    g_free(os_project_id);
+    g_free(swift_account);
+}
+
 void GfalHttpPluginData::get_gcloud_credentials(Davix::RequestParams& params, const Davix::Uri& uri)
 {
     gchar *gcloud_json_file, *gcloud_json_string;
@@ -365,13 +422,16 @@ void GfalHttpPluginData::get_credentials(Davix::RequestParams& params, const Dav
         get_aws_params(params, uri);
     } else if (uri.getProtocol().compare(0, 6, "gcloud") == 0) {
         get_gcloud_credentials(params, uri);
-    } // Use bearer token (other authentication mechanism should be disabled)
+    } else if (uri.getProtocol().compare(0, 5, "swift") == 0) {
+        get_swift_params(params, uri);
+    }// Use bearer token (other authentication mechanism should be disabled)
       // Not the case for the moment, as certificates are still used (but should be unset in the future)
     else if (!get_token(params, uri, token_write_access, token_validity,
                         secondary_endpoint)) {
         // Utilize AWS or GCLOUD tokens if no bearer token is available (to be reviewed)
         get_aws_params(params, uri);
         get_gcloud_credentials(params,uri);
+        get_swift_params(params, uri);
     }
 }
 
@@ -385,6 +445,8 @@ void GfalHttpPluginData::get_params_internal(Davix::RequestParams& params, const
         params.setProtocol(Davix::RequestProtocol::AwsS3);
     } else if (uri.getProtocol().compare(0, 6, "gcloud") == 0) {
         params.setProtocol(Davix::RequestProtocol::Gcloud);
+    } else if (uri.getProtocol().compare(0, 5, "swift") == 0) {
+        params.setProtocol(Davix::RequestProtocol::Swift);
     } else {
         params.setProtocol(Davix::RequestProtocol::Auto);
     }
@@ -598,6 +660,7 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
                  strncmp("dav:", url, 4) == 0 || strncmp("davs:", url, 5) == 0 ||
                  strncmp("s3:", url, 3) == 0 || strncmp("s3s:", url, 4) == 0 ||
                  strncmp("gcloud:", url, 7) == 0 || strncmp("gclouds:", url, 8) == 0 ||
+                 strncmp("swift:", url, 6) == 0 || strncmp("swifts:", url, 7) == 0 ||
                  strncmp("http+3rd:", url, 9) == 0 || strncmp("https+3rd:", url, 10) == 0 ||
                  strncmp("dav+3rd:", url, 8) == 0 || strncmp("davs+3rd:", url, 9) == 0);
       default:

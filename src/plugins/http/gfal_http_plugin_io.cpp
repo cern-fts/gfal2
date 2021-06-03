@@ -49,6 +49,9 @@ gfal_file_handle gfal_http_fopen(plugin_handle plugin_data, const char* url, int
     else if (strncmp("gcloud:", url, 7) == 0 || strncmp("gclouds:", url, 8) == 0) {
         fd->req_params.setProtocol(Davix::RequestProtocol::Gcloud);
     }
+    else if (strncmp("swift:", url, 6) == 0 || strncmp("swifts:", url, 7) == 0) {
+        fd->req_params.setProtocol(Davix::RequestProtocol::Swift);
+    }
     fd->davix_fd = davix->posix.open(&fd->req_params, stripped_url, flag, &daverr);
 
     if (fd->davix_fd == NULL) {
