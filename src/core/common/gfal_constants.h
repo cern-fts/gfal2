@@ -77,7 +77,7 @@ extern "C"
  * user.status possible value, similar to SRM meaning of status ( brings_online )
  */
 #define GFAL_XATTR_STATUS_ONLINE "ONLINE"
-#define GFAL_XATTR_STATUS_NEARLINE "NEARLINE "
+#define GFAL_XATTR_STATUS_NEARLINE "NEARLINE"
 #define GFAL_XATTR_STATUS_NEARLINE_ONLINE "ONLINE_AND_NEARLINE"
 #define GFAL_XATTR_STATUS_UNKNOWN "UNKNOWN"
 #define GFAL_XATTR_STATUS_LOST "LOST"
