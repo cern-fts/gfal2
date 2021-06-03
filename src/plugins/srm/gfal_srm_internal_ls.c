@@ -41,6 +41,38 @@ void gfal_srm_ls_memory_management(struct srm_ls_input *input, struct srm_ls_out
 }
 
 /*
+ * Utility function to convert SRM File Locality to string.
+ */
+void gfal_srm_status_copy(TFileLocality loc, char *buff, size_t s_buff)
+{
+    char *org_string;
+    switch (loc) {
+        case GFAL_LOCALITY_ONLINE_:
+            org_string = GFAL_XATTR_STATUS_ONLINE;
+            break;
+        case GFAL_LOCALITY_LOST:
+            org_string = GFAL_XATTR_STATUS_LOST;
+            break;
+        case GFAL_LOCALITY_NEARLINE_:
+            org_string = GFAL_XATTR_STATUS_NEARLINE;
+            break;
+        case GFAL_LOCALITY_UNAVAILABLE:
+            org_string = GFAL_XATTR_STATUS_UNAVAILABLE;
+            break;
+        case GFAL_LOCALITY_ONLINE_USCOREAND_USCORENEARLINE:
+            org_string = GFAL_XATTR_STATUS_NEARLINE_ONLINE;
+            break;
+        case GFAL_LOCALITY_NONE_:
+            org_string = GFAL_XATTR_STATUS_NONE;
+            break;
+        default:
+            org_string = GFAL_XATTR_STATUS_UNKNOWN;
+            break;
+    }
+    g_strlcpy(buff, org_string, s_buff);
+}
+
+/*
  *  concentrate the srm_ls logical in one point for stat, readdir, status, and access
  *
  * */

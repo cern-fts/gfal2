@@ -27,6 +27,10 @@ struct extended_stat {
     TFileLocality locality;
 };
 
+void gfal_srm_status_copy(TFileLocality loc, char *buff, size_t s_buff);
+
+void gfal_srm_ls_memory_management(struct srm_ls_input *input, struct srm_ls_output *output);
+
 int gfal_statG_srmv2__generic_internal(srm_context_t context, struct stat *buf, TFileLocality *loc,
     const char *surl, GError **err);
 

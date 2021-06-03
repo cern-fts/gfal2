@@ -27,36 +27,6 @@
 #include "gfal_srm_internal_ls.h"
 
 
-void gfal_srm_status_copy(TFileLocality loc, char *buff, size_t s_buff)
-{
-    char *org_string;
-    switch (loc) {
-        case GFAL_LOCALITY_ONLINE_:
-            org_string = GFAL_XATTR_STATUS_ONLINE;
-            break;
-        case GFAL_LOCALITY_LOST:
-            org_string = GFAL_XATTR_STATUS_LOST;
-            break;
-        case GFAL_LOCALITY_NEARLINE_:
-            org_string = GFAL_XATTR_STATUS_NEARLINE;
-            break;
-        case GFAL_LOCALITY_UNAVAILABLE:
-            org_string = GFAL_XATTR_STATUS_UNAVAILABLE;
-            break;
-        case GFAL_LOCALITY_ONLINE_USCOREAND_USCORENEARLINE:
-            org_string = GFAL_XATTR_STATUS_NEARLINE_ONLINE;
-            break;
-        case GFAL_LOCALITY_NONE_:
-            org_string = GFAL_XATTR_STATUS_NONE;
-            break;
-        default:
-            org_string = GFAL_XATTR_STATUS_UNKNOWN;
-            break;
-    }
-    g_strlcpy(buff, org_string, s_buff);
-}
-
-
 ssize_t gfal_srm_status_internal(gfal_srmv2_opt *opts, srm_context_t context, const char *path,
     void *buff, size_t s_buff, GError **err)
 {
