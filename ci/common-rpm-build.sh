@@ -7,7 +7,12 @@ cp -v ci/repo/dmc-devel-el${VERSION}.repo /etc/yum.repos.d/
 
 TIMESTAMP=`date +%y%m%d%H%M`
 GITREF=`git rev-parse --short HEAD`
-RELEASE=r${TIMESTAMP}git${GITREF}
+BRANCH=`git name-rev $GITREF --name-only`
+RELEASE=
+
+if [[$BRANCH != tags/*]]; then
+  RELEASE=r${TIMESTAMP}git${GITREF}
+fi
 
 RPMBUILD=${PWD}/build
 SRPMS=${RPMBUILD}/SRPMS

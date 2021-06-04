@@ -1,6 +1,11 @@
 stages:
   - build
   - test
+  - publish
+
+#--------------------------
+# Build jobs
+#--------------------------
 
 cc7:
   stage: build
@@ -26,6 +31,10 @@ centos8:
     paths:
       - "$CI_JOB_NAME"
 
+#--------------------------
+# Test jobs
+#--------------------------
+
 cc7-test:
   stage: test
   image: gitlab-registry.cern.ch/linuxsupport/cc7-base
@@ -44,3 +53,59 @@ centos8-test:
     - dnf install -y epel-release
     - dnf install -y centos8/RPMS/*/*.rpm
     - gfal2-unit-tests
+
+#--------------------------
+# Publish templates
+#--------------------------
+
+.publish-template: &publish-template_definition
+  stage: publish
+  image: gitlab-registry.cern.ch/eos/gitlab-eos/cc7:latest
+  dependencies:
+    - cc7
+    - centos8
+  script:
+    - yum install -y python sssd-client sudo createrepo
+    - automount
+    - cat "$repo_passwd" | kinit "$repo_user"
+    - eosfusebind
+    - |
+        for platform in cc7 centos8; do 
+            packaging/gfal2-repo-manager.py --action add --base /eos/project/d/dmc/www/repos/ --ref ${CI_COMMIT_REF_NAME} --packages ${platform}/RPMS/*/*.rpm ${platform}/SRPMS/*
+        done
+    - sleep 60
+  tags:
+    - docker-privileged
+  retry: 2
+
+#--------------------------
+# Publish jobs
+#--------------------------
+
+rpms:
+  <<: *publish-template_definition
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_TAG!= null'
+
+testing-rpms:
+  <<: *publish-template_definition
+  rules:
+    - if: '$CI_COMMIT_REF_NAME != "develop" && $CI_COMMIT_TAG == null'
+      when: manual
+
+publish-production:
+  stage: publish
+  image: gitlab-registry.cern.ch/eos/gitlab-eos/cc7:latest
+  script: 
+    - yum install -y python sssd-client sudo createrepo
+    - automount
+    - cat "$repo_passwd" | kinit "$repo_user"
+    - eosfusebind
+    - packaging/syncrepo --base-origin /eos/project/d/dmc/www/repos/rc --base-dest /eos/project/d/dmc/www/repos/ '*.rpm'
+    - sleep 60
+  tags:
+    - docker-privileged
+  retry: 2
+  rules:
+    - if: $CI_COMMIT_TAG != null
+      when: manual
