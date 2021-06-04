@@ -29,6 +29,7 @@ static int gfal_srm_archive_internal_status_index(int nresponses, struct srmv2_m
 {
     GError* tmp_err = NULL;
     int index = -1;
+    int i;
 
     // Extract only path from surl
     // (srmv2_mdfilestatus structure keeps only the path)
@@ -39,7 +40,7 @@ static int gfal_srm_archive_internal_status_index(int nresponses, struct srmv2_m
         return -1;
     }
 
-    for (int i = 0; i < nresponses; i++) {
+    for (i = 0; i < nresponses; i++) {
         if (strcmp(statuses[i].surl, parsed->path) == 0) {
             index = i;
             break;
