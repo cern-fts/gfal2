@@ -122,6 +122,36 @@ private:
 };
 
 
+class MonitMsgHandler : public XrdCl::ResponseHandler
+{
+public:
+    MonitMsgHandler() = default;
+
+    virtual ~MonitMsgHandler() = default;
+
+    virtual void handleResponse(XrdCl::XRootDStatus* status, XrdCl::AnyObject* response)
+    {
+        if (!status) {
+            gfal2_log(G_LOG_LEVEL_WARNING, "Received invalid status response for XRootdMonitoring message!");
+            return;
+        }
+
+        if (status->IsOK()) {
+            XrdCl::Buffer* buffer = 0;
+            response->Get(buffer);
+            gfal2_log(G_LOG_LEVEL_INFO, "Received XRootdMonitoring message confirmation: %s",
+                      buffer->ToString().c_str());
+            delete buffer;
+        } else {
+            gfal2_log(G_LOG_LEVEL_WARNING, "Received error message from XRootdMonitoring message! [%d] err_msg=%s",
+                      xrootd_errno_to_posix_errno(status->errNo), status->ToStr().c_str());
+        }
+
+        delete status;
+        delete response;
+    }
+};
+
 static void xrootd2gliberr(GError** err, const char* func, const char* format,
                            const XrdCl::XRootDStatus& status)
 {
@@ -171,6 +201,38 @@ static void gfal_xrootd_3rd_init_url(gfal2_context_t context, XrdCl::URL& xurl,
     }
 }
 
+/// Send client info and user agent via XRootd Monitoring to the destination server
+static int gfal_xrootd_send_client_info(gfal2_context_t context, const XrdCl::URL& dest_url,
+                                        const int timeout)
+{
+    const char *agent, *version;
+    gfal2_get_user_agent(context, &agent, &version);
+    std::ostringstream monit_info;
+
+    if (agent) {
+        monit_info << agent << "/" << version << " ";
+    }
+
+    char* client_info = gfal2_get_client_info_string(context);
+
+    if (client_info) {
+        monit_info << client_info;
+    }
+    g_free(client_info);
+
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Sending XRootdMonitoring message: %s", monit_info.str().c_str());
+
+    // Send the XRootdMonitoring message - async operation
+    XrdCl::FileSystem fileSystem(dest_url);
+    MonitMsgHandler monitMsgHandler;
+    XrdCl::XRootDStatus status = fileSystem.SendInfo(monit_info.str(), &monitMsgHandler, timeout);
+
+    if (!status.IsOK()) {
+        gfal2_log(G_LOG_LEVEL_WARNING, "Failed to send XRootdMonitoring message! monit_info=%s",
+                  monit_info.str().c_str());
+    }
+}
+
 /// Clean dst, update err if failed during cleanup with something else than ENOENT,
 /// returns always -1 for convenience
 static int gfal_xrootd_copy_cleanup(plugin_handle plugin_data, const char* dst, GError** err)
@@ -194,10 +256,10 @@ static int gfal_xrootd_copy_cleanup(plugin_handle plugin_data, const char* dst, 
     return -1;
 }
 
-//this is invoked when a tranfer is success and we
+/// When a TPC transfer is successful and the source is CTA,
+/// call an implicit XrdPrepare Evict
 static void gfal_xrootd_evict_cache(gfal2_context_t context, const char* src)
 {
-
     XrdCl::URL endpoint(prepare_url(context, src));
     endpoint.SetPath(std::string());
     XrdCl::FileSystem fs(endpoint);
@@ -336,6 +398,14 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         }
 
         copy_process.AddJob(job, &(results[i]));
+
+        // Send client information via XRootd monitoring
+        gboolean monit_message = gfal2_get_opt_boolean_with_default(context,
+            XROOTD_CONFIG_GROUP, XROOTD_MONIT_MESSAGE, false);
+
+        if (monit_message) {
+            gfal_xrootd_send_client_info(context, dest_url, gfalt_get_timeout(params, NULL));
+        }
     }
 
     // Configuration job
@@ -388,9 +458,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         if (isThirdParty) {
             gfal_xrootd_evict_cache(context,srcs[i]);
         }
-
     }
-
 
     return -n_failed;
 }
