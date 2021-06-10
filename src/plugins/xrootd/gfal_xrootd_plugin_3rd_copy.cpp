@@ -125,11 +125,13 @@ private:
 class MonitMsgHandler : public XrdCl::ResponseHandler
 {
 public:
-    MonitMsgHandler() = default;
+    MonitMsgHandler(XrdCl::FileSystem* fileSystem) : fileSystem(fileSystem) {}
 
-    virtual ~MonitMsgHandler() = default;
+    virtual ~MonitMsgHandler() {
+        delete fileSystem;
+    }
 
-    virtual void handleResponse(XrdCl::XRootDStatus* status, XrdCl::AnyObject* response)
+    virtual void HandleResponse(XrdCl::XRootDStatus* status, XrdCl::AnyObject* response)
     {
         if (!status) {
             gfal2_log(G_LOG_LEVEL_WARNING, "Received invalid status response for XRootdMonitoring message!");
@@ -141,7 +143,6 @@ public:
             response->Get(buffer);
             gfal2_log(G_LOG_LEVEL_INFO, "Received XRootdMonitoring message confirmation: %s",
                       buffer->ToString().c_str());
-            delete buffer;
         } else {
             gfal2_log(G_LOG_LEVEL_WARNING, "Received error message from XRootdMonitoring message! [%d] err_msg=%s",
                       xrootd_errno_to_posix_errno(status->errNo), status->ToStr().c_str());
@@ -149,7 +150,11 @@ public:
 
         delete status;
         delete response;
+        delete this;
     }
+
+private:
+    XrdCl::FileSystem* fileSystem;
 };
 
 static void xrootd2gliberr(GError** err, const char* func, const char* format,
@@ -202,8 +207,7 @@ static void gfal_xrootd_3rd_init_url(gfal2_context_t context, XrdCl::URL& xurl,
 }
 
 /// Send client info and user agent via XRootd Monitoring to the destination server
-static int gfal_xrootd_send_client_info(gfal2_context_t context, const XrdCl::URL& dest_url,
-                                        const int timeout)
+static void gfal_xrootd_send_client_info(gfal2_context_t context, const XrdCl::URL& dest_url)
 {
     const char *agent, *version;
     gfal2_get_user_agent(context, &agent, &version);
@@ -220,12 +224,13 @@ static int gfal_xrootd_send_client_info(gfal2_context_t context, const XrdCl::UR
     }
     g_free(client_info);
 
-    gfal2_log(G_LOG_LEVEL_DEBUG, "Sending XRootdMonitoring message: %s", monit_info.str().c_str());
+    gfal2_log(G_LOG_LEVEL_INFO, "Sending XRootdMonitoring message: %s", monit_info.str().c_str());
 
     // Send the XRootdMonitoring message - async operation
-    XrdCl::FileSystem fileSystem(dest_url);
-    MonitMsgHandler monitMsgHandler;
-    XrdCl::XRootDStatus status = fileSystem.SendInfo(monit_info.str(), &monitMsgHandler, timeout);
+    XrdCl::FileSystem* fileSystem = new XrdCl::FileSystem(dest_url);
+    MonitMsgHandler* monitMsgHandler = new MonitMsgHandler(fileSystem);
+
+    XrdCl::XRootDStatus status = fileSystem->SendInfo(monit_info.str(), monitMsgHandler, 30);
 
     if (!status.IsOK()) {
         gfal2_log(G_LOG_LEVEL_WARNING, "Failed to send XRootdMonitoring message! monit_info=%s",
@@ -404,7 +409,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
             XROOTD_CONFIG_GROUP, XROOTD_MONIT_MESSAGE, false);
 
         if (monit_message) {
-            gfal_xrootd_send_client_info(context, dest_url, gfalt_get_timeout(params, NULL));
+            gfal_xrootd_send_client_info(context, dest_url);
         }
     }
 
