@@ -406,7 +406,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
 
         // Send client information via XRootd monitoring
         gboolean monit_message = gfal2_get_opt_boolean_with_default(context,
-            XROOTD_CONFIG_GROUP, XROOTD_MONIT_MESSAGE, false);
+            XROOTD_CONFIG_GROUP, XROOTD_MONIT_INFO, false);
 
         if (monit_message) {
             gfal_xrootd_send_client_info(context, dest_url);
