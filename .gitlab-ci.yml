@@ -41,6 +41,8 @@ cc7-test:
   dependencies:
     - cc7
   script:
+    - yum install -y wget
+    - wget https://dmc-repo.web.cern.ch/dmc-repo/dmc-ci-el7.repo -P /etc/yum.repos.d/
     - yum install -y cc7/RPMS/*/*.rpm
     - gfal2-unit-tests
 
@@ -50,7 +52,8 @@ centos8-test:
   dependencies:
     - centos8
   script:
-    - dnf install -y epel-release
+    - dnf install -y epel-release wget
+    - wget https://dmc-repo.web.cern.ch/dmc-repo/dmc-ci-el8.repo -P /etc/yum.repos.d/
     - dnf install -y centos8/RPMS/*/*.rpm
     - gfal2-unit-tests
 
