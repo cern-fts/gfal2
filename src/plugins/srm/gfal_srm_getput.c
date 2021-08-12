@@ -419,6 +419,24 @@ int gfal_srm_putTURLS_plugin(plugin_handle ch, const char *surl, char *buff_turl
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
+static void gfal_log_3rd_sup_protocols(const char *msg, char **protocols)
+{
+    int n_protocols = g_strv_length(protocols);
+    GString *msgline = g_string_new(msg);
+    int i;
+
+    for (i = 0; i < n_protocols; ++i) {
+        if (i > 0) {
+            g_string_append_c(msgline, ';');
+        }
+
+        g_string_append(msgline, protocols[i]);
+    }
+
+    gfal2_log(G_LOG_LEVEL_DEBUG, "%s", msgline->str);
+    g_string_free(msgline, TRUE);
+}
+
 // The other_surl protocol is prioritized to the first position of the supported protocols
 int reorder_rd3_sup_protocols(char **sup_protocols, const char *other_surl)
 {
@@ -426,6 +444,8 @@ int reorder_rd3_sup_protocols(char **sup_protocols, const char *other_surl)
     int other_surl_len = strlen(other_surl);
     char *compare_surl = other_surl;
     int j;
+
+    gfal_log_3rd_sup_protocols("\t\tInitial TURLs: ", sup_protocols);
 
     // Treat "davs://" and "https:// as the same protocol
     if (strncmp(compare_surl, "davs", 4) == 0) {
@@ -446,6 +466,8 @@ int reorder_rd3_sup_protocols(char **sup_protocols, const char *other_surl)
     if (compare_surl != other_surl) {
         free(compare_surl);
     }
+
+    gfal_log_3rd_sup_protocols("\t\tReordered TURLs: ", sup_protocols);
 
     return 0;
 }
