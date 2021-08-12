@@ -421,7 +421,7 @@ int gfal_srm_putTURLS_plugin(plugin_handle ch, const char *surl, char *buff_turl
 
 static void gfal_log_3rd_sup_protocols(const char *msg, char **protocols)
 {
-    int n_protocols = g_strv_length(protocols);
+    size_t n_protocols = g_strv_length(protocols);
     GString *msgline = g_string_new(msg);
     int i;
 
@@ -440,25 +440,30 @@ static void gfal_log_3rd_sup_protocols(const char *msg, char **protocols)
 // The other_surl protocol is prioritized to the first position of the supported protocols
 int reorder_rd3_sup_protocols(char **sup_protocols, const char *other_surl)
 {
-    int n_protocols = g_strv_length(sup_protocols);
-    int other_surl_len = strlen(other_surl);
+    size_t n_protocols = g_strv_length(sup_protocols);
+    size_t compare_surl_len = strlen(other_surl);
     char *compare_surl = other_surl;
+    char *swap;
     int j;
 
     gfal_log_3rd_sup_protocols("\t\tInitial TURLs: ", sup_protocols);
 
     // Treat "davs://" and "https:// as the same protocol
     if (strncmp(compare_surl, "davs", 4) == 0) {
-        compare_surl = malloc(other_surl_len + 2);
-        snprintf(compare_surl, other_surl_len + 2, "https%s", other_surl + 4);
+        compare_surl_len += 1;
+        compare_surl = malloc(compare_surl_len + 1);
+        snprintf(compare_surl, compare_surl_len + 1, "https%s", other_surl + 4);
     }
 
     // Check the compare_surl protocol is in the request list
     for (j = 0; j < n_protocols; ++j) {
         size_t proto_len = strlen(sup_protocols[j]);
-        if (strncmp(sup_protocols[j], compare_surl, proto_len) == 0 && compare_surl[proto_len] == ':') {
-            g_strlcpy (sup_protocols[j], sup_protocols[0], strlen(sup_protocols[0])+1);
-            g_strlcpy (sup_protocols[0], compare_surl, proto_len+1);
+        if ((compare_surl_len > proto_len) &&
+            (compare_surl[proto_len] == ':') &&
+            (strncmp(sup_protocols[j], compare_surl, proto_len) == 0)) {
+            swap = sup_protocols[0];
+            sup_protocols[0] = sup_protocols[j];
+            sup_protocols[j] = swap;
             break;
         }
     }
