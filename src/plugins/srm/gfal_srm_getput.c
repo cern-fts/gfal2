@@ -317,7 +317,7 @@ int gfal_srm_get_rd3_turl(plugin_handle ch, gfalt_params_t p, const char *surl, 
     if (params != NULL) {
         gfal_srm_params_set_spacetoken(params, gfalt_get_src_spacetoken(p, NULL));
         sup_protocols = srm_get_3rdparty_turls_sup_protocol(opts->handle);
-        reorder_rd3_sup_protocols(sup_protocols, surl, other_surl);
+        reorder_rd3_sup_protocols(sup_protocols, other_surl);
         gfal_srm_params_set_protocols(params, sup_protocols);
 
         ret = gfal_srm_mTURLS_internal(opts, params, SRM_GET, surl, &resu, &tmp_err);
@@ -359,7 +359,7 @@ int gfal_srm_put_rd3_turl(plugin_handle ch, gfalt_params_t p, const char *surl, 
     if (params != NULL) {
         gfal_srm_params_set_spacetoken(params, gfalt_get_dst_spacetoken(p, NULL));
         sup_protocols = srm_get_3rdparty_turls_sup_protocol(opts->handle);
-        reorder_rd3_sup_protocols(sup_protocols, surl, other_surl);
+        reorder_rd3_sup_protocols(sup_protocols, other_surl);
         gfal_srm_params_set_protocols(params, sup_protocols);
         gfal_srm_params_set_size(params, surl_file_size);
 
@@ -419,20 +419,32 @@ int gfal_srm_putTURLS_plugin(plugin_handle ch, const char *surl, char *buff_turl
     G_RETURN_ERR(ret, tmp_err, err);
 }
 
-// the surl protocol is considered in the first position of the supported protocols
-int reorder_rd3_sup_protocols(char **sup_protocols, const char *surl, const char *other_surl)
+// The other_surl protocol is prioritized to the first position of the supported protocols
+int reorder_rd3_sup_protocols(char **sup_protocols, const char *other_surl)
 {
     int n_protocols = g_strv_length(sup_protocols);
+    int other_surl_len = strlen(other_surl);
+    char *compare_surl = other_surl;
     int j;
 
-    // Check the other_surl protocol is in the request list
+    // Treat "davs://" and "https:// as the same protocol
+    if (strncmp(compare_surl, "davs", 4) == 0) {
+        compare_surl = malloc(other_surl_len + 2);
+        snprintf(compare_surl, other_surl_len + 2, "https%s", other_surl + 4);
+    }
+
+    // Check the compare_surl protocol is in the request list
     for (j = 0; j < n_protocols; ++j) {
-    	size_t proto_len = strlen(sup_protocols[j]);
-        if (strncmp(sup_protocols[j], other_surl, proto_len) == 0 && other_surl[proto_len] == ':') {
+        size_t proto_len = strlen(sup_protocols[j]);
+        if (strncmp(sup_protocols[j], compare_surl, proto_len) == 0 && compare_surl[proto_len] == ':') {
             g_strlcpy (sup_protocols[j], sup_protocols[0], strlen(sup_protocols[0])+1);
-            g_strlcpy (sup_protocols[0], other_surl, proto_len+1);
+            g_strlcpy (sup_protocols[0], compare_surl, proto_len+1);
             break;
         }
+    }
+
+    if (compare_surl != other_surl) {
+        free(compare_surl);
     }
 
     return 0;
