@@ -96,6 +96,9 @@ private:
     // Obtain GCloud endpoint credentials
     void get_gcloud_credentials(Davix::RequestParams& params, const Davix::Uri& uri);
 
+    // Obtain Reva endpoint credentials
+    void get_reva_credentials(Davix::RequestParams &params, const Davix::Uri &uri, bool token_write_access);
+    
     // Obtain certificate credentials
     void get_certificate(Davix::RequestParams& params, const Davix::Uri& uri);
 

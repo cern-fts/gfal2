@@ -47,20 +47,23 @@ static void my_monitor_callback(gfalt_transfer_status_t h, const char* src,
         size_t inst = gfalt_copy_get_instant_baudrate(h, NULL);
         size_t trans = gfalt_copy_get_bytes_transfered(h, NULL);
         time_t elapsed = gfalt_copy_get_elapsed_time(h, NULL);
-
-        printf("%d bytes/second average (%d instant). Transferred %d, elapsed %d seconds", avg, inst, trans, elapsed);
+        printf("%d bytes/second average (%d instant). Transferred %d, elapsed %d seconds \n", avg, inst, trans, elapsed);
     }
 }
 
 
 int main(int argc, char** argv)
 {
+    printf("Main");
     if (argc < 3) {
         fprintf(stderr, "Missing source and/or destination parameter");
         abort();
     }
     const char* source = argv[1];
     const char* destination = argv[2];
+
+    setenv("SRC_URL", source, 1);
+    setenv("DST_URL", destination, 1);
 
     // Errors will be put here
     GError* error = NULL;
@@ -76,10 +79,9 @@ int main(int argc, char** argv)
 
     gfalt_set_timeout(params, 60, &error);                  // 60 seconds timeout
     gfalt_set_dst_spacetoken(params, "TOKEN", &error);      // Destination space token, support depends on the plugin (SRM, XROOTD do support this)
-    gfalt_set_replace_existing_file(params, FALSE, &error); // Just in case, do not overwrite
+    gfalt_set_replace_existing_file(params, TRUE, &error); // Just in case, do not overwrite
     gfalt_set_checksum(params, GFALT_CHECKSUM_NONE, NULL, NULL, NULL); // No checksum
     gfalt_set_create_parent_dir(params, TRUE, &error);      // Create the parent directory if needed
-
     // Callbacks
     gfalt_add_event_callback(params, my_event_callback, NULL, NULL, &error);     // Called when some event is triggered
     gfalt_add_monitor_callback(params, my_monitor_callback, NULL, NULL, &error); // Performance monitor
@@ -91,5 +93,6 @@ int main(int argc, char** argv)
     // Release memory
     gfalt_params_handle_delete(params, &error);
     gfal2_context_free(context);
+    printf("Transfer Compelete :) \n");
     return 0;
 }
