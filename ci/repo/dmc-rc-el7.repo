@@ -1,0 +1,7 @@
+[dmc-rc-el7]
+name=DMC Release Candidate Repository
+baseurl=http://dmc-repo.web.cern.ch/dmc-repo/rc/el7/$basearch
+gpgcheck=0
+enabled=1
+protect=0
+priority=3

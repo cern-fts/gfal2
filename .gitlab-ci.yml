@@ -1,0 +1,114 @@
+stages:
+  - build
+  - test
+  - publish
+
+#--------------------------
+# Build jobs
+#--------------------------
+
+cc7:
+  stage: build
+  image: gitlab-registry.cern.ch/linuxsupport/cc7-base
+  script:
+    - ci/fedora-packages.sh
+    - ci/common-rpm-build.sh
+    - mkdir ${CI_JOB_NAME}
+    - cp -rv build/RPMS build/SRPMS ${CI_JOB_NAME}
+  artifacts:
+    paths:
+      - "$CI_JOB_NAME"
+
+centos8:
+  stage: build
+  image: gitlab-registry.cern.ch/linuxsupport/c8-base
+  script:
+    - ci/fedora-packages.sh
+    - ci/common-rpm-build.sh
+    - mkdir ${CI_JOB_NAME}
+    - cp -rv build/RPMS build/SRPMS ${CI_JOB_NAME}
+  artifacts:
+    paths:
+      - "$CI_JOB_NAME"
+
+#--------------------------
+# Test jobs
+#--------------------------
+
+cc7-test:
+  stage: test
+  image: gitlab-registry.cern.ch/linuxsupport/cc7-base
+  dependencies:
+    - cc7
+  script:
+    - yum install -y wget
+    - wget https://dmc-repo.web.cern.ch/dmc-repo/dmc-ci-el7.repo -P /etc/yum.repos.d/
+    - yum install -y cc7/RPMS/*/*.rpm
+    - gfal2-unit-tests
+
+centos8-test:
+  stage: test
+  image: gitlab-registry.cern.ch/linuxsupport/c8-base
+  dependencies:
+    - centos8
+  script:
+    - dnf install -y epel-release wget
+    - wget https://dmc-repo.web.cern.ch/dmc-repo/dmc-ci-el8.repo -P /etc/yum.repos.d/
+    - dnf install -y centos8/RPMS/*/*.rpm
+    - gfal2-unit-tests
+
+#--------------------------
+# Publish templates
+#--------------------------
+
+.publish-template: &publish-template_definition
+  stage: publish
+  image: gitlab-registry.cern.ch/eos/gitlab-eos/cc7:latest
+  dependencies:
+    - cc7
+    - centos8
+  script:
+    - yum install -y python sssd-client sudo createrepo
+    - automount
+    - cat "$repo_passwd" | kinit "$repo_user"
+    - eosfusebind
+    - |
+        for platform in cc7 centos8; do 
+            packaging/gfal2-repo-manager.py --action add --base /eos/project/d/dmc/www/repos/ --ref ${CI_COMMIT_REF_NAME} --packages ${platform}/RPMS/*/*.rpm ${platform}/SRPMS/*
+        done
+    - sleep 60
+  tags:
+    - docker-privileged
+  retry: 2
+
+#--------------------------
+# Publish jobs
+#--------------------------
+
+rpms:
+  <<: *publish-template_definition
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_TAG!= null'
+
+testing-rpms:
+  <<: *publish-template_definition
+  rules:
+    - if: '$CI_COMMIT_REF_NAME != "develop" && $CI_COMMIT_TAG == null'
+      when: manual
+
+publish-production:
+  stage: publish
+  image: gitlab-registry.cern.ch/eos/gitlab-eos/cc7:latest
+  script: 
+    - yum install -y python sssd-client sudo createrepo
+    - automount
+    - cat "$repo_passwd" | kinit "$repo_user"
+    - eosfusebind
+    - packaging/syncrepo --base-origin /eos/project/d/dmc/www/repos/rc --base-dest /eos/project/d/dmc/www/repos/ '*.rpm'
+    - sleep 60
+  tags:
+    - docker-privileged
+  retry: 2
+  rules:
+    - if: $CI_COMMIT_TAG != null
+      when: manual
