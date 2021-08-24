@@ -210,7 +210,7 @@ gfal_srm_easy_t gfal_srm_ifce_easy_context(gfal_srmv2_opt *opts,
                 return NULL;
             default:
                 gfal2_set_error(err, gfal2_get_plugin_srm_quark(), EPROTONOSUPPORT,
-                    __func__, "Unknow version of the protocol SRM, failure");
+                    __func__, "Unknown version of the protocol SRM, failure");
                 return NULL;
         }
     }

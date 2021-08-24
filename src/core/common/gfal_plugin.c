@@ -312,7 +312,7 @@ int gfal_modules_resolve(gfal2_context_t handle, GError** err)
                 res = -1;
                 break;
             }
-            gfal2_log(G_LOG_LEVEL_DEBUG, " gfal_plugin loaded succesfully : %s", *p);
+            gfal2_log(G_LOG_LEVEL_DEBUG, " gfal_plugin loaded successfully : %s", *p);
             res = 0;
             p++;
         }
