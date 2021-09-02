@@ -130,9 +130,8 @@ static void xrootd2gliberr(GError** err, const char* func, const char* format,
     size_t str_len = statusStr.length();
     gchar *escaped_str = gfal2_utf8escape_string(str, str_len, "\n\r\t\\");
 
-    gfal2_set_error(err, xrootd_domain,
-                    xrootd_errno_to_posix_errno(status.errNo), func,
-                    format, escaped_str);
+    gfal2_set_error(err, xrootd_domain, xrootd_status_to_posix_errno(status),
+                    func, format, escaped_str);
     g_free(escaped_str);
 }
 

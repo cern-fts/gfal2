@@ -193,7 +193,6 @@ int gfal_xrootd_chmodG(plugin_handle handle, const char *url, mode_t mode,
         GError **err)
 {
     std::string sanitizedUrl = prepare_url((gfal2_context_t) handle, url);
-
     set_xrootd_log_level();
 
     XrdCl::URL xrdcl_url( sanitizedUrl );
@@ -201,11 +200,9 @@ int gfal_xrootd_chmodG(plugin_handle handle, const char *url, mode_t mode,
     XrdCl::Access::Mode xrdcl_mode = file_mode_to_xrdcl_access( mode );
     XrdCl::XRootDStatus status = fs.ChMod( xrdcl_url.GetPath(), xrdcl_mode );
 
-    if( !status.IsOK() )
-    {
-      int errNo = status.errNo;
-      if( status.code == XrdCl::errErrorResponse ) errNo = xrootd_errno_to_posix_errno( errNo );
-      gfal2_xrootd_set_error( err, errNo, __func__, status.ToStr().c_str() );
+    if (!status.IsOK()) {
+      gfal2_xrootd_set_error(err, xrootd_status_to_posix_errno(status),
+                             __func__, status.ToStr().c_str());
       return -1;
     }
 

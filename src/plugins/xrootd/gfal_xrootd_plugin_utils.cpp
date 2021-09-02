@@ -260,10 +260,83 @@ void collapse_slashes(std::string& path)
 }
 
 
-// Copied from xrootd/src/XrdPosix/XrdPosixMap.cc
-int xrootd_errno_to_posix_errno(int rc)
+// Mask network error codes as ECOMM
+static int mask_network_errno(int errc)
 {
-  return XProtocol::toErrno( rc );
+    switch (errc) {
+        case EHOSTUNREACH:
+        case ENOTSOCK:
+        case ETIMEDOUT:
+        case ENOTCONN:
+        case ECONNRESET:
+        case ECONNREFUSED:
+        case ENETRESET:
+        case ECONNABORTED:
+            return ECOMM;
+        default:
+            return errc;
+    }
+}
+
+
+// Copied from xrootd/src/XrdPosix/XrdPosixMap.cc
+static int map_status_code_to_errno(int code)
+{
+    switch (code) {
+        case XrdCl::errRetry:                return EAGAIN;       // Cl:001
+        case XrdCl::errInvalidOp:            return EOPNOTSUPP;   // Cl:003
+        case XrdCl::errConfig:               return ENOEXEC;      // Cl:006
+        case XrdCl::errInvalidArgs:          return EINVAL;       // Cl:009
+        case XrdCl::errInProgress:           return EINPROGRESS;  // Cl:010
+        case XrdCl::errNotSupported:         return ENOTSUP;      // Cl:013
+        case XrdCl::errDataError:            return EDOM;         // Cl:014
+        case XrdCl::errNotImplemented:       return ENOSYS;       // Cl:015
+        case XrdCl::errNoMoreReplicas:       return ENOSR;        // Cl:016
+        case XrdCl::errInvalidAddr:          return EHOSTUNREACH; // Cl:101
+        case XrdCl::errSocketError:          return ENOTSOCK;     // Cl:102
+        case XrdCl::errSocketTimeout:        return ETIMEDOUT;    // Cl:103
+        case XrdCl::errSocketDisconnected:   return ENOTCONN;     // Cl:104
+        case XrdCl::errStreamDisconnect:     return ECONNRESET;   // Cl:107
+        case XrdCl::errConnectionError:      return ECONNREFUSED; // Cl:108
+        case XrdCl::errInvalidSession:       return ECHRNG;       // Cl:109
+        case XrdCl::errTlsError:             return ENETRESET;    // Cl:110
+        case XrdCl::errInvalidMessage:       return EPROTO;       // Cl:201
+        case XrdCl::errHandShakeFailed:      return EPROTO;       // Cl:202
+        case XrdCl::errLoginFailed:          return ECONNABORTED; // Cl:203
+        case XrdCl::errAuthFailed:           return EAUTH;        // Cl:204
+        case XrdCl::errQueryNotSupported:    return ENOTSUP;      // Cl:205
+        case XrdCl::errOperationExpired:     return ESTALE;       // Cl:206
+        case XrdCl::errOperationInterrupted: return EINTR;        // Cl:207
+        case XrdCl::errNoMoreFreeSIDs:       return ENOSR;        // Cl:301
+        case XrdCl::errInvalidRedirectURL:   return ESPIPE;       // Cl:302
+        case XrdCl::errInvalidResponse:      return EBADMSG;      // Cl:303
+        case XrdCl::errNotFound:             return EIDRM;        // Cl:304
+        case XrdCl::errCheckSumError:        return EILSEQ;       // Cl:305
+        case XrdCl::errRedirectLimit:        return ELOOP;        // Cl:306
+        default:                             return ENOMSG;
+    }
+}
+
+
+int xrootd_status_to_posix_errno(const XrdCl::XRootDStatus& status, bool query_prepare)
+{
+    int ret;
+
+    if (status.IsOK()) {
+        return 0;
+    }
+
+    if (status.code == XrdCl::errErrorResponse) {
+        ret = XProtocol::toErrno(status.errNo);
+    } else {
+        ret = (status.errNo ? status.errNo : map_status_code_to_errno(status.code));
+    }
+
+    if (query_prepare) {
+        ret = mask_network_errno(ret);
+    }
+
+    return ret;
 }
 
 
