@@ -17,6 +17,5 @@ DartConfiguration.tcl
 doc/Doxyfile
 install_manifest.txt
 
-#buid folder
+#build folder
 build
-

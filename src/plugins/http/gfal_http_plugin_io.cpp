@@ -52,7 +52,7 @@ gfal_file_handle gfal_http_fopen(plugin_handle plugin_data, const char* url, int
     else if (strncmp("swift:", url, 6) == 0 || strncmp("swifts:", url, 7) == 0) {
         fd->req_params.setProtocol(Davix::RequestProtocol::Swift);
     }
-    else if (strncmp("cs3:", url, 4) == 0) {
+    else if (strncmp("cs3:", url, 4) == 0 || strncmp("cs3s:", url, 5) == 0) {
         fd->req_params.setProtocol(Davix::RequestProtocol::CS3);
     }
 

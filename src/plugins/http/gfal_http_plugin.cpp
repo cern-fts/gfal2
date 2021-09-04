@@ -411,6 +411,11 @@ void GfalHttpPluginData::get_gcloud_credentials(Davix::RequestParams& params, co
 
 void GfalHttpPluginData::get_reva_credentials(Davix::RequestParams &params, const Davix::Uri &uri, bool token_write_access)
 {   
+    // The authentication with Reva is yet to be properly designed.
+    // Nevertheless, there is a need to associate tokens to URLs given that a token issued for a destination must have write rights,
+    // whereas right now GFAL issues a `stat()` == `HEAD` request also to the destination without requiring write rights.
+    // To be further developed.
+
     reva::CredentialProvider provider;
     reva::Credentials creds = params.getRevaCredentials();
     provider.updateCredentials(creds, uri.getString(), token_write_access);
@@ -676,7 +681,7 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
                  strncmp("swift:", url, 6) == 0 || strncmp("swifts:", url, 7) == 0 ||
                  strncmp("http+3rd:", url, 9) == 0 || strncmp("https+3rd:", url, 10) == 0 ||
                  strncmp("dav+3rd:", url, 8) == 0 || strncmp("davs+3rd:", url, 9) == 0 ||
-                 strncmp("cs3:", url, 4) == 0);
+                 strncmp("cs3:", url, 4) == 0 || strncmp("cs3s:", url, 5) == 0);
       default:
         return false;
     }

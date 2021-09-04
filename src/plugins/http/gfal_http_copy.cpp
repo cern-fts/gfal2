@@ -136,7 +136,7 @@ static void set_copy_mode_from_urls(gfal2_context_t context, const char * src_ur
 
 static bool is_http_scheme(const char* url)
 {
-    const char *schemes[] = {"http:", "https:", "dav:", "davs:", "s3:", "s3s:", "gcloud:", "gclouds:", "swift:", "swifts:", "cs3:", NULL};
+    const char *schemes[] = {"http:", "https:", "dav:", "davs:", "s3:", "s3s:", "gcloud:", "gclouds:", "swift:", "swifts:", "cs3:", "cs3s:", NULL};
     const char *colon = strchr(url, ':');
     if (!colon)
         return false;
@@ -528,7 +528,7 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
     	req_params.setProtocol(Davix::RequestProtocol::Gcloud);
     else if (dst_uri.getProtocol() == "swift" || dst_uri.getProtocol() == "swifts")
         req_params.setProtocol(Davix::RequestProtocol::Swift);
-    else if (dst_uri.getProtocol() == "cs3")
+    else if (dst_uri.getProtocol() == "cs3" || dst_uri.getProtocol() == "cs3s")
         req_params.setProtocol(Davix::RequestProtocol::CS3);
 
     Davix::DavFile dest(davix->context,req_params, dst_uri );
