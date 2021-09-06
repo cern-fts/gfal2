@@ -28,6 +28,7 @@
 #include <davix.hpp>
 #include <errno.h>
 #include <davix/utils/davix_gcloud_utils.hpp>
+#include <davix/utils/davix_cs3_utils.hpp>
 #include <exceptions/gfalcoreexception.hpp>
 
 using namespace Davix;
@@ -408,6 +409,19 @@ void GfalHttpPluginData::get_gcloud_credentials(Davix::RequestParams& params, co
     g_free(gcloud_json_string);
 }
 
+void GfalHttpPluginData::get_reva_credentials(Davix::RequestParams &params, const Davix::Uri &uri, bool token_write_access)
+{   
+    // The authentication with Reva is yet to be properly designed.
+    // Nevertheless, there is a need to associate tokens to URLs given that a token issued for a destination must have write rights,
+    // whereas right now GFAL issues a `stat()` == `HEAD` request also to the destination without requiring write rights.
+    // To be further developed.
+
+    reva::CredentialProvider provider;
+    reva::Credentials creds = params.getRevaCredentials();
+    provider.updateCredentials(creds, uri.getString(), token_write_access);
+    params.setRevaCredentials(creds);
+}
+
 void GfalHttpPluginData::get_credentials(Davix::RequestParams& params, const Davix::Uri& uri,
                                          bool token_write_access, unsigned token_validity,
                                          bool secondary_endpoint)
@@ -424,6 +438,8 @@ void GfalHttpPluginData::get_credentials(Davix::RequestParams& params, const Dav
         get_gcloud_credentials(params, uri);
     } else if (uri.getProtocol().compare(0, 5, "swift") == 0) {
         get_swift_params(params, uri);
+    }else if (uri.getProtocol().compare(0, 3, "cs3") == 0) {
+        get_reva_credentials(params, uri, token_write_access);
     }// Use bearer token (other authentication mechanism should be disabled)
       // Not the case for the moment, as certificates are still used (but should be unset in the future)
     else if (!get_token(params, uri, token_write_access, token_validity,
@@ -447,7 +463,9 @@ void GfalHttpPluginData::get_params_internal(Davix::RequestParams& params, const
         params.setProtocol(Davix::RequestProtocol::Gcloud);
     } else if (uri.getProtocol().compare(0, 5, "swift") == 0) {
         params.setProtocol(Davix::RequestProtocol::Swift);
-    } else {
+    } else if (uri.getProtocol().compare(0, 3, "cs3") == 0) {
+        params.setProtocol(Davix::RequestProtocol::CS3);
+    }else {
         params.setProtocol(Davix::RequestProtocol::Auto);
     }
 
@@ -662,7 +680,8 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
                  strncmp("gcloud:", url, 7) == 0 || strncmp("gclouds:", url, 8) == 0 ||
                  strncmp("swift:", url, 6) == 0 || strncmp("swifts:", url, 7) == 0 ||
                  strncmp("http+3rd:", url, 9) == 0 || strncmp("https+3rd:", url, 10) == 0 ||
-                 strncmp("dav+3rd:", url, 8) == 0 || strncmp("davs+3rd:", url, 9) == 0);
+                 strncmp("dav+3rd:", url, 8) == 0 || strncmp("davs+3rd:", url, 9) == 0 ||
+                 strncmp("cs3:", url, 4) == 0 || strncmp("cs3s:", url, 5) == 0);
       default:
         return false;
     }

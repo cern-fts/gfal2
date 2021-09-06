@@ -2,7 +2,7 @@
 
 all_examples:=$(shell find -iname "*.c")
 
-CFLAGS:=$(shell pkg-config --libs --cflags gfal2) $(shell pkg-config --libs --cflags gfal_transfer)
+CFLAGS:=$(shell pkg-config --libs --cflags gfal2) $(shell pkg-config --libs --cflags gfal_transfer) -g
 OBJS=$(all_examples:%.c=%)
 
 all: $(OBJS)

@@ -136,7 +136,7 @@ static void set_copy_mode_from_urls(gfal2_context_t context, const char * src_ur
 
 static bool is_http_scheme(const char* url)
 {
-    const char *schemes[] = {"http:", "https:", "dav:", "davs:", "s3:", "s3s:", "gcloud:", "gclouds:", "swift:", "swifts:", NULL};
+    const char *schemes[] = {"http:", "https:", "dav:", "davs:", "s3:", "s3s:", "gcloud:", "gclouds:", "swift:", "swifts:", "cs3:", "cs3s:", NULL};
     const char *colon = strchr(url, ':');
     if (!colon)
         return false;
@@ -331,7 +331,7 @@ static std::string get_canonical_uri(const std::string& original)
     std::string scheme;
     char last_scheme;
 
-    if ((original.compare(0, 2, "s3") == 0)  || (original.compare(0, 6, "gcloud") == 0 ) || original.compare(0, 5, "swift") == 0) {
+    if ((original.compare(0, 2, "s3") == 0)  || (original.compare(0, 6, "gcloud") == 0 ) || original.compare(0, 5, "swift") == 0 || original.compare(0, 3, "cs3") == 0) {
         return original;
     }
 
@@ -528,6 +528,8 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
     	req_params.setProtocol(Davix::RequestProtocol::Gcloud);
     else if (dst_uri.getProtocol() == "swift" || dst_uri.getProtocol() == "swifts")
         req_params.setProtocol(Davix::RequestProtocol::Swift);
+    else if (dst_uri.getProtocol() == "cs3" || dst_uri.getProtocol() == "cs3s")
+        req_params.setProtocol(Davix::RequestProtocol::CS3);
 
     Davix::DavFile dest(davix->context,req_params, dst_uri );
 

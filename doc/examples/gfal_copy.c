@@ -47,8 +47,7 @@ static void my_monitor_callback(gfalt_transfer_status_t h, const char* src,
         size_t inst = gfalt_copy_get_instant_baudrate(h, NULL);
         size_t trans = gfalt_copy_get_bytes_transfered(h, NULL);
         time_t elapsed = gfalt_copy_get_elapsed_time(h, NULL);
-
-        printf("%d bytes/second average (%d instant). Transferred %d, elapsed %d seconds", avg, inst, trans, elapsed);
+        printf("%d bytes/second average (%d instant). Transferred %d, elapsed %d seconds \n", avg, inst, trans, elapsed);
     }
 }
 
@@ -79,7 +78,6 @@ int main(int argc, char** argv)
     gfalt_set_replace_existing_file(params, FALSE, &error); // Just in case, do not overwrite
     gfalt_set_checksum(params, GFALT_CHECKSUM_NONE, NULL, NULL, NULL); // No checksum
     gfalt_set_create_parent_dir(params, TRUE, &error);      // Create the parent directory if needed
-
     // Callbacks
     gfalt_add_event_callback(params, my_event_callback, NULL, NULL, &error);     // Called when some event is triggered
     gfalt_add_monitor_callback(params, my_monitor_callback, NULL, NULL, &error); // Performance monitor
