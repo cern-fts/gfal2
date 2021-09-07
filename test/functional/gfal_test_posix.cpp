@@ -231,6 +231,8 @@ TEST_F(PosixTest, SymLink)
     ASSERT_FALSE(S_ISLNK(buf.st_mode));
 
     char buffer[1024] = {0};
+    // Initialize to non-null value
+    memset(buffer, 'x', sizeof(buffer));
     ret = gfal_readlink(link.c_str(), buffer, sizeof(buffer));
     ASSERT_GT(ret, 0);
     ASSERT_STREQ(file.substr(file.size() - ret).c_str(), buffer);
