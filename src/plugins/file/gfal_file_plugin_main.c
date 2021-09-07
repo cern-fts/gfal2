@@ -355,7 +355,7 @@ ssize_t gfal_plugin_file_readlink(plugin_handle plugin_data, const char *path, c
     if (res < 0) {
         gfal_plugin_file_report_error(__func__, err);
     } else if (res == buffsiz) {
-        gfal2_set_error(err, gfal2_get_plugin_file_quark(), ENOSYS, __func__,
+        gfal2_set_error(err, gfal2_get_plugin_file_quark(), ENOMEM, __func__,
             "Returned path may have been truncated");
     } else {
         errno = 0;
