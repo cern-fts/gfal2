@@ -1021,7 +1021,7 @@ int gfal_plugin_bring_online_poll_listG(gfal2_context_t handle, int nbfiles, con
         }
         g_error_free(tmp_err);
     }
-    G_RETURN_ERR(resu, tmp_err, errors);
+    return resu;
 }
 
 
@@ -1046,7 +1046,7 @@ int gfal_plugin_release_file_listG(gfal2_context_t handle, int nbfiles, const ch
         }
         g_error_free(tmp_err);
     }
-    G_RETURN_ERR(resu, tmp_err, errors);
+    return resu;
 }
 
 
@@ -1136,7 +1136,7 @@ int gfal_plugin_archive_poll_listG(gfal2_context_t handle, int nbfiles, const ch
         }
         g_error_free(tmp_err);
     }
-    G_RETURN_ERR(resu, tmp_err, errors);
+    return resu;
 }
 
 ssize_t gfal_plugin_token_retrieveG(gfal2_context_t handle, const char* url, const char* issuer,
