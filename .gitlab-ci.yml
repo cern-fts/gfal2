@@ -50,12 +50,11 @@ fedora-rawhide:
 .test-template: &test-template_definition
   stage: test
   script:
-    - declare -A DISTMAP=( [cc7]=el7 [centos8]=el8 [fedora-33]=fc33 [fedora-34]=fc34 [fedora-rawhide]=fc-rawhide )
+    - declare -A DISTMAP=( [cc7]=el7 [centos8]=el8 [fedora-33]=fc33 [fedora-34]=fc34 )
     - PLATFORM=${CI_JOB_NAME%-*}
     - DIST=${DISTMAP[${PLATFORM}]}
     - if [[ "$CI_COMMIT_TAG" != null ]]; then BUILD="devel" ; else BUILD="rc" ; fi
     - cp -v ci/repo/dmc-${BUILD}-${DIST}.repo /etc/yum.repos.d/
-    - dnf install -y epel-release
     - dnf install -y ${PLATFORM}/RPMS/*/*.rpm
     - gfal2-unit-tests
 
@@ -68,13 +67,15 @@ cc7-test:
   dependencies:
     - cc7
   before_script:
-    - yum install dnf -y
+    - yum install -y dnf epel-release
   <<: *test-template_definition
 
 centos8-test:
   image: gitlab-registry.cern.ch/linuxsupport/c8-base
   dependencies:
     - centos8
+  before_script:
+    - dnf install -y epel-release
   <<: *test-template_definition
 
 fedora-33-test:
@@ -87,12 +88,6 @@ fedora-34-test:
   image: fedora:34
   dependencies:
     - fedora-34
-  <<: *test-template_definition
-
-fedora-rawhide-test:
-  image: fedora:rawhide
-  dependencies:
-    - fedora-rawhide
   <<: *test-template_definition
 
 #--------------------------
