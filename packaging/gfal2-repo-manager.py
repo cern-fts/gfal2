@@ -1,10 +1,17 @@
 #!/usr/bin/env python
 # Author: Georgios Bitzes <georgios.bitzes@cern.ch>
 
-import os, subprocess, sys, inspect, argparse, re, shutil, errno
+import argparse
+import errno
+import os
+import re
+import shutil
+import subprocess
+import sys
 
 DRY_RUN = False
 NO_CREATE_REPO = False
+RAWHIDE_VERSION = "fc36"
 
 def sh(cmd):
     # poor man's subprocess.check_output, not supported on SL6
@@ -78,6 +85,9 @@ class Package(object):
         if self.platform == "cern":
             self.platform = tmp.split(".")[-1]
             tmp = tmp[0:-len(self.platform)-1]
+
+        if self.platform == RAWHIDE_VERSION:
+            self.platform = "fc-rawhide"
 
         self.packagename = tmp
 

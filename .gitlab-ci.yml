@@ -30,6 +30,19 @@ centos8:
   image: gitlab-registry.cern.ch/linuxsupport/c8-base
   <<: *build-template_definition
 
+fedora-33:
+  image: fedora:33
+  <<: *build-template_definition
+
+fedora-34:
+  image: fedora:34
+  <<: *build-template_definition
+
+fedora-rawhide:
+  image: fedora:rawhide
+  <<: *build-template_definition
+  allow_failure: true
+
 #--------------------------
 # Test templates
 #--------------------------
@@ -37,7 +50,7 @@ centos8:
 .test-template: &test-template_definition
   stage: test
   script:
-    - declare -A DISTMAP=( [cc7]=el7 [centos8]=el8 )
+    - declare -A DISTMAP=( [cc7]=el7 [centos8]=el8 [fedora-33]=fc33 [fedora-34]=fc34 [fedora-rawhide]=fc-rawhide )
     - PLATFORM=${CI_JOB_NAME%-*}
     - DIST=${DISTMAP[${PLATFORM}]}
     - if [[ "$CI_COMMIT_TAG" != null ]]; then BUILD="devel" ; else BUILD="rc" ; fi
@@ -64,6 +77,24 @@ centos8-test:
     - centos8
   <<: *test-template_definition
 
+fedora-33-test:
+  image: fedora:33
+  dependencies:
+    - fedora-33
+  <<: *test-template_definition
+
+fedora-34-test:
+  image: fedora:34
+  dependencies:
+    - fedora-34
+  <<: *test-template_definition
+
+fedora-rawhide-test:
+  image: fedora:rawhide
+  dependencies:
+    - fedora-rawhide
+  <<: *test-template_definition
+
 #--------------------------
 # Publish templates
 #--------------------------
@@ -74,13 +105,16 @@ centos8-test:
   dependencies:
     - cc7
     - centos8
+    - fedora-33
+    - fedora-34
+    - fedora-rawhide
   script:
     - yum install -y python sssd-client sudo createrepo
     - automount
     - cat "$repo_passwd" | kinit "$repo_user"
     - eosfusebind
     - |
-        for platform in cc7 centos8; do
+        for platform in cc7 centos8 fedora-33 fedora-34 fedora-rawhide; do
           packaging/gfal2-repo-manager.py --action add --base /eos/project/d/dmc/www/repos/ --ref ${CI_COMMIT_REF_NAME} --packages ${platform}/RPMS/*/*.rpm ${platform}/SRPMS/*
         done
     - sleep 60
