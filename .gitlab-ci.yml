@@ -36,13 +36,12 @@ centos8:
 
 .test-template: &test-template_definition
   stage: test
-  before_script:
+  script:
     - declare -A DISTMAP=( [cc7]=el7 [centos8]=el8 )
     - PLATFORM=${CI_JOB_NAME%-*}
     - DIST=${DISTMAP[${PLATFORM}]}
     - if [[ "$CI_COMMIT_TAG" != null ]]; then BUILD="devel" ; else BUILD="rc" ; fi
     - cp -v ci/repo/dmc-${BUILD}-${DIST}.repo /etc/yum.repos.d/
-  script:
     - dnf install -y epel-release
     - dnf install -y ${PLATFORM}/RPMS/*/*.rpm
     - gfal2-unit-tests
@@ -55,6 +54,8 @@ cc7-test:
   image: gitlab-registry.cern.ch/linuxsupport/cc7-base
   dependencies:
     - cc7
+  before_script:
+    - yum install dnf -y
   <<: *test-template_definition
 
 centos8-test:
