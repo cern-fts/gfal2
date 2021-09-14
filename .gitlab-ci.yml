@@ -42,6 +42,7 @@ fedora-rawhide:
   image: fedora:rawhide
   <<: *build-template_definition
   allow_failure: true
+  when: manual
 
 #--------------------------
 # Test templates
@@ -110,6 +111,10 @@ fedora-34-test:
     - eosfusebind
     - |
         for platform in cc7 centos8 fedora-33 fedora-34 fedora-rawhide; do
+          if [[ "${platform}" == "fedora-rawhide" ]] && [[ ! -d ${platform} ]] ; then
+            echo "Skipping ${platform} packages..." ;
+            continue ;
+          fi
           packaging/gfal2-repo-manager.py --action add --base /eos/project/d/dmc/www/repos/ --ref ${CI_COMMIT_REF_NAME} --packages ${platform}/RPMS/*/*.rpm ${platform}/SRPMS/*
         done
     - sleep 60
