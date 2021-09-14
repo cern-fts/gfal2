@@ -239,8 +239,7 @@ Requires:           gfal2-plugin-mock%{?_isa} = %{version}-%{release}
 gfal2 tests
 
 %clean
-rm -rf %{buildroot};
-make clean
+%cmake3_build --target clean
 
 %prep
 %setup -q
@@ -279,17 +278,18 @@ export CXX=/usr/bin/g++44
     .
 %endif
 
-make %{?_smp_mflags}
-make doc
+%cmake3_build
+%cmake3_build --target doc
 
 %install
-rm -rf %{buildroot}
-make DESTDIR=%{buildroot} install
+%cmake3_install
 
-
+%if 0%{?rhel} == 7
 %post -p /sbin/ldconfig
-
 %postun -p /sbin/ldconfig
+%else
+%ldconfig_scriptlets
+%endif
 
 %files
 %{_bindir}/gfal2_version
