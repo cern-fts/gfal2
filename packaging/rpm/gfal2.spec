@@ -22,28 +22,15 @@ BuildRoot:          %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXX
 BuildRequires:      cmake
 BuildRequires:      doxygen
 BuildRequires:      json-c-devel
-%if %{?fedora}%{!?fedora:0} >= 13 || %{?rhel}%{!?rhel:0} >= 6
 BuildRequires:      glib2-devel >= 2.28
 Requires:           glib2 >= 2.28
-%else
-BuildRequires:      glib2-devel
-BuildRequires:      gcc44-c++
-%endif
 BuildRequires:      libattr-devel
 BuildRequires:      openldap-devel
-%if ! 0%{?el5}
 BuildRequires:      pugixml-devel
-%endif
-
-## libuuid is in a different rpm for el5
-%if 0%{?el5}
-BuildRequires:      e2fsprogs-devel
-%else
 BuildRequires:      libuuid-devel
-%endif
 #file plugin dependencies
 BuildRequires:      zlib-devel
-%if (0%{?fedora} && 0%{?fedora} <= 30) || (0%{?rhel} && 0%{?rhel} <= 7)
+%if 0%{?rhel} == 7
 #lfc plugin dependencies
 BuildRequires:      lfc-devel
 #rfio plugin dependencies
@@ -89,9 +76,7 @@ development files for %{name}
 %package doc
 Summary:            Documentation for %{name}
 Group:              Documentation
-%if 0%{?fedora} > 10 || 0%{?rhel}>5
 BuildArch:          noarch
-%endif
 
 %description doc
 Documentation, Doxygen and examples of %{name}.
@@ -107,7 +92,7 @@ Provides the file support (file://) for %{name}.
 The file plugin provides local file operations, as copying from local
 to remote or the other way around.
 
-%if (0%{?fedora} && 0%{?fedora} <= 30) || (0%{?rhel} && 0%{?rhel} <= 7)
+%if 0%{?rhel} == 7
 %package plugin-lfc
 Summary:            Provides the lfc support for %{name}
 Group:              Applications/Internet
@@ -214,7 +199,7 @@ Summary:            Meta package for GFAL 2.0 install
 Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-file%{?_isa} = %{version}-%{release}
-%if (0%{?fedora} && 0%{?fedora} <= 30) || (0%{?rhel} && 0%{?rhel} <= 7)
+%if 0%{?rhel} == 7
 Requires:           %{name}-plugin-lfc%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-rfio%{?_isa} = %{version}-%{release}
 %endif
@@ -255,12 +240,7 @@ if [ "$gfal2_cmake_ver" != "$gfal2_spec_ver" ]; then
     exit 1
 fi
 
-%if 0%{?el5}
-export CC=/usr/bin/gcc44
-export CXX=/usr/bin/g++44
-%endif
-
-%if (0%{?fedora} && 0%{?fedora} <= 30) || (0%{?rhel} && 0%{?rhel} <= 7)
+%if 0%{?rhel} == 7
 %cmake \
     -DDOC_INSTALL_DIR=%{_pkgdocdir} \
     -DUNIT_TESTS=TRUE \
@@ -324,7 +304,7 @@ export CXX=/usr/bin/g++44
 %{_libdir}/%{name}-plugins/libgfal_plugin_file.so*
 %{_pkgdocdir}/README_PLUGIN_FILE
 
-%if (0%{?fedora} && 0%{?fedora} <= 30) || (0%{?rhel} && 0%{?rhel} <= 7)
+%if 0%{?rhel} == 7
 %files plugin-lfc
 %{_libdir}/%{name}-plugins/libgfal_plugin_lfc.so*
 %{_pkgdocdir}/README_PLUGIN_LFC
