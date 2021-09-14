@@ -11,7 +11,7 @@ import sys
 
 DRY_RUN = False
 NO_CREATE_REPO = False
-RAWHIDE_VERSION = "fc36"
+RAWHIDE_VERSIONS = ["fc35", "fc36"]
 
 def sh(cmd):
     # poor man's subprocess.check_output, not supported on SL6
@@ -86,7 +86,7 @@ class Package(object):
             self.platform = tmp.split(".")[-1]
             tmp = tmp[0:-len(self.platform)-1]
 
-        if self.platform == RAWHIDE_VERSION:
+        if self.platform in RAWHIDE_VERSIONS:
             self.platform = "fc-rawhide"
 
         self.packagename = tmp
