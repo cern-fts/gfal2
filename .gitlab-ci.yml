@@ -58,7 +58,7 @@ fedora-rawhide:
     - declare -A DISTMAP=( [cc7]=el7 [centos8]=el8 [fedora-33]=fc33 [fedora-34]=fc34 )
     - PLATFORM=${CI_JOB_NAME%-*}
     - DIST=${DISTMAP[${PLATFORM}]}
-    - if [[ "$CI_COMMIT_TAG" != null ]]; then BUILD="devel" ; else BUILD="rc" ; fi
+    - if [[ -z "$CI_COMMIT_TAG" ]]; then BUILD="devel" ; else BUILD="rc" ; fi
     - cp -v ci/repo/${BUILD}/dmc-${BUILD}-${DIST}.repo /etc/yum.repos.d/
     - dnf install -y ${PLATFORM}/RPMS/*/*.rpm
     - gfal2-unit-tests
