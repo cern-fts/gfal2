@@ -38,6 +38,7 @@ def add_dependency(parser, when_present, dependency):
             parser.error("argument --{0} is required when --{1} is present".format(dependency, when_present))
 
 def declare_required(parser, args, choice):
+    choice = choice.replace("-", "_")
     if not hasattr(args, choice):
         parser.error("argument --{0} is required".format(choice))
 
@@ -132,7 +133,7 @@ class Repository(object):
             raise ValueError("Cannot mix packages of different platforms in the same invocation: {0}".format(list(platforms)))
 
         archs = set([x.arch for x in packages])
-        archs.remove(None)
+        archs.discard(None)
         if len(archs) != 1:
             raise ValueError("Cannot mix packages of different architectures in the same invocation: {0}".format(list(archs)))
 
