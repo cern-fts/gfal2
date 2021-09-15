@@ -1,7 +1,0 @@
-[dmc-devel-next-el7]
-name=DMC Devel-next Repository
-baseurl=http://dmc-repo.web.cern.ch/dmc-repo/devel-next/el7/$basearch
-gpgcheck=0
-enabled=1
-protect=0
-priority=3
