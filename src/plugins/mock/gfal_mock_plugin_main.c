@@ -57,12 +57,12 @@ static gboolean gfal_mock_check_url(plugin_handle handle, const char *url, plugi
             //case GFAL_PLUGIN_OPEN:
             //case GFAL_PLUGIN_CHMOD:
         case GFAL_PLUGIN_UNLINK:
-            //case GFAL_PLUGIN_GETXATTR:
+        case GFAL_PLUGIN_GETXATTR:
             //case GFAL_PLUGIN_LISTXATTR:
             //case GFAL_PLUGIN_SETXATTR:
             //case GFAL_PLUGIN_RENAME:
             //case GFAL_PLUGIN_SYMLINK:
-            //case GFAL_PLUGIN_CHECKSUM:
+        case GFAL_PLUGIN_CHECKSUM:
         case GFAL_PLUGIN_BRING_ONLINE:
         case GFAL_PLUGIN_OPEN:
             return is_mock_uri(url);
@@ -190,6 +190,8 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError **err)
     mock_plugin.statG = &gfal_plugin_mock_stat;
     mock_plugin.lstatG = &gfal_plugin_mock_stat;
     mock_plugin.unlinkG = &gfal_plugin_mock_unlink;
+    mock_plugin.getxattrG = &gfal_mock_getxattrG;
+    mock_plugin.checksum_calcG = &gfal_mock_checksumG;
 
     mock_plugin.bring_online = gfal_plugin_mock_bring_online;
     mock_plugin.bring_online_poll = gfal_plugin_mock_bring_online_poll;
