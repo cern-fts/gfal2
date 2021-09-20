@@ -1,6 +1,29 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Mon Sep 20 2021 Mihai Patrascoiu <mipatras at cern.ch> - 2.20.0
+###Epic
+- [DMC-1249] - Migrate CI infrastructure to gitlab-CI
+
+###Bug
+- [DMC-1262] - Gfal2 list polling functions return error array with incomplete first element when plugin not found
+- [DMC-1266] - Missing null byte in readlink Gfal2 file plugin
+
+###New Feature
+- [DMC-1228] - Implement SE token retrieval in Gfal2
+- [DMC-1247] - Add SWIFT support in Gfal2
+- [DMC-1269] - Add CS3API support in Gfal2
+
+###Task
+- [DMC-1250] - Gfal2 packages for Centos8
+- [DMC-1257] - Treat "davs" and "https" protocols as the same in SRM TURL selection
+- [DMC-1264] - Gfal2 packages for Fedora >= 33
+
+###Improvement
+- [DMC-1246] - Avoid exposing sensitive information in Gfal2 HTTP debug output
+- [DMC-1261] - Improve XRootd Satus code to errno mapping
+- [DMC-1270] - Support for checksum and getxattr calls in in Gfal2 mock plugin
+
 ## Wed May 26 2021 Mihai Patrascoiu <mipatras at cern.ch> - 2.19.2
 ###Bug
 - [DMC-1248] - Misleading error message when XRootD bringonline bulk request fails
