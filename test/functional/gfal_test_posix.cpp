@@ -231,9 +231,49 @@ TEST_F(PosixTest, SymLink)
     ASSERT_FALSE(S_ISLNK(buf.st_mode));
 
     char buffer[1024] = {0};
+    // Initialize to non-null value
+    memset(buffer, 'x', sizeof(buffer));
     ret = gfal_readlink(link.c_str(), buffer, sizeof(buffer));
     ASSERT_GT(ret, 0);
     ASSERT_STREQ(file.substr(file.size() - ret).c_str(), buffer);
+}
+
+
+TEST_F(PosixTest, SymLinkTruncate)
+{
+    if (strncmp(root, "file://", 7) != 0) {
+        SKIP_TEST(SymLink);
+        return;
+    }
+
+    std::string file = GenerateFile();
+    std::string link = file + ".link";
+    filesToClean.push_back(link);
+
+    int ret = gfal_symlink(file.c_str(), link.c_str());
+    ASSERT_EQ(0, ret);
+
+    size_t read_size = file.length() - 8;
+    char buffer[1024];
+    GError* error;
+
+    // Initialize to non-null value
+    memset(buffer, 'x', sizeof(buffer));
+
+    // To capture the error object, we need to get the Posix thread handle
+    gfal2_context_t handle = gfal_posix_get_handle();
+    ASSERT_NE(handle, (void *) NULL);
+
+    ret = gfal2_readlink(handle, link.c_str(), buffer, read_size, &error);
+    ASSERT_EQ(ret, read_size);
+    ASSERT_STRNE(file.substr(file.size() - ret).c_str(), buffer);
+
+    // Last read character should match the original
+    ASSERT_EQ(buffer[read_size - 1], file[read_size + 6]);
+    // Character at read_size should be the 'x' padding
+    ASSERT_EQ(buffer[read_size], 'x');
+    // Readlink should return an error about possible truncation
+    ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error, ENOMEM);
 }
 
 

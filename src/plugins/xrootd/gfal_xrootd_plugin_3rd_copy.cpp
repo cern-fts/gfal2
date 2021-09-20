@@ -130,9 +130,8 @@ static void xrootd2gliberr(GError** err, const char* func, const char* format,
     size_t str_len = statusStr.length();
     gchar *escaped_str = gfal2_utf8escape_string(str, str_len, "\n\r\t\\");
 
-    gfal2_set_error(err, xrootd_domain,
-                    xrootd_errno_to_posix_errno(status.errNo), func,
-                    format, escaped_str);
+    gfal2_set_error(err, xrootd_domain, xrootd_status_to_posix_errno(status),
+                    func, format, escaped_str);
     g_free(escaped_str);
 }
 
@@ -352,9 +351,6 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
     XrdCl::XRootDStatus status = copy_process.Prepare();
     if (!status.IsOK()) {
         xrootd2gliberr(op_error, __func__, "Error on XrdCl::CopyProcess::Prepare(): %s", status);
-//        gfal2_set_error(op_error, xrootd_domain,
-//                xrootd_errno_to_posix_errno(status.errNo), __func__,
-//                "Error on XrdCl::CopyProcess::Prepare(): %s", status.ToStr().c_str());
         return -1;
     }
 
@@ -365,9 +361,6 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
     // here, so ignore!
     if (nbfiles == 1 && !status.IsOK()) {
         xrootd2gliberr(op_error, __func__, "Error on XrdCl::CopyProcess::Run(): %s", status);
-//        gfal2_set_error(op_error, xrootd_domain,
-//                xrootd_errno_to_posix_errno(status.errNo), __func__,
-//                "Error on XrdCl::CopyProcess::Run(): %s", status.ToStr().c_str());
         return gfal_xrootd_copy_cleanup(plugin_data, dsts[0],op_error);
     }
 
@@ -378,9 +371,6 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         status = results[i].Get<XrdCl::XRootDStatus>("status");
         if (!status.IsOK()) {
             xrootd2gliberr(&((*file_errors)[i]), __func__, "Error on XrdCl::CopyProcess::Run(): %s", status);
-//            gfal2_set_error(&((*file_errors)[i]), xrootd_domain,
-//                    xrootd_errno_to_posix_errno(status.errNo), __func__,
-//                    "Error on XrdCl::CopyProcess::Run(): %s", status.ToStr().c_str());
             gfal_xrootd_copy_cleanup(plugin_data, dsts[i],file_errors[i]);
             ++n_failed;
         }

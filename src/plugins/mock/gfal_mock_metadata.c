@@ -114,3 +114,62 @@ int gfal_plugin_mock_unlink(plugin_handle plugin_data, const char *url, GError *
         return -1;
     return 0;
 }
+
+int gfal_mock_checksumG(plugin_handle plugin_data, const char* url,
+        const char* check_type, char * checksum_buffer, size_t buffer_length,
+        off_t start_offset, size_t data_length, GError ** err)
+{
+    char arg_buffer[GFAL_URL_MAX_LEN] = {0};
+    int errcode = 0;
+
+    // Check errno first
+    gfal_plugin_mock_get_value(url, "errno", arg_buffer, sizeof(arg_buffer));
+    errcode = gfal_plugin_mock_get_int_from_str(arg_buffer);
+
+    if (errcode > 0) {
+        gfal_plugin_mock_report_error(strerror(errcode), errcode, err);
+        return -1;
+    }
+
+    gfal_plugin_mock_get_value(url, "checksum", arg_buffer, sizeof(arg_buffer));
+    g_strlcpy(checksum_buffer, arg_buffer, buffer_length);
+
+    return 0;
+}
+
+ssize_t gfal_mock_getxattrG(plugin_handle plugin_data, const char* url, const char* key, void* buff, size_t s_buff, GError** err)
+{
+    char arg_buffer[GFAL_URL_MAX_LEN] = {0};
+    int errcode = 0;
+    int emsg_size;
+    char* emsg = NULL;
+
+    // Check errno first
+    gfal_plugin_mock_get_value(url, "errno", arg_buffer, sizeof(arg_buffer));
+    errcode = gfal_plugin_mock_get_int_from_str(arg_buffer);
+
+    if (errcode > 0) {
+        gfal_plugin_mock_report_error(strerror(errcode), errcode, err);
+        return -1;
+    }
+
+    if ((strncmp(key, GFAL_XATTR_STATUS, sizeof(GFAL_XATTR_STATUS)) == 0) ||
+        (strncmp(key, GFAL_XATTR_REPLICA, sizeof(GFAL_XATTR_REPLICA)) == 0) ||
+        (strncmp(key, GFAL_XATTR_GUID, sizeof(GFAL_XATTR_GUID)) == 0) ||
+        (strncmp(key, GFAL_XATTR_COMMENT, sizeof(GFAL_XATTR_COMMENT)) == 0) ||
+        (strncmp(key, GFAL_XATTR_SPACETOKEN, sizeof(GFAL_XATTR_SPACETOKEN)) == 0)) {
+        gfal_plugin_mock_get_value(url, key, arg_buffer, sizeof(arg_buffer));
+        g_strlcpy(buff, arg_buffer, s_buff);
+    }
+
+    if (arg_buffer[0] == '\0') {
+        emsg_size = 26 + strlen(key);
+        emsg =  malloc(emsg_size);
+        snprintf(emsg, emsg_size, "Failed to retrieve xattr %s", key);
+        gfal_plugin_mock_report_error(emsg, ENODATA, err);
+        free(emsg);
+        return -1;
+    }
+
+    return strlen(buff);
+}

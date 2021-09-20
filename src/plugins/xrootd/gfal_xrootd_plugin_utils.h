@@ -50,8 +50,9 @@ bool json_obj_to_bool(struct json_object *boolobj);
 /// Collapse multiple consecutive slashes into a single one
 void collapse_slashes(std::string& path);
 
-/// Map an xrootd errno to a posix errno
-int xrootd_errno_to_posix_errno(int rc);
+/// Map an xrootd status code to a posix errno
+/// @note for a query prepare, mask network errors as ECOMM
+int xrootd_status_to_posix_errno(const XrdCl::XRootDStatus& status, bool query_prepare = false);
 
 /// Set error code with errno description
 void gfal2_xrootd_set_error(GError **err, int errcode, const char *func, const char *desc, ...);

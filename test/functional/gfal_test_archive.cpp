@@ -19,6 +19,7 @@
 #include <stdlib.h>
 
 #include <gfal_api.h>
+#include <uri/gfal2_uri.h>
 #include <utils/exceptions/gerror_to_cpp.h>
 
 #include <common/gfal_lib_test.h>
@@ -86,6 +87,32 @@ TEST_F(ArchiveTest, NoEntryPoll)
 
     ASSERT_EQ(-1, ret);
     ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error, ENOENT);
+}
+
+// Poll invalid hostname
+TEST_F(ArchiveTest, InvalidHostPoll)
+{
+    GError* error = NULL;
+    char invalid_surl[2048];
+    const char* format = "%s://invalid.%sfile.test";
+
+    gfal2_uri* parsed = gfal2_parse_uri(root, &error);
+    ASSERT_NE(parsed, (void *) NULL);
+
+    if (root[strlen(root) - 1] != '/') {
+        format = "%s://invalid.%s/file.test";
+    }
+
+    snprintf(invalid_surl, sizeof(invalid_surl), format,
+             parsed->scheme, (root + strlen(parsed->scheme) + 3));
+
+    g_clear_error(&error);
+    gfal2_free_uri(parsed);
+
+    int ret = gfal2_archive_poll(handle, invalid_surl, &error);
+
+    ASSERT_EQ(-1, ret);
+    ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error, ECOMM);
 }
 
 // Poll a single file for archiving

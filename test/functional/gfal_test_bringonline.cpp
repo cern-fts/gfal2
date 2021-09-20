@@ -19,10 +19,11 @@
  */
 
 #include <gtest/gtest.h>
-
-#include <gfal_api.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <gfal_api.h>
+#include <uri/gfal2_uri.h>
 #include <utils/exceptions/gerror_to_cpp.h>
 #include <transfer/gfal_transfer.h>
 
@@ -248,6 +249,33 @@ TEST_F(BringonlineTest, InvalidRelease)
     else {
         ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
     }
+}
+
+// Poll invalid hostname
+TEST_F(BringonlineTest, InvalidHostPoll)
+{
+    GError* error = NULL;
+    char invalid_surl[2048];
+    const char* format = "%s://invalid.%sfile.test";
+    int ret;
+
+    gfal2_uri* parsed = gfal2_parse_uri(root, &error);
+    ASSERT_NE(parsed, (void *) NULL);
+
+    if (root[strlen(root) - 1] != '/') {
+        format = "%s://invalid.%s/file.test";
+    }
+
+    snprintf(invalid_surl, sizeof(invalid_surl), format,
+             parsed->scheme, (root + strlen(parsed->scheme) + 3));
+
+    g_clear_error(&error);
+    gfal2_free_uri(parsed);
+
+    ret = gfal2_bring_online_poll(handle, invalid_surl, "bringonline-token", &error);
+
+    ASSERT_EQ(-1, ret);
+    ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error, ECOMM);
 }
 
 // Request with duplicated SURLs (see DMC-676)

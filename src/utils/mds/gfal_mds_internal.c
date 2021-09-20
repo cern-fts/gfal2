@@ -170,7 +170,7 @@ static int gfal_mds_convert_entry_to_srm_information(LDAP *ld, LDAPMessage *entr
 				g_strlcpy(srm_name, vals[0]->bv_val, sizeof(srm_name));
 				ret += 1;
 			} else {
-				g_set_error(&tmp_err, gfal2_get_core_quark(), EINVAL, " Bad attribute retrived from bdii ");
+				g_set_error(&tmp_err, gfal2_get_core_quark(), EINVAL, " Bad attribute retrieved from bdii ");
 				gfal_mds_ldap.ldap_value_free_len(vals);
 				gfal_mds_ldap.ldap_memfree(a);
 				ret = -1;

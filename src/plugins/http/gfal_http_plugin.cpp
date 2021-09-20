@@ -19,6 +19,7 @@
  */
 
 #include "gfal_http_plugin.h"
+#include "gfal_http_plugin_token.h"
 #include "uri/gfal2_parsing.h"
 #include <cstdio>
 #include <cstring>
@@ -27,6 +28,8 @@
 #include <davix.hpp>
 #include <errno.h>
 #include <davix/utils/davix_gcloud_utils.hpp>
+#include <davix/utils/davix_cs3_utils.hpp>
+#include <exceptions/gfalcoreexception.hpp>
 
 using namespace Davix;
 
@@ -39,8 +42,7 @@ const char* gfal_http_get_name(void)
     return GFAL2_PLUGIN_VERSIONED("http", VERSION);;
 }
 
-// this is to understand if the active storage in TPC needs gridsite delegation
-// if the destination does not need tls we avoid it
+// The active storage in TPC needs gridsite delegation (avoid if not using TLS)
 static bool delegation_required(const Davix::Uri& uri)
 {
    bool needs_delegation = false;
@@ -65,49 +67,136 @@ static int get_corresponding_davix_log_level()
     return davix_log_level;
 }
 
-static bool isS3SignedURL(const Davix::Uri &url)
+static bool allowsBearerTokenRetrieve(const Davix::Uri& uri)
 {
-    if(url.queryParamExists("AWSAccessKeyId") && url.queryParamExists("Signature")) {
-    	return true;
-    }
-
-    if(url.queryParamExists("X-Amz-Credential") && url.queryParamExists("X-Amz-Signature")) {
-    	return true;
-    }
-
-    return false;
+    return (uri.getProtocol().rfind("https", 0) == 0) ||
+           (uri.getProtocol().rfind("davs", 0) == 0);
 }
 
-/// Token-based authorization.
-//  If this returns `true`, the RequestParams have been successfully
-//  configured to utilize a bearer token.  In such a case, no other
-//  authorization mechanism (such as user certs) should be used.
-static bool gfal_http_get_token(RequestParams & params,
-                                gfal2_context_t handle,
-                                const Davix::Uri &url,
-                                bool secondary_endpoint)
+static bool isS3SignedURL(const Davix::Uri& url)
 {
+    return (url.queryParamExists("AWSAccessKeyId") && url.queryParamExists("Signature")) ||
+           (url.queryParamExists("X-Amz-Credential") && url.queryParamExists("X-Amz-Signature"));
+}
 
-    if (isS3SignedURL(url)) {
-	return false;
+// Retrieve x509 certificate pair from credential mapping/config
+static bool gfal_http_get_x509_cert_pair(gfal2_context_t handle, const Davix::Uri& uri,
+                                         std::string& cert, std::string& key)
+{
+    bool certificate_pair = false;
+    GError* error = NULL;
+
+    // Extract certificate from credential map to give priority to user-set pair
+    gchar *cert_p = gfal2_cred_get(handle, GFAL_CRED_X509_CERT, uri.getString().c_str(), NULL, &error);
+    g_clear_error(&error);
+    gchar *key_p = gfal2_cred_get(handle, GFAL_CRED_X509_KEY, uri.getString().c_str(), NULL, &error);
+    g_clear_error(&error);
+
+    if (cert_p) {
+        cert.assign(cert_p);
+        key = (key_p != NULL) ? std::string(key_p) : cert;
+        certificate_pair = true;
     }
 
-    GError *error = NULL;
-    gchar *token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
-                                  url.getString().c_str(),
+    g_free(cert_p);
+    g_free(key_p);
+
+    return certificate_pair;
+}
+
+char* GfalHttpPluginData::retrieve_se_token(Davix::RequestParams& params, const Davix::Uri& uri,
+                                            bool write_access, unsigned validity)
+{
+    bool retrieve_token = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "RETRIEVE_BEARER_TOKEN", false);
+
+    if (!retrieve_token || !allowsBearerTokenRetrieve(uri)) {
+        return NULL;
+    }
+
+    TokenRetriever* retriever = token_retriever_chain.get();
+    while (retriever != NULL) {
+        try {
+            gfal_http_token_t http_token = retriever->retrieve_token(uri, params, write_access, validity);
+            char *token = strdup(http_token.token.c_str());
+            return token;
+        } catch (const Gfal::CoreException& e) {
+            gfal2_log(G_LOG_LEVEL_INFO, "(SEToken) Error during token retrieval: %s", e.what());
+            retriever = retriever->next();
+        }
+    }
+
+    gfal2_log(G_LOG_LEVEL_WARNING, "(SEToken) Could not retrieve any token for %s", uri.getString().c_str());
+    return NULL;
+}
+
+bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Uri& uri,
+                                   bool write_access, unsigned validity,
+                                   bool secondary_endpoint)
+{
+    if (isS3SignedURL(uri)) {
+	    return false;
+    }
+
+    GError* error = NULL;
+    gchar* token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
+                                  uri.getString().c_str(),
                                   NULL, &error);
-    g_clear_error(&error);  // for now, ignore the error messages.
+    g_clear_error(&error);
 
     if (!token) {
-        // if we don't have specific token for requested URL fallback
-        // to token stored for hostname (for TPC with macaroon tokens
-        // we need at least BEARER set for full source URL and hostname
-        // BEARER for destination because that one could be also used
-        // to create all missing parent directories)
+        // If we don't have specific token for requested URL fallback to token stored for hostname.
+        // TPC with macaroon tokens needs at least BEARER set for full source URL
+        // and hostname BEARER for destination (needed to create missing parent directories)
         token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
-                               url.getHost().c_str(),
+                               uri.getHost().c_str(),
                                NULL, &error);
-        g_clear_error(&error);  // for now, ignore the error messages.
+        g_clear_error(&error);
+    }
+
+    if (token) {
+        // Check token read/write access in TokenAccessMap
+        // TODO: Replace with inspection of access and validity in the future
+        TokenAccessMap::iterator it = token_map.find(token);
+        if (it != token_map.end()) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Found token in credential_map[%s] (access=%s) (needed=%s)",
+                      uri.getString().c_str(), it->second ? "write" : "read",
+                      write_access ? "write" : "read");
+
+            if (write_access && it->second != write_access) {
+                gfal2_log(G_LOG_LEVEL_INFO, "(SEToken) Invalidating token for path=%s because write access is missing",
+                          uri.getString().c_str());
+                token_map.erase(it);
+                g_free(token);
+                token = NULL;
+            }
+        } else {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Retrieved token not in token access map (assuming user-set)");
+        }
+    }
+
+    if (!token) {
+        // No token for neither the URL or the hostname
+        // Attempt to obtain SE-issued token
+        token = retrieve_se_token(params, uri, write_access, validity);
+
+        if (token) {
+            // Treat tokens as opaque. To handle validity and write access,
+            // cache the token in the TokenAccessMap together with write access and validity info
+
+            // Register token in the credentials map
+            gfal2_cred_t* token_cred = gfal2_cred_new(GFAL_CRED_BEARER, token);
+            if (gfal2_cred_set(handle, uri.getString().c_str(), token_cred, &error) < 0) {
+                gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Failed to set bearer token in credential_map[%s] due to error: %s",
+                          uri.getString().c_str(), error->message);
+                g_clear_error(&error);
+            } else {
+                gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Set bearer token in credential_map[%s] (access=%s) (validity=%u)",
+                          uri.getString().c_str(), write_access ? "write" : "read" , validity);
+                token_map[token] = write_access;
+            }
+
+            gfal2_cred_free(token_cred);
+        }
     }
 
     if (!token) {
@@ -117,51 +206,40 @@ static bool gfal_http_get_token(RequestParams & params,
     std::stringstream ss;
     ss << "Bearer " << token;
 
-    gfal2_log(G_LOG_LEVEL_DEBUG, "Using bearer token for HTTPS request authorization%s",
+    gfal2_log(G_LOG_LEVEL_INFO, "Using bearer token for HTTPS request authorization%s",
               secondary_endpoint ? " (passive TPC)" : "");
 
     if (secondary_endpoint) {
         params.addHeader("TransferHeaderAuthorization", ss.str());
-        // If we have a valid token for the destination, we explicitly disable credential
-        // delegation.
+        // Disable credential delegation if we have a valid token for the destination
         params.addHeader("Credential", "none");
     } else {
         params.addHeader("Authorization", ss.str());
     }
+
     g_free(token);
     return true;
 }
 
-/// Authn implementation
-static void gfal_http_get_ucert(const Davix::Uri &url, RequestParams & params, gfal2_context_t handle)
+void GfalHttpPluginData::get_certificate(Davix::RequestParams& params, const Davix::Uri& uri)
 {
-    std::string ukey, ucert;
-    DavixError* tmp_err = NULL;
-    GError *error = NULL;
+    DavixError* daverr = NULL;
+    std::string cert, key;
 
-    // Try user defined first
-    std::string url_string = url.getString();
+    bool certificate_pair = gfal_http_get_x509_cert_pair(handle, uri, cert, key);
 
-    gchar *ucert_p = gfal2_cred_get(handle, GFAL_CRED_X509_CERT, url_string.c_str(), NULL, &error);
-    g_clear_error(&error);
-    gchar *ukey_p = gfal2_cred_get(handle, GFAL_CRED_X509_KEY, url_string.c_str(), NULL, &error);
-    g_clear_error(&error);
-
-    if (ucert_p) {
+    if (certificate_pair) {
         gfal2_log(G_LOG_LEVEL_DEBUG, "Using client X509 for HTTPS session authorization");
-        ucert.assign(ucert_p);
-        ukey= (ukey_p != NULL)?(std::string(ukey_p)):(ucert);
 
         X509Credential cred;
-        if(cred.loadFromFilePEM(ukey,ucert,"", &tmp_err) <0){
-            gfal2_log(G_LOG_LEVEL_WARNING,
-                    "Could not load the user credentials: %s", tmp_err->getErrMsg().c_str());
-        }else{
+        if (cred.loadFromFilePEM(key, cert, "", &daverr) < 0 ) {
+            gfal2_log(G_LOG_LEVEL_WARNING, "Could not load the user credentials: %s",
+                      daverr->getErrMsg().c_str());
+            DavixError::clearError(&daverr);
+        } else {
             params.setClientCertX509(cred);
         }
     }
-    g_free(ucert_p);
-    g_free(ukey_p);
 }
 
 /// AWS authorization
@@ -174,15 +252,14 @@ static void gfal_http_get_aws_keys(gfal2_context_t handle, const std::string& gr
     *token         = (*token)      ? *token      : gfal2_get_opt_string(handle, group.c_str(), "TOKEN", NULL);
     *region        = (*region)     ? *region     : gfal2_get_opt_string(handle, group.c_str(), "REGION", NULL);
 
-    // For retrocompatibility
+    // For retro-compatibility
     if (!*access_key || !*secret_key) {
         *access_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_TOKEN", NULL);
         *secret_key = gfal2_get_opt_string(handle, group.c_str(), "ACCESS_TOKEN_SECRET", NULL);
     }
 }
 
-/// AWS authorization + parameters
-static void gfal_http_get_aws(RequestParams& params, gfal2_context_t handle, const Davix::Uri& uri)
+void GfalHttpPluginData::get_aws_params(Davix::RequestParams& params, const Davix::Uri& uri)
 {
     bool alternate_url;
     gchar *access_key = NULL, *secret_key = NULL, *token = NULL, *region = NULL;
@@ -254,7 +331,64 @@ static void gfal_http_get_aws(RequestParams& params, gfal2_context_t handle, con
     g_free(region);
 }
 
-static void gfal_http_get_gcloud(RequestParams & params, gfal2_context_t handle, const Davix::Uri& uri)
+/// Swift authorization
+static void gfal_http_get_swift_credentials(gfal2_context_t handle, const std::string& group,
+                                   gchar** os_token, gchar** os_project_id,
+                                   gchar** swift_account)
+{
+    *os_token         = (*os_token)      ? *os_token      : gfal2_get_opt_string(handle, group.c_str(), "OS_TOKEN", NULL);
+    *os_project_id    = (*os_project_id) ? *os_project_id : gfal2_get_opt_string(handle, group.c_str(), "OS_PROJECT_ID", NULL);
+    *swift_account    = (*swift_account) ? *swift_account : gfal2_get_opt_string(handle, group.c_str(), "SWIFT_ACCOUNT", NULL);
+}
+
+void GfalHttpPluginData::get_swift_params(Davix::RequestParams& params, const Davix::Uri& uri)
+{
+    gchar *os_token = NULL, *os_project_id = NULL, *swift_account = NULL;
+    bool token_set = false, project_id_set = false, swift_account_set = false;
+
+    std::list<std::string> group_labels;
+    std::string host = uri.getHost();
+
+    // Add SWIFT:HOST group label
+    std::string group_label = std::string("SWIFT:") + host;
+    std::transform(group_label.begin(), group_label.end(), group_label.begin(), ::toupper);
+    group_labels.push_back(group_label);
+
+    // ADD SWIFT group label
+    group_labels.push_back("SWIFT");
+
+    // Extract data from the config options
+    // Order: Most specific group --> most generic group
+    // Mechanism: Once a property is set, it will not be overwritten by later groups
+    std::list<std::string>::const_iterator it;
+    for (it = group_labels.begin(); it != group_labels.end(); it++) {
+        gfal_http_get_swift_credentials(handle, *it, &os_token, &os_project_id, &swift_account);
+
+        if (!token_set && os_token) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Setting OS token [%s]", it->c_str());
+            params.setOSToken(os_token);
+            token_set = true;
+        }
+
+        if (!project_id_set && os_project_id) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Setting OS project id [%s]", it->c_str());
+            params.setOSProjectID(os_project_id);
+            project_id_set = true;
+        }
+
+        if (!swift_account_set && swift_account) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Using Swift account %s [%s]", swift_account, it->c_str());
+            params.setSwiftAccount(swift_account);
+            swift_account_set = true;
+        }
+    }
+
+    g_free(os_token);
+    g_free(os_project_id);
+    g_free(swift_account);
+}
+
+void GfalHttpPluginData::get_gcloud_credentials(Davix::RequestParams& params, const Davix::Uri& uri)
 {
     gchar *gcloud_json_file, *gcloud_json_string;
     std::string group_label("GCLOUD");
@@ -262,69 +396,98 @@ static void gfal_http_get_gcloud(RequestParams & params, gfal2_context_t handle,
     gcloud_json_file = gfal2_get_opt_string(handle, group_label.c_str(), "JSON_AUTH_FILE", NULL);
     gcloud_json_string = gfal2_get_opt_string(handle, group_label.c_str(), "JSON_AUTH_STRING", NULL);
     gcloud::CredentialProvider provider;
+
     if (gcloud_json_file) {
         gfal2_log(G_LOG_LEVEL_DEBUG, "Using gcloud json credential file");
         params.setGcloudCredentials(provider.fromFile(std::string(gcloud_json_file)));
     } else if (gcloud_json_string) {
         gfal2_log(G_LOG_LEVEL_DEBUG, "Using gcloud json credential string");
-        params.setGcloudCredentials(provider.fromJSONString (std::string(gcloud_json_string)));
+        params.setGcloudCredentials(provider.fromJSONString(std::string(gcloud_json_string)));
     }
 
     g_free(gcloud_json_file);
     g_free(gcloud_json_string);
 }
 
-static void gfal_http_get_cred(RequestParams & params,
-                               gfal2_context_t handle,
-                               const Davix::Uri& uri,
-                               bool secondary_endpoint = false)
+void GfalHttpPluginData::get_reva_credentials(Davix::RequestParams &params, const Davix::Uri &uri, bool token_write_access)
+{   
+    // The authentication with Reva is yet to be properly designed.
+    // Nevertheless, there is a need to associate tokens to URLs given that a token issued for a destination must have write rights,
+    // whereas right now GFAL issues a `stat()` == `HEAD` request also to the destination without requiring write rights.
+    // To be further developed.
+
+    reva::CredentialProvider provider;
+    reva::Credentials creds = params.getRevaCredentials();
+    provider.updateCredentials(creds, uri.getString(), token_write_access);
+    params.setRevaCredentials(creds);
+}
+
+void GfalHttpPluginData::get_credentials(Davix::RequestParams& params, const Davix::Uri& uri,
+                                         bool token_write_access, unsigned token_validity,
+                                         bool secondary_endpoint)
 {
-    // We still setup GSI in case the storage endpoint tries to fall back to GridSite delegation.
-    // That does mean that we might contact the endpoint with both X509 and token auth -- but seems
-    // to be an acceptable compromise.
-    gfal_http_get_ucert(uri, params, handle);
+    // Setup GSI in case the storage endpoint tries to fall back to GridSite delegation.
+    // That does mean that we might contact the endpoint with both X509 and token auth,
+    // but seems to be an acceptable compromise
+    get_certificate(params, uri);
 
     // Explicit request for S3 or GCloud
     if (uri.getProtocol().compare(0, 2, "s3") == 0) {
-        gfal_http_get_aws(params, handle, uri);
+        get_aws_params(params, uri);
     } else if (uri.getProtocol().compare(0, 6, "gcloud") == 0) {
-        gfal_http_get_gcloud(params, handle, uri);
-    } // Use bearer token
-    else if (!gfal_http_get_token(params, handle, uri, secondary_endpoint)) {
+        get_gcloud_credentials(params, uri);
+    } else if (uri.getProtocol().compare(0, 5, "swift") == 0) {
+        get_swift_params(params, uri);
+    }else if (uri.getProtocol().compare(0, 3, "cs3") == 0) {
+        get_reva_credentials(params, uri, token_write_access);
+    }// Use bearer token (other authentication mechanism should be disabled)
+      // Not the case for the moment, as certificates are still used (but should be unset in the future)
+    else if (!get_token(params, uri, token_write_access, token_validity,
+                        secondary_endpoint)) {
         // Utilize AWS or GCLOUD tokens if no bearer token is available (to be reviewed)
-        gfal_http_get_aws(params, handle, uri);
-        gfal_http_get_gcloud(params, handle, uri);
+        get_aws_params(params, uri);
+        get_gcloud_credentials(params,uri);
+        get_swift_params(params, uri);
     }
 }
 
-static void gfal_http_get_params(RequestParams & params, gfal2_context_t handle, const Davix::Uri& uri)
+void GfalHttpPluginData::get_params_internal(Davix::RequestParams& params, const Davix::Uri& uri)
 {
+    if (uri.getProtocol().compare(0, 4, "http") == 0) {
+        params.setProtocol(Davix::RequestProtocol::Http);
+    } else if (uri.getProtocol().compare(0, 3, "dav") == 0) {
+        params.setProtocol(Davix::RequestProtocol::Webdav);
+    } else if (uri.getProtocol().compare(0, 2, "s3") == 0) {
+        params.setProtocol(Davix::RequestProtocol::AwsS3);
+    } else if (uri.getProtocol().compare(0, 6, "gcloud") == 0) {
+        params.setProtocol(Davix::RequestProtocol::Gcloud);
+    } else if (uri.getProtocol().compare(0, 5, "swift") == 0) {
+        params.setProtocol(Davix::RequestProtocol::Swift);
+    } else if (uri.getProtocol().compare(0, 3, "cs3") == 0) {
+        params.setProtocol(Davix::RequestProtocol::CS3);
+    }else {
+        params.setProtocol(Davix::RequestProtocol::Auto);
+    }
+
+    // Insecure flag
     gboolean insecure_mode = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "INSECURE", FALSE);
     if (insecure_mode) {
         params.setSSLCAcheck(false);
     }
 
-    if (uri.getProtocol().compare(0, 4, "http") == 0 )  {
-        params.setProtocol(Davix::RequestProtocol::Http);
-    }
-    else if (uri.getProtocol().compare(0, 3, "dav") == 0) {
-        params.setProtocol(Davix::RequestProtocol::Webdav);
-    }
-    else if (uri.getProtocol().compare(0, 2, "s3") == 0) {
-        params.setProtocol(Davix::RequestProtocol::AwsS3);
-    }
-    else if (uri.getProtocol().compare(0, 6, "gcloud") == 0) {
-        params.setProtocol(Davix::RequestProtocol::Gcloud);
-    }
-    else {
-        params.setProtocol(Davix::RequestProtocol::Auto);
-    }
     // Keep alive
     gboolean keep_alive = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "KEEP_ALIVE", TRUE);
     params.setKeepAlive(keep_alive);
 
     // Reset here the verbosity level
     davix_set_log_level(get_corresponding_davix_log_level());
+
+    // Reset sensitive scope mask
+    int davix_scope_mask = Davix::getLogScope() & ~(DAVIX_LOG_SSL | DAVIX_LOG_SENSITIVE);
+    if (gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "LOG_SENSITIVE", false)) {
+        davix_scope_mask |= (DAVIX_LOG_SSL | DAVIX_LOG_SENSITIVE);
+    }
+    Davix::setLogScope(davix_scope_mask);
 
     // Avoid retries
     params.setOperationRetry(0);
@@ -335,11 +498,9 @@ static void gfal_http_get_params(RequestParams & params, gfal2_context_t handle,
 
     std::ostringstream user_agent;
     if (agent) {
-        user_agent << agent << "/" << version << " " << "gfal2/" << gfal2_version();
+        user_agent << agent << "/" << version << " ";
     }
-    else {
-        user_agent << "gfal2/" << gfal2_version();
-    }
+    user_agent << "gfal2/" << gfal2_version();
     params.setUserAgent(user_agent.str());
 
     // Client information
@@ -369,25 +530,30 @@ static void gfal_http_get_params(RequestParams & params, gfal2_context_t handle,
     params.setOperationTimeout(&opTimeout);
 }
 
-void GfalHttpPluginData::get_tpc_params(bool push_mode,
-                                        Davix::RequestParams * req_params,
+void GfalHttpPluginData::get_tpc_params(Davix::RequestParams* req_params,
                                         const Davix::Uri& src_uri,
-                                        const Davix::Uri& dst_uri)
+                                        const Davix::Uri& dst_uri,
+                                        gfalt_params_t transfer_params,
+                                        bool push_mode)
 {
     *req_params = reference_params;
-
     bool do_delegation = false;
+
+    // Token validity
+    unsigned token_timeout = ((unsigned) (2 * gfalt_get_timeout(transfer_params, NULL)) / 60) + 10;
+
     if (push_mode) {
-        gfal_http_get_params(*req_params, handle, src_uri);
-        gfal_http_get_cred(*req_params, handle, src_uri);
-        gfal_http_get_cred(*req_params, handle, dst_uri, true);
+        get_params_internal(*req_params, src_uri);
+        get_credentials(*req_params, src_uri, false, token_timeout);
+        get_credentials(*req_params, dst_uri, true, token_timeout, true);
         do_delegation = delegation_required(dst_uri);
     } else {  // Pull mode
-        gfal_http_get_params(*req_params, handle, dst_uri);
-        gfal_http_get_cred(*req_params, handle, src_uri, true);
-        gfal_http_get_cred(*req_params, handle, dst_uri);
+        get_params_internal(*req_params, dst_uri);
+        get_credentials(*req_params, src_uri, false, token_timeout, true);
+        get_credentials(*req_params, dst_uri, true, token_timeout);
         do_delegation = delegation_required(src_uri);
     }
+
     // The TPC request should be explicit in terms of how the active endpoint should manage credentials,
     // as it can be ambiguous from the request (i.e., client X509 authenticated by Macaroon present or
     // Macaroon present at an endpoint that supports OIDC).
@@ -397,17 +563,16 @@ void GfalHttpPluginData::get_tpc_params(bool push_mode,
     if (do_delegation) {
         const HeaderVec &headers = req_params->getHeaders();
         bool set_credential = false;
-        for (HeaderVec::const_iterator iter = headers.begin();
-             iter != headers.end();
-             iter++)
-        {
+
+        for (HeaderVec::const_iterator iter = headers.begin(); iter != headers.end(); iter++) {
             if (!strcasecmp(iter->first.c_str(), "Credential")) {
                 set_credential = true;
             }
         }
+
         if (!set_credential) {
             req_params->addHeader("Credential", "gridsite");
-       }
+        }
     } else {
         req_params->addHeader("Credential", "none");
         req_params->addHeader("X-No-Delegate", "true");
@@ -416,12 +581,13 @@ void GfalHttpPluginData::get_tpc_params(bool push_mode,
 }
 
 void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
-                                    const Davix::Uri& uri)
+                                    const Davix::Uri& uri,
+                                    bool token_write_access)
 {
     *req_params = reference_params;
 
-    gfal_http_get_cred(*req_params, handle, uri);
-    gfal_http_get_params(*req_params, handle, uri);
+    get_params_internal(*req_params, uri);
+    get_credentials(*req_params, uri, token_write_access);
 }
 
 
@@ -444,19 +610,29 @@ static void log_davix2gfal(void* userdata, int msg_level, const char* msg)
 
 
 GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
-    context(), posix(&context), handle(handle), reference_params()
+    context(), posix(&context), handle(handle), reference_params(), token_map()
 {
     davix_set_log_handler(log_davix2gfal, NULL);
     int davix_level = get_corresponding_davix_log_level();
-
     int davix_config_level = gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", "LOG_LEVEL", 0);
+
     if (davix_config_level)
         davix_level = davix_config_level;
+
     davix_set_log_level(davix_level);
+    Davix::setLogScope(Davix::getLogScope() & ~(DAVIX_LOG_SSL | DAVIX_LOG_SENSITIVE));
 
     reference_params.setTransparentRedirectionSupport(true);
     reference_params.setUserAgent("gfal2::http");
     context.loadModule("grid");
+
+    // TODO: read token issuer value
+    // if (!issuer.empty()) {
+    //     token_retriever_chain.reset(new SciTokensRetriever(issuer));
+    //     token_retriever_chain->add(new MacaroonRetriever());
+    // }
+
+    token_retriever_chain.reset(new MacaroonRetriever());
 }
 
 
@@ -497,12 +673,15 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
         case GFAL_PLUGIN_UNLINK:
         case GFAL_PLUGIN_CHECKSUM:
         case GFAL_PLUGIN_RENAME:
+        case GFAL_PLUGIN_TOKEN:
             return (strncmp("http:", url, 5) == 0 || strncmp("https:", url, 6) == 0 ||
                  strncmp("dav:", url, 4) == 0 || strncmp("davs:", url, 5) == 0 ||
                  strncmp("s3:", url, 3) == 0 || strncmp("s3s:", url, 4) == 0 ||
                  strncmp("gcloud:", url, 7) == 0 || strncmp("gclouds:", url, 8) == 0 ||
+                 strncmp("swift:", url, 6) == 0 || strncmp("swifts:", url, 7) == 0 ||
                  strncmp("http+3rd:", url, 9) == 0 || strncmp("https+3rd:", url, 10) == 0 ||
-                 strncmp("dav+3rd:", url, 8) == 0 || strncmp("davs+3rd:", url, 9) == 0);
+                 strncmp("dav+3rd:", url, 8) == 0 || strncmp("davs+3rd:", url, 9) == 0 ||
+                 strncmp("cs3:", url, 4) == 0 || strncmp("cs3s:", url, 5) == 0);
       default:
         return false;
     }
@@ -510,17 +689,15 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
 
 gboolean gfal_should_fallback(int error_code)
 {
-
 	switch(error_code) {
 	    case ECANCELED:
-	    	return false;
-	default:
-	    return true;
-
+            return false;
+	    default:
+	        return true;
 	}
 }
 
-static int davix2errno(StatusCode::Code code)
+int davix2errno(StatusCode::Code code)
 {
     int errcode;
 
@@ -607,7 +784,7 @@ void davix2gliberr(const DavixError* daverr, GError** err)
     gchar *escaped_str = gfal2_utf8escape_string(str, str_len, NULL);
 
     gfal2_set_error(err, http_plugin_domain, davix2errno(daverr->getStatus()), __func__,
-              "%s", escaped_str);
+                    "%s", escaped_str);
 
     g_free(escaped_str);
 }
@@ -700,6 +877,9 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError
     http_plugin.check_qos_available_transitions = &gfal_http_check_qos_available_transitions;
     http_plugin.check_target_qos = &gfal_http_check_target_qos;
     http_plugin.change_object_qos = &gfal_http_change_object_qos;
+
+    // Token
+    http_plugin.token_retrieve = &gfal_http_token_retrieve;
 
     return http_plugin;
 }

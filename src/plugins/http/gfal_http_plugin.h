@@ -21,8 +21,12 @@
 #ifndef _GFAL_HTTP_PLUGIN_H
 #define _GFAL_HTTP_PLUGIN_H
 
+#include <map>
+
 #include <gfal_plugins_api.h>
 #include <davix.hpp>
+
+#include "gfal_http_plugin_token.h"
 
 #define HTTP_CONFIG_OP_TIMEOUT     "OPERATION_TIMEOUT"
 
@@ -34,17 +38,72 @@ public:
     Davix::DavPosix posix;
     gfal2_context_t handle;
 
-    // Setup the Davix request parameters for a given URL.
-    void get_params(Davix::RequestParams*, const Davix::Uri& uri);
+    // Setup the Davix request parameters for a given URL
+    // @param token_write_access flag to signal tokens with write access are needed
+    void get_params(Davix::RequestParams*, const Davix::Uri& uri,
+                    bool token_write_access = false);
 
     // Put together parameters for the TPC, which may depend on both URLs in the transfer
     // Further, the request headers depend on the transfer mode that will be used.
-    void get_tpc_params(bool push_mode, Davix::RequestParams*,
-                        const Davix::Uri& src_uri, const Davix::Uri& dst_uri);
+    void get_tpc_params(Davix::RequestParams*,
+                        const Davix::Uri& src_uri, const Davix::Uri& dst_uri,
+                        gfalt_params_t transfer_params,
+                        bool push_mode);
+
+    friend ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, const char* issuer,
+                                            gboolean write_access, unsigned validity, const char* const* activities,
+                                            char* buff, size_t s_buff, GError** err);
 
 private:
+    typedef std::map<std::string, bool> TokenAccessMap;
+    /// baseline Davix Request Parameters
     Davix::RequestParams reference_params;
+    /// map a token with read/write access flag
+    TokenAccessMap token_map;
+    /// token retriever object (can be chained)
+    std::unique_ptr<TokenRetriever> token_retriever_chain;
 
+    // Set up general request parameters
+    void get_params_internal(Davix::RequestParams& params, const Davix::Uri& uri);
+
+    // Obtain credentials for a given Uri and set those credentials in the Davix request parameters.
+    // @param token_write_access flag to signal tokens with write access are needed
+    // @param token_validity requested lifetime of the token in minutes
+    // @param secondary_endpoint signals whether this is the passive element in a TPC transfer
+    void get_credentials(Davix::RequestParams& params, const Davix::Uri& uri,
+                         bool token_write_access, unsigned token_validity = 180,
+                         bool secondary_endpoint = false);
+
+    // Obtain token credentials
+    // @param write_access flag to request write permission
+    // @param secondary_endpoint signals whether this is the passive element in a TPC transfer
+    // @param validity requested lifetime of the token in seconds
+    // @return true if a bearer for the provided Uri was set in the request params
+    bool get_token(Davix::RequestParams& params, const Davix::Uri& uri,
+                   bool write_access, unsigned validity,
+                   bool secondary_endpoint);
+
+    // Attempt to obtain a SE-issued token (by exchanging x509 certificate)
+    // @param write_access flag to request write permission
+    // @param validity lifetime of the token in seconds
+    // @return the SE-issued token or null
+    char* retrieve_se_token(Davix::RequestParams& params, const Davix::Uri& uri,
+                            bool write_access, unsigned validity);
+
+    // Obtain request parameters + credentials for an AWS endpoint
+    void get_aws_params(Davix::RequestParams& params, const Davix::Uri& uri);
+
+    // Obtain GCloud endpoint credentials
+    void get_gcloud_credentials(Davix::RequestParams& params, const Davix::Uri& uri);
+
+    // Obtain Reva endpoint credentials
+    void get_reva_credentials(Davix::RequestParams &params, const Davix::Uri &uri, bool token_write_access);
+    
+    // Obtain certificate credentials
+    void get_certificate(Davix::RequestParams& params, const Davix::Uri& uri);
+
+    // Obtain request parameters + credentials for a Swift endpoint
+    void get_swift_params(Davix::RequestParams &params, const Davix::Uri &uri);
 };
 
 const char* gfal_http_get_name(void);
@@ -60,6 +119,9 @@ void davix2gliberr(const Davix::DavixError* daverr, GError** err);
 
 // Initializes a GError from an HTTP code
 void http2gliberr(GError** err, int http, const char* func, const char* msg);
+
+// Returns errno from Davix StatusCode
+int davix2errno(Davix::StatusCode::Code code);
 
 // Removes +3rd from the url, if there
 void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);
@@ -122,5 +184,10 @@ ssize_t gfal_http_check_qos_available_transitions(plugin_handle plugin_data, con
 ssize_t gfal_http_check_target_qos(plugin_handle plugin_data, const char* url, char* buff, size_t s_buff, GError** err);
 int gfal_http_change_object_qos(plugin_handle plugin_data, const char* url, const char* target_qos, GError** err);
 bool http_cdmi_code_is_valid(int code);
+
+// Token
+ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, const char* issuer,
+                                 gboolean write_access, unsigned validity, const char* const* activities,
+                                 char* buff, size_t s_buff, GError** err);
 
 #endif //_GFAL_HTTP_PLUGIN_H

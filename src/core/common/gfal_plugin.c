@@ -312,7 +312,7 @@ int gfal_modules_resolve(gfal2_context_t handle, GError** err)
                 res = -1;
                 break;
             }
-            gfal2_log(G_LOG_LEVEL_DEBUG, " gfal_plugin loaded succesfully : %s", *p);
+            gfal2_log(G_LOG_LEVEL_DEBUG, " gfal_plugin loaded successfully : %s", *p);
             res = 0;
             p++;
         }
@@ -1021,7 +1021,7 @@ int gfal_plugin_bring_online_poll_listG(gfal2_context_t handle, int nbfiles, con
         }
         g_error_free(tmp_err);
     }
-    G_RETURN_ERR(resu, tmp_err, errors);
+    return resu;
 }
 
 
@@ -1046,7 +1046,7 @@ int gfal_plugin_release_file_listG(gfal2_context_t handle, int nbfiles, const ch
         }
         g_error_free(tmp_err);
     }
-    G_RETURN_ERR(resu, tmp_err, errors);
+    return resu;
 }
 
 
@@ -1136,5 +1136,19 @@ int gfal_plugin_archive_poll_listG(gfal2_context_t handle, int nbfiles, const ch
         }
         g_error_free(tmp_err);
     }
-    G_RETURN_ERR(resu, tmp_err, errors);
+    return resu;
+}
+
+ssize_t gfal_plugin_token_retrieveG(gfal2_context_t handle, const char* url, const char* issuer,
+                                    gboolean write_access, unsigned validity, const char* const* activities,
+                                    char* buff, size_t s_buff, GError** err)
+{
+    GError* tmp_err = NULL;
+    ssize_t resu = -1;
+    gfal_plugin_interface* p = gfal_find_plugin(handle, url, GFAL_PLUGIN_TOKEN, &tmp_err);
+
+    if (p)
+        resu = p->token_retrieve(gfal_get_plugin_handle(p), url, issuer,
+                                 write_access, validity, activities, buff, s_buff, err);
+    G_RETURN_ERR(resu, tmp_err, err);
 }
