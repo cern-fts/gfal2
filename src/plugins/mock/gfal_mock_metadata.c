@@ -160,7 +160,9 @@ ssize_t gfal_mock_getxattrG(plugin_handle plugin_data, const char* url, const ch
         (strncmp(key, GFAL_XATTR_SPACETOKEN, sizeof(GFAL_XATTR_SPACETOKEN)) == 0)) {
         gfal_plugin_mock_get_value(url, key, arg_buffer, sizeof(arg_buffer));
         g_strlcpy(buff, arg_buffer, s_buff);
-    } else {
+    }
+
+    if (arg_buffer[0] == '\0') {
         emsg_size = 26 + strlen(key);
         emsg =  malloc(emsg_size);
         snprintf(emsg, emsg_size, "Failed to retrieve xattr %s", key);
