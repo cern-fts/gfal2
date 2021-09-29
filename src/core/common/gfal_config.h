@@ -60,7 +60,7 @@ extern "C"
 
 /*!
     \addtogroup config_group
-	@{
+    @{
 */
 
 
@@ -319,7 +319,7 @@ gint gfal2_get_client_info_value(gfal2_context_t handle, const char* key, const 
 char* gfal2_get_client_info_string(gfal2_context_t handle);
 
 /**
-	@}
+    @}
     End of the FILE group
 */
 

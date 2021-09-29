@@ -69,7 +69,7 @@ extern "C"
 
 /*!
     \addtogroup file_group
-	@{
+    @{
 */
 
 /**
@@ -701,7 +701,7 @@ ssize_t gfal2_pread(gfal2_context_t context, int fd, void * buffer, size_t count
 ssize_t gfal2_pwrite(gfal2_context_t context, int fd, const void * buffer, size_t count, off_t offset, GError ** err);
 
 /**
-	@}
+    @}
     End of the FILE group
 */
 #ifdef __cplusplus
