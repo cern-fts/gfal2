@@ -344,7 +344,7 @@ std::string MacaroonRetriever::perform_request(HttpRequest& request, std::string
         std::stringstream errmsg;
         errmsg << description << " response exceeds maximum size: " << response_size
                << " bytes (max size = " << MacaroonRetriever::RESPONSE_MAX_SIZE << ")";
-        throw Gfal::CoreException(http_plugin_domain, davix2errno(err->getStatus()), errmsg.str());
+        throw Gfal::CoreException(http_plugin_domain, EINVAL, errmsg.str());
     }
 
     // StoRM has an interesting bug where an unknown/unhandled POST is treated like a corresponding GET,
@@ -360,9 +360,9 @@ std::string MacaroonRetriever::perform_request(HttpRequest& request, std::string
 
     if (segment_size >= MacaroonRetriever::RESPONSE_MAX_SIZE) {
         std::stringstream errmsg;
-        errmsg << description << " response exceeds maximum size: " << response_size
+        errmsg << description << " response exceeds maximum size: " << segment_size
                << " bytes (max size = " << MacaroonRetriever::RESPONSE_MAX_SIZE << ")";
-        throw Gfal::CoreException(http_plugin_domain, davix2errno(err->getStatus()), errmsg.str());
+        throw Gfal::CoreException(http_plugin_domain, EINVAL, errmsg.str());
     }
 
     if (request.getRequestCode() != 200)
