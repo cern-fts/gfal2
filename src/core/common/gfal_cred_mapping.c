@@ -117,6 +117,12 @@ char *gfal2_cred_get(gfal2_context_t handle, const char *type, const char *url, 
     for (item = g_list_first(handle->cred_mapping); item != NULL; item = g_list_next(item)) {
         gfal2_cred_node_t *node = item->data;
         if (strcmp(node->cred->type, type) == 0 && strncmp(node->url_prefix, url, node->prefix_len) == 0) {
+            // Prefix must match a directory in the target URL
+            if (node->prefix_len < strlen(url) &&
+                (url[node->prefix_len - 1] != '/' && url[node->prefix_len] != '/')) {
+                continue;
+            }
+
             if (baseurl) {
                 *baseurl = (char const*)(node->url_prefix);
             }
