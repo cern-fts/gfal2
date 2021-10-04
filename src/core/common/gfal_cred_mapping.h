@@ -97,6 +97,16 @@ int gfal2_cred_set(gfal2_context_t handle, const char *url_prefix, const gfal2_c
 char *gfal2_cred_get(gfal2_context_t handle, const char *type, const char *url, char const** baseurl, GError **error);
 
 /**
+ * Remove the credential for a given type and url
+ * @param handle        The gfal2 context
+ * @param type          Credential type
+ * @param url           Full URL. Only exact matching URL will be deleted
+ * @param error         In case of error
+ * @return              0 on success, -1 on error
+ */
+int gfal2_cred_del(gfal2_context_t handle, const char *type, const char *url, GError **error);
+
+/**
  * Remove all loaded credentials
  * @param handle        The gfal2 context
  * @param error         In case of error

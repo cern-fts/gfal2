@@ -140,6 +140,23 @@ char *gfal2_cred_get(gfal2_context_t handle, const char *type, const char *url, 
 }
 
 
+int gfal2_cred_del(gfal2_context_t handle, const char *type, const char *url, GError **error)
+{
+    GList *item;
+
+    for (item = g_list_first(handle->cred_mapping); item != NULL; item = g_list_next(item)) {
+        gfal2_cred_node_t *node = item->data;
+        if ((strcmp(node->cred->type, type) == 0) && (node->prefix_len == strlen(url)) &&
+            (strcmp(node->url_prefix, url) == 0)) {
+            node_free(node);
+            handle->cred_mapping = g_list_delete_link(handle->cred_mapping, item);
+            return 0;
+        }
+    }
+
+    return -1;
+}
+
 int gfal2_cred_clean(gfal2_context_t handle, GError **error)
 {
     g_list_free_full(handle->cred_mapping, node_free);
