@@ -138,9 +138,10 @@ bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Ur
     }
 
     GError* error = NULL;
+    const char* token_path = NULL;
     gchar* token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
                                   uri.getString().c_str(),
-                                  NULL, &error);
+                                  &token_path, &error);
     g_clear_error(&error);
 
     if (!token) {
@@ -149,7 +150,7 @@ bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Ur
         // and hostname BEARER for destination (needed to create missing parent directories)
         token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
                                uri.getHost().c_str(),
-                               NULL, &error);
+                               &token_path, &error);
         g_clear_error(&error);
     }
 
@@ -159,18 +160,19 @@ bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Ur
         TokenAccessMap::iterator it = token_map.find(token);
         if (it != token_map.end()) {
             gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Found token in credential_map[%s] (access=%s) (needed=%s)",
-                      uri.getString().c_str(), it->second ? "write" : "read",
-                      write_access ? "write" : "read");
+                      token_path, it->second ? "write" : "read", write_access ? "write" : "read");
 
             if (write_access && it->second != write_access) {
                 gfal2_log(G_LOG_LEVEL_INFO, "(SEToken) Invalidating token for path=%s because write access is missing",
-                          uri.getString().c_str());
+                          token_path);
+                gfal2_cred_del(handle, GFAL_CRED_BEARER, token_path, &error);
                 token_map.erase(it);
                 g_free(token);
                 token = NULL;
             }
         } else {
-            gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Retrieved token not in token access map (assuming user-set)");
+            gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Retrieved token not in token access map (path=%s) (assuming user-set)",
+                      token_path);
         }
     }
 
