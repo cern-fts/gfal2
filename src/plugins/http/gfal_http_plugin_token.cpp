@@ -429,13 +429,12 @@ std::vector<std::string> MacaroonRetriever::_activities(bool write_access, const
 
     // Construct activities based on read/write flag
     v_activities.emplace_back("LIST");
+    v_activities.emplace_back("DOWNLOAD");
 
     if (write_access) {
         v_activities.emplace_back("MANAGE");
         v_activities.emplace_back("UPLOAD");
         v_activities.emplace_back("DELETE");
-    } else {
-        v_activities.emplace_back("DOWNLOAD");
     }
 
     return v_activities;
