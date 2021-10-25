@@ -22,19 +22,23 @@ class CredTest: public testing::Test {
 protected:
     gfal2_context_t context;
     gfal2_cred_t *x509, *user, *x509_2;
+    gfal2_cred_t *token, *token_2;
 
 public:
     CredTest() {
         x509 = gfal2_cred_new(GFAL_CRED_X509_CERT, "ABCDE");
         x509_2 = gfal2_cred_new(GFAL_CRED_X509_CERT, "12345");
         user = gfal2_cred_new(GFAL_CRED_USER, "user");
-
+        token = gfal2_cred_new(GFAL_CRED_BEARER, "mytoken");
+        token_2 = gfal2_cred_new(GFAL_CRED_BEARER, "mytoken_2");
     }
 
     virtual ~CredTest() {
         gfal2_cred_free(x509);
         gfal2_cred_free(x509_2);
         gfal2_cred_free(user);
+        gfal2_cred_free(token);
+        gfal2_cred_free(token_2);
     }
 
     virtual void SetUp() {
@@ -171,4 +175,86 @@ TEST_F(CredTest, copy)
     g_free(resp);
 
     gfal2_context_free(new_context);
+}
+
+TEST_F(CredTest, set_get_del)
+{
+    const char* short_base = "https://host.com/path";
+    const char* long_base = "https://host.com/path/subpath";
+    const char* full_path = "https://host.com/path/subpath/file";
+    GError* error = NULL;
+
+    int ret = gfal2_cred_set(context, short_base, token, &error);
+    ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    ret = gfal2_cred_set(context, long_base, token_2, &error);
+    ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    const char* baseurl = NULL;
+    char* resp = gfal2_cred_get(context, GFAL_CRED_BEARER, full_path, &baseurl, &error);
+    ASSERT_PRED_FORMAT2(AssertGfalSuccess, 0, error);
+    ASSERT_NE(resp, (void*) NULL);
+    ASSERT_STREQ(resp, token_2->value);
+    ASSERT_STREQ(long_base, baseurl);
+    g_free(resp);
+
+    ret = gfal2_cred_del(context, GFAL_CRED_BEARER, long_base, &error);
+    ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    resp = gfal2_cred_get(context, GFAL_CRED_BEARER, full_path, &baseurl, &error);
+    ASSERT_PRED_FORMAT2(AssertGfalSuccess, 0, error);
+    ASSERT_NE(resp, (void*) NULL);
+    ASSERT_STREQ(resp, token->value);
+    ASSERT_STREQ(short_base, baseurl);
+    g_free(resp);
+
+    ret = gfal2_cred_del(context, GFAL_CRED_BEARER, long_base, &error);
+    ASSERT_EQ(ret, -1);
+
+    ret = gfal2_cred_del(context, GFAL_CRED_BEARER, full_path, &error);
+    ASSERT_EQ(ret, -1);
+}
+
+TEST_F(CredTest, set_get_prefix)
+{
+    const char* dir_base = "https://host.com/path";
+    const char* dir_full_base = "https://host.com/path/";
+    const char* file_base = "https://host.com/path/file";
+    const char* full_path = "https://host.com/path/file.extension";
+    GError* error = NULL;
+
+    int ret = gfal2_cred_set(context, dir_base, token, &error);
+    ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    ret = gfal2_cred_set(context, dir_full_base, token_2, &error);
+    ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    ret = gfal2_cred_set(context, file_base, token_2, &error);
+    ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    const char* baseurl = NULL;
+    char* resp = gfal2_cred_get(context, GFAL_CRED_BEARER, full_path, &baseurl, &error);
+    ASSERT_PRED_FORMAT2(AssertGfalSuccess, 0, error);
+    ASSERT_NE(resp, (void*) NULL);
+    ASSERT_STREQ(resp, token_2->value);
+    ASSERT_STREQ(dir_full_base, baseurl);
+    g_free(resp);
+
+    ret = gfal2_cred_del(context, GFAL_CRED_BEARER, dir_full_base, &error);
+    ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    resp = gfal2_cred_get(context, GFAL_CRED_BEARER, full_path, &baseurl, &error);
+    ASSERT_PRED_FORMAT2(AssertGfalSuccess, 0, error);
+    ASSERT_NE(resp, (void*) NULL);
+    ASSERT_STREQ(resp, token->value);
+    ASSERT_STREQ(dir_base, baseurl);
+    g_free(resp);
+
+    ret = gfal2_cred_del(context, GFAL_CRED_BEARER, dir_base, &error);
+    ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
+
+    resp = gfal2_cred_get(context, GFAL_CRED_BEARER, full_path, &baseurl, &error);
+    ASSERT_PRED_FORMAT2(AssertGfalSuccess, 0, error);
+    ASSERT_EQ(resp, (void*) NULL);
+    ASSERT_STREQ("", baseurl);
 }
