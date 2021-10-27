@@ -25,7 +25,6 @@
 #include "gfal_http_plugin.h"
 
 
-
 int gfal_http_stat(plugin_handle plugin_data, const char* url,
                    struct stat* buf, GError** err)
 {
@@ -68,17 +67,14 @@ int gfal_http_stat(plugin_handle plugin_data, const char* url,
 }
 
 
-
-int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, gboolean rec_flag, GError** err)
+static int gfal_http_mkdir(plugin_handle plugin_data, const char* url, mode_t mode, GError** err)
 {
-    char stripped_url[GFAL_URL_MAX_LEN];
-    strip_3rd_from_url(url, stripped_url, sizeof(stripped_url));
-
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
     Davix::RequestParams req_params;
-    davix->get_params(&req_params, Davix::Uri(stripped_url), true);
-    if (davix->posix.mkdir(&req_params, stripped_url, mode, &daverr) != 0) {
+    davix->get_params(&req_params, Davix::Uri(url), true);
+
+    if (davix->posix.mkdir(&req_params, url, mode, &daverr) != 0) {
         davix2gliberr(daverr, err);
         Davix::DavixError::clearError(&daverr);
         return -1;
@@ -86,6 +82,126 @@ int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, g
     return 0;
 }
 
+
+int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, gboolean rec_flag, GError** err)
+{
+    char stripped_url[GFAL_URL_MAX_LEN];
+    strip_3rd_from_url(url, stripped_url, sizeof(stripped_url));
+
+    // For SE-tokens and MKCOL, certain storage implementations expect a token for the parent path,
+    // whereas others work with the path. Adding this consideration in Gfal2 is rather complicated,
+    // especially as the recursive directory creation is handled by a Gfal2 top-level function.
+
+    // One alternative solution is to handle the recursive directory creation here and
+    // obtain a token for the full host.
+
+    int ret = gfal_http_mkdir(plugin_data, stripped_url, mode, err);
+
+    if (!rec_flag || *err == NULL) {
+        return ret;
+    }
+
+    if ((*err)->code == ENOENT) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Executing HTTP step-by-step recursive mkdir for %s", url);
+        std::stack<std::string> stack_url;
+        std::string surl(stripped_url);
+        Davix::Uri uri(surl);
+        GError* token_err = NULL;
+        char token[2048];
+
+        // Obtain SE-token for the host
+        std::string host = uri.getProtocol() + "://" + uri.getHost();
+
+        if (uri.getPort()) {
+            host += ":" + std::to_string(uri.getPort());
+        }
+
+        // DPM workaround
+        if (uri.getPath().find("/dpm/") == 0) {
+            host += "/dpm/";
+        } else {
+            host += "/";
+        }
+
+        gfal_http_token_retrieve(plugin_data, host.c_str(), "", true, 60, NULL, token, sizeof(token), &token_err);
+
+        if (token_err) {
+            gfal2_log(G_LOG_LEVEL_ERROR, "Error during HTTP step-by-step recursive mkdir: failed to retrieve token for host=%s errmsg=%s", host.c_str(), token_err->message);
+            gfal2_set_error(err, http_plugin_domain, token_err->code, __func__, "%s", token_err->message);
+            g_clear_error(&token_err);
+            return -1;
+        }
+
+        // Save token in the credentials map
+        GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
+        gfal2_cred_t* cred = gfal2_cred_new(GFAL_CRED_BEARER, token);
+
+        if (gfal2_cred_set(davix->handle, host.c_str(), cred, &token_err)) {
+            gfal2_log(G_LOG_LEVEL_ERROR, "Error during HTTP step-by-step recursive mkdir: failed to store token for host=%s errmsg=%s", host.c_str(), token_err->message);
+            gfal2_set_error(err, http_plugin_domain, token_err->code, __func__, "%s", token_err->message);
+            g_clear_error(&token_err);
+        }
+
+        // Remove token for original path from the credentials map
+        gfal2_cred_del(davix->handle, GFAL_CRED_BEARER, surl.c_str(), &token_err);
+        g_clear_error(&token_err);
+
+        while ((*err) && (*err)->code == ENOENT) {
+            stack_url.push(surl);
+            g_clear_error(err);
+
+            // Remove trailing '/'
+            while (surl.back() == '/') {
+                surl.pop_back();
+            }
+
+            // Find parent directory
+            size_t pos = surl.rfind('/');
+
+            if (pos != std::string::npos) {
+                surl.erase(pos);
+                ret = gfal_http_mkdir(plugin_data, surl.c_str(), mode, err);
+
+                if (ret == 0) {
+                    gfal2_log(G_LOG_LEVEL_DEBUG, "HTTP step-by-step mkdir created directory %s", surl.c_str());
+                }
+            }
+        }
+
+        // Directory might have been created by a separate process
+        if ((*err) && (*err)->code == EEXIST) {
+            g_clear_error(err);
+        }
+
+        if ((*err) == NULL) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "HTTP step-by-step mkdir start from stack root %s", surl.c_str());
+            ret = 0;
+
+            while (!stack_url.empty() && ret == 0) {
+                const char* current_url = stack_url.top().c_str();
+                ret = gfal_http_mkdir(plugin_data, current_url, mode, err);
+
+                if (ret == 0) {
+                    gfal2_log(G_LOG_LEVEL_DEBUG, "HTTP step-by-step mkdir created directory %s", current_url);
+                } else if ((*err) && (*err)->code == EEXIST) {
+                    g_clear_error(err);
+                    ret = 0;
+                }
+
+                stack_url.pop();
+            }
+        }
+
+        // Remove host token from the credentials map
+        gfal2_cred_del(davix->handle, GFAL_CRED_BEARER, host.c_str(), &token_err);
+        g_clear_error(&token_err);
+    } else if ((*err)->code == EEXIST) {
+        g_clear_error(err);
+        ret = 0;
+    }
+
+    return ret;
+}
 
 
 int gfal_http_unlinkG(plugin_handle plugin_data, const char* url, GError** err)
@@ -107,7 +223,6 @@ int gfal_http_unlinkG(plugin_handle plugin_data, const char* url, GError** err)
     }
     return 0;
 }
-
 
 
 int gfal_http_rmdirG(plugin_handle plugin_data, const char* url, GError** err)
