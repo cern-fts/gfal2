@@ -109,24 +109,16 @@ int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, g
         GError* token_err = NULL;
         char token[2048];
 
-        // Obtain SE-token for the host
-        std::string host = uri.getProtocol() + "://" + uri.getHost();
+        // Obtain SE-token with mkdir permissions for the full path
+        // Benefit from the fact that more specific file path tokens are allowed to create included directories
+        std::string fictive_surl = surl + "/gfal2_mkdir_workaround.fictive";
 
-        if (uri.getPort()) {
-            host += ":" + std::to_string(uri.getPort());
-        }
-
-        // DPM workaround
-        if (uri.getPath().find("/dpm/") == 0) {
-            host += "/dpm/";
-        } else {
-            host += "/";
-        }
-
-        gfal_http_token_retrieve(plugin_data, host.c_str(), "", true, 60, NULL, token, sizeof(token), &token_err);
+        gfal_http_token_retrieve(plugin_data, fictive_surl.c_str(), "", true, 60, NULL, token, sizeof(token), &token_err);
 
         if (token_err) {
-            gfal2_log(G_LOG_LEVEL_ERROR, "Error during HTTP step-by-step recursive mkdir: failed to retrieve token for host=%s errmsg=%s", host.c_str(), token_err->message);
+            gfal2_log(G_LOG_LEVEL_ERROR,
+                      "Error during HTTP step-by-step recursive mkdir: failed to retrieve token for url=%s errmsg=%s",
+                      fictive_surl.c_str(), token_err->message);
             gfal2_set_error(err, http_plugin_domain, token_err->code, __func__, "%s", token_err->message);
             g_clear_error(&token_err);
             return -1;
@@ -136,8 +128,10 @@ int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, g
         GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
         gfal2_cred_t* cred = gfal2_cred_new(GFAL_CRED_BEARER, token);
 
-        if (gfal2_cred_set(davix->handle, host.c_str(), cred, &token_err)) {
-            gfal2_log(G_LOG_LEVEL_ERROR, "Error during HTTP step-by-step recursive mkdir: failed to store token for host=%s errmsg=%s", host.c_str(), token_err->message);
+        if (gfal2_cred_set(davix->handle, uri.getHost().c_str(), cred, &token_err)) {
+            gfal2_log(G_LOG_LEVEL_ERROR,
+                      "Error during HTTP step-by-step recursive mkdir: failed to store token for host=%s errmsg=%s",
+                      uri.getHost().c_str(), token_err->message);
             gfal2_set_error(err, http_plugin_domain, token_err->code, __func__, "%s", token_err->message);
             g_clear_error(&token_err);
         }
@@ -193,7 +187,7 @@ int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, g
         }
 
         // Remove host token from the credentials map
-        gfal2_cred_del(davix->handle, GFAL_CRED_BEARER, host.c_str(), &token_err);
+        gfal2_cred_del(davix->handle, GFAL_CRED_BEARER, uri.getHost().c_str(), &token_err);
         g_clear_error(&token_err);
     } else if ((*err)->code == EEXIST) {
         g_clear_error(err);
