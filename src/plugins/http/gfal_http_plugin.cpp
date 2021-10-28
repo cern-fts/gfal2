@@ -104,10 +104,87 @@ static bool gfal_http_get_x509_cert_pair(gfal2_context_t handle, const Davix::Ur
     return certificate_pair;
 }
 
-char* GfalHttpPluginData::retrieve_se_token(Davix::RequestParams& params, const Davix::Uri& uri,
-                                            bool write_access, unsigned validity)
+char* GfalHttpPluginData::find_se_token(const Davix::Uri& uri, bool write_access, bool extended_search)
+{
+    const char* token_path = NULL;
+    GError* error = NULL;
+
+    if (!allowsBearerTokenRetrieve(uri)) {
+        return NULL;
+    }
+
+    // Helper function to find a token in the Gfal HTTP internal token map
+    auto find_in_token_map = [&](const char* token) -> TokenAccessMap::iterator {
+        auto it = token_map.find(token);
+
+        if (it == token_map.end()) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Retrieved token not in token access map (path=%s) (assuming user-set)",
+                      token_path);
+        } else {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Found token in credential_map[%s] (access=%s) (needed=%s)",
+                      token_path, it->second ? "write" : "read", write_access ? "write" : "read");
+        }
+
+        return it;
+    };
+
+    std::string search_url = uri.getString();
+    char* token = NULL;
+
+    if (extended_search) {
+        token = gfal2_cred_get_reverse(handle, GFAL_CRED_BEARER, uri.getString().c_str(), &token_path, &error);
+        g_clear_error(&error);
+
+        if (token) {
+            auto pos = find_in_token_map(token);
+
+            if (pos != token_map.end() && (write_access && pos->second != write_access)) {
+                g_free(token);
+                token = NULL;
+            }
+        }
+    }
+
+    while (!search_url.empty() && !token) {
+        token = gfal2_cred_get(handle, GFAL_CRED_BEARER, search_url.c_str(), &token_path, &error);
+        g_clear_error(&error);
+
+        if (!token) {
+            // Search token for the full host (backwards compatibility with FTS)
+            token = gfal2_cred_get(handle, GFAL_CRED_BEARER, uri.getHost().c_str(), &token_path, &error);
+            g_clear_error(&error);
+        }
+
+        // No token found, end search
+        if (!token) {
+            break;
+        }
+
+        if (token) {
+            auto pos = find_in_token_map(token);
+
+            if (pos == token_map.end()) {
+                return token;
+            }
+
+            if (write_access && pos->second != write_access) {
+                search_url = *token_path;
+                search_url.pop_back();
+                g_free(token);
+                token = NULL;
+            }
+        }
+    }
+
+    return token;
+}
+
+char* GfalHttpPluginData::retrieve_and_store_se_token(Davix::RequestParams& params, const Davix::Uri& uri,
+                                                            bool write_access, unsigned validity)
 {
     bool retrieve_token = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "RETRIEVE_BEARER_TOKEN", false);
+    GError* error = NULL;
+    char* token = NULL;
 
     if (!retrieve_token || !allowsBearerTokenRetrieve(uri)) {
         return NULL;
@@ -117,88 +194,50 @@ char* GfalHttpPluginData::retrieve_se_token(Davix::RequestParams& params, const 
     while (retriever != NULL) {
         try {
             gfal_http_token_t http_token = retriever->retrieve_token(uri, params, write_access, validity);
-            char *token = strdup(http_token.token.c_str());
-            return token;
+            token = strdup(http_token.token.c_str());
+            break;
         } catch (const Gfal::CoreException& e) {
             gfal2_log(G_LOG_LEVEL_INFO, "(SEToken) Error during token retrieval: %s", e.what());
             retriever = retriever->next();
         }
     }
 
-    gfal2_log(G_LOG_LEVEL_WARNING, "(SEToken) Could not retrieve any token for %s", uri.getString().c_str());
-    return NULL;
+    if (!token) {
+        gfal2_log(G_LOG_LEVEL_WARNING, "(SEToken) Could not retrieve any token for %s", uri.getString().c_str());
+        return NULL;
+    }
+
+    // Tokens are treated as opaque, therefor they are cached in the TokenAccessMap
+    // together with write access and validity info
+    gfal2_cred_t* token_cred = gfal2_cred_new(GFAL_CRED_BEARER, token);
+
+    if (gfal2_cred_set(handle, uri.getString().c_str(), token_cred, &error) < 0) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Failed to set bearer token in credential_map[%s] due to error: %s",
+                  uri.getString().c_str(), error->message);
+        g_clear_error(&error);
+    } else {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Set bearer token in credential_map[%s] (access=%s) (validity=%u)",
+                  uri.getString().c_str(), write_access ? "write" : "read" , validity);
+        token_map[token] = write_access;
+    }
+
+    gfal2_cred_free(token_cred);
+    return token;
 }
 
 bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Uri& uri,
-                                   bool write_access, unsigned validity,
-                                   bool secondary_endpoint)
+                                   bool write_access, bool extended_search,
+                                   unsigned validity, bool secondary_endpoint)
 {
     if (isS3SignedURL(uri)) {
 	    return false;
     }
 
-    GError* error = NULL;
-    const char* token_path = NULL;
-    gchar* token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
-                                  uri.getString().c_str(),
-                                  &token_path, &error);
-    g_clear_error(&error);
+    gchar* token = find_se_token(uri, write_access, extended_search);
 
     if (!token) {
-        // If we don't have specific token for requested URL fallback to token stored for hostname.
-        // TPC with macaroon tokens needs at least BEARER set for full source URL
-        // and hostname BEARER for destination (needed to create missing parent directories)
-        token = gfal2_cred_get(handle, GFAL_CRED_BEARER,
-                               uri.getHost().c_str(),
-                               &token_path, &error);
-        g_clear_error(&error);
-    }
-
-    if (token) {
-        // Check token read/write access in TokenAccessMap
-        // TODO: Replace with inspection of access and validity in the future
-        TokenAccessMap::iterator it = token_map.find(token);
-        if (it != token_map.end()) {
-            gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Found token in credential_map[%s] (access=%s) (needed=%s)",
-                      token_path, it->second ? "write" : "read", write_access ? "write" : "read");
-
-            if (write_access && it->second != write_access) {
-                gfal2_log(G_LOG_LEVEL_INFO, "(SEToken) Invalidating token for path=%s because write access is missing",
-                          token_path);
-                gfal2_cred_del(handle, GFAL_CRED_BEARER, token_path, &error);
-                token_map.erase(it);
-                g_free(token);
-                token = NULL;
-            }
-        } else {
-            gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Retrieved token not in token access map (path=%s) (assuming user-set)",
-                      token_path);
-        }
-    }
-
-    if (!token) {
-        // No token for neither the URL or the hostname
         // Attempt to obtain SE-issued token
-        token = retrieve_se_token(params, uri, write_access, validity);
-
-        if (token) {
-            // Treat tokens as opaque. To handle validity and write access,
-            // cache the token in the TokenAccessMap together with write access and validity info
-
-            // Register token in the credentials map
-            gfal2_cred_t* token_cred = gfal2_cred_new(GFAL_CRED_BEARER, token);
-            if (gfal2_cred_set(handle, uri.getString().c_str(), token_cred, &error) < 0) {
-                gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Failed to set bearer token in credential_map[%s] due to error: %s",
-                          uri.getString().c_str(), error->message);
-                g_clear_error(&error);
-            } else {
-                gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Set bearer token in credential_map[%s] (access=%s) (validity=%u)",
-                          uri.getString().c_str(), write_access ? "write" : "read" , validity);
-                token_map[token] = write_access;
-            }
-
-            gfal2_cred_free(token_cred);
-        }
+        token = retrieve_and_store_se_token(params, uri, write_access, validity);
     }
 
     if (!token) {
@@ -425,8 +464,8 @@ void GfalHttpPluginData::get_reva_credentials(Davix::RequestParams &params, cons
 }
 
 void GfalHttpPluginData::get_credentials(Davix::RequestParams& params, const Davix::Uri& uri,
-                                         bool token_write_access, unsigned token_validity,
-                                         bool secondary_endpoint)
+                                         bool token_write_access, bool token_extended_search,
+                                         unsigned token_validity, bool secondary_endpoint)
 {
     // Setup GSI in case the storage endpoint tries to fall back to GridSite delegation.
     // That does mean that we might contact the endpoint with both X509 and token auth,
@@ -444,8 +483,8 @@ void GfalHttpPluginData::get_credentials(Davix::RequestParams& params, const Dav
         get_reva_credentials(params, uri, token_write_access);
     }// Use bearer token (other authentication mechanism should be disabled)
       // Not the case for the moment, as certificates are still used (but should be unset in the future)
-    else if (!get_token(params, uri, token_write_access, token_validity,
-                        secondary_endpoint)) {
+    else if (!get_token(params, uri, token_write_access, token_extended_search,
+                        token_validity, secondary_endpoint)) {
         // Utilize AWS or GCLOUD tokens if no bearer token is available (to be reviewed)
         get_aws_params(params, uri);
         get_gcloud_credentials(params,uri);
@@ -582,14 +621,13 @@ void GfalHttpPluginData::get_tpc_params(Davix::RequestParams* req_params,
 
 }
 
-void GfalHttpPluginData::get_params(Davix::RequestParams* req_params,
-                                    const Davix::Uri& uri,
-                                    bool token_write_access)
+void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davix::Uri& uri,
+                                    bool token_write_access, bool token_extended_search)
 {
     *req_params = reference_params;
 
     get_params_internal(*req_params, uri);
-    get_credentials(*req_params, uri, token_write_access);
+    get_credentials(*req_params, uri, token_write_access, token_extended_search);
 }
 
 
