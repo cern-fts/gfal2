@@ -76,8 +76,29 @@ int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, g
 
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
+    Davix::Uri uri(stripped_url);
     Davix::RequestParams req_params;
-    davix->get_params(&req_params, Davix::Uri(stripped_url), true);
+    bool retrieve_token = gfal2_get_opt_boolean_with_default(davix->handle, "HTTP PLUGIN", "RETRIEVE_BEARER_TOKEN", false);
+
+    if (retrieve_token) {
+        gchar *token = davix->find_se_token(uri, true, true);
+
+        if (!token) {
+            g_free(token);
+            std::string reserved(stripped_url);
+            if (reserved.back() != '/') {
+                reserved.push_back('/');
+            }
+            reserved += "gfal2_mkdir.reserved";
+
+            Davix::Uri reserved_uri(reserved);
+            req_params = davix->reference_params;
+            davix->get_params_internal(req_params, reserved_uri);
+            davix->retrieve_and_store_se_token(req_params, reserved_uri, true, 60);
+        }
+    }
+
+    davix->get_params(&req_params, uri, true, true);
     if (davix->posix.mkdir(&req_params, stripped_url, mode, &daverr) != 0) {
         davix2gliberr(daverr, err);
         Davix::DavixError::clearError(&daverr);
