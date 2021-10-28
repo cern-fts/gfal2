@@ -146,6 +146,29 @@ char *gfal2_cred_get(gfal2_context_t handle, const char *type, const char *url, 
 }
 
 
+char *gfal2_cred_get_reverse(gfal2_context_t handle, const char *type, const char *url,
+                             char const **baseurl, GError **err)
+{
+    // The credential list is sorted
+    GList *item;
+    for (item = g_list_first(handle->cred_mapping); item != NULL; item = g_list_next(item)) {
+        gfal2_cred_node_t* node = item->data;
+        size_t url_len = strlen(url);
+        if (strcmp(node->cred->type, type) == 0 && strncmp(url, node->url_prefix, url_len) == 0) {
+            if (node->prefix_len > url_len &&
+                (node->url_prefix[url_len - 1] == '/' || node->url_prefix[url_len] == '/')) {
+
+                if (baseurl) {
+                    *baseurl = (char const*)(node->url_prefix);
+                }
+                return g_strdup(node->cred->value);
+            }
+        }
+    }
+
+    return NULL;
+}
+
 int gfal2_cred_del(gfal2_context_t handle, const char *type, const char *url, GError **error)
 {
     GList *item;
