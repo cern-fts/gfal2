@@ -491,6 +491,10 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
 void GridFTPModule::autoCleanFileCopy(gfalt_params_t params,
         int code, const char* dst)
 {
+    if (gfalt_get_cleanup_on_failure(params, NULL) == false) {
+        gfal2_log(G_LOG_LEVEL_INFO, "Skipping cleanup on failure");
+        return;
+    }
     if (code != EEXIST) {
         gfal2_log(G_LOG_LEVEL_INFO,
                 "\t\tError in transfer, clean destination file %s ", dst);

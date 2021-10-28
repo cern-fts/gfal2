@@ -331,6 +331,19 @@ gint gfalt_set_use_proxy_delegation(gfalt_params_t, gboolean proxy_delegation, G
 gboolean gfalt_get_use_proxy_delegation(gfalt_params_t, GError** err);
 
 /**
+ * Enable or disable destination file cleanup on transfer failure
+ * default : true
+ * With cleanup on failure disabled, after a transfers failure
+ * gfal will not delete the destination file
+ */
+gint gfalt_set_cleanup_on_failure(gfalt_params_t params, gboolean cleanup_on_failure, GError** err);
+
+/**
+ * Get value of destination file cleanup on transfer failure flag
+ */
+gboolean gfalt_get_cleanup_on_failure(gfalt_params_t params, GError** err);
+
+/**
  * @brief Add a new callback for monitoring the current transfer
  * Adding the same callback with a different udata will just change the udata and the free method, but the callback will not be called twice.
  * In this case, udata_free will be called with the old data.

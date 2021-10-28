@@ -38,6 +38,7 @@ static void gfalt_params_handle_init(gfalt_params_t p, GError ** err)
     p->strict_mode = FALSE;
     p->parent_dir_create = FALSE;
     p->proxy_delegation = TRUE;
+    p->cleanup_on_failure = TRUE;
 
     p->monitor_callbacks = NULL;
     p->event_callbacks = NULL;
@@ -376,6 +377,21 @@ gboolean gfalt_get_use_proxy_delegation(gfalt_params_t params , GError** err)
     g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
     return params->proxy_delegation;
 }
+
+
+gint gfalt_set_cleanup_on_failure(gfalt_params_t params, gboolean cleanup_on_failure, GError** err)
+{
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+    params->cleanup_on_failure = cleanup_on_failure;
+    return 0;
+}
+
+gboolean gfalt_get_cleanup_on_failure(gfalt_params_t params, GError** err)
+{
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+    return params->cleanup_on_failure;
+}
+
 
 gint gfalt_set_checksum_check(gfalt_params_t params, gboolean value, GError** err)
 {

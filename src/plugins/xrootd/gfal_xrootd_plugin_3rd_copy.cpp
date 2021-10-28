@@ -171,10 +171,17 @@ static void gfal_xrootd_3rd_init_url(gfal2_context_t context, XrdCl::URL& xurl,
 }
 
 /// Clean dst, update err if failed during cleanup with something else than ENOENT,
+/// Do not clean if cleanup on failure option is set to false [DMC-1281]
 /// returns always -1 for convenience
-static int gfal_xrootd_copy_cleanup(plugin_handle plugin_data, const char* dst, GError** err)
+static int gfal_xrootd_copy_cleanup(plugin_handle plugin_data, gfalt_params_t params, const char* dst, GError** err)
 {
     GError *unlink_err = NULL;
+
+    if (gfalt_get_cleanup_on_failure(params, NULL) == false){
+        gfal2_log(G_LOG_LEVEL_INFO, "Skipping cleanup on failure");
+        return -1;
+    }
+
     if ((*err)->code != EEXIST) {
         if (gfal_xrootd_unlinkG(plugin_data, dst, &unlink_err) != 0) {
             if (unlink_err->code != ENOENT) {
@@ -361,7 +368,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
     // here, so ignore!
     if (nbfiles == 1 && !status.IsOK()) {
         xrootd2gliberr(op_error, __func__, "Error on XrdCl::CopyProcess::Run(): %s", status);
-        return gfal_xrootd_copy_cleanup(plugin_data, dsts[0],op_error);
+        return gfal_xrootd_copy_cleanup(plugin_data, params, dsts[0],op_error);
     }
 
     // For bulk operations, here we do get the actual status per file
@@ -371,7 +378,7 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         status = results[i].Get<XrdCl::XRootDStatus>("status");
         if (!status.IsOK()) {
             xrootd2gliberr(&((*file_errors)[i]), __func__, "Error on XrdCl::CopyProcess::Run(): %s", status);
-            gfal_xrootd_copy_cleanup(plugin_data, dsts[i],file_errors[i]);
+            gfal_xrootd_copy_cleanup(plugin_data, params, dsts[i],file_errors[i]);
             ++n_failed;
         }
         //clean the disk cache source if thirdparty

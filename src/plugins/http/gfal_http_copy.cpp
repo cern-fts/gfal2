@@ -302,10 +302,17 @@ static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfDat
 }
 
 /// Clean dst, update err if failed during cleanup with something else than ENOENT,
+/// Do not clean if cleanup on failure option is set to false [DMC-1281]
 /// returns always -1 for convenience
-static int gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GError** err)
+static int gfal_http_copy_cleanup(plugin_handle plugin_data, gfalt_params_t params, const char* dst, GError** err)
 {
     GError *unlink_err = NULL;
+
+    if (gfalt_get_cleanup_on_failure(params, NULL) == false) {
+        gfal2_log(G_LOG_LEVEL_INFO, "Skipping cleanup on failure");
+        return -1;
+    }
+
     if ((*err)->code != EEXIST) {
         if (gfal_http_unlinkG(plugin_data, dst, &unlink_err) != 0) {
             if (unlink_err->code != ENOENT) {
@@ -717,7 +724,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
 	       "%s", nested_error->message);
                // Delete any potential destination file.
-            gfal_http_copy_cleanup(plugin_data, dst, &nested_error);
+            gfal_http_copy_cleanup(plugin_data, params, dst, &nested_error);
             if (!gfal_should_fallback(nested_error->code)){
             	break;
             }
@@ -734,7 +741,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
 
     if (nested_error != NULL) {
         gfalt_propagate_prefixed_error(err, nested_error, __func__, GFALT_ERROR_TRANSFER, "");
-        return gfal_http_copy_cleanup(plugin_data, dst, err);
+        return gfal_http_copy_cleanup(plugin_data, params, dst, err);
     }
 
     // Destination checksum validation

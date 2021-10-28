@@ -533,11 +533,16 @@ static int srm_do_transfer(plugin_handle handle, gfal2_context_t context,
 static int srm_cleanup_copy(plugin_handle handle, gfal2_context_t context,
     const char *source, const char *destination,
     const char *token_source, const char *token_destination,
-    gboolean transfer_finished,
+    gboolean transfer_finished, gfalt_params_t params,
     GError **err)
 {
     if (*err != NULL) {
-        srm_rollback_put(handle, context, destination, token_destination, transfer_finished, err);
+        if (gfalt_get_cleanup_on_failure(params, NULL) == 0) {
+            gfal2_log(G_LOG_LEVEL_INFO, "Skipping cleanup on failure");
+        }
+        else{
+            srm_rollback_put(handle, context, destination, token_destination, transfer_finished, err);
+        }
     }
     if (token_source[0] != '\0') {
         srm_release_get(handle, source, token_source, err);
@@ -644,7 +649,7 @@ int srm_plugin_filecopy(plugin_handle handle, gfal2_context_t context,
     }
     srm_cleanup_copy(handle, context, source, dest,
         token_source, token_destination,
-        transfer_finished, &nested_error);
+        transfer_finished, params, &nested_error);
     if (nested_error != NULL)
         gfal2_propagate_prefixed_error(err, nested_error, __func__);
     else
