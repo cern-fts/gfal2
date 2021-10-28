@@ -585,13 +585,13 @@ void GfalHttpPluginData::get_tpc_params(Davix::RequestParams* req_params,
 
     if (push_mode) {
         get_params_internal(*req_params, src_uri);
-        get_credentials(*req_params, src_uri, false, token_timeout);
-        get_credentials(*req_params, dst_uri, true, token_timeout, true);
+        get_credentials(*req_params, src_uri, false, false, token_timeout);
+        get_credentials(*req_params, dst_uri, true, false, token_timeout, true);
         do_delegation = delegation_required(dst_uri);
     } else {  // Pull mode
         get_params_internal(*req_params, dst_uri);
-        get_credentials(*req_params, src_uri, false, token_timeout, true);
-        get_credentials(*req_params, dst_uri, true, token_timeout);
+        get_credentials(*req_params, src_uri, false, false, token_timeout, true);
+        get_credentials(*req_params, dst_uri, true, false, token_timeout);
         do_delegation = delegation_required(src_uri);
     }
 
