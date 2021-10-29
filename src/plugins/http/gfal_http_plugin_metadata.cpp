@@ -84,18 +84,15 @@ int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, g
         gchar *token = davix->find_se_token(uri, GfalHttpPluginData::OP::MKCOL);
 
         if (!token) {
-            g_free(token);
             std::string reserved(stripped_url);
             if (reserved.back() != '/') {
                 reserved.push_back('/');
             }
             reserved += "gfal2_mkdir.reserved";
-
-            Davix::Uri reserved_uri(reserved);
-            req_params = davix->reference_params;
-            davix->get_params_internal(req_params, reserved_uri);
-            davix->retrieve_and_store_se_token(req_params, reserved_uri, GfalHttpPluginData::OP::MKCOL, 60);
+            davix->retrieve_and_store_se_token(Davix::Uri(reserved), GfalHttpPluginData::OP::MKCOL, 60);
         }
+
+        g_free(token);
     }
 
     davix->get_params(&req_params, uri, GfalHttpPluginData::OP::MKCOL);

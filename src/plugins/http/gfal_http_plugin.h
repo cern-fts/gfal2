@@ -101,8 +101,7 @@ private:
     // @param operation the HTTP operation to be performed. Read/write access is inferred
     // @param validity lifetime of the token in seconds
     // @return the SE-issued token or null
-    char* retrieve_and_store_se_token(Davix::RequestParams& params, const Davix::Uri& uri,
-                                      const OP& operation, unsigned validity);
+    char* retrieve_and_store_se_token(const Davix::Uri& uri, const OP& operation, unsigned validity);
 
     // Obtain request parameters + credentials for an AWS endpoint
     void get_aws_params(Davix::RequestParams& params, const Davix::Uri& uri);

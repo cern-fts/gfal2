@@ -193,8 +193,7 @@ char* GfalHttpPluginData::find_se_token(const Davix::Uri& uri, const OP& operati
     return token;
 }
 
-char* GfalHttpPluginData::retrieve_and_store_se_token(Davix::RequestParams& params, const Davix::Uri& uri,
-                                                      const OP& operation, unsigned validity)
+char* GfalHttpPluginData::retrieve_and_store_se_token(const Davix::Uri& uri, const OP& operation, unsigned validity)
 {
     bool retrieve_token = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "RETRIEVE_BEARER_TOKEN", false);
     GError* error = NULL;
@@ -204,8 +203,12 @@ char* GfalHttpPluginData::retrieve_and_store_se_token(Davix::RequestParams& para
         return NULL;
     }
 
+    Davix::RequestParams params = reference_params;
+    get_params_internal(params, uri);
+
     bool write_access = writeFlagFromOperation(operation);
     TokenRetriever* retriever = token_retriever_chain.get();
+
     while (retriever != NULL) {
         try {
             gfal_http_token_t http_token = retriever->retrieve_token(uri, params, write_access, validity);
@@ -251,7 +254,7 @@ bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Ur
 
     if (!token) {
         // Attempt to obtain SE-issued token
-        token = retrieve_and_store_se_token(params, uri, operation, validity);
+        token = retrieve_and_store_se_token(uri, operation, validity);
     }
 
     if (!token) {
