@@ -81,7 +81,7 @@ int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, g
     bool retrieve_token = gfal2_get_opt_boolean_with_default(davix->handle, "HTTP PLUGIN", "RETRIEVE_BEARER_TOKEN", false);
 
     if (retrieve_token) {
-        gchar *token = davix->find_se_token(uri, true, true);
+        gchar *token = davix->find_se_token(uri, GfalHttpPluginData::OP::MKCOL);
 
         if (!token) {
             g_free(token);
@@ -94,11 +94,11 @@ int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, g
             Davix::Uri reserved_uri(reserved);
             req_params = davix->reference_params;
             davix->get_params_internal(req_params, reserved_uri);
-            davix->retrieve_and_store_se_token(req_params, reserved_uri, true, 60);
+            davix->retrieve_and_store_se_token(req_params, reserved_uri, GfalHttpPluginData::OP::MKCOL, 60);
         }
     }
 
-    davix->get_params(&req_params, uri, true, true);
+    davix->get_params(&req_params, uri, GfalHttpPluginData::OP::MKCOL);
     if (davix->posix.mkdir(&req_params, stripped_url, mode, &daverr) != 0) {
         davix2gliberr(daverr, err);
         Davix::DavixError::clearError(&daverr);
@@ -118,7 +118,7 @@ int gfal_http_unlinkG(plugin_handle plugin_data, const char* url, GError** err)
     Davix::DavixError* daverr = NULL;
 
     Davix::RequestParams req_params;
-    davix->get_params(&req_params, Davix::Uri(stripped_url), true);
+    davix->get_params(&req_params, Davix::Uri(stripped_url), GfalHttpPluginData::OP::WRITE);
     req_params.setMetalinkMode(Davix::MetalinkMode::Disable);
 
     if (davix->posix.unlink(&req_params, stripped_url, &daverr) != 0) {
@@ -151,7 +151,7 @@ int gfal_http_rmdirG(plugin_handle plugin_data, const char* url, GError** err)
     Davix::DavixError* daverr = NULL;
 
     Davix::RequestParams req_params;
-    davix->get_params(&req_params, Davix::Uri(stripped_url), true);
+    davix->get_params(&req_params, Davix::Uri(stripped_url), GfalHttpPluginData::OP::WRITE);
 
     if (davix->posix.rmdir(&req_params, stripped_url, &daverr) != 0) {
       davix2gliberr(daverr, err);
@@ -173,7 +173,7 @@ int gfal_http_rename(plugin_handle plugin_data, const char* oldurl, const char* 
     Davix::DavixError* daverr = NULL;
 
     Davix::RequestParams req_params;
-    davix->get_params(&req_params, Davix::Uri(stripped_old), true);
+    davix->get_params(&req_params, Davix::Uri(stripped_old), GfalHttpPluginData::OP::WRITE);
 
     if (davix->posix.rename(&req_params, stripped_old, stripped_new, &daverr) != 0) {
         davix2gliberr(daverr, err);

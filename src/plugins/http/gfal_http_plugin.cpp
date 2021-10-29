@@ -73,6 +73,17 @@ static bool allowsBearerTokenRetrieve(const Davix::Uri& uri)
            (uri.getProtocol().rfind("davs", 0) == 0);
 }
 
+static bool writeFlagFromOperation(const GfalHttpPluginData::OP& operation) {
+    return (operation == GfalHttpPluginData::OP::MKCOL) ||
+           (operation == GfalHttpPluginData::OP::WRITE) ||
+           (operation == GfalHttpPluginData::OP::WRITE_PASV);
+}
+
+static bool needsTransferHeader(const GfalHttpPluginData::OP& operation) {
+    return (operation == GfalHttpPluginData::OP::READ_PASV) ||
+           (operation == GfalHttpPluginData::OP::WRITE_PASV);
+}
+
 static bool isS3SignedURL(const Davix::Uri& url)
 {
     return (url.queryParamExists("AWSAccessKeyId") && url.queryParamExists("Signature")) ||
@@ -104,7 +115,7 @@ static bool gfal_http_get_x509_cert_pair(gfal2_context_t handle, const Davix::Ur
     return certificate_pair;
 }
 
-char* GfalHttpPluginData::find_se_token(const Davix::Uri& uri, bool write_access, bool extended_search)
+char* GfalHttpPluginData::find_se_token(const Davix::Uri& uri, const OP& operation)
 {
     const char* token_path = NULL;
     GError* error = NULL;
@@ -112,6 +123,9 @@ char* GfalHttpPluginData::find_se_token(const Davix::Uri& uri, bool write_access
     if (!allowsBearerTokenRetrieve(uri)) {
         return NULL;
     }
+
+    bool write_access = writeFlagFromOperation(operation);
+    bool extended_search = (operation == OP::MKCOL);
 
     // Helper function to find a token in the Gfal HTTP internal token map
     auto find_in_token_map = [&](const char* token) -> TokenAccessMap::iterator {
@@ -180,7 +194,7 @@ char* GfalHttpPluginData::find_se_token(const Davix::Uri& uri, bool write_access
 }
 
 char* GfalHttpPluginData::retrieve_and_store_se_token(Davix::RequestParams& params, const Davix::Uri& uri,
-                                                            bool write_access, unsigned validity)
+                                                      const OP& operation, unsigned validity)
 {
     bool retrieve_token = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "RETRIEVE_BEARER_TOKEN", false);
     GError* error = NULL;
@@ -190,6 +204,7 @@ char* GfalHttpPluginData::retrieve_and_store_se_token(Davix::RequestParams& para
         return NULL;
     }
 
+    bool write_access = writeFlagFromOperation(operation);
     TokenRetriever* retriever = token_retriever_chain.get();
     while (retriever != NULL) {
         try {
@@ -226,18 +241,17 @@ char* GfalHttpPluginData::retrieve_and_store_se_token(Davix::RequestParams& para
 }
 
 bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Uri& uri,
-                                   bool write_access, bool extended_search,
-                                   unsigned validity, bool secondary_endpoint)
+                                   const OP& operation, unsigned validity)
 {
     if (isS3SignedURL(uri)) {
 	    return false;
     }
 
-    gchar* token = find_se_token(uri, write_access, extended_search);
+    gchar* token = find_se_token(uri, operation);
 
     if (!token) {
         // Attempt to obtain SE-issued token
-        token = retrieve_and_store_se_token(params, uri, write_access, validity);
+        token = retrieve_and_store_se_token(params, uri, operation, validity);
     }
 
     if (!token) {
@@ -248,9 +262,9 @@ bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Ur
     ss << "Bearer " << token;
 
     gfal2_log(G_LOG_LEVEL_INFO, "Using bearer token for HTTPS request authorization%s",
-              secondary_endpoint ? " (passive TPC)" : "");
+              needsTransferHeader(operation) ? " (passive TPC)" : "");
 
-    if (secondary_endpoint) {
+    if (needsTransferHeader(operation)) {
         params.addHeader("TransferHeaderAuthorization", ss.str());
         // Disable credential delegation if we have a valid token for the destination
         params.addHeader("Credential", "none");
@@ -450,22 +464,22 @@ void GfalHttpPluginData::get_gcloud_credentials(Davix::RequestParams& params, co
     g_free(gcloud_json_string);
 }
 
-void GfalHttpPluginData::get_reva_credentials(Davix::RequestParams &params, const Davix::Uri &uri, bool token_write_access)
+void GfalHttpPluginData::get_reva_credentials(Davix::RequestParams &params, const Davix::Uri &uri, const OP& operation)
 {   
     // The authentication with Reva is yet to be properly designed.
     // Nevertheless, there is a need to associate tokens to URLs given that a token issued for a destination must have write rights,
     // whereas right now GFAL issues a `stat()` == `HEAD` request also to the destination without requiring write rights.
     // To be further developed.
 
+    bool write_access = writeFlagFromOperation(operation);
     reva::CredentialProvider provider;
     reva::Credentials creds = params.getRevaCredentials();
-    provider.updateCredentials(creds, uri.getString(), token_write_access);
+    provider.updateCredentials(creds, uri.getString(), write_access);
     params.setRevaCredentials(creds);
 }
 
 void GfalHttpPluginData::get_credentials(Davix::RequestParams& params, const Davix::Uri& uri,
-                                         bool token_write_access, bool token_extended_search,
-                                         unsigned token_validity, bool secondary_endpoint)
+                                         const OP& operation, unsigned token_validity)
 {
     // Setup GSI in case the storage endpoint tries to fall back to GridSite delegation.
     // That does mean that we might contact the endpoint with both X509 and token auth,
@@ -480,11 +494,10 @@ void GfalHttpPluginData::get_credentials(Davix::RequestParams& params, const Dav
     } else if (uri.getProtocol().compare(0, 5, "swift") == 0) {
         get_swift_params(params, uri);
     }else if (uri.getProtocol().compare(0, 3, "cs3") == 0) {
-        get_reva_credentials(params, uri, token_write_access);
-    }// Use bearer token (other authentication mechanism should be disabled)
+        get_reva_credentials(params, uri, operation);
+    } // Use bearer token (other authentication mechanism should be disabled)
       // Not the case for the moment, as certificates are still used (but should be unset in the future)
-    else if (!get_token(params, uri, token_write_access, token_extended_search,
-                        token_validity, secondary_endpoint)) {
+    else if (!get_token(params, uri, operation, token_validity)) {
         // Utilize AWS or GCLOUD tokens if no bearer token is available (to be reviewed)
         get_aws_params(params, uri);
         get_gcloud_credentials(params,uri);
@@ -585,13 +598,13 @@ void GfalHttpPluginData::get_tpc_params(Davix::RequestParams* req_params,
 
     if (push_mode) {
         get_params_internal(*req_params, src_uri);
-        get_credentials(*req_params, src_uri, false, false, token_timeout);
-        get_credentials(*req_params, dst_uri, true, false, token_timeout, true);
+        get_credentials(*req_params, src_uri, OP::READ, token_timeout);
+        get_credentials(*req_params, dst_uri, OP::WRITE_PASV, token_timeout);
         do_delegation = delegation_required(dst_uri);
     } else {  // Pull mode
         get_params_internal(*req_params, dst_uri);
-        get_credentials(*req_params, src_uri, false, false, token_timeout, true);
-        get_credentials(*req_params, dst_uri, true, false, token_timeout);
+        get_credentials(*req_params, src_uri, OP::READ_PASV, token_timeout);
+        get_credentials(*req_params, dst_uri, OP::WRITE, token_timeout);
         do_delegation = delegation_required(src_uri);
     }
 
@@ -622,12 +635,12 @@ void GfalHttpPluginData::get_tpc_params(Davix::RequestParams* req_params,
 }
 
 void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davix::Uri& uri,
-                                    bool token_write_access, bool token_extended_search)
+                                    const OP& operation)
 {
     *req_params = reference_params;
 
     get_params_internal(*req_params, uri);
-    get_credentials(*req_params, uri, token_write_access, token_extended_search);
+    get_credentials(*req_params, uri, operation);
 }
 
 
