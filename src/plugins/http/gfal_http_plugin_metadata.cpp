@@ -144,6 +144,14 @@ int gfal_http_rmdirG(plugin_handle plugin_data, const char* url, GError** err)
         return -1;
     }
 
+    // Enforce rmdir path to always end in '/'
+    size_t len = strlen(stripped_url);
+
+    if (GFAL_URL_MAX_LEN > len && stripped_url[len - 1] != '/') {
+        stripped_url[len] = '/';
+        stripped_url[len + 1] = '\0';
+    }
+
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
 
