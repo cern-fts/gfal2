@@ -205,6 +205,7 @@ char* GfalHttpPluginData::retrieve_and_store_se_token(const Davix::Uri& uri, con
 
     Davix::RequestParams params = reference_params;
     get_params_internal(params, uri);
+    get_certificate(params, uri);
 
     bool write_access = writeFlagFromOperation(operation);
     TokenRetriever* retriever = token_retriever_chain.get();
