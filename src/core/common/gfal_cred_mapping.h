@@ -97,6 +97,19 @@ int gfal2_cred_set(gfal2_context_t handle, const char *url_prefix, const gfal2_c
 char *gfal2_cred_get(gfal2_context_t handle, const char *type, const char *url, char const** baseurl, GError **error);
 
 /**
+ * Get a credential for a given url.
+ * This search acts in reserve, returning the first credential whose path fully includes the search url.
+ * @param handle        The gfal2 context
+ * @param type          Credential type
+ * @param url           Full URL. First including prefix will be picked.
+ * @param baseurl       If not NULL, the chose base url will be put here.
+ * @param error         In case of error
+ * @return              A credential suitable for the given url. NULL if nothing has been found. Remember to g_free it.
+ */
+char *gfal2_cred_get_reverse(gfal2_context_t handle, const char *type, const char *url,
+                             char const** baseurl, GError **error);
+
+/**
  * Remove the credential for a given type and url
  * @param handle        The gfal2 context
  * @param type          Credential type

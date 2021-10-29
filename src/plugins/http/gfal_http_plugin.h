@@ -38,10 +38,18 @@ public:
     Davix::DavPosix posix;
     gfal2_context_t handle;
 
-    // Setup the Davix request parameters for a given URL
-    // @param token_write_access flag to signal tokens with write access are needed
+    enum class OP {
+        READ,
+        WRITE,
+        MKCOL,
+        READ_PASV,
+        WRITE_PASV
+    };
+
+    // Set up the Davix request parameters for a given URL
+    // @param operation the HTTP operation to be performed
     void get_params(Davix::RequestParams*, const Davix::Uri& uri,
-                    bool token_write_access = false);
+                    const OP& operation = OP::READ);
 
     // Put together parameters for the TPC, which may depend on both URLs in the transfer
     // Further, the request headers depend on the transfer mode that will be used.
@@ -53,6 +61,9 @@ public:
     friend ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, const char* issuer,
                                             gboolean write_access, unsigned validity, const char* const* activities,
                                             char* buff, size_t s_buff, GError** err);
+
+    friend int gfal_http_mkdirpG(plugin_handle plugin_data, const char *url, mode_t mode,
+                                 gboolean rec_flag, GError **err);
 
 private:
     typedef std::map<std::string, bool> TokenAccessMap;
@@ -67,28 +78,30 @@ private:
     void get_params_internal(Davix::RequestParams& params, const Davix::Uri& uri);
 
     // Obtain credentials for a given Uri and set those credentials in the Davix request parameters.
-    // @param token_write_access flag to signal tokens with write access are needed
+    // @param operation the HTTP operation to be performed
     // @param token_validity requested lifetime of the token in minutes
-    // @param secondary_endpoint signals whether this is the passive element in a TPC transfer
     void get_credentials(Davix::RequestParams& params, const Davix::Uri& uri,
-                         bool token_write_access, unsigned token_validity = 180,
-                         bool secondary_endpoint = false);
+                         const OP& operation, unsigned token_validity = 180);
 
     // Obtain token credentials
-    // @param write_access flag to request write permission
-    // @param secondary_endpoint signals whether this is the passive element in a TPC transfer
+    // @param operation the HTTP operation to be performed
     // @param validity requested lifetime of the token in seconds
     // @return true if a bearer for the provided Uri was set in the request params
     bool get_token(Davix::RequestParams& params, const Davix::Uri& uri,
-                   bool write_access, unsigned validity,
-                   bool secondary_endpoint);
+                   const OP& operation, unsigned validity);
+
+    // Find SE-issued token in the Gfal2 credential map based on the path.
+    // The found token provides either an exact path match or a parent directory path.
+    // When the "extended_search" is requested, the found token may be a subpath of the search path.
+    // @param operation the HTTP operation to be performed. Read/write access and extended search is inferred
+    // @return the SE-issued token or null
+    char* find_se_token(const Davix::Uri& uri, const OP& operation);
 
     // Attempt to obtain a SE-issued token (by exchanging x509 certificate)
-    // @param write_access flag to request write permission
+    // @param operation the HTTP operation to be performed. Read/write access is inferred
     // @param validity lifetime of the token in seconds
     // @return the SE-issued token or null
-    char* retrieve_se_token(Davix::RequestParams& params, const Davix::Uri& uri,
-                            bool write_access, unsigned validity);
+    char* retrieve_and_store_se_token(const Davix::Uri& uri, const OP& operation, unsigned validity);
 
     // Obtain request parameters + credentials for an AWS endpoint
     void get_aws_params(Davix::RequestParams& params, const Davix::Uri& uri);
@@ -97,7 +110,7 @@ private:
     void get_gcloud_credentials(Davix::RequestParams& params, const Davix::Uri& uri);
 
     // Obtain Reva endpoint credentials
-    void get_reva_credentials(Davix::RequestParams &params, const Davix::Uri &uri, bool token_write_access);
+    void get_reva_credentials(Davix::RequestParams &params, const Davix::Uri &uri, const OP& operation);
     
     // Obtain certificate credentials
     void get_certificate(Davix::RequestParams& params, const Davix::Uri& uri);

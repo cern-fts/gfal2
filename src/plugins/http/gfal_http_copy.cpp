@@ -511,7 +511,7 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
     Davix::Uri dst_uri(dst);
     Davix::RequestParams req_params;
 
-    davix->get_params(&req_params, dst_uri, true);
+    davix->get_params(&req_params, dst_uri, GfalHttpPluginData::OP::WRITE);
     //add timeout
     struct timespec opTimeout;
     opTimeout.tv_sec = gfalt_get_timeout(params, NULL);
