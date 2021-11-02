@@ -31,7 +31,7 @@
 
 
 #ifndef ECOMM
-#define ECOMM ENOTCONN
+#define ECOMM EIO
 #endif
 
 
