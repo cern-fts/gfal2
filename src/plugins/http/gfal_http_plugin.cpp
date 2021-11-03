@@ -73,20 +73,17 @@ static bool allowsBearerTokenRetrieve(const Davix::Uri& uri)
            (uri.getProtocol().rfind("davs", 0) == 0);
 }
 
-static bool writeFlagFromOperation(const GfalHttpPluginData::OP& operation) {
-    return (operation == GfalHttpPluginData::OP::MKCOL) ||
-           (operation == GfalHttpPluginData::OP::WRITE) ||
-           (operation == GfalHttpPluginData::OP::WRITE_PASV);
+bool GfalHttpPluginData::writeFlagFromOperation(const OP& operation) {
+    return (operation == OP::MKCOL) || (operation == OP::WRITE) ||
+           (operation == OP::WRITE_PASV);
 }
 
-static bool searchFlagFromOperation(const GfalHttpPluginData::OP& operation) {
-    return (operation == GfalHttpPluginData::OP::MKCOL) ||
-           (operation == GfalHttpPluginData::OP::HEAD);
+bool GfalHttpPluginData::searchFlagFromOperation(const OP& operation) {
+    return (operation == OP::MKCOL) || (operation == OP::HEAD);
 }
 
-static bool needsTransferHeader(const GfalHttpPluginData::OP& operation) {
-    return (operation == GfalHttpPluginData::OP::READ_PASV) ||
-           (operation == GfalHttpPluginData::OP::WRITE_PASV);
+bool GfalHttpPluginData::needsTransferHeader(const OP& operation) {
+    return (operation == OP::READ_PASV) || (operation == OP::WRITE_PASV);
 }
 
 static bool isS3SignedURL(const Davix::Uri& url)

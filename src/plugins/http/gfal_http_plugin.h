@@ -66,6 +66,8 @@ public:
     friend int gfal_http_mkdirpG(plugin_handle plugin_data, const char *url, mode_t mode,
                                  gboolean rec_flag, GError **err);
 
+    friend class TokenMapTest;
+
 private:
     typedef std::map<std::string, bool> TokenAccessMap;
     /// baseline Davix Request Parameters
@@ -118,6 +120,10 @@ private:
 
     // Obtain request parameters + credentials for a Swift endpoint
     void get_swift_params(Davix::RequestParams &params, const Davix::Uri &uri);
+
+    bool writeFlagFromOperation(const OP& operation);
+    bool searchFlagFromOperation(const OP& operation);
+    bool needsTransferHeader(const OP& operation);
 };
 
 const char* gfal_http_get_name(void);
