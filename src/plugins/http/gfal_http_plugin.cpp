@@ -117,8 +117,7 @@ static bool gfal_http_get_x509_cert_pair(gfal2_context_t handle, const Davix::Ur
 
 char* GfalHttpPluginData::find_se_token(const Davix::Uri& uri, const OP& operation)
 {
-    const char* token_path = NULL;
-    GError* error = NULL;
+    using credTuple = std::pair<std::string, std::string>;
 
     if (!allowsBearerTokenRetrieve(uri)) {
         return NULL;
@@ -128,67 +127,63 @@ char* GfalHttpPluginData::find_se_token(const Davix::Uri& uri, const OP& operati
     bool extended_search = (operation == OP::MKCOL);
 
     // Helper function to find a token in the Gfal HTTP internal token map
-    auto find_in_token_map = [&](const char* token) -> TokenAccessMap::iterator {
+    auto find_in_token_map = [&](const char* token, const char* token_path, bool write_access) -> bool {
         auto it = token_map.find(token);
 
         if (it == token_map.end()) {
-            gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Retrieved token not in token access map (path=%s) (assuming user-set)",
+            gfal2_log(G_LOG_LEVEL_DEBUG,
+                      "(SEToken) Retrieved token not in token access map (path=%s) (assuming user-set)",
                       token_path);
-        } else {
+            return true;
+        }
+
+        if (it->second || (write_access == it->second)) {
             gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Found token in credential_map[%s] (access=%s) (needed=%s)",
                       token_path, it->second ? "write" : "read", write_access ? "write" : "read");
+            return true;
         }
 
-        return it;
+        return false;
     };
 
-    std::string search_url = uri.getString();
-    char* token = NULL;
+    // Helper function to extract all credentials of type "BEARER"
+    auto cred_map_callback = [](const char* url_prefix, const gfal2_cred_t* cred, void* user_data) {
+        auto cred_list = static_cast<std::list<credTuple>*>(user_data);
 
-    if (extended_search) {
-        token = gfal2_cred_get_reverse(handle, GFAL_CRED_BEARER, uri.getString().c_str(), &token_path, &error);
-        g_clear_error(&error);
+        if (strcmp(cred->type, GFAL_CRED_BEARER) == 0) {
+            cred_list->emplace_back(url_prefix, cred->value);
+        }
+    };
 
-        if (token) {
-            auto pos = find_in_token_map(token);
+    // Helper function to check whether a path contains the search path
+    auto path_contains = [](const std::string& path, const std::string& search) -> bool {
+        size_t pos = path.find(search);
 
-            if (pos != token_map.end() && (write_access && pos->second != write_access)) {
-                g_free(token);
-                token = NULL;
+        if (pos == 0) {
+            return (path.size() == search.size()) ||
+                   (path.at(search.size() - 1) == '/') ||
+                   (path.at(search.size()) == '/');
+        }
+
+        return false;
+    };
+
+    std::list<credTuple> cred_list;
+    gfal2_cred_foreach(handle, cred_map_callback, &cred_list);
+
+    for (auto cred = cred_list.begin(); cred != cred_list.end(); cred++) {
+        if (path_contains(uri.getString(), cred->first) ||
+            (extended_search && path_contains(cred->first, uri.getString()))) {
+            if (find_in_token_map(cred->second.c_str(), cred->first.c_str(), write_access)) {
+                return g_strdup(cred->second.c_str());
             }
         }
     }
 
-    while (!search_url.empty() && !token) {
-        token = gfal2_cred_get(handle, GFAL_CRED_BEARER, search_url.c_str(), &token_path, &error);
-        g_clear_error(&error);
-
-        if (!token) {
-            // Search token for the full host (backwards compatibility with FTS)
-            token = gfal2_cred_get(handle, GFAL_CRED_BEARER, uri.getHost().c_str(), &token_path, &error);
-            g_clear_error(&error);
-        }
-
-        // No token found, end search
-        if (!token) {
-            break;
-        }
-
-        if (token) {
-            auto pos = find_in_token_map(token);
-
-            if (pos == token_map.end()) {
-                return token;
-            }
-
-            if (write_access && pos->second != write_access) {
-                search_url = *token_path;
-                search_url.pop_back();
-                g_free(token);
-                token = NULL;
-            }
-        }
-    }
+    // Search token for the full host (backwards compatibility with FTS)
+    GError* error = NULL;
+    char* token = gfal2_cred_get(handle, GFAL_CRED_BEARER, uri.getHost().c_str(), NULL, &error);
+    g_clear_error(&error);
 
     return token;
 }
