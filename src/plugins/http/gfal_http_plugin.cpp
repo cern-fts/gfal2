@@ -79,6 +79,11 @@ static bool writeFlagFromOperation(const GfalHttpPluginData::OP& operation) {
            (operation == GfalHttpPluginData::OP::WRITE_PASV);
 }
 
+static bool searchFlagFromOperation(const GfalHttpPluginData::OP& operation) {
+    return (operation == GfalHttpPluginData::OP::MKCOL) ||
+           (operation == GfalHttpPluginData::OP::HEAD);
+}
+
 static bool needsTransferHeader(const GfalHttpPluginData::OP& operation) {
     return (operation == GfalHttpPluginData::OP::READ_PASV) ||
            (operation == GfalHttpPluginData::OP::WRITE_PASV);
@@ -124,7 +129,7 @@ char* GfalHttpPluginData::find_se_token(const Davix::Uri& uri, const OP& operati
     }
 
     bool write_access = writeFlagFromOperation(operation);
-    bool extended_search = (operation == OP::MKCOL);
+    bool extended_search = searchFlagFromOperation(operation);
 
     // Helper function to find a token in the Gfal HTTP internal token map
     auto find_in_token_map = [&](const char* token, const char* token_path, bool write_access) -> bool {

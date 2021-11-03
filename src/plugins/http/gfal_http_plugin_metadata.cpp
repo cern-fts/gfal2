@@ -40,7 +40,7 @@ int gfal_http_stat(plugin_handle plugin_data, const char* url,
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
     Davix::RequestParams req_params;
-    davix->get_params(&req_params, Davix::Uri(stripped_url));
+    davix->get_params(&req_params, Davix::Uri(stripped_url), GfalHttpPluginData::OP::HEAD);
 
     // Attempt stat over WebDav first, then fallback to HTTP
     if (req_params.getProtocol() == Davix::RequestProtocol::Http) {

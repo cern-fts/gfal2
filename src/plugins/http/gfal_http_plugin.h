@@ -40,6 +40,7 @@ public:
 
     enum class OP {
         READ,
+        HEAD,
         WRITE,
         MKCOL,
         READ_PASV,
