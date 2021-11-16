@@ -193,48 +193,6 @@ static int gfal_xrootd_copy_cleanup(plugin_handle plugin_data, const char* dst, 
     return -1;
 }
 
-//this is invoked when a tranfer is success and we
-static void gfal_xrootd_evict_cache(gfal2_context_t context, const char* src)
-{
-
-    XrdCl::URL endpoint(prepare_url(context, src));
-    endpoint.SetPath(std::string());
-    XrdCl::FileSystem fs(endpoint);
-
-    //first check if  Xrootd sitename contains CTA
-    XrdCl::Buffer *response = 0;
-    std::string sitename_arg = std::string("sitename");
-
-    XrdCl::Buffer arg( sitename_arg.size() );
-    arg.FromString( sitename_arg );
-
-    XrdCl::XRootDStatus status = fs.Query( XrdCl::QueryCode::Config, arg, response );
-    
-    if (!status.IsOK()) {
-        delete response;
-        return;
-    }
-    gfal2_log(G_LOG_LEVEL_DEBUG, "Sitename: %s", response->GetBuffer());
-
-    bool runEvict = false;
-    std::string sitename = response->GetBuffer();
-    if (sitename.find("cern_tape_archive") == 0) {
-        runEvict = true;
-    }
-    delete response;
-
-    if (runEvict) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "Found CTA, evicting cache", sitename.c_str());
-        std::vector<std::string> fileList;
-        XrdCl::URL file(prepare_url(context, src));
-        fileList.emplace_back(file.GetPath());
-   
-        XrdCl::Buffer *responsePtr = 0;
-        XrdCl::Status st = fs.Prepare(fileList, XrdCl::PrepareFlags::Flags::Evict, 0, responsePtr, 30);
-    	delete responsePtr;
-    }
-}
-
 int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         gfal2_context_t context, gfalt_params_t params, size_t nbfiles,
         const char* const * srcs, const char* const * dsts,
@@ -366,7 +324,9 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
 
     // For bulk operations, here we do get the actual status per file
     int n_failed = 0;
+    int n_evict = 0;
     *file_errors = g_new0(GError*, nbfiles);
+    const char* files_to_evict[nbfiles];
     for (size_t i = 0; i < nbfiles; ++i) {
         status = results[i].Get<XrdCl::XRootDStatus>("status");
         if (!status.IsOK()) {
@@ -374,13 +334,23 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
             gfal_xrootd_copy_cleanup(plugin_data, dsts[i],file_errors[i]);
             ++n_failed;
         }
-        //clean the disk cache source if thirdparty
-        if (isThirdParty) {
-            gfal_xrootd_evict_cache(context,srcs[i]);
+        else {
+            files_to_evict[n_evict] = srcs[i];
+            ++n_evict;
         }
-
     }
 
+    // Evict source files If flag is set to true
+    if (gfalt_get_use_evict(params, NULL)) {
+        std::vector<GError*> errors(n_evict, NULL);
+        int ret = gfal_xrootd_release_file_list(plugin_data, n_evict, files_to_evict, "", errors.data()); //No token is needed for evict operation in xrootd
+        if (ret < 0) {
+            gfal2_log(G_LOG_LEVEL_INFO, "Eviction request failed in one or more files");
+            for(int i = 0; i < n_evict; ++i) {
+                g_error_free(errors[i]);
+            }
+        }
+    }
 
     return -n_failed;
 }
