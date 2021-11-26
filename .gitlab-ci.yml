@@ -59,6 +59,8 @@ fedora-rawhide:
     - ci/write-repo-file.sh
     - dnf install -y ${PLATFORM}/RPMS/*/*.rpm
     - gfal2-unit-tests
+  variables:
+    BRANCH: ${CI_COMMIT_REF_NAME}
 
 #--------------------------
 # Test jobs
