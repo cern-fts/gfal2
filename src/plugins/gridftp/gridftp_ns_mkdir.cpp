@@ -23,6 +23,7 @@
 
 
 static const GQuark GFAL_GRIDFTP_SCOPE_MKDIR = g_quark_from_static_string("GridFTPModule::mkdir");
+static const GQuark GFAL_GRIDFTP_SCOPE_REQ_STATE = g_quark_from_static_string("GridFTPModule::RequestState");
 
 
 void GridFTPModule::mkdir(const char* path, mode_t mode)
@@ -62,5 +63,12 @@ extern "C" int gfal_gridftp_mkdirG(plugin_handle handle, const char* path,
             ret = 0;
     CPP_GERROR_CATCH(&tmp_err);
     gfal2_log(G_LOG_LEVEL_DEBUG, "  [gfal_gridftp_mkdirG]<-");
+
+    // Distinguish between actual ENOENT or certificate loading error
+    if (pflag && tmp_err && tmp_err->code == ENOENT && tmp_err->domain == GFAL_GRIDFTP_SCOPE_REQ_STATE) {
+        // ENOENT error will be masked by parent flag
+        tmp_err->code = EFAULT;
+    }
+
     G_RETURN_ERR(ret, tmp_err, err);
 }

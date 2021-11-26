@@ -44,9 +44,8 @@ ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, con
     TokenRetriever* retriever_chain = NULL;
     ssize_t ret = -1;
 
-    Davix::RequestParams params;
     // Emulate GfalHttpPluginData::get_params(..) without the get_credentials(..) part
-    params = davix->reference_params;
+    Davix::RequestParams params = davix->reference_params;
     davix->get_params_internal(params, Davix::Uri(url));
 
     if (issuer && *issuer) {

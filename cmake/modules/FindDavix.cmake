@@ -63,7 +63,7 @@ else ()
 endif()
 
 if (DAVIX_LIBRARIES)
-    message ("DAVIX libraries: ${DAVIX_LIBRARIES}")
+    message (STATUS "DAVIX libraries: ${DAVIX_LIBRARIES}")
 endif (DAVIX_LIBRARIES)
 if(DAVIX_INCLUDE_DIR)
     message(STATUS "DAVIX includes found in ${DAVIX_INCLUDE_DIR}")

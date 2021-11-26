@@ -7,13 +7,12 @@ add_subdirectory(cancel)
 add_subdirectory(config)
 add_subdirectory(cred)
 add_subdirectory(global)
+add_subdirectory(http)
 add_subdirectory(mds)
 add_subdirectory(transfer)
 add_subdirectory(uri)
 
-
 add_executable(gfal2-unit-tests
-
     ./cancel/cancel_tests.cpp
     ./config/config_test.cpp
     ./cred/test_cred.cpp
@@ -29,7 +28,6 @@ target_include_directories(gfal2-unit-tests PRIVATE
     ${PROJECT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
-
 
 target_link_libraries(gfal2-unit-tests
     ${GFAL2_LIBRARIES} ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} gfal2_test_shared

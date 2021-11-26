@@ -23,8 +23,8 @@ else
   printf "Using environment set variable BRANCH=%s\n" "${BRANCH}"
 fi
 
-if [[ $BRANCH =~ ^(tags/)?(v)[.0-9]+(-[0-9]+)?$ ]]; then
-  RELEASE=
+if [[ $BRANCH =~ ^(tags/)?(v)[.0-9]+(-(rc)?([0-9]+))?$ ]]; then
+  RELEASE="${BASH_REMATCH[4]}${BASH_REMATCH[5]}"
   BUILD="rc"
 fi
 
@@ -35,15 +35,11 @@ DISTNAME=${DIST}
 [[ "${DISTNAME}" == "fc35" ]] && DISTNAME="fc-rawhide"
 [[ "${DISTNAME}" == "fc36" ]] && DISTNAME="fc-rawhide"
 
-# Fetch repository files from fts/build-utils
-./ci/fetch_repo_files.sh
+# Write repository files to /etc/yum.repos.d/ based on the branch name
+./ci/write-repo-file.sh
 
 REPO_FILE="${BUILD}/dmc-${BUILD}-${DISTNAME}.repo"
 print_info
-
-if [[ -f "ci/repo/${REPO_FILE}" ]]; then
-  cp -v "ci/repo/${REPO_FILE}" "/etc/yum.repos.d/"
-fi
 
 RPMBUILD=${PWD}/build
 SRPMS=${RPMBUILD}/SRPMS
