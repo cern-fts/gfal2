@@ -1,7 +1,14 @@
 GFAL2 RELEASE-NOTES
 ===================
 
-## Mon Oct 25 2021 Mihai Patrascoiu <mipatras at cern.ch> - 2.21.0
+## Fri Nov 26 2021 Mihai Patrascoiu <mipatras at cern.ch> - 2.20.2
+###Bug
+[DMC-1149] - Misleading error message from mkdir -p when x509 credential can not be found
+[DMC-1282] - Gfal2 MKCOL with SE-tokens incompatible with dCache storage
+[DMC-1283] - HTTP Rmdir + SETokens fails on DPM when path missing trailing '/'
+[DMC-1284] - Do not use Authorization Header when requesting SEToken
+
+## Mon Oct 25 2021 Mihai Patrascoiu <mipatras at cern.ch> - 2.20.1
 ###Bug
 - [DMC-1272] - Segfault when macaroon request exceeds maximum response size
 - [DMC-1273] - Gfal2 HTTP plugin does not clear SE-issued tokens from the Gfal2 core credential map
