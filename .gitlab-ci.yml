@@ -68,30 +68,30 @@ fedora-rawhide:
 
 cc7-test:
   image: gitlab-registry.cern.ch/linuxsupport/cc7-base
-  dependencies:
-    - cc7
+  needs:
+    - job: cc7
   before_script:
     - yum install -y dnf epel-release
   <<: *test-template_definition
 
 centos8-test:
   image: gitlab-registry.cern.ch/linuxsupport/c8-base
-  dependencies:
-    - centos8
+  needs:
+    - job: centos8
   before_script:
     - dnf install -y epel-release
   <<: *test-template_definition
 
 fedora-33-test:
   image: fedora:33
-  dependencies:
-    - fedora-33
+  needs:
+    - job: fedora-33
   <<: *test-template_definition
 
 fedora-34-test:
   image: fedora:34
-  dependencies:
-    - fedora-34
+  needs:
+    - job: fedora-34
   <<: *test-template_definition
 
 #--------------------------
