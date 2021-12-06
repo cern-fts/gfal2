@@ -1,7 +1,7 @@
 GFAL2 RELEASE-NOTES
 ===================
 
-## Fri Nov 26 2021 Mihai Patrascoiu <mipatras at cern.ch> - 2.20.2
+## Mon Dec 06 2021 Mihai Patrascoiu <mipatras at cern.ch> - 2.20.2
 ###Bug
 [DMC-1149] - Misleading error message from mkdir -p when x509 credential can not be found
 [DMC-1282] - Gfal2 MKCOL with SE-tokens incompatible with dCache storage

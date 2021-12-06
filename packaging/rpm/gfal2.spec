@@ -360,7 +360,7 @@ fi
 
 
 %changelog
-* Fri Nov 26 2021 Mihai Patrascoiu <mipatras at cern.ch> - 2.20.2-1
+* Mon Dec 06 2021 Mihai Patrascoiu <mipatras at cern.ch> - 2.20.2-1
 - New upstream release
 
 * Mon Oct 25 2021 Mihai Patrascoiu <mipatras at cern.ch> - 2.20.1-1
