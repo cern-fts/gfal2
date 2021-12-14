@@ -284,6 +284,10 @@ static int mask_network_errno(int errc)
 
 
 // Copied from xrootd/src/XrdPosix/XrdPosixMap.cc
+#ifndef ENOSR
+#define ENOSR ENOSPC
+#endif
+
 #ifndef ECHRNG
 #define ECHRNG EINVAL
 #endif
