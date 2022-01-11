@@ -466,17 +466,17 @@ void GfalHttpPluginData::get_gcloud_credentials(Davix::RequestParams& params, co
 }
 
 void GfalHttpPluginData::get_reva_credentials(Davix::RequestParams &params, const Davix::Uri &uri, const OP& operation)
-{   
-    // The authentication with Reva is yet to be properly designed.
-    // Nevertheless, there is a need to associate tokens to URLs given that a token issued for a destination must have write rights,
-    // whereas right now GFAL issues a `stat()` == `HEAD` request also to the destination without requiring write rights.
-    // To be further developed.
+{
+    // Reva is capable to handle bearer tokens, therefore we do here what is done for the typical case of bearer tokens
+    // that are valid across sites (Reva would map them to local identities), i.e. use the token given in the GFAL context.
+    // Note that a missing token will not raise exceptions but will obviously make the request fail.
+    std::string header = "Bearer " + std::string(gfal2_get_opt_string_with_default(handle, GFAL_CRED_BEARER, "TOKEN", ""));
 
-    bool write_access = writeFlagFromOperation(operation);
-    reva::CredentialProvider provider;
-    reva::Credentials creds = params.getRevaCredentials();
-    provider.updateCredentials(creds, uri.getString(), write_access);
-    params.setRevaCredentials(creds);
+    if (needsTransferHeader(operation)) {
+        // If Reva is the active side of the transfer, set the corresponding additional header
+        params.addHeader("TransferHeaderAuthorization", header);
+    }
+    params.addHeader("Authorization", header);
 }
 
 void GfalHttpPluginData::get_credentials(Davix::RequestParams& params, const Davix::Uri& uri,
