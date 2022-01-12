@@ -28,7 +28,6 @@
 #include <davix.hpp>
 #include <errno.h>
 #include <davix/utils/davix_gcloud_utils.hpp>
-#include <davix/utils/davix_cs3_utils.hpp>
 #include <exceptions/gfalcoreexception.hpp>
 
 using namespace Davix;
@@ -470,13 +469,19 @@ void GfalHttpPluginData::get_reva_credentials(Davix::RequestParams &params, cons
     // Reva is capable to handle bearer tokens, therefore we do here what is done for the typical case of bearer tokens
     // that are valid across sites (Reva would map them to local identities), i.e. use the token given in the GFAL context.
     // Note that a missing token will not raise exceptions but will obviously make the request fail.
-    std::string header = "Bearer " + std::string(gfal2_get_opt_string_with_default(handle, GFAL_CRED_BEARER, "TOKEN", ""));
+    std::string header = gfal2_get_opt_string_with_default(handle, GFAL_CRED_BEARER, "TOKEN", "");
+    if (header == "") {
+        return;
+    }
+    header = "Bearer " + header;
 
     if (needsTransferHeader(operation)) {
-        // If Reva is the active side of the transfer, set the corresponding additional header
+        // Reva is the active side of the transfer, set the corresponding TPC header
         params.addHeader("TransferHeaderAuthorization", header);
+    } else {
+        // Reva is the passive side of the transfer
+        params.addHeader("Authorization", header);
     }
-    params.addHeader("Authorization", header);
 }
 
 void GfalHttpPluginData::get_credentials(Davix::RequestParams& params, const Davix::Uri& uri,
