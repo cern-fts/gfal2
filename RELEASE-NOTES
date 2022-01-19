@@ -1,6 +1,10 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Wed Jan 19 2022 Joao Lopes <batistal at cern.ch> - 2.20.3
+###Improvement
+- [gfal2/pull/41] - Simplified tokens management for CS3 storages
+
 ## Mon Dec 06 2021 Mihai Patrascoiu <mipatras at cern.ch> - 2.20.2
 ###Bug
 - [DMC-1149] - Misleading error message from mkdir -p over GridFTP when x509 credential can not be found
