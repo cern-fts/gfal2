@@ -7,7 +7,8 @@ if (IS_IFCE)
     list (APPEND src_mds "${CMAKE_CURRENT_SOURCE_DIR}/mds/gfal_mds.c")
 else (IS_IFCE)
     list (APPEND gfal2_utils_definitions "-DMDS_BDII_EXTERNAL=0")
-    list (APPEND is_ifce_link "ldap_r" "lber")
+    find_library(LDAP_LIBRARY NAMES ldap_r ldap)
+    list (APPEND is_ifce_link ${LDAP_LIBRARY} "lber")
     list (APPEND src_mds
         "${CMAKE_CURRENT_SOURCE_DIR}/mds/gfal_mds.c"
         "${CMAKE_CURRENT_SOURCE_DIR}/mds/gfal_mds_internal.c"
