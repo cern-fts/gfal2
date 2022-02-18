@@ -188,6 +188,7 @@ std::string TokenRetriever::parse_json_response(const std::string& response, con
     json_response = json_tokener_parse(response.c_str());
 
     if (!json_response) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "(SEToken) Unparsable JSON: %s", response.c_str());
         throw Gfal::CoreException(http_plugin_domain, EINVAL, "Response was not valid JSON");
     }
 
