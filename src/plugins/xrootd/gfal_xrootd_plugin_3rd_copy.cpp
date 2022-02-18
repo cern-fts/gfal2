@@ -340,10 +340,11 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         }
     }
 
-    // Evict source files If flag is set to true
+    // Evict source files if flag is set to true
     if (gfalt_get_use_evict(params, NULL)) {
         std::vector<GError*> errors(n_evict, NULL);
         int ret = gfal_xrootd_release_file_list(plugin_data, n_evict, files_to_evict, "", errors.data()); //No token is needed for evict operation in xrootd
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Eviction request exited with status code: %d", ret);
         if (ret < 0) {
             gfal2_log(G_LOG_LEVEL_INFO, "Eviction request failed in one or more files");
             for(int i = 0; i < n_evict; ++i) {
