@@ -21,9 +21,6 @@
 #include "gfal_mock_plugin.h"
 #include <string.h>
 
-#ifndef ENODATA
-#define ENODATA ENOATTR
-#endif
 
 int gfal_plugin_mock_stat(plugin_handle plugin_data, const char *path, struct stat *buf, GError **err)
 {
@@ -169,7 +166,7 @@ ssize_t gfal_mock_getxattrG(plugin_handle plugin_data, const char* url, const ch
         emsg_size = 26 + strlen(key);
         emsg =  malloc(emsg_size);
         snprintf(emsg, emsg_size, "Failed to retrieve xattr %s", key);
-        gfal_plugin_mock_report_error(emsg, ENODATA, err);
+        gfal_plugin_mock_report_error(emsg, ENOATTR, err);
         free(emsg);
         return -1;
     }
