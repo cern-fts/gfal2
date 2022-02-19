@@ -60,6 +60,7 @@ ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, con
     }
 
     std::string token;
+    std::string last_emsg;
     TokenRetriever* retriever = retriever_chain;
 
     while (retriever != NULL) {
@@ -70,13 +71,14 @@ ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, con
             break;
         } catch (const Gfal::CoreException& e) {
             gfal2_log(G_LOG_LEVEL_INFO, "(SEToken) Error during token retrieval: %s", e.what());
+            last_emsg = e.what_str();
             retriever = retriever->next();
         }
     }
 
     if (token.empty()) {
         gfal2_set_error(err, http_plugin_domain, ENODATA, __func__,
-                        "Could not retrieve token for %s", url);
+                        "Could not retrieve token for %s [last failed attempt: %s]", url, last_emsg.c_str());
     } else if (token.size() >= s_buff) {
         gfal2_set_error(err, http_plugin_domain, ENOMEM, __func__,
                         "response larger than allocated buffer size [%ld]", s_buff);
