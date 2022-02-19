@@ -21,6 +21,9 @@
 #include "gfal_mock_plugin.h"
 #include <string.h>
 
+#ifndef ENODATA
+#define ENODATA ENOATTR
+#endif
 
 int gfal_plugin_mock_stat(plugin_handle plugin_data, const char *path, struct stat *buf, GError **err)
 {

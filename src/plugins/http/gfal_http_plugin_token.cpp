@@ -25,6 +25,10 @@
 #include "gfal_http_plugin.h"
 #include "exceptions/gfalcoreexception.hpp"
 
+#ifndef ENODATA
+#define ENODATA ENOATTR
+#endif
+
 /*
  * NOTE:
  * The token interaction in this unit file is largely based
