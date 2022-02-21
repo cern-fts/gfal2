@@ -117,7 +117,7 @@ private:
 
     // Obtain Reva endpoint credentials
     void get_reva_credentials(Davix::RequestParams &params, const Davix::Uri &uri, const OP& operation);
-    
+
     // Obtain certificate credentials
     void get_certificate(Davix::RequestParams& params, const Davix::Uri& uri);
 

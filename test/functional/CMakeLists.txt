@@ -72,7 +72,7 @@ if(FUNCTIONAL_TESTS)
     function(test_del name dir_path)
         add_test(gfal_test_del_${name} gfal_test_del ${dir_path})
     endfunction(test_del name path)
-    
+
     # QoS tests
     add_test_executable(gfal_test_qos "gfal_test_qos.cpp")
     target_link_libraries(gfal_test_qos ${GFAL2_LIBRARIES} gfal2_test_shared)

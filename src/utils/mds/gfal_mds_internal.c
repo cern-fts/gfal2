@@ -195,7 +195,7 @@ static int gfal_mds_convert_entry_to_srm_information(LDAP *ld, LDAPMessage *entr
 
 
 /*
- * 
+ *
  * parse the result of a query to get the srm endpoint
  */
 int gfal_mds_get_srm_types_endpoint(LDAP *ld, LDAPMessage *result, gfal_mds_endpoint *endpoints, size_t s_endpoint,
@@ -237,7 +237,7 @@ int gfal_mds_get_srm_types_endpoint(LDAP *ld, LDAPMessage *result, gfal_mds_endp
 }
 
 /*
- * 
+ *
  * get the current ldap URI
  **/
 int gfal_mds_get_ldapuri(gfal2_context_t context, char *buff, size_t s_buff, GError **err)

@@ -3,7 +3,7 @@
 # include files and libraries are.
 #
 # This code sets the following variables:
-# 
+#
 # GSOAP_LIBRARIES       = full path to the gsoap libraries
 # GSOAP_SSL_LIBRARIES   = full path to the gsoap ssl libraries
 # GSOAP_INCLUDE_DIR     = include dir to be used when using the gsoap library
@@ -40,21 +40,21 @@ ELSE(PC_GSOAP_FOUND)
     # -----------------------------------------------------
     find_library(GSOAP_LIBRARIES
         NAMES gsoap
-        HINTS ${GSOAP_LOCATION} 
+        HINTS ${GSOAP_LOCATION}
               ${CMAKE_INSTALL_PREFIX}/gsoap/*/${PLATFORM}/
         DOC "The main gsoap library"
     )
-    
+
     # -----------------------------------------------------
     # GSOAP Include Directories
     # -----------------------------------------------------
-    find_path(GSOAP_INCLUDE_DIR 
+    find_path(GSOAP_INCLUDE_DIR
         NAMES stdsoap2.h
         HINTS ${GSOAP_LOCATION}
               ${CMAKE_INSTALL_PREFIX}/gsoap/*/${PLATFORM}/
         DOC "The gsoap include directory"
     )
-    
+
     SET(GSOAP_DEFINITIONS "")
 
 ENDIF(PC_GSOAP_FOUND)
@@ -65,7 +65,7 @@ ENDIF(PC_GSOAP_FOUND)
 
 find_library(GSOAP_SSL_LIBRARIES
     NAMES gsoapssl
-    HINTS ${GSOAP_LOCATION} 
+    HINTS ${GSOAP_LOCATION}
           ${CMAKE_INSTALL_PREFIX}/gsoap/*/${PLATFORM}/
     DOC "The ssl gsoap library"
 )
@@ -106,19 +106,19 @@ endif()
 message(STATUS " - GSOAP VERSION : ${GSOAP_VERSION}")
 if( "${GSOAP_VERSION}"  VERSION_LESS "2.7.6")
 	set(GSOAP_276_COMPAT_FLAGS "")
-elseif ( "${GSOAP_VERSION}"  VERSION_LESS "2.7.14") 
-	set(GSOAP_276_COMPAT_FLAGS "-z")	
-else ( "${GSOAP_VERSION}"  VERSION_LESS "2.7.14") 
-	set(GSOAP_276_COMPAT_FLAGS "-z1 -z2")	
+elseif ( "${GSOAP_VERSION}"  VERSION_LESS "2.7.14")
+	set(GSOAP_276_COMPAT_FLAGS "-z")
+else ( "${GSOAP_VERSION}"  VERSION_LESS "2.7.14")
+	set(GSOAP_276_COMPAT_FLAGS "-z1 -z2")
 endif ( "${GSOAP_VERSION}"  VERSION_LESS "2.7.6")
 
 
 
 # -----------------------------------------------------
-# handle the QUIETLY and REQUIRED arguments and set GSOAP_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set GSOAP_FOUND to TRUE if
 # all listed variables are TRUE
 # -----------------------------------------------------
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(gsoap DEFAULT_MSG GSOAP_LIBRARIES 
+find_package_handle_standard_args(gsoap DEFAULT_MSG GSOAP_LIBRARIES
     GSOAP_INCLUDE_DIR GSOAP_WSDL2H GSOAP_SOAPCPP2)
 mark_as_advanced(GSOAP_INCLUDE_DIR GSOAP_LIBRARIES GSOAP_DEFINITIONS GSOAP_WSDL2H GSOAP_SOAPCPP2)

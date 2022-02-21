@@ -73,7 +73,7 @@ GSimpleCache* gsimplecache_new(guint64 max_number_item, GSimpleCache_CopyConstru
 void gsimplecache_delete(GSimpleCache* cache){
 	if(cache != NULL){
 		pthread_mutex_lock(&cache->mux);
-		g_hash_table_destroy (cache->table);		
+		g_hash_table_destroy (cache->table);
 		pthread_mutex_unlock(&cache->mux);
 		pthread_mutex_destroy(&cache->mux);
 		g_free(cache);
@@ -84,12 +84,12 @@ Internal_item* gsimplecache_find_kstr_internal(GSimpleCache* cache, const char* 
 	Internal_item* ret = (Internal_item*) g_hash_table_lookup(cache->table, (gconstpointer) key);
 	if(ret != NULL ){
 		return ret;
-	}	
+	}
 	return NULL;
 }
 
 static gboolean gsimplecache_remove_internal_kstr(GSimpleCache* cache, const char* key){
-		return g_hash_table_remove(cache->table, (gconstpointer) key);	
+		return g_hash_table_remove(cache->table, (gconstpointer) key);
 }
 
 // simple lazy space maker, can be improved
@@ -103,7 +103,7 @@ static void gsimplecache_manage_space(GSimpleCache* cache){
 
 
 void gsimplecache_add_item_internal(GSimpleCache* cache, const char* key, void* item){
-	Internal_item* ret = gsimplecache_find_kstr_internal(cache, key);	
+	Internal_item* ret = gsimplecache_find_kstr_internal(cache, key);
 	if(ret == NULL){
         gsimplecache_manage_space(cache);
 		ret = malloc(sizeof(struct _Internal_item) + cache->size_item);
@@ -120,7 +120,7 @@ void gsimplecache_add_item_internal(GSimpleCache* cache, const char* key, void* 
  * Add an item to the cache or increment the reference of this item of one if already exist
  * */
 void gsimplecache_add_item_kstr(GSimpleCache* cache, const char* key, void* item){
-	pthread_mutex_lock(&cache->mux);	
+	pthread_mutex_lock(&cache->mux);
 	gsimplecache_add_item_internal(cache, key, item);
 	pthread_mutex_unlock(&cache->mux);
 }
@@ -134,17 +134,17 @@ void gsimplecache_add_item_kstr(GSimpleCache* cache, const char* key, void* item
 gboolean gsimplecache_remove_kstr(GSimpleCache* cache, const char* key){
 	pthread_mutex_lock(&cache->mux);
 	gboolean ret = gsimplecache_remove_internal_kstr(cache, key);
-	pthread_mutex_unlock(&cache->mux);	
+	pthread_mutex_unlock(&cache->mux);
 	return ret;
 }
 
 /**
  * find the value in the cache, and decrease its internal reference count of 1.
  * If the item exist, set the item resu to the correct value and return 0 else return -1
- * 
+ *
  * */
 int gsimplecache_take_one_kstr(GSimpleCache* cache, const char* key, void* res){
-	pthread_mutex_lock(&cache->mux);	
+	pthread_mutex_lock(&cache->mux);
 	Internal_item* ret = gsimplecache_find_kstr_internal(cache, key);
 	if(ret){
 		(ret->ref_count)--;
@@ -152,7 +152,7 @@ int gsimplecache_take_one_kstr(GSimpleCache* cache, const char* key, void* res){
 		if(ret->ref_count <= 0)
 			gsimplecache_remove_internal_kstr(cache, key);
 	}
-	pthread_mutex_unlock(&cache->mux);	
+	pthread_mutex_unlock(&cache->mux);
 	return (ret)?0:-1;
 }
 

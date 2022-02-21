@@ -1,6 +1,6 @@
 What is GFAL2 ?
 ===============
-GFAL2 offers an a single and simple toolkit for the file operations in grids and cloud environments. 
+GFAL2 offers an a single and simple toolkit for the file operations in grids and cloud environments.
 The set of supported protocols depends on the installed plugins.
 
 Supported protocols :
@@ -17,7 +17,7 @@ License
 =======
 GFAL2 is under the Apache License 2.0
 
-Documentation 
+Documentation
 =============
  See https://dmc-docs.web.cern.ch/dmc-docs/gfal2/gfal2.html for more details
 
@@ -44,16 +44,16 @@ make
 
 ## Installation
 ```bash
-make install 
+make install
 ```
 
 ## Tests
 ```bash
 make test
 ```
-## Contributions 
+## Contributions
 Any contributions, patch or external plugins is welcome.
- 
-# Contact 
+
+# Contact
 dmc-devel@cern.ch or dmc-support@cern.ch
 

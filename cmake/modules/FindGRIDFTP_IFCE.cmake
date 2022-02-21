@@ -3,7 +3,7 @@
 # include files and libraries are.
 #
 # This code sets the following variables:
-# 
+#
 # GRIDFTP_IFCE_LIBRARIES   = full path to the dpm libraries
 # GRIDFTP_IFCE_INCLUDE_DIR = include dir to be used when using the dpm library
 # GRIDFTP_IFCE_FOUND       = set to true if dpm was found successfully
@@ -26,7 +26,7 @@ find_library(GRIDFTP_IFCE_LIBRARIES
 # -----------------------------------------------------
 # GRIDFTP_IFCE Include Directories
 # -----------------------------------------------------
-find_path(GRIDFTP_IFCE_INCLUDE_DIR 
+find_path(GRIDFTP_IFCE_INCLUDE_DIR
     NAMES gridftp-ifce.h
     HINTS ${GRIDFTP_IFCE_LOCATION} ${GRIDFTP_IFCE_LOCATION}/include ${GRIDFTP_IFCE_LOCATION}/include/*
     DOC "The gridftp-ifce.h include directory"
@@ -42,7 +42,7 @@ endif()
 
 
 # -----------------------------------------------------
-# handle the QUIETLY and REQUIRED arguments and set GRIDFTP_IFCE_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set GRIDFTP_IFCE_FOUND to TRUE if
 # all listed variables are TRUE
 # -----------------------------------------------------
 include(FindPackageHandleStandardArgs)

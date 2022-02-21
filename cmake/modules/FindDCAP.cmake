@@ -3,7 +3,7 @@
 # include files and libraries are.
 #
 # This code sets the following variables:
-# 
+#
 # DCAP_LIBRARIES   = full path to the DCAP libraries
 # DCAP_INCLUDE_DIR = include dir to be used when using the DCAP library
 # DCAP_FOUND       = set to true if DCAP was found successfully
@@ -31,8 +31,8 @@ find_library(DCAP_LIBRARIES
 # -----------------------------------------------------
 # DCAP Include Directories
 # -----------------------------------------------------
-find_path(DCAP_INCLUDE_DIR 
-    NAMES dcap.h 
+find_path(DCAP_INCLUDE_DIR
+    NAMES dcap.h
     HINTS ${DCAP_LOCATION}
           ${STAGE_DIR}
           ${CMAKE_INSTALL_PREFIX}/dcap/*/${PLATFORM}/
@@ -50,7 +50,7 @@ endif()
 
 
 # -----------------------------------------------------
-# handle the QUIETLY and REQUIRED arguments and set DCAP_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set DCAP_FOUND to TRUE if
 # all listed variables are TRUE
 # -----------------------------------------------------
 include(FindPackageHandleStandardArgs)
