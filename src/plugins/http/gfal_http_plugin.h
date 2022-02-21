@@ -66,6 +66,9 @@ public:
     friend int gfal_http_mkdirpG(plugin_handle plugin_data, const char *url, mode_t mode,
                                  gboolean rec_flag, GError **err);
 
+    friend int gfal_http_rename(plugin_handle plugin_data, const char* oldurl,
+                                const char* newurl, GError** err);;
+
     friend class TokenMapTest;
 
 private:
