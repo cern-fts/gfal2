@@ -3,7 +3,7 @@
 # include files and libraries are.
 #
 # This code sets the following variables:
-# 
+#
 # DPM_LIBRARIES   = full path to the dpm libraries
 # DPM_INCLUDE_DIR = include dir to be used when using the dpm library
 # DPM_FOUND       = set to true if dpm was found successfully
@@ -40,8 +40,8 @@ find_library(LCGDM_LIBRARIES
 # -----------------------------------------------------
 # DPM Include Directories
 # -----------------------------------------------------
-find_path(DPM_INCLUDE_DIR 
-    NAMES dpm/dpm_api.h 
+find_path(DPM_INCLUDE_DIR
+    NAMES dpm/dpm_api.h
     HINTS ${DPM_LOCATION}
           ${STAGE_DIR}
           ${CMAKE_INSTALL_PREFIX}/dcap/*/${PLATFORM}/
@@ -56,12 +56,12 @@ endif()
 # -----------------------------------------------------
 # LCGDM Include Directories
 # -----------------------------------------------------
-find_path(LCGDM_INCLUDE_DIR 
+find_path(LCGDM_INCLUDE_DIR
     NAMES Cinit.h
     HINTS ${LCGDM_LOCATION}
           ${STAGE_DIR}
           ${CMAKE_INSTALL_PREFIX}/dcap/*/${PLATFORM}/
-          ${CMAKE_INSTALL_PREFIX}/Grid/dcap/*/${PLATFORM}/ 
+          ${CMAKE_INSTALL_PREFIX}/Grid/dcap/*/${PLATFORM}/
     DOC "The LCGDM include directory"
 )
 if(LCGDM_INCLUDE_DIR)
@@ -69,7 +69,7 @@ if(LCGDM_INCLUDE_DIR)
 endif()
 
 # -----------------------------------------------------
-# handle the QUIETLY and REQUIRED arguments and set DPM_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set DPM_FOUND to TRUE if
 # all listed variables are TRUE
 # -----------------------------------------------------
 include(FindPackageHandleStandardArgs)

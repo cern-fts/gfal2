@@ -3,7 +3,7 @@
 # include files and libraries are.
 #
 # This code sets the following variables:
-# 
+#
 # GLOBUS_FTP_CLIENT_LIBRARIES       = full path to the globus-ftp-client libraries
 # GLOBUS_FTP_CLIENT_INCLUDE_DIR     = include dir to be used when using the globus-ftp-client library
 # GLOBUS_FTP_CLIENT_FOUND           = set to true if globus-ftp-client was found successfully
@@ -24,7 +24,7 @@ else (GLOBUS_FTP_CLIENT_PKG_FOUND)
 
     find_library(GLOBUS_FTP_CLIENT_LIBRARIES
         NAMES globus_ftp_client
-        HINTS ${GLOBUS_FTP_CLIENT_LOCATION} 
+        HINTS ${GLOBUS_FTP_CLIENT_LOCATION}
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib64
@@ -33,7 +33,7 @@ else (GLOBUS_FTP_CLIENT_PKG_FOUND)
         DOC "The main globus-ftp-client library"
     )
 
-    find_path(GLOBUS_FTP_CLIENT_INCLUDE_DIRS 
+    find_path(GLOBUS_FTP_CLIENT_INCLUDE_DIRS
         NAMES globus_ftp_client.h
         HINTS ${GLOBUS_FTP_CLIENT_LOCATION}/include/*
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/include
@@ -54,7 +54,7 @@ if (GLOBUS_FTP_CLIENT_INCLUDE_DIRS)
 endif (GLOBUS_FTP_CLIENT_INCLUDE_DIRS)
 
 # -----------------------------------------------------
-# handle the QUIETLY and REQUIRED arguments and set GLOBUS_FTP_CLIENT_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set GLOBUS_FTP_CLIENT_FOUND to TRUE if
 # all listed variables are TRUE
 # -----------------------------------------------------
 include(FindPackageHandleStandardArgs)

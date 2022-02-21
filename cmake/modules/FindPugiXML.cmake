@@ -3,7 +3,7 @@
 # include files and libraries are.
 #
 # This code sets the following variables:
-# 
+#
 # PUGIXML_LIBRARIES   = full path to the pugixml libraries
 # PUGIXML_INCLUDE_DIR = include dir to be used when using the pugixml library
 # PUGIXML_FOUND       = set to true if pugixml was found successfully
@@ -24,7 +24,7 @@ find_library(PUGIXML_LIBRARIES
 # -----------------------------------------------------
 # PUGIXML Include Directories
 # -----------------------------------------------------
-find_path(PUGIXML_INCLUDE_DIR 
+find_path(PUGIXML_INCLUDE_DIR
     NAMES pugixml.hpp
     HINTS ${PUGIXML_LOCATION} ${PUGIXML_LOCATION}/include ${PUGIXML_LOCATION}/include/* /usr/include
     DOC "The pugixml include directory"
@@ -34,7 +34,7 @@ if(PUGIXML_INCLUDE_DIR)
 endif()
 
 # -----------------------------------------------------
-# handle the QUIETLY and REQUIRED arguments and set PUGIXML_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set PUGIXML_FOUND to TRUE if
 # all listed variables are TRUE
 # -----------------------------------------------------
 include(FindPackageHandleStandardArgs)

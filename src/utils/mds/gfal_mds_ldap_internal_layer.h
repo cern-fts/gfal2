@@ -21,13 +21,13 @@
 #include <lber.h>
 #include <ldap.h>
 
-struct _gfal_mds_ldap{	
+struct _gfal_mds_ldap{
 	int (*ldap_initialize)(LDAP **ldp, const char *uri);
-	
+
     int (*ldap_sasl_bind_s)(LDAP *ld, const char *dn, const char *mechanism,
               struct berval *cred, LDAPControl *sctrls[],
               LDAPControl *cctrls[], struct berval **servercredp);
-              
+
 	 int (*ldap_search_ext_s)(
 				LDAP			*ld,
 				LDAP_CONST char	*base,
@@ -45,11 +45,11 @@ struct _gfal_mds_ldap{
 		LDAP			*ld,
 		LDAPControl		**serverctrls,
 		LDAPControl		**clientctrls);
-	
+
 	LDAPMessage* (*ldap_first_entry)( LDAP *ld, LDAPMessage *result );
 
 	LDAPMessage* (*ldap_next_entry)( LDAP *ld, LDAPMessage *entry );
-	
+
 	int (*ldap_count_entries)( LDAP *ld, LDAPMessage *result );
 
 	char* (*ldap_first_attribute)(
@@ -57,18 +57,18 @@ struct _gfal_mds_ldap{
 
 	char* (*ldap_next_attribute)(
 		  LDAP *ld, LDAPMessage *entry, BerElement *ber );
-		  
+
     struct berval **(*ldap_get_values_len)(LDAP *ld, LDAPMessage *entry, const char *attr);
 
 
 	void (*ldap_value_free_len) ( struct berval **vals );
- 
+
 	void (*ldap_memfree)(void * p);
 
 	int (*ldap_msgfree)( LDAPMessage *msg );
-	
+
 	void (*ber_free)(BerElement *ber, int freebuf);
-	
+
 	int (*ldap_set_option)(LDAP *ld, int option, const void *invalue);
 
 };

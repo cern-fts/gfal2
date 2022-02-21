@@ -140,7 +140,7 @@ class Repository(object):
 
         tag = is_tag(ref)
 
-        if tag: 
+        if tag:
             base = "{0}/rc".format(self.base)
         else:
             base = "{0}/testing".format(self.base)

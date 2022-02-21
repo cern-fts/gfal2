@@ -94,7 +94,7 @@ TEST_F(XAttrTest, SrmType)
     ret = gfal2_listxattr(context, surl, buffer, sizeof(buffer), &error);
     EXPECT_PRED_FORMAT2(AssertGfalSuccess, 0, error);
     EXPECT_GT(ret, 0);
-    
+
     bool found = false;
     int i = 0;
     while (i < ret) {

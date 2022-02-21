@@ -1,4 +1,4 @@
-##convenience function for string manipulation 
+##convenience function for string manipulation
 
 
 
@@ -16,16 +16,16 @@ function(replace_all_occurence)
     )
 	LIST(APPEND list_pattern ${REPLACE_ALL_LIST_PATTERN})
 	LIST(APPEND list_replacer ${REPLACE_ALL_LIST_REPLACER})
-	
+
 	LIST(LENGTH list_pattern list_size )
 	LIST(LENGTH list_replacer list2_size )
 	math(EXPR list_size ${list_size}-1)
 	LIST(GET  REPLACE_ALL_DEFAULT_ARGS 0 output_var)
 	LIST(GET  REPLACE_ALL_DEFAULT_ARGS 1 intput_content )
-	
+
 	SET(tmp_str ${intput_content})
 	SET(tmp_str2 "")
-	
+
 	foreach(i RANGE ${list_size})
 		list(GET list_pattern ${i} current_pattern )
 		list(GET list_replacer ${i} current_replacer )
@@ -44,10 +44,10 @@ endfunction(STRING_APPEND var_name content)
 function(parse_lib_path lib_link lib_directory lib_path)
 	string(REGEX REPLACE "^.*/(lib)?(.*)\\.(so|dll)"
          "\\2" my_lib_link
-         ${lib_path})	
+         ${lib_path})
 	string(REGEX REPLACE "^(.*)/(lib)?(.*)\\.(so|dll)"
          "\\1" my_lib_dir
-         ${lib_path})	
+         ${lib_path})
     SET(${lib_link} ${my_lib_link} PARENT_SCOPE)
-    SET(${lib_directory} ${my_lib_dir} PARENT_SCOPE)   
+    SET(${lib_directory} ${my_lib_dir} PARENT_SCOPE)
 endfunction(parse_lib_path lib_link lib_directory lib_path)
