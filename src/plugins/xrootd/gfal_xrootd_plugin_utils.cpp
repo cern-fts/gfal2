@@ -55,7 +55,7 @@ XrdCl::Access::Mode file_mode_to_xrdcl_access( mode_t mode )
   if( mode & S_IWOTH )
     xrdcl_mode |= XrdCl::Access::OW;
   if( mode & S_IXOTH )
-    xrdcl_mode |= XrdCl::Access::OX;   
+    xrdcl_mode |= XrdCl::Access::OX;
 
   return xrdcl_mode;
 }
@@ -92,7 +92,7 @@ static std::string query_args(gfal2_context_t context, const char *url)
     std::ostringstream args;
 
     if (ucert) {
-    
+
         if (!ukey) {
             ukey = ucert;
         }
@@ -107,9 +107,9 @@ static std::string query_args(gfal2_context_t context, const char *url)
            args << "xrd.gsiusrcrt=" << ucert << '&' << "xrd.gsiusrkey=" << ukey;
            prev_args = true;
         }
-     
+
         g_free(ucert);
-    
+
         if (ucert != ukey)
             g_free(ukey);
     }

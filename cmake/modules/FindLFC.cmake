@@ -3,7 +3,7 @@
 # include files and libraries are.
 #
 # This code sets the following variables:
-# 
+#
 # LFC_LIBRARIES   = full path to the LFC libraries
 # LFC_INCLUDE_DIR = include dir to be used when using the LFC library
 # LFC_FOUND       = set to true if LFC was found successfully
@@ -27,8 +27,8 @@ find_library(LFC_LIBRARIES
 # -----------------------------------------------------
 # LFC Include Directories
 # -----------------------------------------------------
-find_path(LFC_INCLUDE_DIR 
-    NAMES lfc/lfc_api.h 
+find_path(LFC_INCLUDE_DIR
+    NAMES lfc/lfc_api.h
     HINTS ${LFC_LOCATION}
           ${STAGE_DIR}
           ${CMAKE_INSTALL_PREFIX}/lfc/*/${PLATFORM}/
@@ -51,7 +51,7 @@ find_path(LCGDM_INCLUDE_DIR
 )
 
 # -----------------------------------------------------
-# handle the QUIETLY and REQUIRED arguments and set LFC_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set LFC_FOUND to TRUE if
 # all listed variables are TRUE
 # -----------------------------------------------------
 include(FindPackageHandleStandardArgs)

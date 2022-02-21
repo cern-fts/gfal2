@@ -32,7 +32,7 @@ RUN yum install -y cppcheck java-1.8.0-openjdk lcg-CA lcov rats unzip voms-clien
 # Coverage requirements
 ADD "http://repo1.maven.org/maven2/org/codehaus/sonar/runner/sonar-runner-dist/2.4/sonar-runner-dist-2.4.zip" /tmp
 RUN unzip "/tmp/sonar-runner-dist-2.4.zip" -d "/tmp"
-ADD sonar-runner.properties "/tmp/sonar-runner-2.4/conf" 
+ADD sonar-runner.properties "/tmp/sonar-runner-2.4/conf"
 ADD "https://raw.github.com/eriwen/lcov-to-cobertura-xml/master/lcov_cobertura/lcov_cobertura.py" /tmp
 RUN chmod a+r /tmp/lcov_cobertura.py
 

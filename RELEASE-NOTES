@@ -113,13 +113,13 @@ GFAL2 RELEASE-NOTES
 
 ###Improvement
 - [DMC-1187] - Add COPY_FAIL_NEARLINE option for  SRM  copy_file
-                                                                                                                                                                                                                                                
+
 ## Tue Oct 22 2019 Andrea Manzi <amanzi at cern.ch> - 2.17.0
 ###Sub-task
 - [DMC-1168] - add root and https to TURL_3RD_PARTY_PROTOCOLS
 
 ###Bug
-- [DMC-1185] - When an Xrootd staging request part of a bulk fails, all staging requests are also set as failed 
+- [DMC-1185] - When an Xrootd staging request part of a bulk fails, all staging requests are also set as failed
 
 ###Task
 
@@ -131,7 +131,7 @@ GFAL2 RELEASE-NOTES
 
 - [DMC-1061] - xrootd plugin: checksum logic broken
 - [DMC-1182] - Add multistream support in Xrootd plugin
-         
+
 ## Wed Sep 18 2019 Andrea Manzi <amanzi at cern.ch> - 2.16.4
 ###Bug
 - [DMC-1173] - The xrootd plugin ignores the make parent option
@@ -139,7 +139,7 @@ GFAL2 RELEASE-NOTES
 ###Task
 - [DMC-1159] - Implement Xrootd prepare evict on sources when Xrootd TPC transfers succeed
 - [DMC-1160] - Remove conditional compilation code to still support xrootd v3 on xrootd plugin
-- [DMC-1166] - Add support for canceling HTTP TPC transfers 
+- [DMC-1166] - Add support for canceling HTTP TPC transfers
 
 ## Fri May 17 2019 Andrea Manzi <amanzi at cern.ch> - 2.16.3
 ###Bug
@@ -150,7 +150,7 @@ GFAL2 RELEASE-NOTES
 
 ###Task
 - [DMC-1152] - Map stat file flags for Xrootd to SRM user.status xattr
-- [DMC-1156] - Sanitize gridftp checksum returned by globus 
+- [DMC-1156] - Sanitize gridftp checksum returned by globus
 - [DMC-1157] - Integrate new API for staging canceling in Xrootd
 
 ## Thu Feb 21 2019 Andrea Manzi <amanzi at cern.ch> - 2.16.2
@@ -173,9 +173,9 @@ GFAL2 RELEASE-NOTES
 
 ###Task
 - [DMC-1095] - Refactor http streamed copy to support s3 multipart upload via Davix
-            
+
 ## Mon Seo 28 2018 Andrea Manzi <amanzi at cern.ch> - 2.16.0
-### Bug 
+### Bug
 - [DMC-1048] - Xrootd plugin: the query for the EOS-CTA extended attribute "sys.retrieve.error" should be asynchronous
 - [DMC-1055] - The Xrootd checksum preset should not contain leading 0s
 - [DMC-1057] - xattr.h is in glibc-headers >= 2.27
@@ -210,7 +210,7 @@ GFAL2 RELEASE-NOTES
 
 ## Thu Apr 05 2018 Andrea Manzi <amanzi at cern.ch> - 2.15.4
 ### Bug
-- [DMC-1027] - DAVIX operation timeout incorrect for HTTP-based transfers 
+- [DMC-1027] - DAVIX operation timeout incorrect for HTTP-based transfers
 - [DMC-1031] - gfal_http_get_token does not free the gchar* token
 - [DMC-1034] - When ENABLE_STREAM_COPY is disabled the http copy process crashes
 

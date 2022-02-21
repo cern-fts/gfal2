@@ -25,9 +25,9 @@
 #include <glib.h>
 
 namespace Gfal{
-	
+
 void gerror_to_cpp(GError ** err);
 
 }
 
-#endif /* GERROR_TO_CPP_H */ 
+#endif /* GERROR_TO_CPP_H */

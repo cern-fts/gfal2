@@ -99,7 +99,7 @@ void GridFTPModule::checksum(const char* url, const char* check_type,
     if (string_is_valid(checksum_buffer) != 1) {
         std::string s(16, '0');
 	strncpy(checksum_buffer, s.c_str(), buffer_length);
-    } 
-	
+    }
+
     gfal2_log(G_LOG_LEVEL_DEBUG, " <- [GridFTPModule::checksum] ");
 }

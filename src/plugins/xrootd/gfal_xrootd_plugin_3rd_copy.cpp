@@ -209,7 +209,7 @@ static void gfal_xrootd_evict_cache(gfal2_context_t context, const char* src)
     arg.FromString( sitename_arg );
 
     XrdCl::XRootDStatus status = fs.Query( XrdCl::QueryCode::Config, arg, response );
-    
+
     if (!status.IsOK()) {
         delete response;
         return;
@@ -228,7 +228,7 @@ static void gfal_xrootd_evict_cache(gfal2_context_t context, const char* src)
         std::vector<std::string> fileList;
         XrdCl::URL file(prepare_url(context, src));
         fileList.emplace_back(file.GetPath());
-   
+
         XrdCl::Buffer *responsePtr = 0;
         XrdCl::Status st = fs.Prepare(fileList, XrdCl::PrepareFlags::Flags::Evict, 0, responsePtr, 30);
     	delete responsePtr;

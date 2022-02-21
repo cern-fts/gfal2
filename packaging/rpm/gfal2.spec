@@ -58,9 +58,9 @@ Obsoletes:          %{name}-transfer < %{version}-%{release}
 Provides:           %{name}-transfer = %{version}-%{release}
 
 %description
-GFAL 2.0 offers an a single and simple POSIX-like API 
-for the file operations in grids and cloud environments. 
-The set of supported protocols depends 
+GFAL 2.0 offers an a single and simple POSIX-like API
+for the file operations in grids and cloud environments.
+The set of supported protocols depends
 of the %{name} installed plugins.
 
 %package devel
@@ -68,7 +68,7 @@ Summary:            Development files of %{name}
 Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           glib2-devel%{?_isa}
-Requires:           libattr-devel%{?_isa} 
+Requires:           libattr-devel%{?_isa}
 Requires:           pkgconfig
 
 %description devel
@@ -101,31 +101,31 @@ Requires:           %{name}%{?_isa} = %{version}-%{release}
 
 %description plugin-lfc
 Provides the lfc support (lfn://) for %{name}.
-The LFC plugin allows read-only POSIX operations 
+The LFC plugin allows read-only POSIX operations
 for the LFC catalog.
 
 
 %package plugin-rfio
 Summary:            Provides the rfio support for %{name}
 Group:              Applications/Internet
-Requires:           %{name}%{?_isa} = %{version}-%{release} 
+Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           dpm-libs%{?_isa}
 
 %description plugin-rfio
-Provides the rfio support (rfio://) for %{name}. 
-The rfio plugin provides the POSIX operations for 
-the rfio URLs, the rfio protocol is used on the DPM 
+Provides the rfio support (rfio://) for %{name}.
+The rfio plugin provides the POSIX operations for
+the rfio URLs, the rfio protocol is used on the DPM
 and on the Castor storage systems.
 %endif
 
 %package plugin-dcap
 Summary:            Provides the support access for %{name}
 Group:              Applications/Internet
-Requires:           %{name}%{?_isa} = %{version}-%{release} 
+Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           dcap-tunnel-gsi%{?_isa}
 
 %description plugin-dcap
-Provides the dcap support (gsidcap://, dcap://) for %{name}. 
+Provides the dcap support (gsidcap://, dcap://) for %{name}.
 The dcap plugin provides the POSIX operations for the dcap \
 URLs, the dcap protocol is used on the DCACHE storage system
 
@@ -133,23 +133,23 @@ URLs, the dcap protocol is used on the DCACHE storage system
 %package plugin-srm
 Summary:            Provides the srm access for %{name}
 Group:              Applications/Internet
-Requires:           %{name}%{?_isa} = %{version}-%{release} 
+Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           srm-ifce >= 1.23.1
 
 %description plugin-srm
-Provides the srm support (srm://) for %{name}. 
-The srm plugin provides the POSIX operations and 
+Provides the srm support (srm://) for %{name}.
+The srm plugin provides the POSIX operations and
 the third party transfer support on the SRM URLs.
 
 
 %package plugin-gridftp
 Summary:            Provides the gridftp support for %{name}
 Group:              Applications/Internet
-Requires:           %{name}%{?_isa} = %{version}-%{release} 
+Requires:           %{name}%{?_isa} = %{version}-%{release}
 
 %description plugin-gridftp
-Provides the gridftp support (gsiftp://) for %{name}. 
-The gridftp plugin provides the POSIX operations and 
+Provides the gridftp support (gsiftp://) for %{name}.
+The gridftp plugin provides the POSIX operations and
 the third party transfer support on the GSIFTP URLs.
 
 
@@ -212,7 +212,7 @@ Requires:           %{name}-plugin-xrootd%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-sftp%{?_isa} = %{version}-%{release}
 
 %description all
-Meta-package for complete install of GFAL2 
+Meta-package for complete install of GFAL2
 with all the protocol plugins.
 
 %package tests
@@ -538,7 +538,7 @@ fi
 
 * Mon Apr 29 2013 Michail Salichos <msalicho at cern.ch> - 2.2.0-5
 - make all gridftp ops async to avoid stalling processes
- 
+
 * Fri Apr 26 2013 Michail Salichos <msalicho at cern.ch> - 2.2.0-4
 - replace gass stat with gridftp stat
 
@@ -550,7 +550,7 @@ fi
 
 * Mon Mar 25 2013 Michail Salichos <msalicho at cern.ch> - 2.2.0-1
 - fix memory leaks in bringonline SRM op
- 
+
 * Wed Mar 20 2013 Adrien Devresse <adevress at cern.ch> - 2.2.0-0
 - fix thread safety issue with gsiftp plugin
 - add the bring online API
@@ -640,6 +640,6 @@ fi
 - Improve gridftp plugin with severals other calls
 - Correct dcap/rfio/srm bugs related to error report
 - big work on the documentation
- 
+
 * Mon Dec 12 2011 Adrien Devresse <adevress at cern.ch> - 2.0.0-0.6.2012041515snap
 - Initial gfal 2.0 preview release

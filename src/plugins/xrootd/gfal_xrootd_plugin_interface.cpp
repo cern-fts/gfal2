@@ -35,7 +35,7 @@
 
 // For setting the log level
 #include <XrdCl/XrdClDefaultEnv.hh>
- 
+
 #include <XrdVersion.hh>
 
 // TRUE and FALSE are defined in Glib and xrootd headers
@@ -308,7 +308,7 @@ void StatInfo2Xattr(const XrdCl::StatInfo* stinfo,  char * buff)
         strcpy(buff,GFAL_XATTR_STATUS_ONLINE);
         gfal2_log(G_LOG_LEVEL_DEBUG, GFAL_XATTR_STATUS_ONLINE);
     }
-    else { 
+    else {
         strcpy(buff,GFAL_XATTR_STATUS_UNKNOWN);
         gfal2_log(G_LOG_LEVEL_DEBUG, GFAL_XATTR_STATUS_UNKNOWN);
     }
@@ -571,22 +571,22 @@ ssize_t gfal_xrootd_getxattrG(plugin_handle plugin_data, const char* url, const 
     if (strcmp(key, GFAL_XATTR_SPACETOKEN) == 0) {
         len = gfal_xrootd_space_reporting(plugin_data, url, key, buff, s_buff, err);
     } else if (strcmp(key, GFAL_XATTR_STATUS) == 0) {
- 
+
         std::string sanitizedUrl = prepare_url((gfal2_context_t) plugin_data, url);
         XrdCl::URL parsed(sanitizedUrl);
         XrdCl::FileSystem fs(parsed);
         XrdCl::StatInfo * info;
         XrdCl::XRootDStatus st = fs.Stat( parsed.GetPath(), info );
- 
+
         if (!st.IsOK()) {
             errno = ENOENT;
             gfal2_xrootd_set_error(err, errno, __func__, "Failed to get the xattr \"%s\"", key);
             return -1;
         }
-        
+
         StatInfo2Xattr(info,(char*)buff);
         len = strnlen((char*)buff, s_buff);
-        delete info;       
+        delete info;
     } else {
         std::string sanitizedUrl = prepare_url((gfal2_context_t) plugin_data, url);
         memset(buff, 0x00, s_buff);

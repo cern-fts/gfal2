@@ -59,7 +59,7 @@ if (UNIX)
       "${LIB_INSTALL_DIR}/${APPLICATION_NAME}-plugins/"
       CACHE PATH "The subdirectory relative to the install prefix where plugins will be installed (default is prefix/lib/${APPLICATION_NAME})"
   )
-  
+
   SET(INCLUDE_INSTALL_DIR
     "${CMAKE_INSTALL_PREFIX}/include"
     CACHE PATH "The subdirectory to the header prefix (default prefix/include)"
@@ -69,12 +69,12 @@ if (UNIX)
     "${DATA_INSTALL_PREFIX}"
     CACHE PATH "The parent directory where applications can install their data (default prefix/share/${APPLICATION_NAME})"
   )
- 
+
   SET(DOC_INSTALL_DIR
     "${SHARE_INSTALL_PREFIX}/doc/${APPLICATION_NAME}"
     CACHE PATH "The parent directory where applications can install their documentation (default prefix/share/doc/${APPLICATION_NAME})"
   )
-  
+
   SET(HTML_INSTALL_DIR
     "${DATA_INSTALL_PREFIX}/doc/HTML"
     CACHE PATH "The HTML install dir for documentation (default data/doc/html)"

@@ -3,7 +3,7 @@
 # include files and libraries are.
 #
 # This code sets the following variables:
-# 
+#
 # GLOBUS_OPENSSL_LIBRARIES       = full path to the globus-openssl libraries
 # GLOBUS_OPENSSL_INCLUDE_DIR     = include dir to be used when using the globus-openssl library
 # GLOBUS_OPENSSL_FOUND           = set to true if globus-openssl was found successfully
@@ -24,7 +24,7 @@ else (GLOBUS_OPENSSL_PKG_FOUND)
 
     find_library(GLOBUS_OPENSSL_LIBRARIES
         NAMES globus_openssl
-        HINTS ${GLOBUS_OPENSSL_LOCATION} 
+        HINTS ${GLOBUS_OPENSSL_LOCATION}
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib64
@@ -33,7 +33,7 @@ else (GLOBUS_OPENSSL_PKG_FOUND)
         DOC "The main globus-openssl library"
     )
 
-    find_path(GLOBUS_OPENSSL_INCLUDE_DIRS 
+    find_path(GLOBUS_OPENSSL_INCLUDE_DIRS
         NAMES globus_openssl.h
         HINTS ${GLOBUS_OPENSSL_LOCATION}/include/*
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/include
@@ -54,7 +54,7 @@ if (GLOBUS_OPENSSL_INCLUDE_DIRS)
 endif (GLOBUS_OPENSSL_INCLUDE_DIRS)
 
 # -----------------------------------------------------
-# handle the QUIETLY and REQUIRED arguments and set GLOBUS_OPENSSL_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set GLOBUS_OPENSSL_FOUND to TRUE if
 # all listed variables are TRUE
 # -----------------------------------------------------
 include(FindPackageHandleStandardArgs)

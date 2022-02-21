@@ -21,9 +21,9 @@ if (PLUGIN_FILE)
 
     install(TARGETS		plugin_file
 	        LIBRARY		DESTINATION ${PLUGIN_INSTALL_DIR} )
-	    
+
     install(FILES		"README_PLUGIN_FILE"
-	    	DESTINATION ${DOC_INSTALL_DIR})	    
+	    	DESTINATION ${DOC_INSTALL_DIR})
 
 endif (PLUGIN_FILE)
 
