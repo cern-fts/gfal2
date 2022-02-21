@@ -27,7 +27,7 @@
  * initialize a file copy from the given source to the given dest with the parameters params
  *  srm implementation of the plugin filecopy
  *  @param handle : srm plugin handle
- *  @param params :tranfer parameters
+ *  @param params :transfer parameters
  *  @param status : transfer status handle
  *  @param src : source url
  *  @param dst : destination url

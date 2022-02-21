@@ -27,6 +27,9 @@
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_bringonline.h"
 
+/** default buffer size for protocol schema */
+#define GFAL_SCHEMA_MAX_LEN 64
+
 
 GQuark srm_domain()
 {
@@ -140,67 +143,53 @@ static int srm_plugin_prepare_dest_put(plugin_handle handle,
     return res;
 }
 
-
-static int srm_resolve_get_turl(plugin_handle handle, gfalt_params_t params,
-    const char *surl, const char *other_surl,
-    char *turl, size_t turl_size,
+// Returns 0 on success, < 0 on failure or > 0 if SURL not an SRM endpoint
+static int srm_resolve_get_turl(plugin_handle handle, gfalt_params_t params, char **protocols,
+    const char *surl, char *turl, size_t turl_size,
     char *token, size_t token_size,
     GError **err)
 {
-    GError *tmp_err = NULL;
+    GError* tmp_err = NULL;
+    int res;
 
-    int res = 0;
     if (srm_check_url(surl)) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tGET surl -> turl resolution start");
-        res = gfal_srm_get_rd3_turl(handle, params, surl, other_surl, turl, turl_size, token, token_size, &tmp_err);
-        if (res >= 0) {
-            gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tGET surl -> turl resolution finished: %s -> %s (%s)",
-                surl, turl, token);
-            plugin_trigger_event(params, gfal2_get_plugin_srm_quark(),
-                GFAL_EVENT_SOURCE, gfal2_get_srm_get_quark(),
-                "Got TURL %s => %s", surl, turl);
-        }
+        res = gfal_srm_get_rd3_turl(handle, params, protocols, surl,
+                                    turl, turl_size, token, token_size,
+                                    &tmp_err);
     }
     else {
         g_strlcpy(turl, surl, turl_size);
         gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tNo SRM resolution needed on %s", surl);
         token[0] = '\0';
+        res = 1;
     }
 
     if (tmp_err)
         gfalt_propagate_prefixed_error(err, tmp_err, __func__, GFALT_ERROR_SOURCE, "SRM_GET_TURL");
+
     return res;
 }
 
-// = 0 on success
-// < 0 on failure
-// > 0 if surl is not an srm endpoint
+// Returns 0 on success, < 0 on failure or > 0 if SURL not an SRM endpoint
 static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
-    gfalt_params_t params,
-    const char *surl, const char *other_surl, off_t file_size_surl,
+    gfalt_params_t params, char **protocols,
+    const char *surl, off_t file_size_surl,
     char *turl, size_t turl_size,
     char *token, size_t token_size,
     GError **err)
 {
-    GError *tmp_err = NULL;
+    GError* tmp_err = NULL;
+    int res;
 
-    int res = 0;
     if (srm_check_url(surl)) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tPUT surl -> turl resolution start ");
         res = srm_plugin_prepare_dest_put(handle, context, params, surl, &tmp_err);
+
         if (res == 0) {
-            res = gfal_srm_put_rd3_turl(handle, params, surl, other_surl, file_size_surl,
-                turl, turl_size,
-                token, token_size,
-                &tmp_err);
-            if (res >= 0) {
-                gfal2_log(G_LOG_LEVEL_DEBUG, "\t\tPUT surl -> turl resolution ended : %s -> %s (%s)",
-                    surl, turl, token);
-                plugin_trigger_event(params, gfal2_get_plugin_srm_quark(),
-                    GFAL_EVENT_DESTINATION, gfal2_get_srm_put_quark(),
-                    "Got TURL %s => %s", surl, turl);
-            }
-            else {
+            res = gfal_srm_put_rd3_turl(handle, params, protocols, surl, file_size_surl,
+                                        turl, turl_size, token, token_size,
+                                        &tmp_err);
+
+            if (res < 0) {
                 gfalt_propagate_prefixed_error(err, tmp_err, __func__, GFALT_ERROR_DESTINATION, "SRM_PUT_TURL");
                 return res;
             }
@@ -215,9 +204,117 @@ static int srm_resolve_put_turl(plugin_handle handle, gfal2_context_t context,
 
     if (tmp_err != NULL)
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+
     return res;
 }
 
+
+static void srm_resolve_get_turl_log_event(gfalt_params_t params, const char* surl,
+                                           const char* turl, const char* token)
+{
+    if (srm_check_url(surl)) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "\t\t[GET] SURL -> TURL resolution finished: %s -> %s (%s)",
+                  surl, turl, token);
+        plugin_trigger_event(params, gfal2_get_plugin_srm_quark(),
+                             GFAL_EVENT_SOURCE, gfal2_get_srm_get_quark(),
+                             "Got TURL %s => %s", surl, turl);
+    }
+}
+
+static void srm_resolve_put_turl_log_event(gfalt_params_t params, const char* surl,
+                                           const char* turl, const char* token)
+{
+    if (srm_check_url(surl)) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "\t\t[PUT] SURL -> TURL resolution finished: %s -> %s (%s)",
+                  surl, turl, token);
+        plugin_trigger_event(params, gfal2_get_plugin_srm_quark(),
+                             GFAL_EVENT_DESTINATION, gfal2_get_srm_put_quark(),
+                             "Got TURL %s => %s", surl, turl);
+    }
+}
+
+
+static void srm_resolve_protocol_list_log(GLogLevelFlags loglevel, const char *msg, char **protocols)
+{
+    size_t n_protocols = g_strv_length(protocols);
+    GString *msgline = g_string_new(msg);
+    int i;
+
+    for (i = 0; i < n_protocols; ++i) {
+        if (i > 0) {
+            g_string_append_c(msgline, ';');
+        }
+
+        g_string_append(msgline, protocols[i]);
+    }
+
+    gfal2_log(loglevel, "%s", msgline->str);
+    g_string_free(msgline, TRUE);
+}
+
+
+// Return the configuration list of protocols.
+// If one of the involved SURLs is not SRM, prioritize it.
+static char** srm_resolve_protocol_list(plugin_handle ch, const char* source, const char* dest)
+{
+    gfal_srmv2_opt *opts = (gfal_srmv2_opt *) ch;
+    const char* non_srm_protocol = NULL;
+    char** protocols = NULL;
+    char* shift = NULL;
+    size_t n_protocols;
+    size_t non_srm_prot_len;
+    gfal2_uri* parsed = NULL;
+    GError* err = NULL;
+    int i, j;
+
+    protocols = srm_get_3rdparty_turls_sup_protocol(opts->handle);
+    n_protocols = g_strv_length(protocols);
+    srm_resolve_protocol_list_log(G_LOG_LEVEL_DEBUG, "Initial protocols for TURL resolution: ", protocols);
+
+    if (!srm_check_url(source)) {
+        non_srm_protocol = source;
+    } else if (!srm_check_url(dest)) {
+        non_srm_protocol = dest;
+    }
+
+    // Prioritize non-SRM protocol
+    if (non_srm_protocol != NULL) {
+        parsed = gfal2_parse_uri(non_srm_protocol, &err);
+
+        if (err != NULL) {
+            g_clear_error(&err);
+            return protocols;
+        }
+
+        non_srm_protocol = parsed->scheme;
+
+        // Treat "davs://" and "https:// as the same protocol
+        if (strncmp(non_srm_protocol, "davs", 4) == 0) {
+            non_srm_protocol = "https";
+        }
+
+        non_srm_prot_len = strlen(non_srm_protocol);
+
+        // Check the compare_surl protocol is in the request list
+        for (i = 1; i < n_protocols; i++) {
+            if (strncmp(protocols[i], non_srm_protocol, non_srm_prot_len) == 0) {
+                shift = protocols[i];
+
+                for (j = i; j > 0; j--) {
+                    protocols[j] = protocols[j - 1];
+                }
+
+                protocols[0] = shift;
+                break;
+            }
+        }
+
+        gfal2_free_uri(parsed);
+    }
+
+    srm_resolve_protocol_list_log(G_LOG_LEVEL_DEBUG, "Reordered protocols for TURL resolution: ", protocols);
+    return protocols;
+}
 
 static int srm_get_checksum_config(gfal2_context_t context, gfalt_params_t params,
     gfalt_checksum_mode_t *mode, char *algorithm, size_t algorithm_size,
@@ -431,6 +528,7 @@ static int srm_resolve_turls(plugin_handle handle, gfal2_context_t context,
     char buffer[1024];
     struct stat stat_source;
     memset(&stat_source, 0, sizeof(stat_source));
+
     if (gfal2_stat(context, source, &stat_source, &tmp_err) != 0) {
         stat_source.st_size = 0;
         gfal2_log(G_LOG_LEVEL_DEBUG,
@@ -440,11 +538,13 @@ static int srm_resolve_turls(plugin_handle handle, gfal2_context_t context,
         tmp_err = NULL;
     }
 
-    //check if the source file is online in case the SRM_COPY_FAIL_NEARLINE is set
+    // Check if the source file is online in case the SRM_COPY_FAIL_NEARLINE is set
     gboolean fail_nearline = gfal2_get_opt_boolean_with_default(context, "SRM PLUGIN", "COPY_FAIL_NEARLINE", FALSE);
+
     if (fail_nearline && srm_check_url(source)) {
         gfal2_log(G_LOG_LEVEL_DEBUG, "Copy-fail-nearline: querying status first");
         ssize_t ret = gfal2_getxattr(context,  source, GFAL_XATTR_STATUS, buffer, sizeof(buffer), &tmp_err);
+
         if (ret > 0 && strlen(buffer) > 0 && tmp_err == NULL) {
             if (strncmp(buffer, GFAL_XATTR_STATUS_NEARLINE, sizeof(GFAL_XATTR_STATUS_NEARLINE)) == 0) {
                 gfal2_log(G_LOG_LEVEL_DEBUG, "Copy-fail-nearline: The source file is not ONLINE");
@@ -463,25 +563,107 @@ static int srm_resolve_turls(plugin_handle handle, gfal2_context_t context,
         }
     }
 
-    srm_resolve_get_turl(handle, params, source, dest,
-        turl_source, GFAL_URL_MAX_LEN,
-        token_source, GFAL_URL_MAX_LEN,
-        &tmp_err);
-    if (tmp_err != NULL) {
+    // Try to match 3rd TURLs exhaustively
+    // Algorithm:
+    //   - Reorder the configured list of possible protocols
+    //   - For each protocol in the list, try to get both getTURL and putTURL
+    //   - Stop when successful or exhausted the protocol list
+
+    char turl_source_resolved[GFAL_URL_MAX_LEN] = {0};
+    char token_source_resolved[GFAL_URL_MAX_LEN] = {0};
+    char turl_destination_resolved[GFAL_URL_MAX_LEN] = {0};
+    char token_destination_resolved[GFAL_URL_MAX_LEN] = {0};
+    char** protocols_tmp;
+    char** protocols;
+    char* protocol;
+    size_t n_protocols;
+    int i;
+
+    gboolean protocol_agreement_flag = FALSE;
+    GError* src_tmp_err = NULL;
+    GError* dst_tmp_err = NULL;
+    int src_turl_retc = 0;
+    int dst_turl_retc = 0;
+
+    protocols = srm_resolve_protocol_list(handle, source, dest);
+    n_protocols = g_strv_length(protocols);
+
+    for (i = 0; i < n_protocols; i++) {
+        protocol = protocols[i];
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Trying to resolve TURLs for protocol: %s", protocol);
+        protocols_tmp = calloc(2, sizeof(char *));
+        protocols_tmp[0] = g_strdup(protocol);
+
+        if (src_turl_retc <= 0) {
+            src_turl_retc = srm_resolve_get_turl(handle, params, protocols_tmp, source,
+                                                 turl_source, GFAL_URL_MAX_LEN,
+                                                 token_source, GFAL_URL_MAX_LEN,
+                                                 &src_tmp_err);
+        }
+
+        if (dst_turl_retc <= 0) {
+            dst_turl_retc = srm_resolve_put_turl(handle, context, params, protocols_tmp,
+                                                 dest, stat_source.st_size,
+                                                 turl_destination, GFAL_URL_MAX_LEN,
+                                                 token_destination, GFAL_URL_MAX_LEN,
+                                                 &dst_tmp_err);
+        }
+
+        g_strfreev(protocols_tmp);
+        g_clear_error(&src_tmp_err);
+        g_clear_error(&dst_tmp_err);
+
+        // Both TURLs resolved
+        if (src_turl_retc >= 0 && dst_turl_retc >= 0) {
+            // Write source TURL and token
+            g_strlcpy(turl_source_resolved, turl_source, GFAL_URL_MAX_LEN);
+            g_strlcpy(token_source_resolved, token_source, GFAL_URL_MAX_LEN);
+            // Write destination TURL and token
+            g_strlcpy(turl_destination_resolved, turl_destination, GFAL_URL_MAX_LEN);
+            g_strlcpy(token_destination_resolved, token_destination, GFAL_URL_MAX_LEN);
+            break;
+        }
+
+        // Keep the first TURL for source and destination as backups
+        if (src_turl_retc >= 0 && turl_source_resolved[0] == '\0') {
+            g_strlcpy(turl_source_resolved, turl_source, GFAL_URL_MAX_LEN);
+            g_strlcpy(token_source_resolved, token_source, GFAL_URL_MAX_LEN);
+        }
+
+        if (dst_turl_retc >= 0 && turl_destination_resolved[0] == '\0') {
+            g_strlcpy(turl_destination_resolved, turl_destination, GFAL_URL_MAX_LEN);
+            g_strlcpy(token_destination_resolved, token_destination, GFAL_URL_MAX_LEN);
+        }
+    }
+
+    if (turl_source_resolved[0] == '\0') {
+        srm_resolve_protocol_list_log(G_LOG_LEVEL_ERROR, "Source does not support any TURL for protocols: ", protocols);
+        gfalt_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
+                        GFALT_ERROR_SOURCE, "SRM_RESOLVE_TURLS",  "SRM 3rd TURLs configuration invalid");
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+        g_strfreev(protocols);
         return -1;
     }
 
-    srm_resolve_put_turl(handle, context, params,
-        dest, source, stat_source.st_size,
-        turl_destination, GFAL_URL_MAX_LEN,
-        token_destination, GFAL_URL_MAX_LEN,
-        &tmp_err);
-    if (tmp_err != NULL) {
+    if (turl_destination_resolved[0] == '\0') {
+        srm_resolve_protocol_list_log(G_LOG_LEVEL_ERROR, "Destination does not support any TURL for protocols: ", protocols);
+        gfalt_set_error(&tmp_err, gfal2_get_plugin_srm_quark(), EINVAL, __func__,
+                        GFALT_ERROR_DESTINATION, "SRM_RESOLVE_TURLS",  "SRM 3rd TURLs configuration invalid");
         gfal2_propagate_prefixed_error(err, tmp_err, __func__);
+        g_strfreev(protocols);
         return -1;
     }
 
+    // Use reserves as main TURLs
+    g_strlcpy(turl_source, turl_source_resolved, GFAL_URL_MAX_LEN);
+    g_strlcpy(token_source, token_source_resolved, GFAL_URL_MAX_LEN);
+    g_strlcpy(turl_destination, turl_destination_resolved, GFAL_URL_MAX_LEN);
+    g_strlcpy(token_destination, token_destination_resolved, GFAL_URL_MAX_LEN);
+
+    srm_resolve_get_turl_log_event(params, source, turl_source, token_source);
+    srm_resolve_put_turl_log_event(params, dest, turl_destination, token_destination);
+
+    g_strfreev(protocols);
     return 0;
 }
 
