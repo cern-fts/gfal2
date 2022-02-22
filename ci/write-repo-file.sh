@@ -5,13 +5,14 @@ GITREF=`git rev-parse --short HEAD`
 
 if [[ -z ${BRANCH} ]]; then
   BRANCH=`git name-rev $GITREF --name-only`
-  BUILD="develop"
-else
-  BUILD="${BRANCH}"
 fi
 
 if [[ $BRANCH =~ ^(tags/)?(v)[.0-9]+(-(rc)?([0-9]+))?$ ]]; then
   BUILD="rc"
+elif [[ ! -z ${DMC_REPO_BRANCH} ]]; then
+  BUILD="${DMC_REPO_BRANCH}"
+else
+  BUILD="develop"
 fi
 
 DIST=$(rpm --eval "%{dist}" | cut -d. -f2)
