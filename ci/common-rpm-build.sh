@@ -3,12 +3,12 @@ set -e
 
 function print_info {
   printf "======================\n"
-  printf "Distribution:\t%s\n" "${DIST}"
-  printf "Dist name:\t%s\n" "${DISTNAME}"
-  printf "Build type:\t%s\n" "${BUILD}"
-  printf "Branch:\t\t%s\n" "${BRANCH}"
-  printf "Release:\t%s\n" "${RELEASE}"
-  printf "DMC Repository:\t%s\n" "${REPO_FILE}"
+  printf "%-16s%s\n" "Distribution:" "${DIST}"
+  printf "%-16s%s\n" "Dist name:" "${DISTNAME}"
+  printf "%-16s%s\n" "Build type:" "${BUILD}"
+  printf "%-16s%s\n" "Branch:" "${BRANCH}"
+  printf "%-16s%s\n" "Release:" "${RELEASE}"
+  printf "%-16s%s\n" "DMC Repository:" "${REPO_FILE}"
   printf "======================\n"
 }
 
