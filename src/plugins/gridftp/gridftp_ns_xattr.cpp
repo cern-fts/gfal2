@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <sstream>
+
 #include "gridftp_namespace.h"
 #include "gridftp_plugin.h"
 #include <exceptions/cpp_to_gerror.hpp>
@@ -353,8 +355,9 @@ ssize_t GridFTPModule::getxattr(const char *path,
     }
 
     if (strncmp(name, GFAL_XATTR_SPACETOKEN, 10) != 0) {
-        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_GETXATTR, ENOATTR,
-                "not an existing extended attribute");
+        std::stringstream msg;
+        msg << "'" << name << "' extended attributed not supported by GridFTP plugin";
+        throw Gfal::CoreException(GFAL_GRIDFTP_SCOPE_GETXATTR, ENOATTR, msg.str());
     }
     const char *qmark = strchr(name, '?');
     const char *token = NULL;

@@ -5,14 +5,14 @@ GITREF=`git rev-parse --short HEAD`
 
 if [[ -z ${BRANCH} ]]; then
   BRANCH=`git name-rev $GITREF --name-only`
-else
-  printf "Using environment set variable BRANCH=%s\n" "${BRANCH}"
 fi
 
 if [[ $BRANCH =~ ^(tags/)?(v)[.0-9]+(-(rc)?([0-9]+))?$ ]]; then
   BUILD="rc"
+elif [[ ! -z ${DMC_REPO_BRANCH} ]]; then
+  BUILD="${DMC_REPO_BRANCH}"
 else
-  BUILD="${BRANCH}"
+  BUILD="develop"
 fi
 
 DIST=$(rpm --eval "%{dist}" | cut -d. -f2)
@@ -30,7 +30,6 @@ else
 	REPO_PATH="testing/${BUILD}/${DISTNAME}/\$basearch"
 fi
 
-echo "Installing /etc/yum.repo.d/dmc-${BUILD}-${DISTNAME}.repo"
 cat <<- EOF > "/etc/yum.repos.d/dmc-${BUILD}-${DISTNAME}.repo"
 	[dmc-${BUILD}-${DISTNAME}]
 	name=DMC Repository
@@ -40,3 +39,5 @@ cat <<- EOF > "/etc/yum.repos.d/dmc-${BUILD}-${DISTNAME}.repo"
 	protect=0
 	priority=3
 	EOF
+
+echo "dmc-${BUILD}-${DISTNAME}.repo"

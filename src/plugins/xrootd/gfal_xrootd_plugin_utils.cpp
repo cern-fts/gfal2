@@ -262,7 +262,7 @@ void collapse_slashes(std::string& path)
 
 // Mask network error codes as ECOMM
 #ifndef ECOMM
-#define ECOMM 70
+#define ECOMM EIO
 #endif
 
 static int mask_network_errno(int errc)
@@ -284,8 +284,12 @@ static int mask_network_errno(int errc)
 
 
 // Copied from xrootd/src/XrdPosix/XrdPosixMap.cc
+#ifndef ENOSR
+#define ENOSR ENOSPC
+#endif
+
 #ifndef ECHRNG
-#define ECHRNG 44
+#define ECHRNG EINVAL
 #endif
 
 static int map_status_code_to_errno(int code)

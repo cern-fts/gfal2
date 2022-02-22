@@ -39,7 +39,8 @@ file (GLOB src_exceptions   "${CMAKE_CURRENT_SOURCE_DIR}/exceptions/*.c*")
 file (GLOB src_gsimplecache "${CMAKE_CURRENT_SOURCE_DIR}/gsimplecache/*.c*")
 file (GLOB src_uri          "${CMAKE_CURRENT_SOURCE_DIR}/uri/*.c*")
 file (GLOB src_checksums    "${CMAKE_CURRENT_SOURCE_DIR}/checksums/*.c*")
-file (GLOB src_space        "${CMAKE_CURRENT_SOURCE_DIR}/space/*.c")
+file (GLOB src_space        "${CMAKE_CURRENT_SOURCE_DIR}/space/*.c*")
+file (GLOB src_network      "${CMAKE_CURRENT_SOURCE_DIR}/network/*.c*")
 
 list (APPEND gfal2_utils_src ${src_exceptions})
 
@@ -49,6 +50,7 @@ list (APPEND gfal2_utils_c_src
     ${src_checksums}
     ${src_mds}
     ${src_space}
+    ${src_network}
 )
 
 set (gfal2_utils_c_src ${gfal2_utils_c_src} PARENT_SCOPE)

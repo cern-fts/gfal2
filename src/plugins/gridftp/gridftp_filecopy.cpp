@@ -29,6 +29,7 @@
 
 #include <checksums/checksums.h>
 #include <uri/gfal2_uri.h>
+#include <network/gfal2_network.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -123,6 +124,34 @@ std::string return_host_and_port(const std::string &uri, gboolean use_ipv6)
     str << lookup_host(parsed->host, use_ipv6, NULL) << ":" << parsed->port;
     gfal2_free_uri(parsed);
     return str.str();
+}
+
+
+// Helper function to resolve a DNS URI to specific host
+static std::string resolve_dns_helper(const char* host_uri, const char* msg)
+{
+    std::string resolved_str;
+
+    if (!strncmp(host_uri, "gsiftp://", 9)) {
+        GError* error = NULL;
+        gfal2_uri* parsed = gfal2_parse_uri(host_uri, &error);
+
+        if (error) {
+            throw Gfal::CoreException(error);
+        }
+
+        char* resolved = gfal2_resolve_dns_to_hostname(parsed->host);
+
+        if (resolved) {
+            gfal2_log(G_LOG_LEVEL_INFO, "%s: %s => %s", msg, parsed->host, resolved);
+            g_free(parsed->host);
+            parsed->host = resolved;
+            resolved_str = gfal2_join_uri(parsed);
+            gfal2_free_uri(parsed);
+        }
+    }
+
+    return resolved_str;
 }
 
 
@@ -431,7 +460,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
           factory->get_gfal2_context(), GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_NB_STREAM, 0);
 
     
-    //if the number of streams in the config file is 0 use the one passed by paramameter
+    //if the number of streams in the config file is 0 use the one passed by parameter
     if (nb_streams_from_conf !=0 ) {
         nbstream = nb_streams_from_conf;
     }
@@ -487,7 +516,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
 
 }
 
-// clear dest if error occures in transfer, does not clean if dest file if set as already exist before any transfer
+// clear dest if error occurs in transfer, does not clean if dest file is set as already exist before any transfer
 void GridFTPModule::autoCleanFileCopy(gfalt_params_t params,
         int code, const char* dst)
 {
@@ -512,10 +541,22 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
     char checksum_user_defined[GFAL_URL_MAX_LEN];
     char checksum_src[GFAL_URL_MAX_LEN] = { 0 };
     char checksum_dst[GFAL_URL_MAX_LEN] = { 0 };
+    std::string resolved_src;
+    std::string resolved_dst;
 
     gboolean use_ipv6 = gfal2_get_opt_boolean(_handle_factory->get_gfal2_context(),
         GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_IPV6,
         NULL);
+
+    gboolean resolve_dns = gfal2_get_opt_boolean_with_default(_handle_factory->get_gfal2_context(),
+                                                              GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_RESOLVE_DNS, FALSE);
+
+    if (resolve_dns) {
+        resolved_src = resolve_dns_helper(src, "Resolving source");
+        resolved_dst = resolve_dns_helper(dst, "Resolving destination");
+        src = (!resolved_src.empty()) ? resolved_src.c_str() : src;
+        dst = (!resolved_dst.empty()) ? resolved_dst.c_str() : dst;
+    }
 
     gfalt_checksum_mode_t checksum_mode = GFALT_CHECKSUM_NONE;
     if (!gfalt_get_strict_copy_mode(params, NULL)) {
@@ -647,7 +688,7 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
 
 
 /**
- * initiaize a file copy from the given source to the given dest with the parameters params
+ * initialize a file copy from the given source to the given dest with the parameters params
  */
 extern "C" int gridftp_plugin_filecopy(plugin_handle handle, gfal2_context_t context,
         gfalt_params_t params, const char* src, const char* dst, GError ** err)

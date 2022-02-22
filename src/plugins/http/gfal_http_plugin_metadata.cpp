@@ -176,10 +176,37 @@ int gfal_http_rename(plugin_handle plugin_data, const char* oldurl, const char* 
 
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
     Davix::DavixError* daverr = NULL;
-
+    Davix::Uri uri(stripped_old);
     Davix::RequestParams req_params;
-    davix->get_params(&req_params, Davix::Uri(stripped_old), GfalHttpPluginData::OP::WRITE);
+    bool retrieve_token = gfal2_get_opt_boolean_with_default(davix->handle, "HTTP PLUGIN", "RETRIEVE_BEARER_TOKEN", false);
 
+    if (retrieve_token) {
+        // Find the common base directory
+        std::string oldpath = uri.getPath();
+        std::string newpath = Davix::Uri(stripped_new).getPath();
+        size_t common_base_idx = 0;
+        size_t idx = 0;
+
+        while ((idx < oldpath.size()) && (idx < newpath.size()) &&
+               (oldpath[idx] == newpath[idx])) {
+            if (oldpath[idx] == '/') {
+                common_base_idx = idx;
+            }
+
+            idx++;
+        }
+
+        uri.setPath(oldpath.substr(0, common_base_idx + 1));
+        gchar *token = davix->find_se_token(uri, GfalHttpPluginData::OP::WRITE);
+
+        if (!token) {
+            davix->retrieve_and_store_se_token(uri, GfalHttpPluginData::OP::WRITE, 60);
+        }
+
+        g_free(token);
+    }
+
+    davix->get_params(&req_params, uri, GfalHttpPluginData::OP::WRITE);
     if (davix->posix.rename(&req_params, stripped_old, stripped_new, &daverr) != 0) {
         davix2gliberr(daverr, err);
         Davix::DavixError::clearError(&daverr);

@@ -25,6 +25,10 @@
 #include "gfal_http_plugin.h"
 #include "exceptions/gfalcoreexception.hpp"
 
+#ifndef ENODATA
+#define ENODATA ENOATTR
+#endif
+
 /*
  * NOTE:
  * The token interaction in this unit file is largely based
@@ -56,6 +60,7 @@ ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, con
     }
 
     std::string token;
+    std::string last_emsg;
     TokenRetriever* retriever = retriever_chain;
 
     while (retriever != NULL) {
@@ -66,13 +71,14 @@ ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, con
             break;
         } catch (const Gfal::CoreException& e) {
             gfal2_log(G_LOG_LEVEL_INFO, "(SEToken) Error during token retrieval: %s", e.what());
+            last_emsg = e.what_str();
             retriever = retriever->next();
         }
     }
 
     if (token.empty()) {
         gfal2_set_error(err, http_plugin_domain, ENODATA, __func__,
-                        "Could not retrieve token for %s", url);
+                        "Could not retrieve token for %s [last failed attempt: %s]", url, last_emsg.c_str());
     } else if (token.size() >= s_buff) {
         gfal2_set_error(err, http_plugin_domain, ENOMEM, __func__,
                         "response larger than allocated buffer size [%ld]", s_buff);
@@ -326,7 +332,7 @@ void MacaroonRetriever::prepare_request(HttpRequest& request, const std::string&
 
 std::string MacaroonRetriever::perform_request(HttpRequest& request, std::string description)
 {
-    char buffer[MacaroonRetriever::RESPONSE_MAX_SIZE];
+    std::vector<char> buffer(MacaroonRetriever::RESPONSE_MAX_SIZE);
     DavixError* err = NULL;
 
     description = (is_oauth) ? "Token" : "Macaroon";
@@ -349,7 +355,7 @@ std::string MacaroonRetriever::perform_request(HttpRequest& request, std::string
     // StoRM has an interesting bug where an unknown/unhandled POST is treated like a corresponding GET,
     // meaning it would respond to the macaroon request with the entire file itself.
     // To protect against this, we read out at most 1MB.
-    dav_ssize_t segment_size = request.readSegment(buffer, MacaroonRetriever::RESPONSE_MAX_SIZE, &err);
+    dav_ssize_t segment_size = request.readSegment(&buffer[0], MacaroonRetriever::RESPONSE_MAX_SIZE, &err);
 
     if (segment_size < 0) {
         std::stringstream errmsg;
@@ -371,7 +377,7 @@ std::string MacaroonRetriever::perform_request(HttpRequest& request, std::string
         throw Gfal::CoreException(http_plugin_domain, davix2errno(err->getStatus()), errmsg.str());
     }
 
-    return std::string(buffer);
+    return std::string(&buffer[0], segment_size);
 }
 
 std::string MacaroonRetriever::macaroon_request_content(unsigned validity,
