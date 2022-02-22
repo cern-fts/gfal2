@@ -15,17 +15,23 @@ function print_info {
 TIMESTAMP=`date +%y%m%d%H%M`
 GITREF=`git rev-parse --short HEAD`
 RELEASE=r${TIMESTAMP}git${GITREF}
+BRANCH_USER_SET=false
 BUILD="devel"
 
 if [[ -z ${BRANCH} ]]; then
   BRANCH=`git name-rev $GITREF --name-only`
 else
   printf "Using environment set variable BRANCH=%s\n" "${BRANCH}"
+  BRANCH_USER_SET=true
 fi
 
 if [[ $BRANCH =~ ^(tags/)?(v)[.0-9]+(-(rc)?([0-9]+))?$ ]]; then
   RELEASE="${BASH_REMATCH[4]}${BASH_REMATCH[5]}"
   BUILD="rc"
+fi
+
+if [ ${BRANCH_USER_SET} = false ]; then
+  unset BRANCH
 fi
 
 DIST=$(rpm --eval "%{dist}" | cut -d. -f2)
@@ -36,9 +42,7 @@ DISTNAME=${DIST}
 [[ "${DISTNAME}" == "fc36" ]] && DISTNAME="fc-rawhide"
 
 # Write repository files to /etc/yum.repos.d/ based on the branch name
-./ci/write-repo-file.sh
-
-REPO_FILE="${BUILD}/dmc-${BUILD}-${DISTNAME}.repo"
+REPO_FILE=$(./ci/write-repo-file.sh --pickup-branch)
 print_info
 
 RPMBUILD=${PWD}/build
