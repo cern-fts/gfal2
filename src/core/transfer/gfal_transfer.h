@@ -331,6 +331,16 @@ gint gfalt_set_use_proxy_delegation(gfalt_params_t, gboolean proxy_delegation, G
 gboolean gfalt_get_use_proxy_delegation(gfalt_params_t, GError** err);
 
 /**
+ * Enable or disable usage of file eviction
+ */
+gint gfalt_set_use_evict(gfalt_params_t, gboolean evict, GError** err);
+
+/**
+ * Get the usage of file eviction
+ */
+gboolean gfalt_get_use_evict(gfalt_params_t, GError** err);
+
+/**
  * @brief Add a new callback for monitoring the current transfer
  * Adding the same callback with a different udata will just change the udata and the free method, but the callback will not be called twice.
  * In this case, udata_free will be called with the old data.

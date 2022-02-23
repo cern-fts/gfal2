@@ -37,6 +37,7 @@ struct _gfalt_params_t {
     gboolean local_transfers;   // local transfer authorized
     gboolean parent_dir_create; // force the creation of the parent dir
     gboolean proxy_delegation;  // use TPC proxy delegation
+    gboolean evict;              // evict file from disk buffer
     // spacetoken management for SRM
     gchar *src_space_token;
     gchar *dst_space_token;

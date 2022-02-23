@@ -288,7 +288,33 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
 int gfal_xrootd_release_file_list(plugin_handle plugin_data,
     int nbfiles, const char* const* urls, const char* token, GError** err)
 {
-    // Noop
+    gfal2_context_t context = (gfal2_context_t)plugin_data;
+
+    XrdCl::URL endpoint(prepare_url(context, urls[0]));
+    endpoint.SetPath(std::string());
+    XrdCl::FileSystem fs(endpoint);
+
+    std::vector<std::string> fileList;
+    for(int i = 0; i < nbfiles; ++i) {
+      XrdCl::URL file(prepare_url(context, urls[i]));
+      fileList.emplace_back(file.GetPath());
+    }
+
+    XrdCl::Buffer *responsePtr = 0;
+    XrdCl::Status st = fs.Prepare(fileList, XrdCl::PrepareFlags::Flags::Evict, 0, responsePtr, 30);
+
+    if (!st.IsOK()) {
+        GError *tmp_err = NULL;
+        gfal2_set_error(&tmp_err, xrootd_domain, xrootd_status_to_posix_errno(st),
+                        __func__, "%s", st.ToString().c_str());
+        for (int i = 0; i < nbfiles; ++i) {
+            err[i] = g_error_copy(tmp_err);
+        }
+        g_error_free(tmp_err);
+        delete responsePtr;
+        return -1;
+    }
+    delete responsePtr;
     return 0;
 }
 
