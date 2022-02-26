@@ -43,6 +43,7 @@ public:
         HEAD,
         WRITE,
         MKCOL,
+        TAPE,
         READ_PASV,
         WRITE_PASV
     };
@@ -212,5 +213,12 @@ bool http_cdmi_code_is_valid(int code);
 ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, const char* issuer,
                                  gboolean write_access, unsigned validity, const char* const* activities,
                                  char* buff, size_t s_buff, GError** err);
+
+// Tape Operations
+int gfal_http_release_file(plugin_handle plugin_data, const char* url,
+                           const char* request_id, GError** err);
+
+int gfal_http_release_file_list(plugin_handle plugin_data, int nbfiles, const char* const* urls,
+                                const char* request_id, GError** err);
 
 #endif //_GFAL_HTTP_PLUGIN_H
