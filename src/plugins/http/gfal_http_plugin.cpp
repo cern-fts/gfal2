@@ -66,10 +66,11 @@ static int get_corresponding_davix_log_level()
     return davix_log_level;
 }
 
-static bool allowsBearerTokenRetrieve(const Davix::Uri& uri)
+static bool allowsBearerTokenRetrieve(const Davix::Uri& uri, const GfalHttpPluginData::OP& operation)
 {
     return (uri.getProtocol().rfind("https", 0) == 0) ||
-           (uri.getProtocol().rfind("davs", 0) == 0);
+           (uri.getProtocol().rfind("davs", 0) == 0) ||
+           (operation != GfalHttpPluginData::OP::TAPE);
 }
 
 bool GfalHttpPluginData::writeFlagFromOperation(const OP& operation) {
@@ -119,11 +120,6 @@ static bool gfal_http_get_x509_cert_pair(gfal2_context_t handle, const Davix::Ur
 char* GfalHttpPluginData::find_se_token(const Davix::Uri& uri, const OP& operation)
 {
     using credTuple = std::pair<std::string, std::string>;
-
-    if (!allowsBearerTokenRetrieve(uri)) {
-        return NULL;
-    }
-
     bool write_access = writeFlagFromOperation(operation);
     bool extended_search = searchFlagFromOperation(operation);
 
@@ -195,7 +191,7 @@ char* GfalHttpPluginData::retrieve_and_store_se_token(const Davix::Uri& uri, con
     GError* error = NULL;
     char* token = NULL;
 
-    if (!retrieve_token || !allowsBearerTokenRetrieve(uri)) {
+    if (!retrieve_token || !allowsBearerTokenRetrieve(uri, operation)) {
         return NULL;
     }
 
@@ -245,10 +241,6 @@ bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Ur
 {
     if (isS3SignedURL(uri)) {
 	    return false;
-    }
-
-    if (operation == OP::TAPE) {
-        return false;
     }
 
     gchar* token = find_se_token(uri, operation);
