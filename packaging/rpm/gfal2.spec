@@ -246,8 +246,7 @@ fi
     -DDOC_INSTALL_DIR=%{_pkgdocdir} \
     -DUNIT_TESTS=TRUE \
     -DPLUGIN_MOCK=TRUE \
-    -DFUNCTIONAL_TESTS=%{?with_tests:ON}%{?!with_tests:OFF} \
-    .
+    -DFUNCTIONAL_TESTS=%{?with_tests:ON}%{?!with_tests:OFF}
 %else
 %cmake \
     -DDOC_INSTALL_DIR=%{_pkgdocdir} \
@@ -255,8 +254,7 @@ fi
     -DPLUGIN_MOCK=TRUE \
     -DPLUGIN_RFIO=FALSE \
     -DPLUGIN_LFC=FALSE \
-    -DFUNCTIONAL_TESTS=%{?with_tests:ON}%{?!with_tests:OFF} \
-    .
+    -DFUNCTIONAL_TESTS=%{?with_tests:ON}%{?!with_tests:OFF}
 %endif
 
 %cmake3_build
