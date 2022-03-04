@@ -3,7 +3,7 @@
 # include files and libraries are.
 #
 # This code sets the following variables:
-# 
+#
 # SRM_IFCE_LIBRARIES   = full path to the SRM-IFCE libraries
 # SRM_IFCE_INCLUDE_DIR = include dir to be used when using the SRM-IFCE library
 # SRM_IFCE_FOUND       = set to true if SRM-IFCE was found successfully
@@ -11,7 +11,7 @@
 # SRM_IFCE_LOCATION
 #   setting this enables search for SRM-IFCE libraries / headers in this location
 
-# ----------------------------------------------------- 
+# -----------------------------------------------------
 # Try with pkgconfig first
 # -----------------------------------------------------
 
@@ -37,9 +37,9 @@ else ()
             ${CMAKE_INSTALL_PREFIX}/Grid/srm-ifce/*/${PLATFORM}/lib64
         DOC "The main srm-ifce library"
     )
-    
+
     # SRM-IFCE Include Directories
-    find_path(SRM_IFCE_INCLUDE_DIR 
+    find_path(SRM_IFCE_INCLUDE_DIR
         NAMES gfal_srm_ifce.h
         HINTS
             ${SRM_IFCE_LOCATION} ${SRM_IFCE_LOCATION}/include ${SRM_IFCE_LOCATION}/include/*
@@ -55,7 +55,7 @@ if(SRM_IFCE_INCLUDE_DIR)
 endif()
 
 # -----------------------------------------------------
-# handle the QUIETLY and REQUIRED arguments and set SRM_IFCE_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set SRM_IFCE_FOUND to TRUE if
 # all listed variables are TRUE
 # -----------------------------------------------------
 include(FindPackageHandleStandardArgs)

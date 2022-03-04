@@ -40,4 +40,4 @@ extern "C" int gfal_gridftp_closeG(plugin_handle ch, gfal_file_handle fd,
         GError** err);
 
 
-#endif /* GRIDFTP_RW_MODULE_H */ 
+#endif /* GRIDFTP_RW_MODULE_H */

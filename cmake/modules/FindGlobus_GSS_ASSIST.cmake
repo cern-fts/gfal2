@@ -3,7 +3,7 @@
 # include files and libraries are.
 #
 # This code sets the following variables:
-# 
+#
 # GLOBUS_GSS_ASSIST_LIBRARIES       = full path to the globus-gssapi-gsi libraries
 # GLOBUS_GSS_ASSIST_INCLUDE_DIR     = include dir to be used when using the globus-gssapi-gsi library
 # GLOBUS_GSS_ASSIST_FOUND           = set to true if globus-gssapi-gsi was found successfully
@@ -22,7 +22,7 @@ else (GLOBUS_GSS_ASSIST_PKG_FOUND)
 
     find_library(GLOBUS_GSS_ASSIST_LIBRARIES
         NAMES globus_gss_assist
-        HINTS ${GLOBUS_GSS_ASSIST_LOCATION} 
+        HINTS ${GLOBUS_GSS_ASSIST_LOCATION}
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib64
@@ -31,7 +31,7 @@ else (GLOBUS_GSS_ASSIST_PKG_FOUND)
         DOC "The main globus-gssapi-gsi library"
     )
 
-    find_path(GLOBUS_GSS_ASSIST_INCLUDE_DIRS 
+    find_path(GLOBUS_GSS_ASSIST_INCLUDE_DIRS
         NAMES globus_gss_assist.h
         HINTS ${GLOBUS_GSS_ASSIST_LOCATION}/include/*
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/include
@@ -52,7 +52,7 @@ if (GLOBUS_GSS_ASSIST_INCLUDE_DIRS)
 endif (GLOBUS_GSS_ASSIST_INCLUDE_DIRS)
 
 # -----------------------------------------------------
-# handle the QUIETLY and REQUIRED arguments and set GLOBUS_GSS_ASSIST_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set GLOBUS_GSS_ASSIST_FOUND to TRUE if
 # all listed variables are TRUE
 # -----------------------------------------------------
 include(FindPackageHandleStandardArgs)

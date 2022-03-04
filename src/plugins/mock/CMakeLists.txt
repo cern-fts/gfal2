@@ -16,7 +16,7 @@ if (PLUGIN_MOCK)
 
     install(TARGETS		plugin_mock
 	        LIBRARY		DESTINATION ${PLUGIN_INSTALL_DIR})
-	    
+
     install(FILES		"README_PLUGIN_MOCK"
                 DESTINATION ${DOC_INSTALL_DIR})
 

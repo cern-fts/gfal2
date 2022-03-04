@@ -2,17 +2,16 @@
 # Author: Georgios Bitzes <georgios.bitzes@cern.ch>
 
 import argparse
+import errno
 import os
 import re
 import shutil
 import subprocess
-
-import errno
 import sys
 
 DRY_RUN = False
 NO_CREATE_REPO = False
-RAWHIDE_VERSIONS = ["fc35", "fc36"]
+RAWHIDE_VERSIONS = ["fc36", "fc37"]
 
 def sh(cmd):
     # poor man's subprocess.check_output, not supported on SL6
@@ -140,7 +139,7 @@ class Repository(object):
 
         tag = is_tag(ref)
 
-        if tag: 
+        if tag:
             base = "{0}/rc".format(self.base)
         else:
             base = "{0}/testing".format(self.base)

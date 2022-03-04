@@ -22,7 +22,7 @@ if (PLUGIN_GRIDFTP)
                           ${GLOBUS_GSS_ASSIST_LIBRARIES}
                           ${GLOBUS_GSSAPI_GSI_LIBRARIES})
 
-    include_directories(${GLOBUS_GASS_COPY_INCLUDE_DIRS}) 
+    include_directories(${GLOBUS_GASS_COPY_INCLUDE_DIRS})
 
     set_target_properties(plugin_gridftp    PROPERTIES
 								LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/src
@@ -34,9 +34,9 @@ if (PLUGIN_GRIDFTP)
 
     install(TARGETS		plugin_gridftp
 	        LIBRARY		DESTINATION ${PLUGIN_INSTALL_DIR} )
-	    
+
     install(FILES		"README_PLUGIN_GRIDFTP"
-	    	DESTINATION ${DOC_INSTALL_DIR})	    
+	    	DESTINATION ${DOC_INSTALL_DIR})
 
     # install gsiftp configuration files
     LIST(APPEND gsiftp_conf_file "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/gsiftp_plugin.conf")

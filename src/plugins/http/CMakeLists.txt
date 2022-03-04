@@ -32,7 +32,7 @@ if (PLUGIN_HTTP)
     install(TARGETS plugin_http
             LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
     install(FILES "README_PLUGIN_HTTP"
-            DESTINATION ${DOC_INSTALL_DIR})    
+            DESTINATION ${DOC_INSTALL_DIR})
 
     # install http configuration files
     LIST(APPEND http_conf_file "${CMAKE_SOURCE_DIR}/dist/etc/gfal2.d/http_plugin.conf")

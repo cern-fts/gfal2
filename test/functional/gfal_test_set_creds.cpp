@@ -90,6 +90,6 @@ int main(int argc, char **argv)
 
     CredsTest::proxy = argv[1];
     CredsTest::root = argv[2];
-    
+
     return RUN_ALL_TESTS();
 }

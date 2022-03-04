@@ -86,8 +86,11 @@ int gfal_statG_srmv2__generic_internal(srm_context_t context, struct stat *buf, 
     const char *surl, GError **err)
 {
     g_return_val_err_if_fail(context && surl
-                             && buf && (sizeof(struct stat) == sizeof(struct stat64)),
-        -1, err, "[gfal_statG_srmv2_generic_internal] Invalid args handle/endpoint or invalid stat struct size");
+                             && buf
+#if !defined(_DARWIN_FEATURE_ONLY_64_BIT_INODE)
+                             && (sizeof(struct stat) == sizeof(struct stat64))
+#endif
+        , -1, err, "[gfal_statG_srmv2_generic_internal] Invalid args handle/endpoint or invalid stat struct size");
     GError *tmp_err = NULL;
     struct srm_ls_input input;
     struct srm_ls_output output;

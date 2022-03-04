@@ -3,7 +3,7 @@
 # include files and libraries are.
 #
 # This code sets the following variables:
-# 
+#
 # CGSI_GSOAP_LIBRARIES   = full path to the CGSI_GSOAP libraries
 # CGSI_GSOAP_INCLUDE_DIRS = include dir to be used when using the CGSI_GSOAP library
 # CGSI_GSOAP_FOUND       = set to true if CGSI_GSOAP was found successfully
@@ -32,7 +32,7 @@ find_library(CGSI_GSOAP_LIBRARIES
 # -----------------------------------------------------
 # CGSI_GSOAP Include Directories
 # -----------------------------------------------------
-find_path(CGSI_GSOAP_INCLUDE_DIRS 
+find_path(CGSI_GSOAP_INCLUDE_DIRS
     NAMES cgsi_plugin.h
     HINTS ${CGSI_GSOAP_LOCATION}
           ${STAGE_DIR}/include
@@ -49,7 +49,7 @@ endif()
 
 
 # -----------------------------------------------------
-# handle the QUIETLY and REQUIRED arguments and set CGSI_GSOAP_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set CGSI_GSOAP_FOUND to TRUE if
 # all listed variables are TRUE
 # -----------------------------------------------------
 include(FindPackageHandleStandardArgs)

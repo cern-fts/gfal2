@@ -29,6 +29,9 @@
 #include "gfal_srm_internal_layer.h"
 #include "gfal_srm_internal_ls.h"
 
+#if defined(_DARWIN_FEATURE_ONLY_64_BIT_INODE)
+#    define stat64 stat
+#endif
 
 /**
  * Casts a 64 bits stat into whatever stat type we are using in this compilation unit.
