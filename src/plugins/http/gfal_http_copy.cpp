@@ -40,10 +40,10 @@ const char* CopyModeStr[] = {
     GFAL_TRANSFER_TYPE_PULL, GFAL_TRANSFER_TYPE_PUSH, GFAL_TRANSFER_TYPE_STREAMED, NULL
 };
 
-static const CopyMode get_copy_mode_from_string(const char * copy_mode_str) { 
-    if (!strcmp(copy_mode_str, GFAL_TRANSFER_TYPE_PULL))  
+static const CopyMode get_copy_mode_from_string(const char * copy_mode_str) {
+    if (!strcmp(copy_mode_str, GFAL_TRANSFER_TYPE_PULL))
         return HTTP_COPY_PULL;
-    if (!strcmp(copy_mode_str, GFAL_TRANSFER_TYPE_PUSH)) 
+    if (!strcmp(copy_mode_str, GFAL_TRANSFER_TYPE_PUSH))
         return HTTP_COPY_PUSH;
      if (!strcmp(copy_mode_str, GFAL_TRANSFER_TYPE_STREAMED))
         return HTTP_COPY_STREAM;
@@ -63,7 +63,7 @@ struct PerfCallbackData {
 };
 
 static bool set_copy_mode(gfal2_context_t context,const char * copy_mode) {
-    bool set = true;   
+    bool set = true;
     GError *error = NULL;
     if (!strcmp(copy_mode,"push" )) {
         gfal2_set_opt_boolean(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", TRUE, &error);
@@ -110,7 +110,7 @@ static void extract_query_parameter(const char* url, const char *key, char *valu
     }
 
     g_strfreev(args);
-}    
+}
 
 static void set_copy_mode_from_urls(gfal2_context_t context, const char * src_url, const char * dst_url)
 {
@@ -123,7 +123,7 @@ static void set_copy_mode_from_urls(gfal2_context_t context, const char * src_ur
         gfal2_log(G_LOG_LEVEL_INFO, "Source copy mode is %s", copy_mode);
         done = set_copy_mode(context, copy_mode);
     }
-    
+
     if (!done) {
         extract_query_parameter(dst_url, "copy_mode", copy_mode, sizeof(copy_mode));
 
@@ -391,7 +391,7 @@ static int gfal_http_third_party_copy(gfal2_context_t context,
 	} else if (mode == HTTP_COPY_PULL) {
 		if ((checksum_mode & GFALT_CHECKSUM_TARGET) || (checksum_mode == GFALT_CHECKSUM_NONE) )
 		    req_params.addHeader("RequireChecksumVerification", "false");
-	} 
+	}
     }
 
     // add timeout
@@ -501,7 +501,7 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
         gfal2_propagate_prefixed_error(err, nested_err, __func__);
         return -1;
     }
-    
+
     int source_fd = gfal2_open(context, src, O_RDONLY, &nested_err);
     if (source_fd < 0) {
         gfal2_propagate_prefixed_error(err, nested_err, __func__);
@@ -657,7 +657,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     set_copy_mode_from_urls(context,src_full, dst_full);
     // Initial copy mode
     CopyMode copy_mode = get_default_copy_mode(context);
-    
+
     bool only_streaming = false;
     // If source is not even http, go straight to streamed
     // or if third party copy is disabled, go straight to streamed
@@ -675,7 +675,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     if (!is_http_streamed_enabled(context)) {
         end_copy_mode = HTTP_COPY_STREAM;
     }
-   
+
     do {
         // The real, actual, copy
         plugin_trigger_event(params, http_plugin_domain,

@@ -14,7 +14,7 @@ if (PLUGIN_DCAP)
 
     target_link_libraries(plugin_dcap gfal2 ${DCAP_LIBRARIES})
 
-    set_target_properties(plugin_dcap PROPERTIES   
+    set_target_properties(plugin_dcap PROPERTIES
                             CLEAN_DIRECT_OUTPUT 1
                             OUTPUT_NAME "gfal_plugin_dcap"
                             LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins)

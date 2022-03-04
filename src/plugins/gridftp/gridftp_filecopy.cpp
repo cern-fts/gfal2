@@ -459,7 +459,7 @@ int gridftp_filecopy_copy_file_internal(GridFTPModule* module,
     const unsigned int nb_streams_from_conf = gfal2_get_opt_integer_with_default(
           factory->get_gfal2_context(), GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_NB_STREAM, 0);
 
-    
+
     //if the number of streams in the config file is 0 use the one passed by parameter
     if (nb_streams_from_conf !=0 ) {
         nbstream = nb_streams_from_conf;
@@ -632,7 +632,7 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
         gridftp_filecopy_copy_file_internal(this, _handle_factory, params, src, dst);
     }
     catch (Gfal::TransferException & e) {
-        
+
         throw;
     }
     catch (const Gfal::CoreException & e) {

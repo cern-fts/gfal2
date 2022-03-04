@@ -122,7 +122,7 @@ int gfal_xrootd_archive_poll_list(plugin_handle plugin_data, int nbfiles, const 
         }
         return -1;
     }
-    
+
     for (int i = 0 ; i < size; i++) {
         struct json_object* fileobj = json_object_array_get_idx(responses, i);
 

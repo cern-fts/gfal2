@@ -3,7 +3,7 @@
 # include files and libraries are.
 #
 # This code sets the following variables:
-# 
+#
 # GLOBUS_GSI_CERT_UTILS_LIBRARIES       = full path to the globus-gsi-cert-utils libraries
 # GLOBUS_GSI_CERT_UTILS_INCLUDE_DIR     = include dir to be used when using the globus-gsi-cert-utils library
 # GLOBUS_GSI_CERT_UTILS_FOUND           = set to true if globus-gsi-cert-utils was found successfully
@@ -24,7 +24,7 @@ else (GLOBUS_GSI_CERT_UTILS_PKG_FOUND)
 
     find_library(GLOBUS_GSI_CERT_UTILS_LIBRARIES
         NAMES globus_gsi_cert_utils
-        HINTS ${GLOBUS_GSI_CERT_UTILS_LOCATION} 
+        HINTS ${GLOBUS_GSI_CERT_UTILS_LOCATION}
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib
               ${CMAKE_INSTALL_PREFIX}/Grid/epel/*/${PLATFORM}/lib64
@@ -33,7 +33,7 @@ else (GLOBUS_GSI_CERT_UTILS_PKG_FOUND)
         DOC "The main globus-gsi-cert-utils library"
     )
 
-    find_path(GLOBUS_GSI_CERT_UTILS_INCLUDE_DIRS 
+    find_path(GLOBUS_GSI_CERT_UTILS_INCLUDE_DIRS
         NAMES globus_gsi_cert_utils.h
         HINTS ${GLOBUS_GSI_CERT_UTILS_LOCATION}/include/*
               ${CMAKE_INSTALL_PREFIX}/globus/*/${PLATFORM}/include
@@ -54,7 +54,7 @@ if (GLOBUS_GSI_CERT_UTILS_INCLUDE_DIRS)
 endif (GLOBUS_GSI_CERT_UTILS_INCLUDE_DIRS)
 
 # -----------------------------------------------------
-# handle the QUIETLY and REQUIRED arguments and set GLOBUS_GSI_CERT_UTILS_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set GLOBUS_GSI_CERT_UTILS_FOUND to TRUE if
 # all listed variables are TRUE
 # -----------------------------------------------------
 include(FindPackageHandleStandardArgs)

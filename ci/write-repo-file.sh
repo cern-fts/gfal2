@@ -19,8 +19,8 @@ DIST=$(rpm --eval "%{dist}" | cut -d. -f2)
 DISTNAME=${DIST}
 
 # Special handling of FC rawhide
-[[ "${DISTNAME}" == "fc35" ]] && DISTNAME="fc-rawhide"
 [[ "${DISTNAME}" == "fc36" ]] && DISTNAME="fc-rawhide"
+[[ "${DISTNAME}" == "fc37" ]] && DISTNAME="fc-rawhide"
 
 if [[ ${BUILD} == "rc" ]]; then
 	REPO_PATH="${BUILD}/${DISTNAME}/\$basearch"

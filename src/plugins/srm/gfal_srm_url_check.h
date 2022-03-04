@@ -31,7 +31,7 @@ gboolean srm_check_url(const char *surl);
  *
  * implementation of the plugi_url_transfer_check for the srm plugin
  * Check if the srm plugin is able to handle a given type of URL.
- * 
+ *
  * */
 
 gboolean plugin_url_check2(plugin_handle handle, gfal2_context_t context,
@@ -53,4 +53,4 @@ int gfal2_srm_surl_cmp(const char *surl1, const char *surl2);
  */
 char *gfal2_srm_get_decoded_path(const char *surl);
 
-#endif /* GFAL_COMMON_SRM_URL_CHECK_H */ 
+#endif /* GFAL_COMMON_SRM_URL_CHECK_H */

@@ -3,7 +3,7 @@
 # include files and libraries are.
 #
 # This code sets the following variables:
-# 
+#
 # GFAL2_LIBRARIES       = full path to the gfal2 libraries
 # GFAL2_INCLUDE_DIR     = include dir to be used when using the gfal2 library
 # GFAL2_FOUND           = set to true if gfal2 was found successfully
@@ -25,21 +25,21 @@ else (GFAL2_PKG_FOUND AND GFAL2_TRANSFER_PKG_FOUND)
 
     find_library(GFAL2_CORE_LIBRARIES
         NAMES gfal2
-        HINTS ${GFAL2_LOCATION} 
+        HINTS ${GFAL2_LOCATION}
               ${CMAKE_INSTALL_PREFIX}/Grid/gfal2/*/${PLATFORM}/lib
               ${CMAKE_INSTALL_PREFIX}/Grid/gfal2/*/${PLATFORM}/lib64
         DOC "The main gfal2 library"
     )
     find_library(GFAL2_TRANSFER_LIBRARIES
         NAMES gfal_transfer
-        HINTS ${GFAL2_LOCATION} 
+        HINTS ${GFAL2_LOCATION}
               ${CMAKE_INSTALL_PREFIX}/Grid/gfal2/*/${PLATFORM}/lib
               ${CMAKE_INSTALL_PREFIX}/Grid/gfal2/*/${PLATFORM}/lib64
         DOC "The transfer gfal2 library"
     )
     set (GFAL2_LIBRARIES ${GFAL2_CORE_LIBRARIES} ${GFAL2_TRANSFER_LIBRARIES})
 
-    find_path(GFAL2_INCLUDE_DIRS 
+    find_path(GFAL2_INCLUDE_DIRS
         NAMES gfal_api.h
         HINTS ${GFAL2_LOCATION}/include/*
               ${CMAKE_INSTALL_PREFIX}/Grid/gfal2/*/${PLATFORM}/include/*
@@ -57,7 +57,7 @@ if (GFAL2_INCLUDE_DIRS)
 endif (GFAL2_INCLUDE_DIRS)
 
 # -----------------------------------------------------
-# handle the QUIETLY and REQUIRED arguments and set GFAL2_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set GFAL2_FOUND to TRUE if
 # all listed variables are TRUE
 # -----------------------------------------------------
 include(FindPackageHandleStandardArgs)

@@ -7,6 +7,6 @@ IF (STRESS_TESTS)
 
         add_executable(fts_seq_copy_files	${src_loadtest})
         target_link_libraries(fts_seq_copy_files ${GFAL2_TRANSFER_LINK} ${GFAL2_LINK} gfal2_test_shared)
-	
+
 ENDIF  (STRESS_TESTS)
 

@@ -14,7 +14,7 @@ OUTPUT_DIR="/tmp"
 
 # Get parameters
 while [ -n "$1" ]; do
-    case "$1" in 
+    case "$1" in
         "--configdir")
             shift
             MOCK_CONFIG_DIR=$1

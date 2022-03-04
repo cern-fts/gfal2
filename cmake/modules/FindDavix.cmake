@@ -3,7 +3,7 @@
 # include files and libraries are.
 #
 # This code sets the following variables:
-# 
+#
 # DAVIX_LIBRARIES   = full path to the Davix libraries
 # DAVIX_INCLUDE_DIR = include dir to be used when using the Davix library
 # DAVIX_FOUND       = set to true if Davix was found successfully
@@ -11,7 +11,7 @@
 # DAVIX_LOCATION
 #   setting this enables search for Davix libraries / headers in this location
 
-# ----------------------------------------------------- 
+# -----------------------------------------------------
 # Try with pkgconfig first
 # -----------------------------------------------------
 
@@ -34,7 +34,7 @@ else ()
             ${CMAKE_INSTALL_PREFIX}/lib
         DOC "The main davix library"
     )
-    
+
     find_library(DAVIX_COPY_LIBRARY
         NAMES davix_copy
         HINTS
@@ -45,11 +45,11 @@ else ()
             ${CMAKE_INSTALL_PREFIX}/lib
         DOC "The davix copy library"
     )
-    
+
     set (DAVIX_LIBRARIES ${DAVIX_MAIN_LIBRARY} ${DAVIX_COPY_LIBRARY})
-    
+
     # Davix Include Directories
-    find_path(DAVIX_INCLUDE_DIR 
+    find_path(DAVIX_INCLUDE_DIR
         NAMES davix.hpp
         HINTS
             ${DAVIX_LOCATION} ${DAVIX_LOCATION}/include ${DAVIX_LOCATION}/include/*
@@ -58,7 +58,7 @@ else ()
             ${CMAKE_INSTALL_PREFIX}/include/davix
         DOC "Davix include directory"
     )
-    
+
     set (DAVIX_CFLAGS "")
 endif()
 
@@ -70,7 +70,7 @@ if(DAVIX_INCLUDE_DIR)
 endif()
 
 # -----------------------------------------------------
-# handle the QUIETLY and REQUIRED arguments and set DAVIX_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set DAVIX_FOUND to TRUE if
 # all listed variables are TRUE
 # -----------------------------------------------------
 include(FindPackageHandleStandardArgs)

@@ -47,7 +47,7 @@ LIST(APPEND CMAKE_PKGCONFIG_TEMPLATE_BASE_PATTERN "@PREFIX@" "@LIBDIR_VAR@"
 # main function to use
 # FORMAT : add_PkgConfigFile_for_Library("string_filename.pc" target_library
 #											[DESCRIPTION] "description of the pkgconfig files"
-#											[HEADER_DIRS] dir1, dir2 
+#											[HEADER_DIRS] dir1, dir2
 #											[REQUIRES] req1 req 2 ) # list of dir to include in $prefix/include/, ex : $prefix/include/dir1
 # the pc file is produced in the ${CMAKE_CURRENT_BINARY_DIR} directory
 
@@ -64,11 +64,11 @@ function(add_PkgConfigFile_for_Library)
 
 	get_target_property(library_name ${lib_target} OUTPUT_NAME)
 	get_target_property(library_version ${lib_target} VERSION)
-	
+
 	set(pkgconfig_prefix "${CMAKE_INSTALL_PREFIX}")
 	set(pkgconfig_libdir_var "\\\${prefix}/lib${LIB_SUFFIX}")
 	set(pkgconfig_include_var "\\\${prefix}/include")
-	
+
 	set(pkgconfig_linkflags "-l${library_name} -L\\\${libdir}")
 	set(pkgconfig_name "${pkgconfig_filename}")
 	set(pkgconfig_version "${library_version}")
@@ -78,7 +78,7 @@ function(add_PkgConfigFile_for_Library)
 
 	IF(PKGCONFIGFILE_REQUIRES)
 		FOREACH(req ${PKGCONFIGFILE_REQUIRES})
-			set(pkgconfig_requires "${pkgconfig_requires} ${req}")	
+			set(pkgconfig_requires "${pkgconfig_requires} ${req}")
 		ENDFOREACH(req PKGCONFIGFILE_REQUIRES)
 	ENDIF(PKGCONFIGFILE_REQUIRES)
 
@@ -87,23 +87,23 @@ function(add_PkgConfigFile_for_Library)
                         set(pkgconfig_cflags "${pkgconfig_cflags} ${req}")
                 ENDFOREACH(req PKGCONFIGFILE_CFLAGS)
         ENDIF(PKGCONFIGFILE_CFLAGS)
-	
+
 	IF(PKGCONFIGFILE_HEADER_DIRS)
 		FOREACH(dir ${PKGCONFIGFILE_HEADER_DIRS})
-			set(pkgconfig_includedir "${pkgconfig_includedir} -I\\\${includedir}/${dir}")	
+			set(pkgconfig_includedir "${pkgconfig_includedir} -I\\\${includedir}/${dir}")
 		ENDFOREACH(dir PKGCONFIGFILE_HEADER_DIRS)
 	ELSE(PKGCONFIGFILE_HEADER_DIRS)
 		set(pkgconfig_includedir " -I\\\${includedir}")
-	ENDIF(PKGCONFIGFILE_HEADER_DIRS)	
-	
+	ENDIF(PKGCONFIGFILE_HEADER_DIRS)
+
 	IF(description)
-		set(pkgconfig_description "${description}")	
-	
+		set(pkgconfig_description "${description}")
+
 	ENDIF(description)
-	
+
         set(pkgconfig_cflags "${pkgconfig_cflags} ${pkgconfig_includedir} ")
-	
-	LIST(APPEND pkgconfig_list_var ${pkgconfig_prefix} ${pkgconfig_libdir_var} 
+
+	LIST(APPEND pkgconfig_list_var ${pkgconfig_prefix} ${pkgconfig_libdir_var}
 								${pkgconfig_include_var} ${pkgconfig_name} ${pkgconfig_description}
 								${pkgconfig_version} ${pkgconfig_requires} ${pkgconfig_linkflags} ${pkgconfig_cflags})
 	replace_all_occurence(pc_file_content ${CMAKE_PKGCONFIG_TEMPLATE_BASE}

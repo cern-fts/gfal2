@@ -15,7 +15,7 @@ endif (ONLY_TESTS)
 find_package(GTEST)
 include_directories(${GTEST_INCLUDE_DIR})
 
-execute_process(COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf_test  ${CMAKE_CURRENT_BINARY_DIR}/conf_test) 
+execute_process(COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf_test  ${CMAKE_CURRENT_BINARY_DIR}/conf_test)
 
 # Common methods for the tests
 add_subdirectory(common)

@@ -3,7 +3,7 @@
 # include files and libraries are.
 #
 # This code sets the following variables:
-# 
+#
 # VOMS_LIBRARIES       = full path to the voms libraries
 # VOMS_INCLUDE_DIR     = include dir to be used when using the voms library
 # VOMS_DEFINITIONS     = compiler flags
@@ -28,13 +28,13 @@ else (VOMS_PKG_FOUND)
 
     find_library(VOMS_LIBRARIES
         NAMES vomsapi
-        HINTS ${VOMS_LOCATION} 
+        HINTS ${VOMS_LOCATION}
               ${CMAKE_INSTALL_PREFIX}/Grid/voms/*/${PLATFORM}/lib
               ${CMAKE_INSTALL_PREFIX}/Grid/voms/*/${PLATFORM}/lib64
         DOC "The voms library"
     )
 
-    find_path(VOMS_INCLUDE_DIRS 
+    find_path(VOMS_INCLUDE_DIRS
         NAMES voms/voms_api.h
         HINTS ${VOMS_LOCATION}/include/*
               ${CMAKE_INSTALL_PREFIX}/Grid/voms/*/${PLATFORM}/include
@@ -52,7 +52,7 @@ if (VOMS_INCLUDE_DIRS)
 endif (VOMS_INCLUDE_DIRS)
 
 # -----------------------------------------------------
-# handle the QUIETLY and REQUIRED arguments and set VOMS_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set VOMS_FOUND to TRUE if
 # all listed variables are TRUE
 # -----------------------------------------------------
 include(FindPackageHandleStandardArgs)
