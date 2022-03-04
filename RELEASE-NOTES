@@ -1,6 +1,15 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Fri Mar 04 2022 Mihai Patrascoiu <mipatras at cern.ch> - 2.20.5
+###Bug
+- [gfal2/pull/42] - Check _DARWIN_FEATURE_ONLY_64_BIT_INODE to avoid errors from stat64 being undefined
+- [gfal2/pull/43] - Fix building against OpenLDAP 2.5+
+
+###Improvement
+- [DMC-1308] - Move Data Management Clients to Fedora 34 & 35
+- [cern-fts/gfal2/pull/9] - Remove trailing white spaces
+
 ## Tue Feb 22 2022 Mihai Patrascoiu <mipatras at cern.ch> - 2.20.4
 ###Bug
 - [DMC-1297] - HTTP MOVE operation + SETokens needs to request a token for common base directory

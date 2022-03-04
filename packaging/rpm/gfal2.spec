@@ -5,7 +5,7 @@
 %bcond_with tests
 
 Name:               gfal2
-Version:            2.20.4
+Version:            2.20.5
 Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 Group:              Applications/Internet
@@ -358,6 +358,9 @@ fi
 
 
 %changelog
+* Fri Mar 04 2022 Mihai Patrascoiu <mipatras at cern.ch> - 2.20.5-1
+- New upstream release
+
 * Tue Feb 22 2022 Mihai Patrascoiu <mipatras at cern.ch> - 2.20.4-1
 - New upstream release
 
