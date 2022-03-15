@@ -27,7 +27,10 @@ BuildRequires:      glib2-devel >= 2.28
 Requires:           glib2 >= 2.28
 BuildRequires:      libattr-devel
 BuildRequires:      openldap-devel
+%if 0%{?rhel} != 9
+# not available in EPEL9 - build without MDS cache support
 BuildRequires:      pugixml-devel
+%endif
 BuildRequires:      libuuid-devel
 #file plugin dependencies
 BuildRequires:      zlib-devel
