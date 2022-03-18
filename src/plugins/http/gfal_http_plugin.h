@@ -221,4 +221,10 @@ int gfal_http_release_file(plugin_handle plugin_data, const char* url,
 int gfal_http_release_file_list(plugin_handle plugin_data, int nbfiles, const char* const* urls,
                                 const char* request_id, GError** err);
 
+int gfal_http_archive_poll(plugin_handle plugin_data, const char* url,
+                            GError** err);
+
+int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const char* const* urls,
+                            GError** err);
+
 #endif //_GFAL_HTTP_PLUGIN_H

@@ -944,6 +944,8 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError
     // Tape
     http_plugin.release_file = &gfal_http_release_file;
     http_plugin.release_file_list = &gfal_http_release_file_list;
+    http_plugin.archive_poll = &gfal_http_archive_poll;
+    http_plugin.archive_poll_list = &gfal_http_archive_poll_list;
 
     return http_plugin;
 }
