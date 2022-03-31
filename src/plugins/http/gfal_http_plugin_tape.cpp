@@ -448,12 +448,17 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
         std::string locality = json_object_get_string(file_locality);
         if (locality == "TAPE" || locality == "DISK_AND_TAPE" ) {
             ontape_count++;
-        } else if (locality == "DISK") {
-            gfal2_set_error(&err[i], http_plugin_domain, EAGAIN, __func__,
-                            "[Tape REST API] File %s is not yet archived", path.c_str());
-        } else {
+        } else if (locality == "LOST") {
+            error_count++;
             gfal2_set_error(&err[i], http_plugin_domain, ENOENT, __func__,
                             "[Tape REST API] File %s is missing", path.c_str());
+        } else if (locality == "NONE") {
+            gfal2_set_error(&err[i], http_plugin_domain, EPERM, __func__,
+                            "[Tape REST API] File %s is empty (zero size)", path.c_str());
+            error_count++;
+        } else {
+            gfal2_set_error(&err[i], http_plugin_domain, EAGAIN, __func__,
+                            "[Tape REST API] File %s is not yet archived", path.c_str());
         }
     }
 
