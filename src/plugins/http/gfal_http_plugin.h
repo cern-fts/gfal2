@@ -227,4 +227,9 @@ int gfal_http_archive_poll(plugin_handle plugin_data, const char* url,
 int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const char* const* urls,
                             GError** err);
 
+int gfal_http_bring_online_poll(plugin_handle plugin_data, const char* url, const char* token, GError ** err);
+
+int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, const char* const* urls,
+                            const char* token, GError ** errors);
+
 #endif //_GFAL_HTTP_PLUGIN_H
