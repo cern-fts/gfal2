@@ -68,25 +68,8 @@ namespace tape_rest_api {
         return endpoint.str();
     }
 
-    // Construct the request body for a release operation from the given set of URLs
-    std::string release_body(int nbfiles, const char *const *urls) {
-        std::stringstream body;
-        body << "{\"paths\": [";
-
-        for (int i = 0; i < nbfiles; i++) {
-            if (i != 0) {
-                body << ", ";
-            }
-
-            body << "\"" << Davix::Uri(urls[i]).getPath() << "\"";
-        }
-
-        body << "]}";
-        return body.str();
-    }
-
-    // Construct the request body for a archive info request from the given set of URLs
-    std::string archive_info_body(int nbfiles, const char *const *urls) {
+    // Construct a request body that consists in a list if file paths from the given set of URLs
+    std::string list_files_body(int nbfiles, const char *const *urls) {
         std::stringstream body;
         body << "{\"paths\": [";
 
@@ -155,7 +138,7 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
     davix->get_params(&params, uri, GfalHttpPluginData::OP::TAPE);
     params.addHeader("Content-Type", "application/json");
     request.setParameters(params);
-    request.setRequestBody(tape_rest_api::archive_info_body(nbfiles, urls));
+    request.setRequestBody(tape_rest_api::list_files_body(nbfiles, urls));
 
     if (request.executeRequest(&reqerr)) {
         gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
@@ -326,7 +309,7 @@ int gfal_http_release_file_list(plugin_handle plugin_data, int nbfiles, const ch
     davix->get_params(&params, uri, GfalHttpPluginData::OP::TAPE);
     params.addHeader("Content-Type", "application/json");
     request.setParameters(params);
-    request.setRequestBody(tape_rest_api::release_body(nbfiles, urls));
+    request.setRequestBody(tape_rest_api::list_files_body(nbfiles, urls));
 
     if (request.executeRequest(&reqerr)) {
         gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
