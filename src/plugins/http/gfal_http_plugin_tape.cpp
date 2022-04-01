@@ -86,6 +86,61 @@ namespace tape_rest_api {
     }
 }
 
+int gfal_http_abort_files(plugin_handle plugin_data, int nbfiles, const char* const* urls, const char* token, GError ** err)
+{
+    if (nbfiles <= 0) {
+        return 1;
+    }
+
+    GError* tmp_err = NULL;
+
+    auto copyErrors = [&tmp_err](int n, GError** err) -> void {
+        for (int i = 0; i < n; i++) {
+            err[i] = g_error_copy(tmp_err);
+        }
+        g_error_free(tmp_err);
+    };
+
+    std::stringstream method;
+    method << "/stage/" << ((token && strlen(token) > 0) ? token : "gfal2-placeholder-id") << "/cancel";
+
+    // Find out Tape Rest API endpoint
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
+    std::string tapeEndpoint = tape_rest_api::discover_tape_endpoint(davix->handle, urls[0],
+                                                                     method.str().c_str(), &tmp_err);
+
+    if (tmp_err != NULL) {
+        copyErrors(nbfiles, err);
+        return -1;
+    }
+
+    // Construct and send "POST /stage/<token>/cancel" request
+    Davix::DavixError* reqerr = NULL;
+    Davix::Uri uri(tapeEndpoint);
+    Davix::RequestParams params;
+
+    PostRequest request(davix->context, uri, &reqerr);
+    params.addHeader("Content-Type", "application/json");
+    request.setParameters(params);
+    request.setRequestBody(tape_rest_api::list_files_body(nbfiles, urls));
+
+    if (request.executeRequest(&reqerr)) {
+        gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
+                        "[Tape REST API] Cancel call failed: %s", reqerr->getErrMsg().c_str());
+        copyErrors(nbfiles, err);
+        return -1;
+    }
+
+    if (request.getRequestCode() != 200) {
+        gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
+                        "[Tape REST API] Cancel call failed: %s", reqerr->getErrMsg().c_str());
+        copyErrors(nbfiles, err);
+        return -1;
+    }
+
+    return 0;
+}
+
 
 int gfal_http_bring_online_poll(plugin_handle plugin_data, const char* url, const char* token, GError ** err)
 {
@@ -129,7 +184,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
         return -1;
     }
 
-    // Construct and send "POST /stage/<token>" request
+    // Construct and send "GET /stage/<token>" request
     Davix::DavixError* reqerr = NULL;
     Davix::Uri uri(tapeEndpoint);
     Davix::RequestParams params;
