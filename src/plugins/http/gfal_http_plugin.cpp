@@ -942,6 +942,10 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError
     http_plugin.token_retrieve = &gfal_http_token_retrieve;
 
     // Tape
+    http_plugin.bring_online_v2 = &gfal_http_bring_online_v2;
+    http_plugin.bring_online_list_v2 = &gfal_http_bring_online_list_v2;
+    http_plugin.bring_online = &gfal_http_bring_online;
+    http_plugin.bring_online_list = &gfal_http_bring_online_list;
     http_plugin.release_file = &gfal_http_release_file;
     http_plugin.release_file_list = &gfal_http_release_file_list;
     http_plugin.archive_poll = &gfal_http_archive_poll;

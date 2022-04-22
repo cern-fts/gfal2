@@ -234,4 +234,16 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
 
 int gfal_http_abort_files(plugin_handle handle, int nbfiles, const char* const* uris, const char* token, GError ** err);
 
+int gfal_http_bring_online(plugin_handle plugin_data, const char* url, time_t pintime, time_t timeout, char* token,
+                                size_t tsize, int async, GError** err);
+
+int gfal_http_bring_online_v2(plugin_handle plugin_data, const char* url, const char* metadata, time_t pintime, time_t timeout,
+                                char* token, size_t tsize, int async, GError** err);
+
+int gfal_http_bring_online_list(plugin_handle plugin_data, int nbfiles, const char* const* urls, time_t pintime, time_t timeout,
+                                char* token, size_t tsize, int async, GError** err);
+
+int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const char* const* urls, const char* const* metadata,
+                                time_t pintime, time_t timeout, char* token, size_t tsize, int async, GError** err);
+
 #endif //_GFAL_HTTP_PLUGIN_H

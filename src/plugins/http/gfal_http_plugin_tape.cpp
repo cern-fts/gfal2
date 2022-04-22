@@ -84,6 +84,195 @@ namespace tape_rest_api {
         body << "]}";
         return body.str();
     }
+
+    // Construct targetedMetadata json
+    std::string stage_request_body(int disk_lifetime, int nbfiles, const char *const *urls, const char *const *metadata) {
+        std::stringstream body;
+        body << "{\"files\": [";
+
+        for (int i = 0; i < nbfiles; i++) {
+            if (i != 0) {
+                body << ", ";
+            }
+
+            body << "{\"path\": " << "\"" << Davix::Uri(urls[i]).getPath() << "\"";
+            if ((metadata[i] != NULL) && (metadata[i][0] != '\0')) {
+                body << ", \"targetedMetadata\": " << metadata[i];
+            }
+            body << "}";
+        }
+
+        body << "]}";
+
+        return body.str();
+    }
+
+    // Parse metadata and return 0 if a valid JSON is found. If metadata is not a valid JSON return -1
+    int metadata_format_checker(int nbfiles, const char *const *metadata_list, GError** err){
+        struct json_object* json_metadata = 0;
+
+        for (int i = 0; i < nbfiles; i++) {
+
+            if ((metadata_list[i] != NULL) && (metadata_list[i][0] != '\0')) {
+                json_metadata = json_tokener_parse(metadata_list[i]);
+
+                if (!json_metadata) {
+                    gfal2_set_error(err, http_plugin_domain, EINVAL, __func__, "Invalid metadata format: %s", metadata_list[i]);
+                    return -1;
+                }
+            }
+        }
+        // Free the JSON object
+        if (json_metadata) {
+            json_object_put(json_metadata);
+        }
+        return 0;
+    }
+}
+
+int gfal_http_bring_online(plugin_handle plugin_data, const char* url, time_t pintime, time_t timeout, char* token,
+                            size_t tsize, int async, GError** err)
+{
+    GError* errors[1] = {NULL};
+    const char* const urls[1] = {url};
+    const char* const metadata_list[1] = {0};
+    int ret = gfal_http_bring_online_list_v2(plugin_data, 1, urls, metadata_list, pintime, timeout,token, tsize, async, err);
+
+    if (errors[0] != NULL) {
+        *err = errors[0];
+    }
+
+    return ret;
+}
+
+int gfal_http_bring_online_list(plugin_handle plugin_data, int nbfiles, const char* const* urls, time_t pintime, time_t timeout,
+                            char* token, size_t tsize, int async, GError** err)
+{
+    const char* metadata_list[nbfiles];
+
+    for (int i = 0; i < nbfiles; ++i) {
+        metadata_list[i] = {0};
+    }
+
+    int ret = gfal_http_bring_online_list_v2(plugin_data, nbfiles, urls, metadata_list, pintime, timeout,token, tsize, async, err);
+
+    return ret;
+}
+
+int gfal_http_bring_online_v2(plugin_handle plugin_data, const char* url, const char* metadata, time_t pintime, time_t timeout, char* token,
+                            size_t tsize, int async, GError** err)
+{
+    GError* errors[1] = {NULL};
+    const char* const urls[1] = {url};
+    const char* const metadata_list[1] = {metadata};
+    int ret = gfal_http_bring_online_list_v2(plugin_data, 1, urls, metadata_list, pintime, timeout,token, tsize, async, err);
+
+    if (errors[0] != NULL) {
+        *err = errors[0];
+    }
+
+    return ret;
+}
+
+int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const char* const* urls, const char* const* metadata, time_t pintime, time_t timeout,
+                            char* token, size_t tsize, int async, GError** err)
+{
+    if (nbfiles <= 0) {
+        return -1;
+    }
+
+    GError* tmp_err = NULL;
+
+    auto copyErrors = [&tmp_err](int n, GError** err) -> void {
+        for (int i = 0; i < n; i++) {
+            err[i] = g_error_copy(tmp_err);
+        }
+        g_error_free(tmp_err);
+    };
+
+    // Check if all the metadata is in a valid JSON format
+    if(tape_rest_api::metadata_format_checker(nbfiles, metadata, &tmp_err)) {
+        copyErrors(nbfiles, err);
+        return -1;
+    }
+
+    std::stringstream method;
+    method << "/stage/";
+
+    // Find out Tape Rest API endpoint
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
+    std::string tapeEndpoint = tape_rest_api::discover_tape_endpoint(davix->handle, urls[0],
+                                                                     method.str().c_str(), &tmp_err);
+
+    if (tmp_err != NULL) {
+        copyErrors(nbfiles, err);
+        return -1;
+    }
+
+    // Construct and send "POST /stage/" request
+    Davix::DavixError* reqerr = NULL;
+    Davix::Uri uri(tapeEndpoint);
+    Davix::RequestParams params;
+
+    PostRequest request(davix->context, uri, &reqerr);
+    params.addHeader("Content-Type", "application/json");
+    request.setParameters(params);
+
+    std::cout << tape_rest_api::stage_request_body(pintime, nbfiles, urls, metadata) << std::endl;
+
+    request.setRequestBody(tape_rest_api::stage_request_body(pintime, nbfiles, urls, metadata));
+
+    if (request.executeRequest(&reqerr)) {
+        gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
+                        "[Tape REST API] Stage call failed: %s", reqerr->getErrMsg().c_str());
+        copyErrors(nbfiles, err);
+        return -1;
+    }
+
+    if (request.getRequestCode() != 200) {
+        gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
+                        "[Tape REST API] Stage call failed: %s", reqerr->getErrMsg().c_str());
+        copyErrors(nbfiles, err);
+        return -1;
+    }
+
+    std::string content = std::string(request.getAnswerContent());
+
+    if (content.empty()) {
+        gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
+                        "[Tape REST API] Response with no data.");
+        copyErrors(nbfiles, err);
+        return -1;
+    }
+
+    struct json_object* json_response = json_tokener_parse(content.c_str());
+
+    if (!json_response) {
+        gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
+                        "[Tape REST API] Malformed served response.");
+        copyErrors(nbfiles, err);
+        return -1;
+    }
+
+    // Check if "requestId" attribute exists
+    struct json_object* id = 0;
+    bool foundId = json_object_object_get_ex(json_response, "requestId", &id);
+    if (!foundId) {
+        gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
+                        "[Tape REST API] requestID attribute missing");
+        copyErrors(nbfiles, err);
+        return -1;
+    }
+
+    std::string reqid = json_object_get_string(id);
+
+    // Copy request id to token buffer
+    g_strlcpy(token, reqid.c_str(), tsize);
+
+    // Free the top JSON object
+    json_object_put(json_response);
+
+    return 0;
 }
 
 int gfal_http_abort_files(plugin_handle plugin_data, int nbfiles, const char* const* urls, const char* token, GError ** err)
