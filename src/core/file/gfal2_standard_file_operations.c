@@ -347,6 +347,23 @@ int gfal2_bring_online(gfal2_context_t context, const char *url, time_t pintime,
 }
 
 
+int gfal2_bring_online_v2(gfal2_context_t context, const char *url, const char *metadata, time_t pintime,
+    time_t timeout, char *token, size_t tsize, int async, GError **err)
+{
+    GError *tmp_err = NULL;
+    int res = -1;
+    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, err);
+    if (url == NULL || context == NULL || metadata == NULL) {
+        g_set_error(&tmp_err, gfal2_get_core_quark(), EFAULT, "context, url or/and metadata are incorrect arguments");
+    }
+    else {
+        res = gfal_plugin_bring_online_v2G(context, url, metadata, pintime, timeout, token, tsize, async, &tmp_err);
+    }
+    GFAL2_END_SCOPE_CANCEL(context);
+    G_RETURN_ERR(res, tmp_err, err);
+}
+
+
 int gfal2_bring_online_poll(gfal2_context_t context, const char *url, const char *token, GError **err)
 {
     GError *tmp_err = NULL;
@@ -490,6 +507,28 @@ int gfal2_bring_online_list(gfal2_context_t context, int nbfiles,
     }
     else {
         res = gfal_plugin_bring_online_listG(context, nbfiles, urls, pintime, timeout, token, tsize, async, errors);
+    }
+    GFAL2_END_SCOPE_CANCEL(context);
+    return res;
+}
+
+
+int gfal2_bring_online_list_v2(gfal2_context_t context, int nbfiles,
+    const char *const *urls, const char *const *metadata, time_t pintime, time_t timeout, char *token,
+    size_t tsize, int async, GError **errors)
+{
+    int res = -1;
+    GFAL2_BEGIN_SCOPE_CANCEL(context, -1, errors);
+
+    if (urls == NULL || *urls == NULL || context == NULL || metadata == NULL || *metadata == NULL) {
+        int i;
+        for (i = 0; i < nbfiles; ++i) {
+            g_set_error(&errors[i], gfal2_get_core_quark(), EFAULT, "context, urls or/and metadata are incorrect arguments");
+        }
+        res = -1;
+    }
+    else {
+        res = gfal_plugin_bring_online_list_v2G(context, nbfiles, urls, metadata, pintime, timeout, token, tsize, async, errors);
     }
     GFAL2_END_SCOPE_CANCEL(context);
     return res;
