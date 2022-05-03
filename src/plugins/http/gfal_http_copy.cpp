@@ -154,8 +154,40 @@ static bool is_http_3rdcopy_enabled(gfal2_context_t context)
 }
 
 
-static bool is_http_streamed_enabled(gfal2_context_t context)
+bool is_http_streaming_enabled(gfal2_context_t context, const char* src, const char* dst)
 {
+    auto host_streaming = [&context](const char* surl) -> int {
+        Davix::Uri uri(surl);
+
+        if (uri.getStatus() != Davix::StatusCode::OK) {
+            return -1;
+        }
+
+        std::string prot = uri.getProtocol();
+
+        if (prot.back() == 's') {
+            prot.pop_back();
+        }
+
+        GError* error = NULL;
+        std::string group = prot + ":" + uri.getHost();
+        std::transform(group.begin(), group.end(), group.begin(), ::toupper);
+        gboolean streaming_enabled = gfal2_get_opt_boolean(context, group.c_str(), "ENABLE_STREAM_COPY", &error);
+
+        if (error != NULL) {
+            return -1;
+        }
+
+        return streaming_enabled;
+    };
+
+    int src_streaming = host_streaming(src);
+    int dst_streaming = host_streaming(dst);
+
+    if (src_streaming > -1 || dst_streaming > -1) {
+        return src_streaming && dst_streaming;
+    }
+
     return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "ENABLE_STREAM_COPY", TRUE);
 }
 
@@ -671,8 +703,9 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
 
     CopyMode end_copy_mode = HTTP_COPY_END;
 
-    //if streaming is disabled stop the loop before
-    if (!is_http_streamed_enabled(context)) {
+    // If streaming is disabled stop the loop before
+    bool streaming_enabled = is_http_streaming_enabled(context, src, dst);
+    if (!streaming_enabled) {
         end_copy_mode = HTTP_COPY_STREAM;
     }
 
@@ -690,7 +723,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
             g_clear_error(&nested_error);
         }
         if (copy_mode == HTTP_COPY_STREAM) {
-            if (is_http_streamed_enabled(context)) {
+            if (streaming_enabled) {
                 ret = gfal_http_streamed_copy(context, davix, src, dst,
                     checksum_mode, checksum_type, user_checksum,
                     params, &nested_error);
