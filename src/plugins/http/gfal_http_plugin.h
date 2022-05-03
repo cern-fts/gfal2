@@ -159,6 +159,9 @@ void http2gliberr(GError** err, int http, const char* func, const char* msg);
 // Returns errno from Davix StatusCode
 int davix2errno(Davix::StatusCode::Code code);
 
+// Returns whether HTTP streaming is enabled for the involved Storage Endpoints
+bool is_http_streaming_enabled(gfal2_context_t context, const char* src, const char* dst);
+
 // Removes +3rd from the url, if there
 void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);
 
