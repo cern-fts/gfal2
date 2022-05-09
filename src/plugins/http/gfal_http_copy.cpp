@@ -715,10 +715,11 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                                               checksum_mode, checksum_type, user_checksum,
                                               params, &nested_error);
             } else if (only_streaming) {
-                gfalt_set_error(&nested_error, http_plugin_domain, EIO, __func__,
-                                GFALT_ERROR_TRANSFER, "STREAMED DISABLED",
-                                "Trying to fallback to a streamed copy, but they are disabled");
+                gfal2_set_error(&nested_error, http_plugin_domain, EINVAL, __func__,
+                                "STREAMED DISABLED Only streamed copy possible but streaming is disabled");
+                gfal2_log(G_LOG_LEVEL_WARNING, "%s", nested_error->message);
                 ret = -1;
+                break;
             }
         } else {
             ret = gfal_http_third_party_copy(context, davix, src, dst, copy_mode, params, &nested_error);
