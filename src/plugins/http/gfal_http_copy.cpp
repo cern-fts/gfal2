@@ -319,9 +319,8 @@ static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfDat
 }
 
 /// Utility function to clean destination file after failed copy operation.
-/// Clean-up is performed if the copy error is something else than EEXIST.
-/// Returns always -1 for convenience
-static int gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GError** err)
+/// Clean-up is performed if the copy error is something else than EEXIST
+static void gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GError** err)
 {
     GError *unlink_err = NULL;
 
@@ -338,8 +337,6 @@ static int gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GE
     } else {
         gfal2_log(G_LOG_LEVEL_DEBUG, "The transfer failed because the file exists. Do not clean!");
     }
-
-    return -1;
 }
 
 // Only http or https
@@ -762,7 +759,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                              GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
                              "%s", nested_error->message);
         gfalt_propagate_prefixed_error(err, nested_error, __func__, GFALT_ERROR_TRANSFER, NULL);
-        return gfal_http_copy_cleanup(plugin_data, dst, err);
+        return -1;
     }
 
     // Destination checksum validation
