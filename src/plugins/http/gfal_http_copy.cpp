@@ -693,20 +693,18 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         end_copy_mode = HTTP_COPY_STREAM;
     }
 
+    plugin_trigger_event(params, http_plugin_domain,
+                         GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
+                         "%s => %s", src_full, dst_full);
+
     do {
         // Perform the copy, going through the different fallback copy modes
-        plugin_trigger_event(params, http_plugin_domain,
-                             GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
-                             "%s => %s", src_full, dst_full);
         gfal2_log(G_LOG_LEVEL_MESSAGE, "Trying copying with mode %s",
                   CopyModeStr[copy_mode]);
         plugin_trigger_event(params, http_plugin_domain,
                              GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_TYPE,
                              "%s", CopyModeStr[copy_mode]);
-
-        if (nested_error != NULL) {
-            g_clear_error(&nested_error);
-        }
+        g_clear_error(&nested_error);
 
         if (copy_mode == HTTP_COPY_STREAM) {
             if (is_http_streamed_enabled(context)) {
@@ -724,14 +722,11 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         }
 
         if (ret == 0) {
-            // Success! Break the loop
             gfal2_log(G_LOG_LEVEL_MESSAGE, "Copy succeeded using mode %s", CopyModeStr[copy_mode]);
             break;
-        } else if (ret < 0) {
-            g_prefix_error(&nested_error, "ERROR: Copy failed with mode %s, with error: ", CopyModeStr[copy_mode]);
-            plugin_trigger_event(params, http_plugin_domain,
-                                 GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
-                                 "%s", nested_error->message);
+        } else {
+            g_prefix_error(&nested_error, "ERROR: Copy failed with mode %s: ", CopyModeStr[copy_mode]);
+            gfal2_log(G_LOG_LEVEL_INFO, "%s", nested_error->message);
             // Delete any potential destination file
             gfal_http_copy_cleanup(plugin_data, dst, &nested_error);
         }
@@ -741,11 +736,14 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
              is_http_3rdcopy_fallback_enabled(context) &&
              gfal_http_copy_should_fallback(nested_error->code));
 
-    plugin_trigger_event(params, http_plugin_domain,
-                         GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
-                         "%s => %s", src, dst);
-
-    if (nested_error != NULL) {
+    if (ret == 0) {
+        plugin_trigger_event(params, http_plugin_domain,
+                             GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
+                             "%s => %s", src, dst);
+    } else {
+        plugin_trigger_event(params, http_plugin_domain,
+                             GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
+                             "%s", nested_error->message);
         gfalt_propagate_prefixed_error(err, nested_error, __func__, GFALT_ERROR_TRANSFER, "");
         return gfal_http_copy_cleanup(plugin_data, dst, err);
     }
