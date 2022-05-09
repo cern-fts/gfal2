@@ -169,6 +169,21 @@ static bool is_http_3rdcopy_fallback_enabled(gfal2_context_t context)
     return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "ENABLE_FALLBACK_TPC_COPY", TRUE);
 }
 
+
+static gboolean gfal_http_copy_should_fallback(int error_code)
+{
+    switch (error_code) {
+        case ECANCELED:
+        case EPERM:
+        case ENOENT:
+        case EACCES:
+            return false;
+        default:
+            return true;
+    }
+}
+
+
 static int gfal_http_exists(plugin_handle plugin_data,
         const char* url, GError** err)
 {
@@ -719,14 +734,12 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                                  "%s", nested_error->message);
             // Delete any potential destination file
             gfal_http_copy_cleanup(plugin_data, dst, &nested_error);
-
-            if (!gfal_should_fallback(nested_error->code)){
-            	break;
-            }
         }
 
         copy_mode = (CopyMode)((int)copy_mode + 1);
-    } while ((copy_mode < end_copy_mode) && is_http_3rdcopy_fallback_enabled(context));
+    } while ((copy_mode < end_copy_mode) &&
+             is_http_3rdcopy_fallback_enabled(context) &&
+             gfal_http_copy_should_fallback(nested_error->code));
 
     plugin_trigger_event(params, http_plugin_domain,
                          GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,

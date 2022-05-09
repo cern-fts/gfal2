@@ -746,16 +746,6 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
     }
 }
 
-gboolean gfal_should_fallback(int error_code)
-{
-	switch(error_code) {
-	    case ECANCELED:
-            return false;
-	    default:
-	        return true;
-	}
-}
-
 int davix2errno(StatusCode::Code code)
 {
     int errcode;
