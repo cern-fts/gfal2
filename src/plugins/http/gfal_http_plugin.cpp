@@ -826,13 +826,13 @@ int davix2errno(StatusCode::Code code)
 }
 
 
-void davix2gliberr(const DavixError* daverr, GError** err)
+void davix2gliberr(const DavixError* daverr, GError** err, const gchar* function)
 {
     const char *str = daverr->getErrMsg().c_str();
     size_t str_len = daverr->getErrMsg().length();
     gchar *escaped_str = gfal2_utf8escape_string(str, str_len, NULL);
 
-    gfal2_set_error(err, http_plugin_domain, davix2errno(daverr->getStatus()), __func__,
+    gfal2_set_error(err, http_plugin_domain, davix2errno(daverr->getStatus()), function,
                     "%s", escaped_str);
 
     g_free(escaped_str);

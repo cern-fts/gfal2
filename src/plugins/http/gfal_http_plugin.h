@@ -138,7 +138,7 @@ void gfal_http_context_delete(gpointer plugin_data);
 extern GQuark http_plugin_domain;
 
 // Initializes a GError from a DavixError
-void davix2gliberr(const Davix::DavixError* daverr, GError** err);
+void davix2gliberr(const Davix::DavixError* daverr, GError** err, const gchar* function);
 
 // Initializes a GError from an HTTP code
 void http2gliberr(GError** err, int http, const char* func, const char* msg);

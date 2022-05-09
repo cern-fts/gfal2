@@ -432,7 +432,7 @@ static int gfal_http_third_party_copy(gfal2_context_t context,
               &davError);
 
     if (davError != NULL) {
-        davix2gliberr(davError, err);
+        davix2gliberr(davError, err, __func__);
         Davix::DavixError::clearError(&davError);
     }
 
@@ -561,7 +561,7 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
     } catch(Davix::DavixException &ex) {
     	Davix::DavixError* daverr = NULL;
         ex.toDavixError(&daverr);
-        davix2gliberr(daverr, err);
+        davix2gliberr(daverr, err, __func__);
         Davix::DavixError::clearError(&daverr);
     }
 

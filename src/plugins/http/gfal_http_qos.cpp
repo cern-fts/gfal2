@@ -57,7 +57,7 @@ ssize_t gfal_http_check_classes(plugin_handle plugin_data, const char* url, cons
 
 		if (dav_err) {
 			std::cerr << " error in request of getting available QoS classes: " << dav_err->getErrMsg() << std::endl;
-      davix2gliberr(dav_err, err);
+      davix2gliberr(dav_err, err, __func__);
       Davix::DavixError::clearError(&dav_err);
 		} else {
 			std::vector<char> body = r.getAnswerContentVec();
@@ -118,7 +118,7 @@ ssize_t gfal_http_check_file_qos(plugin_handle plugin_data, const char* url, cha
 
 	if (dav_err) {
 		std::cerr << " error in request of checking file QoS: " << dav_err->getErrMsg() << std::endl;
-    davix2gliberr(dav_err, err);
+    davix2gliberr(dav_err, err, __func__);
     Davix::DavixError::clearError(&dav_err);
 	} else {
 		std::vector<char> body = r.getAnswerContentVec();
@@ -159,7 +159,7 @@ ssize_t gfal_http_check_qos_available_transitions(plugin_handle plugin_data, con
 
   if (dav_err) {
     std::cerr << " error in request of checking file QoS: " << dav_err->getErrMsg() << std::endl;
-    davix2gliberr(dav_err, err);
+    davix2gliberr(dav_err, err, __func__);
     Davix::DavixError::clearError(&dav_err);
   } else {
     std::vector<char> body = r.getAnswerContentVec();
@@ -238,7 +238,7 @@ ssize_t gfal_http_check_target_qos(plugin_handle plugin_data, const char* url, c
 
 	if (dav_err) {
 		std::cerr << " error in request of checking file QoS: " << dav_err->getErrMsg() << std::endl;
-    davix2gliberr(dav_err, err);
+    davix2gliberr(dav_err, err, __func__);
     Davix::DavixError::clearError(&dav_err);
 	} else {
 		std::vector<char> body = r.getAnswerContentVec();
@@ -294,7 +294,7 @@ int gfal_http_change_object_qos(plugin_handle plugin_data, const char* url, cons
 	if (dav_err || !http_cdmi_code_is_valid(pr.getRequestCode())) {
 		if (dav_err) {
       std::cerr << " error in request of changing file QoS: " << dav_err->getErrMsg() << std::endl;
-      davix2gliberr(dav_err, err);
+      davix2gliberr(dav_err, err, __func__);
       Davix::DavixError::clearError(&dav_err);
     } else {
 			std::cerr << " error in request of changing file QoS " << std::endl;
