@@ -25,6 +25,8 @@
 #include <checksums/checksums.h>
 #include <cstdio>
 #include <cstring>
+#include <list>
+#include <sstream>
 #include "gfal_http_plugin.h"
 
 // An enumeration of the different HTTP third-party-copy strategies.
@@ -686,6 +688,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     }
 
     int ret = 0;
+    std::list<std::string> attempted_mode;
     CopyMode end_copy_mode = HTTP_COPY_END;
 
     // Stop the loop prematurely if streaming is disabled
@@ -725,12 +728,12 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
             gfal2_log(G_LOG_LEVEL_MESSAGE, "Copy succeeded using mode %s", CopyModeStr[copy_mode]);
             break;
         } else {
-            g_prefix_error(&nested_error, "ERROR: Copy failed with mode %s: ", CopyModeStr[copy_mode]);
-            gfal2_log(G_LOG_LEVEL_INFO, "%s", nested_error->message);
+            gfal2_log(G_LOG_LEVEL_WARNING, "Copy failed with mode %s: %s", CopyModeStr[copy_mode], nested_error->message);
             // Delete any potential destination file
             gfal_http_copy_cleanup(plugin_data, dst, &nested_error);
         }
 
+        attempted_mode.emplace_back(CopyModeStr[copy_mode]);
         copy_mode = (CopyMode)((int)copy_mode + 1);
     } while ((copy_mode < end_copy_mode) &&
              is_http_3rdcopy_fallback_enabled(context) &&
@@ -741,10 +744,23 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                              GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
                              "%s => %s", src, dst);
     } else {
+        if (!attempted_mode.empty()) {
+            std::ostringstream errmsg;
+            errmsg << "Copy failed (";
+            for (auto mode = attempted_mode.begin(); mode != attempted_mode.end(); mode++) {
+                if (mode != attempted_mode.begin()) {
+                    errmsg << ", ";
+                }
+                errmsg << (*mode);
+            }
+            errmsg << "). Last attempt: ";
+            g_prefix_error(&nested_error, "ERROR: %s", errmsg.str().c_str());
+        }
+
         plugin_trigger_event(params, http_plugin_domain,
                              GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
                              "%s", nested_error->message);
-        gfalt_propagate_prefixed_error(err, nested_error, __func__, GFALT_ERROR_TRANSFER, "");
+        gfalt_propagate_prefixed_error(err, nested_error, __func__, GFALT_ERROR_TRANSFER, NULL);
         return gfal_http_copy_cleanup(plugin_data, dst, err);
     }
 
