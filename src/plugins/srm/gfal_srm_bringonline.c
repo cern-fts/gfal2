@@ -157,6 +157,14 @@ int gfal_srmv2_bring_onlineG(plugin_handle ch, const char *surl,
 }
 
 
+int gfal_srmv2_bring_online_v2G(plugin_handle ch, const char *surl, const char *metadata,
+    time_t pintime, time_t timeout, char *token, size_t tsize,
+    int async, GError **err)
+{
+    return gfal_srmv2_bring_onlineG(ch, surl, pintime, timeout, token, tsize, async, err);
+}
+
+
 int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char *const *surls,
     time_t pintime, time_t timeout, char *token, size_t tsize,
     int async, GError **errors)
@@ -188,6 +196,14 @@ int gfal_srmv2_bring_online_listG(plugin_handle ch, int nbfiles, const char *con
     }
 
     return ret;
+}
+
+
+int gfal_srmv2_bring_online_list_v2G(plugin_handle ch, int nbfiles,
+    const char *const *surls, const char *const *metadata, time_t pintime,
+    time_t timeout, char *token, size_t tsize, int async, GError **errors)
+{
+    return gfal_srmv2_bring_online_listG(ch, nbfiles, surls, pintime, timeout, token, tsize, async, errors);
 }
 
 
