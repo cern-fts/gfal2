@@ -127,7 +127,7 @@ namespace tape_rest_api {
     }
 
     // Parse metadata and return 0 if a valid JSON is found. If metadata is not a valid JSON return -1
-    int metadata_format_checker(int nbfiles, const char *const *metadata_list, GError** err){
+    int metadata_format_checker(int nbfiles, const char *const *metadata_list, GError** err) {
         struct json_object* json_metadata = 0;
 
         for (int i = 0; i < nbfiles; i++) {
@@ -146,6 +146,14 @@ namespace tape_rest_api {
             json_object_put(json_metadata);
         }
         return 0;
+    }
+
+    void copyErrors(GError*& tmp_err, int n, GError** err) {
+        for (int i = 0; i < n; i++) {
+            err[i] = g_error_copy(tmp_err);
+        }
+        // Frees tmp_err
+        g_error_free(tmp_err);
     }
 }
 
@@ -202,16 +210,9 @@ int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const
 
     GError* tmp_err = NULL;
 
-    auto copyErrors = [&tmp_err](int n, GError** err) -> void {
-        for (int i = 0; i < n; i++) {
-            err[i] = g_error_copy(tmp_err);
-        }
-        g_error_free(tmp_err);
-    };
-
     // Check if all the metadata is in a valid JSON format
     if(tape_rest_api::metadata_format_checker(nbfiles, metadata, &tmp_err)) {
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -224,7 +225,7 @@ int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const
                                                                      method.str().c_str(), &tmp_err);
 
     if (tmp_err != NULL) {
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -237,21 +238,21 @@ int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const
     params.addHeader("Content-Type", "application/json");
     request.setParameters(params);
 
-    std::cout << tape_rest_api::stage_request_body(pintime, nbfiles, urls, metadata) << std::endl;
-
     request.setRequestBody(tape_rest_api::stage_request_body(pintime, nbfiles, urls, metadata));
 
     if (request.executeRequest(&reqerr)) {
         gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
                         "[Tape REST API] Stage call failed: %s", reqerr->getErrMsg().c_str());
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
+        Davix::DavixError::clearError(&reqerr);
         return -1;
     }
 
-    if (request.getRequestCode() != 200) {
-        gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
-                        "[Tape REST API] Stage call failed: %s", reqerr->getErrMsg().c_str());
-        copyErrors(nbfiles, err);
+    if (request.getRequestCode() != 201) {
+        gfal2_set_error(&tmp_err, http_plugin_domain, EINVAL,  __func__,
+                        "[Tape REST API] Stage call failed: Expected 201 status code (received %d)", request.getRequestCode());
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
+        Davix::DavixError::clearError(&reqerr);
         return -1;
     }
 
@@ -260,7 +261,7 @@ int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const
     if (content.empty()) {
         gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] Response with no data.");
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -269,7 +270,7 @@ int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const
     if (!json_response) {
         gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] Malformed served response.");
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -279,7 +280,7 @@ int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const
     if (!foundId) {
         gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] requestID attribute missing");
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -301,14 +302,6 @@ int gfal_http_abort_files(plugin_handle plugin_data, int nbfiles, const char* co
     }
 
     GError* tmp_err = NULL;
-
-    auto copyErrors = [&tmp_err](int n, GError** err) -> void {
-        for (int i = 0; i < n; i++) {
-            err[i] = g_error_copy(tmp_err);
-        }
-        g_error_free(tmp_err);
-    };
-
     std::stringstream method;
     method << "/stage/" << ((token && strlen(token) > 0) ? token : "gfal2-placeholder-id") << "/cancel";
 
@@ -318,7 +311,7 @@ int gfal_http_abort_files(plugin_handle plugin_data, int nbfiles, const char* co
                                                                      method.str().c_str(), &tmp_err);
 
     if (tmp_err != NULL) {
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -335,14 +328,17 @@ int gfal_http_abort_files(plugin_handle plugin_data, int nbfiles, const char* co
     if (request.executeRequest(&reqerr)) {
         gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
                         "[Tape REST API] Cancel call failed: %s", reqerr->getErrMsg().c_str());
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
+        Davix::DavixError::clearError(&reqerr);
         return -1;
     }
 
     if (request.getRequestCode() != 200) {
-        gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
-                        "[Tape REST API] Cancel call failed: %s", reqerr->getErrMsg().c_str());
-        copyErrors(nbfiles, err);
+        gfal2_set_error(&tmp_err, http_plugin_domain, EINVAL,  __func__,
+                        "[Tape REST API] Stage call failed: Expected 200 status code (received %d)",
+                        request.getRequestCode());
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
+        Davix::DavixError::clearError(&reqerr);
         return -1;
     }
 
@@ -371,14 +367,6 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
     }
 
     GError* tmp_err = NULL;
-
-    auto copyErrors = [&tmp_err](int n, GError** err) -> void {
-        for (int i = 0; i < n; i++) {
-            err[i] = g_error_copy(tmp_err);
-        }
-        g_error_free(tmp_err);
-    };
-
     std::stringstream method;
     method << "/stage/" << ((token && strlen(token) > 0) ? token : "gfal2-placeholder-id");
 
@@ -388,7 +376,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
                                                                      method.str().c_str(), &tmp_err);
 
     if (tmp_err != NULL) {
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -404,14 +392,17 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
     if (request.executeRequest(&reqerr)) {
         gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
                         "[Tape REST API] Stage pooling call failed: %s", reqerr->getErrMsg().c_str());
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
+        Davix::DavixError::clearError(&reqerr);
         return -1;
     }
 
     if (request.getRequestCode() != 200) {
-        gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
-                        "[Tape REST API] Stage pooling call failed: %s", reqerr->getErrMsg().c_str());
-        copyErrors(nbfiles, err);
+        gfal2_set_error(&tmp_err, http_plugin_domain, EINVAL,  __func__,
+                        "[Tape REST API] Stage call failed: Expected 200 status code (received %d)",
+                        request.getRequestCode());
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
+        Davix::DavixError::clearError(&reqerr);
         return -1;
     }
 
@@ -420,7 +411,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
     if (content.empty()) {
         gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] Response with no data.");
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -429,7 +420,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
     if (!json_response) {
         gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] Malformed served response.");
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -439,7 +430,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
     if (!foundId) {
         gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] ID attribute missing");
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -448,7 +439,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
     if(reqid.empty() || reqid != token) {
         gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] Request ID mismatch.");
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -458,7 +449,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
     if (!foundFiles) {
         gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] Files attribute missing");
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -470,7 +461,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
     if (len != nbfiles) {
         gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] [Tape REST API] Number of files in the request doest not match!");
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -593,14 +584,6 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
     }
 
     GError* tmp_err = NULL;
-
-    auto copyErrors = [&tmp_err](int n, GError** err) -> void {
-        for (int i = 0; i < n; i++) {
-            err[i] = g_error_copy(tmp_err);
-        }
-        g_error_free(tmp_err);
-    };
-
     std::stringstream method;
     method << "/archiveinfo";
 
@@ -610,7 +593,7 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
                                                                      method.str().c_str(), &tmp_err);
 
     if (tmp_err != NULL) {
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -628,14 +611,17 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
     if (request.executeRequest(&reqerr)) {
         gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
                         "[Tape REST API] Archive polling call failed: %s", reqerr->getErrMsg().c_str());
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
+        Davix::DavixError::clearError(&reqerr);
         return -1;
     }
 
     if (request.getRequestCode() != 200) {
-        gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
-                        "[Tape REST API] Archive polling call failed: %s", reqerr->getErrMsg().c_str());
-        copyErrors(nbfiles, err);
+        gfal2_set_error(&tmp_err, http_plugin_domain, EINVAL,  __func__,
+                        "[Tape REST API] Stage call failed: Expected 200 status code (received %d)",
+                        request.getRequestCode());;
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
+        Davix::DavixError::clearError(&reqerr);
         return -1;
     }
 
@@ -644,7 +630,7 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
     if (content.empty()) {
         gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] Response with no data.");
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -653,7 +639,7 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
     if (!json_response) {
         gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] Malformed served response.");
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -665,7 +651,7 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
     if (len != nbfiles) {
         gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] Number of files in the request doest not match!");
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -769,14 +755,6 @@ int gfal_http_release_file_list(plugin_handle plugin_data, int nbfiles, const ch
     }
 
     GError* tmp_err = NULL;
-
-    auto copyErrors = [&tmp_err](int n, GError** err) -> void {
-        for (int i = 0; i < n; i++) {
-            err[i] = g_error_copy(tmp_err);
-        }
-        g_error_free(tmp_err);
-    };
-
     std::stringstream method;
     method << "/release/" << ((request_id && strlen(request_id) > 0) ? request_id : "gfal2-placeholder-id");
 
@@ -786,7 +764,7 @@ int gfal_http_release_file_list(plugin_handle plugin_data, int nbfiles, const ch
                                                                      method.str().c_str(), &tmp_err);
 
     if (tmp_err != NULL) {
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
 
@@ -804,14 +782,17 @@ int gfal_http_release_file_list(plugin_handle plugin_data, int nbfiles, const ch
     if (request.executeRequest(&reqerr)) {
         gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
                         "[Tape REST API] Release call failed: %s", reqerr->getErrMsg().c_str());
-        copyErrors(nbfiles, err);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
+        Davix::DavixError::clearError(&reqerr);
         return -1;
     }
 
     if (request.getRequestCode() != 200) {
-        gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
-                        "[Tape REST API] Release call failed: %s", reqerr->getErrMsg().c_str());
-        copyErrors(nbfiles, err);
+        gfal2_set_error(&tmp_err, http_plugin_domain, EINVAL,  __func__,
+                        "[Tape REST API] Stage call failed: Expected 200 status code (received %d)",
+                        request.getRequestCode());
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
+        Davix::DavixError::clearError(&reqerr);
         return -1;
     }
 
