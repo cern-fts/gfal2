@@ -33,19 +33,38 @@ namespace tape_rest_api {
         }
 
         std::stringstream endpoint;
-        endpoint << uri.getProtocol() << "://" << uri.getHost();
+        std::string protocol = uri.getProtocol();
 
-        if (uri.getPort()) {
-            endpoint << ":" << uri.getPort();
+        if (protocol.back() == 's') {
+            protocol.pop_back();
         }
 
-        gchar *tape_prefix = gfal2_get_opt_string(context, "HTTP PLUGIN",
-                                                  "TAPE_REST_API_PREFIX", NULL);
+        std::string group = protocol + ":" + uri.getHost();
+        std::transform(group.begin(), group.end(), group.begin(), ::toupper);
+        gchar *tape_prefix = gfal2_get_opt_string(context, group.c_str(), "TAPE_REST_API_PREFIX", NULL);
+
+        if (tape_prefix != NULL) {
+            Davix::Uri metadata_uri(tape_prefix);
+            if (uri.getStatus() == StatusCode::OK) {
+                endpoint << tape_prefix;
+                g_free(tape_prefix);
+                return endpoint.str();
+            }
+        }
+        else {
+            tape_prefix = gfal2_get_opt_string(context, "HTTP PLUGIN","TAPE_REST_API_PREFIX", NULL);
+        }
 
         if (tape_prefix == NULL) {
             gfal2_set_error(err, http_plugin_domain, EINVAL, __func__,
                             "Tape REST API endpoint not configured");
             return "";
+        }
+
+        endpoint << uri.getProtocol() << "://" << uri.getHost();
+
+        if (uri.getPort()) {
+            endpoint << ":" << uri.getPort();
         }
 
         if (tape_prefix[0] != '/') {
