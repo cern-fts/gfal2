@@ -737,11 +737,10 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
                  strncmp("http+3rd:", url, 9) == 0 || strncmp("https+3rd:", url, 10) == 0 ||
                  strncmp("dav+3rd:", url, 8) == 0 || strncmp("davs+3rd:", url, 9) == 0 ||
                  strncmp("cs3:", url, 4) == 0 || strncmp("cs3s:", url, 5) == 0);
-        // TODO: enable only when all 5 BringOnline-related operations are implemented
-        // Enable as-needed for debugging
-        //case GFAL_PLUGIN_BRING_ONLINE:
-        //    return (strncmp("http:", url, 5) == 0 || strncmp("https:", url, 6) == 0 ||
-        //            strncmp("dav:", url, 4) == 0 || strncmp("davs:", url, 5) == 0);
+        case GFAL_PLUGIN_BRING_ONLINE:
+        case GFAL_PLUGIN_ARCHIVE:
+            return (strncmp("http:", url, 5) == 0 || strncmp("https:", url, 6) == 0 ||
+                    strncmp("dav:", url, 4) == 0 || strncmp("davs:", url, 5) == 0);
       default:
         return false;
     }
