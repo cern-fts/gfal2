@@ -306,6 +306,9 @@ static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfDat
 {
     static int callCount=0;
     PerfCallbackData* pdata = static_cast<PerfCallbackData*>(data);
+
+    callCount++;
+
     if (pdata)
     {
         _gfalt_transfer_status status;
