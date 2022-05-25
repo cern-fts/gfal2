@@ -45,7 +45,7 @@ namespace tape_rest_api {
 
         if (tape_prefix != NULL) {
             Davix::Uri metadata_uri(tape_prefix);
-            if (uri.getStatus() == StatusCode::OK) {
+            if (metadata_uri.getStatus() == StatusCode::OK) {
                 endpoint << tape_prefix;
                 g_free(tape_prefix);
                 return endpoint.str();
@@ -140,15 +140,13 @@ namespace tape_rest_api {
                     return -1;
                 }
             }
-        }
-        // Free the JSON object
-        if (json_metadata) {
+            //Free the JSON object
             json_object_put(json_metadata);
         }
         return 0;
     }
 
-    void copyErrors(GError*& tmp_err, int n, GError** err) {
+    void copyErrors(GError* tmp_err, int n, GError** err) {
         for (int i = 0; i < n; i++) {
             err[i] = g_error_copy(tmp_err);
         }
@@ -235,6 +233,7 @@ int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const
     Davix::RequestParams params;
 
     PostRequest request(davix->context, uri, &reqerr);
+    davix->get_params(&params, uri, GfalHttpPluginData::OP::TAPE);
     params.addHeader("Content-Type", "application/json");
     request.setParameters(params);
 
@@ -298,7 +297,7 @@ int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const
 int gfal_http_abort_files(plugin_handle plugin_data, int nbfiles, const char* const* urls, const char* token, GError ** err)
 {
     if (nbfiles <= 0) {
-        return 1;
+        return -1;
     }
 
     GError* tmp_err = NULL;
@@ -321,6 +320,7 @@ int gfal_http_abort_files(plugin_handle plugin_data, int nbfiles, const char* co
     Davix::RequestParams params;
 
     PostRequest request(davix->context, uri, &reqerr);
+    davix->get_params(&params, uri, GfalHttpPluginData::OP::TAPE);
     params.addHeader("Content-Type", "application/json");
     request.setParameters(params);
     request.setRequestBody(tape_rest_api::list_files_body(nbfiles, urls));
@@ -448,7 +448,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
     bool foundFiles = json_object_object_get_ex(json_response, "files", &files);
     if (!foundFiles) {
         gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
-                        "[Tape REST API] Files attribute missing");
+                        "[Tape REST API] Files attribute missing from server poll response");
         tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
@@ -460,7 +460,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
 
     if (len != nbfiles) {
         gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
-                        "[Tape REST API] [Tape REST API] Number of files in the request doest not match!");
+                        "[Tape REST API] Number of files in the request does not match!");
         tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
@@ -507,7 +507,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
             }
             else {
                 gfal2_set_error(&err[i], http_plugin_domain, EAGAIN, __func__,
-                                "[Tape REST API] File %s is not on disk", path.c_str());
+                                "[Tape REST API] File %s is not yet on disk", path.c_str());
                 continue;
             }
         }
@@ -531,7 +531,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
                             "[Tape REST API] File %s is not yet on disk", path.c_str());
         } else if (state == "CANCELED") {
             gfal2_set_error(&err[i], http_plugin_domain, ECANCELED, __func__,
-                            "[Tape REST API] Staging operation cancelled for the file %s", path.c_str());
+                            "[Tape REST API] Staging operation cancelled. File=%s", path.c_str());
             error_count++;
         } else {
             gfal2_set_error(&err[i], http_plugin_domain, ENOENT, __func__,
@@ -679,7 +679,8 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
         bool foundPath = json_object_object_get_ex(file, "path", &file_path);
         if (!foundPath) {
             error_count++;
-            gfal2_set_error(&err[i], http_plugin_domain, ENOMSG, __func__, "[Tape REST API] Path attribute missing");
+            gfal2_set_error(&err[i], http_plugin_domain, ENOMSG, __func__,
+                            "[Tape REST API] Path attribute missing from server poll response");
             continue;
         }
 
@@ -703,7 +704,7 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
                             "[Tape REST API] File %s is missing", path.c_str());
         } else if (locality == "NONE") {
             gfal2_set_error(&err[i], http_plugin_domain, EPERM, __func__,
-                            "[Tape REST API] File %s is empty (zero size)", path.c_str());
+                            "[Tape REST API] File %s is zero size", path.c_str());
             error_count++;
         } else {
             gfal2_set_error(&err[i], http_plugin_domain, EAGAIN, __func__,

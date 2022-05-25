@@ -475,7 +475,7 @@ struct _gfal_plugin_interface {
       * OPTIONAL: Requests to stage a file to the fist layer on a hierarchical SE.
       * @param plugin_data : internal plugin context
       * @param url : The url of the file
-      * @param metadata Staging metadata
+      * @param metadata : Staging metadata
       * @param pintime : Time the file should stay in the cache
       * @param timeout : Operation timeout
       * @param token Where to put the retrieved token.
@@ -553,7 +553,7 @@ struct _gfal_plugin_interface {
       * @param plugin_data : internal plugin context
       * @param nbfiles : number of files
       * @param urls : The urls of the files
-      * @param metadata : Staging metadata for all the files in the request
+      * @param metadata : Staging metadata array
       * @param pintime : Time the file should stay in the cache
       * @param timeout : Operation timeout
       * @param token Where to put the retrieved token.

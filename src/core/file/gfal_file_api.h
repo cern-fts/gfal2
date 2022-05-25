@@ -351,12 +351,12 @@ int gfal2_bring_online(gfal2_context_t context, const char* url,
  *
  * @param context : gfal2 handle, see \ref gfal2_context_new
  * @param url : url of the file
- * @param metadata: Staging metadata
+ * @param metadata : Staging metadata
  * @param pintime : pin time
  * @param timeout : timeout
  * @param token : The token will be put in the buffer pointed by this
- * @param tsize:  The size of the buffer pointed by token
- * @param async: Asynchronous request (does not block if != 0)
+ * @param tsize :  The size of the buffer pointed by token
+ * @param async : Asynchronous request (does not block if != 0)
  * @param err : GError error report
  * @return 0 if the request has been queued, > 0 if the file is pinned, < 0 on error
  */
@@ -503,12 +503,12 @@ int gfal2_bring_online_list(gfal2_context_t context, int nbfiles, const char* co
  * @param context : gfal2 handle, see \ref gfal2_context_new
  * @param nbfiles : number of files
  * @param urls : urls of files
- * @param metadata: Staging metadata for all the files in the request
+ * @param metadata : Staging metadata array
  * @param pintime : pin time
  * @param timeout : timeout
  * @param token : The token will be put in the buffer pointed by this
  * @param tsize : The size of the buffer pointed by token
- * @param async: Asynchronous request (does not block if != 0)
+ * @param async : Asynchronous request (does not block if != 0)
  * @param errors : Preallocated array of nbfiles pointers to GError. User must allocate and free.
  * @return 0 if the request has been queued, > 0 if the file is pinned, < 0 on error
  * @note  Even if the result is > 0, you need to check each individual file status
