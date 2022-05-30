@@ -441,18 +441,12 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
     // Check if "id" attribute exists
     struct json_object* id = 0;
     bool foundId = json_object_object_get_ex(json_response, "id", &id);
-    if (!foundId) {
-        gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
-                        "[Tape REST API] ID attribute missing");
-        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
-        return -1;
-    }
+    std::string reqid = foundId ? json_object_get_string(id) : "";
 
     // Check if "request_id" attribute matches
-    std::string reqid = id ? json_object_get_string(id) : "";
-    if(reqid.empty() || reqid != token) {
+    if (!reqid.empty() && reqid != token) {
         gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
-                        "[Tape REST API] Request ID mismatch.");
+                        "[Tape REST API] Request ID mismatch. Expected id=%s but received id=%s", token, reqid.c_str());
         tape_rest_api::copyErrors(tmp_err, nbfiles, err);
         return -1;
     }
