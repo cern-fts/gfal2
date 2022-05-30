@@ -301,8 +301,15 @@ int gfal_http_abort_files(plugin_handle plugin_data, int nbfiles, const char* co
     }
 
     GError* tmp_err = NULL;
+    if (!token || strlen(token) == 0) {
+        gfal2_set_error(&tmp_err, http_plugin_domain, EINVAL,  __func__,
+                        "The request ID was not provided.");
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
+        return -1;
+    }
+
     std::stringstream method;
-    method << "/stage/" << ((token && strlen(token) > 0) ? token : "gfal2-placeholder-id") << "/cancel";
+    method << "/stage/" << token << "/cancel";
 
     // Find out Tape Rest API endpoint
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
@@ -367,8 +374,15 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
     }
 
     GError* tmp_err = NULL;
+    if (!token || strlen(token) == 0) {
+        gfal2_set_error(&tmp_err, http_plugin_domain, EINVAL,  __func__,
+                        "The request ID was not provided.");
+        tape_rest_api::copyErrors(tmp_err, nbfiles, err);
+        return -1;
+    }
+
     std::stringstream method;
-    method << "/stage/" << ((token && strlen(token) > 0) ? token : "gfal2-placeholder-id");
+    method << "/stage/" << token;
 
     // Find out Tape Rest API endpoint
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
