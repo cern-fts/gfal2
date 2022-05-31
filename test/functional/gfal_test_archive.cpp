@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
+#include <list>
 #include <stdio.h>
 #include <stdlib.h>
+#include <gtest/gtest.h>
 
 #include <gfal_api.h>
 #include <uri/gfal2_uri.h>
@@ -86,7 +87,7 @@ TEST_F(ArchiveTest, NoEntryPoll)
     int ret = gfal2_archive_poll(handle, inexistent, &error);
 
     ASSERT_EQ(-1, ret);
-    ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error, ENOENT);
+    ASSERT_PRED_FORMAT3(AssertGfalOneOfErrno, -1, error, (std::list<int>{ENOENT, ENOMSG}));
 }
 
 // Poll invalid hostname
@@ -112,7 +113,7 @@ TEST_F(ArchiveTest, InvalidHostPoll)
     int ret = gfal2_archive_poll(handle, invalid_surl, &error);
 
     ASSERT_EQ(-1, ret);
-    ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error, ECOMM);
+    ASSERT_PRED_FORMAT3(AssertGfalOneOfErrno, -1, error, (std::list<int>{ECOMM, EHOSTUNREACH}));
 }
 
 // Poll a single file for archiving
@@ -185,7 +186,7 @@ TEST_F(ArchiveTest, ListPoll)
         ret = gfal2_archive_poll_list(handle, nbfiles, surls, errors);
 
         // Check that the first file does not exist
-        ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, errors[0], ENOENT);
+        ASSERT_PRED_FORMAT3(AssertGfalOneOfErrno, -1, errors[0], (std::list<int>{ENOENT, ENOMSG}));
 
         // Check that remaining files exist
         for (int i = 1; i < nbfiles; i++) {
@@ -206,7 +207,7 @@ TEST_F(ArchiveTest, ListPoll)
     } while (ret == 0);
 
     ASSERT_EQ(2, ret);
-    ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, errors[0], ENOENT);
+    ASSERT_PRED_FORMAT3(AssertGfalOneOfErrno, -1, errors[0], (std::list<int>{ENOENT, ENOMSG}));
     for (int i = 1; i < nbfiles; i++) {
         ASSERT_PRED_FORMAT2(AssertGfalSuccess, 1, errors[i]);
     }
