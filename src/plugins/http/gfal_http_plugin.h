@@ -219,31 +219,30 @@ int gfal_http_release_file(plugin_handle plugin_data, const char* url,
                            const char* request_id, GError** err);
 
 int gfal_http_release_file_list(plugin_handle plugin_data, int nbfiles, const char* const* urls,
-                                const char* request_id, GError** err);
+                                const char* request_id, GError** errors);
 
-int gfal_http_archive_poll(plugin_handle plugin_data, const char* url,
-                            GError** err);
+int gfal_http_archive_poll(plugin_handle plugin_data, const char* url, GError** err);
 
 int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const char* const* urls,
-                            GError** err);
+                                GError** errors);
 
-int gfal_http_bring_online_poll(plugin_handle plugin_data, const char* url, const char* token, GError ** err);
+int gfal_http_bring_online_poll(plugin_handle plugin_data, const char* url, const char* token, GError** err);
 
 int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, const char* const* urls,
-                            const char* token, GError ** errors);
+                                     const char* token, GError** errors);
 
-int gfal_http_abort_files(plugin_handle handle, int nbfiles, const char* const* uris, const char* token, GError ** err);
+int gfal_http_abort_files(plugin_handle handle, int nbfiles, const char* const* uris, const char* token, GError** errors);
 
 int gfal_http_bring_online(plugin_handle plugin_data, const char* url, time_t pintime, time_t timeout, char* token,
-                                size_t tsize, int async, GError** err);
+                           size_t tsize, int async, GError** err);
 
 int gfal_http_bring_online_v2(plugin_handle plugin_data, const char* url, const char* metadata, time_t pintime, time_t timeout,
-                                char* token, size_t tsize, int async, GError** err);
+                              char* token, size_t tsize, int async, GError** err);
 
 int gfal_http_bring_online_list(plugin_handle plugin_data, int nbfiles, const char* const* urls, time_t pintime, time_t timeout,
-                                char* token, size_t tsize, int async, GError** err);
+                                char* token, size_t tsize, int async, GError** errors);
 
 int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const char* const* urls, const char* const* metadata,
-                                time_t pintime, time_t timeout, char* token, size_t tsize, int async, GError** err);
+                                   time_t pintime, time_t timeout, char* token, size_t tsize, int async, GError** errors);
 
 #endif //_GFAL_HTTP_PLUGIN_H
