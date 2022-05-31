@@ -153,6 +153,26 @@ namespace tape_rest_api {
         // Frees tmp_err
         g_error_free(tmp_err);
     }
+
+    // Run through the full response and identify the JSON item corresponding to our path
+    // Very inefficient O(N^2) complexity but avoids complicated data structures (tape polling is time permissive)
+    struct json_object* polling_get_item_by_path(struct json_object* response, int nbfiles, const std::string& surl) {
+        for (int i = 0; i < nbfiles; i++) {
+            auto item = json_object_array_get_idx(response, i);
+
+            if (item != NULL) {
+                struct json_object* item_path = 0;
+                json_object_object_get_ex(item, "path", &item_path);
+                std::string path = item_path ? json_object_get_string(item_path) : "";
+
+                if (!path.empty() && path == surl) {
+                    return item;
+                }
+            }
+        }
+
+        return NULL;
+    }
 }
 
 int gfal_http_bring_online(plugin_handle plugin_data, const char* url, time_t pintime, time_t timeout, char* token,
@@ -476,43 +496,34 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
     }
 
     for (int i = 0; i < nbfiles; ++i) {
-        json_object *file_obj = json_object_array_get_idx(files, i);
+        std::string path = Davix::Uri(urls[i]).getPath();
+        struct json_object* file = tape_rest_api::polling_get_item_by_path(files, nbfiles, path);
 
-        if (file_obj == NULL) {
+        if (file == NULL) {
             error_count++;
-            gfal2_set_error(&errors[i], http_plugin_domain, ENOMSG, __func__, "[Tape REST API] Malformed server response");
+            gfal2_set_error(&errors[i], http_plugin_domain, ENOMSG, __func__,
+                            "[Tape REST API] Missing response item for path=%s", path.c_str());
             continue;
         }
 
         // Check if "error" attribute exists
         struct json_object* file_error_text = 0;
-        bool foundError = json_object_object_get_ex(file_obj, "error", &file_error_text);
+        bool foundError = json_object_object_get_ex(file, "error", &file_error_text);
 
         if (foundError) {
             error_count++;
             std::string error_text = json_object_get_string(file_error_text);
-            gfal2_set_error(&errors[i], http_plugin_domain, ENOMSG, __func__, "[Tape REST API] %s", error_text.c_str());
+            gfal2_set_error(&errors[i], http_plugin_domain, ENOMSG, __func__,
+                            "[Tape REST API] %s", error_text.c_str());
             continue;
         }
-
-        // Check if "path" attribute exists
-        struct json_object* file_path = 0;
-        bool foundPath = json_object_object_get_ex(file_obj, "path", &file_path);
-
-        if (!foundPath) {
-            error_count++;
-            gfal2_set_error(&errors[i], http_plugin_domain, ENOMSG, __func__, "[Tape REST API] Path attribute missing");
-            continue;
-        }
-
-        std::string path = json_object_get_string(file_path);
 
         // Retrieve "onDisk" attribute
-        struct json_object* on_disk = 0;
-        bool foundOnDisk = json_object_object_get_ex(file_obj, "onDisk", &on_disk);
+        struct json_object* file_on_disk = 0;
+        bool foundOnDisk = json_object_object_get_ex(file, "onDisk", &file_on_disk);
 
         if (foundOnDisk) {
-            std::string disk = json_object_get_string(on_disk);
+            std::string disk = json_object_get_string(file_on_disk);
             std::transform(disk.begin(), disk.end(), disk.begin(), tolower);
 
             if (disk == "true") {
@@ -526,8 +537,8 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
         }
 
         // Retrieve "state" attribute
-        struct json_object* state_obj = 0;
-        bool foundState = json_object_object_get_ex(file_obj, "state", &state_obj);
+        struct json_object* file_state = 0;
+        bool foundState = json_object_object_get_ex(file, "state", &file_state);
 
         if (!foundState) {
             error_count++;
@@ -536,7 +547,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
             continue;
         }
 
-        std::string state = json_object_get_string(state_obj);
+        std::string state = json_object_get_string(file_state);
 
         if (state == "COMPLETED") {
             online_count++;
@@ -669,11 +680,13 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
     }
 
     for (int i = 0; i < nbfiles; ++i) {
-        json_object *file = json_object_array_get_idx(json_response, i);
+        std::string path = Davix::Uri(urls[i]).getPath();
+        struct json_object* file = tape_rest_api::polling_get_item_by_path(json_response, nbfiles, path);
 
         if (file == NULL) {
             error_count++;
-            gfal2_set_error(&errors[i], http_plugin_domain, ENOMSG, __func__, "[Tape REST API] Malformed server response");
+            gfal2_set_error(&errors[i], http_plugin_domain, ENOMSG, __func__,
+                            "[Tape REST API] Missing response item for path=%s", path.c_str());
             continue;
         }
 
@@ -687,18 +700,6 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
             gfal2_set_error(&errors[i], http_plugin_domain, ENOMSG, __func__, "[Tape REST API] %s", error_text.c_str());
             continue;
         }
-
-        // Check if "path" attribute exists
-        struct json_object* file_path = 0;
-        bool foundPath = json_object_object_get_ex(file, "path", &file_path);
-        if (!foundPath) {
-            error_count++;
-            gfal2_set_error(&errors[i], http_plugin_domain, ENOMSG, __func__,
-                            "[Tape REST API] Path attribute missing from server poll response");
-            continue;
-        }
-
-        std::string path = json_object_get_string(file_path);
 
         // Retrieve "locality" attribute
         struct json_object* file_locality = 0;
