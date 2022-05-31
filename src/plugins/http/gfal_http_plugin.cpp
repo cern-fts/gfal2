@@ -68,8 +68,8 @@ static int get_corresponding_davix_log_level()
 
 static bool allowsBearerTokenRetrieve(const Davix::Uri& uri, const GfalHttpPluginData::OP& operation)
 {
-    return (uri.getProtocol().rfind("https", 0) == 0) ||
-           (uri.getProtocol().rfind("davs", 0) == 0) ||
+    return ((uri.getProtocol().rfind("https", 0) == 0) ||
+           (uri.getProtocol().rfind("davs", 0) == 0)) &&
            (operation != GfalHttpPluginData::OP::TAPE);
 }
 
