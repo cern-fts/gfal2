@@ -44,6 +44,7 @@ GQuark GFAL_EVENT_LIST_EXIT;
 GQuark GFAL_EVENT_TRANSFER_TYPE;
 GQuark GFAL_EVENT_IPV6;
 
+
 __attribute__((constructor))
 static void init_event_quarks() {
     GFAL_EVENT_PREPARE_ENTER = g_quark_from_static_string("PREPARE:ENTER");

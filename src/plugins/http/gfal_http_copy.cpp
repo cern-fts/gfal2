@@ -305,7 +305,7 @@ static bool gfal_http_cancellationcopy_callback(void* data)
 static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfData, void* data)
 {
     PerfCallbackData* pdata = static_cast<PerfCallbackData*>(data);
-    static int callCount=0;
+    static int callCount = 0;
 
     callCount++;
 
@@ -318,7 +318,7 @@ static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfDat
         status.instant_baudrate = static_cast<size_t>(perfData.diffTransfer());
         status.transfer_time    = perfData.absElapsed();
 
-        if ((callCount == 1)&&(perfData.ipflag == Davix::IPv6)) {
+        if ((callCount == 1) && (perfData.ipflag == Davix::IPv6)) {
             plugin_trigger_event(pdata->params, http_plugin_domain,
                                  GFAL_EVENT_DESTINATION, GFAL_EVENT_IPV6,
                                  "TRUE");

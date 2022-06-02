@@ -63,7 +63,7 @@ static void gfal2_ftp_client_pasv_fire_event(GridFTPSession* session,
         if (is_ipv6) {
             plugin_trigger_event(session->params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
                 GFAL_EVENT_DESTINATION, GFAL_EVENT_IPV6,
-                "TRUE %s:%u", ip, port);
+                "%s:%u", ip, port);
         }
     }
 }
