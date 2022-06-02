@@ -24,25 +24,8 @@ using namespace Davix;
 
 namespace tape_rest_api {
 
-    // Parse version field from /.well-known endpoint.
-    // Expects version in the format v0,v1 etc. Returns -1 if it fails to find the correct version number.
-    int parseVersion(std::string& version ) {
-        if (!version.empty() && version[0] == 'v') {
-            version.erase(0, 1);
-        }
-
-        if (!version.empty() && !isdigit(version[0])) {
-            return -1;
-        }
-
-        int v = std::atoi(version.c_str());
-
-        return v;
-    }
-
     // Discover the Tape REST API endpoint starting from one of the URLs of the request
     std::string discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method, GError** err) {
-
         Davix::Uri uri(url);
 
         if (uri.getStatus() != StatusCode::OK) {
@@ -59,7 +42,7 @@ namespace tape_rest_api {
         }
         config_endpoint << "/.well-known/wlcg-tape-rest-api";
 
-        // Construct and send "GET /.well-known request
+        // Construct and send "GET /.well-known/wlcg-tape-rest-api" request
         Davix::DavixError* reqerr = NULL;
         Davix::Uri config_uri(config_endpoint.str());
         Davix::RequestParams params;
@@ -85,7 +68,7 @@ namespace tape_rest_api {
 
         if (!json_response) {
             gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
-                            "[Tape REST API] Malformed served response from /.well-known/wlcg-tape-rest-api.");
+                            "[Tape REST API] Malformed served response from /.well-known/wlcg-tape-rest-api");
             return "";
         }
 
@@ -94,9 +77,25 @@ namespace tape_rest_api {
         bool foundEndpoints = json_object_object_get_ex(json_response, "endpoints", &endpoints);
         if (!foundEndpoints) {
             gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
-                            "[Tape REST API] No endpoints in response from /.well-known/wlcg-tape-rest-api.");
+                            "[Tape REST API] No endpoints in response from /.well-known/wlcg-tape-rest-api");
             return "";
         }
+
+        // Helper function to parse version field from /.well-known endpoint
+        // Expects version in the format v0,v1 etc. Returns -1 if it fails to find the correct version number
+        auto parseVersion = [](std::string version) {
+            std::transform(version.begin(), version.end(), version.begin(), tolower);
+
+            if (!version.empty() && version[0] == 'v') {
+                version.erase(0, 1);
+            }
+
+            if (!version.empty() && !isdigit(version[0])) {
+                return -1;
+            }
+
+            return std::atoi(version.c_str());
+        };
 
         // Iterate over the endpoints list and find v0 or v1
         const int len = json_object_array_length(endpoints);
@@ -115,7 +114,6 @@ namespace tape_rest_api {
             bool foundVersion = json_object_object_get_ex(endpoint_obj, "version", &version_obj);
             if (foundVersion) {
                 std::string version_str = json_object_get_string(version_obj);
-                std::transform(version_str.begin(), version_str.end(), version_str.begin(), tolower);
                 parsedVersion = parseVersion(version_str);
 
                 // Check if "uri" attribute exists
@@ -130,12 +128,12 @@ namespace tape_rest_api {
             }
         }
 
-        //Free the JSON object
+        // Free the JSON object
         json_object_put(json_response);
 
         if (metadata_uri.empty()) {
             gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
-                            "[Tape REST API] Failed to find metadata uri in response from /.well-known/wlcg-tape-rest-api.");
+                            "[Tape REST API] Failed to find v0 or v1 metadata endpoint in response from /.well-known/wlcg-tape-rest-api");
             return "";
         }
 
