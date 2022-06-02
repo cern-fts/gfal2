@@ -24,135 +24,6 @@ using namespace Davix;
 
 namespace tape_rest_api {
 
-    // Discover the Tape REST API endpoint starting from one of the URLs of the request
-    std::string discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method, GError** err) {
-        Davix::Uri uri(url);
-
-        if (uri.getStatus() != StatusCode::OK) {
-            gfal2_set_error(err, http_plugin_domain, EINVAL, __func__, "Invalid URL: %s", url);
-            return "";
-        }
-
-        // Construct /.well-known endpoint
-        std::stringstream config_endpoint;
-        config_endpoint << uri.getProtocol() << "://" << uri.getHost();
-
-        if (uri.getPort()) {
-            config_endpoint << ":" << uri.getPort();
-        }
-        config_endpoint << "/.well-known/wlcg-tape-rest-api";
-
-        // Construct and send "GET /.well-known/wlcg-tape-rest-api" request
-        Davix::DavixError* reqerr = NULL;
-        Davix::Uri config_uri(config_endpoint.str());
-        Davix::RequestParams params;
-
-        GetRequest request(davix->context, config_uri, &reqerr);
-        davix->get_params(&params, config_uri, GfalHttpPluginData::OP::TAPE);
-        request.setParameters(params);
-
-        if (request.executeRequest(&reqerr)) {
-            gfal2_set_error(err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
-                            "[Tape REST API] Failed to query /.well-known/wlcg-tape-rest-api");
-            return "";
-        }
-
-        if (request.getRequestCode() != 200) {
-            gfal2_set_error(err, http_plugin_domain, EINVAL, __func__,
-                            "[Tape REST API] Failed to query /.well-known/wlcg-tape-rest-api: Expected 200 "
-                            "status code (received %d)", request.getRequestCode());
-            return "";
-        }
-
-        struct json_object* json_response = json_tokener_parse(request.getAnswerContent());
-
-        if (!json_response) {
-            gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
-                            "[Tape REST API] Malformed served response from /.well-known/wlcg-tape-rest-api");
-            return "";
-        }
-
-        // Check if "endpoints" attribute exists
-        struct json_object* endpoints = 0;
-        bool foundEndpoints = json_object_object_get_ex(json_response, "endpoints", &endpoints);
-        if (!foundEndpoints) {
-            gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
-                            "[Tape REST API] No endpoints in response from /.well-known/wlcg-tape-rest-api");
-            return "";
-        }
-
-        // Helper function to parse version field from /.well-known endpoint
-        // Expects version in the format v0,v1 etc. Returns -1 if it fails to find the correct version number
-        auto parseVersion = [](std::string version) {
-            std::transform(version.begin(), version.end(), version.begin(), tolower);
-
-            if (!version.empty() && version[0] == 'v') {
-                version.erase(0, 1);
-            }
-
-            if (!version.empty() && !isdigit(version[0])) {
-                return -1;
-            }
-
-            return std::atoi(version.c_str());
-        };
-
-        // Iterate over the endpoints list and find v0 or v1
-        const int len = json_object_array_length(endpoints);
-        int maxVersion = 0;
-        std::string metadata_uri = "";
-
-        for (int i = 0; i < len; ++i) {
-            int parsedVersion = 0;
-            json_object *endpoint_obj = json_object_array_get_idx(endpoints, i);
-            if (endpoint_obj == NULL) {
-                continue;
-            }
-
-            // Check if "version" attribute exists
-            struct json_object* version_obj = 0;
-            bool foundVersion = json_object_object_get_ex(endpoint_obj, "version", &version_obj);
-            if (foundVersion) {
-                std::string version_str = json_object_get_string(version_obj);
-                parsedVersion = parseVersion(version_str);
-
-                // Check if "uri" attribute exists
-                struct json_object *uri_obj = 0;
-                bool foundUri = json_object_object_get_ex(endpoint_obj, "uri", &uri_obj);
-                if (foundUri) {
-                    if (parsedVersion >= maxVersion && parsedVersion <= 1) {
-                        metadata_uri = json_object_get_string(uri_obj);
-                        maxVersion = parsedVersion;
-                    }
-                }
-            }
-        }
-
-        // Free the JSON object
-        json_object_put(json_response);
-
-        if (metadata_uri.empty()) {
-            gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
-                            "[Tape REST API] Failed to find v0 or v1 metadata endpoint in response from /.well-known/wlcg-tape-rest-api");
-            return "";
-        }
-
-        std::stringstream endpoint;
-        endpoint << metadata_uri;
-
-        if (endpoint.str().back() != '/') {
-            endpoint << "/";
-        }
-
-        if (method[0] == '/') {
-            endpoint.seekp(-1, std::ios_base::end);
-        }
-
-        endpoint << method;
-
-        return endpoint.str();
-    }
-
     // Construct a request body that consists in a list if file paths from the given set of URLs
     std::string list_files_body(int nbfiles, const char *const *urls) {
         std::stringstream body;
@@ -302,7 +173,7 @@ int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const
 
     // Find out Tape Rest API endpoint
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
-    std::string tapeEndpoint = tape_rest_api::discover_tape_endpoint(davix, urls[0], "/stage/", &tmp_err);
+    std::string tapeEndpoint = discover_tape_endpoint(davix, urls[0], "/stage/", &tmp_err);
 
     if (tmp_err != NULL) {
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
@@ -396,7 +267,7 @@ int gfal_http_abort_files(plugin_handle plugin_data, int nbfiles, const char* co
 
     // Find out Tape Rest API endpoint
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
-    std::string tapeEndpoint = tape_rest_api::discover_tape_endpoint(davix, urls[0], method.str().c_str(), &tmp_err);
+    std::string tapeEndpoint = discover_tape_endpoint(davix, urls[0], method.str().c_str(), &tmp_err);
 
     if (tmp_err != NULL) {
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
@@ -468,7 +339,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
 
     // Find out Tape Rest API endpoint
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
-    std::string tapeEndpoint = tape_rest_api::discover_tape_endpoint(davix, urls[0], method.str().c_str(), &tmp_err);
+    std::string tapeEndpoint = discover_tape_endpoint(davix, urls[0], method.str().c_str(), &tmp_err);
 
     if (tmp_err != NULL) {
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
@@ -671,7 +542,7 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
 
     // Find out Tape Rest API endpoint
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
-    std::string tapeEndpoint = tape_rest_api::discover_tape_endpoint(davix, urls[0], "/archiveinfo", &tmp_err);
+    std::string tapeEndpoint = discover_tape_endpoint(davix, urls[0], "/archiveinfo/", &tmp_err);
 
     if (tmp_err != NULL) {
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
@@ -835,7 +706,7 @@ int gfal_http_release_file_list(plugin_handle plugin_data, int nbfiles, const ch
 
     // Find out Tape REST API endpoint
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
-    std::string tapeEndpoint = tape_rest_api::discover_tape_endpoint(davix, urls[0], method.str().c_str(), &tmp_err);
+    std::string tapeEndpoint = discover_tape_endpoint(davix, urls[0], method.str().c_str(), &tmp_err);
 
     if (tmp_err != NULL) {
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);

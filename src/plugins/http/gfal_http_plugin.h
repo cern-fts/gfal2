@@ -72,14 +72,20 @@ public:
 
     friend class TokenMapTest;
 
+    friend std::string discover_tape_endpoint(GfalHttpPluginData* davix, const char *url, const char *method,
+                                              GError **err);
+
 private:
     typedef std::map<std::string, bool> TokenAccessMap;
+    typedef std::map<std::string, std::string> TapeEndpointMap;
     /// baseline Davix Request Parameters
     Davix::RequestParams reference_params;
     /// map a token with read/write access flag
     TokenAccessMap token_map;
     /// token retriever object (can be chained)
     std::unique_ptr<TokenRetriever> token_retriever_chain;
+    /// map a url with a tape endpoint
+    TapeEndpointMap tape_endpoint_map;
 
     // Set up general request parameters
     void get_params_internal(Davix::RequestParams& params, const Davix::Uri& uri);
@@ -109,6 +115,12 @@ private:
     // @param validity lifetime of the token in seconds
     // @return the SE-issued token or null
     char* retrieve_and_store_se_token(const Davix::Uri& uri, const OP& operation, unsigned validity);
+
+    // Discover tape endpoint and cache it
+    // @param config_endpoint the well-known endpoint of the Tape REST API
+    // @param err error handle
+    // @return the tape endpoint
+    std::string retrieve_and_store_tape_endpoint(std::string config_endpoint, GError** err);
 
     // Obtain request parameters + credentials for an AWS endpoint
     void get_aws_params(Davix::RequestParams& params, const Davix::Uri& uri);
@@ -149,6 +161,9 @@ int davix2errno(Davix::StatusCode::Code code);
 
 // Removes +3rd from the url, if there
 void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);
+
+// Find tape endpoint for a given method
+std::string discover_tape_endpoint(GfalHttpPluginData* davix, const char *url, const char *method, GError **err);
 
 // METADATA OPERATIONS
 void gfal_http_delete(plugin_handle plugin_data);
