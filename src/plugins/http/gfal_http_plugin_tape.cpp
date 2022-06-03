@@ -18,9 +18,19 @@
 #include <sstream>
 #include <json.h>
 
+#include "uri/gfal2_parsing.h"
 #include "gfal_http_plugin.h"
 
 using namespace Davix;
+
+// Wrapper function to provide string functionality on top of Gfal2 util functionality
+static std::string collapse_slashes(const std::string& path)
+{
+    char* collapsed_ptr = gfal2_path_collapse_slashes(path.c_str());
+    std::string collapsed(collapsed_ptr);
+    g_free(collapsed_ptr);
+    return collapsed;
+}
 
 namespace tape_rest_api {
 
@@ -102,8 +112,13 @@ namespace tape_rest_api {
                 json_object_object_get_ex(item, "path", &item_path);
                 std::string path = item_path ? json_object_get_string(item_path) : "";
 
-                if (!path.empty() && path == surl) {
-                    return item;
+                if (!path.empty()) {
+                    std::string cpath = collapse_slashes(path);
+                    std::string csurl = collapse_slashes(surl);
+
+                    if (cpath == csurl) {
+                        return item;
+                    }
                 }
             }
         }
