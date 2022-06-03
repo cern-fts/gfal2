@@ -309,9 +309,8 @@ std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::stri
         struct json_object* version_obj = 0;
         bool foundVersion = json_object_object_get_ex(endpoint_obj, "version", &version_obj);
         if (foundVersion) {
-            int parsedVersion = 0;
             std::string version_str = json_object_get_string(version_obj);
-            parsedVersion = parseVersion(version_str);
+            int parsedVersion = parseVersion(version_str);
 
             // Check if "uri" attribute exists
             struct json_object *uri_obj = 0;

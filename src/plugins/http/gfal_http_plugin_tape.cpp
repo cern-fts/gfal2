@@ -411,7 +411,14 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
     std::string reqid = foundId ? json_object_get_string(id) : "";
 
     // Check if "request_id" attribute matches
-    if (!reqid.empty() && reqid != token) {
+    if (reqid.empty()) {
+        gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
+                        "[Tape REST API] Request ID missing from polling response (expected id=%s)", token);
+        tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
+        return -1;
+    }
+
+    if (reqid != token) {
         gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] Request ID mismatch. Expected id=%s but received id=%s", token, reqid.c_str());
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);

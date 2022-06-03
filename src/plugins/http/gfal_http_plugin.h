@@ -73,7 +73,7 @@ public:
     friend class TokenMapTest;
 
     friend std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method,
-                                              GError** err);
+                                                        GError** err);
 
 private:
     typedef std::map<std::string, bool> TokenAccessMap;
