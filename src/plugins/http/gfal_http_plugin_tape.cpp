@@ -173,7 +173,7 @@ int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const
 
     // Find out Tape Rest API endpoint
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
-    std::string tapeEndpoint = discover_tape_endpoint(davix, urls[0], "/stage/", &tmp_err);
+    std::string tapeEndpoint = gfal_http_discover_tape_endpoint(davix, urls[0], "/stage/", &tmp_err);
 
     if (tmp_err != NULL) {
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
@@ -267,7 +267,7 @@ int gfal_http_abort_files(plugin_handle plugin_data, int nbfiles, const char* co
 
     // Find out Tape Rest API endpoint
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
-    std::string tapeEndpoint = discover_tape_endpoint(davix, urls[0], method.str().c_str(), &tmp_err);
+    std::string tapeEndpoint = gfal_http_discover_tape_endpoint(davix, urls[0], method.str().c_str(), &tmp_err);
 
     if (tmp_err != NULL) {
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
@@ -339,7 +339,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
 
     // Find out Tape Rest API endpoint
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
-    std::string tapeEndpoint = discover_tape_endpoint(davix, urls[0], method.str().c_str(), &tmp_err);
+    std::string tapeEndpoint = gfal_http_discover_tape_endpoint(davix, urls[0], method.str().c_str(), &tmp_err);
 
     if (tmp_err != NULL) {
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
@@ -542,7 +542,7 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
 
     // Find out Tape Rest API endpoint
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
-    std::string tapeEndpoint = discover_tape_endpoint(davix, urls[0], "/archiveinfo/", &tmp_err);
+    std::string tapeEndpoint = gfal_http_discover_tape_endpoint(davix, urls[0], "/archiveinfo/", &tmp_err);
 
     if (tmp_err != NULL) {
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
@@ -706,7 +706,7 @@ int gfal_http_release_file_list(plugin_handle plugin_data, int nbfiles, const ch
 
     // Find out Tape REST API endpoint
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
-    std::string tapeEndpoint = discover_tape_endpoint(davix, urls[0], method.str().c_str(), &tmp_err);
+    std::string tapeEndpoint = gfal_http_discover_tape_endpoint(davix, urls[0], method.str().c_str(), &tmp_err);
 
     if (tmp_err != NULL) {
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);

@@ -237,7 +237,7 @@ char* GfalHttpPluginData::retrieve_and_store_se_token(const Davix::Uri& uri, con
     return token;
 }
 
-std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(std::string config_endpoint, GError** err)
+std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& config_endpoint, GError** err)
 {
     // Construct and send "GET /.well-known/wlcg-tape-rest-api" request
     Davix::DavixError* reqerr = NULL;
@@ -300,7 +300,6 @@ std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(std::string con
     std::string tape_uri = "";
 
     for (int i = 0; i < len; ++i) {
-        int parsedVersion = 0;
         json_object *endpoint_obj = json_object_array_get_idx(endpoints, i);
         if (endpoint_obj == NULL) {
             continue;
@@ -310,6 +309,7 @@ std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(std::string con
         struct json_object* version_obj = 0;
         bool foundVersion = json_object_object_get_ex(endpoint_obj, "version", &version_obj);
         if (foundVersion) {
+            int parsedVersion = 0;
             std::string version_str = json_object_get_string(version_obj);
             parsedVersion = parseVersion(version_str);
 
@@ -339,7 +339,7 @@ std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(std::string con
     return tape_uri;
 }
 
-std::string discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method, GError** err)
+std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method, GError** err)
 {
     Davix::Uri uri(url);
 
@@ -362,6 +362,10 @@ std::string discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, c
     std::string metadata_uri = (it == davix->tape_endpoint_map.end()) ?
                                davix->retrieve_and_store_tape_endpoint(config_endpoint.str(), err) :
                                it->second;
+
+    if (*err != NULL) {
+        return "";
+    }
 
     std::stringstream endpoint;
     endpoint << metadata_uri;

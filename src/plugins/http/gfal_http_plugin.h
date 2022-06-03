@@ -72,8 +72,8 @@ public:
 
     friend class TokenMapTest;
 
-    friend std::string discover_tape_endpoint(GfalHttpPluginData* davix, const char *url, const char *method,
-                                              GError **err);
+    friend std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method,
+                                              GError** err);
 
 private:
     typedef std::map<std::string, bool> TokenAccessMap;
@@ -120,7 +120,7 @@ private:
     // @param config_endpoint the well-known endpoint of the Tape REST API
     // @param err error handle
     // @return the tape endpoint
-    std::string retrieve_and_store_tape_endpoint(std::string config_endpoint, GError** err);
+    std::string retrieve_and_store_tape_endpoint(const std::string& config_endpoint, GError** err);
 
     // Obtain request parameters + credentials for an AWS endpoint
     void get_aws_params(Davix::RequestParams& params, const Davix::Uri& uri);
@@ -163,7 +163,7 @@ int davix2errno(Davix::StatusCode::Code code);
 void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);
 
 // Find tape endpoint for a given method
-std::string discover_tape_endpoint(GfalHttpPluginData* davix, const char *url, const char *method, GError **err);
+std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method, GError** err);
 
 // METADATA OPERATIONS
 void gfal_http_delete(plugin_handle plugin_data);
