@@ -786,6 +786,9 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
             gfal2_log(G_LOG_LEVEL_INFO, "Eviction request failed: %s", tmp_err->message);
             g_error_free(tmp_err);
         }
+
+        plugin_trigger_event(params, http_plugin_domain, GFAL_EVENT_SOURCE,
+                             GFAL_EVENT_EVICT, "%d", ret);
     }
 
     return 0;

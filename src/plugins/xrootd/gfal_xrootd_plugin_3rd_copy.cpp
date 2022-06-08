@@ -351,6 +351,9 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
                 g_error_free(errors[i]);
             }
         }
+
+        plugin_trigger_event(params, xrootd_domain, GFAL_EVENT_SOURCE,
+                             GFAL_EVENT_EVICT, "%d", ret);
     }
 
     return -n_failed;
