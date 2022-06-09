@@ -151,7 +151,7 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
     if( size != nbfiles )
     {
       for( int i = 0; i < nbfiles; ++i )
-        gfal2_set_error( &err[0], xrootd_domain, ENOMSG, __func__,
+        gfal2_set_error( &err[i], xrootd_domain, ENOMSG, __func__,
                          "Number of files in the request does not match!" );
       return -1;
     }
