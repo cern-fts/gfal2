@@ -209,7 +209,7 @@ TEST_F(BringonlineTest, TwoAbort)
     if (ret == 0 && token[0]) {
         ret = gfal2_abort_files(handle, 2, surls, token, error);
         ASSERT_TRUE(error[0] == NULL || error[0]->code == ENOENT);
-        ASSERT_TRUE(error[1] == NULL || error[1]->code == EIO);
+        ASSERT_TRUE(error[1] == NULL || error[1]->code == EIO || error[1]->code == ENOENT);
 
         while (ret == 0) {
             sleep(1);
@@ -220,7 +220,8 @@ TEST_F(BringonlineTest, TwoAbort)
         }
 
         ASSERT_TRUE(error[0]->code == ECANCELED || error[0]->code == ENOENT || error[0]->code == ENOMSG);
-        ASSERT_TRUE(error[1] == NULL ||error[1]->code == ECANCELED || error[1]->code == 0 || error[1]->code == EIO);
+        ASSERT_TRUE(error[1] == NULL ||error[1]->code == ECANCELED || error[1]->code == EIO ||
+                    error[1]->code == ENOENT);
     }
 }
 
@@ -236,9 +237,17 @@ TEST_F(BringonlineTest, InvalidPoll)
     };
 
     ret = gfal2_bring_online_poll_list(handle, 2, surls, "1234-5678-badabad", error);
-    ASSERT_LT(ret, 0);
-    ASSERT_TRUE(error[0]->code == EBADR || error[0]->code == EIO || error[0]->code == EINVAL || error[0]->code == ENOMSG);
-    ASSERT_TRUE(error[1]->code == EBADR || error[1]->code == EIO || error[1]->code == EINVAL || error[1]->code == ENOMSG );
+    // With xroot you can poll with an invalid token
+    if(ret < 0) {
+        ASSERT_TRUE(error[0]->code == EBADR || error[0]->code == EIO || error[0]->code == EINVAL ||
+                    error[0]->code == ENOMSG);
+        ASSERT_TRUE(error[1]->code == EBADR || error[1]->code == EIO || error[1]->code == EINVAL ||
+                    error[1]->code == ENOMSG);
+    }
+    else{
+        ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error[0]);
+        ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error[1]);
+    }
 }
 
 // Release an invalid token
