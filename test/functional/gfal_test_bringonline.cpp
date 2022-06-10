@@ -76,7 +76,7 @@ TEST_F(BringonlineTest, SingleBringOnlineSync)
     int ret;
     ret = gfal2_bring_online(handle, surl, 10, 28800, token, sizeof(token), 0, &error);
     ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
-    ASSERT_EQ(1, ret);
+    ASSERT_GE(ret,0);
 }
 
 
@@ -114,9 +114,15 @@ TEST_F(BringonlineTest, TwoBringOnlineSync)
     };
 
     ret = gfal2_bring_online_list(handle, 2, surls, 10, 28800, token, sizeof(token), FALSE, error);
-    ASSERT_EQ(1, ret);
+    ASSERT_GE(ret,0);
 
-    ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error[0], ENOENT);
+    // Tape REST API returns a success even if files in the request do not exist
+    if (ret == 0) {
+        ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error[0]);
+    }
+    else {
+        ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error[0], ENOENT);
+    }
     ASSERT_PRED_FORMAT2(AssertGfalSuccess, 1, error[1]);
 }
 
@@ -147,7 +153,7 @@ TEST_F(BringonlineTest, TwoBringOnlineAsync)
             printf("Poll\n");
             ret = gfal2_bring_online_poll_list(handle, 2, surls, token, error);
             if (error[0] != NULL) {
-                ASSERT_TRUE(error[0]->code == EAGAIN || error[0]->code == ENOENT);
+                ASSERT_TRUE(error[0]->code == EAGAIN || error[0]->code == ENOENT || error[0]->code == ENOMSG);
                 if (error[0]->code == EAGAIN) {
                     g_clear_error(&error[0]);
                 }
@@ -159,9 +165,9 @@ TEST_F(BringonlineTest, TwoBringOnlineAsync)
         }
     }
 
-    ASSERT_EQ(1, ret);
+    ASSERT_GT(ret, 0);
 
-    ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error[0], ENOENT);
+    ASSERT_PRED_FORMAT3(AssertGfalOneOfErrno, -1, error[0], (std::list<int>{ENOENT,ENOMSG}));
     ASSERT_PRED_FORMAT2(AssertGfalSuccess, 1, error[1]);
 }
 
@@ -173,7 +179,7 @@ TEST_F(BringonlineTest, SingleReleaseSync)
     int ret;
     ret = gfal2_bring_online(handle, surl, 10, 28800, token, sizeof(token), FALSE, &error);
     ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
-    ASSERT_EQ(1, ret);
+    ASSERT_GE(ret,0);
 
     if (token[0]) {
         printf("Release\n");
@@ -213,8 +219,8 @@ TEST_F(BringonlineTest, TwoAbort)
             ret = gfal2_bring_online_poll_list(handle, 2, surls, token, error);
         }
 
-        ASSERT_TRUE(error[0]->code == ECANCELED || error[0]->code == ENOENT);
-        ASSERT_TRUE(error[1]->code == ECANCELED || error[1]->code == 0 || error[1]->code == EIO);
+        ASSERT_TRUE(error[0]->code == ECANCELED || error[0]->code == ENOENT || error[0]->code == ENOMSG);
+        ASSERT_TRUE(error[1] == NULL ||error[1]->code == ECANCELED || error[1]->code == 0 || error[1]->code == EIO);
     }
 }
 
@@ -231,8 +237,8 @@ TEST_F(BringonlineTest, InvalidPoll)
 
     ret = gfal2_bring_online_poll_list(handle, 2, surls, "1234-5678-badabad", error);
     ASSERT_LT(ret, 0);
-    ASSERT_TRUE(error[0]->code == EBADR || error[0]->code == EIO);
-    ASSERT_TRUE(error[1]->code == EBADR || error[1]->code == EIO);
+    ASSERT_TRUE(error[0]->code == EBADR || error[0]->code == EIO || error[0]->code == EINVAL || error[0]->code == ENOMSG);
+    ASSERT_TRUE(error[1]->code == EBADR || error[1]->code == EIO || error[1]->code == EINVAL || error[1]->code == ENOMSG );
 }
 
 // Release an invalid token
@@ -244,7 +250,7 @@ TEST_F(BringonlineTest, InvalidRelease)
     ret = gfal2_release_file(handle, surl, "1234-5678-badabad", &error);
     // Some storages return a success even if the token does not exist
     if (ret) {
-        ASSERT_PRED_FORMAT3(AssertGfalErrno, ret, error, EBADR);
+        ASSERT_PRED_FORMAT3(AssertGfalOneOfErrno, ret, error, (std::list<int>{EBADR, EHOSTUNREACH}));
     }
     else {
         ASSERT_PRED_FORMAT2(AssertGfalSuccess, ret, error);
@@ -275,7 +281,7 @@ TEST_F(BringonlineTest, InvalidHostPoll)
     ret = gfal2_bring_online_poll(handle, invalid_surl, "bringonline-token", &error);
 
     ASSERT_EQ(-1, ret);
-    ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error, ECOMM);
+    ASSERT_PRED_FORMAT3(AssertGfalOneOfErrno, -1, error, (std::list<int>{ECOMM, EHOSTUNREACH}));
 }
 
 // Request with duplicated SURLs (see DMC-676)
@@ -319,7 +325,7 @@ TEST_F(BringonlineTest, DuplicatedSURLs)
                         ASSERT_EQ(EAGAIN, error[i]->code);
                     }
                     else {
-                        ASSERT_TRUE(error[i]->code == EAGAIN || error[i]->code == ENOENT);
+                        ASSERT_TRUE(error[i]->code == EAGAIN || error[i]->code == ENOENT || error[i]->code == ENOMSG);
                     }
                     if (error[i] && error[i]->code == EAGAIN) {
                         g_clear_error(&error[i]);
@@ -334,7 +340,7 @@ TEST_F(BringonlineTest, DuplicatedSURLs)
         if (i % 2 == 0)
             ASSERT_PRED_FORMAT2(AssertGfalSuccess, 1, error[i]);
         else
-            ASSERT_PRED_FORMAT3(AssertGfalErrno, -1, error[i], ENOENT);
+            ASSERT_PRED_FORMAT3(AssertGfalOneOfErrno, -1, error[i], (std::list<int>{ENOENT,ENOMSG}));
     }
 
     free(surls[1]);
