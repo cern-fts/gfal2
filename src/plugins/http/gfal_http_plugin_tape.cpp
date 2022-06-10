@@ -437,16 +437,8 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
     }
 
     // Iterate over the "files" list
-    const int len = json_object_array_length(files);
     int online_count = 0;
     int error_count  = 0;
-
-    if (len != nbfiles) {
-        gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
-                        "[Tape REST API] Number of files in the request does not match!");
-        tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
-        return -1;
-    }
 
     for (int i = 0; i < nbfiles; ++i) {
         std::string path = Davix::Uri(urls[i]).getPath();
@@ -618,16 +610,8 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
     }
 
     // Iterate over the file list
-    const int len = json_object_array_length(json_response);
     int ontape_count = 0;
     int error_count = 0;
-
-    if (len != nbfiles) {
-        gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
-                        "[Tape REST API] Number of files in the request doest not match!");
-        tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
-        return -1;
-    }
 
     for (int i = 0; i < nbfiles; ++i) {
         std::string path = Davix::Uri(urls[i]).getPath();
