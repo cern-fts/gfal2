@@ -44,7 +44,7 @@ namespace tape_rest_api {
                 body << ", ";
             }
 
-            body << "\"" << Davix::Uri(urls[i]).getPath() << "\"";
+            body << "\"" << collapse_slashes(Davix::Uri(urls[i]).getPath()) << "\"";
         }
 
         body << "]}";
@@ -61,7 +61,7 @@ namespace tape_rest_api {
                 body << ", ";
             }
 
-            body << "{\"path\": " << "\"" << Davix::Uri(urls[i]).getPath() << "\"";
+            body << "{\"path\": " << "\"" << collapse_slashes(Davix::Uri(urls[i]).getPath()) << "\"";
             if ((metadata[i] != NULL) && (metadata[i][0] != '\0')) {
                 body << ", \"targetedMetadata\": " << metadata[i];
             }
