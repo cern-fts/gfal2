@@ -288,6 +288,9 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
     // if there were errors return -1
     if( errorcnt == nbfiles ) return -1;
 
+    // Some files are online, others encountered errors
+    if( (errorcnt + onlinecnt) == nbfiles ) return 2;
+
     // otherwise 0 means user still needs to wait
     return 0;
 }
