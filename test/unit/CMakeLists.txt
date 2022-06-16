@@ -29,6 +29,7 @@ add_executable(gfal2-unit-tests
     ./transfer/tests_callbacks.cpp
     ./transfer/tests_params.cpp
     ./uri/test_uri.cpp
+    ./uri/test_parsing.cpp
 )
 
 target_include_directories(gfal2-unit-tests PRIVATE

@@ -248,9 +248,11 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError **err)
     srm_plugin.copy_file = &srm_plugin_filecopy;
     srm_plugin.check_plugin_url_transfer = &plugin_url_check2;
     srm_plugin.bring_online = &gfal_srmv2_bring_onlineG;
+    srm_plugin.bring_online_v2 = &gfal_srmv2_bring_online_v2G;
     srm_plugin.bring_online_poll = &gfal_srmv2_bring_online_pollG;
     srm_plugin.release_file = &gfal_srmv2_release_fileG;
     srm_plugin.bring_online_list = &gfal_srmv2_bring_online_listG;
+    srm_plugin.bring_online_list_v2 = &gfal_srmv2_bring_online_list_v2G;
     srm_plugin.bring_online_poll_list = &gfal_srmv2_bring_online_poll_listG;
     srm_plugin.release_file_list = &gfal_srmv2_release_file_listG;
     srm_plugin.abort_files = &gfal_srm2_abort_filesG;

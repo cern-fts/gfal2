@@ -30,6 +30,12 @@ extern "C"
  */
 gchar* gfal2_utf8escape_string(const char* str, size_t str_len, const char* ignore);
 
+/*
+ * Given a path, returns a pointer to a new string with all slashes collapsed.
+ * Note: the caller must handle memory deallocation of the new string
+ */
+char* gfal2_path_collapse_slashes(const char* path);
+
 #ifdef __cplusplus
 }
 #endif

@@ -85,6 +85,7 @@ extern GQuark GFAL_EVENT_LIST_ITEM;       /**< Triggered once per url pair to be
 extern GQuark GFAL_EVENT_LIST_EXIT;       /**< Triggered after listing the urls to be transferred */
 extern GQuark GFAL_EVENT_TRANSFER_TYPE;   /**< Triggered to register the transfer type being done */
 extern GQuark GFAL_EVENT_IPV6;            /**< Triggered to register the transfer is done over IPv6 */
+extern GQuark GFAL_EVENT_EVICT;           /**< Triggered after a file eviction operation  */
 
 /**
  * Types for for GFAL_EVENT_TRANSFER_TYPE

@@ -83,6 +83,8 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError** err)
 
     xrootd_plugin.bring_online = &gfal_xrootd_bring_online;
     xrootd_plugin.bring_online_list = &gfal_xrootd_bring_online_list;
+    xrootd_plugin.bring_online_v2 = &gfal_xrootd_bring_online_v2;
+    xrootd_plugin.bring_online_list_v2 = &gfal_xrootd_bring_online_list_v2;
     xrootd_plugin.bring_online_poll = &gfal_xrootd_bring_online_poll;
     xrootd_plugin.bring_online_poll_list = &gfal_xrootd_bring_online_poll_list;
     xrootd_plugin.release_file = &gfal_xrootd_release_file;

@@ -810,6 +810,21 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                 GFAL_EVENT_CHECKSUM_EXIT, "");
     }
 
+    // Evict source file if configured
+    if (gfalt_get_use_evict(params, NULL)) {
+        GError* tmp_err;
+        ret = gfal_http_release_file(plugin_data, src, "", &tmp_err);
+        gfal2_log(G_LOG_LEVEL_INFO, "Eviction request exited with status code: %d", ret);
+
+        if (ret < 0) {
+            gfal2_log(G_LOG_LEVEL_INFO, "Eviction request failed: %s", tmp_err->message);
+            g_error_free(tmp_err);
+        }
+
+        plugin_trigger_event(params, http_plugin_domain, GFAL_EVENT_SOURCE,
+                             GFAL_EVENT_EVICT, "%d", ret);
+    }
+
     return 0;
 }
 

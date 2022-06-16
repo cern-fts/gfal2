@@ -27,6 +27,7 @@
 #include <list>
 #include <davix.hpp>
 #include <errno.h>
+#include <json.h>
 #include <davix/utils/davix_gcloud_utils.hpp>
 #include <exceptions/gfalcoreexception.hpp>
 
@@ -66,10 +67,11 @@ static int get_corresponding_davix_log_level()
     return davix_log_level;
 }
 
-static bool allowsBearerTokenRetrieve(const Davix::Uri& uri)
+static bool allowsBearerTokenRetrieve(const Davix::Uri& uri, const GfalHttpPluginData::OP& operation)
 {
-    return (uri.getProtocol().rfind("https", 0) == 0) ||
-           (uri.getProtocol().rfind("davs", 0) == 0);
+    return ((uri.getProtocol().rfind("https", 0) == 0) ||
+           (uri.getProtocol().rfind("davs", 0) == 0)) &&
+           (operation != GfalHttpPluginData::OP::TAPE);
 }
 
 bool GfalHttpPluginData::writeFlagFromOperation(const OP& operation) {
@@ -119,11 +121,6 @@ static bool gfal_http_get_x509_cert_pair(gfal2_context_t handle, const Davix::Ur
 char* GfalHttpPluginData::find_se_token(const Davix::Uri& uri, const OP& operation)
 {
     using credTuple = std::pair<std::string, std::string>;
-
-    if (!allowsBearerTokenRetrieve(uri)) {
-        return NULL;
-    }
-
     bool write_access = writeFlagFromOperation(operation);
     bool extended_search = searchFlagFromOperation(operation);
 
@@ -195,7 +192,7 @@ char* GfalHttpPluginData::retrieve_and_store_se_token(const Davix::Uri& uri, con
     GError* error = NULL;
     char* token = NULL;
 
-    if (!retrieve_token || !allowsBearerTokenRetrieve(uri)) {
+    if (!retrieve_token || !allowsBearerTokenRetrieve(uri, operation)) {
         return NULL;
     }
 
@@ -238,6 +235,151 @@ char* GfalHttpPluginData::retrieve_and_store_se_token(const Davix::Uri& uri, con
 
     gfal2_cred_free(token_cred);
     return token;
+}
+
+std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& config_endpoint, GError** err)
+{
+    // Construct and send "GET /.well-known/wlcg-tape-rest-api" request
+    Davix::DavixError* reqerr = NULL;
+    Davix::Uri config_uri(config_endpoint);
+    Davix::RequestParams params;
+
+    GetRequest request(context, config_uri, &reqerr);
+    get_params(&params, config_uri, GfalHttpPluginData::OP::TAPE);
+    request.setParameters(params);
+
+    if (request.executeRequest(&reqerr)) {
+        gfal2_set_error(err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
+                        "[Tape REST API] Failed to query /.well-known/wlcg-tape-rest-api");
+        return "";
+    }
+
+    if (request.getRequestCode() != 200) {
+        gfal2_set_error(err, http_plugin_domain, EINVAL, __func__,
+                        "[Tape REST API] Failed to query /.well-known/wlcg-tape-rest-api: Expected 200 "
+                        "status code (received %d)", request.getRequestCode());
+        return "";
+    }
+
+    struct json_object* json_response = json_tokener_parse(request.getAnswerContent());
+
+    if (!json_response) {
+        gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
+                        "[Tape REST API] Malformed served response from /.well-known/wlcg-tape-rest-api");
+        return "";
+    }
+
+    // Check if "endpoints" attribute exists
+    struct json_object* endpoints = 0;
+    bool foundEndpoints = json_object_object_get_ex(json_response, "endpoints", &endpoints);
+    if (!foundEndpoints) {
+        gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
+                        "[Tape REST API] No endpoints in response from /.well-known/wlcg-tape-rest-api");
+        return "";
+    }
+
+    // Helper function to parse version field from /.well-known endpoint
+    // Expects version in the format v0,v1 etc. Returns -1 if it fails to find the correct version number
+    auto parseVersion = [](std::string version) {
+        std::transform(version.begin(), version.end(), version.begin(), tolower);
+
+        if (!version.empty() && version[0] == 'v') {
+            version.erase(0, 1);
+        }
+
+        if (!version.empty() && !isdigit(version[0])) {
+            return -1;
+        }
+
+        return std::atoi(version.c_str());
+    };
+
+    // Iterate over the endpoints list and find v0 or v1
+    const int len = json_object_array_length(endpoints);
+    int maxVersion = 0;
+    std::string tape_uri = "";
+
+    for (int i = 0; i < len; ++i) {
+        json_object *endpoint_obj = json_object_array_get_idx(endpoints, i);
+        if (endpoint_obj == NULL) {
+            continue;
+        }
+
+        // Check if "version" attribute exists
+        struct json_object* version_obj = 0;
+        bool foundVersion = json_object_object_get_ex(endpoint_obj, "version", &version_obj);
+        if (foundVersion) {
+            std::string version_str = json_object_get_string(version_obj);
+            int parsedVersion = parseVersion(version_str);
+
+            // Check if "uri" attribute exists
+            struct json_object *uri_obj = 0;
+            bool foundUri = json_object_object_get_ex(endpoint_obj, "uri", &uri_obj);
+            if (foundUri) {
+                if (parsedVersion >= maxVersion && parsedVersion <= 1) {
+                    tape_uri = json_object_get_string(uri_obj);
+                    maxVersion = parsedVersion;
+                }
+            }
+        }
+    }
+
+    // Free the JSON object
+    json_object_put(json_response);
+
+    if (tape_uri.empty()) {
+        gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
+                        "[Tape REST API] Failed to find v0 or v1 metadata endpoint in response"
+                        " from /.well-known/wlcg-tape-rest-api");
+        return "";
+    }
+
+    tape_endpoint_map[config_endpoint] = tape_uri;
+    return tape_uri;
+}
+
+std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method, GError** err)
+{
+    Davix::Uri uri(url);
+
+    if (uri.getStatus() != StatusCode::OK) {
+        gfal2_set_error(err, http_plugin_domain, EINVAL, __func__, "Invalid URL: %s", url);
+        return NULL;
+    }
+
+    // Construct /.well-known endpoint
+    std::stringstream config_endpoint;
+    config_endpoint << uri.getProtocol() << "://" << uri.getHost();
+
+    if (uri.getPort()) {
+        config_endpoint << ":" << uri.getPort();
+    }
+    config_endpoint << "/.well-known/wlcg-tape-rest-api";
+
+    auto it = davix->tape_endpoint_map.find(config_endpoint.str());
+
+    std::string metadata_uri = (it == davix->tape_endpoint_map.end()) ?
+                               davix->retrieve_and_store_tape_endpoint(config_endpoint.str(), err) :
+                               it->second;
+
+    if (*err != NULL) {
+        return "";
+    }
+
+    std::stringstream endpoint;
+    endpoint << metadata_uri;
+
+    if (endpoint.str().back() != '/') {
+        endpoint << "/";
+    }
+
+    if (method[0] == '/') {
+        endpoint.seekp(-1, std::ios_base::end);
+    }
+
+    endpoint << method;
+
+    return endpoint.str();
 }
 
 bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Uri& uri,
@@ -669,7 +811,8 @@ static void log_davix2gfal(void* userdata, int msg_level, const char* msg)
 
 
 GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
-    context(), posix(&context), handle(handle), reference_params(), token_map()
+    context(), posix(&context), handle(handle), reference_params(),
+    token_map(), tape_endpoint_map()
 {
     davix_set_log_handler(log_davix2gfal, NULL);
     int davix_level = get_corresponding_davix_log_level();
@@ -741,6 +884,10 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
                  strncmp("http+3rd:", url, 9) == 0 || strncmp("https+3rd:", url, 10) == 0 ||
                  strncmp("dav+3rd:", url, 8) == 0 || strncmp("davs+3rd:", url, 9) == 0 ||
                  strncmp("cs3:", url, 4) == 0 || strncmp("cs3s:", url, 5) == 0);
+        case GFAL_PLUGIN_BRING_ONLINE:
+        case GFAL_PLUGIN_ARCHIVE:
+            return (strncmp("http:", url, 5) == 0 || strncmp("https:", url, 6) == 0 ||
+                    strncmp("dav:", url, 4) == 0 || strncmp("davs:", url, 5) == 0);
       default:
         return false;
     }
@@ -929,6 +1076,19 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError
 
     // Token
     http_plugin.token_retrieve = &gfal_http_token_retrieve;
+
+    // Tape
+    http_plugin.bring_online_v2 = &gfal_http_bring_online_v2;
+    http_plugin.bring_online_list_v2 = &gfal_http_bring_online_list_v2;
+    http_plugin.bring_online = &gfal_http_bring_online;
+    http_plugin.bring_online_list = &gfal_http_bring_online_list;
+    http_plugin.release_file = &gfal_http_release_file;
+    http_plugin.release_file_list = &gfal_http_release_file_list;
+    http_plugin.archive_poll = &gfal_http_archive_poll;
+    http_plugin.archive_poll_list = &gfal_http_archive_poll_list;
+    http_plugin.bring_online_poll = &gfal_http_bring_online_poll;
+    http_plugin.bring_online_poll_list = &gfal_http_bring_online_poll_list;
+    http_plugin.abort_files = &gfal_http_abort_files;
 
     return http_plugin;
 }
