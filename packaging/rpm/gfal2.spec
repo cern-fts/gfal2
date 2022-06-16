@@ -357,6 +357,10 @@ fi
 
 
 %changelog
+* Fri Jun 17 2022 Joao Lopes <batistal at cern.ch> - 2.21.0-1
+- New upstream release
+- Introduces support for HTTP tape operations
+
 * Fri Mar 04 2022 Mihai Patrascoiu <mipatras at cern.ch> - 2.20.5-1
 - New upstream release
 
