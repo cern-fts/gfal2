@@ -503,9 +503,14 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
             gfal2_set_error(&errors[i], http_plugin_domain, ECANCELED, __func__,
                             "[Tape REST API] Staging operation cancelled. File=%s", path.c_str());
             error_count++;
+        } else if (state == "FAILED") {
+            gfal2_set_error(&errors[i], http_plugin_domain, ENOENT, __func__,
+                            "[Tape REST API] Staging operation failed for file=%s", path.c_str());
+            error_count++;
         } else {
             gfal2_set_error(&errors[i], http_plugin_domain, ENOENT, __func__,
-                            "[Tape REST API] The server was unable to provide file %s on disk", path.c_str());
+                            "[Tape REST API] Unrecognized staging status. File=%s status=%s",
+                            path.c_str(), state.c_str());
             error_count++;
         }
     }
@@ -652,10 +657,10 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
         } else if (locality == "LOST") {
             error_count++;
             gfal2_set_error(&errors[i], http_plugin_domain, ENOENT, __func__,
-                            "[Tape REST API] File %s is missing", path.c_str());
+                            "[Tape REST API] File locality reported as LOST (path=%s)", path.c_str());
         } else if (locality == "NONE") {
             gfal2_set_error(&errors[i], http_plugin_domain, EPERM, __func__,
-                            "[Tape REST API] File %s is zero size", path.c_str());
+                            "[Tape REST API] File locality reported as NONE (path=%s)", path.c_str());
             error_count++;
         } else {
             gfal2_set_error(&errors[i], http_plugin_domain, EAGAIN, __func__,
