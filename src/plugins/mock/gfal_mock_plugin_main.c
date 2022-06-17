@@ -194,10 +194,12 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError **err)
     mock_plugin.checksum_calcG = &gfal_mock_checksumG;
 
     mock_plugin.bring_online = gfal_plugin_mock_bring_online;
+    mock_plugin.bring_online_v2 = gfal_plugin_mock_bring_online_v2;
     mock_plugin.bring_online_poll = gfal_plugin_mock_bring_online_poll;
     mock_plugin.release_file = gfal_plugin_mock_release_file;
 
     mock_plugin.bring_online_list = gfal_plugin_mock_bring_online_list;
+    mock_plugin.bring_online_list_v2 = gfal_plugin_mock_bring_online_list_v2;
     mock_plugin.bring_online_poll_list = gfal_plugin_mock_bring_online_poll_list;
     mock_plugin.release_file_list = gfal_plugin_mock_release_file_list;
     mock_plugin.abort_files = gfal_plugin_mock_abort_file_list;

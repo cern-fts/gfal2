@@ -72,6 +72,14 @@ int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
 }
 
 
+int gfal_xrootd_bring_online_list_v2(plugin_handle plugin_data,
+    int nbfiles, const char* const* urls, const char* const* metadata,
+    time_t pintime, time_t timeout, char* token, size_t tsize, int async, GError** err)
+{
+    return gfal_xrootd_bring_online_list(plugin_data, nbfiles, urls, pintime, timeout, token, tsize, async, err);
+}
+
+
 int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
     int nbfiles, const char* const* urls, const char* token, GError** err)
 {
@@ -143,7 +151,7 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
     if( size != nbfiles )
     {
       for( int i = 0; i < nbfiles; ++i )
-        gfal2_set_error( &err[0], xrootd_domain, ENOMSG, __func__,
+        gfal2_set_error( &err[i], xrootd_domain, ENOMSG, __func__,
                          "Number of files in the request does not match!" );
       return -1;
     }
@@ -280,6 +288,9 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
     // if there were errors return -1
     if( errorcnt == nbfiles ) return -1;
 
+    // Some files are online, others encountered errors
+    if( (errorcnt + onlinecnt) == nbfiles ) return 2;
+
     // otherwise 0 means user still needs to wait
     return 0;
 }
@@ -288,7 +299,33 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
 int gfal_xrootd_release_file_list(plugin_handle plugin_data,
     int nbfiles, const char* const* urls, const char* token, GError** err)
 {
-    // Noop
+    gfal2_context_t context = (gfal2_context_t)plugin_data;
+
+    XrdCl::URL endpoint(prepare_url(context, urls[0]));
+    endpoint.SetPath(std::string());
+    XrdCl::FileSystem fs(endpoint);
+
+    std::vector<std::string> fileList;
+    for(int i = 0; i < nbfiles; ++i) {
+      XrdCl::URL file(prepare_url(context, urls[i]));
+      fileList.emplace_back(file.GetPath());
+    }
+
+    XrdCl::Buffer *responsePtr = 0;
+    XrdCl::Status st = fs.Prepare(fileList, XrdCl::PrepareFlags::Flags::Evict, 0, responsePtr, 30);
+
+    if (!st.IsOK()) {
+        GError *tmp_err = NULL;
+        gfal2_set_error(&tmp_err, xrootd_domain, xrootd_status_to_posix_errno(st),
+                        __func__, "%s", st.ToString().c_str());
+        for (int i = 0; i < nbfiles; ++i) {
+            err[i] = g_error_copy(tmp_err);
+        }
+        g_error_free(tmp_err);
+        delete responsePtr;
+        return -1;
+    }
+    delete responsePtr;
     return 0;
 }
 
@@ -303,6 +340,13 @@ int gfal_xrootd_bring_online(plugin_handle plugin_data,
         *err = errors[0];
     }
     return ret;
+}
+
+
+int gfal_xrootd_bring_online_v2(plugin_handle plugin_data,
+    const char* url, const char* metadata, time_t pintime, time_t timeout, char* token, size_t tsize, int async, GError** err)
+{
+    return gfal_xrootd_bring_online(plugin_data, url, pintime, timeout, token, tsize, async, err);
 }
 
 

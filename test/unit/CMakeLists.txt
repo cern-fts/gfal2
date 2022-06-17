@@ -1,3 +1,5 @@
+find_package (PugiXML)
+
 include_directories(
     "${CMAKE_SOURCE_DIR}/test"
     "${CMAKE_SOURCE_DIR}/src/posix/"
@@ -12,15 +14,22 @@ add_subdirectory(mds)
 add_subdirectory(transfer)
 add_subdirectory(uri)
 
+if (PUGIXML_FOUND)
+set (TEST_MDS ./mds/test_mds.cpp)
+else (PUGIXML_FOUND)
+set (TEST_MDS "")
+endif (PUGIXML_FOUND)
+
 add_executable(gfal2-unit-tests
     ./cancel/cancel_tests.cpp
     ./config/config_test.cpp
     ./cred/test_cred.cpp
     ./global/global_test.cpp
-    ./mds/test_mds.cpp
+    ${TEST_MDS}
     ./transfer/tests_callbacks.cpp
     ./transfer/tests_params.cpp
     ./uri/test_uri.cpp
+    ./uri/test_parsing.cpp
 )
 
 target_include_directories(gfal2-unit-tests PRIVATE

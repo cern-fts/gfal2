@@ -84,6 +84,8 @@ extern GQuark GFAL_EVENT_LIST_ENTER;      /**< Triggered before listing the urls
 extern GQuark GFAL_EVENT_LIST_ITEM;       /**< Triggered once per url pair to be transferred */
 extern GQuark GFAL_EVENT_LIST_EXIT;       /**< Triggered after listing the urls to be transferred */
 extern GQuark GFAL_EVENT_TRANSFER_TYPE;   /**< Triggered to register the transfer type being done */
+extern GQuark GFAL_EVENT_IPV6;            /**< Triggered to register the transfer is done over IPv6 */
+extern GQuark GFAL_EVENT_EVICT;           /**< Triggered after a file eviction operation  */
 
 /**
  * Types for for GFAL_EVENT_TRANSFER_TYPE
@@ -329,6 +331,16 @@ gint gfalt_set_use_proxy_delegation(gfalt_params_t, gboolean proxy_delegation, G
  * Get the usage of TPC proxy delegation value
  */
 gboolean gfalt_get_use_proxy_delegation(gfalt_params_t, GError** err);
+
+/**
+ * Enable or disable usage of file eviction
+ */
+gint gfalt_set_use_evict(gfalt_params_t, gboolean evict, GError** err);
+
+/**
+ * Get the usage of file eviction
+ */
+gboolean gfalt_get_use_evict(gfalt_params_t, GError** err);
 
 /**
  * @brief Add a new callback for monitoring the current transfer

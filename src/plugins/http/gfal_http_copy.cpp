@@ -25,6 +25,8 @@
 #include <checksums/checksums.h>
 #include <cstdio>
 #include <cstring>
+#include <list>
+#include <sstream>
 #include "gfal_http_plugin.h"
 
 // An enumeration of the different HTTP third-party-copy strategies.
@@ -154,8 +156,40 @@ static bool is_http_3rdcopy_enabled(gfal2_context_t context)
 }
 
 
-static bool is_http_streamed_enabled(gfal2_context_t context)
+bool is_http_streaming_enabled(gfal2_context_t context, const char* src, const char* dst)
 {
+    auto host_streaming = [&context](const char* surl) -> int {
+        Davix::Uri uri(surl);
+
+        if (uri.getStatus() != Davix::StatusCode::OK) {
+            return -1;
+        }
+
+        std::string prot = uri.getProtocol();
+
+        if (prot.back() == 's') {
+            prot.pop_back();
+        }
+
+        GError* error = NULL;
+        std::string group = prot + ":" + uri.getHost();
+        std::transform(group.begin(), group.end(), group.begin(), ::toupper);
+        gboolean streaming_enabled = gfal2_get_opt_boolean(context, group.c_str(), "ENABLE_STREAM_COPY", &error);
+
+        if (error != NULL) {
+            return -1;
+        }
+
+        return streaming_enabled;
+    };
+
+    int src_streaming = host_streaming(src);
+    int dst_streaming = host_streaming(dst);
+
+    if (src_streaming > -1 || dst_streaming > -1) {
+        return src_streaming && dst_streaming;
+    }
+
     return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "ENABLE_STREAM_COPY", TRUE);
 }
 
@@ -168,6 +202,21 @@ static bool is_http_3rdcopy_fallback_enabled(gfal2_context_t context)
 {
     return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "ENABLE_FALLBACK_TPC_COPY", TRUE);
 }
+
+
+static gboolean gfal_http_copy_should_fallback(int error_code)
+{
+    switch (error_code) {
+        case ECANCELED:
+        case EPERM:
+        case ENOENT:
+        case EACCES:
+            return false;
+        default:
+            return true;
+    }
+}
+
 
 static int gfal_http_exists(plugin_handle plugin_data,
         const char* url, GError** err)
@@ -288,6 +337,10 @@ static bool gfal_http_cancellationcopy_callback(void* data)
 static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfData, void* data)
 {
     PerfCallbackData* pdata = static_cast<PerfCallbackData*>(data);
+    static int callCount = 0;
+
+    callCount++;
+
     if (pdata)
     {
         _gfalt_transfer_status status;
@@ -297,31 +350,34 @@ static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfDat
         status.instant_baudrate = static_cast<size_t>(perfData.diffTransfer());
         status.transfer_time    = perfData.absElapsed();
 
+        if ((callCount == 1) && (perfData.ipflag == Davix::IPv6)) {
+            plugin_trigger_event(pdata->params, http_plugin_domain,
+                                 GFAL_EVENT_DESTINATION, GFAL_EVENT_IPV6,
+                                 "TRUE");
+        }
         plugin_trigger_monitor(pdata->params, &status, pdata->source.c_str(), pdata->destination.c_str());
     }
 }
 
-/// Clean dst, update err if failed during cleanup with something else than ENOENT,
-/// returns always -1 for convenience
-static int gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GError** err)
+/// Utility function to clean destination file after failed copy operation.
+/// Clean-up is performed if the copy error is something else than EEXIST
+static void gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GError** err)
 {
     GError *unlink_err = NULL;
+
     if ((*err)->code != EEXIST) {
         if (gfal_http_unlinkG(plugin_data, dst, &unlink_err) != 0) {
             if (unlink_err->code != ENOENT) {
                 gfal2_log(G_LOG_LEVEL_WARNING,
-                         "When trying to clean the destination: %s", unlink_err->message);
+                          "When trying to clean the destination: %s", unlink_err->message);
             }
             g_error_free(unlink_err);
-        }
-        else {
+        } else {
             gfal2_log(G_LOG_LEVEL_DEBUG, "Destination file removed");
         }
-    }
-    else {
+    } else {
         gfal2_log(G_LOG_LEVEL_DEBUG, "The transfer failed because the file exists. Do not clean!");
     }
-    return -1;
 }
 
 // Only http or https
@@ -331,7 +387,10 @@ static std::string get_canonical_uri(const std::string& original)
     std::string scheme;
     char last_scheme;
 
-    if ((original.compare(0, 2, "s3") == 0)  || (original.compare(0, 6, "gcloud") == 0 ) || original.compare(0, 5, "swift") == 0 || original.compare(0, 3, "cs3") == 0) {
+    if ((original.compare(0, 2, "s3") == 0)  ||
+        (original.compare(0, 6, "gcloud") == 0 ) ||
+        (original.compare(0, 5, "swift") == 0) ||
+        (original.compare(0, 3, "cs3") == 0)) {
         return original;
     }
 
@@ -354,11 +413,11 @@ static std::string get_canonical_uri(const std::string& original)
 
 
 static int gfal_http_third_party_copy(gfal2_context_t context,
-        GfalHttpPluginData* davix,
-        const char* src, const char* dst,
-        CopyMode mode,
-        gfalt_params_t params,
-        GError** err)
+                                      GfalHttpPluginData* davix,
+                                      const char* src, const char* dst,
+                                      CopyMode mode,
+                                      gfalt_params_t params,
+                                      GError** err)
 {
     gfal2_log(G_LOG_LEVEL_MESSAGE, "Performing a HTTP third party copy");
 
@@ -368,13 +427,12 @@ static int gfal_http_third_party_copy(gfal2_context_t context,
 
     Davix::RequestParams req_params;
     davix->get_tpc_params(&req_params, Davix::Uri(src), Davix::Uri(dst), params, mode == HTTP_COPY_PUSH);
+
     if (mode == HTTP_COPY_PUSH) {
         req_params.setCopyMode(Davix::CopyMode::Push);
-    }
-    else if (mode == HTTP_COPY_PULL) {
+    } else if (mode == HTTP_COPY_PULL) {
         req_params.setCopyMode(Davix::CopyMode::Pull);
-    }
-    else {
+    } else {
         gfal2_set_error(err, http_plugin_domain, EIO, __func__, "gfal_http_third_party_copy invalid copy mode");
         return -1;
     }
@@ -383,15 +441,17 @@ static int gfal_http_third_party_copy(gfal2_context_t context,
     // are to be used
     gfalt_checksum_mode_t checksum_mode = gfalt_get_checksum_mode(params, err);
     if (*err) {
-	g_clear_error(err);
+        g_clear_error(err);
     } else {
         if (mode == HTTP_COPY_PUSH) {
-	    if ((checksum_mode & GFALT_CHECKSUM_SOURCE) || (checksum_mode == GFALT_CHECKSUM_NONE) )
+            if ((checksum_mode & GFALT_CHECKSUM_SOURCE) || (checksum_mode == GFALT_CHECKSUM_NONE)) {
                 req_params.addHeader("RequireChecksumVerification", "false");
-	} else if (mode == HTTP_COPY_PULL) {
-		if ((checksum_mode & GFALT_CHECKSUM_TARGET) || (checksum_mode == GFALT_CHECKSUM_NONE) )
-		    req_params.addHeader("RequireChecksumVerification", "false");
-	}
+            }
+        } else if (mode == HTTP_COPY_PULL) {
+            if ((checksum_mode & GFALT_CHECKSUM_TARGET) || (checksum_mode == GFALT_CHECKSUM_NONE)) {
+                req_params.addHeader("RequireChecksumVerification", "false");
+            }
+        }
     }
 
     // add timeout
@@ -413,7 +473,7 @@ static int gfal_http_third_party_copy(gfal2_context_t context,
               &davError);
 
     if (davError != NULL) {
-        davix2gliberr(davError, err);
+        davix2gliberr(davError, err, __func__);
         Davix::DavixError::clearError(&davError);
     }
 
@@ -542,7 +602,7 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
     } catch(Davix::DavixException &ex) {
     	Davix::DavixError* daverr = NULL;
         ex.toDavixError(&daverr);
-        davix2gliberr(daverr, err);
+        davix2gliberr(daverr, err, __func__);
         Davix::DavixError::clearError(&daverr);
     }
 
@@ -653,7 +713,6 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_EXIT,
                          "%s => %s", src_full, dst_full);
 
-
     set_copy_mode_from_urls(context,src_full, dst_full);
     // Initial copy mode
     CopyMode copy_mode = get_default_copy_mode(context);
@@ -666,75 +725,83 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         only_streaming = true;
     }
 
-    // Re-try different approaches
     int ret = 0;
-
+    std::list<std::string> attempted_mode;
     CopyMode end_copy_mode = HTTP_COPY_END;
 
-    //if streaming is disabled stop the loop before
-    if (!is_http_streamed_enabled(context)) {
+    // Stop the loop prematurely if streaming is disabled
+    bool streaming_enabled = is_http_streaming_enabled(context, src, dst);
+    if (!streaming_enabled) {
         end_copy_mode = HTTP_COPY_STREAM;
     }
 
+    plugin_trigger_event(params, http_plugin_domain,
+                         GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
+                         "%s => %s", src_full, dst_full);
+
     do {
-        // The real, actual, copy
-        plugin_trigger_event(params, http_plugin_domain,
-                                     GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
-                               "%s => %s", src_full, dst_full);
+        // Perform the copy, going through the different fallback copy modes
         gfal2_log(G_LOG_LEVEL_MESSAGE, "Trying copying with mode %s",
-            CopyModeStr[copy_mode]);
+                  CopyModeStr[copy_mode]);
         plugin_trigger_event(params, http_plugin_domain,
-            GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_TYPE,
-            "%s",  CopyModeStr[copy_mode]);
-        if (nested_error != NULL) {
-            g_clear_error(&nested_error);
-        }
+                             GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_TYPE,
+                             "%s", CopyModeStr[copy_mode]);
+        g_clear_error(&nested_error);
+
         if (copy_mode == HTTP_COPY_STREAM) {
-            if (is_http_streamed_enabled(context)) {
+            if (streaming_enabled) {
                 ret = gfal_http_streamed_copy(context, davix, src, dst,
-                    checksum_mode, checksum_type, user_checksum,
-                    params, &nested_error);
-            }
-            else if (only_streaming) {
+                                              checksum_mode, checksum_type, user_checksum,
+                                              params, &nested_error);
+            } else if (only_streaming) {
+                gfal2_set_error(&nested_error, http_plugin_domain, EINVAL, __func__,
+                                "STREAMED DISABLED Only streamed copy possible but streaming is disabled");
+                gfal2_log(G_LOG_LEVEL_WARNING, "%s", nested_error->message);
                 ret = -1;
-                gfalt_set_error(&nested_error, http_plugin_domain, EIO, __func__,
-                    GFALT_ERROR_TRANSFER, "STREAMED DISABLED",
-                    "Trying to fallback to a streamed copy, but they are disabled");
+                break;
             }
-        }
-        else {
+        } else {
             ret = gfal_http_third_party_copy(context, davix, src, dst, copy_mode, params, &nested_error);
         }
 
         if (ret == 0) {
-            // Success! Break the loop
             gfal2_log(G_LOG_LEVEL_MESSAGE, "Copy succeeded using mode %s", CopyModeStr[copy_mode]);
             break;
-        }
-        else if (ret < 0) {
-            g_prefix_error(&nested_error, "ERROR: Copy failed with mode %s, with error: ",CopyModeStr[copy_mode]);
-            plugin_trigger_event(params, http_plugin_domain,
-               GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
-	       "%s", nested_error->message);
-               // Delete any potential destination file.
+        } else {
+            gfal2_log(G_LOG_LEVEL_WARNING, "Copy failed with mode %s: %s", CopyModeStr[copy_mode], nested_error->message);
+            // Delete any potential destination file
             gfal_http_copy_cleanup(plugin_data, dst, &nested_error);
-            if (!gfal_should_fallback(nested_error->code)){
-            	break;
-            }
         }
 
+        attempted_mode.emplace_back(CopyModeStr[copy_mode]);
         copy_mode = (CopyMode)((int)copy_mode + 1);
+    } while ((copy_mode < end_copy_mode) &&
+             is_http_3rdcopy_fallback_enabled(context) &&
+             gfal_http_copy_should_fallback(nested_error->code));
 
-    } while ((copy_mode < end_copy_mode) && is_http_3rdcopy_fallback_enabled(context));
+    if (ret == 0) {
+        plugin_trigger_event(params, http_plugin_domain,
+                             GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
+                             "%s => %s", src, dst);
+    } else {
+        if (!attempted_mode.empty()) {
+            std::ostringstream errmsg;
+            errmsg << "Copy failed (";
+            for (auto mode = attempted_mode.begin(); mode != attempted_mode.end(); mode++) {
+                if (mode != attempted_mode.begin()) {
+                    errmsg << ", ";
+                }
+                errmsg << (*mode);
+            }
+            errmsg << "). Last attempt: ";
+            g_prefix_error(&nested_error, "ERROR: %s", errmsg.str().c_str());
+        }
 
-
-    plugin_trigger_event(params, http_plugin_domain,
-                         GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
-                         "%s => %s", src, dst);
-
-    if (nested_error != NULL) {
-        gfalt_propagate_prefixed_error(err, nested_error, __func__, GFALT_ERROR_TRANSFER, "");
-        return gfal_http_copy_cleanup(plugin_data, dst, err);
+        plugin_trigger_event(params, http_plugin_domain,
+                             GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
+                             "%s", nested_error->message);
+        gfalt_propagate_prefixed_error(err, nested_error, __func__, GFALT_ERROR_TRANSFER, NULL);
+        return -1;
     }
 
     // Destination checksum validation
@@ -776,6 +843,21 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                 GFAL_EVENT_CHECKSUM_EXIT, "");
     }
 
+    // Evict source file if configured
+    if (gfalt_get_use_evict(params, NULL)) {
+        GError* tmp_err;
+        ret = gfal_http_release_file(plugin_data, src, "", &tmp_err);
+        gfal2_log(G_LOG_LEVEL_INFO, "Eviction request exited with status code: %d", ret);
+
+        if (ret < 0) {
+            gfal2_log(G_LOG_LEVEL_INFO, "Eviction request failed: %s", tmp_err->message);
+            g_error_free(tmp_err);
+        }
+
+        plugin_trigger_event(params, http_plugin_domain, GFAL_EVENT_SOURCE,
+                             GFAL_EVENT_EVICT, "%d", ret);
+    }
+
     return 0;
 }
 
@@ -789,4 +871,3 @@ int gfal_http_copy_check(plugin_handle plugin_data, gfal2_context_t context, con
     // It will try to decide if it is better to do a third party copy, or a streamed copy later on
     return (is_http_scheme(dst) && ((strncmp(src, "file://", 7) == 0) || is_http_scheme(src)));
 }
-

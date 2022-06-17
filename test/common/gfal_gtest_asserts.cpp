@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+#include <algorithm>
 #include "gfal_gtest_asserts.h"
 
 
@@ -67,4 +68,27 @@ testing::AssertionResult AssertGfalErrno(
             << " (" << error->message << ")";
 
     return testing::AssertionSuccess();
+}
+
+
+// Same as AssertGfalError, but accepts a list of possible error codes
+// Accommodate plugins returning different error codes for the same function call (ideally, this is to be avoided)
+testing::AssertionResult AssertGfalOneOfErrno(
+        const char* ret_expr, const char* error_expr, const char* errno_expr,
+        int ret, const GError* error, std::list<int> errcodes)
+{
+    for (auto it = errcodes.begin(); it != errcodes.end(); it++) {
+        auto res = AssertGfalErrno(ret_expr, error_expr, errno_expr, ret, error, *it);
+
+        if (res == testing::AssertionSuccess()) {
+            return res;
+        }
+    }
+
+    std::ostringstream oss;
+    std::copy(errcodes.begin(), errcodes.end(), std::ostream_iterator<int>(oss, ", "));
+
+    return testing::AssertionFailure()
+        << "Expecting one of following errno [" << oss.str().substr(0, oss.str().size() - 2)
+        << "] but got " << error->code << " (" << error->message << ")";
 }

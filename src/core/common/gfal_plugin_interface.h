@@ -471,6 +471,28 @@ struct _gfal_plugin_interface {
                          GError** err);
 
      /**
+      *
+      * OPTIONAL: Requests to stage a file to the fist layer on a hierarchical SE.
+      * @param plugin_data : internal plugin context
+      * @param url : The url of the file
+      * @param metadata : Staging metadata
+      * @param pintime : Time the file should stay in the cache
+      * @param timeout : Operation timeout
+      * @param token Where to put the retrieved token.
+      * @param tsize The size of the buffer pointed by token.
+      * @param async If true (!= 0), the call will not block. The caller will need
+      *              to use bring_online_poll later.
+      * @param err:  GError error support
+      * @return      -1 on error (and err is set). 0 on success. 1 if the file has been staged.
+      */
+     int (*bring_online_v2)(plugin_handle plugin_data,
+                         const char* url, const char* metadata,
+                         time_t pintime, time_t timeout,
+                         char* token, size_t tsize,
+                         int async,
+                         GError** err);
+
+     /**
       * OPTIONAL: Polling the bring_online request (mandatory if bring online is supported)
       * @param url   The same URL as was passed to bring_online_async
       * @param token The token as returned by bring_online_async
@@ -520,6 +542,29 @@ struct _gfal_plugin_interface {
       * @return      -1 on error (and err is set). 0 on success. 1 if the file has been staged.
       */
      int (*bring_online_list)(plugin_handle plugin_data, int nbfiles, const char* const* urls,
+                         time_t pintime, time_t timeout,
+                         char* token, size_t tsize,
+                         int async,
+                         GError** err);
+
+     /**
+      *
+      * OPTIONAL: Requests to stage a file to the fist layer on a hierarchical SE.
+      * @param plugin_data : internal plugin context
+      * @param nbfiles : number of files
+      * @param urls : The urls of the files
+      * @param metadata : Staging metadata array
+      * @param pintime : Time the file should stay in the cache
+      * @param timeout : Operation timeout
+      * @param token Where to put the retrieved token.
+      * @param tsize The size of the buffer pointed by token.
+      * @param async If true (!= 0), the call will not block. The caller will need
+      *              to use bring_online_poll later.
+      * @param err:  GError error support
+      * @return      -1 on error (and err is set). 0 on success. 1 if the file has been staged.
+      */
+     int (*bring_online_list_v2)(plugin_handle plugin_data, int nbfiles,
+                         const char* const* urls, const char* const* metadata,
                          time_t pintime, time_t timeout,
                          char* token, size_t tsize,
                          int async,
@@ -699,7 +744,7 @@ struct _gfal_plugin_interface {
 
       // reserved for future usage
 	 //! @cond
-     void* future[6];
+     void* future[4];
 	 //! @endcond
 };
 
@@ -755,6 +800,13 @@ int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri,
                               int async,
                               GError ** err);
 
+int gfal_plugin_bring_online_v2G(gfal2_context_t handle,
+                                      const char* uri, const char* metadata,
+                                      time_t pintime, time_t timeout,
+                                      char* token, size_t tsize,
+                                      int async,
+                                      GError ** err);
+
 int gfal_plugin_bring_online_pollG(gfal2_context_t handle, const char* uri,
                                    const char* token, GError ** err);
 
@@ -766,6 +818,13 @@ int gfal_plugin_bring_online_listG(gfal2_context_t handle, int nbfiles, const ch
                               char* token, size_t tsize,
                               int async,
                               GError ** err);
+
+int gfal_plugin_bring_online_list_v2G(gfal2_context_t handle, int nbfiles,
+                                      const char* const* uris, const char* const* metadata,
+                                      time_t pintime, time_t timeout,
+                                      char* token, size_t tsize,
+                                      int async,
+                                      GError ** err);
 
 int gfal_plugin_bring_online_poll_listG(gfal2_context_t handle, int nbfiles, const char* const* uris,
                                    const char* token, GError ** err);

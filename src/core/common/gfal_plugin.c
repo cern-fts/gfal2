@@ -891,6 +891,21 @@ int gfal_plugin_bring_onlineG(gfal2_context_t handle, const char* uri, time_t pi
     G_RETURN_ERR(resu, tmp_err, err);
 }
 
+
+int gfal_plugin_bring_online_v2G(gfal2_context_t handle, const char* uri, const char* metadata, time_t pintime,
+        time_t timeout, char* token, size_t tsize, int async, GError ** err)
+{
+    GError* tmp_err = NULL;
+    int resu = -1;
+    gfal_plugin_interface* p = gfal_find_plugin(handle, uri, GFAL_PLUGIN_BRING_ONLINE, &tmp_err);
+
+    if (p)
+        resu = p->bring_online_v2(gfal_get_plugin_handle(p), uri, metadata, pintime, timeout, token, tsize,
+                async, &tmp_err);
+    G_RETURN_ERR(resu, tmp_err, err);
+}
+
+
 ssize_t gfal_plugin_qos_check_classes(gfal2_context_t handle, const char* url, const char* type,
                                       char* buff, size_t s_buff, GError** err)
 {
@@ -983,6 +998,32 @@ int gfal_plugin_bring_online_listG(gfal2_context_t handle, int nbfiles, const ch
 
     if (p && p->bring_online_list) {
         resu = p->bring_online_list(gfal_get_plugin_handle(p), nbfiles, uris, pintime, timeout,
+                token, tsize, async, errors);
+    }
+    else {
+        if (p && !p->bring_online_list) {
+            gfal2_set_error(&tmp_err, gfal2_get_plugins_quark(), EPROTONOSUPPORT,
+                    __func__, "The plugin does not implement bulk bring online");
+        }
+        int i;
+        for (i = 0; i < nbfiles; ++i) {
+            errors[i] = g_error_copy(tmp_err);
+        }
+        g_error_free(tmp_err);
+    }
+    return resu;
+}
+
+
+int gfal_plugin_bring_online_list_v2G(gfal2_context_t handle, int nbfiles, const char* const* uris,
+         const char* const* metadata, time_t pintime, time_t timeout, char* token, size_t tsize, int async, GError ** errors)
+{
+    GError* tmp_err = NULL;
+    int resu = -1;
+    gfal_plugin_interface* p = gfal_find_plugin(handle, *uris, GFAL_PLUGIN_BRING_ONLINE, &tmp_err);
+
+    if (p && p->bring_online_list_v2) {
+        resu = p->bring_online_list_v2(gfal_get_plugin_handle(p), nbfiles, uris, metadata, pintime, timeout,
                 token, tsize, async, errors);
     }
     else {

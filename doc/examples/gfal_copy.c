@@ -47,7 +47,7 @@ static void my_monitor_callback(gfalt_transfer_status_t h, const char* src,
         size_t inst = gfalt_copy_get_instant_baudrate(h, NULL);
         size_t trans = gfalt_copy_get_bytes_transfered(h, NULL);
         time_t elapsed = gfalt_copy_get_elapsed_time(h, NULL);
-        printf("%d bytes/second average (%d instant). Transferred %d, elapsed %d seconds \n", avg, inst, trans, elapsed);
+        printf("%zu bytes/second average (%zu instant). Transferred %zu, elapsed %d seconds \n", avg, inst, trans, (int) elapsed);
     }
 }
 

@@ -68,3 +68,32 @@ gchar* gfal2_utf8escape_string(const char* str, size_t str_len, const char* igno
     g_string_free(escaped_str, FALSE);
     return res;
 }
+
+char* gfal2_path_collapse_slashes(const char* path)
+{
+    if (path == NULL) {
+        return NULL;
+    }
+
+    size_t len = strlen(path);
+    char* collapsed = g_malloc0(len + 1);
+    int pos = 0;
+    int i;
+
+    collapsed[pos] = '\0';
+
+    // Use a simple stack algorithm:
+    // Insert elements from 'path' one-by-one into the stack
+    // When inserting a new '/', make sure top of the stack is not also a '/'
+    for (i = 0; i < len; i++) {
+        if (path[i] != '/') {
+            collapsed[pos++] = path[i];
+        } else if (pos == 0 || collapsed[pos - 1] != '/') {
+            collapsed[pos++] = path[i];
+        }
+    }
+
+    collapsed[pos] = '\0';
+    collapsed = g_realloc(collapsed, pos + 1);
+    return collapsed;
+}

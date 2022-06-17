@@ -43,6 +43,7 @@ public:
         HEAD,
         WRITE,
         MKCOL,
+        TAPE,
         READ_PASV,
         WRITE_PASV
     };
@@ -71,14 +72,20 @@ public:
 
     friend class TokenMapTest;
 
+    friend std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method,
+                                                        GError** err);
+
 private:
     typedef std::map<std::string, bool> TokenAccessMap;
+    typedef std::map<std::string, std::string> TapeEndpointMap;
     /// baseline Davix Request Parameters
     Davix::RequestParams reference_params;
     /// map a token with read/write access flag
     TokenAccessMap token_map;
     /// token retriever object (can be chained)
     std::unique_ptr<TokenRetriever> token_retriever_chain;
+    /// map a url with a tape endpoint
+    TapeEndpointMap tape_endpoint_map;
 
     // Set up general request parameters
     void get_params_internal(Davix::RequestParams& params, const Davix::Uri& uri);
@@ -109,6 +116,12 @@ private:
     // @return the SE-issued token or null
     char* retrieve_and_store_se_token(const Davix::Uri& uri, const OP& operation, unsigned validity);
 
+    // Discover tape endpoint and cache it
+    // @param config_endpoint the well-known endpoint of the Tape REST API
+    // @param err error handle
+    // @return the tape endpoint
+    std::string retrieve_and_store_tape_endpoint(const std::string& config_endpoint, GError** err);
+
     // Obtain request parameters + credentials for an AWS endpoint
     void get_aws_params(Davix::RequestParams& params, const Davix::Uri& uri);
 
@@ -138,7 +151,7 @@ void gfal_http_context_delete(gpointer plugin_data);
 extern GQuark http_plugin_domain;
 
 // Initializes a GError from a DavixError
-void davix2gliberr(const Davix::DavixError* daverr, GError** err);
+void davix2gliberr(const Davix::DavixError* daverr, GError** err, const gchar* function);
 
 // Initializes a GError from an HTTP code
 void http2gliberr(GError** err, int http, const char* func, const char* msg);
@@ -146,8 +159,14 @@ void http2gliberr(GError** err, int http, const char* func, const char* msg);
 // Returns errno from Davix StatusCode
 int davix2errno(Davix::StatusCode::Code code);
 
+// Returns whether HTTP streaming is enabled for the involved Storage Endpoints
+bool is_http_streaming_enabled(gfal2_context_t context, const char* src, const char* dst);
+
 // Removes +3rd from the url, if there
 void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);
+
+// Find tape endpoint for a given method
+std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method, GError** err);
 
 // METADATA OPERATIONS
 void gfal_http_delete(plugin_handle plugin_data);
@@ -196,8 +215,6 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context, gfalt_par
 int gfal_http_copy_check(plugin_handle plugin_data, gfal2_context_t context,
         const char* src, const char* dst, gfal_url2_check check);
 
-gboolean gfal_should_fallback(int error_code);
-
 // QoS
 ssize_t gfal_http_check_classes(plugin_handle plugin_data, const char* url, const char* type,
                                 char* buff, size_t s_buff, GError** err);
@@ -212,5 +229,36 @@ bool http_cdmi_code_is_valid(int code);
 ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, const char* issuer,
                                  gboolean write_access, unsigned validity, const char* const* activities,
                                  char* buff, size_t s_buff, GError** err);
+
+// Tape Operations
+int gfal_http_release_file(plugin_handle plugin_data, const char* url,
+                           const char* request_id, GError** err);
+
+int gfal_http_release_file_list(plugin_handle plugin_data, int nbfiles, const char* const* urls,
+                                const char* request_id, GError** errors);
+
+int gfal_http_archive_poll(plugin_handle plugin_data, const char* url, GError** err);
+
+int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const char* const* urls,
+                                GError** errors);
+
+int gfal_http_bring_online_poll(plugin_handle plugin_data, const char* url, const char* token, GError** err);
+
+int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, const char* const* urls,
+                                     const char* token, GError** errors);
+
+int gfal_http_abort_files(plugin_handle handle, int nbfiles, const char* const* uris, const char* token, GError** errors);
+
+int gfal_http_bring_online(plugin_handle plugin_data, const char* url, time_t pintime, time_t timeout, char* token,
+                           size_t tsize, int async, GError** err);
+
+int gfal_http_bring_online_v2(plugin_handle plugin_data, const char* url, const char* metadata, time_t pintime, time_t timeout,
+                              char* token, size_t tsize, int async, GError** err);
+
+int gfal_http_bring_online_list(plugin_handle plugin_data, int nbfiles, const char* const* urls, time_t pintime, time_t timeout,
+                                char* token, size_t tsize, int async, GError** errors);
+
+int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const char* const* urls, const char* const* metadata,
+                                   time_t pintime, time_t timeout, char* token, size_t tsize, int async, GError** errors);
 
 #endif //_GFAL_HTTP_PLUGIN_H

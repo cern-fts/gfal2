@@ -1,8 +1,18 @@
+add_executable(gfal2_test_uri "test_uri.cpp")
 
-add_executable(g_test_uri_exe "test_uri.cpp")
-
-target_link_libraries(g_test_uri_exe
-    ${GFAL2_LIBRARIES} ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES}
+target_link_libraries(gfal2_test_uri
+    ${GFAL2_LIBRARIES}
+    ${GTEST_LIBRARIES}
+    ${GTEST_MAIN_LIBRARIES}
 )
 
-add_test(g_test_uri g_test_uri_exe )
+add_executable(gfal2_test_parsing "test_parsing.cpp")
+
+target_link_libraries(gfal2_test_parsing
+    ${GFAL2_LIBRARIES}
+    ${GTEST_LIBRARIES}
+    ${GTEST_MAIN_LIBRARIES}
+)
+
+add_test(gfal2_test_uri gfal2_test_uri)
+add_test(gfal2_test_parsing gfal2_test_parsing)

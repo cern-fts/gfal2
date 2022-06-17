@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <list>
 #include <glib.h>
 #include <gtest/gtest.h>
 
@@ -36,4 +37,10 @@ testing::AssertionResult AssertGfalSuccess(
 testing::AssertionResult AssertGfalErrno(
         const char* ret_expr, const char* error_expr, const char* errno_expr,
         int ret, const GError* error, int err
+);
+
+
+testing::AssertionResult AssertGfalOneOfErrno(
+        const char* ret_expr, const char* error_expr, const char* errcodes_expr,
+        int ret, const GError* error, std::list<int> errcodes
 );

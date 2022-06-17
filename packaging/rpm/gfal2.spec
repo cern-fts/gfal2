@@ -1,11 +1,11 @@
-# unversionned doc dir F20 change https://fedoraproject.org/wiki/Changes/UnversionedDocdirs
-%{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
+%undefine __cmake_in_source_build
+%undefine __cmake3_in_source_build
 
 # Require --with=tests in order to build functional tests
 %bcond_with tests
 
 Name:               gfal2
-Version:            2.20.5
+Version:            2.21.0
 Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 Group:              Applications/Internet
@@ -17,17 +17,20 @@ URL:                https://dmc-docs.web.cern.ch/dmc-docs/gfal2/gfal2.html
 # popd
 # tar czf gfal2-2.20.0.tar.gz --exclude-vcs gfal2-2.20.0
 Source0:            %{name}-%{version}.tar.gz
-BuildRoot:          %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 #main lib dependencies
-BuildRequires:      cmake
+BuildRequires:      gcc-c++
+BuildRequires:      cmake3
 BuildRequires:      doxygen
 BuildRequires:      json-c-devel
 BuildRequires:      glib2-devel >= 2.28
 Requires:           glib2 >= 2.28
 BuildRequires:      libattr-devel
 BuildRequires:      openldap-devel
+%if 0%{?rhel} != 9
+# not available in EPEL9 - build without MDS cache support
 BuildRequires:      pugixml-devel
+%endif
 BuildRequires:      libuuid-devel
 #file plugin dependencies
 BuildRequires:      zlib-devel
@@ -44,7 +47,7 @@ BuildRequires:      dcap-devel
 #gridftp plugin dependencies
 BuildRequires:      globus-gass-copy-devel
 #http plugin dependencies
-BuildRequires:      davix-devel >= 0.8.0
+BuildRequires:      davix-devel >= 0.8.2
 #xrootd plugin dependencies
 BuildRequires:      xrootd-client-devel >= 1:5.0.0
 # sftp plugin dependencies
@@ -157,11 +160,12 @@ the third party transfer support on the GSIFTP URLs.
 Summary:            Provides the HTTP/DAV support for %{name}
 Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
-Requires:           davix-libs >= 0.8.0
+Requires:           davix-libs >= 0.8.2
 
 %description plugin-http
 Provides the HTTP (http[s]://) and WevDAV (dav[s]://) support for %{name}.
-this plugin is able to do third-party copy with WebDAV if the storage supports it.
+This plugin is able to do Third-Party Copy with WebDAV,
+if the storage supports it.
 
 
 %package plugin-xrootd
@@ -182,7 +186,7 @@ Requires:           %{name}%{?_isa} = %{version}-%{release}
 
 %description plugin-sftp
 The Grid File Access Library, GFAL2, provides a simple POSIX-like API for file
-perations in grid and cloud environments. Plug-ins are available to allow
+operations in grid and cloud environments. Plug-ins are available to allow
 access via a variety of protocols. This package contains a plugin for the
 sftp protocol (sftp://).
 
@@ -242,18 +246,18 @@ if [ "$gfal2_cmake_ver" != "$gfal2_spec_ver" ]; then
 fi
 
 %if 0%{?rhel} == 7
-%cmake \
+%cmake3 \
     -DDOC_INSTALL_DIR=%{_pkgdocdir} \
     -DUNIT_TESTS=TRUE \
     -DPLUGIN_MOCK=TRUE \
     -DFUNCTIONAL_TESTS=%{?with_tests:ON}%{?!with_tests:OFF}
 %else
-%cmake \
+%cmake3 \
     -DDOC_INSTALL_DIR=%{_pkgdocdir} \
     -DUNIT_TESTS=TRUE \
     -DPLUGIN_MOCK=TRUE \
-    -DPLUGIN_RFIO=FALSE \
     -DPLUGIN_LFC=FALSE \
+    -DPLUGIN_RFIO=FALSE \
     -DFUNCTIONAL_TESTS=%{?with_tests:ON}%{?!with_tests:OFF}
 %endif
 
@@ -263,12 +267,7 @@ fi
 %install
 %cmake3_install
 
-%if 0%{?rhel} == 7
-%post -p /sbin/ldconfig
-%postun -p /sbin/ldconfig
-%else
 %ldconfig_scriptlets
-%endif
 
 %files
 %{_bindir}/gfal2_version
@@ -358,6 +357,10 @@ fi
 
 
 %changelog
+* Fri Jun 17 2022 Joao Lopes <batistal at cern.ch> - 2.21.0-1
+- New upstream release
+- Introduces support for HTTP tape operations
+
 * Fri Mar 04 2022 Mihai Patrascoiu <mipatras at cern.ch> - 2.20.5-1
 - New upstream release
 

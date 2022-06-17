@@ -71,6 +71,14 @@ int gfal_plugin_mock_bring_online(plugin_handle plugin_data, const char *url,
 }
 
 
+int gfal_plugin_mock_bring_online_v2(plugin_handle plugin_data, const char *url, const char *metadata,
+    time_t pintime, time_t timeout, char *token, size_t tsize, int async,
+    GError **err)
+{
+    return gfal_plugin_mock_bring_online(plugin_data, url, pintime, timeout, token, tsize, async, err);
+}
+
+
 int gfal_plugin_mock_bring_online_poll(plugin_handle plugin_data,
     const char *url, const char *token, GError **err)
 {
@@ -125,6 +133,14 @@ int gfal_plugin_mock_bring_online_list(plugin_handle plugin_data, int nbfiles,
     if (terminal_count == nbfiles)
         return 1;
     return 0;
+}
+
+
+int gfal_plugin_mock_bring_online_list_v2(plugin_handle plugin_data, int nbfiles,
+    const char *const *urls, const char *const *metadata, time_t pintime, time_t timeout,
+    char *token, size_t tsize, int async, GError **err)
+{
+    return gfal_plugin_mock_bring_online_list(plugin_data, nbfiles, urls, pintime, timeout, token, tsize, async, err);
 }
 
 
