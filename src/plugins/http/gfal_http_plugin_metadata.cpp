@@ -381,3 +381,37 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
     return 0;
 }
 
+
+ssize_t gfal_http_getxattrG(plugin_handle plugin_data, const char* url, const char* key,
+                            void* buff, size_t s_buff, GError** err)
+{
+    size_t len = 0;
+
+    if (strcmp(key, GFAL_XATTR_STATUS) == 0) {
+        gfal_http_status_getxattr(plugin_data, url, (char*)buff, s_buff, err);
+        len = (*err != NULL) ? -1 : strnlen((char*)buff, s_buff);
+    } else {
+        gfal2_set_error(err, http_plugin_domain, ENODATA, __func__,
+                        "Failed to get the xattr \"%s\" (No data available)", key);
+        return -1;
+    }
+    return len;
+}
+
+ssize_t gfal_http_listxattrG(plugin_handle plugin_data, const char* url,
+                             char* list, size_t s_list, GError** err)
+{
+    static const char props[] = "taperestapi.version";
+    static const size_t proplen = sizeof(props);
+    size_t len = proplen > s_list ? s_list : proplen;
+    memcpy(list, props, len);
+    return len;
+}
+
+int gfal_http_setxattrG(plugin_handle plugin_data, const char* url, const char* key,
+                        const void* buff , size_t s_buff, int flags, GError** err)
+{
+    gfal2_set_error(err, http_plugin_domain, ENOSYS, __func__,
+                    "Can not set extended attributes");
+    return -1;
+}

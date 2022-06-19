@@ -166,7 +166,11 @@ bool is_http_streaming_enabled(gfal2_context_t context, const char* src, const c
 void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);
 
 // Find tape endpoint for a given method
-std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method, GError** err);
+std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method,
+                                             GError** err);
+
+// Get user.status extended attribute
+void gfal_http_status_getxattr(plugin_handle plugin_data, const char* url, char* buff, size_t s_buff, GError** err);
 
 // METADATA OPERATIONS
 void gfal_http_delete(plugin_handle plugin_data);
@@ -208,6 +212,15 @@ int gfal_http_checksum(plugin_handle data, const char* url, const char* check_ty
                        off_t start_offset, size_t data_length,
                        GError ** err);
 
+// Extended attributes
+ssize_t gfal_http_getxattrG(plugin_handle plugin_data, const char* url, const char* key,
+                            void* buff, size_t s_buff, GError** err);
+
+ssize_t gfal_http_listxattrG(plugin_handle plugin_data, const char* url,
+                             char* list, size_t s_list, GError** err);
+
+int gfal_http_setxattrG(plugin_handle plugin_data, const char* url, const char* key,
+                        const void* buff , size_t s_buff, int flags, GError** err);
 
 int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params,
         const char* src, const char* dst, GError** err);

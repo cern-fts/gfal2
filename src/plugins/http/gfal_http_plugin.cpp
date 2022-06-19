@@ -884,6 +884,9 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
                  strncmp("http+3rd:", url, 9) == 0 || strncmp("https+3rd:", url, 10) == 0 ||
                  strncmp("dav+3rd:", url, 8) == 0 || strncmp("davs+3rd:", url, 9) == 0 ||
                  strncmp("cs3:", url, 4) == 0 || strncmp("cs3s:", url, 5) == 0);
+        case GFAL_PLUGIN_GETXATTR:
+        case GFAL_PLUGIN_SETXATTR:
+        case GFAL_PLUGIN_LISTXATTR:
         case GFAL_PLUGIN_BRING_ONLINE:
         case GFAL_PLUGIN_ARCHIVE:
             return (strncmp("http:", url, 5) == 0 || strncmp("https:", url, 6) == 0 ||
@@ -1059,6 +1062,11 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError
     http_plugin.writeG = &gfal_http_fwrite;
     http_plugin.lseekG = &gfal_http_fseek;
     http_plugin.closeG = &gfal_http_fclose;
+
+    // Extended attributes
+    http_plugin.getxattrG = &gfal_http_getxattrG;
+    http_plugin.listxattrG = &gfal_http_listxattrG;
+    http_plugin.setxattrG = &gfal_http_setxattrG;
 
     // Checksum
     http_plugin.checksum_calcG = &gfal_http_checksum;
