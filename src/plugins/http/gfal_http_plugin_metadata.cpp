@@ -388,7 +388,10 @@ ssize_t gfal_http_getxattrG(plugin_handle plugin_data, const char* url, const ch
     size_t len = 0;
 
     if (strcmp(key, GFAL_XATTR_STATUS) == 0) {
-        gfal_http_status_getxattr(plugin_data, url, (char*)buff, s_buff, err);
+        gfal_http_status_getxattr(plugin_data, url, (char *) buff, s_buff, err);
+        len = (*err != NULL) ? -1 : strnlen((char *) buff, s_buff);
+    } else if (strcmp(key, GFAL_XATTR_TAPE_API_VERSION) == 0) {
+        gfal_http_get_tape_api_version(plugin_data, url, key, (char*)buff, s_buff, err);
         len = (*err != NULL) ? -1 : strnlen((char*)buff, s_buff);
     } else {
         gfal2_set_error(err, http_plugin_domain, ENODATA, __func__,

@@ -298,6 +298,7 @@ std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::stri
     const int len = json_object_array_length(endpoints);
     int maxVersion = 0;
     std::string tape_uri = "";
+    std::string tape_endpoint_version = "";
 
     for (int i = 0; i < len; ++i) {
         json_object *endpoint_obj = json_object_array_get_idx(endpoints, i);
@@ -318,6 +319,7 @@ std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::stri
             if (foundUri) {
                 if (parsedVersion >= maxVersion && parsedVersion <= 1) {
                     tape_uri = json_object_get_string(uri_obj);
+                    tape_endpoint_version = version_str;
                     maxVersion = parsedVersion;
                 }
             }
@@ -334,9 +336,50 @@ std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::stri
         return "";
     }
 
-    tape_endpoint_map[config_endpoint] = tape_uri;
+    tape_endpoint_map[config_endpoint] = std::make_pair(tape_uri, tape_endpoint_version);
     return tape_uri;
 }
+
+void gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
+                                    char* buff, size_t s_buff, GError** err)
+{
+    GError* tmp_err = NULL;
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
+    Davix::Uri uri(url);
+
+    if (uri.getStatus() != StatusCode::OK) {
+        gfal2_set_error(err, http_plugin_domain, EINVAL, __func__, "Invalid URL: %s", url);
+        return;
+    }
+
+    // Construct /.well-known endpoint
+    std::stringstream config_endpoint;
+    config_endpoint << uri.getProtocol() << "://" << uri.getHost();
+
+    if (uri.getPort()) {
+        config_endpoint << ":" << uri.getPort();
+    }
+    config_endpoint << "/.well-known/wlcg-tape-rest-api";
+    auto it = davix->tape_endpoint_map.find(config_endpoint.str());
+
+    if (it == davix->tape_endpoint_map.end()) {
+        davix->retrieve_and_store_tape_endpoint(config_endpoint.str(), &tmp_err);
+        if (tmp_err != NULL) {
+            *err = g_error_copy(tmp_err);
+            g_clear_error(&tmp_err);
+            return;
+        }
+        it = davix->tape_endpoint_map.find(config_endpoint.str());
+    }
+
+    if (it == davix->tape_endpoint_map.end()) {
+        gfal2_set_error(err, http_plugin_domain, ENODATA, __func__,
+                        "Failed to get the xattr \"%s\" (No data available)", key);
+        return;
+    }
+    strncpy(buff, it->second.second.c_str(), s_buff);
+}
+
 
 std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method, GError** err)
 {
@@ -360,7 +403,7 @@ std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const ch
 
     std::string metadata_uri = (it == davix->tape_endpoint_map.end()) ?
                                davix->retrieve_and_store_tape_endpoint(config_endpoint.str(), err) :
-                               it->second;
+                               it->second.first;
 
     if (*err != NULL) {
         return "";

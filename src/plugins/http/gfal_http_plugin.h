@@ -75,16 +75,19 @@ public:
     friend std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method,
                                                         GError** err);
 
+    friend void gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
+                                               char* buff, size_t s_buff, GError** err);
+
 private:
     typedef std::map<std::string, bool> TokenAccessMap;
-    typedef std::map<std::string, std::string> TapeEndpointMap;
+    typedef std::map<std::string, std::pair<std::string, std::string>> TapeEndpointMap;
     /// baseline Davix Request Parameters
     Davix::RequestParams reference_params;
     /// map a token with read/write access flag
     TokenAccessMap token_map;
     /// token retriever object (can be chained)
     std::unique_ptr<TokenRetriever> token_retriever_chain;
-    /// map a url with a tape endpoint
+    /// map a url with a tape endpoint and the corresponding version
     TapeEndpointMap tape_endpoint_map;
 
     // Set up general request parameters
@@ -171,6 +174,10 @@ std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const ch
 
 // Get user.status extended attribute
 void gfal_http_status_getxattr(plugin_handle plugin_data, const char* url, char* buff, size_t s_buff, GError** err);
+
+// Get tape REST API version
+void gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
+                                    char* buff, size_t s_buff, GError** err);
 
 // METADATA OPERATIONS
 void gfal_http_delete(plugin_handle plugin_data);
