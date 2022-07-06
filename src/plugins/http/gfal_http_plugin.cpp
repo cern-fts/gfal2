@@ -297,11 +297,12 @@ std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::stri
     // Iterate over the endpoints list and find v0 or v1
     const int len = json_object_array_length(endpoints);
     int maxVersion = 0;
-    std::string tape_uri = "";
-    std::string tape_endpoint_version = "";
+    std::string tape_uri;
+    std::string tape_endpoint_version;
 
     for (int i = 0; i < len; ++i) {
         json_object *endpoint_obj = json_object_array_get_idx(endpoints, i);
+
         if (endpoint_obj == NULL) {
             continue;
         }
@@ -340,8 +341,8 @@ std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::stri
     return tape_uri;
 }
 
-void gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
-                                    char* buff, size_t s_buff, GError** err)
+ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
+                                       char* buff, size_t s_buff, GError** err)
 {
     GError* tmp_err = NULL;
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
@@ -349,7 +350,7 @@ void gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, 
 
     if (uri.getStatus() != StatusCode::OK) {
         gfal2_set_error(err, http_plugin_domain, EINVAL, __func__, "Invalid URL: %s", url);
-        return;
+        return -1;
     }
 
     // Construct /.well-known endpoint
@@ -364,20 +365,24 @@ void gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, 
 
     if (it == davix->tape_endpoint_map.end()) {
         davix->retrieve_and_store_tape_endpoint(config_endpoint.str(), &tmp_err);
+
         if (tmp_err != NULL) {
             *err = g_error_copy(tmp_err);
             g_clear_error(&tmp_err);
-            return;
+            return -1;
         }
-        it = davix->tape_endpoint_map.find(config_endpoint.str());
     }
+
+    it = davix->tape_endpoint_map.find(config_endpoint.str());
 
     if (it == davix->tape_endpoint_map.end()) {
         gfal2_set_error(err, http_plugin_domain, ENODATA, __func__,
                         "Failed to get the xattr \"%s\" (No data available)", key);
-        return;
+        return -1;
     }
+
     strncpy(buff, it->second.second.c_str(), s_buff);
+    return strnlen(buff, s_buff);
 }
 
 

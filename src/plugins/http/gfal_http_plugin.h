@@ -75,8 +75,8 @@ public:
     friend std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method,
                                                         GError** err);
 
-    friend void gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
-                                               char* buff, size_t s_buff, GError** err);
+    friend ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
+                                                  char* buff, size_t s_buff, GError** err);
 
 private:
     typedef std::map<std::string, bool> TokenAccessMap;
@@ -172,12 +172,13 @@ void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);
 std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method,
                                              GError** err);
 
-// Get user.status extended attribute
-void gfal_http_status_getxattr(plugin_handle plugin_data, const char* url, char* buff, size_t s_buff, GError** err);
-
 // Get tape REST API version
-void gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
-                                    char* buff, size_t s_buff, GError** err);
+ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
+                                       char* buff, size_t s_buff, GError** err);
+
+// Get "user.status" extended attribute
+ssize_t gfal_http_status_getxattr(plugin_handle plugin_data, const char* url, char* buff, size_t s_buff,
+                                  GError** err);
 
 // METADATA OPERATIONS
 void gfal_http_delete(plugin_handle plugin_data);
@@ -229,6 +230,7 @@ ssize_t gfal_http_listxattrG(plugin_handle plugin_data, const char* url,
 int gfal_http_setxattrG(plugin_handle plugin_data, const char* url, const char* key,
                         const void* buff , size_t s_buff, int flags, GError** err);
 
+// Copy operation
 int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params,
         const char* src, const char* dst, GError** err);
 

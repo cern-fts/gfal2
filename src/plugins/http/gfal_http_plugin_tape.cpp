@@ -34,7 +34,8 @@ static std::string collapse_slashes(const std::string& path)
 
 namespace tape_rest_api {
 
-    // struct containing file locality on the remote storage endpoint
+    // Struct containing file locality on the remote storage endpoint
+    // (Storage endpoint must support Tape REST API functionality)
     struct file_locality_s
     {
         bool on_disk;
@@ -144,7 +145,6 @@ namespace tape_rest_api {
 
         if (tmp_err != NULL) {
             *err = g_error_copy(tmp_err);
-            // Frees tmp_err
             g_error_free(tmp_err);
             return "";
         }
@@ -186,7 +186,8 @@ namespace tape_rest_api {
         return content;
     }
 
-    // Try to get locality field form json object returned by the /archiveinfo endpoint
+    // Get locality field from "/archiveinfo" response
+    // On failed request, sets the "err" object
     file_locality_t get_file_locality(struct json_object* file, const std::string& path, GError** err) {
         file_locality_t locality{false, false};
 
@@ -220,9 +221,9 @@ namespace tape_rest_api {
 
         if (locality_text == "TAPE") {
             locality.on_tape = true;
-        } else if (locality_text == "DISK" ) {
+        } else if (locality_text == "DISK") {
             locality.on_disk = true;
-        } else if (locality_text == "DISK_AND_TAPE" ) {
+        } else if (locality_text == "DISK_AND_TAPE") {
             locality.on_disk = true;
             locality.on_tape = true;
         } else if (locality_text == "LOST") {
@@ -654,7 +655,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
     return 0;
 }
 
-void gfal_http_status_getxattr(plugin_handle plugin_data, const char* url, char * buff, size_t s_buff, GError** err)
+ssize_t gfal_http_status_getxattr(plugin_handle plugin_data, const char* url, char* buff, size_t s_buff, GError** err)
 {
     GError* tmp_err = NULL;
     const char* const urls[1] = {url};
@@ -662,9 +663,8 @@ void gfal_http_status_getxattr(plugin_handle plugin_data, const char* url, char 
 
     if (tmp_err != NULL) {
         *err = g_error_copy(tmp_err);
-        // Frees tmp_err
         g_error_free(tmp_err);
-        return;
+        return -1;
     }
 
     struct json_object* json_response = json_tokener_parse(content.c_str());
@@ -672,37 +672,37 @@ void gfal_http_status_getxattr(plugin_handle plugin_data, const char* url, char 
     if (!json_response) {
         gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] Malformed server response");
-        return;
+        return -1;
     }
 
     std::string path = Uri(url).getPath();
     struct json_object* file = tape_rest_api::polling_get_item_by_path(json_response, 1, path);
     tape_rest_api::file_locality_t locality = tape_rest_api::get_file_locality(file, path, &tmp_err);
+
     // Free the top JSON object
     json_object_put(json_response);
 
     if (tmp_err != NULL) {
         *err = g_error_copy(tmp_err);
         g_clear_error(&tmp_err);
-        return;
+        return -1;
     }
 
     if (locality.on_tape && locality.on_disk) {
         strncpy(buff, GFAL_XATTR_STATUS_NEARLINE_ONLINE, s_buff);
         gfal2_log(G_LOG_LEVEL_DEBUG, GFAL_XATTR_STATUS_NEARLINE_ONLINE);
-    }
-    else if (locality.on_tape) {
+    } else if (locality.on_tape) {
         strncpy(buff, GFAL_XATTR_STATUS_NEARLINE, s_buff);
         gfal2_log(G_LOG_LEVEL_DEBUG, GFAL_XATTR_STATUS_NEARLINE);
-    }
-    else if (locality.on_disk) {
+    } else if (locality.on_disk) {
         strncpy(buff, GFAL_XATTR_STATUS_ONLINE, s_buff);
         gfal2_log(G_LOG_LEVEL_DEBUG, GFAL_XATTR_STATUS_ONLINE);
-    }
-    else {
+    } else {
         strncpy(buff, GFAL_XATTR_STATUS_UNKNOWN, s_buff);
         gfal2_log(G_LOG_LEVEL_DEBUG, GFAL_XATTR_STATUS_UNKNOWN);
     }
+
+    return strnlen(buff, s_buff);
 }
 
 int gfal_http_archive_poll(plugin_handle plugin_data, const char* url, GError** err)
@@ -728,7 +728,7 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
     GError* tmp_err = NULL;
     std::string content = tape_rest_api::get_archiveinfo(plugin_data, nbfiles, urls, &tmp_err);
 
-    if(tmp_err != NULL) {
+    if (tmp_err != NULL) {
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
         return -1;
     }
@@ -747,10 +747,9 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
     int error_count = 0;
 
     for (int i = 0; i < nbfiles; ++i) {
-        tape_rest_api::file_locality_t locality{false, false};
         std::string path = Davix::Uri(urls[i]).getPath();
         struct json_object* file = tape_rest_api::polling_get_item_by_path(json_response, nbfiles, path);
-        locality = tape_rest_api::get_file_locality(file, path, &tmp_err);
+        auto locality = tape_rest_api::get_file_locality(file, path, &tmp_err);
 
         if (tmp_err != NULL) {
             errors[i] = g_error_copy(tmp_err);

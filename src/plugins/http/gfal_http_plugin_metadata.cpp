@@ -385,20 +385,15 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
 ssize_t gfal_http_getxattrG(plugin_handle plugin_data, const char* url, const char* key,
                             void* buff, size_t s_buff, GError** err)
 {
-    size_t len = 0;
-
     if (strcmp(key, GFAL_XATTR_STATUS) == 0) {
-        gfal_http_status_getxattr(plugin_data, url, (char *) buff, s_buff, err);
-        len = (*err != NULL) ? -1 : strnlen((char *) buff, s_buff);
+        return gfal_http_status_getxattr(plugin_data, url, (char *) buff, s_buff, err);
     } else if (strcmp(key, GFAL_XATTR_TAPE_API_VERSION) == 0) {
-        gfal_http_get_tape_api_version(plugin_data, url, key, (char*)buff, s_buff, err);
-        len = (*err != NULL) ? -1 : strnlen((char*)buff, s_buff);
+        return gfal_http_get_tape_api_version(plugin_data, url, key, (char*)buff, s_buff, err);
     } else {
         gfal2_set_error(err, http_plugin_domain, ENODATA, __func__,
                         "Failed to get the xattr \"%s\" (No data available)", key);
         return -1;
     }
-    return len;
 }
 
 ssize_t gfal_http_listxattrG(plugin_handle plugin_data, const char* url,
@@ -412,7 +407,7 @@ ssize_t gfal_http_listxattrG(plugin_handle plugin_data, const char* url,
 }
 
 int gfal_http_setxattrG(plugin_handle plugin_data, const char* url, const char* key,
-                        const void* buff , size_t s_buff, int flags, GError** err)
+                        const void* buff, size_t s_buff, int flags, GError** err)
 {
     gfal2_set_error(err, http_plugin_domain, ENOSYS, __func__,
                     "Can not set extended attributes");
