@@ -131,11 +131,11 @@ TEST_F(XAttrTest, Status)
     EXPECT_TRUE(found);
 }
 
-TEST_F(XAttrTest, Version)
+TEST_F(XAttrTest, TapeAPIVersion)
 {
     if (strncmp("http:", root, 5) != 0 && strncmp("https:", root, 6) != 0 &&
         strncmp("dav:", root, 4) != 0 && strncmp("davs:", root, 5) != 0) {
-        SKIP_TEST(Version);
+        SKIP_TEST(TapeAPIVersion);
         return;
     }
 
