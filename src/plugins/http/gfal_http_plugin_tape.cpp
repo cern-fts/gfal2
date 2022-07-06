@@ -275,17 +275,11 @@ ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* ur
             g_clear_error(&tmp_err);
             return -1;
         }
+
+        it = davix->tape_endpoint_map.find(config_endpoint.str());
     }
 
-    it = davix->tape_endpoint_map.find(config_endpoint.str());
-
-    if (it == davix->tape_endpoint_map.end()) {
-        gfal2_set_error(err, http_plugin_domain, ENODATA, __func__,
-                        "Failed to get the xattr \"%s\" (No data available)", key);
-        return -1;
-    }
-
-    strncpy(buff, it->second.second.c_str(), s_buff);
+    strncpy(buff, it->second.version.c_str(), s_buff);
     return strnlen(buff, s_buff);
 }
 

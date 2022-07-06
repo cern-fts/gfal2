@@ -79,15 +79,24 @@ public:
                                                   char* buff, size_t s_buff, GError** err);
 
 private:
+    /// Tape REST API endpoint info struct
+    typedef struct tape_endpoint_info {
+        std::string uri;
+        std::string version;
+
+        tape_endpoint_info() = default;
+    } tape_endpoint_info_t;
+
     typedef std::map<std::string, bool> TokenAccessMap;
-    typedef std::map<std::string, std::pair<std::string, std::string>> TapeEndpointMap;
+    typedef std::map<std::string, tape_endpoint_info_t> TapeEndpointMap;
+
     /// baseline Davix Request Parameters
     Davix::RequestParams reference_params;
     /// map a token with read/write access flag
     TokenAccessMap token_map;
     /// token retriever object (can be chained)
     std::unique_ptr<TokenRetriever> token_retriever_chain;
-    /// map a url with a tape endpoint and the corresponding version
+    /// map a url with a tape endpoint info struct
     TapeEndpointMap tape_endpoint_map;
 
     // Set up general request parameters
@@ -123,7 +132,7 @@ private:
     // @param config_endpoint the well-known endpoint of the Tape REST API
     // @param err error handle
     // @return the tape endpoint
-    std::string retrieve_and_store_tape_endpoint(const std::string& config_endpoint, GError** err);
+    tape_endpoint_info_t retrieve_and_store_tape_endpoint(const std::string& config_endpoint, GError** err);
 
     // Obtain request parameters + credentials for an AWS endpoint
     void get_aws_params(Davix::RequestParams& params, const Davix::Uri& uri);
