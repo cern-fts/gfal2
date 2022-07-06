@@ -172,14 +172,6 @@ void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);
 std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method,
                                              GError** err);
 
-// Get tape REST API version
-ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
-                                       char* buff, size_t s_buff, GError** err);
-
-// Get "user.status" extended attribute
-ssize_t gfal_http_status_getxattr(plugin_handle plugin_data, const char* url, char* buff, size_t s_buff,
-                                  GError** err);
-
 // METADATA OPERATIONS
 void gfal_http_delete(plugin_handle plugin_data);
 
@@ -282,5 +274,13 @@ int gfal_http_bring_online_list(plugin_handle plugin_data, int nbfiles, const ch
 
 int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const char* const* urls, const char* const* metadata,
                                    time_t pintime, time_t timeout, char* token, size_t tsize, int async, GError** errors);
+
+// Get tape REST API version
+ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
+                                       char* buff, size_t s_buff, GError** err);
+
+// Get "user.status" extended attribute
+ssize_t gfal_http_status_getxattr(plugin_handle plugin_data, const char* url, char* buff, size_t s_buff,
+                                  GError** err);
 
 #endif //_GFAL_HTTP_PLUGIN_H
