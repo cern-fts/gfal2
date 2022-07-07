@@ -75,16 +75,28 @@ public:
     friend std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method,
                                                         GError** err);
 
+    friend ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
+                                                  char* buff, size_t s_buff, GError** err);
+
 private:
+    /// Tape REST API endpoint info struct
+    typedef struct tape_endpoint_info {
+        std::string uri;
+        std::string version;
+
+        tape_endpoint_info() = default;
+    } tape_endpoint_info_t;
+
     typedef std::map<std::string, bool> TokenAccessMap;
-    typedef std::map<std::string, std::string> TapeEndpointMap;
+    typedef std::map<std::string, tape_endpoint_info_t> TapeEndpointMap;
+
     /// baseline Davix Request Parameters
     Davix::RequestParams reference_params;
     /// map a token with read/write access flag
     TokenAccessMap token_map;
     /// token retriever object (can be chained)
     std::unique_ptr<TokenRetriever> token_retriever_chain;
-    /// map a url with a tape endpoint
+    /// map a url with a tape endpoint info struct
     TapeEndpointMap tape_endpoint_map;
 
     // Set up general request parameters
@@ -120,7 +132,7 @@ private:
     // @param config_endpoint the well-known endpoint of the Tape REST API
     // @param err error handle
     // @return the tape endpoint
-    std::string retrieve_and_store_tape_endpoint(const std::string& config_endpoint, GError** err);
+    tape_endpoint_info_t retrieve_and_store_tape_endpoint(const std::string& config_endpoint, GError** err);
 
     // Obtain request parameters + credentials for an AWS endpoint
     void get_aws_params(Davix::RequestParams& params, const Davix::Uri& uri);
@@ -166,7 +178,8 @@ bool is_http_streaming_enabled(gfal2_context_t context, const char* src, const c
 void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);
 
 // Find tape endpoint for a given method
-std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method, GError** err);
+std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method,
+                                             GError** err);
 
 // METADATA OPERATIONS
 void gfal_http_delete(plugin_handle plugin_data);
@@ -208,7 +221,17 @@ int gfal_http_checksum(plugin_handle data, const char* url, const char* check_ty
                        off_t start_offset, size_t data_length,
                        GError ** err);
 
+// Extended attributes
+ssize_t gfal_http_getxattrG(plugin_handle plugin_data, const char* url, const char* key,
+                            void* buff, size_t s_buff, GError** err);
 
+ssize_t gfal_http_listxattrG(plugin_handle plugin_data, const char* url,
+                             char* list, size_t s_list, GError** err);
+
+int gfal_http_setxattrG(plugin_handle plugin_data, const char* url, const char* key,
+                        const void* buff , size_t s_buff, int flags, GError** err);
+
+// Copy operation
 int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context, gfalt_params_t params,
         const char* src, const char* dst, GError** err);
 
@@ -260,5 +283,13 @@ int gfal_http_bring_online_list(plugin_handle plugin_data, int nbfiles, const ch
 
 int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const char* const* urls, const char* const* metadata,
                                    time_t pintime, time_t timeout, char* token, size_t tsize, int async, GError** errors);
+
+// Get tape REST API version
+ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
+                                       char* buff, size_t s_buff, GError** err);
+
+// Get "user.status" extended attribute
+ssize_t gfal_http_status_getxattr(plugin_handle plugin_data, const char* url, char* buff, size_t s_buff,
+                                  GError** err);
 
 #endif //_GFAL_HTTP_PLUGIN_H
