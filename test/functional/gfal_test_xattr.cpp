@@ -131,6 +131,23 @@ TEST_F(XAttrTest, Status)
     EXPECT_TRUE(found);
 }
 
+TEST_F(XAttrTest, TapeAPIVersion)
+{
+    if (strncmp("http:", root, 5) != 0 && strncmp("https:", root, 6) != 0 &&
+        strncmp("dav:", root, 4) != 0 && strncmp("davs:", root, 5) != 0) {
+        SKIP_TEST(TapeAPIVersion);
+        return;
+    }
+
+    GError *error = NULL;
+    char buffer[1024];
+
+    ssize_t ret = gfal2_getxattr(context, surl, GFAL_XATTR_TAPE_API_VERSION, buffer, sizeof(buffer), &error);
+    EXPECT_PRED_FORMAT2(AssertGfalSuccess, 0, error);
+    EXPECT_GT(ret, 0);
+    EXPECT_GT(strlen(buffer), 0);
+}
+
 
 TEST_F(XAttrTest, SrmReplicas)
 {

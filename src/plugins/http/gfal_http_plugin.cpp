@@ -237,7 +237,8 @@ char* GfalHttpPluginData::retrieve_and_store_se_token(const Davix::Uri& uri, con
     return token;
 }
 
-std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& config_endpoint, GError** err)
+GfalHttpPluginData::tape_endpoint_info_t
+GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& config_endpoint, GError** err)
 {
     // Construct and send "GET /.well-known/wlcg-tape-rest-api" request
     Davix::DavixError* reqerr = NULL;
@@ -251,14 +252,14 @@ std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::stri
     if (request.executeRequest(&reqerr)) {
         gfal2_set_error(err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
                         "[Tape REST API] Failed to query /.well-known/wlcg-tape-rest-api");
-        return "";
+        return tape_endpoint_info{};
     }
 
     if (request.getRequestCode() != 200) {
         gfal2_set_error(err, http_plugin_domain, EINVAL, __func__,
                         "[Tape REST API] Failed to query /.well-known/wlcg-tape-rest-api: Expected 200 "
                         "status code (received %d)", request.getRequestCode());
-        return "";
+        return tape_endpoint_info{};
     }
 
     struct json_object* json_response = json_tokener_parse(request.getAnswerContent());
@@ -266,7 +267,7 @@ std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::stri
     if (!json_response) {
         gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] Malformed served response from /.well-known/wlcg-tape-rest-api");
-        return "";
+        return tape_endpoint_info{};
     }
 
     // Check if "endpoints" attribute exists
@@ -275,7 +276,7 @@ std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::stri
     if (!foundEndpoints) {
         gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] No endpoints in response from /.well-known/wlcg-tape-rest-api");
-        return "";
+        return tape_endpoint_info{};
     }
 
     // Helper function to parse version field from /.well-known endpoint
@@ -297,10 +298,12 @@ std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::stri
     // Iterate over the endpoints list and find v0 or v1
     const int len = json_object_array_length(endpoints);
     int maxVersion = 0;
-    std::string tape_uri = "";
+    std::string tape_uri;
+    std::string tape_endpoint_version;
 
     for (int i = 0; i < len; ++i) {
         json_object *endpoint_obj = json_object_array_get_idx(endpoints, i);
+
         if (endpoint_obj == NULL) {
             continue;
         }
@@ -318,6 +321,7 @@ std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::stri
             if (foundUri) {
                 if (parsedVersion >= maxVersion && parsedVersion <= 1) {
                     tape_uri = json_object_get_string(uri_obj);
+                    tape_endpoint_version = version_str;
                     maxVersion = parsedVersion;
                 }
             }
@@ -331,11 +335,11 @@ std::string GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::stri
         gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] Failed to find v0 or v1 metadata endpoint in response"
                         " from /.well-known/wlcg-tape-rest-api");
-        return "";
+        return tape_endpoint_info{};
     }
 
-    tape_endpoint_map[config_endpoint] = tape_uri;
-    return tape_uri;
+    tape_endpoint_map[config_endpoint] = tape_endpoint_info{tape_uri, tape_endpoint_version};
+    return tape_endpoint_map[config_endpoint];
 }
 
 std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method, GError** err)
@@ -358,16 +362,18 @@ std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const ch
 
     auto it = davix->tape_endpoint_map.find(config_endpoint.str());
 
-    std::string metadata_uri = (it == davix->tape_endpoint_map.end()) ?
-                               davix->retrieve_and_store_tape_endpoint(config_endpoint.str(), err) :
-                               it->second;
+    if (it == davix->tape_endpoint_map.end()) {
+        davix->retrieve_and_store_tape_endpoint(config_endpoint.str(), err);
 
-    if (*err != NULL) {
-        return "";
+        if (*err != NULL) {
+            return "";
+        }
+
+        it = davix->tape_endpoint_map.find(config_endpoint.str());
     }
 
     std::stringstream endpoint;
-    endpoint << metadata_uri;
+    endpoint << it->second.uri;
 
     if (endpoint.str().back() != '/') {
         endpoint << "/";
@@ -884,6 +890,9 @@ static gboolean gfal_http_check_url(plugin_handle plugin_data, const char* url,
                  strncmp("http+3rd:", url, 9) == 0 || strncmp("https+3rd:", url, 10) == 0 ||
                  strncmp("dav+3rd:", url, 8) == 0 || strncmp("davs+3rd:", url, 9) == 0 ||
                  strncmp("cs3:", url, 4) == 0 || strncmp("cs3s:", url, 5) == 0);
+        case GFAL_PLUGIN_GETXATTR:
+        case GFAL_PLUGIN_SETXATTR:
+        case GFAL_PLUGIN_LISTXATTR:
         case GFAL_PLUGIN_BRING_ONLINE:
         case GFAL_PLUGIN_ARCHIVE:
             return (strncmp("http:", url, 5) == 0 || strncmp("https:", url, 6) == 0 ||
@@ -1059,6 +1068,11 @@ extern "C" gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError
     http_plugin.writeG = &gfal_http_fwrite;
     http_plugin.lseekG = &gfal_http_fseek;
     http_plugin.closeG = &gfal_http_fclose;
+
+    // Extended attributes
+    http_plugin.getxattrG = &gfal_http_getxattrG;
+    http_plugin.listxattrG = &gfal_http_listxattrG;
+    http_plugin.setxattrG = &gfal_http_setxattrG;
 
     // Checksum
     http_plugin.checksum_calcG = &gfal_http_checksum;

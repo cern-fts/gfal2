@@ -34,6 +34,16 @@ static std::string collapse_slashes(const std::string& path)
 
 namespace tape_rest_api {
 
+    // Struct containing file locality on the remote storage endpoint
+    // (Storage endpoint must support Tape REST API functionality)
+    struct file_locality_s
+    {
+        bool on_disk;
+        bool on_tape;
+    };
+
+    typedef struct file_locality_s file_locality_t;
+
     // Construct a request body that consists in a list if file paths from the given set of URLs
     std::string list_files_body(int nbfiles, const char *const *urls) {
         std::stringstream body;
@@ -125,6 +135,152 @@ namespace tape_rest_api {
 
         return NULL;
     }
+
+    std::string get_archiveinfo(plugin_handle plugin_data, int nbfiles, const char* const* urls, GError** err)
+    {
+        GError* tmp_err = NULL;
+        GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
+        std::string tapeEndpoint = gfal_http_discover_tape_endpoint(davix, urls[0],"/archiveinfo/",
+                                                                    &tmp_err);
+
+        if (tmp_err != NULL) {
+            *err = g_error_copy(tmp_err);
+            g_error_free(tmp_err);
+            return "";
+        }
+
+        // Construct and send "POST /archiveinfo" request
+        Davix::DavixError* reqerr = NULL;
+        Davix::Uri uri(tapeEndpoint);
+        Davix::RequestParams params;
+
+        PostRequest request(davix->context, uri, &reqerr);
+        davix->get_params(&params, uri, GfalHttpPluginData::OP::TAPE);
+        params.addHeader("Content-Type", "application/json");
+        request.setParameters(params);
+        request.setRequestBody(tape_rest_api::list_files_body(nbfiles, urls));
+
+        if (request.executeRequest(&reqerr)) {
+            gfal2_set_error(err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
+                            "[Tape REST API] Archive polling call failed: %s", reqerr->getErrMsg().c_str());
+            Davix::DavixError::clearError(&reqerr);
+            return "";
+        }
+
+        if (request.getRequestCode() != 200) {
+            gfal2_set_error(err, http_plugin_domain, EINVAL, __func__,
+                            "[Tape REST API] Archive polling call failed: Expected 200 status code (received %d)",
+                            request.getRequestCode());
+            Davix::DavixError::clearError(&reqerr);
+            return "";
+        }
+
+        std::string content = request.getAnswerContent();
+
+        if (content.empty()) {
+            gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
+                            "[Tape REST API] Response with no data");
+            return "";
+        }
+
+        return content;
+    }
+
+    // Get locality field from "/archiveinfo" response
+    // On failed request, sets the "err" object
+    file_locality_t get_file_locality(struct json_object* file, const std::string& path, GError** err) {
+        file_locality_t locality{false, false};
+
+        if (file == NULL) {
+            gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
+                            "[Tape REST API] Missing response item for path=%s", path.c_str());
+            return locality;
+        }
+
+        // Check if "error" attribute exists
+        struct json_object *file_error_text = 0;
+        bool foundError = json_object_object_get_ex(file, "error", &file_error_text);
+
+        if (foundError) {
+            std::string error_text = json_object_get_string(file_error_text);
+            gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__, "[Tape REST API] %s", error_text.c_str());
+            return locality;
+        }
+
+        // Retrieve "locality" attribute
+        struct json_object *file_locality = 0;
+        bool localityExist = json_object_object_get_ex(file, "locality", &file_locality);
+
+        if (!localityExist) {
+            gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
+                            "[Tape REST API] Locality attribute missing");
+            return locality;
+        }
+
+        std::string locality_text = json_object_get_string(file_locality);
+
+        if (locality_text == "TAPE") {
+            locality.on_tape = true;
+        } else if (locality_text == "DISK") {
+            locality.on_disk = true;
+        } else if (locality_text == "DISK_AND_TAPE") {
+            locality.on_disk = true;
+            locality.on_tape = true;
+        } else if (locality_text == "LOST") {
+            gfal2_set_error(err, http_plugin_domain, ENOENT, __func__,
+                            "[Tape REST API] File locality reported as LOST (path=%s)", path.c_str());
+        } else if (locality_text == "NONE") {
+            gfal2_set_error(err, http_plugin_domain, EPERM, __func__,
+                            "[Tape REST API] File locality reported as NONE (path=%s)", path.c_str());
+        } else if (locality_text == "UNAVAILABLE") {
+            gfal2_set_error(err, http_plugin_domain, EAGAIN, __func__,
+                            "[Tape REST API] File locality reported as UNAVAILABLE (path=%s)", path.c_str());
+        }else {
+            gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
+                            "[Tape REST API] File locality reported as \"%s\" (path=%s)",
+                            locality_text.c_str(), path.c_str());
+        }
+
+        return locality;
+    }
+}
+
+ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
+                                       char* buff, size_t s_buff, GError** err)
+{
+    GError* tmp_err = NULL;
+    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
+    Davix::Uri uri(url);
+
+    if (uri.getStatus() != StatusCode::OK) {
+        gfal2_set_error(err, http_plugin_domain, EINVAL, __func__, "Invalid URL: %s", url);
+        return -1;
+    }
+
+    // Construct /.well-known endpoint
+    std::stringstream config_endpoint;
+    config_endpoint << uri.getProtocol() << "://" << uri.getHost();
+
+    if (uri.getPort()) {
+        config_endpoint << ":" << uri.getPort();
+    }
+    config_endpoint << "/.well-known/wlcg-tape-rest-api";
+    auto it = davix->tape_endpoint_map.find(config_endpoint.str());
+
+    if (it == davix->tape_endpoint_map.end()) {
+        davix->retrieve_and_store_tape_endpoint(config_endpoint.str(), &tmp_err);
+
+        if (tmp_err != NULL) {
+            *err = g_error_copy(tmp_err);
+            g_clear_error(&tmp_err);
+            return -1;
+        }
+
+        it = davix->tape_endpoint_map.find(config_endpoint.str());
+    }
+
+    strncpy(buff, it->second.version.c_str(), s_buff);
+    return strnlen(buff, s_buff);
 }
 
 int gfal_http_bring_online(plugin_handle plugin_data, const char* url, time_t pintime, time_t timeout, char* token,
@@ -537,6 +693,56 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
     return 0;
 }
 
+ssize_t gfal_http_status_getxattr(plugin_handle plugin_data, const char* url, char* buff, size_t s_buff, GError** err)
+{
+    GError* tmp_err = NULL;
+    const char* const urls[1] = {url};
+    std::string content = tape_rest_api::get_archiveinfo(plugin_data, 1, urls, &tmp_err);
+
+    if (tmp_err != NULL) {
+        *err = g_error_copy(tmp_err);
+        g_error_free(tmp_err);
+        return -1;
+    }
+
+    struct json_object* json_response = json_tokener_parse(content.c_str());
+
+    if (!json_response) {
+        gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
+                        "[Tape REST API] Malformed server response");
+        return -1;
+    }
+
+    std::string path = Uri(url).getPath();
+    struct json_object* file = tape_rest_api::polling_get_item_by_path(json_response, 1, path);
+    tape_rest_api::file_locality_t locality = tape_rest_api::get_file_locality(file, path, &tmp_err);
+
+    // Free the top JSON object
+    json_object_put(json_response);
+
+    if (tmp_err != NULL) {
+        *err = g_error_copy(tmp_err);
+        g_clear_error(&tmp_err);
+        return -1;
+    }
+
+    if (locality.on_tape && locality.on_disk) {
+        strncpy(buff, GFAL_XATTR_STATUS_NEARLINE_ONLINE, s_buff);
+        gfal2_log(G_LOG_LEVEL_DEBUG, GFAL_XATTR_STATUS_NEARLINE_ONLINE);
+    } else if (locality.on_tape) {
+        strncpy(buff, GFAL_XATTR_STATUS_NEARLINE, s_buff);
+        gfal2_log(G_LOG_LEVEL_DEBUG, GFAL_XATTR_STATUS_NEARLINE);
+    } else if (locality.on_disk) {
+        strncpy(buff, GFAL_XATTR_STATUS_ONLINE, s_buff);
+        gfal2_log(G_LOG_LEVEL_DEBUG, GFAL_XATTR_STATUS_ONLINE);
+    } else {
+        strncpy(buff, GFAL_XATTR_STATUS_UNKNOWN, s_buff);
+        gfal2_log(G_LOG_LEVEL_DEBUG, GFAL_XATTR_STATUS_UNKNOWN);
+    }
+
+    return strnlen(buff, s_buff);
+}
+
 int gfal_http_archive_poll(plugin_handle plugin_data, const char* url, GError** err)
 {
     GError* errors[1] = {NULL};
@@ -558,49 +764,9 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
     }
 
     GError* tmp_err = NULL;
-
-    // Find out Tape Rest API endpoint
-    GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
-    std::string tapeEndpoint = gfal_http_discover_tape_endpoint(davix, urls[0], "/archiveinfo/", &tmp_err);
+    std::string content = tape_rest_api::get_archiveinfo(plugin_data, nbfiles, urls, &tmp_err);
 
     if (tmp_err != NULL) {
-        tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
-        return -1;
-    }
-
-    // Construct and send "POST /archiveinfo" request
-    Davix::DavixError* reqerr = NULL;
-    Davix::Uri uri(tapeEndpoint);
-    Davix::RequestParams params;
-
-    PostRequest request(davix->context, uri, &reqerr);
-    davix->get_params(&params, uri, GfalHttpPluginData::OP::TAPE);
-    params.addHeader("Content-Type", "application/json");
-    request.setParameters(params);
-    request.setRequestBody(tape_rest_api::list_files_body(nbfiles, urls));
-
-    if (request.executeRequest(&reqerr)) {
-        gfal2_set_error(&tmp_err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
-                        "[Tape REST API] Archive polling call failed: %s", reqerr->getErrMsg().c_str());
-        tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
-        Davix::DavixError::clearError(&reqerr);
-        return -1;
-    }
-
-    if (request.getRequestCode() != 200) {
-        gfal2_set_error(&tmp_err, http_plugin_domain, EINVAL, __func__,
-                        "[Tape REST API] Archive polling call failed: Expected 200 status code (received %d)",
-                        request.getRequestCode());
-        tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
-        Davix::DavixError::clearError(&reqerr);
-        return -1;
-    }
-
-    std::string content = std::string(request.getAnswerContent());
-
-    if (content.empty()) {
-        gfal2_set_error(&tmp_err, http_plugin_domain, ENOMSG, __func__,
-                        "[Tape REST API] Response with no data");
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
         return -1;
     }
@@ -621,47 +787,17 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
     for (int i = 0; i < nbfiles; ++i) {
         std::string path = Davix::Uri(urls[i]).getPath();
         struct json_object* file = tape_rest_api::polling_get_item_by_path(json_response, nbfiles, path);
+        auto locality = tape_rest_api::get_file_locality(file, path, &tmp_err);
 
-        if (file == NULL) {
+        if (tmp_err != NULL) {
+            errors[i] = g_error_copy(tmp_err);
+            g_clear_error(&tmp_err);
             error_count++;
-            gfal2_set_error(&errors[i], http_plugin_domain, ENOMSG, __func__,
-                            "[Tape REST API] Missing response item for path=%s", path.c_str());
             continue;
         }
 
-        // Check if "error" attribute exists
-        struct json_object* file_error_text = 0;
-        bool foundError = json_object_object_get_ex(file, "error", &file_error_text);
-
-        if (foundError) {
-            error_count++;
-            std::string error_text = json_object_get_string(file_error_text);
-            gfal2_set_error(&errors[i], http_plugin_domain, ENOMSG, __func__, "[Tape REST API] %s", error_text.c_str());
-            continue;
-        }
-
-        // Retrieve "locality" attribute
-        struct json_object* file_locality = 0;
-        bool localityExist = json_object_object_get_ex(file, "locality", &file_locality);
-
-        if (!localityExist) {
-            error_count++;
-            gfal2_set_error(&errors[i], http_plugin_domain, ENOMSG, __func__,
-                            "[Tape REST API] Locality attribute missing");
-        }
-
-        std::string locality = json_object_get_string(file_locality);
-
-        if (locality == "TAPE" || locality == "DISK_AND_TAPE" ) {
+        if (locality.on_tape) {
             ontape_count++;
-        } else if (locality == "LOST") {
-            error_count++;
-            gfal2_set_error(&errors[i], http_plugin_domain, ENOENT, __func__,
-                            "[Tape REST API] File locality reported as LOST (path=%s)", path.c_str());
-        } else if (locality == "NONE") {
-            gfal2_set_error(&errors[i], http_plugin_domain, EPERM, __func__,
-                            "[Tape REST API] File locality reported as NONE (path=%s)", path.c_str());
-            error_count++;
         } else {
             gfal2_set_error(&errors[i], http_plugin_domain, EAGAIN, __func__,
                             "[Tape REST API] File %s is not yet archived", path.c_str());
