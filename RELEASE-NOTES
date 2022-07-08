@@ -1,7 +1,7 @@
 GFAL2 RELEASE-NOTES
 ===================
 
-## Fri Jun 17 2022 Joao Lopes <batistal at cern.ch> - 2.21.0
+## Fri Jul 08 2022 Joao Lopes <batistal at cern.ch> - 2.21.0
 ###Epic
 - [DMC-1301] - Gfal2 Support for HTTP Tape Operations
 
@@ -17,6 +17,7 @@ GFAL2 RELEASE-NOTES
 - [DMC-1316] - Allow configuration of HTTP "ENABLE_STREAM_COPY" parameter by Storage Endpoint
 - [DMC-1321] - HTTP tape polling operations must not assume order is preserved in server response
 - [DMC-1323] - Gfal2 should propagate the EVICT event
+- [DMC-1324] - Gfal2 support for extended attributes via HTTP
 
 ###Improvement
 - [DMC-1260] - Expose Gfal2 XRootD eviction via the file API
