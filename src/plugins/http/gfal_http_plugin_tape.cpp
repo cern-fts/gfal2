@@ -245,8 +245,8 @@ namespace tape_rest_api {
     }
 }
 
-ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
-                                       char* buff, size_t s_buff, GError** err)
+ssize_t gfal_http_getxattr_internal(plugin_handle plugin_data, const char* url, const char *key,
+                                    char* buff, size_t s_buff, GError** err)
 {
     GError* tmp_err = NULL;
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
@@ -279,7 +279,15 @@ ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* ur
         it = davix->tape_endpoint_map.find(endpoint.str());
     }
 
-    strncpy(buff, it->second.version.c_str(), s_buff);
+    if (strcmp(key, GFAL_XATTR_TAPE_API_VERSION) == 0) {
+        strncpy(buff, it->second.version.c_str(), s_buff);
+    } else if (strcmp(key, GFAL_XATTR_TAPE_API_URI) == 0) {
+        strncpy(buff, it->second.uri.c_str(), s_buff);
+    } else {
+        gfal2_set_error(err, http_plugin_domain, ENODATA, __func__,
+                        "Failed to get the xattr \"%s\" (No data available)", key);
+        return -1;
+    }
     return strnlen(buff, s_buff);
 }
 
