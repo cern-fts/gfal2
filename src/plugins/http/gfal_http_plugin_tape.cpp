@@ -257,18 +257,18 @@ ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* ur
         return -1;
     }
 
-    // Construct /.well-known endpoint
-    std::stringstream config_endpoint;
-    config_endpoint << uri.getProtocol() << "://" << uri.getHost();
+    // Construct remote storage endpoint
+    std::stringstream endpoint;
+    endpoint << uri.getProtocol() << "://" << uri.getHost();
 
     if (uri.getPort()) {
-        config_endpoint << ":" << uri.getPort();
+        endpoint << ":" << uri.getPort();
     }
-    config_endpoint << "/.well-known/wlcg-tape-rest-api";
-    auto it = davix->tape_endpoint_map.find(config_endpoint.str());
+
+    auto it = davix->tape_endpoint_map.find(endpoint.str());
 
     if (it == davix->tape_endpoint_map.end()) {
-        davix->retrieve_and_store_tape_endpoint(config_endpoint.str(), &tmp_err);
+        davix->retrieve_and_store_tape_endpoint(endpoint.str(), &tmp_err);
 
         if (tmp_err != NULL) {
             *err = g_error_copy(tmp_err);
@@ -276,7 +276,7 @@ ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* ur
             return -1;
         }
 
-        it = davix->tape_endpoint_map.find(config_endpoint.str());
+        it = davix->tape_endpoint_map.find(endpoint.str());
     }
 
     strncpy(buff, it->second.version.c_str(), s_buff);

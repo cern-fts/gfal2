@@ -129,10 +129,10 @@ private:
     char* retrieve_and_store_se_token(const Davix::Uri& uri, const OP& operation, unsigned validity);
 
     // Discover tape endpoint and cache it
-    // @param config_endpoint the well-known endpoint of the Tape REST API
+    // @param endpoint the url of the remote storage endpoint
     // @param err error handle
     // @return the tape endpoint
-    tape_endpoint_info_t retrieve_and_store_tape_endpoint(const std::string& config_endpoint, GError** err);
+    tape_endpoint_info_t retrieve_and_store_tape_endpoint(const std::string& endpoint, GError** err);
 
     // Obtain request parameters + credentials for an AWS endpoint
     void get_aws_params(Davix::RequestParams& params, const Davix::Uri& uri);
