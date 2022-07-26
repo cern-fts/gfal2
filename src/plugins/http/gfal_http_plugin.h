@@ -129,7 +129,7 @@ private:
     char* retrieve_and_store_se_token(const Davix::Uri& uri, const OP& operation, unsigned validity);
 
     // Discover tape endpoint and cache it
-    // @param endpoint the url of the remote storage endpoint
+    // @param endpoint the SE, defined as protocol://host
     // @param err error handle
     // @return the tape endpoint
     tape_endpoint_info_t retrieve_and_store_tape_endpoint(const std::string& endpoint, GError** err);
@@ -284,7 +284,7 @@ int gfal_http_bring_online_list(plugin_handle plugin_data, int nbfiles, const ch
 int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const char* const* urls, const char* const* metadata,
                                    time_t pintime, time_t timeout, char* token, size_t tsize, int async, GError** errors);
 
-// Get tape REST API version
+// Get the extended attribute in "key" from a remote storage endpoint
 ssize_t gfal_http_getxattr_internal(plugin_handle plugin_data, const char* url, const char *key,
                                     char* buff, size_t s_buff, GError** err);
 
