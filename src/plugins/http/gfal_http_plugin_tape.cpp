@@ -245,8 +245,8 @@ namespace tape_rest_api {
     }
 }
 
-ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
-                                       char* buff, size_t s_buff, GError** err)
+ssize_t gfal_http_getxattr_internal(plugin_handle plugin_data, const char* url, const char *key,
+                                    char* buff, size_t s_buff, GError** err)
 {
     GError* tmp_err = NULL;
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
@@ -257,18 +257,18 @@ ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* ur
         return -1;
     }
 
-    // Construct /.well-known endpoint
-    std::stringstream config_endpoint;
-    config_endpoint << uri.getProtocol() << "://" << uri.getHost();
+    // Construct remote storage endpoint
+    std::stringstream endpoint;
+    endpoint << uri.getProtocol() << "://" << uri.getHost();
 
     if (uri.getPort()) {
-        config_endpoint << ":" << uri.getPort();
+        endpoint << ":" << uri.getPort();
     }
-    config_endpoint << "/.well-known/wlcg-tape-rest-api";
-    auto it = davix->tape_endpoint_map.find(config_endpoint.str());
+
+    auto it = davix->tape_endpoint_map.find(endpoint.str());
 
     if (it == davix->tape_endpoint_map.end()) {
-        davix->retrieve_and_store_tape_endpoint(config_endpoint.str(), &tmp_err);
+        davix->retrieve_and_store_tape_endpoint(endpoint.str(), &tmp_err);
 
         if (tmp_err != NULL) {
             *err = g_error_copy(tmp_err);
@@ -276,10 +276,18 @@ ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* ur
             return -1;
         }
 
-        it = davix->tape_endpoint_map.find(config_endpoint.str());
+        it = davix->tape_endpoint_map.find(endpoint.str());
     }
 
-    strncpy(buff, it->second.version.c_str(), s_buff);
+    if (strcmp(key, GFAL_XATTR_TAPE_API_VERSION) == 0) {
+        strncpy(buff, it->second.version.c_str(), s_buff);
+    } else if (strcmp(key, GFAL_XATTR_TAPE_API_URI) == 0) {
+        strncpy(buff, it->second.uri.c_str(), s_buff);
+    } else {
+        gfal2_set_error(err, http_plugin_domain, ENODATA, __func__,
+                        "Failed to get the xattr \"%s\" (No data available)", key);
+        return -1;
+    }
     return strnlen(buff, s_buff);
 }
 

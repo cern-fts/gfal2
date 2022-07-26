@@ -238,9 +238,10 @@ char* GfalHttpPluginData::retrieve_and_store_se_token(const Davix::Uri& uri, con
 }
 
 GfalHttpPluginData::tape_endpoint_info_t
-GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& config_endpoint, GError** err)
+GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& endpoint, GError** err)
 {
     // Construct and send "GET /.well-known/wlcg-tape-rest-api" request
+    std::string config_endpoint = endpoint + "/.well-known/wlcg-tape-rest-api";
     Davix::DavixError* reqerr = NULL;
     Davix::Uri config_uri(config_endpoint);
     Davix::RequestParams params;
@@ -338,8 +339,8 @@ GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& config_e
         return tape_endpoint_info{};
     }
 
-    tape_endpoint_map[config_endpoint] = tape_endpoint_info{tape_uri, tape_endpoint_version};
-    return tape_endpoint_map[config_endpoint];
+    tape_endpoint_map[endpoint] = tape_endpoint_info{tape_uri, tape_endpoint_version};
+    return tape_endpoint_map[endpoint];
 }
 
 std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method, GError** err)
@@ -351,41 +352,40 @@ std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const ch
         return NULL;
     }
 
-    // Construct /.well-known endpoint
-    std::stringstream config_endpoint;
-    config_endpoint << uri.getProtocol() << "://" << uri.getHost();
+    // Construct remote storage endpoint
+    std::stringstream endpoint;
+    endpoint << uri.getProtocol() << "://" << uri.getHost();
 
     if (uri.getPort()) {
-        config_endpoint << ":" << uri.getPort();
+        endpoint << ":" << uri.getPort();
     }
-    config_endpoint << "/.well-known/wlcg-tape-rest-api";
 
-    auto it = davix->tape_endpoint_map.find(config_endpoint.str());
+    auto it = davix->tape_endpoint_map.find(endpoint.str());
 
     if (it == davix->tape_endpoint_map.end()) {
-        davix->retrieve_and_store_tape_endpoint(config_endpoint.str(), err);
+        davix->retrieve_and_store_tape_endpoint(endpoint.str(), err);
 
         if (*err != NULL) {
             return "";
         }
 
-        it = davix->tape_endpoint_map.find(config_endpoint.str());
+        it = davix->tape_endpoint_map.find(endpoint.str());
     }
 
-    std::stringstream endpoint;
-    endpoint << it->second.uri;
+    std::stringstream tape_endpoint;
+    tape_endpoint << it->second.uri;
 
-    if (endpoint.str().back() != '/') {
-        endpoint << "/";
+    if (tape_endpoint.str().back() != '/') {
+        tape_endpoint << "/";
     }
 
     if (method[0] == '/') {
-        endpoint.seekp(-1, std::ios_base::end);
+        tape_endpoint.seekp(-1, std::ios_base::end);
     }
 
-    endpoint << method;
+    tape_endpoint << method;
 
-    return endpoint.str();
+    return tape_endpoint.str();
 }
 
 bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Uri& uri,

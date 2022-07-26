@@ -89,6 +89,7 @@ extern "C"
 
 /** tape rest api version */
 #define GFAL_XATTR_TAPE_API_VERSION "taperestapi.version"
+#define GFAL_XATTR_TAPE_API_URI "taperestapi.uri"
 
 #ifdef __cplusplus
 }
