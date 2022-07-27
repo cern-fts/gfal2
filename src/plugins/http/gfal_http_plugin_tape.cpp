@@ -283,6 +283,8 @@ ssize_t gfal_http_getxattr_internal(plugin_handle plugin_data, const char* url, 
         strncpy(buff, it->second.version.c_str(), s_buff);
     } else if (strcmp(key, GFAL_XATTR_TAPE_API_URI) == 0) {
         strncpy(buff, it->second.uri.c_str(), s_buff);
+    } else if (strcmp(key, GFAL_XATTR_TAPE_API_SITENAME) == 0) {
+        strncpy(buff, it->second.sitename.c_str(), s_buff);
     } else {
         gfal2_set_error(err, http_plugin_domain, ENODATA, __func__,
                         "Failed to get the xattr \"%s\" (No data available)", key);

@@ -271,6 +271,16 @@ GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& endpoint
         return tape_endpoint_info{};
     }
 
+    // Check if "sitename" attribute exists
+    struct json_object* sitename_obj = 0;
+    bool foundSitename = json_object_object_get_ex(json_response, "sitename", &sitename_obj);
+    if (!foundSitename) {
+        gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
+                        "[Tape REST API] No sitename in response from /.well-known/wlcg-tape-rest-api");
+        return tape_endpoint_info{};
+    }
+    std::string sitename = json_object_get_string(sitename_obj);
+
     // Check if "endpoints" attribute exists
     struct json_object* endpoints = 0;
     bool foundEndpoints = json_object_object_get_ex(json_response, "endpoints", &endpoints);
@@ -299,7 +309,7 @@ GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& endpoint
     // Iterate over the endpoints list and find v0 or v1
     const int len = json_object_array_length(endpoints);
     int maxVersion = 0;
-    std::string tape_uri;
+    std::string tape_endpoint_uri;
     std::string tape_endpoint_version;
 
     for (int i = 0; i < len; ++i) {
@@ -321,7 +331,7 @@ GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& endpoint
             bool foundUri = json_object_object_get_ex(endpoint_obj, "uri", &uri_obj);
             if (foundUri) {
                 if (parsedVersion >= maxVersion && parsedVersion <= 1) {
-                    tape_uri = json_object_get_string(uri_obj);
+                    tape_endpoint_uri = json_object_get_string(uri_obj);
                     tape_endpoint_version = version_str;
                     maxVersion = parsedVersion;
                 }
@@ -332,14 +342,14 @@ GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& endpoint
     // Free the JSON object
     json_object_put(json_response);
 
-    if (tape_uri.empty()) {
+    if (tape_endpoint_uri.empty()) {
         gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] Failed to find v0 or v1 metadata endpoint in response"
                         " from /.well-known/wlcg-tape-rest-api");
         return tape_endpoint_info{};
     }
 
-    tape_endpoint_map[endpoint] = tape_endpoint_info{tape_uri, tape_endpoint_version};
+    tape_endpoint_map[endpoint] = tape_endpoint_info{sitename, tape_endpoint_uri, tape_endpoint_version};
     return tape_endpoint_map[endpoint];
 }
 

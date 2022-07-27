@@ -81,6 +81,7 @@ public:
 private:
     /// Tape REST API endpoint info struct
     typedef struct tape_endpoint_info {
+        std::string sitename;
         std::string uri;
         std::string version;
 

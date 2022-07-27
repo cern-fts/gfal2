@@ -87,9 +87,10 @@ extern "C"
 /** space reporting */
 #define GFAL_XATTR_SPACETOKEN "spacetoken"
 
-/** tape rest api version */
-#define GFAL_XATTR_TAPE_API_VERSION "taperestapi.version"
+/** tape rest api attributes */
+#define GFAL_XATTR_TAPE_API_SITENAME "taperestapi.sitename"
 #define GFAL_XATTR_TAPE_API_URI "taperestapi.uri"
+#define GFAL_XATTR_TAPE_API_VERSION "taperestapi.version"
 
 #ifdef __cplusplus
 }
