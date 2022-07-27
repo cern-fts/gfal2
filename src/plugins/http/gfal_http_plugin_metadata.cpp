@@ -387,7 +387,9 @@ ssize_t gfal_http_getxattrG(plugin_handle plugin_data, const char* url, const ch
 {
     if (strcmp(key, GFAL_XATTR_STATUS) == 0) {
         return gfal_http_status_getxattr(plugin_data, url, (char *) buff, s_buff, err);
-    } else if (strcmp(key, GFAL_XATTR_TAPE_API_VERSION) == 0 || strcmp(key, GFAL_XATTR_TAPE_API_URI) == 0) {
+    } else if ((strcmp(key, GFAL_XATTR_TAPE_API_VERSION) == 0) ||
+              (strcmp(key, GFAL_XATTR_TAPE_API_URI) == 0) ||
+              (strcmp(key, GFAL_XATTR_TAPE_API_SITENAME) == 0)) {
         return gfal_http_getxattr_internal(plugin_data, url, key, (char*)buff, s_buff, err);
     } else {
         gfal2_set_error(err, http_plugin_domain, ENODATA, __func__,
@@ -399,7 +401,7 @@ ssize_t gfal_http_getxattrG(plugin_handle plugin_data, const char* url, const ch
 ssize_t gfal_http_listxattrG(plugin_handle plugin_data, const char* url,
                              char* list, size_t s_list, GError** err)
 {
-    static const char props[] = "taperestapi.version\0taperestapi.uri";
+    static const char props[] = "taperestapi.version\0taperestapi.uri\0taperestapi.sitename";
     static const size_t proplen = sizeof(props);
     size_t len = proplen > s_list ? s_list : proplen;
     memcpy(list, props, len);
