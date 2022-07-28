@@ -113,8 +113,9 @@ namespace tape_rest_api {
 
     // Run through the full response and identify the JSON item corresponding to our path
     // Very inefficient O(N^2) complexity but avoids complicated data structures (tape polling is time permissive)
-    struct json_object* polling_get_item_by_path(struct json_object* response, int nbfiles, const std::string& surl) {
-        for (int i = 0; i < nbfiles; i++) {
+    struct json_object* polling_get_item_by_path(struct json_object* response, const std::string& surl) {
+        const int len = json_object_array_length(response);
+        for (int i = 0; i < len; i++) {
             auto item = json_object_array_get_idx(response, i);
 
             if (item != NULL) {
@@ -608,7 +609,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
 
     for (int i = 0; i < nbfiles; ++i) {
         std::string path = Davix::Uri(urls[i]).getPath();
-        struct json_object* file = tape_rest_api::polling_get_item_by_path(files, nbfiles, path);
+        struct json_object* file = tape_rest_api::polling_get_item_by_path(files, path);
 
         if (file == NULL) {
             error_count++;
@@ -724,7 +725,7 @@ ssize_t gfal_http_status_getxattr(plugin_handle plugin_data, const char* url, ch
     }
 
     std::string path = Uri(url).getPath();
-    struct json_object* file = tape_rest_api::polling_get_item_by_path(json_response, 1, path);
+    struct json_object* file = tape_rest_api::polling_get_item_by_path(json_response, path);
     tape_rest_api::file_locality_t locality = tape_rest_api::get_file_locality(file, path, &tmp_err);
 
     // Free the top JSON object
@@ -796,7 +797,7 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
 
     for (int i = 0; i < nbfiles; ++i) {
         std::string path = Davix::Uri(urls[i]).getPath();
-        struct json_object* file = tape_rest_api::polling_get_item_by_path(json_response, nbfiles, path);
+        struct json_object* file = tape_rest_api::polling_get_item_by_path(json_response, path);
         auto locality = tape_rest_api::get_file_locality(file, path, &tmp_err);
 
         if (tmp_err != NULL) {
