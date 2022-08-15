@@ -11,11 +11,11 @@ Summary:            Grid file access library 2.0
 Group:              Applications/Internet
 License:            ASL 2.0
 URL:                https://dmc-docs.web.cern.ch/dmc-docs/gfal2/gfal2.html
-# git clone --depth=1 --branch master https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.20.0
-# pushd gfal2-2.20.0
-# git checkout v2.20.0
+# git clone --depth=1 --branch master https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.21.0
+# pushd gfal2-2.21.0
+# git checkout v2.21.0
 # popd
-# tar czf gfal2-2.20.0.tar.gz --exclude-vcs gfal2-2.20.0
+# tar czf gfal2-2.21.0.tar.gz --exclude-vcs gfal2-2.21.0
 Source0:            %{name}-%{version}.tar.gz
 
 #main lib dependencies
@@ -27,10 +27,7 @@ BuildRequires:      glib2-devel >= 2.28
 Requires:           glib2 >= 2.28
 BuildRequires:      libattr-devel
 BuildRequires:      openldap-devel
-%if 0%{?rhel} != 9
-# not available in EPEL9 - build without MDS cache support
 BuildRequires:      pugixml-devel
-%endif
 BuildRequires:      libuuid-devel
 #file plugin dependencies
 BuildRequires:      zlib-devel
@@ -120,6 +117,7 @@ The rfio plugin provides the POSIX operations for
 the rfio URLs, the rfio protocol is used on the DPM
 and on the Castor storage systems.
 %endif
+
 
 %package plugin-dcap
 Summary:            Provides the support access for %{name}
