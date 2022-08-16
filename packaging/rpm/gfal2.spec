@@ -8,7 +8,6 @@ Name:               gfal2
 Version:            2.21.0
 Release:            1%{?dist}
 Summary:            Grid file access library 2.0
-Group:              Applications/Internet
 License:            ASL 2.0
 URL:                https://dmc-docs.web.cern.ch/dmc-docs/gfal2/gfal2.html
 # git clone --depth=1 --branch master https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.21.0
@@ -65,7 +64,6 @@ of the %{name} installed plugins.
 
 %package devel
 Summary:            Development files of %{name}
-Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           glib2-devel%{?_isa}
 Requires:           libattr-devel%{?_isa}
@@ -76,7 +74,6 @@ development files for %{name}
 
 %package doc
 Summary:            Documentation for %{name}
-Group:              Documentation
 BuildArch:          noarch
 
 %description doc
@@ -85,7 +82,6 @@ Documentation, Doxygen and examples of %{name}.
 
 %package plugin-file
 Summary:            Provides file support for %{name}
-Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 
 %description plugin-file
@@ -96,7 +92,6 @@ to remote or the other way around.
 %if 0%{?rhel} == 7
 %package plugin-lfc
 Summary:            Provides the lfc support for %{name}
-Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 
 %description plugin-lfc
@@ -107,7 +102,6 @@ for the LFC catalog.
 
 %package plugin-rfio
 Summary:            Provides the rfio support for %{name}
-Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           dpm-libs%{?_isa}
 
@@ -121,7 +115,6 @@ and on the Castor storage systems.
 
 %package plugin-dcap
 Summary:            Provides the support access for %{name}
-Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           dcap-tunnel-gsi%{?_isa}
 
@@ -133,7 +126,6 @@ URLs, the dcap protocol is used on the DCACHE storage system
 
 %package plugin-srm
 Summary:            Provides the srm access for %{name}
-Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           srm-ifce >= 1.23.1
 
@@ -145,7 +137,6 @@ the third party transfer support on the SRM URLs.
 
 %package plugin-gridftp
 Summary:            Provides the gridftp support for %{name}
-Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 
 %description plugin-gridftp
@@ -156,7 +147,6 @@ the third party transfer support on the GSIFTP URLs.
 
 %package plugin-http
 Summary:            Provides the HTTP/DAV support for %{name}
-Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           davix-libs >= 0.8.2
 
@@ -168,7 +158,6 @@ if the storage supports it.
 
 %package plugin-xrootd
 Summary:            Provide xrootd support for GFAL2
-Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 
 %description plugin-xrootd
@@ -179,7 +168,6 @@ xrootd protocol (root://).
 
 %package plugin-sftp
 Summary:            Provide sftp support for GFAL2
-Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 
 %description plugin-sftp
@@ -190,7 +178,6 @@ sftp protocol (sftp://).
 
 %package plugin-mock
 Summary:            Provides a Mock dummy protocol for %{name}
-Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 
 %description plugin-mock
@@ -199,7 +186,6 @@ Provides a dummy mock:// protocol for %{name}.
 
 %package all
 Summary:            Meta package for GFAL 2.0 install
-Group:              Applications/Internet
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-file%{?_isa} = %{version}-%{release}
 %if 0%{?rhel} == 7
@@ -219,7 +205,6 @@ with all the protocol plugins.
 
 %package tests
 Summary:            gfal2 tests
-Group:              Applications/Internet
 Requires:           gfal2-all%{?_isa} = %{version}-%{release}
 Requires:           gfal2-plugin-mock%{?_isa} = %{version}-%{release}
 
