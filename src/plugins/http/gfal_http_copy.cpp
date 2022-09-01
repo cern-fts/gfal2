@@ -490,12 +490,13 @@ struct HttpStreamProvider {
     time_t start, last_update;
     dav_ssize_t read_instant;
     _gfalt_transfer_status perf;
+    GError* stream_err;
 
-    HttpStreamProvider(const char* source, const char* destination,
-            gfal2_context_t context, int source_fd, gfalt_params_t params):
+    HttpStreamProvider(const char *source, const char *destination,
+                       gfal2_context_t context, int source_fd, gfalt_params_t params) :
         source(source), destination(destination),
         context(context), params(params), source_fd(source_fd), start(time(NULL)),
-        last_update(start), read_instant(0)
+        last_update(start), read_instant(0), stream_err(NULL)
     {
         memset(&perf, 0, sizeof(perf));
     }
@@ -538,8 +539,9 @@ static dav_ssize_t gfal_http_streamed_provider(void *userdata,
         }
     }
 
-    if (error)
-        g_error_free(error);
+    if (error) {
+        gfal2_propagate_prefixed_error(&data->stream_err, error, __func__);
+    }
 
     return ret;
 }
@@ -614,11 +616,19 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
     	dest.put(&req_params, std::bind(&gfal_http_streamed_provider,&provider,
         		  std::placeholders::_1, std::placeholders::_2), src_stat.st_size);
 
-    } catch(Davix::DavixException &ex) {
-    	Davix::DavixError* daverr = NULL;
-        ex.toDavixError(&daverr);
-        davix2gliberr(daverr, err, __func__);
-        Davix::DavixError::clearError(&daverr);
+    } catch (Davix::DavixException& ex) {
+        GError* tmp_err = NULL;
+
+        // Propagate the source error first, then the destination error
+        if (provider.stream_err != NULL) {
+            tmp_err = provider.stream_err;
+        } else {
+            tmp_err = g_error_new(http_plugin_domain, ex.code(), "%s", ex.what());
+        }
+
+        gfal2_set_error(err, http_plugin_domain, tmp_err->code, __func__, "%s (%s)",
+                        tmp_err->message, (provider.stream_err) ? "source" : "destination");
+        g_clear_error(&tmp_err);
     }
 
     gfal2_close(context, source_fd, &nested_err);
