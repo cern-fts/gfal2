@@ -60,6 +60,9 @@ public:
                         gfalt_params_t transfer_params,
                         bool push_mode);
 
+    int get_operation_timeout() const;
+    void set_operation_timeout(int timeout);
+
     friend ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, const char* issuer,
                                             gboolean write_access, unsigned validity, const char* const* activities,
                                             char* buff, size_t s_buff, GError** err);

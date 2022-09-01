@@ -742,9 +742,8 @@ void GfalHttpPluginData::get_params_internal(Davix::RequestParams& params, const
         g_strfreev(headers);
     }
 
-    // Timeout
-    struct timespec opTimeout;
-    opTimeout.tv_sec = gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", HTTP_CONFIG_OP_TIMEOUT, 8000);
+    // Operation timeout
+    struct timespec opTimeout{get_operation_timeout()};
     params.setOperationTimeout(&opTimeout);
 }
 
@@ -805,6 +804,18 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davi
 
     get_params_internal(*req_params, uri);
     get_credentials(*req_params, uri, operation);
+}
+
+int GfalHttpPluginData::get_operation_timeout() const
+{
+    int global_timeout = gfal2_get_opt_integer_with_default(handle, CORE_CONFIG_GROUP,
+                                                            CORE_CONFIG_NAMESPACE_TIMEOUT, 300);
+    return gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", HTTP_CONFIG_OP_TIMEOUT, global_timeout);
+}
+
+void GfalHttpPluginData::set_operation_timeout(int timeout)
+{
+    gfal2_set_opt_integer(handle, "HTTP PLUGIN", HTTP_CONFIG_OP_TIMEOUT, timeout, NULL);
 }
 
 

@@ -562,7 +562,23 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
         return -1;
     }
 
+    // Must reset the HTTP OPERATION_TIMEOUT to the transfer timeout
+    bool reset_operation_timeout = is_http_scheme(src);
+    int transfer_timeout = static_cast<int>(gfalt_get_timeout(params, NULL));
+    int previous_timeout = 0;
+
+    if (reset_operation_timeout) {
+        previous_timeout = davix->get_operation_timeout();
+        davix->set_operation_timeout(transfer_timeout);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Source HTTP Open transfer timeout=%d", transfer_timeout);
+    }
+
     int source_fd = gfal2_open(context, src, O_RDONLY, &nested_err);
+
+    if (reset_operation_timeout) {
+        davix->set_operation_timeout(previous_timeout);
+    }
+
     if (source_fd < 0) {
         gfal2_propagate_prefixed_error(err, nested_err, __func__);
         return -1;
@@ -570,11 +586,10 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
 
     Davix::Uri dst_uri(dst);
     Davix::RequestParams req_params;
-
     davix->get_params(&req_params, dst_uri, GfalHttpPluginData::OP::WRITE);
-    //add timeout
-    struct timespec opTimeout;
-    opTimeout.tv_sec = gfalt_get_timeout(params, NULL);
+
+    // Add timeout
+    struct timespec opTimeout{transfer_timeout};
     req_params.setOperationTimeout(&opTimeout);
 
     // Set MD5 header on the PUT
