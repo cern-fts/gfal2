@@ -21,6 +21,7 @@
 #include <davix.hpp>
 #include <copy/davixcopy.hpp>
 #include <status/davixstatusrequest.hpp>
+#include <network/gfal2_network.h>
 #include <unistd.h>
 #include <checksums/checksums.h>
 #include <cstdio>
@@ -693,6 +694,22 @@ void strip_3rd_from_url(const char* url_full, char* url, size_t url_size)
     }
 }
 
+// DMC-1348: DNS resolution mechanism
+static void resolve_url(const gfal2_context_t& context, const char* url, char* url_resolved, size_t url_size) {
+    gboolean resolve_dns = gfal2_get_opt_boolean_with_default(context, CORE_CONFIG_GROUP, RESOLVE_DNS, FALSE);
+
+    if (resolve_dns && is_http_scheme(url)) {
+        char *url_tmp = resolve_dns_helper(url, "Resolving url");
+        if (url_tmp) {
+            g_strlcpy(url_resolved, url_tmp, url_size);
+            free(url_tmp);
+            return;
+        }
+    }
+
+    g_strlcpy(url_resolved, url, url_size);
+}
+
 
 int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         gfalt_params_t params, const char* src_full, const char* dst_full, GError** err)
@@ -705,9 +722,14 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          "%s => %s", src_full, dst_full);
 
     // Determine if urls are 3rd party, and strip the +3rd if they are
+    char stripped_src[GFAL_URL_MAX_LEN], stripped_dst[GFAL_URL_MAX_LEN];
+    strip_3rd_from_url(src_full, stripped_src, sizeof(stripped_src));
+    strip_3rd_from_url(dst_full, stripped_dst, sizeof(stripped_dst));
+
+    // Determine if we need to resolve DNS alias
     char src[GFAL_URL_MAX_LEN], dst[GFAL_URL_MAX_LEN];
-    strip_3rd_from_url(src_full, src, sizeof(src));
-    strip_3rd_from_url(dst_full, dst, sizeof(dst));
+    resolve_url(context, stripped_src, src, sizeof(src));
+    resolve_url(context, stripped_dst, dst, sizeof(dst));
 
     gfal2_log(G_LOG_LEVEL_DEBUG, "Using source: %s", src);
     gfal2_log(G_LOG_LEVEL_DEBUG, "Using destination: %s", dst);
@@ -792,7 +814,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     HttpTransferHosts transferHosts;
 
     // Stop the loop prematurely if streaming is disabled
-    bool streaming_enabled = is_http_streaming_enabled(context, src, dst);
+    bool streaming_enabled = is_http_streaming_enabled(context, stripped_src, stripped_dst);
     if (!streaming_enabled) {
         end_copy_mode = HTTP_COPY_STREAM;
     }
@@ -839,7 +861,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         attempted_mode.emplace_back(CopyModeStr[copy_mode]);
         copy_mode = (CopyMode)((int)copy_mode + 1);
     } while ((copy_mode < end_copy_mode) &&
-             is_http_3rdcopy_fallback_enabled(context, src, dst) &&
+             is_http_3rdcopy_fallback_enabled(context, stripped_src, stripped_dst) &&
              gfal_http_copy_should_fallback(nested_error->code));
 
     if (ret == 0) {

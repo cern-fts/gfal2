@@ -20,6 +20,32 @@
 
 #include "gfal2_network.h"
 #include "gfal_plugins_api.h"
+#include <uri/gfal2_uri.h>
+
+char* resolve_dns_helper(const char* host_uri, const char* msg)
+{
+    char* resolved_str;
+    GError *error = NULL;
+    gfal2_uri *parsed = gfal2_parse_uri(host_uri, &error);
+
+    if (error) {
+        gfal2_log(G_LOG_LEVEL_WARNING, "Failed to parse host uri while resolving DNS alias: %s", host_uri);
+        return NULL;
+    }
+
+    char *resolved = gfal2_resolve_dns_to_hostname(parsed->host);
+
+    if (!resolved) {
+        return NULL;
+    }
+
+    gfal2_log(G_LOG_LEVEL_INFO, "%s: %s => %s", msg, parsed->host, resolved);
+    g_free(parsed->host);
+    parsed->host = resolved;
+    resolved_str = gfal2_join_uri(parsed);
+    gfal2_free_uri(parsed);
+    return resolved_str;
+}
 
 char* gfal2_resolve_dns_to_hostname(const char* dnshost)
 {
@@ -44,7 +70,7 @@ char* gfal2_resolve_dns_to_hostname(const char* dnshost)
             freeaddrinfo(addresses);
         }
 
-        gfal2_log(G_LOG_LEVEL_ERROR, "Could not resolve DNS alias: %s", dnshost);
+        gfal2_log(G_LOG_LEVEL_WARNING, "Could not resolve DNS alias: %s", dnshost);
         return NULL;
     }
 
