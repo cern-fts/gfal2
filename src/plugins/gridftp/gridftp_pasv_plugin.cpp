@@ -60,11 +60,9 @@ static void gfal2_ftp_client_pasv_fire_event(GridFTPSession* session,
         plugin_trigger_event(session->params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
                 GFAL_EVENT_DESTINATION, GFAL_GRIDFTP_PASV_STAGE_QUARK,
                 "%s:%s:%u", hostname, ip, port);
-        if (is_ipv6) {
-            plugin_trigger_event(session->params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
-                GFAL_EVENT_DESTINATION, GFAL_EVENT_IPV6,
-                "%s:%u", ip, port);
-        }
+        GQuark ipevent = (is_ipv6) ? GFAL_EVENT_IPV6 : GFAL_EVENT_IPV4;
+        plugin_trigger_event(session->params, GFAL_GRIDFTP_DOMAIN_GSIFTP,
+                             GFAL_EVENT_DESTINATION, ipevent, "%s:%u", ip, port);
     }
 }
 
