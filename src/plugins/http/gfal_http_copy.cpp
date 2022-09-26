@@ -150,6 +150,34 @@ static bool is_http_scheme(const char* url)
     return false;
 }
 
+/*
+* Get custom storage element configuration option
+*/
+static int get_se_custom_opt_boolean(const gfal2_context_t& context, const char* surl, const char* key) {
+    Davix::Uri uri(surl);
+
+    if (uri.getStatus() != Davix::StatusCode::OK) {
+        return -1;
+    }
+
+    std::string prot = uri.getProtocol();
+
+    if (prot.back() == 's') {
+        prot.pop_back();
+    }
+
+    GError* error = NULL;
+    std::string group = prot + ":" + uri.getHost();
+    std::transform(group.begin(), group.end(), group.begin(), ::toupper);
+    gboolean value = gfal2_get_opt_boolean(context, group.c_str(), key, &error);
+
+    if (error != NULL) {
+        return -1;
+    }
+
+    return value;
+}
+
 static bool is_http_3rdcopy_enabled(gfal2_context_t context)
 {
     return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", TRUE);
@@ -158,33 +186,8 @@ static bool is_http_3rdcopy_enabled(gfal2_context_t context)
 
 bool is_http_streaming_enabled(gfal2_context_t context, const char* src, const char* dst)
 {
-    auto host_streaming = [&context](const char* surl) -> int {
-        Davix::Uri uri(surl);
-
-        if (uri.getStatus() != Davix::StatusCode::OK) {
-            return -1;
-        }
-
-        std::string prot = uri.getProtocol();
-
-        if (prot.back() == 's') {
-            prot.pop_back();
-        }
-
-        GError* error = NULL;
-        std::string group = prot + ":" + uri.getHost();
-        std::transform(group.begin(), group.end(), group.begin(), ::toupper);
-        gboolean streaming_enabled = gfal2_get_opt_boolean(context, group.c_str(), "ENABLE_STREAM_COPY", &error);
-
-        if (error != NULL) {
-            return -1;
-        }
-
-        return streaming_enabled;
-    };
-
-    int src_streaming = host_streaming(src);
-    int dst_streaming = host_streaming(dst);
+    int src_streaming = get_se_custom_opt_boolean(context, src, "ENABLE_STREAM_COPY");
+    int dst_streaming = get_se_custom_opt_boolean(context, dst, "ENABLE_STREAM_COPY");
 
     if (src_streaming > -1 || dst_streaming > -1) {
         return src_streaming && dst_streaming;
@@ -198,11 +201,17 @@ static CopyMode get_default_copy_mode(gfal2_context_t context)
     return get_copy_mode_from_string(gfal2_get_opt_string_with_default(context, "HTTP PLUGIN", "DEFAULT_COPY_MODE", GFAL_TRANSFER_TYPE_PULL));
 }
 
-static bool is_http_3rdcopy_fallback_enabled(gfal2_context_t context)
+bool is_http_3rdcopy_fallback_enabled(gfal2_context_t context, const char* src, const char* dst)
 {
+    int src_streaming = get_se_custom_opt_boolean(context, src, "ENABLE_FALLBACK_TPC_COPY");
+    int dst_streaming = get_se_custom_opt_boolean(context, dst, "ENABLE_FALLBACK_TPC_COPY");
+
+    if (src_streaming > -1 || dst_streaming > -1) {
+        return src_streaming && dst_streaming;
+    }
+
     return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "ENABLE_FALLBACK_TPC_COPY", TRUE);
 }
-
 
 static gboolean gfal_http_copy_should_fallback(int error_code)
 {
@@ -800,7 +809,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         attempted_mode.emplace_back(CopyModeStr[copy_mode]);
         copy_mode = (CopyMode)((int)copy_mode + 1);
     } while ((copy_mode < end_copy_mode) &&
-             is_http_3rdcopy_fallback_enabled(context) &&
+             is_http_3rdcopy_fallback_enabled(context, src, dst) &&
              gfal_http_copy_should_fallback(nested_error->code));
 
     if (ret == 0) {

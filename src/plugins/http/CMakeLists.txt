@@ -17,12 +17,19 @@ if (PLUGIN_HTTP)
     # Build plugin
     file (GLOB src_http "gfal_http_*.cpp")
     add_library (plugin_http MODULE ${src_http})
+    add_library (plugin_http_static STATIC ${src_http})
 
     target_link_libraries(plugin_http gfal2
           gfal2_transfer
           ${DAVIX_LIBRARIES}
 	  ${JSONC_LIBRARIES}
     )
+
+    target_link_libraries(plugin_http_static gfal2
+            gfal2_transfer
+            ${DAVIX_LIBRARIES}
+            ${JSONC_LIBRARIES}
+            )
 
     set_target_properties(plugin_http   PROPERTIES  CLEAN_DIRECT_OUTPUT 1
                                         OUTPUT_NAME "gfal_plugin_http"
