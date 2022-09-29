@@ -1,6 +1,24 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Thu Sep 29 2022 Mihai Patrascoiu <mipatras at cern.ch> - 2.21.1
+###Bug
+- [DMC-1334] - Gfal2 HTTP bring online polling missing files
+
+###New Feature
+- [DMC-1347] - Allow GFAL2 ENABLE_FALLBACK_TPC_COPY to be overridden per SE
+- [DMC-1349] - Report IPv4 transfer event
+
+###Task
+- [DMC-1327] - DMC packages for Centos Stream 9
+- [DMC-1329] - Create "taperestapi.uri" extended attribute in Gfal2 HTTP plugin
+- [DMC-1331] - Create "taperestapi.sitename" extended attribute in Gfal2 HTTP plugin
+- [DMC-1336] - Data Management Clients for Fedora 36
+
+###Improvement
+- [DMC-1339] - HTTP streamed copy should apply the transfer timeout to both source and destination operations
+- [DMC-1340] - Better reporting of errors during HTTP streamed transfers
+
 ## Fri Jul 08 2022 Joao Lopes <batistal at cern.ch> - 2.21.0
 ###Epic
 - [DMC-1301] - Gfal2 Support for HTTP Tape Operations
