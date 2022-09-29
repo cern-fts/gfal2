@@ -20,11 +20,30 @@ else (PUGIXML_FOUND)
 set (TEST_MDS "")
 endif (PUGIXML_FOUND)
 
+if (PLUGIN_HTTP)
+    set(TEST_TOKEN_MAP ./http/test_token_map.cpp)
+    set(TEST_CUSTOM_HTTP_OPTIONS http/test_custom_http_options.cpp)
+    set(HTTP_PLUGIN_LIBRARIES  plugin_http_static)
+
+    include     (CheckLibraryExists)
+    find_package(Davix REQUIRED)
+
+    # Includes
+    include_directories(${DAVIX_INCLUDE_DIR})
+
+else(PLUGIN_HTTP)
+    set(TEST_TOKEN_MAP "")
+    set(TEST_CUSTOM_HTTP_OPTIONS "")
+    set(HTTP_PLUGIN_LIBRARIES "")
+endif (PLUGIN_HTTP)
+
 add_executable(gfal2-unit-tests
     ./cancel/cancel_tests.cpp
     ./config/config_test.cpp
     ./cred/test_cred.cpp
     ./global/global_test.cpp
+    ${TEST_TOKEN_MAP}
+    ${TEST_CUSTOM_HTTP_OPTIONS}
     ${TEST_MDS}
     ./transfer/tests_callbacks.cpp
     ./transfer/tests_params.cpp
@@ -39,7 +58,7 @@ target_include_directories(gfal2-unit-tests PRIVATE
 )
 
 target_link_libraries(gfal2-unit-tests
-    ${GFAL2_LIBRARIES} ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} gfal2_test_shared
+    ${GFAL2_LIBRARIES} ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} gfal2_test_shared ${HTTP_PLUGIN_LIBRARIES}
 )
 
 install(TARGETS gfal2-unit-tests

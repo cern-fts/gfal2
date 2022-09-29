@@ -113,8 +113,9 @@ namespace tape_rest_api {
 
     // Run through the full response and identify the JSON item corresponding to our path
     // Very inefficient O(N^2) complexity but avoids complicated data structures (tape polling is time permissive)
-    struct json_object* polling_get_item_by_path(struct json_object* response, int nbfiles, const std::string& surl) {
-        for (int i = 0; i < nbfiles; i++) {
+    struct json_object* polling_get_item_by_path(struct json_object* response, const std::string& surl) {
+        const int len = json_object_array_length(response);
+        for (int i = 0; i < len; i++) {
             auto item = json_object_array_get_idx(response, i);
 
             if (item != NULL) {
@@ -245,8 +246,8 @@ namespace tape_rest_api {
     }
 }
 
-ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
-                                       char* buff, size_t s_buff, GError** err)
+ssize_t gfal_http_getxattr_internal(plugin_handle plugin_data, const char* url, const char *key,
+                                    char* buff, size_t s_buff, GError** err)
 {
     GError* tmp_err = NULL;
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
@@ -257,18 +258,18 @@ ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* ur
         return -1;
     }
 
-    // Construct /.well-known endpoint
-    std::stringstream config_endpoint;
-    config_endpoint << uri.getProtocol() << "://" << uri.getHost();
+    // Construct remote storage endpoint
+    std::stringstream endpoint;
+    endpoint << uri.getProtocol() << "://" << uri.getHost();
 
     if (uri.getPort()) {
-        config_endpoint << ":" << uri.getPort();
+        endpoint << ":" << uri.getPort();
     }
-    config_endpoint << "/.well-known/wlcg-tape-rest-api";
-    auto it = davix->tape_endpoint_map.find(config_endpoint.str());
+
+    auto it = davix->tape_endpoint_map.find(endpoint.str());
 
     if (it == davix->tape_endpoint_map.end()) {
-        davix->retrieve_and_store_tape_endpoint(config_endpoint.str(), &tmp_err);
+        davix->retrieve_and_store_tape_endpoint(endpoint.str(), &tmp_err);
 
         if (tmp_err != NULL) {
             *err = g_error_copy(tmp_err);
@@ -276,10 +277,20 @@ ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* ur
             return -1;
         }
 
-        it = davix->tape_endpoint_map.find(config_endpoint.str());
+        it = davix->tape_endpoint_map.find(endpoint.str());
     }
 
-    strncpy(buff, it->second.version.c_str(), s_buff);
+    if (strcmp(key, GFAL_XATTR_TAPE_API_VERSION) == 0) {
+        strncpy(buff, it->second.version.c_str(), s_buff);
+    } else if (strcmp(key, GFAL_XATTR_TAPE_API_URI) == 0) {
+        strncpy(buff, it->second.uri.c_str(), s_buff);
+    } else if (strcmp(key, GFAL_XATTR_TAPE_API_SITENAME) == 0) {
+        strncpy(buff, it->second.sitename.c_str(), s_buff);
+    } else {
+        gfal2_set_error(err, http_plugin_domain, ENODATA, __func__,
+                        "Failed to get the xattr \"%s\" (No data available)", key);
+        return -1;
+    }
     return strnlen(buff, s_buff);
 }
 
@@ -598,7 +609,7 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
 
     for (int i = 0; i < nbfiles; ++i) {
         std::string path = Davix::Uri(urls[i]).getPath();
-        struct json_object* file = tape_rest_api::polling_get_item_by_path(files, nbfiles, path);
+        struct json_object* file = tape_rest_api::polling_get_item_by_path(files, path);
 
         if (file == NULL) {
             error_count++;
@@ -714,7 +725,7 @@ ssize_t gfal_http_status_getxattr(plugin_handle plugin_data, const char* url, ch
     }
 
     std::string path = Uri(url).getPath();
-    struct json_object* file = tape_rest_api::polling_get_item_by_path(json_response, 1, path);
+    struct json_object* file = tape_rest_api::polling_get_item_by_path(json_response, path);
     tape_rest_api::file_locality_t locality = tape_rest_api::get_file_locality(file, path, &tmp_err);
 
     // Free the top JSON object
@@ -786,7 +797,7 @@ int gfal_http_archive_poll_list(plugin_handle plugin_data, int nbfiles, const ch
 
     for (int i = 0; i < nbfiles; ++i) {
         std::string path = Davix::Uri(urls[i]).getPath();
-        struct json_object* file = tape_rest_api::polling_get_item_by_path(json_response, nbfiles, path);
+        struct json_object* file = tape_rest_api::polling_get_item_by_path(json_response, path);
         auto locality = tape_rest_api::get_file_locality(file, path, &tmp_err);
 
         if (tmp_err != NULL) {

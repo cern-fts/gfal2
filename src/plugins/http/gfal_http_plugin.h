@@ -60,6 +60,9 @@ public:
                         gfalt_params_t transfer_params,
                         bool push_mode);
 
+    int get_operation_timeout() const;
+    void set_operation_timeout(int timeout);
+
     friend ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, const char* issuer,
                                             gboolean write_access, unsigned validity, const char* const* activities,
                                             char* buff, size_t s_buff, GError** err);
@@ -75,12 +78,13 @@ public:
     friend std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method,
                                                         GError** err);
 
-    friend ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
-                                                  char* buff, size_t s_buff, GError** err);
+    friend ssize_t gfal_http_getxattr_internal(plugin_handle plugin_data, const char* url, const char *key,
+                                               char* buff, size_t s_buff, GError** err);
 
 private:
     /// Tape REST API endpoint info struct
     typedef struct tape_endpoint_info {
+        std::string sitename;
         std::string uri;
         std::string version;
 
@@ -129,10 +133,10 @@ private:
     char* retrieve_and_store_se_token(const Davix::Uri& uri, const OP& operation, unsigned validity);
 
     // Discover tape endpoint and cache it
-    // @param config_endpoint the well-known endpoint of the Tape REST API
+    // @param endpoint the SE, defined as protocol://host
     // @param err error handle
     // @return the tape endpoint
-    tape_endpoint_info_t retrieve_and_store_tape_endpoint(const std::string& config_endpoint, GError** err);
+    tape_endpoint_info_t retrieve_and_store_tape_endpoint(const std::string& endpoint, GError** err);
 
     // Obtain request parameters + credentials for an AWS endpoint
     void get_aws_params(Davix::RequestParams& params, const Davix::Uri& uri);
@@ -173,6 +177,9 @@ int davix2errno(Davix::StatusCode::Code code);
 
 // Returns whether HTTP streaming is enabled for the involved Storage Endpoints
 bool is_http_streaming_enabled(gfal2_context_t context, const char* src, const char* dst);
+
+// Returns whether HTTP 3rd party copy fallback is enabled for the involved Storage Endpoints
+bool is_http_3rdcopy_fallback_enabled(gfal2_context_t context, const char* src, const char* dst);
 
 // Removes +3rd from the url, if there
 void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);
@@ -284,9 +291,9 @@ int gfal_http_bring_online_list(plugin_handle plugin_data, int nbfiles, const ch
 int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const char* const* urls, const char* const* metadata,
                                    time_t pintime, time_t timeout, char* token, size_t tsize, int async, GError** errors);
 
-// Get tape REST API version
-ssize_t gfal_http_get_tape_api_version(plugin_handle plugin_data, const char* url, const char *key,
-                                       char* buff, size_t s_buff, GError** err);
+// Get the extended attribute in "key" from a remote storage endpoint
+ssize_t gfal_http_getxattr_internal(plugin_handle plugin_data, const char* url, const char *key,
+                                    char* buff, size_t s_buff, GError** err);
 
 // Get "user.status" extended attribute
 ssize_t gfal_http_status_getxattr(plugin_handle plugin_data, const char* url, char* buff, size_t s_buff,

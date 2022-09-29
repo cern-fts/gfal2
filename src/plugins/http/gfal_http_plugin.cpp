@@ -238,9 +238,10 @@ char* GfalHttpPluginData::retrieve_and_store_se_token(const Davix::Uri& uri, con
 }
 
 GfalHttpPluginData::tape_endpoint_info_t
-GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& config_endpoint, GError** err)
+GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& endpoint, GError** err)
 {
     // Construct and send "GET /.well-known/wlcg-tape-rest-api" request
+    std::string config_endpoint = endpoint + "/.well-known/wlcg-tape-rest-api";
     Davix::DavixError* reqerr = NULL;
     Davix::Uri config_uri(config_endpoint);
     Davix::RequestParams params;
@@ -270,6 +271,16 @@ GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& config_e
         return tape_endpoint_info{};
     }
 
+    // Check if "sitename" attribute exists
+    struct json_object* sitename_obj = 0;
+    bool foundSitename = json_object_object_get_ex(json_response, "sitename", &sitename_obj);
+    if (!foundSitename) {
+        gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
+                        "[Tape REST API] No sitename in response from /.well-known/wlcg-tape-rest-api");
+        return tape_endpoint_info{};
+    }
+    std::string sitename = json_object_get_string(sitename_obj);
+
     // Check if "endpoints" attribute exists
     struct json_object* endpoints = 0;
     bool foundEndpoints = json_object_object_get_ex(json_response, "endpoints", &endpoints);
@@ -298,7 +309,7 @@ GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& config_e
     // Iterate over the endpoints list and find v0 or v1
     const int len = json_object_array_length(endpoints);
     int maxVersion = 0;
-    std::string tape_uri;
+    std::string tape_endpoint_uri;
     std::string tape_endpoint_version;
 
     for (int i = 0; i < len; ++i) {
@@ -320,7 +331,7 @@ GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& config_e
             bool foundUri = json_object_object_get_ex(endpoint_obj, "uri", &uri_obj);
             if (foundUri) {
                 if (parsedVersion >= maxVersion && parsedVersion <= 1) {
-                    tape_uri = json_object_get_string(uri_obj);
+                    tape_endpoint_uri = json_object_get_string(uri_obj);
                     tape_endpoint_version = version_str;
                     maxVersion = parsedVersion;
                 }
@@ -331,15 +342,15 @@ GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& config_e
     // Free the JSON object
     json_object_put(json_response);
 
-    if (tape_uri.empty()) {
+    if (tape_endpoint_uri.empty()) {
         gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__,
                         "[Tape REST API] Failed to find v0 or v1 metadata endpoint in response"
                         " from /.well-known/wlcg-tape-rest-api");
         return tape_endpoint_info{};
     }
 
-    tape_endpoint_map[config_endpoint] = tape_endpoint_info{tape_uri, tape_endpoint_version};
-    return tape_endpoint_map[config_endpoint];
+    tape_endpoint_map[endpoint] = tape_endpoint_info{sitename, tape_endpoint_uri, tape_endpoint_version};
+    return tape_endpoint_map[endpoint];
 }
 
 std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method, GError** err)
@@ -351,41 +362,40 @@ std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const ch
         return NULL;
     }
 
-    // Construct /.well-known endpoint
-    std::stringstream config_endpoint;
-    config_endpoint << uri.getProtocol() << "://" << uri.getHost();
+    // Construct remote storage endpoint
+    std::stringstream endpoint;
+    endpoint << uri.getProtocol() << "://" << uri.getHost();
 
     if (uri.getPort()) {
-        config_endpoint << ":" << uri.getPort();
+        endpoint << ":" << uri.getPort();
     }
-    config_endpoint << "/.well-known/wlcg-tape-rest-api";
 
-    auto it = davix->tape_endpoint_map.find(config_endpoint.str());
+    auto it = davix->tape_endpoint_map.find(endpoint.str());
 
     if (it == davix->tape_endpoint_map.end()) {
-        davix->retrieve_and_store_tape_endpoint(config_endpoint.str(), err);
+        davix->retrieve_and_store_tape_endpoint(endpoint.str(), err);
 
         if (*err != NULL) {
             return "";
         }
 
-        it = davix->tape_endpoint_map.find(config_endpoint.str());
+        it = davix->tape_endpoint_map.find(endpoint.str());
     }
 
-    std::stringstream endpoint;
-    endpoint << it->second.uri;
+    std::stringstream tape_endpoint;
+    tape_endpoint << it->second.uri;
 
-    if (endpoint.str().back() != '/') {
-        endpoint << "/";
+    if (tape_endpoint.str().back() != '/') {
+        tape_endpoint << "/";
     }
 
     if (method[0] == '/') {
-        endpoint.seekp(-1, std::ios_base::end);
+        tape_endpoint.seekp(-1, std::ios_base::end);
     }
 
-    endpoint << method;
+    tape_endpoint << method;
 
-    return endpoint.str();
+    return tape_endpoint.str();
 }
 
 bool GfalHttpPluginData::get_token(Davix::RequestParams& params, const Davix::Uri& uri,
@@ -732,9 +742,8 @@ void GfalHttpPluginData::get_params_internal(Davix::RequestParams& params, const
         g_strfreev(headers);
     }
 
-    // Timeout
-    struct timespec opTimeout;
-    opTimeout.tv_sec = gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", HTTP_CONFIG_OP_TIMEOUT, 8000);
+    // Operation timeout
+    struct timespec opTimeout{get_operation_timeout()};
     params.setOperationTimeout(&opTimeout);
 }
 
@@ -795,6 +804,18 @@ void GfalHttpPluginData::get_params(Davix::RequestParams* req_params, const Davi
 
     get_params_internal(*req_params, uri);
     get_credentials(*req_params, uri, operation);
+}
+
+int GfalHttpPluginData::get_operation_timeout() const
+{
+    int global_timeout = gfal2_get_opt_integer_with_default(handle, CORE_CONFIG_GROUP,
+                                                            CORE_CONFIG_NAMESPACE_TIMEOUT, 300);
+    return gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", HTTP_CONFIG_OP_TIMEOUT, global_timeout);
+}
+
+void GfalHttpPluginData::set_operation_timeout(int timeout)
+{
+    gfal2_set_opt_integer(handle, "HTTP PLUGIN", HTTP_CONFIG_OP_TIMEOUT, timeout, NULL);
 }
 
 

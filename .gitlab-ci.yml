@@ -33,12 +33,16 @@ centos8:
   image: gitlab-registry.cern.ch/linuxsupport/c8-base
   <<: *build-template_definition
 
-fedora-34:
-  image: fedora:34
+cs9:
+  image: gitlab-registry.cern.ch/linuxsupport/cs9-base
   <<: *build-template_definition
 
 fedora-35:
   image: fedora:35
+  <<: *build-template_definition
+
+fedora-36:
+  image: fedora:36
   <<: *build-template_definition
 
 fedora-rawhide:
@@ -82,16 +86,24 @@ centos8-test:
     - dnf install -y epel-release
   <<: *test-template_definition
 
-fedora-34-test:
-  image: fedora:34
+cs9-test:
+  image: gitlab-registry.cern.ch/linuxsupport/cs9-base
   needs:
-    - job: fedora-34
+    - job: cs9
+  before_script:
+    - dnf install -y epel-release
   <<: *test-template_definition
 
 fedora-35-test:
   image: fedora:35
   needs:
     - job: fedora-35
+  <<: *test-template_definition
+
+fedora-36-test:
+  image: fedora:36
+  needs:
+    - job: fedora-36
   <<: *test-template_definition
 
 #--------------------------
@@ -104,8 +116,9 @@ rpms:
   dependencies:
     - cc7
     - centos8
-    - fedora-34
+    - cs9
     - fedora-35
+    - fedora-36
     - fedora-rawhide
   script:
     - yum install -y openssh-clients
@@ -113,7 +126,7 @@ rpms:
     - ssh ${SSH_OPTIONS} ${repo_user}@${SSH_HOST} "mkdir -p ${TMP_REPO_PATH}"
     - scp ${SSH_OPTIONS} packaging/gfal2-repo-manager.py ${repo_user}@${SSH_HOST}:${TMP_REPO_PATH}
     - |
-      for platform in cc7 centos8 fedora-34 fedora-35 fedora-rawhide; do
+      for platform in cc7 centos8 cs9 fedora-35 fedora-36 fedora-rawhide; do
         if [[ "${platform}" == "fedora-rawhide" ]] && [[ ! -d ${platform} ]] ; then
           echo "Skipping ${platform} packages..." ;
           continue ;
@@ -135,20 +148,3 @@ rpms:
     - if: '$CI_COMMIT_REF_NAME != "develop" && $CI_COMMIT_TAG == null'
       when: manual
   retry: 2
-
-publish-production:
-  stage: publish
-  image: gitlab-registry.cern.ch/eos/gitlab-eos/cc7:latest
-  script:
-    - yum install -y python sssd-client sudo createrepo
-    - automount
-    - cat "$repo_passwd" | kinit "$repo_user"
-    - eosfusebind
-    - packaging/syncrepo --base-origin /eos/project/d/dmc/www/repos/rc --base-dest /eos/project/d/dmc/www/repos/ '*.rpm'
-    - sleep 60
-  tags:
-    - docker-privileged
-  retry: 2
-  rules:
-    - if: $CI_COMMIT_TAG != null
-      when: manual

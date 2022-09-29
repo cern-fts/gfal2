@@ -150,6 +150,34 @@ static bool is_http_scheme(const char* url)
     return false;
 }
 
+/*
+* Get custom storage element configuration option
+*/
+static int get_se_custom_opt_boolean(const gfal2_context_t& context, const char* surl, const char* key) {
+    Davix::Uri uri(surl);
+
+    if (uri.getStatus() != Davix::StatusCode::OK) {
+        return -1;
+    }
+
+    std::string prot = uri.getProtocol();
+
+    if (prot.back() == 's') {
+        prot.pop_back();
+    }
+
+    GError* error = NULL;
+    std::string group = prot + ":" + uri.getHost();
+    std::transform(group.begin(), group.end(), group.begin(), ::toupper);
+    gboolean value = gfal2_get_opt_boolean(context, group.c_str(), key, &error);
+
+    if (error != NULL) {
+        return -1;
+    }
+
+    return value;
+}
+
 static bool is_http_3rdcopy_enabled(gfal2_context_t context)
 {
     return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", TRUE);
@@ -158,33 +186,8 @@ static bool is_http_3rdcopy_enabled(gfal2_context_t context)
 
 bool is_http_streaming_enabled(gfal2_context_t context, const char* src, const char* dst)
 {
-    auto host_streaming = [&context](const char* surl) -> int {
-        Davix::Uri uri(surl);
-
-        if (uri.getStatus() != Davix::StatusCode::OK) {
-            return -1;
-        }
-
-        std::string prot = uri.getProtocol();
-
-        if (prot.back() == 's') {
-            prot.pop_back();
-        }
-
-        GError* error = NULL;
-        std::string group = prot + ":" + uri.getHost();
-        std::transform(group.begin(), group.end(), group.begin(), ::toupper);
-        gboolean streaming_enabled = gfal2_get_opt_boolean(context, group.c_str(), "ENABLE_STREAM_COPY", &error);
-
-        if (error != NULL) {
-            return -1;
-        }
-
-        return streaming_enabled;
-    };
-
-    int src_streaming = host_streaming(src);
-    int dst_streaming = host_streaming(dst);
+    int src_streaming = get_se_custom_opt_boolean(context, src, "ENABLE_STREAM_COPY");
+    int dst_streaming = get_se_custom_opt_boolean(context, dst, "ENABLE_STREAM_COPY");
 
     if (src_streaming > -1 || dst_streaming > -1) {
         return src_streaming && dst_streaming;
@@ -198,11 +201,17 @@ static CopyMode get_default_copy_mode(gfal2_context_t context)
     return get_copy_mode_from_string(gfal2_get_opt_string_with_default(context, "HTTP PLUGIN", "DEFAULT_COPY_MODE", GFAL_TRANSFER_TYPE_PULL));
 }
 
-static bool is_http_3rdcopy_fallback_enabled(gfal2_context_t context)
+bool is_http_3rdcopy_fallback_enabled(gfal2_context_t context, const char* src, const char* dst)
 {
+    int src_streaming = get_se_custom_opt_boolean(context, src, "ENABLE_FALLBACK_TPC_COPY");
+    int dst_streaming = get_se_custom_opt_boolean(context, dst, "ENABLE_FALLBACK_TPC_COPY");
+
+    if (src_streaming > -1 || dst_streaming > -1) {
+        return src_streaming && dst_streaming;
+    }
+
     return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "ENABLE_FALLBACK_TPC_COPY", TRUE);
 }
-
 
 static gboolean gfal_http_copy_should_fallback(int error_code)
 {
@@ -337,9 +346,7 @@ static bool gfal_http_cancellationcopy_callback(void* data)
 static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfData, void* data)
 {
     PerfCallbackData* pdata = static_cast<PerfCallbackData*>(data);
-    static int callCount = 0;
-
-    callCount++;
+    static int ipevent_sent = false;
 
     if (pdata)
     {
@@ -350,10 +357,11 @@ static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfDat
         status.instant_baudrate = static_cast<size_t>(perfData.diffTransfer());
         status.transfer_time    = perfData.absElapsed();
 
-        if ((callCount == 1) && (perfData.ipflag == Davix::IPv6)) {
+        if ((!ipevent_sent) && (perfData.ipflag != Davix::undefined)) {
+            GQuark ipevent = (perfData.ipflag == Davix::IPv6) ? GFAL_EVENT_IPV6 : GFAL_EVENT_IPV4;
             plugin_trigger_event(pdata->params, http_plugin_domain,
-                                 GFAL_EVENT_DESTINATION, GFAL_EVENT_IPV6,
-                                 "TRUE");
+                                 GFAL_EVENT_DESTINATION, ipevent, "TRUE");
+            ipevent_sent = true;
         }
         plugin_trigger_monitor(pdata->params, &status, pdata->source.c_str(), pdata->destination.c_str());
     }
@@ -490,12 +498,13 @@ struct HttpStreamProvider {
     time_t start, last_update;
     dav_ssize_t read_instant;
     _gfalt_transfer_status perf;
+    GError* stream_err;
 
-    HttpStreamProvider(const char* source, const char* destination,
-            gfal2_context_t context, int source_fd, gfalt_params_t params):
+    HttpStreamProvider(const char *source, const char *destination,
+                       gfal2_context_t context, int source_fd, gfalt_params_t params) :
         source(source), destination(destination),
         context(context), params(params), source_fd(source_fd), start(time(NULL)),
-        last_update(start), read_instant(0)
+        last_update(start), read_instant(0), stream_err(NULL)
     {
         memset(&perf, 0, sizeof(perf));
     }
@@ -538,8 +547,9 @@ static dav_ssize_t gfal_http_streamed_provider(void *userdata,
         }
     }
 
-    if (error)
-        g_error_free(error);
+    if (error) {
+        gfal2_propagate_prefixed_error(&data->stream_err, error, __func__);
+    }
 
     return ret;
 }
@@ -562,7 +572,23 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
         return -1;
     }
 
+    // Must reset the HTTP OPERATION_TIMEOUT to the transfer timeout
+    bool reset_operation_timeout = is_http_scheme(src);
+    int transfer_timeout = static_cast<int>(gfalt_get_timeout(params, NULL));
+    int previous_timeout = 0;
+
+    if (reset_operation_timeout) {
+        previous_timeout = davix->get_operation_timeout();
+        davix->set_operation_timeout(transfer_timeout);
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Source HTTP Open transfer timeout=%d", transfer_timeout);
+    }
+
     int source_fd = gfal2_open(context, src, O_RDONLY, &nested_err);
+
+    if (reset_operation_timeout) {
+        davix->set_operation_timeout(previous_timeout);
+    }
+
     if (source_fd < 0) {
         gfal2_propagate_prefixed_error(err, nested_err, __func__);
         return -1;
@@ -570,11 +596,10 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
 
     Davix::Uri dst_uri(dst);
     Davix::RequestParams req_params;
-
     davix->get_params(&req_params, dst_uri, GfalHttpPluginData::OP::WRITE);
-    //add timeout
-    struct timespec opTimeout;
-    opTimeout.tv_sec = gfalt_get_timeout(params, NULL);
+
+    // Add timeout
+    struct timespec opTimeout{transfer_timeout};
     req_params.setOperationTimeout(&opTimeout);
 
     // Set MD5 header on the PUT
@@ -599,11 +624,19 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
     	dest.put(&req_params, std::bind(&gfal_http_streamed_provider,&provider,
         		  std::placeholders::_1, std::placeholders::_2), src_stat.st_size);
 
-    } catch(Davix::DavixException &ex) {
-    	Davix::DavixError* daverr = NULL;
-        ex.toDavixError(&daverr);
-        davix2gliberr(daverr, err, __func__);
-        Davix::DavixError::clearError(&daverr);
+    } catch (Davix::DavixException& ex) {
+        GError* tmp_err = NULL;
+
+        // Propagate the source error first, then the destination error
+        if (provider.stream_err != NULL) {
+            tmp_err = provider.stream_err;
+        } else {
+            tmp_err = g_error_new(http_plugin_domain, ex.code(), "%s", ex.what());
+        }
+
+        gfal2_set_error(err, http_plugin_domain, tmp_err->code, __func__, "%s (%s)",
+                        tmp_err->message, (provider.stream_err) ? "source" : "destination");
+        g_clear_error(&tmp_err);
     }
 
     gfal2_close(context, source_fd, &nested_err);
@@ -776,7 +809,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         attempted_mode.emplace_back(CopyModeStr[copy_mode]);
         copy_mode = (CopyMode)((int)copy_mode + 1);
     } while ((copy_mode < end_copy_mode) &&
-             is_http_3rdcopy_fallback_enabled(context) &&
+             is_http_3rdcopy_fallback_enabled(context, src, dst) &&
              gfal_http_copy_should_fallback(nested_error->code));
 
     if (ret == 0) {

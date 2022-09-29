@@ -42,6 +42,7 @@ GQuark GFAL_EVENT_LIST_ENTER;
 GQuark GFAL_EVENT_LIST_ITEM;
 GQuark GFAL_EVENT_LIST_EXIT;
 GQuark GFAL_EVENT_TRANSFER_TYPE;
+GQuark GFAL_EVENT_IPV4;
 GQuark GFAL_EVENT_IPV6;
 GQuark GFAL_EVENT_EVICT;
 
@@ -63,6 +64,7 @@ static void init_event_quarks() {
     GFAL_EVENT_LIST_ITEM = g_quark_from_static_string("LIST:ITEM");
     GFAL_EVENT_LIST_EXIT = g_quark_from_static_string("LIST:EXIT");
     GFAL_EVENT_TRANSFER_TYPE = g_quark_from_static_string("TRANSFER:TYPE");
+    GFAL_EVENT_IPV4 = g_quark_from_static_string("IPV4");
     GFAL_EVENT_IPV6 = g_quark_from_static_string("IPV6");
     GFAL_EVENT_EVICT = g_quark_from_static_string("EVICT");
 }
