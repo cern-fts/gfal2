@@ -172,6 +172,7 @@ static int get_se_custom_opt_boolean(const gfal2_context_t& context, const char*
     gboolean value = gfal2_get_opt_boolean(context, group.c_str(), key, &error);
 
     if (error != NULL) {
+        g_error_free(error);
         return -1;
     }
 
