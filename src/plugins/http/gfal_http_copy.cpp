@@ -199,7 +199,10 @@ bool is_http_streaming_enabled(gfal2_context_t context, const char* src, const c
 
 static CopyMode get_default_copy_mode(gfal2_context_t context)
 {
-    return get_copy_mode_from_string(gfal2_get_opt_string_with_default(context, "HTTP PLUGIN", "DEFAULT_COPY_MODE", GFAL_TRANSFER_TYPE_PULL));
+    gchar* copy_mode_str = gfal2_get_opt_string_with_default(context, "HTTP PLUGIN", "DEFAULT_COPY_MODE", GFAL_TRANSFER_TYPE_PULL);
+    CopyMode copy_mode = get_copy_mode_from_string(copy_mode_str);
+    g_free(copy_mode_str);
+    return copy_mode;
 }
 
 bool is_http_3rdcopy_fallback_enabled(gfal2_context_t context, const char* src, const char* dst)
