@@ -179,8 +179,15 @@ static int get_se_custom_opt_boolean(const gfal2_context_t& context, const char*
     return value;
 }
 
-static bool is_http_3rdcopy_enabled(gfal2_context_t context)
+bool is_http_3rdcopy_enabled(gfal2_context_t context, const char* src, const char* dst)
 {
+    int src_remote_copy = get_se_custom_opt_boolean(context, src, "ENABLE_REMOTE_COPY");
+    int dst_remote_copy = get_se_custom_opt_boolean(context, dst, "ENABLE_REMOTE_COPY");
+
+    if (src_remote_copy > -1 || dst_remote_copy > -1) {
+        return src_remote_copy && dst_remote_copy;
+    }
+
     return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", TRUE);
 }
 
@@ -757,7 +764,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     bool only_streaming = false;
     // If source is not even http, go straight to streamed
     // or if third party copy is disabled, go straight to streamed
-    if (!is_http_scheme(src) || !is_http_3rdcopy_enabled(context)) {
+    if (!is_http_scheme(src) || !is_http_3rdcopy_enabled(context, src, dst)) {
         copy_mode = HTTP_COPY_STREAM;
         only_streaming = true;
     }
