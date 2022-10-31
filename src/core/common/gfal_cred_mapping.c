@@ -17,7 +17,7 @@
 #include <gfal_api.h>
 #include <string.h>
 #include "gfal_handle.h"
-
+#include <ctype.h>
 
 typedef struct {
     size_t prefix_len;
@@ -141,6 +141,8 @@ char *gfal2_cred_get(gfal2_context_t handle, const char *type, const char *url, 
     }
     else if (strcmp(type, GFAL_CRED_BEARER) == 0) {
         return gfal2_get_opt_string_with_default(handle, "BEARER", "TOKEN", NULL);
+    } else if (strcmp(type, GFAL_CRED_BEARER_FILE) == 0) {
+        return gfal2_get_opt_string_with_default(handle, "BEARER", "TOKEN_FILE", NULL);
     }
     return NULL;
 }
@@ -199,4 +201,58 @@ void gfal2_cred_foreach(gfal2_context_t handle, gfal_cred_func_t callback, void 
 {
     callback_data data = {callback, user_data};
     g_list_foreach(handle->cred_mapping, foreach_callback_wrapper, &data);
+}
+
+
+int gfal2_cred_get_token_from_file(const char *token_file, char **value)
+{
+    FILE *fp = fopen(token_file, "r");
+    if (!fp) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Token file %s is not valid: %s", token_file, strerror(errno));
+        return -1;
+    }
+    char *line = NULL;
+    size_t len = 0;
+    int nread;
+    // We will try the token as long as its not commented out and non-empty.
+    while ((nread = getline(&line, &len, fp)) != -1) {
+        int found_nonspace = 0;
+        size_t idx;
+        for (idx = 0; idx < nread; idx++) {
+            if (line[idx] == '#') break; // ignore commented-out lines
+            if (line[idx] && !isspace(line[idx])) {
+                found_nonspace = 1;
+                break;
+            }
+        }
+        if (found_nonspace) {
+            fclose(fp);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Found a token in file %s", token_file);
+            if (value) {
+                *value = (char *)malloc(nread + 1);
+                if (!value) {
+                    gfal2_log(G_LOG_LEVEL_ERROR, "Failed to allocate memory for token copy");
+                    return -1;
+                }
+                strncpy(*value, line + idx, nread);
+                (*value)[nread] = '\0';
+                size_t idx2;
+                for (idx2 = 0; idx2 < nread - idx; idx2++)
+                {
+                    if (!(*value)[idx2] || isspace((*value)[idx2])) {
+                        (*value)[idx2] = '\0';
+                        break;
+                    }
+                }
+            }
+            return 0;
+        }
+    }
+    if (!feof(fp) && (nread == -1)) {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Error while reading token file %s: %s", token_file, strerror(errno));
+    } else {
+        gfal2_log(G_LOG_LEVEL_DEBUG, "Failed to find a token in file %s", token_file);
+    }
+    fclose(fp);
+    return -1;
 }

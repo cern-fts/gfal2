@@ -75,14 +75,68 @@ static void gfal_setBearerToken(gfal2_context_t handle, const char *token)
     gfal2_log(G_LOG_LEVEL_DEBUG, "Using BEARER token credentials from the env");
 }
 
+static void gfal_setBearerTokenFile(gfal2_context_t handle, const char *token_file)
+{
+    GError *error = NULL;
+    gfal2_set_opt_string(handle, "BEARER", "TOKEN_FILE", token_file, &error);
+    g_clear_error(&error);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Using BEARER token credentials from file %s", token_file);
+}
+
 // Setup default credentials depending on the environment
 static void gfal_initCredentialLocation(gfal2_context_t handle)
 {
-    //check first if BEARER is on the env
+    // Bearer token discovery is done according to:
+    //   https://github.com/WLCG-AuthZ-WG/bearer-token-discovery/blob/master/specification.md
+    //
+    // check first if BEARER is on the env
     const char *token = getenv("BEARER_TOKEN");
     if (token != NULL) {
         gfal_setBearerToken(handle, token);
         return;
+    }
+    // next, look to BEARER_TOKEN_FILE
+    const char *token_file = getenv("BEARER_TOKEN_FILE");
+    if (token_file && (0 == gfal2_cred_get_token_from_file(token_file, NULL))) {
+        gfal_setBearerTokenFile(handle, token_file);
+        return;
+    }
+    // next, check in the $XDG_RUNTIME_DIR
+    const char *runtime_dir = getenv("XDG_RUNTIME_DIR");
+    if (runtime_dir) {
+        // filename is of the form:
+        //    $XDG_RUNTIME_DIR/bt_u$ID
+        // Assume that $ID is max 20 digits.
+        size_t runtime_dir_len = strlen(runtime_dir);
+        char *token_file_full = (char*)malloc(runtime_dir_len + 5 + 20 + 1);
+        if (!token_file_full) {
+            gfal2_log(G_LOG_LEVEL_ERROR, "Failed to allocate memory");
+            return;
+        }
+        sprintf(token_file_full, "%s/bt_u%u", runtime_dir, geteuid());
+        if (0 == gfal2_cred_get_token_from_file(token_file_full, NULL)) {
+            gfal_setBearerTokenFile(handle, token_file_full);
+            free(token_file_full);
+            return;
+        }
+        free(token_file_full);
+    }
+    // finally, check in /tmp for a bearer token.
+    {
+        // filename is of the form:
+        //    /tmp/bt_u$ID
+        char *token_file_full = (char*)malloc(9 + 20 + 1);
+        if (!token_file_full) {
+            gfal2_log(G_LOG_LEVEL_ERROR, "Failed to allocate memory");
+            return;
+        }
+        sprintf(token_file_full, "/tmp/bt_u%u", geteuid());
+        if (0 == gfal2_cred_get_token_from_file(token_file_full, NULL)) {
+            gfal_setBearerTokenFile(handle, token_file_full);
+            free(token_file_full);
+            return;
+        }
+        free(token_file_full);
     }
     // X509_USER_PROXY
     const char *proxy = getenv("X509_USER_PROXY");
