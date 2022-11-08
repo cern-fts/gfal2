@@ -252,7 +252,8 @@ GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& endpoint
 
     if (request.executeRequest(&reqerr)) {
         gfal2_set_error(err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
-                        "[Tape REST API] Failed to query /.well-known/wlcg-tape-rest-api");
+                        "[Tape REST API] Failed to query /.well-known/wlcg-tape-rest-api: %s",
+                        reqerr->getErrMsg().c_str());
         return tape_endpoint_info{};
     }
 
