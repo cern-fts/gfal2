@@ -694,6 +694,10 @@ void GfalHttpPluginData::get_params_internal(Davix::RequestParams& params, const
         params.setSSLCAcheck(false);
     }
 
+    // Metalink mode
+    gboolean metalink = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "METALINK", FALSE);
+    params.setMetalinkMode((metalink) ? Davix::MetalinkMode::Auto : Davix::MetalinkMode::Disable);
+
     // Keep alive
     gboolean keep_alive = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "KEEP_ALIVE", TRUE);
     params.setKeepAlive(keep_alive);
