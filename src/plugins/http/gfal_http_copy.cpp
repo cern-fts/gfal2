@@ -890,7 +890,8 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     // Evict source file if configured
     if (gfalt_get_use_evict(params, NULL)) {
         GError* tmp_err;
-        ret = gfal_http_release_file(plugin_data, src, "", &tmp_err);
+        const char* request_id = gfalt_get_stage_request_id(params, NULL);
+        ret = gfal_http_release_file(plugin_data, src, request_id, &tmp_err);
         gfal2_log(G_LOG_LEVEL_INFO, "Eviction request exited with status code: %d", ret);
 
         if (ret < 0) {

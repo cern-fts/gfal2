@@ -391,6 +391,22 @@ gboolean gfalt_get_use_evict(gfalt_params_t params , GError** err)
     return params->evict;
 }
 
+
+gint gfalt_set_stage_request_id(gfalt_params_t params, const char* request_id, GError** err)
+{
+    if (params->stage_request_id)
+        g_free(params->stage_request_id);
+    params->stage_request_id = g_strdup(request_id);
+    return 0;
+}
+
+
+const gchar* gfalt_get_stage_request_id(gfalt_params_t params, GError** err)
+{
+    return params->stage_request_id;
+}
+
+
 gint gfalt_set_checksum_check(gfalt_params_t params, gboolean value, GError** err)
 {
     if (value) {
