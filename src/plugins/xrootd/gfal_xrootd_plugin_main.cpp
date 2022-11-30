@@ -100,7 +100,10 @@ gboolean gfal_xrootd_check_url(plugin_handle ch, const char* url,
         plugin_mode mode, GError** err)
 {
 
-    if (strncmp(url, "root://", 7) != 0 && strncmp(url, "xroot://", 8) != 0)
+    if (strncmp(url, "root://", 7) != 0
+        && strncmp(url, "roots://", 8) != 0
+        && strncmp(url, "xroot://", 8) != 0
+        && strncmp(url, "xroots://", 9) != 0)
         return FALSE;
 
     int ret;
