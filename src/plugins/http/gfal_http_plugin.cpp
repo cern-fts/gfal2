@@ -67,6 +67,13 @@ static int get_corresponding_davix_log_level()
     return davix_log_level;
 }
 
+static bool isCloudStorage(const Davix::Uri& uri) {
+    return (uri.getProtocol().rfind("s3", 0) == 0 ||
+            uri.getProtocol().rfind("gcloud", 0) == 0 ||
+            uri.getProtocol().rfind("swift", 0) == 0 ||
+            uri.getProtocol().rfind("cs3", 0) == 0);
+}
+
 static bool allowsBearerTokenRetrieve(const Davix::Uri& uri, const GfalHttpPluginData::OP& operation)
 {
     return ((uri.getProtocol().rfind("https", 0) == 0) ||
@@ -697,6 +704,10 @@ void GfalHttpPluginData::get_params_internal(Davix::RequestParams& params, const
     // Metalink mode
     gboolean metalink = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "METALINK", FALSE);
     params.setMetalinkMode((metalink) ? Davix::MetalinkMode::Auto : Davix::MetalinkMode::Disable);
+
+    if (isCloudStorage(uri)) {
+        params.setMetalinkMode(Davix::MetalinkMode::Disable);
+    }
 
     // Keep alive
     gboolean keep_alive = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "KEEP_ALIVE", TRUE);
