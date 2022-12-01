@@ -172,14 +172,22 @@ static int get_se_custom_opt_boolean(const gfal2_context_t& context, const char*
     gboolean value = gfal2_get_opt_boolean(context, group.c_str(), key, &error);
 
     if (error != NULL) {
+        g_error_free(error);
         return -1;
     }
 
     return value;
 }
 
-static bool is_http_3rdcopy_enabled(gfal2_context_t context)
+bool is_http_3rdcopy_enabled(gfal2_context_t context, const char* src, const char* dst)
 {
+    int src_remote_copy = get_se_custom_opt_boolean(context, src, "ENABLE_REMOTE_COPY");
+    int dst_remote_copy = get_se_custom_opt_boolean(context, dst, "ENABLE_REMOTE_COPY");
+
+    if (src_remote_copy > -1 || dst_remote_copy > -1) {
+        return src_remote_copy && dst_remote_copy;
+    }
+
     return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", TRUE);
 }
 
@@ -198,7 +206,10 @@ bool is_http_streaming_enabled(gfal2_context_t context, const char* src, const c
 
 static CopyMode get_default_copy_mode(gfal2_context_t context)
 {
-    return get_copy_mode_from_string(gfal2_get_opt_string_with_default(context, "HTTP PLUGIN", "DEFAULT_COPY_MODE", GFAL_TRANSFER_TYPE_PULL));
+    gchar* copy_mode_str = gfal2_get_opt_string_with_default(context, "HTTP PLUGIN", "DEFAULT_COPY_MODE", GFAL_TRANSFER_TYPE_PULL);
+    CopyMode copy_mode = get_copy_mode_from_string(copy_mode_str);
+    g_free(copy_mode_str);
+    return copy_mode;
 }
 
 bool is_http_3rdcopy_fallback_enabled(gfal2_context_t context, const char* src, const char* dst)
@@ -753,7 +764,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     bool only_streaming = false;
     // If source is not even http, go straight to streamed
     // or if third party copy is disabled, go straight to streamed
-    if (!is_http_scheme(src) || !is_http_3rdcopy_enabled(context)) {
+    if (!is_http_scheme(src) || !is_http_3rdcopy_enabled(context, src, dst)) {
         copy_mode = HTTP_COPY_STREAM;
         only_streaming = true;
     }
@@ -879,7 +890,8 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     // Evict source file if configured
     if (gfalt_get_use_evict(params, NULL)) {
         GError* tmp_err;
-        ret = gfal_http_release_file(plugin_data, src, "", &tmp_err);
+        const char* request_id = gfalt_get_stage_request_id(params, NULL);
+        ret = gfal_http_release_file(plugin_data, src, request_id, &tmp_err);
         gfal2_log(G_LOG_LEVEL_INFO, "Eviction request exited with status code: %d", ret);
 
         if (ret < 0) {

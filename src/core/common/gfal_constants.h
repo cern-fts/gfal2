@@ -43,14 +43,17 @@ extern "C"
 /** default buffer size for address */
 #define GFAL_URL_MAX_LEN 2048
 
-/** environment variable for personnalized plugin directory  */
+/** Adler32 formatted checksum byte length */
+#define GFAL_ADLER_CHKSUM_LEN 8
+
+/** environment variable for personalized plugin directory  */
 #define GFAL_PLUGIN_DIR_ENV "GFAL_PLUGIN_DIR"
 /** default directory name for gfal 2 plugin search */
 #define GFAL_PLUGIN_DIR_SUFFIX "gfal2-plugins"
 /** plugin entry point */
 #define GFAL_PLUGIN_INIT_SYM "gfal_plugin_init"
 
-/**  environment variable for personnalized configuration directory */
+/**  environment variable for personalized configuration directory */
 #define GFAL_CONFIG_DIR_ENV "GFAL_CONFIG_DIR"
 /**  folder name under /etc for the configuration files */
 #define GFAL_CONFIG_DIR_SUFFIX "gfal2.d"

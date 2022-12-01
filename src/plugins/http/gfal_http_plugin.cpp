@@ -67,6 +67,13 @@ static int get_corresponding_davix_log_level()
     return davix_log_level;
 }
 
+static bool isCloudStorage(const Davix::Uri& uri) {
+    return (uri.getProtocol().rfind("s3", 0) == 0 ||
+            uri.getProtocol().rfind("gcloud", 0) == 0 ||
+            uri.getProtocol().rfind("swift", 0) == 0 ||
+            uri.getProtocol().rfind("cs3", 0) == 0);
+}
+
 static bool allowsBearerTokenRetrieve(const Davix::Uri& uri, const GfalHttpPluginData::OP& operation)
 {
     return ((uri.getProtocol().rfind("https", 0) == 0) ||
@@ -252,7 +259,8 @@ GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& endpoint
 
     if (request.executeRequest(&reqerr)) {
         gfal2_set_error(err, http_plugin_domain, davix2errno(reqerr->getStatus()), __func__,
-                        "[Tape REST API] Failed to query /.well-known/wlcg-tape-rest-api");
+                        "[Tape REST API] Failed to query /.well-known/wlcg-tape-rest-api: %s",
+                        reqerr->getErrMsg().c_str());
         return tape_endpoint_info{};
     }
 
@@ -691,6 +699,14 @@ void GfalHttpPluginData::get_params_internal(Davix::RequestParams& params, const
     gboolean insecure_mode = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "INSECURE", FALSE);
     if (insecure_mode) {
         params.setSSLCAcheck(false);
+    }
+
+    // Metalink mode
+    gboolean metalink = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "METALINK", FALSE);
+    params.setMetalinkMode((metalink) ? Davix::MetalinkMode::Auto : Davix::MetalinkMode::Disable);
+
+    if (isCloudStorage(uri)) {
+        params.setMetalinkMode(Davix::MetalinkMode::Disable);
     }
 
     // Keep alive

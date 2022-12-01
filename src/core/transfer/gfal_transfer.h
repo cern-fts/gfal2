@@ -344,6 +344,16 @@ gint gfalt_set_use_evict(gfalt_params_t, gboolean evict, GError** err);
 gboolean gfalt_get_use_evict(gfalt_params_t, GError** err);
 
 /**
+ * Set the request id used in the staging operation
+ */
+gint gfalt_set_stage_request_id(gfalt_params_t, const char* request_id, GError** err);
+
+/**
+ * Get the request id used in the staging operation
+ */
+const gchar* gfalt_get_stage_request_id(gfalt_params_t, GError** err);
+
+/**
  * @brief Add a new callback for monitoring the current transfer
  * Adding the same callback with a different udata will just change the udata and the free method, but the callback will not be called twice.
  * In this case, udata_free will be called with the old data.

@@ -143,9 +143,13 @@ int gfal_xrootd_3rdcopy_check(plugin_handle plugin_data,
         return 0;
 
     bool src_is_root = strncmp(src, "root://", 7) == 0 ||
-                       strncmp(src, "xroot://", 8) == 0;
+                       strncmp(src, "roots://", 8) == 0 ||
+                       strncmp(src, "xroot://", 8) == 0 ||
+                       strncmp(src, "xroots://", 9) == 0;
     bool dst_is_root = strncmp(dst, "root://", 7) == 0 ||
-                       strncmp(dst, "xroot://", 8) == 0;
+                       strncmp(dst, "roots://", 8) == 0 ||
+                       strncmp(dst, "xroot://", 8) == 0 ||
+                       strncmp(dst, "xroots://", 9) == 0;
     bool src_is_file = strncmp(src, "file://", 7) == 0;
     bool dst_is_file = strncmp(dst, "file://", 7) == 0;
 

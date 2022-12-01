@@ -175,6 +175,9 @@ void http2gliberr(GError** err, int http, const char* func, const char* msg);
 // Returns errno from Davix StatusCode
 int davix2errno(Davix::StatusCode::Code code);
 
+// Returns whether HTTP remote copy is enabled for the involved Storage Endpoints
+bool is_http_3rdcopy_enabled(gfal2_context_t context, const char* src, const char* dst);
+
 // Returns whether HTTP streaming is enabled for the involved Storage Endpoints
 bool is_http_streaming_enabled(gfal2_context_t context, const char* src, const char* dst);
 

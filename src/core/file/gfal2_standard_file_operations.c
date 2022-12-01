@@ -24,6 +24,7 @@
 #include <common/gfal_plugin.h>
 #include <common/gfal_error.h>
 #include <common/gfal_cancel.h>
+#include <common/gfal_config.h>
 
 int gfal2_access(gfal2_context_t context, const char *url, int amode, GError **err)
 {
@@ -680,5 +681,23 @@ int gfal2_checksum(gfal2_context_t handle, const char *url, const char *check_ty
             data_length, &tmp_err);
     }
     GFAL2_END_SCOPE_CANCEL(handle);
+
+    // If configured, always return Adler32 checksum as 8-byte string
+    gboolean format_checksum = gfal2_get_opt_boolean_with_default(handle, "CORE", "FORMAT_ADLER32_CHECKSUM", TRUE);
+
+    if (format_checksum && checksum_buffer != NULL &&
+        strncasecmp(check_type, "adler32", strlen(check_type)) == 0) {
+        size_t checksum_len = strlen(checksum_buffer);
+
+        if (checksum_len < GFAL_ADLER_CHKSUM_LEN && buffer_length > GFAL_ADLER_CHKSUM_LEN) {
+            size_t diff = GFAL_ADLER_CHKSUM_LEN - checksum_len;
+            char* tmp_buffer = g_strdup(checksum_buffer);
+            memset(checksum_buffer, '0', diff);
+            g_strlcpy(checksum_buffer + diff, tmp_buffer, buffer_length);
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Formatted adler32 checksum: %s --> %s", tmp_buffer, checksum_buffer);
+            g_free(tmp_buffer);
+        }
+    }
+
     G_RETURN_ERR(res, tmp_err, err);
 }
