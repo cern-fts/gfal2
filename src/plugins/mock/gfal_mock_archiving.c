@@ -44,7 +44,6 @@ int gfal_plugin_mock_archive_poll(plugin_handle plugin_data, const char* url, GE
         gfal_plugin_mock_get_value(url, "archiving_time", arg_buffer, sizeof(arg_buffer));
         time_t *archiving_end = g_new0(time_t, 1);
         *archiving_end = time(NULL) + gfal_plugin_mock_get_int_from_str(arg_buffer);
-
         g_hash_table_insert(archiving_end_table, g_strdup(url), archiving_end);
     }
 
@@ -54,8 +53,11 @@ int gfal_plugin_mock_archive_poll(plugin_handle plugin_data, const char* url, GE
     if (archiving_end == NULL || *archiving_end <= time(NULL)) {
         if (archiving_error) {
             gfal_plugin_mock_report_error(strerror(archiving_error), archiving_error, err);
+            g_hash_table_remove(archiving_end_table, url);
             return -1;
         }
+
+        g_hash_table_remove(archiving_end_table, url);
         return 1;
     }
     else {
@@ -83,5 +85,6 @@ int gfal_plugin_mock_archive_poll_list(plugin_handle plugin_data, int nbfiles, c
 
     if (terminal_count == nbfiles)
         return 1;
+
     return 0;
 }
