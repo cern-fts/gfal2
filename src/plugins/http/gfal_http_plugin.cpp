@@ -714,7 +714,12 @@ void GfalHttpPluginData::get_params_internal(Davix::RequestParams& params, const
     params.setKeepAlive(keep_alive);
 
     // Reset here the verbosity level
-    davix_set_log_level(get_corresponding_davix_log_level());
+    int davix_level = gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", "LOG_LEVEL", 0);
+
+    if (!davix_level)
+        davix_level = get_corresponding_davix_log_level();
+
+    davix_set_log_level(davix_level);
 
     // Reset sensitive scope mask
     int davix_scope_mask = Davix::getLogScope() & ~(DAVIX_LOG_SSL | DAVIX_LOG_SENSITIVE);
@@ -858,11 +863,10 @@ GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
     token_map(), tape_endpoint_map()
 {
     davix_set_log_handler(log_davix2gfal, NULL);
-    int davix_level = get_corresponding_davix_log_level();
-    int davix_config_level = gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", "LOG_LEVEL", 0);
+    int davix_level = gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", "LOG_LEVEL", 0);
 
-    if (davix_config_level)
-        davix_level = davix_config_level;
+    if (!davix_level)
+        davix_level = get_corresponding_davix_log_level();
 
     davix_set_log_level(davix_level);
     Davix::setLogScope(Davix::getLogScope() & ~(DAVIX_LOG_SSL | DAVIX_LOG_SENSITIVE));
