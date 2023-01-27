@@ -27,7 +27,7 @@
 
 
 int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
-    int nbfiles, const char* const* urls, time_t pintime, time_t timeout, char* token, size_t tsize,
+    int nbfiles, const char* const* urls, time_t pintime, time_t timeout, char* token, size_t dest_size,
     int async, GError** err)
 {
     if (nbfiles <= 0) {
@@ -61,7 +61,15 @@ int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
         return -1;
     }
     if (responsePtr && responsePtr->GetBuffer()) {
-        g_strlcpy(token, responsePtr->GetBuffer(), tsize);
+        size_t source_size = responsePtr->GetSize();
+        size_t copy_size = std::min(source_size, dest_size);
+        // Use memcpy because we have no guarantee that the source buffer is null terminated
+        memcpy(token, responsePtr->GetBuffer(), copy_size);
+        if (source_size < dest_size) {
+            token[copy_size] = '\0';
+        } else {
+            token[dest_size - 1] = '\0';
+        }
     } else {
         gfal2_log(G_LOG_LEVEL_DEBUG, "Empty response from the server");
         delete responsePtr;
