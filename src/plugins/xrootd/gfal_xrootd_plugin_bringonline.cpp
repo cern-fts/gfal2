@@ -127,7 +127,7 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
     if( !parsed_json )
     {
       for( int i = 0; i < nbfiles; ++i )
-        gfal2_set_error( &err[i], xrootd_domain, ENOMSG, __func__, "Malformed server response." );
+        gfal2_set_error( &err[i], xrootd_domain, ENOMSG, __func__, "Failed to parse JSON object in the server response." );
       return -1;
     }
 
@@ -163,7 +163,7 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
       if( !arrobj )
       {
         ++errorcnt;
-        gfal2_set_error(&err[i], xrootd_domain, ENOMSG, __func__, "Malformed server response." );
+        gfal2_set_error(&err[i], xrootd_domain, ENOMSG, __func__, "Failed to parse \"responses\" array." );
         continue;
       }
 
