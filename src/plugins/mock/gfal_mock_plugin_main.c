@@ -64,6 +64,7 @@ static gboolean gfal_mock_check_url(plugin_handle handle, const char *url, plugi
             //case GFAL_PLUGIN_SYMLINK:
         case GFAL_PLUGIN_CHECKSUM:
         case GFAL_PLUGIN_BRING_ONLINE:
+        case GFAL_PLUGIN_ARCHIVE:
         case GFAL_PLUGIN_OPEN:
             return is_mock_uri(url);
         default:
@@ -197,12 +198,14 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError **err)
     mock_plugin.bring_online_v2 = gfal_plugin_mock_bring_online_v2;
     mock_plugin.bring_online_poll = gfal_plugin_mock_bring_online_poll;
     mock_plugin.release_file = gfal_plugin_mock_release_file;
+    mock_plugin.archive_poll = gfal_plugin_mock_archive_poll;
 
     mock_plugin.bring_online_list = gfal_plugin_mock_bring_online_list;
     mock_plugin.bring_online_list_v2 = gfal_plugin_mock_bring_online_list_v2;
     mock_plugin.bring_online_poll_list = gfal_plugin_mock_bring_online_poll_list;
     mock_plugin.release_file_list = gfal_plugin_mock_release_file_list;
     mock_plugin.abort_files = gfal_plugin_mock_abort_file_list;
+    mock_plugin.archive_poll_list = &gfal_plugin_mock_archive_poll_list;
 
     mock_plugin.check_plugin_url_transfer = &gfal_plugin_mock_check_url_transfer;
     mock_plugin.copy_file = &gfal_plugin_mock_filecopy;
