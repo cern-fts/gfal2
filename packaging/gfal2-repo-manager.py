@@ -11,7 +11,7 @@ import sys
 
 DRY_RUN = False
 NO_CREATE_REPO = False
-RAWHIDE_VERSIONS = ["fc37", "fc38"]
+RAWHIDE_VERSIONS = ["fc38", "fc39"]
 
 def sh(cmd):
     # poor man's subprocess.check_output, not supported on SL6
