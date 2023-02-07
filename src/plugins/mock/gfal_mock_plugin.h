@@ -107,6 +107,8 @@ int gfal_plugin_mock_bring_online_poll(plugin_handle plugin_data,
 int gfal_plugin_mock_release_file(plugin_handle plugin_data, const char *url,
     const char *token, GError **err);
 
+int gfal_plugin_mock_archive_poll(plugin_handle plugin_data, const char* url, GError** err);
+
 int gfal_plugin_mock_bring_online_list(plugin_handle plugin_data, int nbfiles,
     const char *const *urls, time_t pintime, time_t timeout, char *token,
     size_t tsize, int async, GError **err);
@@ -124,6 +126,8 @@ int gfal_plugin_mock_release_file_list(plugin_handle plugin_data, int nbfiles,
 
 int gfal_plugin_mock_abort_file_list(plugin_handle plugin_data, int nbfiles, const char *const *uris, const char *token,
     GError **err);
+
+int gfal_plugin_mock_archive_poll_list(plugin_handle plugin_data, int nbfiles, const char* const* urls, GError** errors);
 
 // Copy
 int gfal_plugin_mock_filecopy(plugin_handle plugin_data,

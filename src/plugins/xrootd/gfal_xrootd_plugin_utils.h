@@ -61,4 +61,7 @@ void gfal2_xrootd_set_error(GError **err, int errcode, const char *func, const c
 void gfal2_xrootd_poll_set_error(GError **err, int errcode, const char *func, const char *err_reasno,
                                  const char *format, ...);
 
+/// Copy contents of source buffer to dest buffer and always terminate dest buffer with null terminator
+void copy_to_cstring(char* dest, size_t dest_size, const char* source, size_t source_size);
+
 #endif /* GFAL_XROOTD_PLUGIN_UTILS_H_ */

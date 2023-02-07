@@ -37,12 +37,12 @@ cs9:
   image: gitlab-registry.cern.ch/linuxsupport/cs9-base
   <<: *build-template_definition
 
-fedora-35:
-  image: fedora:35
-  <<: *build-template_definition
-
 fedora-36:
   image: fedora:36
+  <<: *build-template_definition
+
+fedora-37:
+  image: fedora:37
   <<: *build-template_definition
 
 fedora-rawhide:
@@ -94,16 +94,16 @@ cs9-test:
     - dnf install -y epel-release
   <<: *test-template_definition
 
-fedora-35-test:
-  image: fedora:35
-  needs:
-    - job: fedora-35
-  <<: *test-template_definition
-
 fedora-36-test:
   image: fedora:36
   needs:
     - job: fedora-36
+  <<: *test-template_definition
+
+fedora-37-test:
+  image: fedora:37
+  needs:
+    - job: fedora-37
   <<: *test-template_definition
 
 #--------------------------
@@ -117,8 +117,8 @@ rpms:
     - cc7
     - centos8
     - cs9
-    - fedora-35
     - fedora-36
+    - fedora-37
     - fedora-rawhide
   script:
     - yum install -y openssh-clients
@@ -126,13 +126,13 @@ rpms:
     - ssh ${SSH_OPTIONS} ${repo_user}@${SSH_HOST} "mkdir -p ${TMP_REPO_PATH}"
     - scp ${SSH_OPTIONS} packaging/gfal2-repo-manager.py ${repo_user}@${SSH_HOST}:${TMP_REPO_PATH}
     - |
-      for platform in cc7 centos8 cs9 fedora-35 fedora-36 fedora-rawhide; do
+      for platform in cc7 centos8 cs9 fedora-36 fedora-37 fedora-rawhide; do
         if [[ "${platform}" == "fedora-rawhide" ]] && [[ ! -d ${platform} ]] ; then
           echo "Skipping ${platform} packages..." ;
           continue ;
         fi
         scp ${SSH_OPTIONS} -r ${platform} ${repo_user}@${SSH_HOST}:${TMP_REPO_PATH} ;
-        ssh ${SSH_OPTIONS} ${repo_user}@${SSH_HOST} "cd ${TMP_REPO_PATH}; ./gfal2-repo-manager.py --action add --base /eos/project/d/dmc/www/repos/ --ref ${CI_COMMIT_REF_NAME} --packages ${platform}/RPMS/*/*.rpm ${platform}/SRPMS/*"
+        ssh ${SSH_OPTIONS} ${repo_user}@${SSH_HOST} "cd ${TMP_REPO_PATH}; ./gfal2-repo-manager.py --action add --base /eos/project-d/dmc/www/repos/ --ref ${CI_COMMIT_REF_NAME} --packages ${platform}/RPMS/*/*.rpm ${platform}/SRPMS/*"
       done
     - sleep 30
   after_script:

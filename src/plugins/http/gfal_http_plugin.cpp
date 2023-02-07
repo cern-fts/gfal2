@@ -67,6 +67,31 @@ static int get_corresponding_davix_log_level()
     return davix_log_level;
 }
 
+/// Get custom HTTP headers for Storage Element group
+char** get_se_custom_headers_list(const gfal2_context_t& context, const Davix::Uri& uri) {
+    if (uri.getStatus() != Davix::StatusCode::OK) {
+        return NULL;
+    }
+
+    std::string prot = uri.getProtocol();
+
+    if (prot.back() == 's') {
+        prot.pop_back();
+    }
+
+    std::string group = prot + ":" + uri.getHost();
+    std::transform(group.begin(), group.end(), group.begin(), ::toupper);
+
+    gsize headers_length = 0;
+    char** headers = gfal2_get_opt_string_list_with_default(context, group.c_str(), "HEADERS", &headers_length, NULL);
+
+    if (headers == NULL) {
+        headers = gfal2_get_opt_string_list_with_default(context, "HTTP PLUGIN", "HEADERS", &headers_length, NULL);
+    }
+
+    return headers;
+}
+
 static bool isCloudStorage(const Davix::Uri& uri) {
     return (uri.getProtocol().rfind("s3", 0) == 0 ||
             uri.getProtocol().rfind("gcloud", 0) == 0 ||
@@ -714,7 +739,12 @@ void GfalHttpPluginData::get_params_internal(Davix::RequestParams& params, const
     params.setKeepAlive(keep_alive);
 
     // Reset here the verbosity level
-    davix_set_log_level(get_corresponding_davix_log_level());
+    int davix_level = gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", "LOG_LEVEL", 0);
+
+    if (!davix_level)
+        davix_level = get_corresponding_davix_log_level();
+
+    davix_set_log_level(davix_level);
 
     // Reset sensitive scope mask
     int davix_scope_mask = Davix::getLogScope() & ~(DAVIX_LOG_SSL | DAVIX_LOG_SENSITIVE);
@@ -744,9 +774,9 @@ void GfalHttpPluginData::get_params_internal(Davix::RequestParams& params, const
     }
     g_free(client_info);
 
-    // Custom headers
-    gsize headers_length = 0;
-    char **headers = gfal2_get_opt_string_list_with_default(handle, "HTTP PLUGIN", "HEADERS", &headers_length, NULL);
+    // Custom headers by SE
+    char** headers = get_se_custom_headers_list(handle, uri);
+
     if (headers) {
         for (char **hi = headers; *hi != NULL; ++hi) {
             char **kv = g_strsplit(*hi, ":", 2);
@@ -858,11 +888,10 @@ GfalHttpPluginData::GfalHttpPluginData(gfal2_context_t handle):
     token_map(), tape_endpoint_map()
 {
     davix_set_log_handler(log_davix2gfal, NULL);
-    int davix_level = get_corresponding_davix_log_level();
-    int davix_config_level = gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", "LOG_LEVEL", 0);
+    int davix_level = gfal2_get_opt_integer_with_default(handle, "HTTP PLUGIN", "LOG_LEVEL", 0);
 
-    if (davix_config_level)
-        davix_level = davix_config_level;
+    if (!davix_level)
+        davix_level = get_corresponding_davix_log_level();
 
     davix_set_log_level(davix_level);
     Davix::setLogScope(Davix::getLogScope() & ~(DAVIX_LOG_SSL | DAVIX_LOG_SENSITIVE));

@@ -431,11 +431,18 @@ static std::string get_canonical_uri(const std::string& original)
 }
 
 
+struct HttpTransferHosts {
+    std::string sourceHost;
+    std::string destHost;
+};
+
+
 static int gfal_http_third_party_copy(gfal2_context_t context,
                                       GfalHttpPluginData* davix,
                                       const char* src, const char* dst,
                                       CopyMode mode,
                                       gfalt_params_t params,
+                                      HttpTransferHosts& transferHosts,
                                       GError** err)
 {
     gfal2_log(G_LOG_LEVEL_MESSAGE, "Performing a HTTP third party copy");
@@ -494,6 +501,17 @@ static int gfal_http_third_party_copy(gfal2_context_t context,
     if (davError != NULL) {
         davix2gliberr(davError, err, __func__);
         Davix::DavixError::clearError(&davError);
+    } else {
+        auto _transferHost = [](const std::string& initialHost, const std::string& transferHost) -> std::string {
+            if (initialHost == transferHost) {
+                return "";
+            }
+
+            return transferHost;
+        };
+
+        transferHosts.sourceHost = _transferHost(src_uri.getHost(), copy.getTransferSourceHost());
+        transferHosts.destHost = _transferHost(dst_uri.getHost(), copy.getTransferDestinationHost());
     }
 
     return *err == NULL ? 0 : -1;
@@ -564,7 +582,6 @@ static dav_ssize_t gfal_http_streamed_provider(void *userdata,
 
     return ret;
 }
-
 
 
 static int gfal_http_streamed_copy(gfal2_context_t context,
@@ -772,6 +789,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
     int ret = 0;
     std::list<std::string> attempted_mode;
     CopyMode end_copy_mode = HTTP_COPY_END;
+    HttpTransferHosts transferHosts;
 
     // Stop the loop prematurely if streaming is disabled
     bool streaming_enabled = is_http_streaming_enabled(context, src, dst);
@@ -805,7 +823,8 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                 break;
             }
         } else {
-            ret = gfal_http_third_party_copy(context, davix, src, dst, copy_mode, params, &nested_error);
+            ret = gfal_http_third_party_copy(context, davix, src, dst, copy_mode, params,
+                                             transferHosts, &nested_error);
         }
 
         if (ret == 0) {
@@ -824,9 +843,22 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
              gfal_http_copy_should_fallback(nested_error->code));
 
     if (ret == 0) {
+        std::ostringstream msg;
+        msg << src;
+
+        if (!transferHosts.sourceHost.empty()) {
+            msg << " (" << transferHosts.sourceHost << ")";
+        }
+
+        msg << " => " << dst;
+
+        if (!transferHosts.destHost.empty()) {
+            msg << " (" << transferHosts.destHost << ")";
+        }
+
         plugin_trigger_event(params, http_plugin_domain,
-                             GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_EXIT,
-                             "%s => %s", src, dst);
+                             GFAL_EVENT_NONE,GFAL_EVENT_TRANSFER_EXIT,
+                             "%s", msg.str().c_str());
     } else {
         if (!attempted_mode.empty()) {
             std::ostringstream errmsg;

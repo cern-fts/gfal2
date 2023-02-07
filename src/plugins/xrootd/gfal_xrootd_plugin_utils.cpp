@@ -395,3 +395,15 @@ void gfal2_xrootd_poll_set_error(GError **err, int errcode, const char *func, co
 
   gfal2_set_error(err, xrootd_domain, errcode, func, "%s", buffer);
 }
+
+void copy_to_cstring(char* dest, size_t dest_size, const char* source, size_t source_size)
+{
+    size_t copy_size = std::min(source_size, dest_size);
+    // Use memcpy because we have no guarantee that the source buffer is null terminated
+    memcpy(dest, source, copy_size);
+    if (source_size < dest_size) {
+        dest[copy_size] = '\0';
+    } else {
+        dest[dest_size - 1] = '\0';
+    }
+}
