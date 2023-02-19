@@ -15,6 +15,8 @@ GFAL2 RELEASE-NOTES
 - [DMC-1365] - Protect gfal_xrootd_bring_online_list() from reading un-allocated memory
 - [DMC-1366] - Two GFAL2 XRootD bring on-line error messages have the same message
 
+###Bug
+- [cern-fts/gfal2/pull/14] - Don't downgrade the C++ version
 
 ## Thu Dec 01 2022 Mihai Patrascoiu <mipatras at cern.ch> - 2.21.2
 ###New Feature
