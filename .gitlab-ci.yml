@@ -112,7 +112,7 @@ fedora-37-test:
 
 rpms:
   stage: publish
-  image: gitlab-registry.cern.ch/linuxsupport/cc7-base
+  image: gitlab-registry.cern.ch/eos/gitlab-eos/cc7:latest
   dependencies:
     - cc7
     - centos8
@@ -121,30 +121,25 @@ rpms:
     - fedora-37
     - fedora-rawhide
   script:
-    - yum install -y openssh-clients
-    - cat ${repo_passwd} | kinit ${repo_user}
-    - ssh ${SSH_OPTIONS} ${repo_user}@${SSH_HOST} "mkdir -p ${TMP_REPO_PATH}"
-    - scp ${SSH_OPTIONS} packaging/gfal2-repo-manager.py ${repo_user}@${SSH_HOST}:${TMP_REPO_PATH}
+    - yum install -y python sssd-client sudo createrepo
+    - automount
+    - cat "${repo_passwd}" | kinit "${repo_user}"
+    - eosfusebind
     - |
       for platform in cc7 centos8 cs9 fedora-36 fedora-37 fedora-rawhide; do
         if [[ "${platform}" == "fedora-rawhide" ]] && [[ ! -d ${platform} ]] ; then
           echo "Skipping ${platform} packages..." ;
           continue ;
         fi
-        scp ${SSH_OPTIONS} -r ${platform} ${repo_user}@${SSH_HOST}:${TMP_REPO_PATH} ;
-        ssh ${SSH_OPTIONS} ${repo_user}@${SSH_HOST} "cd ${TMP_REPO_PATH}; ./gfal2-repo-manager.py --action add --base /eos/project-d/dmc/www/repos/ --ref ${CI_COMMIT_REF_NAME} --packages ${platform}/RPMS/*/*.rpm ${platform}/SRPMS/*"
+        packaging/gfal2-repo-manager.py --action add --base /eos/project/d/dmc/www/repos/ --ref ${CI_COMMIT_REF_NAME} --packages ${platform}/RPMS/*/*.rpm ${platform}/SRPMS/*
       done
     - sleep 30
-  after_script:
-    - ssh ${SSH_OPTIONS} ${repo_user}@${SSH_HOST} "rm -rf ${TMP_REPO_PATH}"
-  variables:
-    SSH_OPTIONS: -o StrictHostKeyChecking=no -o GSSAPIAuthentication=yes -o GSSAPITrustDNS=yes -o GSSAPIDelegateCredentials=yes
-    SSH_HOST: dmc-build-ci-02
-    TMP_REPO_PATH: "/tmp/${CI_PROJECT_NAME}/${CI_PIPELINE_ID}/"
   rules:
     - if: '$CI_PROJECT_NAMESPACE != "dmc"'
       when: never
-    - if: '$CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_TAG!= null'
+    - if: '$CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_TAG != null'
     - if: '$CI_COMMIT_REF_NAME != "develop" && $CI_COMMIT_TAG == null'
       when: manual
+  tags:
+    - docker-privileged
   retry: 2
