@@ -359,6 +359,16 @@ gint gfalt_set_stage_request_id(gfalt_params_t, const char* request_id, GError**
 const gchar* gfalt_get_stage_request_id(gfalt_params_t, GError** err);
 
 /**
+ * Set the transfer metadata to be sent to the disk-buffer
+ */
+gint gfalt_set_transfer_metadata(gfalt_params_t, const char* metadata, GError** err);
+
+/**
+ * Get the transfer metadata to be sent to the disk-buffer
+ */
+const gchar* gfalt_get_transfer_metadata(gfalt_params_t, GError** err);
+
+/**
  * @brief Add a new callback for monitoring the current transfer
  * Adding the same callback with a different udata will just change the udata and the free method, but the callback will not be called twice.
  * In this case, udata_free will be called with the old data.
