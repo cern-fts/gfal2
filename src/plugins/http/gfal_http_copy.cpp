@@ -24,6 +24,7 @@
 #include <network/gfal2_network.h>
 #include <unistd.h>
 #include <checksums/checksums.h>
+#include <cryptopp/base64.h>
 #include <cstdio>
 #include <cstring>
 #include <list>
@@ -438,6 +439,23 @@ struct HttpTransferHosts {
 };
 
 
+static void set_transfer_metadata_header(Davix::RequestParams& req_params, CopyMode mode, const std::string& metadata)
+{
+    std::string encoded_metadata;
+    // DMC-1368: Base64 encode the header
+    const bool noNewLineInBase64Output = false;
+    CryptoPP::StringSource ss1(metadata, true,
+                               new CryptoPP::Base64Encoder(
+                                       new CryptoPP::StringSink(encoded_metadata), noNewLineInBase64Output));
+
+    if (mode == HTTP_COPY_PUSH) {
+        req_params.addHeader("TransferHeaderTransferMetadata", encoded_metadata);
+    } else {
+        req_params.addHeader("TransferMetadata", encoded_metadata);
+    }
+}
+
+
 static int gfal_http_third_party_copy(gfal2_context_t context,
                                       GfalHttpPluginData* davix,
                                       const char* src, const char* dst,
@@ -479,6 +497,12 @@ static int gfal_http_third_party_copy(gfal2_context_t context,
                 req_params.addHeader("RequireChecksumVerification", "false");
             }
         }
+    }
+
+    // Set transfer metadata header
+    const char* const metadata = gfalt_get_transfer_metadata(params, NULL);
+    if (metadata != NULL && metadata[0] != '\0') {
+        set_transfer_metadata_header(req_params, mode, metadata);
     }
 
     // add timeout
@@ -634,6 +658,12 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
     // Set MD5 header on the PUT
     if (checksum_mode & GFALT_CHECKSUM_TARGET && strcasecmp(checksum_type, "md5") == 0 && user_checksum[0]) {
     	req_params.addHeader("Content-MD5", user_checksum);
+    }
+
+    // Set transfer metadata header
+    const char* const metadata = gfalt_get_transfer_metadata(params, NULL);
+    if (metadata != NULL && metadata[0] != '\0') {
+        set_transfer_metadata_header(req_params, HTTP_COPY_STREAM, metadata);
     }
 
     if (dst_uri.getProtocol() == "s3" || dst_uri.getProtocol() == "s3s")
