@@ -170,8 +170,8 @@ namespace tape_rest_api {
 
         if (request.getRequestCode() != 200) {
             gfal2_set_error(err, http_plugin_domain, EINVAL, __func__,
-                            "[Tape REST API] Archive polling call failed: Expected 200 status code (received %d)",
-                            request.getRequestCode());
+                            "[Tape REST API] Archive polling call failed: %s: %s",
+                            reqerr->getErrMsg().c_str(), request.getAnswerContent());
             Davix::DavixError::clearError(&reqerr);
             return "";
         }
@@ -384,7 +384,8 @@ int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const
 
     if (request.getRequestCode() != 201) {
         gfal2_set_error(&tmp_err, http_plugin_domain, EINVAL, __func__,
-                        "[Tape REST API] Stage call failed: Expected 201 status code (received %d)", request.getRequestCode());
+                        "[Tape REST API] Stage call failed: %s: %s",
+                        reqerr->getErrMsg().c_str(), request.getAnswerContent());
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
         Davix::DavixError::clearError(&reqerr);
         return -1;
@@ -477,8 +478,8 @@ int gfal_http_abort_files(plugin_handle plugin_data, int nbfiles, const char* co
 
     if (request.getRequestCode() != 200) {
         gfal2_set_error(&tmp_err, http_plugin_domain, EINVAL, __func__,
-                        "[Tape REST API] Stage call failed: Expected 200 status code (received %d)",
-                        request.getRequestCode());
+                        "[Tape REST API] Stage call failed: %s: %s",
+                        reqerr->getErrMsg().c_str(), request.getAnswerContent());
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
         Davix::DavixError::clearError(&reqerr);
         return -1;
@@ -547,8 +548,8 @@ int gfal_http_bring_online_poll_list(plugin_handle plugin_data, int nbfiles, con
 
     if (request.getRequestCode() != 200) {
         gfal2_set_error(&tmp_err, http_plugin_domain, EINVAL, __func__,
-                        "[Tape REST API] Stage call failed: Expected 200 status code (received %d)",
-                        request.getRequestCode());
+                        "[Tape REST API] Stage call failed: %s: %s)",
+                        reqerr->getErrMsg().c_str(), request.getAnswerContent());
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
         Davix::DavixError::clearError(&reqerr);
         return -1;
@@ -892,8 +893,8 @@ int gfal_http_release_file_list(plugin_handle plugin_data, int nbfiles, const ch
 
     if (request.getRequestCode() != 200) {
         gfal2_set_error(&tmp_err, http_plugin_domain, EINVAL, __func__,
-                        "[Tape REST API] Release call failed: Expected 200 status code (received %d)",
-                        request.getRequestCode());
+                        "[Tape REST API] Release call failed: %s: %s",
+                        reqerr->getErrMsg().c_str(), request.getAnswerContent());
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
         Davix::DavixError::clearError(&reqerr);
         return -1;

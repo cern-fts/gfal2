@@ -291,8 +291,8 @@ GfalHttpPluginData::retrieve_and_store_tape_endpoint(const std::string& endpoint
 
     if (request.getRequestCode() != 200) {
         gfal2_set_error(err, http_plugin_domain, EINVAL, __func__,
-                        "[Tape REST API] Failed to query /.well-known/wlcg-tape-rest-api: Expected 200 "
-                        "status code (received %d)", request.getRequestCode());
+                        "[Tape REST API] Failed to query /.well-known/wlcg-tape-rest-api: %s: %s",
+                        reqerr->getErrMsg().c_str(), request.getAnswerContent());
         return tape_endpoint_info{};
     }
 
