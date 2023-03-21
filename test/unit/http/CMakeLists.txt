@@ -10,7 +10,8 @@ add_library(test_plugin_http STATIC ${src_http})
 target_link_libraries(test_plugin_http
   gfal2
   ${DAVIX_LIBRARIES}
-  ${JSONC_LIBRARIES})
+  ${JSONC_LIBRARIES}
+  ${CRYPTOPP_LIBRARIES})
 
 set(test_plugin_http_link_libraries
   ${GFAL2_LIBRARIES}
@@ -18,6 +19,7 @@ set(test_plugin_http_link_libraries
   ${GTEST_MAIN_LIBRARIES}
   gfal2_test_shared
   ${DAVIX_LIBRARIES}
+  ${CRYPTOPP_LIBRARIES}
   test_plugin_http)
 
 target_include_directories(test_plugin_http PRIVATE

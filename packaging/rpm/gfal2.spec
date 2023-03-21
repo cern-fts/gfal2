@@ -44,6 +44,7 @@ BuildRequires:      dcap-devel
 BuildRequires:      globus-gass-copy-devel
 #http plugin dependencies
 BuildRequires:      davix-devel >= 0.8.4
+BuildRequires:      cryptopp-devel >= 5.6.2
 #xrootd plugin dependencies
 BuildRequires:      xrootd-client-devel >= 1:5.0.0
 # sftp plugin dependencies

@@ -5,11 +5,13 @@ if (PLUGIN_HTTP)
     include     (CheckLibraryExists)
 
     find_package(Davix REQUIRED)
+    find_package(Cryptopp REQUIRED)
 
     # Includes
     include_directories (${CMAKE_CURRENT_BINARY_DIR})
     include_directories(${DAVIX_INCLUDE_DIR})
     include_directories(${JSONC_INCLUDE_DIRS})
+    include_directories(${CRYPTOPP_INCLUDE_DIRS})
 
     # definitions
     add_definitions (${DAVIX_CFLAGS})
@@ -22,13 +24,15 @@ if (PLUGIN_HTTP)
     target_link_libraries(plugin_http gfal2
           gfal2_transfer
           ${DAVIX_LIBRARIES}
-	  ${JSONC_LIBRARIES}
+          ${JSONC_LIBRARIES}
+          ${CRYPTOPP_LIBRARIES}
     )
 
     target_link_libraries(plugin_http_static gfal2
             gfal2_transfer
             ${DAVIX_LIBRARIES}
             ${JSONC_LIBRARIES}
+            ${CRYPTOPP_LIBRARIES}
             )
 
     set_target_properties(plugin_http   PROPERTIES  CLEAN_DIRECT_OUTPUT 1
