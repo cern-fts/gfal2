@@ -1,6 +1,17 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Wed Mar 22 2023 Joao Lopes <batistal at cern.ch> - 2.21.4
+###New Feature
+- [DMC-1367] - Gfal2 support for transfer metadata
+
+###Improvement
+- [DMC-1374] - Propagate all error messages reported by the HTTP Tape REST API
+
+###Sub-task
+- [DMC-1348] - Extend DNS host resolution for HTTP protocol
+- [DMC-1368] - Pass transfer metadata in the HTTP TPC command
+
 ## Tue Feb 07 2023 Joao Lopes <batistal at cern.ch> - 2.21.3
 ###New Feature
 - [DMC-1290] - Gfal2 Mock Plugin support for Archive operation
