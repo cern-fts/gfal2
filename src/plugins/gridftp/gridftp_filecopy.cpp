@@ -127,34 +127,6 @@ std::string return_host_and_port(const std::string &uri, gboolean use_ipv6)
 }
 
 
-// Helper function to resolve a DNS URI to specific host
-static std::string resolve_dns_helper(const char* host_uri, const char* msg)
-{
-    std::string resolved_str;
-
-    if (!strncmp(host_uri, "gsiftp://", 9)) {
-        GError* error = NULL;
-        gfal2_uri* parsed = gfal2_parse_uri(host_uri, &error);
-
-        if (error) {
-            throw Gfal::CoreException(error);
-        }
-
-        char* resolved = gfal2_resolve_dns_to_hostname(parsed->host);
-
-        if (resolved) {
-            gfal2_log(G_LOG_LEVEL_INFO, "%s: %s => %s", msg, parsed->host, resolved);
-            g_free(parsed->host);
-            parsed->host = resolved;
-            resolved_str = gfal2_join_uri(parsed);
-            gfal2_free_uri(parsed);
-        }
-    }
-
-    return resolved_str;
-}
-
-
 // return 1 if deleted something
 int gridftp_filecopy_delete_existing(GridFTPModule* module,
         gfalt_params_t params, const char * url)
@@ -541,21 +513,32 @@ void GridFTPModule::filecopy(gfalt_params_t params, const char* src,
     char checksum_user_defined[GFAL_URL_MAX_LEN];
     char checksum_src[GFAL_URL_MAX_LEN] = { 0 };
     char checksum_dst[GFAL_URL_MAX_LEN] = { 0 };
-    std::string resolved_src;
-    std::string resolved_dst;
+    char resolved_src[GFAL_URL_MAX_LEN] = { 0 };
+    char resolved_dst[GFAL_URL_MAX_LEN] = { 0 };
 
     gboolean use_ipv6 = gfal2_get_opt_boolean(_handle_factory->get_gfal2_context(),
         GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_IPV6,
         NULL);
 
     gboolean resolve_dns = gfal2_get_opt_boolean_with_default(_handle_factory->get_gfal2_context(),
-                                                              GRIDFTP_CONFIG_GROUP, GRIDFTP_CONFIG_RESOLVE_DNS, FALSE);
+                                                              CORE_CONFIG_GROUP, RESOLVE_DNS, FALSE);
 
+    // DMC-1348: DNS resolution mechanism
     if (resolve_dns) {
-        resolved_src = resolve_dns_helper(src, "Resolving source");
-        resolved_dst = resolve_dns_helper(dst, "Resolving destination");
-        src = (!resolved_src.empty()) ? resolved_src.c_str() : src;
-        dst = (!resolved_dst.empty()) ? resolved_dst.c_str() : dst;
+        char* resolved_src_ptr = resolve_dns_helper(src, "Resolving source");
+        char* resolved_dst_ptr = resolve_dns_helper(dst, "Resolving destination");
+
+        if (resolved_src_ptr) {
+            g_strlcpy(resolved_src, resolved_src_ptr, sizeof(resolved_src));
+            src = resolved_src;
+            free(resolved_src_ptr);
+        }
+
+        if (resolved_dst_ptr) {
+            g_strlcpy(resolved_dst, resolved_dst_ptr, sizeof(resolved_dst));
+            dst = resolved_dst;
+            free(resolved_dst_ptr);
+        }
     }
 
     gfalt_checksum_mode_t checksum_mode = GFALT_CHECKSUM_NONE;

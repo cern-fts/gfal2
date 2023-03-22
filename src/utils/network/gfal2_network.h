@@ -24,6 +24,12 @@ extern "C"
 #endif
 
 /*
+ * Helper function to resolve a DNS URI to a specific a host
+ * Returns a newly allocated string with the resolved uri
+*/
+char* resolve_dns_helper(const char* host_uri, const char* msg);
+
+/*
  * Given a DNS alias, resolve the list of underlying addresses and select one at random.
  */
 char* gfal2_resolve_dns_to_hostname(const char* dnshost);

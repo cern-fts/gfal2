@@ -95,6 +95,11 @@ extern GQuark GFAL_EVENT_EVICT;           /**< Triggered after a file eviction o
 #define GFAL_TRANSFER_TYPE_PUSH "3rd push"
 #define GFAL_TRANSFER_TYPE_PULL "3rd pull"
 
+/**
+ * Enable or disable DNS resolution within the copy function
+ */
+#define RESOLVE_DNS "RESOLVE_DNS"
+
 /** Trigger of the event */
 typedef enum {
     GFAL_EVENT_SOURCE = 0,  /**< Event triggered by the source */
@@ -352,6 +357,16 @@ gint gfalt_set_stage_request_id(gfalt_params_t, const char* request_id, GError**
  * Get the request id used in the staging operation
  */
 const gchar* gfalt_get_stage_request_id(gfalt_params_t, GError** err);
+
+/**
+ * Set the transfer metadata to be sent to the disk-buffer
+ */
+gint gfalt_set_transfer_metadata(gfalt_params_t, const char* metadata, GError** err);
+
+/**
+ * Get the transfer metadata to be sent to the disk-buffer
+ */
+const gchar* gfalt_get_transfer_metadata(gfalt_params_t, GError** err);
 
 /**
  * @brief Add a new callback for monitoring the current transfer
