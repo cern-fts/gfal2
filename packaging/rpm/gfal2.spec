@@ -341,7 +341,7 @@ fi
 
 
 %changelog
-* Wed Mar 22 2023 Joao Lopes <batistal at cern.ch> - 2.21.4-1
+* Mon Apr 03 2023 Joao Lopes <batistal at cern.ch> - 2.21.4-1
 - New upstream release
 
 * Tue Feb 07 2023 Joao Lopes <batistal at cern.ch> - 2.21.3-1

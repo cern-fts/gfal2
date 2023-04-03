@@ -1,7 +1,7 @@
 GFAL2 RELEASE-NOTES
 ===================
 
-## Wed Mar 22 2023 Joao Lopes <batistal at cern.ch> - 2.21.4
+## Mon Apr 03 2023 Joao Lopes <batistal at cern.ch> - 2.21.4
 ###New Feature
 - [DMC-1367] - Gfal2 support for transfer metadata
 
