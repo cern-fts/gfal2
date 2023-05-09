@@ -16,21 +16,58 @@
 
 # This code sets the following variables:
 #
-# CRYPTOPP_LIBRARIES       = full path to the crytopp libraries
-# CRYPTOPP_INCLUDE_DIRS    = include dir to be used when using the crytopp library
-# CRYPTOPP_FOUND           = set to true if crytopp was found successfully
+# CRYPTOPP_LIBRARIES       = full path to the cryptopp libraries
+# CRYPTOPP_INCLUDE_DIRS    = include dir to be used when using the cryptopp library
+# CRYPTOPP_FOUND           = set to true if cryptopp was found successfully
 
 
-find_path(CRYPTOPP_INCLUDE_DIRS
-        base64.h
-        PATHS /usr/include/cryptopp
-        NO_DEFAULT_PATH)
+# -----------------------------------------------------
+# Try pkg config search
+# -----------------------------------------------------
 
-find_library(CRYPTOPP_LIBRARIES
-        NAME cryptopp
-        PATHS /usr/lib64
-        NO_DEFAULT_PATH)
+find_package (PkgConfig)
+pkg_check_modules(CRYPTOPP_PKG cryptopp)
 
+if(CRYPTOPP_PKG_FOUND)
+
+    set(CRYPTOPP_LIBRARIES ${CRYPTOPP_PKG_LIBRARIES})
+    set(CRYPTOPP_INCLUDE_DIRS ${CRYPTOPP_PKG_INCLUDE_DIRS})
+    if(NOT CRYPTOPP_INCLUDE_DIRS)
+        set(CRYPTOPP_INCLUDE_DIRS "/usr/include")
+    endif(NOT CRYPTOPP_INCLUDE_DIRS)
+    set(CRYPTOPP_DEFINITIONS "${CRYPTOPP_PKG_CFLAGS}")
+
+else(CRYPTOPP_PKG_FOUND)
+
+    # -----------------------------------------------------
+    # Cryptopp Libraries
+    # -----------------------------------------------------
+    find_library(CRYPTOPP_LIBRARIES
+        NAMES cryptopp
+        HINTS ${CRYPTOPP_LOCATION}
+              ${CMAKE_INSTALL_PREFIX}/cryptopp/*/${PLATFORM}
+        DOC "The cryptopp library"
+    )
+
+    # -----------------------------------------------------
+    # Cryptopp Include Directories
+    # -----------------------------------------------------
+    find_path(CRYPTOPP_INCLUDE_DIRS
+        NAMES base64.h                # header for base64 encoding, not processor architecture
+        HINTS ${CRYPTOPP_LOCATION}
+              ${CMAKE_INSTALL_PREFIX}/cryptopp/*/${PLATFORM}/
+        DOC "The cryptopp headers"
+    )
+
+    set(CRYPTOPP_DEFINITIONS "")
+
+endif(CRYPTOPP_PKG_FOUND)
+
+# -------------------------------------------------------------------
+# Handle the QUIETLY and REQUIRED arguments
+# and set CRYPTOPP to TRUE if all listed variables are TRUE
+# -------------------------------------------------------------------
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(cryptopp DEFAULT_MSG
-        CRYPTOPP_INCLUDE_DIRS CRYPTOPP_LIBRARIES)
+    CRYPTOPP_LIBRARIES CRYPTOPP_INCLUDE_DIRS)
+mark_as_advanced(CRYPTOPP_LIBRARIES CRYPTOPP_INCLUDE_DIRS)
