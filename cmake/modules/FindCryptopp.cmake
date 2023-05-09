@@ -20,48 +20,25 @@
 # CRYPTOPP_INCLUDE_DIRS    = include dir to be used when using the cryptopp library
 # CRYPTOPP_FOUND           = set to true if cryptopp was found successfully
 
+# -----------------------------------------------------
+# Cryptopp Libraries
+# -----------------------------------------------------
+find_library(CRYPTOPP_LIBRARIES
+    NAMES cryptopp
+    HINTS ${CRYPTOPP_LOCATION}
+          /lib /lib64 /usr/lib /usr/lib64
+    DOC "The cryptopp library"
+)
 
 # -----------------------------------------------------
-# Try pkg config search
+# Cryptopp Include Directories
 # -----------------------------------------------------
-
-find_package (PkgConfig)
-pkg_check_modules(CRYPTOPP_PKG cryptopp)
-
-if(CRYPTOPP_PKG_FOUND)
-
-    set(CRYPTOPP_LIBRARIES ${CRYPTOPP_PKG_LIBRARIES})
-    set(CRYPTOPP_INCLUDE_DIRS ${CRYPTOPP_PKG_INCLUDE_DIRS})
-    if(NOT CRYPTOPP_INCLUDE_DIRS)
-        set(CRYPTOPP_INCLUDE_DIRS "/usr/include")
-    endif(NOT CRYPTOPP_INCLUDE_DIRS)
-    set(CRYPTOPP_DEFINITIONS "${CRYPTOPP_PKG_CFLAGS}")
-
-else(CRYPTOPP_PKG_FOUND)
-
-    # -----------------------------------------------------
-    # Cryptopp Libraries
-    # -----------------------------------------------------
-    find_library(CRYPTOPP_LIBRARIES
-        NAMES cryptopp
-        HINTS ${CRYPTOPP_LOCATION}
-              ${CMAKE_INSTALL_PREFIX}/cryptopp/*/${PLATFORM}
-        DOC "The cryptopp library"
-    )
-
-    # -----------------------------------------------------
-    # Cryptopp Include Directories
-    # -----------------------------------------------------
-    find_path(CRYPTOPP_INCLUDE_DIRS
-        NAMES base64.h                # header for base64 encoding, not processor architecture
-        HINTS ${CRYPTOPP_LOCATION}
-              ${CMAKE_INSTALL_PREFIX}/cryptopp/*/${PLATFORM}/
-        DOC "The cryptopp headers"
-    )
-
-    set(CRYPTOPP_DEFINITIONS "")
-
-endif(CRYPTOPP_PKG_FOUND)
+find_path(CRYPTOPP_INCLUDE_DIRS
+    NAMES base64.h                # header for base64 encoding, not processor architecture
+    HINTS ${CRYPTOPP_LOCATION}
+          /usr/include/cryptopp
+    DOC "The cryptopp headers"
+)
 
 # -------------------------------------------------------------------
 # Handle the QUIETLY and REQUIRED arguments
