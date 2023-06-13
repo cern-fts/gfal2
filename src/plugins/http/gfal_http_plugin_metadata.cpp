@@ -375,6 +375,7 @@ int gfal_http_checksum(plugin_handle plugin_data, const char* url, const char* c
     if(f.checksum(&req_params, buffer_chk, check_type, &daverr) <0 ){
         davix2gliberr(daverr, err, __func__);
         Davix::DavixError::clearError(&daverr);
+        return -1;
     }
 
     g_strlcpy(checksum_buffer, buffer_chk.c_str(), buffer_length);
