@@ -248,22 +248,23 @@ TEST_F(HttpCopyModeTest, CopyModeIteration)
 {
     auto copyMode = HttpCopyMode::ConstructCopyMode(context, src, dst);
     ASSERT_EQ(CopyMode::PULL, copyMode.value());
-    ASSERT_TRUE(copyMode.hasNext());
+    ASSERT_FALSE(copyMode.end());
 
     copyMode.next();
     ASSERT_EQ(CopyMode::PUSH, copyMode.value());
-    ASSERT_TRUE(copyMode.hasNext());
+    ASSERT_FALSE(copyMode.end());
 
     copyMode.next();
     ASSERT_EQ(CopyMode::STREAM, copyMode.value());
-    ASSERT_FALSE(copyMode.hasNext());
+    ASSERT_FALSE(copyMode.end());
 
     copyMode.next();
     ASSERT_EQ(CopyMode::NONE, copyMode.value());
-    ASSERT_FALSE(copyMode.hasNext());
+    ASSERT_TRUE(copyMode.end());
 
     copyMode.next();
     ASSERT_EQ(CopyMode::NONE, copyMode.value());
+    ASSERT_TRUE(copyMode.end());
 }
 
 TEST_F(HttpCopyModeTest, CopyModeIteration_StreamingDisabled)
@@ -273,9 +274,20 @@ TEST_F(HttpCopyModeTest, CopyModeIteration_StreamingDisabled)
     auto copyMode = HttpCopyMode::ConstructCopyMode(context, src, dst);
     ASSERT_EQ(CopyMode::PUSH, copyMode.value());
     ASSERT_FALSE(copyMode.isStreamingEnabled());
-    ASSERT_FALSE(copyMode.hasNext());
+    ASSERT_FALSE(copyMode.end());
 
     copyMode.next();
     ASSERT_EQ(CopyMode::NONE, copyMode.value());
-    ASSERT_FALSE(copyMode.hasNext());
+    ASSERT_TRUE(copyMode.end());
+}
+
+TEST_F(HttpCopyModeTest, CopyModeLoopIteration)
+{
+    auto copyMode = HttpCopyMode::ConstructCopyMode(context, src, dst);
+    ASSERT_EQ(CopyMode::PULL, copyMode.value());
+
+    do {
+        copyMode.next();
+    } while (!copyMode.end());
+    ASSERT_TRUE(copyMode.end());
 }

@@ -42,7 +42,7 @@ public:
     };
 
     void next();
-    bool hasNext() const;
+    bool end() const;
     const char* str() const;
 
     inline CopyMode value() const {

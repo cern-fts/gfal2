@@ -153,9 +153,8 @@ void HttpCopyMode::next() {
     }
 }
 
-bool HttpCopyMode::hasNext() const {
-    return (copyMode == CopyMode::PULL) ||
-           (copyMode == CopyMode::PUSH && streamingEnabled);
+bool HttpCopyMode::end() const {
+    return (copyMode == CopyMode::NONE);
 }
 
 const char* HttpCopyMode::str() const {
@@ -934,7 +933,8 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         }
 
         attempted_mode.emplace_back(copyMode.str());
-    } while (copyMode.hasNext() &&
+        copyMode.next();
+    } while (!copyMode.end() &&
              is_http_3rdcopy_fallback_enabled(context, stripped_src, stripped_dst) &&
              gfal_http_copy_should_fallback(nested_error->code));
 
