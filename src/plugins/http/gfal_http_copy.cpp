@@ -31,29 +31,7 @@
 #include <sstream>
 #include "gfal_http_plugin.h"
 
-// An enumeration of the different HTTP third-party-copy strategies.
-// NOTE: we loop through strategies from beginning to end, meaning the default
-// strategy should always be listed first.
-typedef enum {HTTP_COPY_PULL=0,
-              HTTP_COPY_PUSH,
-              HTTP_COPY_STREAM,
-              HTTP_COPY_END} CopyMode;
-// The human-readable strings corresponding to the above enum; changes to the two
-// lists must be synchronized.
-const char* CopyModeStr[] = {
-    GFAL_TRANSFER_TYPE_PULL, GFAL_TRANSFER_TYPE_PUSH, GFAL_TRANSFER_TYPE_STREAMED, NULL
-};
-
-static const CopyMode get_copy_mode_from_string(const char * copy_mode_str) {
-    if (!strcmp(copy_mode_str, GFAL_TRANSFER_TYPE_PULL))
-        return HTTP_COPY_PULL;
-    if (!strcmp(copy_mode_str, GFAL_TRANSFER_TYPE_PUSH))
-        return HTTP_COPY_PUSH;
-     if (!strcmp(copy_mode_str, GFAL_TRANSFER_TYPE_STREAMED))
-        return HTTP_COPY_STREAM;
-     return HTTP_COPY_PULL;
-}
-
+using CopyMode = HttpCopyMode::CopyMode;
 
 struct PerfCallbackData {
     gfalt_params_t     params;
@@ -65,31 +43,6 @@ struct PerfCallbackData {
     {
     }
 };
-
-static bool set_copy_mode(gfal2_context_t context,const char * copy_mode) {
-    bool set = true;
-    GError *error = NULL;
-    if (!strcmp(copy_mode,"push" )) {
-        gfal2_set_opt_boolean(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", TRUE, &error);
-        gfal2_set_opt_string(context, "HTTP PLUGIN", "DEFAULT_COPY_MODE", GFAL_TRANSFER_TYPE_PUSH, &error);
-        gfal2_set_opt_boolean(context, "HTTP PLUGIN", "ENABLE_FALLBACK_TPC_COPY", FALSE, &error);
-        if (error != NULL) {
-            g_clear_error(&error);
-            set =false;
-        }
-    } else if (!strcmp(copy_mode,"pull") ) {
-        gfal2_set_opt_boolean(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", TRUE, &error);
-        gfal2_set_opt_string(context, "HTTP PLUGIN", "DEFAULT_COPY_MODE", GFAL_TRANSFER_TYPE_PULL, &error);
-        gfal2_set_opt_boolean(context, "HTTP PLUGIN", "ENABLE_FALLBACK_TPC_COPY", FALSE, &error);
-        if (error != NULL) {
-            g_clear_error(&error);
-            set =false;
-        }
-    } else {
-        set =false;
-    }
-    return set;
-}
 
 static void extract_query_parameter(const char* url, const char *key, char *value, size_t val_size)
 {
@@ -116,28 +69,6 @@ static void extract_query_parameter(const char* url, const char *key, char *valu
     g_strfreev(args);
 }
 
-static void set_copy_mode_from_urls(gfal2_context_t context, const char * src_url, const char * dst_url)
-{
-    char copy_mode[64] = {0};
-    bool done = false;
-
-    extract_query_parameter(src_url, "copy_mode", copy_mode, sizeof(copy_mode));
-
-    if (copy_mode[0] != '\0') {
-        gfal2_log(G_LOG_LEVEL_INFO, "Source copy mode is %s", copy_mode);
-        done = set_copy_mode(context, copy_mode);
-    }
-
-    if (!done) {
-        extract_query_parameter(dst_url, "copy_mode", copy_mode, sizeof(copy_mode));
-
-        if (copy_mode[0] != '\0') {
-	          gfal2_log(G_LOG_LEVEL_INFO, "Destination copy mode is %s", copy_mode);
-            set_copy_mode(context, copy_mode);
-        }
-    }
-}
-
 static bool is_http_scheme(const char* url)
 {
     const char *schemes[] = {"http:", "https:", "dav:", "davs:", "s3:", "s3s:", "gcloud:", "gclouds:", "swift:", "swifts:", "cs3:", "cs3s:", NULL};
@@ -152,14 +83,11 @@ static bool is_http_scheme(const char* url)
     return false;
 }
 
-/*
-* Get custom storage element configuration option
-*/
-static int get_se_custom_opt_boolean(const gfal2_context_t& context, const char* surl, const char* key) {
+static std::string construct_config_group_from_url(const char* surl) {
     Davix::Uri uri(surl);
 
     if (uri.getStatus() != Davix::StatusCode::OK) {
-        return -1;
+        return "";
     }
 
     std::string prot = uri.getProtocol();
@@ -168,9 +96,22 @@ static int get_se_custom_opt_boolean(const gfal2_context_t& context, const char*
         prot.pop_back();
     }
 
-    GError* error = NULL;
     std::string group = prot + ":" + uri.getHost();
     std::transform(group.begin(), group.end(), group.begin(), ::toupper);
+    return group;
+}
+
+/*
+* Get custom storage element configuration option (boolean value)
+*/
+static int get_se_custom_opt_boolean(const gfal2_context_t& context, const char* surl, const char* key) {
+    std::string group = construct_config_group_from_url(surl);
+
+    if (group.empty()) {
+        return -1;
+    }
+
+    GError* error = NULL;
     gboolean value = gfal2_get_opt_boolean(context, group.c_str(), key, &error);
 
     if (error != NULL) {
@@ -180,6 +121,136 @@ static int get_se_custom_opt_boolean(const gfal2_context_t& context, const char*
 
     return value;
 }
+
+/*
+* Get custom storage element configuration option (string value)
+*/
+static const char* get_se_custom_opt_string(const gfal2_context_t& context, const char* surl, const char* key) {
+    std::string group = construct_config_group_from_url(surl);
+
+    if (group.empty()) {
+        return NULL;
+    }
+
+    GError* error = NULL;
+    gchar* value = gfal2_get_opt_string(context, group.c_str(), key, &error);
+
+    if (error != NULL) {
+        g_error_free(error);
+        return NULL;
+    }
+
+    return value;
+}
+
+void HttpCopyMode::next() {
+    if (copyMode == CopyMode::PULL) {
+        copyMode = CopyMode::PUSH;
+    } else if (copyMode == CopyMode::PUSH && streamingEnabled) {
+        copyMode = CopyMode::STREAM;
+    } else {
+        copyMode = CopyMode::NONE;
+    }
+}
+
+bool HttpCopyMode::hasNext() const {
+    return (copyMode == CopyMode::PULL) ||
+           (copyMode == CopyMode::PUSH && streamingEnabled);
+}
+
+const char* HttpCopyMode::str() const {
+    return CopyModeToStr(copyMode);
+}
+
+CopyMode HttpCopyMode::CopyModeFromQueryArguments(const char* surl) {
+    char buffer[64] = {0};
+
+    extract_query_parameter(surl, "copy_mode", buffer, sizeof(buffer));
+
+    if (buffer[0] != '\0') {
+        if (!strcmp(buffer, "pull")) {
+            return CopyMode::PULL;
+        } else if (!strcmp(buffer, "push")) {
+            return CopyMode::PUSH;
+        }
+    }
+
+    return CopyMode::NONE;
+}
+
+CopyMode HttpCopyMode::CopyModeFromStr(const char* copyModeStr) {
+    if (copyModeStr != NULL) {
+        if (!strcmp(copyModeStr, GFAL_TRANSFER_TYPE_PULL)) {
+            return CopyMode::PULL;
+        } else if (!strcmp(copyModeStr, GFAL_TRANSFER_TYPE_PUSH)) {
+            return CopyMode::PUSH;
+        } else if (!strcmp(copyModeStr, GFAL_TRANSFER_TYPE_STREAMED)) {
+            return CopyMode::STREAM;
+        }
+    }
+
+    return CopyMode::NONE;
+}
+
+const char* HttpCopyMode::CopyModeToStr(CopyMode copyMode) {
+    if (copyMode == CopyMode::PULL) {
+        return GFAL_TRANSFER_TYPE_PULL;
+    } else if (copyMode == CopyMode::PUSH) {
+        return GFAL_TRANSFER_TYPE_PUSH;
+    } else if (copyMode == CopyMode::STREAM) {
+        return GFAL_TRANSFER_TYPE_STREAMED;
+    } else {
+        return "None";
+    }
+}
+
+
+HttpCopyMode HttpCopyMode::ConstructCopyMode(gfal2_context_t context, const char* src, const char* dst) {
+    // If source is not HTTP or ThirdPartyCopy is disabled, go straight to streaming
+    if (!is_http_scheme(src) || !is_http_3rdcopy_enabled(context, src, dst)) {
+        return HttpCopyMode{CopyMode::STREAM, true, true};
+    }
+
+    bool streamingEnabled = is_http_streaming_enabled(context, src, dst);
+    CopyMode copyMode = HttpCopyMode::CopyModeFromQueryArguments(src);
+
+    if (copyMode == CopyMode::NONE) {
+        copyMode = HttpCopyMode::CopyModeFromQueryArguments(dst);
+    }
+
+    if (copyMode != CopyMode::NONE) {
+        // Disable fallback when copy mode extracted from query arguments
+        GError* error = NULL;
+        gfal2_set_opt_boolean(context, "HTTP PLUGIN", "ENABLE_REMOTE_COPY", TRUE, &error);
+        gfal2_set_opt_boolean(context, "HTTP PLUGIN", "ENABLE_FALLBACK_TPC_COPY", FALSE, &error);
+        gfal2_log(G_LOG_LEVEL_INFO, "Extracted copy mode from query arguments: %s",
+                  HttpCopyMode::CopyModeToStr(copyMode));
+        g_clear_error(&error);
+        return HttpCopyMode{copyMode, (copyMode == CopyMode::STREAM), streamingEnabled};
+    }
+
+    copyMode = HttpCopyMode::CopyModeFromStr(get_se_custom_opt_string(context, src, "DEFAULT_COPY_MODE"));
+
+    if (copyMode == CopyMode::NONE) {
+        copyMode = HttpCopyMode::CopyModeFromStr(get_se_custom_opt_string(context, dst, "DEFAULT_COPY_MODE"));
+    }
+
+    if (copyMode != CopyMode::NONE) {
+        gfal2_log(G_LOG_LEVEL_INFO, "Using storage specific copy mode configuration: %s",
+                  HttpCopyMode::CopyModeToStr(copyMode));
+    } else {
+        copyMode = HttpCopyMode::CopyModeFromStr(gfal2_get_opt_string_with_default(context, "HTTP PLUGIN", "DEFAULT_COPY_MODE", GFAL_TRANSFER_TYPE_PULL));
+
+        if (copyMode == CopyMode::NONE) {
+            copyMode = CopyMode::PULL;
+            gfal2_log(G_LOG_LEVEL_WARNING, "Invalid Gfal2 configuration for 'DEFAULT_COPY_MODE'. Using default copy mode: %s",
+                      HttpCopyMode::CopyModeToStr(copyMode));
+        }
+    }
+
+    return HttpCopyMode{copyMode, (copyMode == CopyMode::STREAM), streamingEnabled};
+};
+
 
 bool is_http_3rdcopy_enabled(gfal2_context_t context, const char* src, const char* dst)
 {
@@ -206,13 +277,6 @@ bool is_http_streaming_enabled(gfal2_context_t context, const char* src, const c
     return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "ENABLE_STREAM_COPY", TRUE);
 }
 
-static CopyMode get_default_copy_mode(gfal2_context_t context)
-{
-    gchar* copy_mode_str = gfal2_get_opt_string_with_default(context, "HTTP PLUGIN", "DEFAULT_COPY_MODE", GFAL_TRANSFER_TYPE_PULL);
-    CopyMode copy_mode = get_copy_mode_from_string(copy_mode_str);
-    g_free(copy_mode_str);
-    return copy_mode;
-}
 
 bool is_http_3rdcopy_fallback_enabled(gfal2_context_t context, const char* src, const char* dst)
 {
@@ -448,7 +512,7 @@ static void set_transfer_metadata_header(Davix::RequestParams& req_params, CopyM
                                new CryptoPP::Base64Encoder(
                                        new CryptoPP::StringSink(encoded_metadata), noNewLineInBase64Output));
 
-    if (mode == HTTP_COPY_PUSH) {
+    if (mode == CopyMode::PUSH) {
         req_params.addHeader("TransferHeaderTransferMetadata", encoded_metadata);
     } else {
         req_params.addHeader("TransferMetadata", encoded_metadata);
@@ -471,11 +535,11 @@ static int gfal_http_third_party_copy(gfal2_context_t context,
     );
 
     Davix::RequestParams req_params;
-    davix->get_tpc_params(&req_params, Davix::Uri(src), Davix::Uri(dst), params, mode == HTTP_COPY_PUSH);
+    davix->get_tpc_params(&req_params, Davix::Uri(src), Davix::Uri(dst), params, mode == CopyMode::PUSH);
 
-    if (mode == HTTP_COPY_PUSH) {
+    if (mode == CopyMode::PUSH) {
         req_params.setCopyMode(Davix::CopyMode::Push);
-    } else if (mode == HTTP_COPY_PULL) {
+    } else if (mode == CopyMode::PULL) {
         req_params.setCopyMode(Davix::CopyMode::Pull);
     } else {
         gfal2_set_error(err, http_plugin_domain, EIO, __func__, "gfal_http_third_party_copy invalid copy mode");
@@ -488,11 +552,11 @@ static int gfal_http_third_party_copy(gfal2_context_t context,
     if (*err) {
         g_clear_error(err);
     } else {
-        if (mode == HTTP_COPY_PUSH) {
+        if (mode == CopyMode::PUSH) {
             if ((checksum_mode & GFALT_CHECKSUM_SOURCE) || (checksum_mode == GFALT_CHECKSUM_NONE)) {
                 req_params.addHeader("RequireChecksumVerification", "false");
             }
-        } else if (mode == HTTP_COPY_PULL) {
+        } else if (mode == CopyMode::PULL) {
             if ((checksum_mode & GFALT_CHECKSUM_TARGET) || (checksum_mode == GFALT_CHECKSUM_NONE)) {
                 req_params.addHeader("RequireChecksumVerification", "false");
             }
@@ -663,7 +727,7 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
     // Set transfer metadata header
     const char* const metadata = gfalt_get_transfer_metadata(params, NULL);
     if (metadata != NULL && metadata[0] != '\0') {
-        set_transfer_metadata_header(req_params, HTTP_COPY_STREAM, metadata);
+        set_transfer_metadata_header(req_params, CopyMode::STREAM, metadata);
     }
 
     if (dst_uri.getProtocol() == "s3" || dst_uri.getProtocol() == "s3s")
@@ -826,28 +890,10 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          GFAL_EVENT_NONE, GFAL_EVENT_PREPARE_EXIT,
                          "%s => %s", src_full, dst_full);
 
-    set_copy_mode_from_urls(context,src_full, dst_full);
-    // Initial copy mode
-    CopyMode copy_mode = get_default_copy_mode(context);
-
-    bool only_streaming = false;
-    // If source is not even http, go straight to streamed
-    // or if third party copy is disabled, go straight to streamed
-    if (!is_http_scheme(src) || !is_http_3rdcopy_enabled(context, src, dst)) {
-        copy_mode = HTTP_COPY_STREAM;
-        only_streaming = true;
-    }
-
     int ret = 0;
     std::list<std::string> attempted_mode;
-    CopyMode end_copy_mode = HTTP_COPY_END;
     HttpTransferHosts transferHosts;
-
-    // Stop the loop prematurely if streaming is disabled
-    bool streaming_enabled = is_http_streaming_enabled(context, stripped_src, stripped_dst);
-    if (!streaming_enabled) {
-        end_copy_mode = HTTP_COPY_STREAM;
-    }
+    HttpCopyMode copyMode = HttpCopyMode::ConstructCopyMode(context, src, dst);
 
     plugin_trigger_event(params, http_plugin_domain,
                          GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_ENTER,
@@ -855,19 +901,18 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
 
     do {
         // Perform the copy, going through the different fallback copy modes
-        gfal2_log(G_LOG_LEVEL_MESSAGE, "Trying copying with mode %s",
-                  CopyModeStr[copy_mode]);
+        gfal2_log(G_LOG_LEVEL_MESSAGE, "Trying copying with mode %s", copyMode.str());
         plugin_trigger_event(params, http_plugin_domain,
                              GFAL_EVENT_NONE, GFAL_EVENT_TRANSFER_TYPE,
-                             "%s", CopyModeStr[copy_mode]);
+                             "%s", copyMode.str());
         g_clear_error(&nested_error);
 
-        if (copy_mode == HTTP_COPY_STREAM) {
-            if (streaming_enabled) {
+        if (copyMode.value() == CopyMode::STREAM) {
+            if (copyMode.isStreamingEnabled()) {
                 ret = gfal_http_streamed_copy(context, davix, src, dst,
                                               checksum_mode, checksum_type, user_checksum,
                                               params, &nested_error);
-            } else if (only_streaming) {
+            } else if (copyMode.isStreamingOnly()) {
                 gfal2_set_error(&nested_error, http_plugin_domain, EINVAL, __func__,
                                 "STREAMED DISABLED Only streamed copy possible but streaming is disabled");
                 gfal2_log(G_LOG_LEVEL_WARNING, "%s", nested_error->message);
@@ -875,22 +920,21 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                 break;
             }
         } else {
-            ret = gfal_http_third_party_copy(context, davix, src, dst, copy_mode, params,
+            ret = gfal_http_third_party_copy(context, davix, src, dst, copyMode.value(), params,
                                              transferHosts, &nested_error);
         }
 
         if (ret == 0) {
-            gfal2_log(G_LOG_LEVEL_MESSAGE, "Copy succeeded using mode %s", CopyModeStr[copy_mode]);
+            gfal2_log(G_LOG_LEVEL_MESSAGE, "Copy succeeded using mode %s", copyMode.str());
             break;
         } else {
-            gfal2_log(G_LOG_LEVEL_WARNING, "Copy failed with mode %s: %s", CopyModeStr[copy_mode], nested_error->message);
+            gfal2_log(G_LOG_LEVEL_WARNING, "Copy failed with mode %s: %s", copyMode.str(), nested_error->message);
             // Delete any potential destination file
             gfal_http_copy_cleanup(plugin_data, dst, &nested_error);
         }
 
-        attempted_mode.emplace_back(CopyModeStr[copy_mode]);
-        copy_mode = (CopyMode)((int)copy_mode + 1);
-    } while ((copy_mode < end_copy_mode) &&
+        attempted_mode.emplace_back(copyMode.str());
+    } while (copyMode.hasNext() &&
              is_http_3rdcopy_fallback_enabled(context, stripped_src, stripped_dst) &&
              gfal_http_copy_should_fallback(nested_error->code));
 

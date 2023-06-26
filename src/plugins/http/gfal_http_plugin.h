@@ -27,6 +27,7 @@
 #include <davix.hpp>
 
 #include "gfal_http_plugin_token.h"
+#include "gfal_http_plugin_copy.h"
 
 #define HTTP_CONFIG_OP_TIMEOUT     "OPERATION_TIMEOUT"
 
