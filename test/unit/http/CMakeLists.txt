@@ -1,5 +1,6 @@
 add_executable(gfal2_token_map_test "test_token_map.cpp")
 add_executable(gfal2_custom_http_options_test "test_custom_http_options.cpp")
+add_executable(gfal2_http_copy_mode_test "test_http_copy_mode.cpp")
 
 find_package(Davix REQUIRED)
 find_package(JSONC REQUIRED)
@@ -38,5 +39,12 @@ target_link_libraries(gfal2_custom_http_options_test
 target_include_directories(gfal2_custom_http_options_test PRIVATE
   ${DAVIX_INCLUDE_DIR})
 
+target_link_libraries(gfal2_http_copy_mode_test
+  ${test_plugin_http_link_libraries})
+
+target_include_directories(gfal2_http_copy_mode_test PRIVATE
+  ${DAVIX_INCLUDE_DIR})
+
 add_test(gfal2_token_map_test gfal2_token_map_test)
 add_test(gfal2_custom_http_options_test gfal2_custom_http_options_test)
+add_test(gfal2_http_copy_mode_test gfal2_http_copy_mode_test)
