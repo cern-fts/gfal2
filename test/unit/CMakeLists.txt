@@ -21,8 +21,7 @@ set (TEST_MDS "")
 endif (PUGIXML_FOUND)
 
 if (PLUGIN_HTTP)
-    set(TEST_TOKEN_MAP ./http/test_token_map.cpp)
-    set(TEST_CUSTOM_HTTP_OPTIONS http/test_custom_http_options.cpp)
+    file(GLOB TEST_HTTP_PLUGIN "./http/test_*.cpp")
     set(HTTP_PLUGIN_LIBRARIES  plugin_http_static)
 
     include     (CheckLibraryExists)
@@ -32,8 +31,7 @@ if (PLUGIN_HTTP)
     include_directories(${DAVIX_INCLUDE_DIR})
 
 else(PLUGIN_HTTP)
-    set(TEST_TOKEN_MAP "")
-    set(TEST_CUSTOM_HTTP_OPTIONS "")
+    set(TEST_HTTP_PLUGIN "")
     set(HTTP_PLUGIN_LIBRARIES "")
 endif (PLUGIN_HTTP)
 
@@ -42,8 +40,7 @@ add_executable(gfal2-unit-tests
     ./config/config_test.cpp
     ./cred/test_cred.cpp
     ./global/global_test.cpp
-    ${TEST_TOKEN_MAP}
-    ${TEST_CUSTOM_HTTP_OPTIONS}
+    ${TEST_HTTP_PLUGIN}
     ${TEST_MDS}
     ./transfer/tests_callbacks.cpp
     ./transfer/tests_params.cpp
