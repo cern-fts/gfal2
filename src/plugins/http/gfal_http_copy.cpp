@@ -445,20 +445,26 @@ static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfDat
 
 /// Utility function to clean destination file after failed copy operation.
 /// Clean-up is performed if the copy error is something else than EEXIST
-static void gfal_http_copy_cleanup(plugin_handle plugin_data, const char* dst, GError** err)
+/// Triggers an event when attempts to unlink destination file.
+/// If unlink fails reports in the event the correspondent errno.
+/// If unlink succeeds or if it fails because the file does not exist, the event reports 0 as the status code.
+static void gfal_http_copy_cleanup(plugin_handle plugin_data, const gfalt_params_t& params, const char* dst, GError** err)
 {
     GError *unlink_err = NULL;
 
     if ((*err)->code != EEXIST) {
+        int status = 0;
         if (gfal_http_unlinkG(plugin_data, dst, &unlink_err) != 0) {
             if (unlink_err->code != ENOENT) {
                 gfal2_log(G_LOG_LEVEL_WARNING,
                           "When trying to clean the destination: %s", unlink_err->message);
+                status = unlink_err->code;
             }
             g_error_free(unlink_err);
         } else {
             gfal2_log(G_LOG_LEVEL_DEBUG, "Destination file removed");
         }
+        plugin_trigger_event(params, http_plugin_domain, GFAL_EVENT_DESTINATION, GFAL_EVENT_CLEANUP, "%d", status);
     } else {
         gfal2_log(G_LOG_LEVEL_DEBUG, "The transfer failed because the file exists. Do not clean!");
     }
@@ -929,7 +935,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         } else {
             gfal2_log(G_LOG_LEVEL_WARNING, "Copy failed with mode %s: %s", copyMode.str(), nested_error->message);
             // Delete any potential destination file
-            gfal_http_copy_cleanup(plugin_data, dst, &nested_error);
+            gfal_http_copy_cleanup(plugin_data, params, dst, &nested_error);
         }
 
         attempted_mode.emplace_back(copyMode.str());

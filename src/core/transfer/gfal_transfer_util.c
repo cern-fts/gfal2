@@ -45,6 +45,7 @@ GQuark GFAL_EVENT_TRANSFER_TYPE;
 GQuark GFAL_EVENT_IPV4;
 GQuark GFAL_EVENT_IPV6;
 GQuark GFAL_EVENT_EVICT;
+GQuark GFAL_EVENT_CLEANUP;
 
 
 __attribute__((constructor))
@@ -67,6 +68,7 @@ static void init_event_quarks() {
     GFAL_EVENT_IPV4 = g_quark_from_static_string("IPV4");
     GFAL_EVENT_IPV6 = g_quark_from_static_string("IPV6");
     GFAL_EVENT_EVICT = g_quark_from_static_string("EVICT");
+    GFAL_EVENT_CLEANUP = g_quark_from_static_string("CLEANUP");
 }
 
 
