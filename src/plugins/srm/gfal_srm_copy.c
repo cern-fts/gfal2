@@ -368,6 +368,7 @@ static void srm_force_unlink(plugin_handle handle,
 
 static void srm_rollback_put(plugin_handle handle,
     gfal2_context_t context,
+    gfalt_params_t params,
     const char *surl, const char *token,
     gboolean transfer_finished,
     GError **err)
@@ -375,10 +376,20 @@ static void srm_rollback_put(plugin_handle handle,
     gfal2_log(G_LOG_LEVEL_MESSAGE, "Rolling back PUT");
 
     GError *abort_error = NULL;
-    // If the transfer finished, or the destination is not an SRM
-    // remove the destination
+    // If the transfer finished, or the destination is not an SRM unlink the destination and trigger an event
+    // If unlink fails reports in the event the correspondent errno.
+    // If unlink succeeds or if it fails because the file does not exist, the event reports 0 as the status code.
     if ((*err && (*err)->code != EEXIST) && (transfer_finished || !srm_check_url(surl))) {
-        gfal2_unlink(context, surl, &abort_error);
+        int status = 0;
+        if (gfal2_unlink(context, surl, &abort_error)) {
+            if (abort_error->code != ENOENT) {
+                gfal2_log(G_LOG_LEVEL_WARNING, "When trying to clean the destination: %s", abort_error->message);
+                status = abort_error->code;
+            }
+        } else {
+            gfal2_log(G_LOG_LEVEL_INFO, "Destination file removed");
+        }
+        plugin_trigger_event(params, srm_domain(), GFAL_EVENT_DESTINATION, GFAL_EVENT_CLEANUP, "%d", status);
         // It may not be there, so be gentle
         if (abort_error != NULL)
             g_error_free(abort_error);
@@ -530,14 +541,14 @@ static int srm_do_transfer(plugin_handle handle, gfal2_context_t context,
 }
 
 
-static int srm_cleanup_copy(plugin_handle handle, gfal2_context_t context,
+static int srm_cleanup_copy(plugin_handle handle, gfal2_context_t context, gfalt_params_t params,
     const char *source, const char *destination,
     const char *token_source, const char *token_destination,
     gboolean transfer_finished,
     GError **err)
 {
     if (*err != NULL) {
-        srm_rollback_put(handle, context, destination, token_destination, transfer_finished, err);
+        srm_rollback_put(handle, context, params, destination, token_destination, transfer_finished, err);
     }
     if (token_source[0] != '\0') {
         srm_release_get(handle, source, token_source, err);
@@ -642,7 +653,7 @@ int srm_plugin_filecopy(plugin_handle handle, gfal2_context_t context,
     if (nested_error) {
         gfal2_log(G_LOG_LEVEL_WARNING, "Transfer failed with: %s", nested_error->message);
     }
-    srm_cleanup_copy(handle, context, source, dest,
+    srm_cleanup_copy(handle, context, params, source, dest,
         token_source, token_destination,
         transfer_finished, &nested_error);
     if (nested_error != NULL)
