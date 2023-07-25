@@ -16,21 +16,35 @@
 
 # This code sets the following variables:
 #
-# CRYPTOPP_LIBRARIES       = full path to the crytopp libraries
-# CRYPTOPP_INCLUDE_DIRS    = include dir to be used when using the crytopp library
-# CRYPTOPP_FOUND           = set to true if crytopp was found successfully
+# CRYPTOPP_LIBRARIES       = full path to the cryptopp libraries
+# CRYPTOPP_INCLUDE_DIRS    = include dir to be used when using the cryptopp library
+# CRYPTOPP_FOUND           = set to true if cryptopp was found successfully
 
-
-find_path(CRYPTOPP_INCLUDE_DIRS
-        base64.h
-        PATHS /usr/include/cryptopp
-        NO_DEFAULT_PATH)
-
+# -----------------------------------------------------
+# Cryptopp Libraries
+# -----------------------------------------------------
 find_library(CRYPTOPP_LIBRARIES
-        NAME cryptopp
-        PATHS /usr/lib64
-        NO_DEFAULT_PATH)
+    NAMES cryptopp
+    HINTS ${CRYPTOPP_LOCATION}
+          /lib /lib64 /usr/lib /usr/lib64
+    DOC "The cryptopp library"
+)
 
+# -----------------------------------------------------
+# Cryptopp Include Directories
+# -----------------------------------------------------
+find_path(CRYPTOPP_INCLUDE_DIRS
+    NAMES base64.h                # header for base64 encoding, not processor architecture
+    HINTS ${CRYPTOPP_LOCATION}
+          /usr/include/cryptopp
+    DOC "The cryptopp headers"
+)
+
+# -------------------------------------------------------------------
+# Handle the QUIETLY and REQUIRED arguments
+# and set CRYPTOPP to TRUE if all listed variables are TRUE
+# -------------------------------------------------------------------
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(cryptopp DEFAULT_MSG
-        CRYPTOPP_INCLUDE_DIRS CRYPTOPP_LIBRARIES)
+    CRYPTOPP_LIBRARIES CRYPTOPP_INCLUDE_DIRS)
+mark_as_advanced(CRYPTOPP_LIBRARIES CRYPTOPP_INCLUDE_DIRS)

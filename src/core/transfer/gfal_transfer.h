@@ -87,6 +87,7 @@ extern GQuark GFAL_EVENT_TRANSFER_TYPE;   /**< Triggered to register the transfe
 extern GQuark GFAL_EVENT_IPV4;            /**< Triggered to register the transfer is done over IPv4 */
 extern GQuark GFAL_EVENT_IPV6;            /**< Triggered to register the transfer is done over IPv6 */
 extern GQuark GFAL_EVENT_EVICT;           /**< Triggered after a file eviction operation  */
+extern GQuark GFAL_EVENT_CLEANUP;         /**< Triggered after a delete to cleanup a failed transfer */
 
 /**
  * Types for for GFAL_EVENT_TRANSFER_TYPE
