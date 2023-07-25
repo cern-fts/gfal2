@@ -1,6 +1,17 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Tue Jul 25 2023 Mihai Patrascoiu <mipatras at cern.ch> - 2.21.5
+###Bug
+- [DMC-1380] - Return an error code when checksum request fails over HTTP
+
+###New Feature
+- [DMC-1382] - Gfal2 should propagate the CLEANUP event
+
+###Improvement
+- [DMC-1378] - Archive and stage poll should show response from XrootD server when response is an invalid JSON
+- [DMC-1381] - Configure DEFAULT_COPY_MODE per storage endpoint
+
 ## Mon Apr 03 2023 Joao Lopes <batistal at cern.ch> - 2.21.4
 ###New Feature
 - [DMC-1367] - Gfal2 support for transfer metadata
