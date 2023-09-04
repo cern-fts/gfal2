@@ -65,6 +65,7 @@ gfalt_params_t gfalt_params_handle_copy(gfalt_params_t params, GError ** err)
 {
     gfalt_params_t p = g_new0(struct _gfalt_params_t, 1);
     memcpy(p, params, sizeof(struct _gfalt_params_t));
+    p->stage_request_id = g_strdup(params->stage_request_id);
     p->transfer_metadata = g_strdup(params->transfer_metadata);
     p->src_space_token = g_strdup(params->src_space_token);
     p->dst_space_token = g_strdup(params->dst_space_token);
@@ -100,6 +101,7 @@ void gfalt_params_handle_delete(gfalt_params_t params, GError ** err)
 {
     if (params) {
         params->lock = FALSE;
+        g_free(params->stage_request_id);
         g_free(params->transfer_metadata);
         g_free(params->src_space_token);
         g_free(params->dst_space_token);
