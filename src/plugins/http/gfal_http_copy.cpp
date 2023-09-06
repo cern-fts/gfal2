@@ -574,6 +574,15 @@ static int gfal_http_third_party_copy(gfal2_context_t context,
         set_transfer_metadata_header(req_params, mode, metadata);
     }
 
+    // Set SciTag header
+    guint scitag = gfalt_get_scitag(params, NULL);
+
+    if (scitag > 0 && scitag < GFAL_SCITAG_MAX_VALUE) {
+        req_params.addHeader("SciTag", std::to_string(scitag));
+    } else if (scitag >= GFAL_SCITAG_MAX_VALUE) {
+        gfal2_log(G_LOG_LEVEL_WARNING, "Invalid SciTag value: %u", scitag);
+    }
+
     // add timeout
     struct timespec opTimeout;
     opTimeout.tv_sec = gfalt_get_timeout(params, NULL);

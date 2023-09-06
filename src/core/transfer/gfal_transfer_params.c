@@ -38,6 +38,7 @@ static void gfalt_params_handle_init(gfalt_params_t p, GError ** err)
     p->strict_mode = FALSE;
     p->parent_dir_create = FALSE;
     p->proxy_delegation = TRUE;
+    p->scitag = 0;
     p->evict = FALSE;
 
     p->monitor_callbacks = NULL;
@@ -380,6 +381,19 @@ gboolean gfalt_get_use_proxy_delegation(gfalt_params_t params, GError** err)
 {
     g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
     return params->proxy_delegation;
+}
+
+gint gfalt_set_scitag(gfalt_params_t params, guint scitag, GError** err)
+{
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+    params->scitag = scitag;
+    return 0;
+}
+
+guint gfalt_get_scitag(gfalt_params_t params, GError** err)
+{
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+    return params->scitag;
 }
 
 gint gfalt_set_use_evict(gfalt_params_t params, gboolean evict, GError** err)

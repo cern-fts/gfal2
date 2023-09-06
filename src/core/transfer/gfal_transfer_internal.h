@@ -37,6 +37,7 @@ struct _gfalt_params_t {
     gboolean local_transfers;   // local transfer authorized
     gboolean parent_dir_create; // force the creation of the parent dir
     gboolean proxy_delegation;  // use TPC proxy delegation
+    guint scitag;               // transfer SciTag flow
     // disk residency management for tape endpoints
     gboolean evict;             // evict file from disk buffer
     gchar *stage_request_id;    // request id used in the staging operation

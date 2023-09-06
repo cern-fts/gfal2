@@ -22,6 +22,9 @@
 #ifndef _GFAL_HTTP_PLUGIN_COPY_H
 #define _GFAL_HTTP_PLUGIN_COPY_H
 
+/** SciTag maximum legal value */
+#define GFAL_SCITAG_MAX_VALUE 1<<16
+
 /**
  * Gfal2 HTTP Plugin abstraction for the copy mode,
  * which can be one of "pull", "push" and "stream".
