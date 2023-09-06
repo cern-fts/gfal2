@@ -59,7 +59,7 @@ typedef struct _gfalt_transfer_status* gfalt_transfer_status_t;
 
 /**
  * @brief copy gfalt_monitor_transfer
- * This function is called callback_mperiod milli-seconds in order to provide informations and a control on the tranfers.
+ * This function is called callback_mperiod milli-seconds in order to provide information and a control on the transfers.
  *  @param src : URL of the source file
  *  @param dst : URL of the dest file
  *  @param user_data : external pointer provided before
@@ -162,7 +162,7 @@ void gfalt_params_handle_delete(gfalt_params_t params, GError ** err);
 gfalt_params_t gfalt_params_handle_copy(gfalt_params_t params, GError ** err);
 
 /**
- * Define the maximum time acceptable for the file tranfer
+ * Define the maximum time acceptable for the file transfer
  */
 gint gfalt_set_timeout(gfalt_params_t, guint64 timeout, GError** err);
 
@@ -172,7 +172,7 @@ gint gfalt_set_timeout(gfalt_params_t, guint64 timeout, GError** err);
 guint64 gfalt_get_timeout(gfalt_params_t handle, GError** err);
 
 /**
- * Define the maximum number of parallels connexion to use for the file tranfer
+ * Define the maximum number of parallels connexion to use for the file transfer
  */
 gint gfalt_set_nbstreams(gfalt_params_t, guint nbstreams, GError** err);
 
@@ -222,7 +222,7 @@ gint gfalt_set_dst_spacetoken(gfalt_params_t params, const char* srm_spacetoken,
 const gchar* gfalt_get_dst_spacetoken(gfalt_params_t params, GError** err);
 
 /**
- * set the replace/overwritte option.
+ * set the replace/overwrite option.
  * default : false
  * when True, if a destination file already exist, it is deleted before the copy.
  */
@@ -414,13 +414,13 @@ int gfalt_copy_file(gfal2_context_t context, gfalt_params_t params, const char* 
 /**
  * @brief bulk copy operation
  * If not provided by the plugin, it will fallback to a serialized implementation
- * Note that file_erros will point to an array of nbfiles pointers to GError, where each one
+ * Note that file_errors will point to an array of nbfiles pointers to GError, where each one
  * corresponds to the source and destination pair in the same position
- * op_error will contain an error if something happened _before_ file transfering could be attempted
+ * op_error will contain an error if something happened _before_ file transferring could be attempted
  */
 int gfalt_copy_bulk(gfal2_context_t context, gfalt_params_t params, size_t nbfiles,
         const char* const * srcs, const char* const * dsts, const char* const* checksums,
-        GError** op_error, GError*** file_erros);
+        GError** op_error, GError*** file_errors);
 
 /**
  * Get a transfer status indicator
@@ -438,11 +438,12 @@ size_t gfalt_copy_get_average_baudrate(gfalt_transfer_status_t, GError ** err);
 size_t gfalt_copy_get_instant_baudrate(gfalt_transfer_status_t, GError ** err);
 
 /**
- * Get the current number of bytes transfered
+ * Get the current number of bytes transferred
  */
-size_t gfalt_copy_get_bytes_transfered(gfalt_transfer_status_t, GError ** err);
+GFAL2_DEPRECATED(gfalt_copy_get_bytes_transferred) size_t gfalt_copy_get_bytes_transfered(gfalt_transfer_status_t, GError ** err);
+size_t gfalt_copy_get_bytes_transferred(gfalt_transfer_status_t, GError ** err);
 /**
- * Get the elapsed tiem since the call to \ref gfalt_copy_file
+ * Get the elapsed time since the call to \ref gfalt_copy_file
  */
 time_t gfalt_copy_get_elapsed_time(gfalt_transfer_status_t, GError ** err);
 

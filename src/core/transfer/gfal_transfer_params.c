@@ -376,7 +376,7 @@ gint gfalt_set_use_proxy_delegation(gfalt_params_t params, gboolean proxy_delega
     return 0;
 }
 
-gboolean gfalt_get_use_proxy_delegation(gfalt_params_t params , GError** err)
+gboolean gfalt_get_use_proxy_delegation(gfalt_params_t params, GError** err)
 {
     g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
     return params->proxy_delegation;
@@ -531,6 +531,11 @@ size_t gfalt_copy_get_instant_baudrate(gfalt_transfer_status_t s, GError ** err)
 
 
 size_t gfalt_copy_get_bytes_transfered(gfalt_transfer_status_t s, GError ** err)
+{
+    return gfalt_copy_get_bytes_transferred(s, err);
+}
+
+size_t gfalt_copy_get_bytes_transferred(gfalt_transfer_status_t s, GError ** err)
 {
     g_return_val_err_if_fail(s != NULL, -1, err, "[BUG] invalid transfer status handle");
     return s->bytes_transfered;
