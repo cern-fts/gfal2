@@ -386,6 +386,7 @@ gboolean gfalt_get_use_proxy_delegation(gfalt_params_t params, GError** err)
 gint gfalt_set_scitag(gfalt_params_t params, guint scitag, GError** err)
 {
     g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+    g_return_val_err_if_fail((scitag > 64 && scitag < 65536), -1, err, "Invalid SciTag value (must be in the [65, 65535] range)");
     params->scitag = scitag;
     return 0;
 }
