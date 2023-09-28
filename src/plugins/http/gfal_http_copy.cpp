@@ -577,10 +577,11 @@ static int gfal_http_third_party_copy(gfal2_context_t context,
     // Set SciTag header
     guint scitag = gfalt_get_scitag(params, NULL);
 
-    if (scitag > 64 && scitag < GFAL_SCITAG_MAX_VALUE) {
+    if (scitag >= GFAL_SCITAG_MIN_VALUE && scitag <= GFAL_SCITAG_MAX_VALUE) {
         req_params.addHeader("SciTag", std::to_string(scitag));
-    } else if (scitag >= GFAL_SCITAG_MAX_VALUE) {
-        gfal2_log(G_LOG_LEVEL_WARNING, "Invalid SciTag value: %u", scitag);
+    } else {
+        gfal2_log(G_LOG_LEVEL_WARNING, "Invalid SciTag value: %u (not in the [%u - %u] range)", scitag,
+                  GFAL_SCITAG_MIN_VALUE, GFAL_SCITAG_MAX_VALUE);
     }
 
     // add timeout
