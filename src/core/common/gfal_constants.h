@@ -95,6 +95,10 @@ extern "C"
 #define GFAL_XATTR_TAPE_API_URI "taperestapi.uri"
 #define GFAL_XATTR_TAPE_API_VERSION "taperestapi.version"
 
+/** SciTag legal values */
+#define GFAL_SCITAG_MIN_VALUE ((1<<6) + 1)
+#define GFAL_SCITAG_MAX_VALUE ((1<<16) - 1)
+
 #ifdef __cplusplus
 }
 #endif

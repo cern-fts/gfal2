@@ -340,6 +340,16 @@ gint gfalt_set_use_proxy_delegation(gfalt_params_t, gboolean proxy_delegation, G
 gboolean gfalt_get_use_proxy_delegation(gfalt_params_t, GError** err);
 
 /**
+ * Set the SciTag transfer flow label
+ */
+gint gfalt_set_scitag(gfalt_params_t, guint scitag, GError** err);
+
+/**
+ * Get the SciTag transfer flow label
+ */
+guint gfalt_get_scitag(gfalt_params_t, GError** err);
+
+/**
  * Enable or disable usage of file eviction
  */
 gint gfalt_set_use_evict(gfalt_params_t, gboolean evict, GError** err);
