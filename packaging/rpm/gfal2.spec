@@ -10,11 +10,11 @@ Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 License:            ASL 2.0
 URL:                https://dmc-docs.web.cern.ch/dmc-docs/gfal2/gfal2.html
-# git clone --depth=1 --branch master https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.21.5
-# pushd gfal2-2.21.5
-# git checkout v2.21.5
+# git clone --depth=1 --branch master https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.22.0
+# pushd gfal2-2.22.0
+# git checkout v2.22.0
 # popd
-# tar czf gfal2-2.21.5.tar.gz --exclude-vcs gfal2-2.21.5
+# tar czf gfal2-2.22.0.tar.gz --exclude-vcs gfal2-2.22.0
 Source0:            %{name}-%{version}.tar.gz
 
 #main lib dependencies
@@ -341,6 +341,10 @@ fi
 
 
 %changelog
+* Wed Oct 18 2023 Joao Lopes <batistal at cern.ch> - 2.22.0-1
+- New upstream release
+- Introduces support for scitags
+
 * Tue Jul 25 2023 Mihai Patrascoiu <mipatras at cern.ch> - 2.21.5-1
 - New upstream release
 

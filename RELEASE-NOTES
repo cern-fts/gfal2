@@ -1,6 +1,14 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Wed Oct 18 2023 Joao Lopes <batistal at cern.ch> - 2.22.0
+###New Feature
+- [DMC-1344] - Propagate Scitags during TPC transfers
+
+###Task
+- [DMC-1379] - Move DMC projects to Alma8 and Alma9
+- [DMC-1387] - Data Management Clients for Fedora 38
+
 ## Tue Jul 25 2023 Mihai Patrascoiu <mipatras at cern.ch> - 2.21.5
 ###Bug
 - [DMC-1380] - Return an error code when checksum request fails over HTTP
