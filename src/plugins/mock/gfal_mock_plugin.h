@@ -49,6 +49,8 @@ void gfal_plugin_mock_get_value(const char *url, const char *key, char *value, s
 
 long long gfal_plugin_mock_get_int_from_str(const char* buff);
 
+unsigned long long gfal_plugin_mock_get_unsigned_int_from_str(const char* buff);
+
 // Metadata operations
 int gfal_plugin_mock_stat(plugin_handle plugin_data,
     const char *path, struct stat *buf, GError **err);

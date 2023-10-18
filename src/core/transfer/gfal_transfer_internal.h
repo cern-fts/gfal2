@@ -28,7 +28,7 @@
 
 struct _gfalt_params_t {
     gboolean lock;              // lock enabled after the start of the transfer
-    guint64 timeout;            // connexion timeout
+    guint64 timeout;            // connection timeout
     guint64 tcp_buffer_size;
     gboolean replace_existing;  // replace destination or not
     off_t start_offset;         // start offset in case of restart
@@ -37,6 +37,7 @@ struct _gfalt_params_t {
     gboolean local_transfers;   // local transfer authorized
     gboolean parent_dir_create; // force the creation of the parent dir
     gboolean proxy_delegation;  // use TPC proxy delegation
+    guint scitag;               // transfer SciTag flow in the [65-65535] range
     // disk residency management for tape endpoints
     gboolean evict;             // evict file from disk buffer
     gchar *stage_request_id;    // request id used in the staging operation

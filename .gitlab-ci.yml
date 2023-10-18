@@ -4,6 +4,13 @@ stages:
   - publish
 
 #--------------------------
+# Notes
+#--------------------------
+# Gitlab-CI + yum is known to hang on CC7 images
+# The file descriptors limit must be relaxed in order to allow yum to operate
+# https://gitlab.docs.cern.ch/docs/Build%20your%20application/CI-CD/Runners/TroubleShooting/yum-install-hang/
+
+#--------------------------
 # Build templates
 #--------------------------
 
@@ -27,22 +34,24 @@ stages:
 
 cc7:
   image: gitlab-registry.cern.ch/linuxsupport/cc7-base
+  before_script:
+    - ulimit -n 1048576 # Note on gitlab-CI + yum hanging
   <<: *build-template_definition
 
-centos8:
-  image: gitlab-registry.cern.ch/linuxsupport/c8-base
+alma8:
+  image: gitlab-registry.cern.ch/linuxsupport/alma8-base
   <<: *build-template_definition
 
-cs9:
-  image: gitlab-registry.cern.ch/linuxsupport/cs9-base
-  <<: *build-template_definition
-
-fedora-36:
-  image: fedora:36
+alma9:
+  image: gitlab-registry.cern.ch/linuxsupport/alma9-base
   <<: *build-template_definition
 
 fedora-37:
   image: fedora:37
+  <<: *build-template_definition
+
+fedora-38:
+  image: fedora:38
   <<: *build-template_definition
 
 fedora-rawhide:
@@ -75,29 +84,24 @@ cc7-test:
   needs:
     - job: cc7
   before_script:
+    - ulimit -n 1048576 # Note on gitlab-CI + yum hanging
     - yum install -y dnf epel-release
   <<: *test-template_definition
 
-centos8-test:
-  image: gitlab-registry.cern.ch/linuxsupport/c8-base
+alma8-test:
+  image: gitlab-registry.cern.ch/linuxsupport/alma8-base
   needs:
-    - job: centos8
+    - job: alma8
   before_script:
     - dnf install -y epel-release
   <<: *test-template_definition
 
-cs9-test:
-  image: gitlab-registry.cern.ch/linuxsupport/cs9-base
+alma9-test:
+  image: gitlab-registry.cern.ch/linuxsupport/alma9-base
   needs:
-    - job: cs9
+    - job: alma9
   before_script:
     - dnf install -y epel-release
-  <<: *test-template_definition
-
-fedora-36-test:
-  image: fedora:36
-  needs:
-    - job: fedora-36
   <<: *test-template_definition
 
 fedora-37-test:
@@ -106,40 +110,46 @@ fedora-37-test:
     - job: fedora-37
   <<: *test-template_definition
 
+fedora-38-test:
+  image: fedora:38
+  needs:
+    - job: fedora-38
+  <<: *test-template_definition
+
 #--------------------------
 # Publish jobs
 #--------------------------
 
 rpms:
   stage: publish
-  image: gitlab-registry.cern.ch/eos/gitlab-eos/cc7:latest
+  image: gitlab-registry.cern.ch/eos/gitlab-eos/alma9:latest
   dependencies:
     - cc7
-    - centos8
-    - cs9
-    - fedora-36
+    - alma8
+    - alma9
     - fedora-37
+    - fedora-38
     - fedora-rawhide
   script:
-    - yum install -y python sssd-client sudo createrepo
     - automount
     - cat "${repo_passwd}" | kinit "${repo_user}"
-    - eosfusebind
     - |
-      for platform in cc7 centos8 cs9 fedora-36 fedora-37 fedora-rawhide; do
+      for platform in cc7 alma8 alma9 fedora-37 fedora-38 fedora-rawhide; do
         if [[ "${platform}" == "fedora-rawhide" ]] && [[ ! -d ${platform} ]] ; then
           echo "Skipping ${platform} packages..." ;
           continue ;
         fi
-        packaging/gfal2-repo-manager.py --action add --base /eos/project/d/dmc/www/repos/ --ref ${CI_COMMIT_REF_NAME} --packages ${platform}/RPMS/*/*.rpm ${platform}/SRPMS/*
+        packaging/gfal2-repo-manager.py --action add --base /eos/project-d/dmc/www/repos/ --ref ${CI_COMMIT_REF_NAME} --packages ${platform}/RPMS/*/*.rpm ${platform}/SRPMS/*
       done
     - sleep 30
   rules:
     - if: '$CI_PROJECT_NAMESPACE != "dmc"'
       when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
     - if: '$CI_COMMIT_REF_NAME == "develop" || $CI_COMMIT_TAG != null'
     - if: '$CI_COMMIT_REF_NAME != "develop" && $CI_COMMIT_TAG == null'
       when: manual
   tags:
-    - docker-privileged
+    - docker-privileged-xl
   retry: 2

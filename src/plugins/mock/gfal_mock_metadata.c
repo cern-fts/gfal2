@@ -29,7 +29,7 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char *path, struct st
     char arg_buffer[64] = {0};
     int errcode = 0;
     int signum = 0;
-    long long size = 0, wait_time = 0;
+    unsigned long long size = 0, wait_time = 0;
 
     // Is fts_url_copy calling us?
     const char *agent, *version;
@@ -61,7 +61,7 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char *path, struct st
 
     // Default size first
     gfal_plugin_mock_get_value(path, "size", arg_buffer, sizeof(arg_buffer));
-    size = gfal_plugin_mock_get_int_from_str(arg_buffer);
+    size = gfal_plugin_mock_get_unsigned_int_from_str(arg_buffer);
 
     // Try specific stage then
     if (is_url_copy) {
@@ -70,7 +70,7 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char *path, struct st
                 mdata->stat_stage = STAT_DESTINATION_AFTER_TRANSFER;
 
                 gfal_plugin_mock_get_value(path, "size_pre", arg_buffer, sizeof(arg_buffer));
-                size = gfal_plugin_mock_get_int_from_str(arg_buffer);
+                size = gfal_plugin_mock_get_unsigned_int_from_str(arg_buffer);
                 // If this size were <= 0, consider it a ENOENT
                 if (size <= 0) {
                     gfal_plugin_mock_report_error(strerror(ENOENT), ENOENT, err);
@@ -81,7 +81,7 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char *path, struct st
                 mdata->stat_stage = STAT_SOURCE;
 
                 gfal_plugin_mock_get_value(path, "size_post", arg_buffer, sizeof(arg_buffer));
-                size = gfal_plugin_mock_get_int_from_str(arg_buffer);
+                size = gfal_plugin_mock_get_unsigned_int_from_str(arg_buffer);
                 break;
             case STAT_SOURCE:
                 mdata->stat_stage = STAT_DESTINATION_BEFORE_TRANSFER;

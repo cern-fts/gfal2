@@ -20,15 +20,15 @@
 
 #include <gfal_api.h>
 #include <gfal_plugins_api.h>
-#include <utils/uri/gfal2_uri.h>
 #include <gtest/gtest.h>
 
 
-TEST(gfalGlobal, testVerbose)
+TEST(gfalGlobal, testLogLevel)
 {
-    gfal2_log_set_level(G_LOG_LEVEL_INFO);
+    // Restrict log level to "Warning" to reduce verbosity
+    gfal2_log_set_level(G_LOG_LEVEL_WARNING);
     GLogLevelFlags r = gfal2_log_get_level();
-    ASSERT_EQ(G_LOG_LEVEL_INFO, r);
+    ASSERT_EQ(G_LOG_LEVEL_WARNING, r);
 }
 
 

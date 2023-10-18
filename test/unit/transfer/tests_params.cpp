@@ -77,3 +77,44 @@ TEST(gfalTransfer, testlocaltransfer){
     ASSERT_TRUE( res == FALSE && ret == FALSE && tmp_err==NULL);
     gfalt_params_handle_delete(p,NULL);
 }
+
+TEST(gfalTransfer, testSciTagMinValue){
+    GError* tmp_err = NULL;
+    gfalt_params_t p = gfalt_params_handle_new(&tmp_err);
+    ASSERT_TRUE(p != NULL && tmp_err == NULL);
+    gfalt_get_scitag(p, &tmp_err);
+    ASSERT_TRUE(tmp_err == NULL);
+    guint r = (1 << 6);
+    gint res = gfalt_set_scitag(p, r, &tmp_err);
+    ASSERT_TRUE(res == -1);
+    ASSERT_TRUE(tmp_err != NULL);
+    gfalt_params_handle_delete(p, NULL);
+    g_error_free(tmp_err);
+}
+
+TEST(gfalTransfer, testSciTagMaxValue){
+    GError* tmp_err = NULL;
+    gfalt_params_t p = gfalt_params_handle_new(&tmp_err);
+    ASSERT_TRUE(p != NULL && tmp_err == NULL);
+    gfalt_get_scitag(p, &tmp_err);
+    ASSERT_TRUE(tmp_err == NULL);
+    guint r = (1 << 16);
+    gint res = gfalt_set_scitag(p, r, &tmp_err);
+    ASSERT_TRUE(res == -1);
+    ASSERT_TRUE(tmp_err != NULL);
+    gfalt_params_handle_delete(p, NULL);
+    g_error_free(tmp_err);
+}
+
+TEST(gfalTransfer, testSciTag){
+    GError* tmp_err = NULL;
+    gfalt_params_t p = gfalt_params_handle_new(&tmp_err);
+    ASSERT_TRUE(p != NULL && tmp_err == NULL);
+    gfalt_get_scitag(p, &tmp_err);
+    ASSERT_TRUE(tmp_err == NULL);
+    guint r = (rand() % (GFAL_SCITAG_MAX_VALUE - GFAL_SCITAG_MIN_VALUE + 1)) + GFAL_SCITAG_MIN_VALUE;
+    gfalt_set_scitag(p, r, &tmp_err);
+    ASSERT_TRUE(tmp_err == NULL);
+    ASSERT_TRUE(gfalt_get_scitag(p, &tmp_err) == r);
+    gfalt_params_handle_delete(p, NULL);
+}

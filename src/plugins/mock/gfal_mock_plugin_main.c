@@ -113,6 +113,15 @@ long long gfal_plugin_mock_get_int_from_str(const char *buff)
 }
 
 
+unsigned long long gfal_plugin_mock_get_unsigned_int_from_str(const char *buff)
+{
+    if (buff == 0 || buff[0] == '\0')
+        return 0;
+    char* pEnd;
+    return strtoull(buff, &pEnd, 10);
+}
+
+
 gboolean gfal_plugin_mock_check_url_transfer(plugin_handle handle, gfal2_context_t ctx, const char *src,
     const char *dst, gfal_url2_check type)
 {

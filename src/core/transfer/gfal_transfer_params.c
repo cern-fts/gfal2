@@ -38,6 +38,7 @@ static void gfalt_params_handle_init(gfalt_params_t p, GError ** err)
     p->strict_mode = FALSE;
     p->parent_dir_create = FALSE;
     p->proxy_delegation = TRUE;
+    p->scitag = 0;
     p->evict = FALSE;
 
     p->monitor_callbacks = NULL;
@@ -65,6 +66,7 @@ gfalt_params_t gfalt_params_handle_copy(gfalt_params_t params, GError ** err)
 {
     gfalt_params_t p = g_new0(struct _gfalt_params_t, 1);
     memcpy(p, params, sizeof(struct _gfalt_params_t));
+    p->stage_request_id = g_strdup(params->stage_request_id);
     p->transfer_metadata = g_strdup(params->transfer_metadata);
     p->src_space_token = g_strdup(params->src_space_token);
     p->dst_space_token = g_strdup(params->dst_space_token);
@@ -100,6 +102,7 @@ void gfalt_params_handle_delete(gfalt_params_t params, GError ** err)
 {
     if (params) {
         params->lock = FALSE;
+        g_free(params->stage_request_id);
         g_free(params->transfer_metadata);
         g_free(params->src_space_token);
         g_free(params->dst_space_token);
@@ -374,10 +377,24 @@ gint gfalt_set_use_proxy_delegation(gfalt_params_t params, gboolean proxy_delega
     return 0;
 }
 
-gboolean gfalt_get_use_proxy_delegation(gfalt_params_t params , GError** err)
+gboolean gfalt_get_use_proxy_delegation(gfalt_params_t params, GError** err)
 {
     g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
     return params->proxy_delegation;
+}
+
+gint gfalt_set_scitag(gfalt_params_t params, guint scitag, GError** err)
+{
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+    g_return_val_err_if_fail((scitag >= GFAL_SCITAG_MIN_VALUE && scitag <= GFAL_SCITAG_MAX_VALUE), -1, err, "Invalid SciTag value (must be in the [65, 65535] range)");
+    params->scitag = scitag;
+    return 0;
+}
+
+guint gfalt_get_scitag(gfalt_params_t params, GError** err)
+{
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+    return params->scitag;
 }
 
 gint gfalt_set_use_evict(gfalt_params_t params, gboolean evict, GError** err)
@@ -529,6 +546,11 @@ size_t gfalt_copy_get_instant_baudrate(gfalt_transfer_status_t s, GError ** err)
 
 
 size_t gfalt_copy_get_bytes_transfered(gfalt_transfer_status_t s, GError ** err)
+{
+    return gfalt_copy_get_bytes_transferred(s, err);
+}
+
+size_t gfalt_copy_get_bytes_transferred(gfalt_transfer_status_t s, GError ** err)
 {
     g_return_val_err_if_fail(s != NULL, -1, err, "[BUG] invalid transfer status handle");
     return s->bytes_transfered;
