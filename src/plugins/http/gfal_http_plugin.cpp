@@ -233,8 +233,21 @@ char* GfalHttpPluginData::retrieve_and_store_se_token(const Davix::Uri& uri, con
     get_certificate(params, uri);
 
     bool write_access = writeFlagFromOperation(operation);
-    TokenRetriever* retriever = token_retriever_chain.get();
 
+    // Get storage server
+    std::stringstream endpoint;
+    endpoint << uri.getProtocol() << "://" << uri.getHost();
+
+    if (uri.getPort()) {
+        endpoint << ":" << uri.getPort();
+    }
+    std::string storage = endpoint.str();
+
+    std::unique_ptr<TokenRetriever> retriever_chain;
+    retriever_chain.reset(new MacaroonRetriever());
+    retriever_chain->add(new MacaroonRetriever(storage));
+
+    TokenRetriever* retriever = retriever_chain.get();
     while (retriever != NULL) {
         try {
             gfal_http_token_t http_token = retriever->retrieve_token(uri, params, write_access, validity);
@@ -245,6 +258,8 @@ char* GfalHttpPluginData::retrieve_and_store_se_token(const Davix::Uri& uri, con
             retriever = retriever->next();
         }
     }
+
+    delete retriever;
 
     if (!token) {
         gfal2_log(G_LOG_LEVEL_WARNING, "(SEToken) Could not retrieve any token for %s", uri.getString().c_str());
