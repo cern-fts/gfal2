@@ -5,16 +5,16 @@
 %bcond_with tests
 
 Name:               gfal2
-Version:            2.22.0
+Version:            2.22.1
 Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 License:            ASL 2.0
 URL:                https://dmc-docs.web.cern.ch/dmc-docs/gfal2/gfal2.html
-# git clone --depth=1 --branch master https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.22.0
-# pushd gfal2-2.22.0
-# git checkout v2.22.0
+# git clone --depth=1 --branch master https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.22.1
+# pushd gfal2-2.22.1
+# git checkout v2.22.1
 # popd
-# tar czf gfal2-2.22.0.tar.gz --exclude-vcs gfal2-2.22.0
+# tar czf gfal2-2.22.1.tar.gz --exclude-vcs gfal2-2.22.1
 Source0:            %{name}-%{version}.tar.gz
 
 #main lib dependencies
@@ -341,6 +341,10 @@ fi
 
 
 %changelog
+* Mon Dec 11 2023 Joao Lopes <batistal at cern.ch> - 2.22.1-1
+- New upstream release
+- Introduces retrieval of storage tokens using OAuth2 flow
+
 * Wed Oct 18 2023 Joao Lopes <batistal at cern.ch> - 2.22.0-1
 - New upstream release
 - Introduces support for scitags
