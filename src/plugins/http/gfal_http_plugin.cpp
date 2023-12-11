@@ -259,8 +259,6 @@ char* GfalHttpPluginData::retrieve_and_store_se_token(const Davix::Uri& uri, con
         }
     }
 
-    delete retriever;
-
     if (!token) {
         gfal2_log(G_LOG_LEVEL_WARNING, "(SEToken) Could not retrieve any token for %s", uri.getString().c_str());
         return NULL;
