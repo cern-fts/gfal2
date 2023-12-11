@@ -1,6 +1,10 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Mon Dec 11 2023 Joao Lopes <batistal at cern.ch> - 2.22.1
+###Improvement
+- [DMC-1396] - Get storage-issued tokens with OAuth2 flow
+
 ## Wed Oct 18 2023 Joao Lopes <batistal at cern.ch> - 2.22.0
 ###New Feature
 - [DMC-1344] - Propagate Scitags during TPC transfers
