@@ -141,7 +141,7 @@ namespace tape_rest_api {
     {
         GError* tmp_err = NULL;
         GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
-        std::string tapeEndpoint = gfal_http_discover_tape_endpoint(davix, urls[0],"/archiveinfo/",
+        std::string tapeEndpoint = gfal_http_discover_tape_endpoint(davix, urls[0],"/archiveinfo",
                                                                     &tmp_err);
 
         if (tmp_err != NULL) {
@@ -355,7 +355,7 @@ int gfal_http_bring_online_list_v2(plugin_handle plugin_data, int nbfiles, const
 
     // Find out Tape Rest API endpoint
     GfalHttpPluginData* davix = gfal_http_get_plugin_context(plugin_data);
-    std::string tapeEndpoint = gfal_http_discover_tape_endpoint(davix, urls[0], "/stage/", &tmp_err);
+    std::string tapeEndpoint = gfal_http_discover_tape_endpoint(davix, urls[0], "/stage", &tmp_err);
 
     if (tmp_err != NULL) {
         tape_rest_api::copyErrors(tmp_err, nbfiles, errors);
