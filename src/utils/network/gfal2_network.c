@@ -93,8 +93,14 @@ char* gfal2_resolve_dns_to_hostname(const char* dnshost)
                 break;
         }
 
-        getnameinfo(addrP->ai_addr, addrP->ai_addrlen, hostname, sizeof(hostname), NULL, 0, NI_NAMEREQD);
-        g_string_append_printf(log_str, "%s[%s] ", hostname, addrstr);
+        // Reverse DNS. Try to translate the address to a hostname. If successful save hostname for logging
+        if (getnameinfo(addrP->ai_addr, addrP->ai_addrlen, hostname, sizeof(hostname),
+                        NULL, 0, NI_NAMEREQD)) {
+            gfal2_log(G_LOG_LEVEL_WARNING, "Failed reverse address %s into hostname", addrstr);
+        } else {
+            g_string_append_printf(log_str, "%s[%s] ", hostname, addrstr);
+        }
+
         count++;
     }
 
@@ -107,7 +113,13 @@ char* gfal2_resolve_dns_to_hostname(const char* dnshost)
 
     for (addrP = addresses; addrP != NULL; addrP = addrP->ai_next) {
         if (selected-- == 0) {
-            getnameinfo(addrP->ai_addr, addrP->ai_addrlen, hostname, sizeof(hostname), NULL, 0, NI_NAMEREQD);
+            if (getnameinfo(addrP->ai_addr, addrP->ai_addrlen, hostname, sizeof(hostname),
+                            NULL, 0, NI_NAMEREQD)) {
+                freeaddrinfo(addresses);
+                gfal2_log(G_LOG_LEVEL_WARNING, "Failed reverse DNS resolution for %s ", dnshost);
+                return NULL;
+            }
+
             break;
         }
     }
