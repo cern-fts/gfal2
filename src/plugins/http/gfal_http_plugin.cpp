@@ -21,6 +21,7 @@
 #include "gfal_http_plugin.h"
 #include "gfal_http_plugin_token.h"
 #include "uri/gfal2_parsing.h"
+#include "network/gfal2_network.h"
 #include <cstdio>
 #include <cstring>
 #include <sstream>
@@ -877,6 +878,30 @@ void GfalHttpPluginData::set_operation_timeout(int timeout)
     gfal2_set_opt_integer(handle, "HTTP PLUGIN", HTTP_CONFIG_OP_TIMEOUT, timeout, NULL);
 }
 
+void GfalHttpPluginData::resolve_and_store_url(const char* url)
+{
+    gboolean resolve_dns = gfal2_get_opt_boolean_with_default(handle, CORE_CONFIG_GROUP, RESOLVE_DNS, FALSE);
+
+    if (resolve_dns && is_http_scheme(url)) {
+        char *url_tmp = resolve_dns_helper(url, "Resolved url");
+
+        if (url_tmp) {
+            resolution_map[url] = url_tmp;
+            free(url_tmp);
+        }
+    }
+}
+
+std::string GfalHttpPluginData::resolved_url(const std::string& url)
+{
+    auto resolved = resolution_map.find(url);
+
+    if (resolved != resolution_map.end()) {
+        return resolved->second;
+    }
+
+    return url;
+}
 
 static void log_davix2gfal(void* userdata, int msg_level, const char* msg)
 {

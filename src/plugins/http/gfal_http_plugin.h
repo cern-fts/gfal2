@@ -61,6 +61,13 @@ public:
                         gfalt_params_t transfer_params,
                         bool push_mode);
 
+    // Resolve the DNS alias URL and store it in the internal DNS Alias map
+    void resolve_and_store_url(const char* url);
+
+    // Returns the resolved URL, if it exists, or the original URL
+    // This function uses the internal DNS Alias map
+    std::string resolved_url(const std::string& url);
+
     int get_operation_timeout() const;
     void set_operation_timeout(int timeout);
 
@@ -94,6 +101,7 @@ private:
 
     typedef std::map<std::string, bool> TokenAccessMap;
     typedef std::map<std::string, tape_endpoint_info_t> TapeEndpointMap;
+    typedef std::map<std::string, std::string> DNSResolutionMap;
 
     /// baseline Davix Request Parameters
     Davix::RequestParams reference_params;
@@ -103,6 +111,8 @@ private:
     std::unique_ptr<TokenRetriever> token_retriever_chain;
     /// map a url with a tape endpoint info struct
     TapeEndpointMap tape_endpoint_map;
+    /// map an initial DNS alias URL to it's resolved URL
+    DNSResolutionMap resolution_map;
 
     // Set up general request parameters
     void get_params_internal(Davix::RequestParams& params, const Davix::Uri& uri);
