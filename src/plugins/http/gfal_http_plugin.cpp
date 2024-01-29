@@ -22,7 +22,6 @@
 #include "gfal_http_plugin_token.h"
 #include "uri/gfal2_parsing.h"
 #include "network/gfal2_network.h"
-#include <cstdio>
 #include <cstring>
 #include <sstream>
 #include <list>
@@ -711,7 +710,7 @@ void GfalHttpPluginData::get_credentials(Davix::RequestParams& params, const Dav
     else if (!get_token(params, uri, operation, token_validity)) {
         // Utilize AWS or GCLOUD tokens if no bearer token is available (to be reviewed)
         get_aws_params(params, uri);
-        get_gcloud_credentials(params,uri);
+        get_gcloud_credentials(params, uri);
         get_swift_params(params, uri);
     }
 }

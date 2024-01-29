@@ -69,20 +69,6 @@ static void extract_query_parameter(const char* url, const char *key, char *valu
     g_strfreev(args);
 }
 
-static bool is_http_scheme(const char* url)
-{
-    const char *schemes[] = {"http:", "https:", "dav:", "davs:", "s3:", "s3s:", "gcloud:", "gclouds:", "swift:", "swifts:", "cs3:", "cs3s:", NULL};
-    const char *colon = strchr(url, ':');
-    if (!colon)
-        return false;
-    size_t scheme_len = colon - url + 1;
-    for (size_t i = 0; schemes[i] != NULL; ++i) {
-        if (strncmp(url, schemes[i], scheme_len) == 0)
-            return true;
-    }
-    return false;
-}
-
 static std::string construct_config_group_from_url(const char* surl) {
     Davix::Uri uri(surl);
 
@@ -249,6 +235,24 @@ HttpCopyMode HttpCopyMode::ConstructCopyMode(gfal2_context_t context, const char
 
     return HttpCopyMode{copyMode, (copyMode == CopyMode::STREAM), streamingEnabled};
 };
+
+bool is_http_scheme(const char* url)
+{
+    const char *schemes[] = {"http:", "https:", "dav:", "davs:", "s3:", "s3s:", "gcloud:", "gclouds:", "swift:", "swifts:", "cs3:", "cs3s:", NULL};
+    const char *colon = strchr(url, ':');
+
+    if (!colon)
+        return false;
+
+    size_t scheme_len = colon - url + 1;
+    for (size_t i = 0; schemes[i] != NULL; ++i) {
+        if (strncmp(url, schemes[i], scheme_len) == 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 
 bool is_http_3rdcopy_enabled(gfal2_context_t context, const char* src, const char* dst)

@@ -79,7 +79,7 @@ public:
                                  gboolean rec_flag, GError **err);
 
     friend int gfal_http_rename(plugin_handle plugin_data, const char* oldurl,
-                                const char* newurl, GError** err);;
+                                const char* newurl, GError** err);
 
     friend class TokenMapTest;
 
@@ -175,6 +175,8 @@ GfalHttpPluginData* gfal_http_get_plugin_context(gpointer plugin_data);
 
 void gfal_http_context_delete(gpointer plugin_data);
 
+void gfal_http_delete(plugin_handle plugin_data);
+
 extern GQuark http_plugin_domain;
 
 // Initializes a GError from a DavixError
@@ -185,6 +187,9 @@ void http2gliberr(GError** err, int http, const char* func, const char* msg);
 
 // Returns errno from Davix StatusCode
 int davix2errno(Davix::StatusCode::Code code);
+
+// Returns whether the URL is HTTP scheme
+bool is_http_scheme(const char* url);
 
 // Returns whether HTTP remote copy is enabled for the involved Storage Endpoints
 bool is_http_3rdcopy_enabled(gfal2_context_t context, const char* src, const char* dst);
@@ -198,13 +203,14 @@ bool is_http_3rdcopy_fallback_enabled(gfal2_context_t context, const char* src, 
 // Removes +3rd from the url, if there
 void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);
 
+// Get custom HTTP headers for Storage Element group
+char** get_se_custom_headers_list(const gfal2_context_t& context, const Davix::Uri& uri);
+
 // Find tape endpoint for a given method
 std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method,
                                              GError** err);
 
 // METADATA OPERATIONS
-void gfal_http_delete(plugin_handle plugin_data);
-
 int gfal_http_stat(plugin_handle plugin_data, const char* url, struct stat* buf, GError** err);
 
 int gfal_http_rename(plugin_handle plugin_data, const char* oldurl, const char* newurl, GError** err);
