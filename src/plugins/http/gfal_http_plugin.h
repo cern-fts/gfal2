@@ -203,6 +203,12 @@ bool is_http_3rdcopy_fallback_enabled(gfal2_context_t context, const char* src, 
 // Removes +3rd from the url, if there
 void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);
 
+// Get custom Storage Element configuration option (boolean value)
+int get_se_custom_opt_boolean(const gfal2_context_t& context, const char* surl, const char* key);
+
+// Get custom Storage Element configuration option (string value)
+char* get_se_custom_opt_string(const gfal2_context_t& context, const char* surl, const char* key);
+
 // Get custom HTTP headers for Storage Element group
 char** get_se_custom_headers_list(const gfal2_context_t& context, const Davix::Uri& uri);
 

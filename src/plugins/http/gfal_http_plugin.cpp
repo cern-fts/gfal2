@@ -67,6 +67,64 @@ static int get_corresponding_davix_log_level()
     return davix_log_level;
 }
 
+static std::string construct_config_group_from_url(const char* surl) {
+    Davix::Uri uri(surl);
+
+    if (uri.getStatus() != Davix::StatusCode::OK) {
+        return "";
+    }
+
+    std::string prot = uri.getProtocol();
+
+    if (prot.back() == 's') {
+        prot.pop_back();
+    }
+
+    std::string group = prot + ":" + uri.getHost();
+    std::transform(group.begin(), group.end(), group.begin(), ::toupper);
+    return group;
+}
+
+/// Get custom Storage Element configuration option (boolean value)
+int get_se_custom_opt_boolean(const gfal2_context_t& context, const char* surl, const char* key)
+{
+    std::string group = construct_config_group_from_url(surl);
+
+    if (group.empty()) {
+        return -1;
+    }
+
+    GError* error = NULL;
+    gboolean value = gfal2_get_opt_boolean(context, group.c_str(), key, &error);
+
+    if (error != NULL) {
+        g_error_free(error);
+        return -1;
+    }
+
+    return value;
+}
+
+/// Get custom Storage Element configuration option (string value)
+char* get_se_custom_opt_string(const gfal2_context_t& context, const char* surl, const char* key)
+{
+    std::string group = construct_config_group_from_url(surl);
+
+    if (group.empty()) {
+        return NULL;
+    }
+
+    GError* error = NULL;
+    gchar* value = gfal2_get_opt_string(context, group.c_str(), key, &error);
+
+    if (error != NULL) {
+        g_error_free(error);
+        return NULL;
+    }
+
+    return value;
+}
+
 /// Get custom HTTP headers for Storage Element group
 char** get_se_custom_headers_list(const gfal2_context_t& context, const Davix::Uri& uri) {
     if (uri.getStatus() != Davix::StatusCode::OK) {
