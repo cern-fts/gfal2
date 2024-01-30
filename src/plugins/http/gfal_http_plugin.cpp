@@ -150,6 +150,18 @@ char** get_se_custom_headers_list(const gfal2_context_t& context, const Davix::U
     return headers;
 }
 
+/// Specific function for the retrieve-bearer-token configuration option
+bool get_retrieve_bearer_token_config(const gfal2_context_t& context, const char* surl, bool default_value)
+{
+    int retrieve_token = get_se_custom_opt_boolean(context, surl, "RETRIEVE_BEARER_TOKEN");
+
+    if (retrieve_token == -1) {
+        return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "RETRIEVE_BEARER_TOKEN", default_value);
+    }
+
+    return static_cast<bool>(retrieve_token);
+}
+
 static bool isCloudStorage(const Davix::Uri& uri) {
     return (uri.getProtocol().rfind("s3", 0) == 0 ||
             uri.getProtocol().rfind("gcloud", 0) == 0 ||
@@ -278,7 +290,7 @@ char* GfalHttpPluginData::find_se_token(const Davix::Uri& uri, const OP& operati
 
 char* GfalHttpPluginData::retrieve_and_store_se_token(const Davix::Uri& uri, const OP& operation, unsigned validity)
 {
-    bool retrieve_token = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "RETRIEVE_BEARER_TOKEN", false);
+    bool retrieve_token = get_retrieve_bearer_token_config(handle, uri.getString().c_str(), false);
     GError* error = NULL;
     char* token = NULL;
 

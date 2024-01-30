@@ -212,6 +212,9 @@ char* get_se_custom_opt_string(const gfal2_context_t& context, const char* surl,
 // Get custom HTTP headers for Storage Element group
 char** get_se_custom_headers_list(const gfal2_context_t& context, const Davix::Uri& uri);
 
+// Specific function for the retrieve-bearer-token configuration option
+bool get_retrieve_bearer_token_config(const gfal2_context_t& context, const char* surl, bool default_value);
+
 // Find tape endpoint for a given method
 std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method,
                                              GError** err);
