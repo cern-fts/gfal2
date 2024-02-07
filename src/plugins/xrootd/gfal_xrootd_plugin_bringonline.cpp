@@ -43,7 +43,7 @@ int gfal_xrootd_bring_online_list(plugin_handle plugin_data,
     std::vector<std::string> fileList;
     for (int i = 0; i < nbfiles; ++i) {
         XrdCl::URL file(prepare_url(context, urls[i]));
-        fileList.emplace_back(file.GetPath());
+        fileList.emplace_back(file.GetPathWithParams());
     }
 
     XrdCl::Buffer *responsePtr = 0;
@@ -172,7 +172,7 @@ int gfal_xrootd_bring_online_poll_list(plugin_handle plugin_data,
       }
 
       // get the error_text attribute
-      // Note: if it exists, this text should be appened to all other error messages
+      // Note: if it exists, this text should be appended to all other error messages
       struct json_object *arrobj_error_text = 0;
       json_object_object_get_ex( arrobj, "error_text", &arrobj_error_text );
       std::string error_text;
@@ -312,7 +312,7 @@ int gfal_xrootd_release_file_list(plugin_handle plugin_data,
     std::vector<std::string> fileList;
     for(int i = 0; i < nbfiles; ++i) {
       XrdCl::URL file(prepare_url(context, urls[i]));
-      fileList.emplace_back(file.GetPath());
+      fileList.emplace_back(file.GetPathWithParams());
     }
 
     XrdCl::Buffer *responsePtr = 0;
@@ -395,7 +395,7 @@ int gfal_xrootd_abort_files(plugin_handle plugin_data,
     fileList.emplace_back(token);
     for (int i = 0; i < nbfiles; ++i) {
         XrdCl::URL file(prepare_url(context, urls[i]));
-        fileList.emplace_back(file.GetPath());
+        fileList.emplace_back(file.GetPathWithParams());
     }
 
     XrdCl::Buffer *reponsePtr = 0;
