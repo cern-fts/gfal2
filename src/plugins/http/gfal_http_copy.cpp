@@ -378,7 +378,14 @@ static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfDat
         status.transfer_time    = perfData.absElapsed();
 
         if ((!ipevent_sent) && (perfData.ipflag != Davix::undefined)) {
-            GQuark ipevent = (perfData.ipflag == Davix::IPv6) ? GFAL_EVENT_IPV6 : GFAL_EVENT_IPV4;
+            GQuark ipevent = g_quark_from_static_string("IP:UNDEFINED");
+
+            if (perfData.ipflag == Davix::IPv6) {
+                ipevent = GFAL_EVENT_IPV6;
+            } else if (perfData.ipflag == Davix::IPv4) {
+                ipevent = GFAL_EVENT_IPV4;
+            }
+
             plugin_trigger_event(pdata->params, http_plugin_domain,
                                  GFAL_EVENT_DESTINATION, ipevent, "TRUE");
             ipevent_sent = true;
