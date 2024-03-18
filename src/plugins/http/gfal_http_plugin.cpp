@@ -829,10 +829,13 @@ void GfalHttpPluginData::get_params_internal(Davix::RequestParams& params, const
 
     davix_set_log_level(davix_level);
 
-    // Reset sensitive scope mask
-    int davix_scope_mask = Davix::getLogScope() & ~(DAVIX_LOG_SSL | DAVIX_LOG_SENSITIVE);
+    // Reset scope mask
+    int davix_scope_mask = Davix::getLogScope() & ~(DAVIX_LOG_SSL | DAVIX_LOG_SENSITIVE | DAVIX_LOG_BODY);
     if (gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "LOG_SENSITIVE", false)) {
         davix_scope_mask |= (DAVIX_LOG_SSL | DAVIX_LOG_SENSITIVE);
+    }
+    if (gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "LOG_CONTENT", false)) {
+        davix_scope_mask |= DAVIX_LOG_BODY;
     }
     Davix::setLogScope(davix_scope_mask);
 
