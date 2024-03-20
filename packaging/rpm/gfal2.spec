@@ -10,11 +10,8 @@ Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 License:            ASL 2.0
 URL:                https://dmc-docs.web.cern.ch/dmc-docs/gfal2/gfal2.html
-# git clone --depth=1 --branch master https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.22.1
-# pushd gfal2-2.22.1
-# git checkout v2.22.1
-# popd
-# tar czf gfal2-2.22.1.tar.gz --exclude-vcs gfal2-2.22.1
+# git clone --depth=1 --branch=v2.22.2 https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.22.2
+# tar czf gfal2-2.22.2.tar.gz --exclude-vcs gfal2-2.22.2
 Source0:            %{name}-%{version}.tar.gz
 
 #main lib dependencies
@@ -341,6 +338,10 @@ fi
 
 
 %changelog
+* Wed Mar 20 2024 Mihai Patrascoiu <mipatras at cern.ch> - 2.22.2-1
+- New upstream release
+- Pass query string in XRootd bringonline operations
+
 * Mon Dec 11 2023 Joao Lopes <batistal at cern.ch> - 2.22.1-1
 - New upstream release
 - Introduces retrieval of storage tokens using OAuth2 flow

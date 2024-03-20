@@ -1,6 +1,22 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Tue Mar 19 2024 Mihai Patrascoiu <mipatras at cern.ch> - 2.22.2
+###Bug
+- [DMC-1398] - Gfal2 does not handle endpoints without reverse DNS entry
+- [DMC-1399] - DNS resolution breaks config and credential look-up
+- [DMC-1402] - Gfal2 XRootd bringonline does not pass query arguments
+- [DMC-1407] - Incorrect IPv4 reported for HTTP-TPC transfers that don't send "RemoteConnections" marker
+
+###New Feature
+- [DMC-1400] - Make Gfal2 HTTP "RETRIEVE_BEARER_TOKEN" option configurable per Storage Endpoint
+
+###Improvement
+- [DMC-1408] - Gfal2 should allow logging the HTTP body of requests/responses
+
+###Question
+- [DMC-1397] - Tape REST API endpoints and trailing slash
+
 ## Mon Dec 11 2023 Joao Lopes <batistal at cern.ch> - 2.22.1
 ###Improvement
 - [DMC-1396] - Get storage-issued tokens with OAuth2 flow
