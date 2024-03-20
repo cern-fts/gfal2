@@ -766,8 +766,8 @@ void GridFTPRequestState::wait(GQuark scope, time_t timeout)
         timeout = default_timeout;
 
     gfal2_log(G_LOG_LEVEL_DEBUG,
-            "   [GridFTP_Request_state::wait_callback] setup gsiftp timeout to %ld seconds",
-            timeout);
+            "   [GridFTP_Request_state::wait_callback] setup gsiftp timeout to %lld seconds",
+            (long long) timeout);
 
     gfal_cancel_token_t cancel_token;
     cancel_token = gfal2_register_cancel_callback(handler->get_factory()->get_gfal2_context(), gridftp_cancel, this);

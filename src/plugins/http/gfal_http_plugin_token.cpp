@@ -81,7 +81,7 @@ ssize_t gfal_http_token_retrieve(plugin_handle plugin_data, const char* url, con
                         "Could not retrieve token for %s [last failed attempt: %s]", url, last_emsg.c_str());
     } else if (token.size() >= s_buff) {
         gfal2_set_error(err, http_plugin_domain, ENOMEM, __func__,
-                        "response larger than allocated buffer size [%ld]", s_buff);
+                        "response larger than allocated buffer size [%zd]", s_buff);
     } else {
         std::strcpy(buff, token.c_str());
         ret = token.size() + 1;

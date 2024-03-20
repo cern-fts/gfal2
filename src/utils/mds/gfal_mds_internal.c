@@ -64,7 +64,7 @@ LDAP *gfal_mds_ldap_connect(gfal2_context_t context, const char *uri, GError **e
 		gfal_mds_ldap.ldap_set_option(ld, LDAP_OPT_NETWORK_TIMEOUT, &timeout);
 		gfal_mds_ldap.ldap_set_option(ld, LDAP_OPT_TIMEOUT, &timeout);
 
-		gfal2_log(G_LOG_LEVEL_DEBUG, " use BDII TIMEOUT : %ld", timeout.tv_sec);
+		gfal2_log(G_LOG_LEVEL_DEBUG, " use BDII TIMEOUT : %lld", (long long) timeout.tv_sec);
 
 		gfal2_log(G_LOG_LEVEL_DEBUG, "  Try to bind with the bdii %s", uri);
 		struct berval cred = {.bv_val = NULL, .bv_len = 0};

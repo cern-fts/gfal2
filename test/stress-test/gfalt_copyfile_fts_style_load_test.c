@@ -38,7 +38,7 @@ void call_perf(gfalt_transfer_status_t h, const char* src, const char* dst, gpoi
     size_t trans=  gfalt_copy_get_bytes_transferred(h,NULL);
     time_t elapsed  = gfalt_copy_get_elapsed_time(h,NULL);
 
-    printf(" <%ld> perf marker avg : %ld, inst: %ld, elapsed: %ld, trans: %ld \n", time(NULL), avg, inst, elapsed, trans);
+    printf(" <%lld> perf marker avg : %zd, inst: %zd, elapsed: %lld, trans: %zd \n", (long long) time(NULL), avg, inst, (long long) elapsed, trans);
 }
 
 
@@ -54,7 +54,7 @@ int internal_copy(gfal2_context_t* handle, gfalt_params_t* params, const char* s
         return -1;
     }else{
         g_assert(buff.st_size != 0);
-        printf(" file size %ld",buff.st_size );
+        printf(" file size %lld", (long long) buff.st_size);
     }
 
    printf(" begin transfer .... \n");

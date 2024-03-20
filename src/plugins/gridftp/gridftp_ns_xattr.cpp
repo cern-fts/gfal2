@@ -111,8 +111,8 @@ struct XAttrState
             timeout = m_default_timeout;
 
         gfal2_log(G_LOG_LEVEL_DEBUG,
-                "   [XAttrState::wait_callback] setup gsiftp timeout to %ld seconds",
-                timeout);
+                "   [XAttrState::wait_callback] setup gsiftp timeout to %lld seconds",
+                (long long) timeout);
 
         gfal_cancel_token_t cancel_token;
         cancel_token = gfal2_register_cancel_callback(m_factory->get_gfal2_context(), gridftp_cancel, this);
