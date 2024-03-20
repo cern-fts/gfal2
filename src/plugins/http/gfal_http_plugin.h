@@ -61,6 +61,13 @@ public:
                         gfalt_params_t transfer_params,
                         bool push_mode);
 
+    // Resolve the DNS alias URL and store it in the internal DNS Alias map
+    void resolve_and_store_url(const char* url);
+
+    // Returns the resolved URL, if it exists, or the original URL
+    // This function uses the internal DNS Alias map
+    std::string resolved_url(const std::string& url);
+
     int get_operation_timeout() const;
     void set_operation_timeout(int timeout);
 
@@ -72,7 +79,7 @@ public:
                                  gboolean rec_flag, GError **err);
 
     friend int gfal_http_rename(plugin_handle plugin_data, const char* oldurl,
-                                const char* newurl, GError** err);;
+                                const char* newurl, GError** err);
 
     friend class TokenMapTest;
 
@@ -94,6 +101,7 @@ private:
 
     typedef std::map<std::string, bool> TokenAccessMap;
     typedef std::map<std::string, tape_endpoint_info_t> TapeEndpointMap;
+    typedef std::map<std::string, std::string> DNSResolutionMap;
 
     /// baseline Davix Request Parameters
     Davix::RequestParams reference_params;
@@ -103,6 +111,8 @@ private:
     std::unique_ptr<TokenRetriever> token_retriever_chain;
     /// map a url with a tape endpoint info struct
     TapeEndpointMap tape_endpoint_map;
+    /// map an initial DNS alias URL to it's resolved URL
+    DNSResolutionMap resolution_map;
 
     // Set up general request parameters
     void get_params_internal(Davix::RequestParams& params, const Davix::Uri& uri);
@@ -165,6 +175,8 @@ GfalHttpPluginData* gfal_http_get_plugin_context(gpointer plugin_data);
 
 void gfal_http_context_delete(gpointer plugin_data);
 
+void gfal_http_delete(plugin_handle plugin_data);
+
 extern GQuark http_plugin_domain;
 
 // Initializes a GError from a DavixError
@@ -175,6 +187,9 @@ void http2gliberr(GError** err, int http, const char* func, const char* msg);
 
 // Returns errno from Davix StatusCode
 int davix2errno(Davix::StatusCode::Code code);
+
+// Returns whether the URL is HTTP scheme
+bool is_http_scheme(const char* url);
 
 // Returns whether HTTP remote copy is enabled for the involved Storage Endpoints
 bool is_http_3rdcopy_enabled(gfal2_context_t context, const char* src, const char* dst);
@@ -188,13 +203,23 @@ bool is_http_3rdcopy_fallback_enabled(gfal2_context_t context, const char* src, 
 // Removes +3rd from the url, if there
 void strip_3rd_from_url(const char* url_full, char* url, size_t url_size);
 
+// Get custom Storage Element configuration option (boolean value)
+int get_se_custom_opt_boolean(const gfal2_context_t& context, const char* surl, const char* key);
+
+// Get custom Storage Element configuration option (string value)
+char* get_se_custom_opt_string(const gfal2_context_t& context, const char* surl, const char* key);
+
+// Get custom HTTP headers for Storage Element group
+char** get_se_custom_headers_list(const gfal2_context_t& context, const Davix::Uri& uri);
+
+// Specific function for the retrieve-bearer-token configuration option
+bool get_retrieve_bearer_token_config(const gfal2_context_t& context, const char* surl, bool default_value);
+
 // Find tape endpoint for a given method
 std::string gfal_http_discover_tape_endpoint(GfalHttpPluginData* davix, const char* url, const char* method,
                                              GError** err);
 
 // METADATA OPERATIONS
-void gfal_http_delete(plugin_handle plugin_data);
-
 int gfal_http_stat(plugin_handle plugin_data, const char* url, struct stat* buf, GError** err);
 
 int gfal_http_rename(plugin_handle plugin_data, const char* oldurl, const char* newurl, GError** err);

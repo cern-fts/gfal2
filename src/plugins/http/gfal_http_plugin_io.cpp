@@ -57,7 +57,9 @@ gfal_file_handle gfal_http_fopen(plugin_handle plugin_data, const char* url, int
         fd->req_params.setProtocol(Davix::RequestProtocol::CS3);
     }
 
-    fd->davix_fd = davix->posix.open(&fd->req_params, stripped_url, flag, &daverr);
+    // DMC-1348: Use resolved URLs for data operations
+    std::string resolved_url = davix->resolved_url(stripped_url);
+    fd->davix_fd = davix->posix.open(&fd->req_params, resolved_url, flag, &daverr);
 
     if (fd->davix_fd == NULL) {
         davix2gliberr(daverr, err, __func__);

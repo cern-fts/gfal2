@@ -69,80 +69,6 @@ static void extract_query_parameter(const char* url, const char *key, char *valu
     g_strfreev(args);
 }
 
-static bool is_http_scheme(const char* url)
-{
-    const char *schemes[] = {"http:", "https:", "dav:", "davs:", "s3:", "s3s:", "gcloud:", "gclouds:", "swift:", "swifts:", "cs3:", "cs3s:", NULL};
-    const char *colon = strchr(url, ':');
-    if (!colon)
-        return false;
-    size_t scheme_len = colon - url + 1;
-    for (size_t i = 0; schemes[i] != NULL; ++i) {
-        if (strncmp(url, schemes[i], scheme_len) == 0)
-            return true;
-    }
-    return false;
-}
-
-static std::string construct_config_group_from_url(const char* surl) {
-    Davix::Uri uri(surl);
-
-    if (uri.getStatus() != Davix::StatusCode::OK) {
-        return "";
-    }
-
-    std::string prot = uri.getProtocol();
-
-    if (prot.back() == 's') {
-        prot.pop_back();
-    }
-
-    std::string group = prot + ":" + uri.getHost();
-    std::transform(group.begin(), group.end(), group.begin(), ::toupper);
-    return group;
-}
-
-/*
-* Get custom storage element configuration option (boolean value)
-*/
-static int get_se_custom_opt_boolean(const gfal2_context_t& context, const char* surl, const char* key) {
-    std::string group = construct_config_group_from_url(surl);
-
-    if (group.empty()) {
-        return -1;
-    }
-
-    GError* error = NULL;
-    gboolean value = gfal2_get_opt_boolean(context, group.c_str(), key, &error);
-
-    if (error != NULL) {
-        g_error_free(error);
-        return -1;
-    }
-
-    return value;
-}
-
-/*
-* Get custom storage element configuration option (string value)
-*/
-static const char* get_se_custom_opt_string(const gfal2_context_t& context, const char* surl, const char* key) {
-    std::string group = construct_config_group_from_url(surl);
-
-    if (group.empty()) {
-        return NULL;
-    }
-
-    GError* error = NULL;
-    gchar* value = gfal2_get_opt_string(context, group.c_str(), key, &error);
-
-    if (error != NULL) {
-        g_error_free(error);
-        return NULL;
-    }
-
-    return value;
-}
-
 void HttpCopyMode::next() {
     if (copyMode == CopyMode::PULL) {
         copyMode = CopyMode::PUSH;
@@ -249,6 +175,24 @@ HttpCopyMode HttpCopyMode::ConstructCopyMode(gfal2_context_t context, const char
 
     return HttpCopyMode{copyMode, (copyMode == CopyMode::STREAM), streamingEnabled};
 };
+
+bool is_http_scheme(const char* url)
+{
+    const char *schemes[] = {"http:", "https:", "dav:", "davs:", "s3:", "s3s:", "gcloud:", "gclouds:", "swift:", "swifts:", "cs3:", "cs3s:", NULL};
+    const char *colon = strchr(url, ':');
+
+    if (!colon)
+        return false;
+
+    size_t scheme_len = colon - url + 1;
+    for (size_t i = 0; schemes[i] != NULL; ++i) {
+        if (strncmp(url, schemes[i], scheme_len) == 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 
 bool is_http_3rdcopy_enabled(gfal2_context_t context, const char* src, const char* dst)
@@ -434,7 +378,14 @@ static void gfal_http_3rdcopy_perfcallback(const Davix::PerformanceData& perfDat
         status.transfer_time    = perfData.absElapsed();
 
         if ((!ipevent_sent) && (perfData.ipflag != Davix::undefined)) {
-            GQuark ipevent = (perfData.ipflag == Davix::IPv6) ? GFAL_EVENT_IPV6 : GFAL_EVENT_IPV4;
+            GQuark ipevent = g_quark_from_static_string("IP:UNDEFINED");
+
+            if (perfData.ipflag == Davix::IPv6) {
+                ipevent = GFAL_EVENT_IPV6;
+            } else if (perfData.ipflag == Davix::IPv4) {
+                ipevent = GFAL_EVENT_IPV4;
+            }
+
             plugin_trigger_event(pdata->params, http_plugin_domain,
                                  GFAL_EVENT_DESTINATION, ipevent, "TRUE");
             ipevent_sent = true;
@@ -586,8 +537,12 @@ static int gfal_http_third_party_copy(gfal2_context_t context,
     opTimeout.tv_sec = gfalt_get_timeout(params, NULL);
     req_params.setOperationTimeout(&opTimeout);
 
-    Davix::Uri src_uri(get_canonical_uri(src));
-    Davix::Uri dst_uri(get_canonical_uri(dst));
+    // DMC-1348: Use resolved URLs for data operations
+    std::string resolved_src = davix->resolved_url(src);
+    std::string resolved_dst = davix->resolved_url(dst);
+
+    Davix::Uri src_uri(get_canonical_uri(resolved_src));
+    Davix::Uri dst_uri(get_canonical_uri(resolved_dst));
 
     Davix::DavixCopy copy(davix->context, &req_params);
 
@@ -751,7 +706,9 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
     else if (dst_uri.getProtocol() == "cs3" || dst_uri.getProtocol() == "cs3s")
         req_params.setProtocol(Davix::RequestProtocol::CS3);
 
-    Davix::DavFile dest(davix->context,req_params, dst_uri );
+    // DMC-1348: Use resolved URLs for data operations
+    std::string resolved_dst = davix->resolved_url(dst);
+    Davix::DavFile dest(davix->context, req_params, resolved_dst);
 
     HttpStreamProvider provider(src, dst, context, source_fd, params);
 
@@ -800,22 +757,6 @@ void strip_3rd_from_url(const char* url_full, char* url, size_t url_size)
     }
 }
 
-// DMC-1348: DNS resolution mechanism
-static void resolve_url(const gfal2_context_t& context, const char* url, char* url_resolved, size_t url_size) {
-    gboolean resolve_dns = gfal2_get_opt_boolean_with_default(context, CORE_CONFIG_GROUP, RESOLVE_DNS, FALSE);
-
-    if (resolve_dns && is_http_scheme(url)) {
-        char *url_tmp = resolve_dns_helper(url, "Resolving url");
-        if (url_tmp) {
-            g_strlcpy(url_resolved, url_tmp, url_size);
-            free(url_tmp);
-            return;
-        }
-    }
-
-    g_strlcpy(url_resolved, url, url_size);
-}
-
 
 int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         gfalt_params_t params, const char* src_full, const char* dst_full, GError** err)
@@ -828,17 +769,16 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
                          "%s => %s", src_full, dst_full);
 
     // Determine if urls are 3rd party, and strip the +3rd if they are
-    char stripped_src[GFAL_URL_MAX_LEN], stripped_dst[GFAL_URL_MAX_LEN];
-    strip_3rd_from_url(src_full, stripped_src, sizeof(stripped_src));
-    strip_3rd_from_url(dst_full, stripped_dst, sizeof(stripped_dst));
-
-    // Determine if we need to resolve DNS alias
     char src[GFAL_URL_MAX_LEN], dst[GFAL_URL_MAX_LEN];
-    resolve_url(context, stripped_src, src, sizeof(src));
-    resolve_url(context, stripped_dst, dst, sizeof(dst));
+    strip_3rd_from_url(src_full, src, sizeof(src));
+    strip_3rd_from_url(dst_full, dst, sizeof(dst));
 
-    gfal2_log(G_LOG_LEVEL_DEBUG, "Using source: %s", src);
-    gfal2_log(G_LOG_LEVEL_DEBUG, "Using destination: %s", dst);
+    // Resolve DNS alias for later usage in the HTTP copy
+    davix->resolve_and_store_url(src);
+    davix->resolve_and_store_url(dst);
+
+    gfal2_log(G_LOG_LEVEL_INFO, "Will use copy source: %s", davix->resolved_url(src).c_str());
+    gfal2_log(G_LOG_LEVEL_INFO, "Will use copy destination: %s", davix->resolved_url(dst).c_str());
 
     // Get user defined checksum
     gfalt_checksum_mode_t checksum_mode = GFALT_CHECKSUM_NONE;
@@ -948,7 +888,7 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         attempted_mode.emplace_back(copyMode.str());
         copyMode.next();
     } while (!copyMode.end() &&
-             is_http_3rdcopy_fallback_enabled(context, stripped_src, stripped_dst) &&
+             is_http_3rdcopy_fallback_enabled(context, src, dst) &&
              gfal_http_copy_should_fallback(nested_error->code));
 
     if (ret == 0) {

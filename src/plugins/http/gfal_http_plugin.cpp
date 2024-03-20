@@ -21,7 +21,7 @@
 #include "gfal_http_plugin.h"
 #include "gfal_http_plugin_token.h"
 #include "uri/gfal2_parsing.h"
-#include <cstdio>
+#include "network/gfal2_network.h"
 #include <cstring>
 #include <sstream>
 #include <list>
@@ -67,6 +67,64 @@ static int get_corresponding_davix_log_level()
     return davix_log_level;
 }
 
+static std::string construct_config_group_from_url(const char* surl) {
+    Davix::Uri uri(surl);
+
+    if (uri.getStatus() != Davix::StatusCode::OK) {
+        return "";
+    }
+
+    std::string prot = uri.getProtocol();
+
+    if (prot.back() == 's') {
+        prot.pop_back();
+    }
+
+    std::string group = prot + ":" + uri.getHost();
+    std::transform(group.begin(), group.end(), group.begin(), ::toupper);
+    return group;
+}
+
+/// Get custom Storage Element configuration option (boolean value)
+int get_se_custom_opt_boolean(const gfal2_context_t& context, const char* surl, const char* key)
+{
+    std::string group = construct_config_group_from_url(surl);
+
+    if (group.empty()) {
+        return -1;
+    }
+
+    GError* error = NULL;
+    gboolean value = gfal2_get_opt_boolean(context, group.c_str(), key, &error);
+
+    if (error != NULL) {
+        g_error_free(error);
+        return -1;
+    }
+
+    return value;
+}
+
+/// Get custom Storage Element configuration option (string value)
+char* get_se_custom_opt_string(const gfal2_context_t& context, const char* surl, const char* key)
+{
+    std::string group = construct_config_group_from_url(surl);
+
+    if (group.empty()) {
+        return NULL;
+    }
+
+    GError* error = NULL;
+    gchar* value = gfal2_get_opt_string(context, group.c_str(), key, &error);
+
+    if (error != NULL) {
+        g_error_free(error);
+        return NULL;
+    }
+
+    return value;
+}
+
 /// Get custom HTTP headers for Storage Element group
 char** get_se_custom_headers_list(const gfal2_context_t& context, const Davix::Uri& uri) {
     if (uri.getStatus() != Davix::StatusCode::OK) {
@@ -90,6 +148,18 @@ char** get_se_custom_headers_list(const gfal2_context_t& context, const Davix::U
     }
 
     return headers;
+}
+
+/// Specific function for the retrieve-bearer-token configuration option
+bool get_retrieve_bearer_token_config(const gfal2_context_t& context, const char* surl, bool default_value)
+{
+    int retrieve_token = get_se_custom_opt_boolean(context, surl, "RETRIEVE_BEARER_TOKEN");
+
+    if (retrieve_token == -1) {
+        return gfal2_get_opt_boolean_with_default(context, "HTTP PLUGIN", "RETRIEVE_BEARER_TOKEN", default_value);
+    }
+
+    return static_cast<bool>(retrieve_token);
 }
 
 static bool isCloudStorage(const Davix::Uri& uri) {
@@ -220,7 +290,7 @@ char* GfalHttpPluginData::find_se_token(const Davix::Uri& uri, const OP& operati
 
 char* GfalHttpPluginData::retrieve_and_store_se_token(const Davix::Uri& uri, const OP& operation, unsigned validity)
 {
-    bool retrieve_token = gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "RETRIEVE_BEARER_TOKEN", false);
+    bool retrieve_token = get_retrieve_bearer_token_config(handle, uri.getString().c_str(), false);
     GError* error = NULL;
     char* token = NULL;
 
@@ -710,7 +780,7 @@ void GfalHttpPluginData::get_credentials(Davix::RequestParams& params, const Dav
     else if (!get_token(params, uri, operation, token_validity)) {
         // Utilize AWS or GCLOUD tokens if no bearer token is available (to be reviewed)
         get_aws_params(params, uri);
-        get_gcloud_credentials(params,uri);
+        get_gcloud_credentials(params, uri);
         get_swift_params(params, uri);
     }
 }
@@ -759,10 +829,13 @@ void GfalHttpPluginData::get_params_internal(Davix::RequestParams& params, const
 
     davix_set_log_level(davix_level);
 
-    // Reset sensitive scope mask
-    int davix_scope_mask = Davix::getLogScope() & ~(DAVIX_LOG_SSL | DAVIX_LOG_SENSITIVE);
+    // Reset scope mask
+    int davix_scope_mask = Davix::getLogScope() & ~(DAVIX_LOG_SSL | DAVIX_LOG_SENSITIVE | DAVIX_LOG_BODY);
     if (gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "LOG_SENSITIVE", false)) {
         davix_scope_mask |= (DAVIX_LOG_SSL | DAVIX_LOG_SENSITIVE);
+    }
+    if (gfal2_get_opt_boolean_with_default(handle, "HTTP PLUGIN", "LOG_CONTENT", false)) {
+        davix_scope_mask |= DAVIX_LOG_BODY;
     }
     Davix::setLogScope(davix_scope_mask);
 
@@ -877,6 +950,30 @@ void GfalHttpPluginData::set_operation_timeout(int timeout)
     gfal2_set_opt_integer(handle, "HTTP PLUGIN", HTTP_CONFIG_OP_TIMEOUT, timeout, NULL);
 }
 
+void GfalHttpPluginData::resolve_and_store_url(const char* url)
+{
+    gboolean resolve_dns = gfal2_get_opt_boolean_with_default(handle, CORE_CONFIG_GROUP, RESOLVE_DNS, FALSE);
+
+    if (resolve_dns && is_http_scheme(url)) {
+        char *url_tmp = resolve_dns_helper(url, "Resolved url");
+
+        if (url_tmp) {
+            resolution_map[url] = url_tmp;
+            free(url_tmp);
+        }
+    }
+}
+
+std::string GfalHttpPluginData::resolved_url(const std::string& url)
+{
+    auto resolved = resolution_map.find(url);
+
+    if (resolved != resolution_map.end()) {
+        return resolved->second;
+    }
+
+    return url;
+}
 
 static void log_davix2gfal(void* userdata, int msg_level, const char* msg)
 {

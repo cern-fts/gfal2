@@ -78,7 +78,7 @@ int gfal_http_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, g
     Davix::DavixError* daverr = NULL;
     Davix::Uri uri(stripped_url);
     Davix::RequestParams req_params;
-    bool retrieve_token = gfal2_get_opt_boolean_with_default(davix->handle, "HTTP PLUGIN", "RETRIEVE_BEARER_TOKEN", false);
+    bool retrieve_token = get_retrieve_bearer_token_config(davix->handle, uri.getString().c_str(), false);
 
     if (retrieve_token) {
         gchar *token = davix->find_se_token(uri, GfalHttpPluginData::OP::MKCOL);
@@ -178,7 +178,7 @@ int gfal_http_rename(plugin_handle plugin_data, const char* oldurl, const char* 
     Davix::DavixError* daverr = NULL;
     Davix::Uri uri(stripped_old);
     Davix::RequestParams req_params;
-    bool retrieve_token = gfal2_get_opt_boolean_with_default(davix->handle, "HTTP PLUGIN", "RETRIEVE_BEARER_TOKEN", false);
+    bool retrieve_token = get_retrieve_bearer_token_config(davix->handle, uri.getString().c_str(), false);
 
     if (retrieve_token) {
         // Find the common base directory
