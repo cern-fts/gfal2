@@ -68,6 +68,7 @@ gfalt_params_t gfalt_params_handle_copy(gfalt_params_t params, GError ** err)
     memcpy(p, params, sizeof(struct _gfalt_params_t));
     p->stage_request_id = g_strdup(params->stage_request_id);
     p->transfer_metadata = g_strdup(params->transfer_metadata);
+    p->archive_metadata = g_strdup(params->archive_metadata);
     p->src_space_token = g_strdup(params->src_space_token);
     p->dst_space_token = g_strdup(params->dst_space_token);
     p->checksum_type = g_strdup(params->checksum_type);
@@ -104,6 +105,7 @@ void gfalt_params_handle_delete(gfalt_params_t params, GError ** err)
         params->lock = FALSE;
         g_free(params->stage_request_id);
         g_free(params->transfer_metadata);
+        g_free(params->archive_metadata);
         g_free(params->src_space_token);
         g_free(params->dst_space_token);
         g_free(params->checksum_type);
@@ -439,6 +441,22 @@ gint gfalt_set_transfer_metadata(gfalt_params_t params, const char* metadata, GE
 const gchar* gfalt_get_transfer_metadata(gfalt_params_t params, GError** err)
 {
     return params->transfer_metadata;
+}
+
+
+gint gfalt_set_archive_metadata(gfalt_params_t params, const char* metadata, GError** err)
+{
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+    if (params->archive_metadata)
+        g_free(params->archive_metadata);
+    params->archive_metadata = g_strdup(metadata);
+    return 0;
+}
+
+
+const gchar* gfalt_get_archive_metadata(gfalt_params_t params, GError** err)
+{
+    return params->archive_metadata;
 }
 
 
