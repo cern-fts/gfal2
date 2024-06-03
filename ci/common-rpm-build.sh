@@ -32,8 +32,7 @@ DIST=$(rpm --eval "%{dist}" | cut -d. -f2)
 DISTNAME=${DIST}
 
 # Special handling of FC rawhide
-[[ "${DISTNAME}" == "fc39" ]] && DISTNAME="fc-rawhide"
-[[ "${DISTNAME}" == "fc40" ]] && DISTNAME="fc-rawhide"
+[[ "${DISTNAME}" == "fc41" ]] && DISTNAME="fc-rawhide"
 
 # Write repository files to /etc/yum.repos.d/ based on the branch name
 REPO_FILE=$(./ci/write-repo-file.sh)
