@@ -370,14 +370,24 @@ gint gfalt_set_stage_request_id(gfalt_params_t, const char* request_id, GError**
 const gchar* gfalt_get_stage_request_id(gfalt_params_t, GError** err);
 
 /**
- * Set the transfer metadata to be sent to the disk-buffer
+ * Set the transfer metadata to be sent to the transfer destination
  */
 gint gfalt_set_transfer_metadata(gfalt_params_t, const char* metadata, GError** err);
 
 /**
- * Get the transfer metadata to be sent to the disk-buffer
+ * Get the transfer metadata to be sent to the transfer destination
  */
 const gchar* gfalt_get_transfer_metadata(gfalt_params_t, GError** err);
+
+/**
+ * Set the archive metadata to be sent to the transfer destination
+ */
+gint gfalt_set_archive_metadata(gfalt_params_t, const char* metadata, GError** err);
+
+/**
+ * Get the transfer metadata to be sent to the transfer destination
+ */
+const gchar* gfalt_get_archive_metadata(gfalt_params_t, GError** err);
 
 /**
  * @brief Add a new callback for monitoring the current transfer

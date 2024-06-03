@@ -41,7 +41,8 @@ struct _gfalt_params_t {
     // disk residency management for tape endpoints
     gboolean evict;             // evict file from disk buffer
     gchar *stage_request_id;    // request id used in the staging operation
-    gchar *transfer_metadata;   // metadata sent in the copy request
+    gchar *transfer_metadata;   // transfer metadata sent in the copy request to the destination
+    gchar *archive_metadata;    // archive metadata sent in the copy request to the destination
     // spacetoken management for SRM
     gchar *src_space_token;
     gchar *dst_space_token;
