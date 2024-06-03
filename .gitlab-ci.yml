@@ -58,7 +58,6 @@ fedora-rawhide:
   image: fedora:rawhide
   <<: *build-template_definition
   allow_failure: true
-  when: manual
 
 #--------------------------
 # Test templates
