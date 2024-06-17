@@ -220,7 +220,7 @@ static int streamed_copy(gfal2_context_t context, gfalt_params_t params,
     const time_t timeout = perf_data.start + gfalt_get_timeout(params, NULL);
     ssize_t s_file = 1;
 
-    gfal2_log(G_LOG_LEVEL_DEBUG, "  begin local transfer %s ->  %s with buffer size %ld", src, dst, buffersize);
+    gfal2_log(G_LOG_LEVEL_DEBUG, "  begin local transfer %s ->  %s with buffer size %zd", src, dst, buffersize);
 
     while (s_file > 0 && !nested_error) {
         s_file = gfal_plugin_readG(context, f_src, buffer, buffersize, &nested_error);

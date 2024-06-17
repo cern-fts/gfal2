@@ -254,10 +254,10 @@ globus_result_t parse_mlst_line(char *line, struct stat *stat_info, char *filena
     }
 
     if (size_s) {
-        off_t size;
+        long long size;
         int rc;
 
-        rc = sscanf(size_s, "%ld", &size);
+        rc = sscanf(size_s, "%lld", &size);
         if (rc == 1) {
             stat_info->st_size = size;
         }
