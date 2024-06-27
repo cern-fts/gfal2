@@ -189,7 +189,11 @@ namespace tape_rest_api {
 
     // Get locality field from "/archiveinfo" response
     // On failed request, sets the "err" object
-    file_locality_t get_file_locality(struct json_object* file, const std::string& path, GError** err) {
+    // On successful request, but "error" field is present in the response:
+    //   - sets the "err" object, if bypass_archive_error not true
+    //   - returns file locality, if bypass_archive_error is true
+    file_locality_t get_file_locality(struct json_object* file, const std::string& path, GError** err,
+                                      bool bypass_archive_error = false) {
         file_locality_t locality{false, false};
 
         if (file == NULL) {
@@ -202,7 +206,7 @@ namespace tape_rest_api {
         struct json_object *file_error_text = 0;
         bool foundError = json_object_object_get_ex(file, "error", &file_error_text);
 
-        if (foundError) {
+        if (foundError && !bypass_archive_error) {
             std::string error_text = json_object_get_string(file_error_text);
             gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__, "[Tape REST API] %s", error_text.c_str());
             return locality;
@@ -727,7 +731,7 @@ ssize_t gfal_http_status_getxattr(plugin_handle plugin_data, const char* url, ch
 
     std::string path = Uri(url).getPath();
     struct json_object* file = tape_rest_api::polling_get_item_by_path(json_response, path);
-    tape_rest_api::file_locality_t locality = tape_rest_api::get_file_locality(file, path, &tmp_err);
+    tape_rest_api::file_locality_t locality = tape_rest_api::get_file_locality(file, path, &tmp_err, true);
 
     // Free the top JSON object
     json_object_put(json_response);
