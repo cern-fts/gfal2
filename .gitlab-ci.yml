@@ -4,13 +4,6 @@ stages:
   - publish
 
 #--------------------------
-# Notes
-#--------------------------
-# Gitlab-CI + yum is known to hang on CC7 images
-# The file descriptors limit must be relaxed in order to allow yum to operate
-# https://gitlab.docs.cern.ch/docs/Build%20your%20application/CI-CD/Runners/TroubleShooting/yum-install-hang/
-
-#--------------------------
 # Build templates
 #--------------------------
 
@@ -31,12 +24,6 @@ stages:
 #--------------------------
 # Build jobs
 #--------------------------
-
-cc7:
-  image: gitlab-registry.cern.ch/linuxsupport/cc7-base
-  before_script:
-    - ulimit -n 1048576 # Note on gitlab-CI + yum hanging
-  <<: *build-template_definition
 
 alma8:
   image: gitlab-registry.cern.ch/linuxsupport/alma8-base
@@ -78,15 +65,6 @@ fedora-rawhide:
 # Test jobs
 #--------------------------
 
-cc7-test:
-  image: gitlab-registry.cern.ch/linuxsupport/cc7-base
-  needs:
-    - job: cc7
-  before_script:
-    - ulimit -n 1048576 # Note on gitlab-CI + yum hanging
-    - yum install -y dnf epel-release
-  <<: *test-template_definition
-
 alma8-test:
   image: gitlab-registry.cern.ch/linuxsupport/alma8-base
   needs:
@@ -123,7 +101,6 @@ rpms:
   stage: publish
   image: gitlab-registry.cern.ch/eos/gitlab-eos/alma9:latest
   dependencies:
-    - cc7
     - alma8
     - alma9
     - fedora-39
@@ -133,7 +110,7 @@ rpms:
     - automount
     - cat "${repo_passwd}" | kinit "${repo_user}"
     - |
-      for platform in cc7 alma8 alma9 fedora-39 fedora-40 fedora-rawhide; do
+      for platform in alma8 alma9 fedora-39 fedora-40 fedora-rawhide; do
         if [[ "${platform}" == "fedora-rawhide" ]] && [[ ! -d ${platform} ]] ; then
           echo "Skipping ${platform} packages..." ;
           continue ;
