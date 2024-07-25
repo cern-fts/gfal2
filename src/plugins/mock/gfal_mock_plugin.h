@@ -58,6 +58,8 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data,
 int gfal_plugin_mock_unlink(plugin_handle plugin_data,
     const char *url, GError **err);
 
+int gfal_plugin_mock_access(plugin_handle plugin_data, const char* url, int mode, GError** err);
+
 int gfal_mock_checksumG(plugin_handle plugin_data, const char* url,
     const char* check_type, char * checksum_buffer, size_t buffer_length,
     off_t start_offset, size_t data_length, GError ** err);

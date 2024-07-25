@@ -106,6 +106,36 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char *path, struct st
     return 0;
 }
 
+int gfal_plugin_mock_access(plugin_handle plugin_data, const char* url, int mode, GError** err)
+{
+    char arg_buffer[64] = {0};
+
+    gfal_plugin_mock_get_value(url, "access", arg_buffer, sizeof(arg_buffer));
+    if (arg_buffer[0]) {
+        const int has_access = gfal_plugin_mock_get_int_from_str(arg_buffer);
+        if (has_access > 0) {
+            return 1;
+        }
+    }
+
+    gfal_plugin_mock_get_value(url, "exists", arg_buffer, sizeof(arg_buffer));
+    if (arg_buffer[0]) {
+        const int has_access = gfal_plugin_mock_get_int_from_str(arg_buffer);
+        if (has_access > 0) {
+            return 1;
+        }
+    }
+
+    gfal_plugin_mock_get_value(url, "access_errno", arg_buffer, sizeof(arg_buffer));
+    int code = gfal_plugin_mock_get_int_from_str(arg_buffer);
+    if (code > 0) {
+        gfal_plugin_mock_report_error(strerror(code), code, err);
+    } else {
+        gfal_plugin_mock_report_error(strerror(ENOENT), ENOENT, err);
+    }
+
+    return -1;
+}
 
 int gfal_plugin_mock_unlink(plugin_handle plugin_data, const char *url, GError **err)
 {
