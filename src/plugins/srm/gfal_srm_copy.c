@@ -653,9 +653,13 @@ int srm_plugin_filecopy(plugin_handle handle, gfal2_context_t context,
     if (nested_error) {
         gfal2_log(G_LOG_LEVEL_WARNING, "Transfer failed with: %s", nested_error->message);
     }
-    srm_cleanup_copy(handle, context, params, source, dest,
-        token_source, token_destination,
-        transfer_finished, &nested_error);
+    if (gfalt_get_transfer_cleanup(params, &nested_error)) {
+        srm_cleanup_copy(handle, context, params, source, dest, token_source, token_destination,
+                         transfer_finished, &nested_error);
+    } else {
+        gfal2_log(G_LOG_LEVEL_INFO, "Gfal srm copy clean-up disabled");
+    }
+
     if (nested_error != NULL)
         gfal2_propagate_prefixed_error(err, nested_error, __func__);
     else
