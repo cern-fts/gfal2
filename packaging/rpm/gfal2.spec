@@ -5,13 +5,13 @@
 %bcond_with tests
 
 Name:               gfal2
-Version:            2.22.2
+Version:            2.23.0
 Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 License:            ASL 2.0
 URL:                https://dmc-docs.web.cern.ch/dmc-docs/gfal2/gfal2.html
-# git clone --depth=1 --branch=v2.22.2 https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.22.2
-# tar czf gfal2-2.22.2.tar.gz --exclude-vcs gfal2-2.22.2
+# git clone --depth=1 --branch=v2.23.0 https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.23.0
+# tar czf gfal2-2.23.0.tar.gz --exclude-vcs gfal2-2.23.0
 Source0:            %{name}-%{version}.tar.gz
 
 #main lib dependencies
@@ -27,12 +27,6 @@ BuildRequires:      pugixml-devel
 BuildRequires:      libuuid-devel
 #file plugin dependencies
 BuildRequires:      zlib-devel
-%if 0%{?rhel} == 7
-#lfc plugin dependencies
-BuildRequires:      lfc-devel
-#rfio plugin dependencies
-BuildRequires:      dpm-devel
-%endif
 #srm plugin dependencies
 BuildRequires:      srm-ifce-devel >= 1.23.1
 #dcap plugin dependencies
@@ -86,29 +80,6 @@ Requires:           %{name}%{?_isa} = %{version}-%{release}
 Provides the file support (file://) for %{name}.
 The file plugin provides local file operations, as copying from local
 to remote or the other way around.
-
-%if 0%{?rhel} == 7
-%package plugin-lfc
-Summary:            Provides the lfc support for %{name}
-Requires:           %{name}%{?_isa} = %{version}-%{release}
-
-%description plugin-lfc
-Provides the lfc support (lfn://) for %{name}.
-The LFC plugin allows read-only POSIX operations
-for the LFC catalog.
-
-
-%package plugin-rfio
-Summary:            Provides the rfio support for %{name}
-Requires:           %{name}%{?_isa} = %{version}-%{release}
-Requires:           dpm-libs%{?_isa}
-
-%description plugin-rfio
-Provides the rfio support (rfio://) for %{name}.
-The rfio plugin provides the POSIX operations for
-the rfio URLs, the rfio protocol is used on the DPM
-and on the Castor storage systems.
-%endif
 
 
 %package plugin-dcap
@@ -164,6 +135,7 @@ operations in grid and cloud environments. Plug-ins are available to allow
 access via a variety of protocols. This package contains a plugin for the
 xrootd protocol (root://).
 
+
 %package plugin-sftp
 Summary:            Provide sftp support for GFAL2
 Requires:           %{name}%{?_isa} = %{version}-%{release}
@@ -173,6 +145,7 @@ The Grid File Access Library, GFAL2, provides a simple POSIX-like API for file
 operations in grid and cloud environments. Plug-ins are available to allow
 access via a variety of protocols. This package contains a plugin for the
 sftp protocol (sftp://).
+
 
 %package plugin-mock
 Summary:            Provides a Mock dummy protocol for %{name}
@@ -186,10 +159,6 @@ Provides a dummy mock:// protocol for %{name}.
 Summary:            Meta package for GFAL 2.0 install
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-file%{?_isa} = %{version}-%{release}
-%if 0%{?rhel} == 7
-Requires:           %{name}-plugin-lfc%{?_isa} = %{version}-%{release}
-Requires:           %{name}-plugin-rfio%{?_isa} = %{version}-%{release}
-%endif
 Requires:           %{name}-plugin-dcap%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-srm%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-gridftp%{?_isa} = %{version}-%{release}
@@ -226,21 +195,11 @@ if [ "$gfal2_cmake_ver" != "$gfal2_spec_ver" ]; then
     exit 1
 fi
 
-%if 0%{?rhel} == 7
 %cmake3 \
     -DDOC_INSTALL_DIR=%{_pkgdocdir} \
     -DUNIT_TESTS=TRUE \
     -DPLUGIN_MOCK=TRUE \
     -DFUNCTIONAL_TESTS=%{?with_tests:ON}%{?!with_tests:OFF}
-%else
-%cmake3 \
-    -DDOC_INSTALL_DIR=%{_pkgdocdir} \
-    -DUNIT_TESTS=TRUE \
-    -DPLUGIN_MOCK=TRUE \
-    -DPLUGIN_LFC=FALSE \
-    -DPLUGIN_RFIO=FALSE \
-    -DFUNCTIONAL_TESTS=%{?with_tests:ON}%{?!with_tests:OFF}
-%endif
 
 %cmake3_build
 %cmake3_build --target doc
@@ -282,18 +241,6 @@ fi
 %files plugin-file
 %{_libdir}/%{name}-plugins/libgfal_plugin_file.so*
 %{_pkgdocdir}/README_PLUGIN_FILE
-
-%if 0%{?rhel} == 7
-%files plugin-lfc
-%{_libdir}/%{name}-plugins/libgfal_plugin_lfc.so*
-%{_pkgdocdir}/README_PLUGIN_LFC
-%config(noreplace) %{_sysconfdir}/%{name}.d/lfc_plugin.conf
-
-%files plugin-rfio
-%{_libdir}/%{name}-plugins/libgfal_plugin_rfio.so*
-%{_pkgdocdir}/README_PLUGIN_RFIO
-%config(noreplace) %{_sysconfdir}/%{name}.d/rfio_plugin.conf
-%endif
 
 %files plugin-dcap
 %{_libdir}/%{name}-plugins/libgfal_plugin_dcap.so*
@@ -338,6 +285,11 @@ fi
 
 
 %changelog
+* Wed Jul 31 2024 Mihai Patrascoiu <mipatras at cern.ch> - 2.23.0-1
+- New upstream release
+- Renamed HTTP COPY "TransferMetadata" to "ArchiveMetadata"
+- Introduce option to disable the automatic clean-up on transfer failure
+
 * Wed Mar 20 2024 Mihai Patrascoiu <mipatras at cern.ch> - 2.22.2-1
 - New upstream release
 - Pass query string in XRootd bringonline operations

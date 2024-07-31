@@ -459,19 +459,19 @@ struct HttpTransferHosts {
 };
 
 
-static void set_transfer_metadata_header(Davix::RequestParams& req_params, CopyMode mode, const std::string& metadata)
+static void set_archive_metadata_header(Davix::RequestParams& req_params, CopyMode mode, const std::string& metadata)
 {
     std::string encoded_metadata;
-    // DMC-1368: Base64 encode the header
+    // Base64 encode the header
     const bool noNewLineInBase64Output = false;
     CryptoPP::StringSource ss1(metadata, true,
                                new CryptoPP::Base64Encoder(
                                        new CryptoPP::StringSink(encoded_metadata), noNewLineInBase64Output));
 
     if (mode == CopyMode::PUSH) {
-        req_params.addHeader("TransferHeaderTransferMetadata", encoded_metadata);
+        req_params.addHeader("TransferHeaderArchiveMetadata", encoded_metadata);
     } else {
-        req_params.addHeader("TransferMetadata", encoded_metadata);
+        req_params.addHeader("ArchiveMetadata", encoded_metadata);
     }
 }
 
@@ -519,10 +519,10 @@ static int gfal_http_third_party_copy(gfal2_context_t context,
         }
     }
 
-    // Set transfer metadata header
-    const char* const metadata = gfalt_get_transfer_metadata(params, NULL);
+    // Set archive metadata header
+    const char* const metadata = gfalt_get_archive_metadata(params, NULL);
     if (metadata != NULL && metadata[0] != '\0') {
-        set_transfer_metadata_header(req_params, mode, metadata);
+        set_archive_metadata_header(req_params, mode, metadata);
     }
 
     // Set SciTag header
@@ -691,10 +691,10 @@ static int gfal_http_streamed_copy(gfal2_context_t context,
     	req_params.addHeader("Content-MD5", user_checksum);
     }
 
-    // Set transfer metadata header
-    const char* const metadata = gfalt_get_transfer_metadata(params, NULL);
+    // Set archive metadata header
+    const char* const metadata = gfalt_get_archive_metadata(params, NULL);
     if (metadata != NULL && metadata[0] != '\0') {
-        set_transfer_metadata_header(req_params, CopyMode::STREAM, metadata);
+        set_archive_metadata_header(req_params, CopyMode::STREAM, metadata);
     }
 
     if (dst_uri.getProtocol() == "s3" || dst_uri.getProtocol() == "s3s")
@@ -882,7 +882,11 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         } else {
             gfal2_log(G_LOG_LEVEL_WARNING, "Copy failed with mode %s: %s", copyMode.str(), nested_error->message);
             // Delete any potential destination file
-            gfal_http_copy_cleanup(plugin_data, params, dst, &nested_error);
+            if (gfalt_get_transfer_cleanup(params, &nested_error)) {
+                gfal_http_copy_cleanup(plugin_data, params, dst, &nested_error);
+            } else {
+                gfal2_log(G_LOG_LEVEL_INFO, "Gfal http copy clean-up disabled");
+            }
         }
 
         attempted_mode.emplace_back(copyMode.str());

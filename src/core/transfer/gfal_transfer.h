@@ -330,6 +330,16 @@ gint gfalt_set_create_parent_dir(gfalt_params_t, gboolean create_parent, GError*
 gboolean gfalt_get_create_parent_dir(gfalt_params_t, GError** err);
 
 /**
+ * Enable or disable the clean-up happening when a transfer fails
+ */
+gint gfalt_set_transfer_cleanup(gfalt_params_t, gboolean transfer_cleanup, GError** err);
+
+/**
+ * Get the transfer clean-up mode
+ */
+gboolean gfalt_get_transfer_cleanup(gfalt_params_t, GError** err);
+
+/**
  * Enable or disable usage of TPC proxy delegation
  */
 gint gfalt_set_use_proxy_delegation(gfalt_params_t, gboolean proxy_delegation, GError** err);
@@ -370,14 +380,24 @@ gint gfalt_set_stage_request_id(gfalt_params_t, const char* request_id, GError**
 const gchar* gfalt_get_stage_request_id(gfalt_params_t, GError** err);
 
 /**
- * Set the transfer metadata to be sent to the disk-buffer
+ * Set the transfer metadata to be sent to the transfer destination
  */
 gint gfalt_set_transfer_metadata(gfalt_params_t, const char* metadata, GError** err);
 
 /**
- * Get the transfer metadata to be sent to the disk-buffer
+ * Get the transfer metadata to be sent to the transfer destination
  */
 const gchar* gfalt_get_transfer_metadata(gfalt_params_t, GError** err);
+
+/**
+ * Set the archive metadata to be sent to the transfer destination
+ */
+gint gfalt_set_archive_metadata(gfalt_params_t, const char* metadata, GError** err);
+
+/**
+ * Get the transfer metadata to be sent to the transfer destination
+ */
+const gchar* gfalt_get_archive_metadata(gfalt_params_t, GError** err);
 
 /**
  * @brief Add a new callback for monitoring the current transfer

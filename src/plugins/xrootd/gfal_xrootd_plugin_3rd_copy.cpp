@@ -329,7 +329,14 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
     // here, so ignore!
     if (nbfiles == 1 && !status.IsOK()) {
         xrootd2gliberr(op_error, __func__, "Error on XrdCl::CopyProcess::Run(): %s", status);
-        return gfal_xrootd_copy_cleanup(plugin_data, params, dsts[0],op_error);
+
+        GError* nested_error = NULL;
+        if (gfalt_get_transfer_cleanup(params, &nested_error)) {
+            return gfal_xrootd_copy_cleanup(plugin_data, params, dsts[0],op_error);
+        }
+
+        gfal2_log(G_LOG_LEVEL_INFO, "Gfal xrootd copy clean-up disabled");
+        return -1;
     }
 
     // For bulk operations, here we do get the actual status per file
@@ -341,7 +348,14 @@ int gfal_xrootd_3rd_copy_bulk(plugin_handle plugin_data,
         status = results[i].Get<XrdCl::XRootDStatus>("status");
         if (!status.IsOK()) {
             xrootd2gliberr(&((*file_errors)[i]), __func__, "Error on XrdCl::CopyProcess::Run(): %s", status);
-            gfal_xrootd_copy_cleanup(plugin_data, params, dsts[i],file_errors[i]);
+
+            GError* nested_error = NULL;
+            if (gfalt_get_transfer_cleanup(params, &nested_error)) {
+                gfal_xrootd_copy_cleanup(plugin_data, params, dsts[i],file_errors[i]);
+            } else {
+                gfal2_log(G_LOG_LEVEL_INFO, "Gfal xrootd copy clean-up disabled: "
+                          "file \"%s\" has not been removed !", srcs[i]);
+            }
             ++n_failed;
         }
         else {

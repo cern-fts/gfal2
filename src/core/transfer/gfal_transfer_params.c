@@ -28,23 +28,24 @@
 
 static void gfalt_params_handle_init(gfalt_params_t p, GError ** err)
 {
-    p->lock = FALSE;
-    p->nb_data_streams = 0;
-    p->timeout = 3600;
-    p->start_offset = 0;
-    p->tcp_buffer_size = 0;
-    p->replace_existing = FALSE;
-    p->local_transfers = TRUE;
-    p->strict_mode = FALSE;
-    p->parent_dir_create = FALSE;
-    p->proxy_delegation = TRUE;
-    p->scitag = 0;
-    p->evict = FALSE;
-
-    p->monitor_callbacks = NULL;
-    p->event_callbacks = NULL;
+    *p = (struct _gfalt_params_t){
+        .lock              = FALSE,
+        .nb_data_streams   = 0,
+        .timeout           = 3600,
+        .start_offset      = 0,
+        .tcp_buffer_size   = 0,
+        .replace_existing  = FALSE,
+        .local_transfers   = TRUE,
+        .strict_mode       = FALSE,
+        .parent_dir_create = FALSE,
+        .transfer_cleanup  = TRUE,
+        .proxy_delegation  = TRUE,
+        .scitag            = 0,
+        .evict             = FALSE,
+        .monitor_callbacks = NULL,
+        .event_callbacks   = NULL,
+    };
 }
-
 
 static GSList* gfalt_params_copy_callbacks(const GSList* original)
 {
@@ -68,6 +69,7 @@ gfalt_params_t gfalt_params_handle_copy(gfalt_params_t params, GError ** err)
     memcpy(p, params, sizeof(struct _gfalt_params_t));
     p->stage_request_id = g_strdup(params->stage_request_id);
     p->transfer_metadata = g_strdup(params->transfer_metadata);
+    p->archive_metadata = g_strdup(params->archive_metadata);
     p->src_space_token = g_strdup(params->src_space_token);
     p->dst_space_token = g_strdup(params->dst_space_token);
     p->checksum_type = g_strdup(params->checksum_type);
@@ -104,6 +106,7 @@ void gfalt_params_handle_delete(gfalt_params_t params, GError ** err)
         params->lock = FALSE;
         g_free(params->stage_request_id);
         g_free(params->transfer_metadata);
+        g_free(params->archive_metadata);
         g_free(params->src_space_token);
         g_free(params->dst_space_token);
         g_free(params->checksum_type);
@@ -370,6 +373,18 @@ gboolean gfalt_get_create_parent_dir(gfalt_params_t params, GError** err)
     return params->parent_dir_create;
 }
 
+gint gfalt_set_transfer_cleanup(gfalt_params_t params, gboolean transfer_cleanup, GError** err)
+{
+    params->transfer_cleanup = transfer_cleanup;
+    return 0;
+}
+
+
+gboolean gfalt_get_transfer_cleanup(gfalt_params_t params, GError** err)
+{
+    return params->transfer_cleanup;
+}
+
 gint gfalt_set_use_proxy_delegation(gfalt_params_t params, gboolean proxy_delegation, GError** err)
 {
     g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
@@ -439,6 +454,22 @@ gint gfalt_set_transfer_metadata(gfalt_params_t params, const char* metadata, GE
 const gchar* gfalt_get_transfer_metadata(gfalt_params_t params, GError** err)
 {
     return params->transfer_metadata;
+}
+
+
+gint gfalt_set_archive_metadata(gfalt_params_t params, const char* metadata, GError** err)
+{
+    g_return_val_err_if_fail(params != NULL, -1, err, "[BUG] invalid params handle");
+    if (params->archive_metadata)
+        g_free(params->archive_metadata);
+    params->archive_metadata = g_strdup(metadata);
+    return 0;
+}
+
+
+const gchar* gfalt_get_archive_metadata(gfalt_params_t params, GError** err)
+{
+    return params->archive_metadata;
 }
 
 

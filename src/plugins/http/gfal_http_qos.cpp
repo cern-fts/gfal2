@@ -89,7 +89,7 @@ ssize_t gfal_http_check_classes(plugin_handle plugin_data, const char* url, cons
         std::strcpy(buff, classes.c_str());
         ret = classes.size() + 1;
 		  }	else {
-        gfal2_set_error(err, http_plugin_domain, ENOMEM, __func__, "response larger than allocated buffer size [%ld]", s_buff);
+        gfal2_set_error(err, http_plugin_domain, ENOMEM, __func__, "response larger than allocated buffer size [%zd]", s_buff);
 		  }
 		}
 	} else {
@@ -132,7 +132,7 @@ ssize_t gfal_http_check_file_qos(plugin_handle plugin_data, const char* url, cha
       std::strcpy(buff, qos_class.c_str());
       ret = qos_class.size() + 1;
     }	else {
-      gfal2_set_error(err, http_plugin_domain, ENOMEM, __func__, "response larger than allocated buffer size [%ld]", s_buff);
+      gfal2_set_error(err, http_plugin_domain, ENOMEM, __func__, "response larger than allocated buffer size [%zd]", s_buff);
     }
 	}
 
@@ -180,7 +180,7 @@ ssize_t gfal_http_check_qos_available_transitions(plugin_handle plugin_data, con
       std::strcpy(buff, transitions.c_str());
       ret = transitions.size() + 1;
     }	else {
-      gfal2_set_error(err, http_plugin_domain, ENOMEM, __func__, "response larger than allocated buffer size [%ld]", s_buff);
+      gfal2_set_error(err, http_plugin_domain, ENOMEM, __func__, "response larger than allocated buffer size [%zd]", s_buff);
     }
   }
 
@@ -264,7 +264,7 @@ ssize_t gfal_http_check_target_qos(plugin_handle plugin_data, const char* url, c
       std::strcpy(buff, target_qos.c_str());
       ret = target_qos.size() + 1;
     }	else {
-      gfal2_set_error(err, http_plugin_domain, ENOMEM, __func__, "response larger than allocated buffer size [%ld]", s_buff);
+      gfal2_set_error(err, http_plugin_domain, ENOMEM, __func__, "response larger than allocated buffer size [%zd]", s_buff);
     }
 	}
 

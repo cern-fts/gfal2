@@ -36,12 +36,14 @@ struct _gfalt_params_t {
     gboolean strict_mode;       // state of the strict copy mode
     gboolean local_transfers;   // local transfer authorized
     gboolean parent_dir_create; // force the creation of the parent dir
+    gboolean transfer_cleanup;  // enable/disable automatic clean-up on failed transfers
     gboolean proxy_delegation;  // use TPC proxy delegation
     guint scitag;               // transfer SciTag flow in the [65-65535] range
     // disk residency management for tape endpoints
     gboolean evict;             // evict file from disk buffer
     gchar *stage_request_id;    // request id used in the staging operation
-    gchar *transfer_metadata;   // metadata sent in the copy request
+    gchar *transfer_metadata;   // transfer metadata sent in the copy request to the destination
+    gchar *archive_metadata;    // archive metadata sent in the copy request to the destination
     // spacetoken management for SRM
     gchar *src_space_token;
     gchar *dst_space_token;

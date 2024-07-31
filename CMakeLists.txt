@@ -6,16 +6,17 @@ message ("cmake source dir : ${CMAKE_SOURCE_DIR}")
 # default set of options
 set (MAIN_CORE      TRUE CACHE STRING "enable compilation of the main library")
 set (MAIN_TRANSFER  TRUE CACHE STRING "enable compilation of the transfer library")
-set (PLUGIN_LFC     TRUE CACHE STRING "enable compilation of the lfc plugin")
 set (PLUGIN_SFTP    TRUE CACHE STRING "enable compilation of the sftp plugin")
 set (PLUGIN_SRM     TRUE CACHE STRING "enable compilation of the srm plugin")
-set (PLUGIN_RFIO    TRUE CACHE STRING "enable compilation of the RFIO plugin")
 set (PLUGIN_DCAP    TRUE CACHE STRING "enable compilation of the DCAP plugin")
 set (PLUGIN_FILE    TRUE CACHE STRING "enable compilation of the local File plugin")
 set (PLUGIN_GRIDFTP TRUE CACHE STRING "enable compilation of the GRIDFTP plugin")
 set (PLUGIN_HTTP    TRUE CACHE STRING "enable compilation of the HTTP plugin")
 set (PLUGIN_XROOTD  TRUE CACHE STRING "enable compilation of the XROOTD plugin")
 set (PLUGIN_MOCK    FALSE CACHE STRING "enable compilation of the MOCK plugin")
+# Deprecated / unsupported protocols after CC7
+set (PLUGIN_LFC     FALSE CACHE STRING "enable compilation of the lfc plugin")
+set (PLUGIN_RFIO    FALSE CACHE STRING "enable compilation of the RFIO plugin")
 
 # build type
 set (CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "type of build")
@@ -44,8 +45,8 @@ set (PROJECT_NAME_TRANSFER "gfal_transfer")
 set (OUTPUT_NAME_TRANSFER "gfal_transfer")
 
 set (VERSION_MAJOR  2)
-set (VERSION_MINOR  22)
-set (VERSION_PATCH  2)
+set (VERSION_MINOR  23)
+set (VERSION_PATCH  0)
 set (VERSION_STRING ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 add_definitions(-DVERSION="${VERSION_STRING}")
