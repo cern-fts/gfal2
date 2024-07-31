@@ -882,7 +882,11 @@ int gfal_http_copy(plugin_handle plugin_data, gfal2_context_t context,
         } else {
             gfal2_log(G_LOG_LEVEL_WARNING, "Copy failed with mode %s: %s", copyMode.str(), nested_error->message);
             // Delete any potential destination file
-            gfal_http_copy_cleanup(plugin_data, params, dst, &nested_error);
+            if (gfalt_get_transfer_cleanup(params, &nested_error)) {
+                gfal_http_copy_cleanup(plugin_data, params, dst, &nested_error);
+            } else {
+                gfal2_log(G_LOG_LEVEL_INFO, "Gfal http copy clean-up disabled");
+            }
         }
 
         attempted_mode.emplace_back(copyMode.str());

@@ -36,6 +36,7 @@ struct _gfalt_params_t {
     gboolean strict_mode;       // state of the strict copy mode
     gboolean local_transfers;   // local transfer authorized
     gboolean parent_dir_create; // force the creation of the parent dir
+    gboolean transfer_cleanup;  // enable/disable automatic clean-up on failed transfers
     gboolean proxy_delegation;  // use TPC proxy delegation
     guint scitag;               // transfer SciTag flow in the [65-65535] range
     // disk residency management for tape endpoints

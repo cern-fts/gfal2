@@ -28,23 +28,24 @@
 
 static void gfalt_params_handle_init(gfalt_params_t p, GError ** err)
 {
-    p->lock = FALSE;
-    p->nb_data_streams = 0;
-    p->timeout = 3600;
-    p->start_offset = 0;
-    p->tcp_buffer_size = 0;
-    p->replace_existing = FALSE;
-    p->local_transfers = TRUE;
-    p->strict_mode = FALSE;
-    p->parent_dir_create = FALSE;
-    p->proxy_delegation = TRUE;
-    p->scitag = 0;
-    p->evict = FALSE;
-
-    p->monitor_callbacks = NULL;
-    p->event_callbacks = NULL;
+    *p = (struct _gfalt_params_t){
+        .lock              = FALSE,
+        .nb_data_streams   = 0,
+        .timeout           = 3600,
+        .start_offset      = 0,
+        .tcp_buffer_size   = 0,
+        .replace_existing  = FALSE,
+        .local_transfers   = TRUE,
+        .strict_mode       = FALSE,
+        .parent_dir_create = FALSE,
+        .transfer_cleanup  = TRUE,
+        .proxy_delegation  = TRUE,
+        .scitag            = 0,
+        .evict             = FALSE,
+        .monitor_callbacks = NULL,
+        .event_callbacks   = NULL,
+    };
 }
-
 
 static GSList* gfalt_params_copy_callbacks(const GSList* original)
 {
@@ -370,6 +371,18 @@ gint gfalt_set_create_parent_dir(gfalt_params_t params, gboolean create_parent, 
 gboolean gfalt_get_create_parent_dir(gfalt_params_t params, GError** err)
 {
     return params->parent_dir_create;
+}
+
+gint gfalt_set_transfer_cleanup(gfalt_params_t params, gboolean transfer_cleanup, GError** err)
+{
+    params->transfer_cleanup = transfer_cleanup;
+    return 0;
+}
+
+
+gboolean gfalt_get_transfer_cleanup(gfalt_params_t params, GError** err)
+{
+    return params->transfer_cleanup;
 }
 
 gint gfalt_set_use_proxy_delegation(gfalt_params_t params, gboolean proxy_delegation, GError** err)

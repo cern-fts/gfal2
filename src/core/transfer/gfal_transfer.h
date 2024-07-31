@@ -330,6 +330,16 @@ gint gfalt_set_create_parent_dir(gfalt_params_t, gboolean create_parent, GError*
 gboolean gfalt_get_create_parent_dir(gfalt_params_t, GError** err);
 
 /**
+ * Enable or disable the clean-up happening when a transfer fails
+ */
+gint gfalt_set_transfer_cleanup(gfalt_params_t, gboolean transfer_cleanup, GError** err);
+
+/**
+ * Get the transfer clean-up mode
+ */
+gboolean gfalt_get_transfer_cleanup(gfalt_params_t, GError** err);
+
+/**
  * Enable or disable usage of TPC proxy delegation
  */
 gint gfalt_set_use_proxy_delegation(gfalt_params_t, gboolean proxy_delegation, GError** err);
