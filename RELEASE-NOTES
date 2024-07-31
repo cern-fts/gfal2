@@ -1,6 +1,20 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Wed Jul 31 2024 Mihai Patrascoiu <mipatras at cern.ch> - 2.23.0
+###Task
+- [DMC-1412] - Gfal2 support for archive metadata
+- [DMC-1413] - Data Management Clients for Fedora 39 and Fedora 40
+- [DMC-1414] - Stop building Data Management Clients for CC7
+
+###Improvement
+- [DMC-1416] - Disable the automatic clean-up when a copy fails
+- [gfal2/pull/61] - Fixes for 64 bit time_t on 32 bit systems
+
+###Change
+- [DMC-1409] - Rename FTS archive-metadata from "TransferMetadata" to "ArchiveMetadata" header in Gfal2
+- [DMC-1415] - Modify HTTP "user.status" extended attribute to return file locality even in the presence of the "/archiveinfo" error field
+
 ## Tue Mar 19 2024 Mihai Patrascoiu <mipatras at cern.ch> - 2.22.2
 ###Bug
 - [DMC-1398] - Gfal2 does not handle endpoints without reverse DNS entry

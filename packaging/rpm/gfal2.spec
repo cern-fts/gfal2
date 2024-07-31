@@ -10,8 +10,8 @@ Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 License:            ASL 2.0
 URL:                https://dmc-docs.web.cern.ch/dmc-docs/gfal2/gfal2.html
-# git clone --depth=1 --branch=v2.22.2 https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.22.2
-# tar czf gfal2-2.22.2.tar.gz --exclude-vcs gfal2-2.22.2
+# git clone --depth=1 --branch=v2.23.0 https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.23.0
+# tar czf gfal2-2.23.0.tar.gz --exclude-vcs gfal2-2.23.0
 Source0:            %{name}-%{version}.tar.gz
 
 #main lib dependencies
@@ -285,6 +285,11 @@ fi
 
 
 %changelog
+* Wed Jul 31 2024 Mihai Patrascoiu <mipatras at cern.ch> - 2.23.0-1
+- New upstream release
+- Renamed HTTP COPY "TransferMetadata" to "ArchiveMetadata"
+- Introduce option to disable the automatic clean-up on transfer failure
+
 * Wed Mar 20 2024 Mihai Patrascoiu <mipatras at cern.ch> - 2.22.2-1
 - New upstream release
 - Pass query string in XRootd bringonline operations
