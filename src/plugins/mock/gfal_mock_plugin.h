@@ -56,6 +56,16 @@ unsigned long long gfal_plugin_mock_get_unsigned_int_from_str(const char* buff);
 int gfal_plugin_mock_stat(plugin_handle plugin_data,
     const char *path, struct stat *buf, GError **err);
 
+/**
+ * @param url    A url to create given "mock://host/path?rd_path=<a uri path>&rd_path=<an other uri path>"
+ *               Every "rd_path" is considered as a read only path, so mkdir will fail.
+ *               e.g. "mock://host/path/a/file?rd_path=mock://host/path/a/"
+ *                 -> mkdir(mock://host/path/)   : OK
+ *                 -> mkdir(mock://host/path/a/) : KO
+ */
+int gfal_plugin_mock_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode,
+                             gboolean rec_flag, GError** err);
+
 int gfal_plugin_mock_unlink(plugin_handle plugin_data,
     const char *url, GError **err);
 

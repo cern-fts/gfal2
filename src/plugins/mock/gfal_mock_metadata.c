@@ -137,6 +137,27 @@ int gfal_plugin_mock_access(plugin_handle plugin_data, const char* url, int mode
     return -1;
 }
 
+int gfal_plugin_mock_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, gboolean rec_flag, GError** err)
+{
+    GStrv read_only_paths = gfal_plugin_mock_get_values(url, "rd_path");
+    if (!read_only_paths) {
+        return 0;
+    }
+
+    for (int i = 0; read_only_paths[i]; ++i) {
+        const char *query = strchr(url, '?');
+        const size_t url_len = query - url;
+        if (!strncmp(url, read_only_paths[i], url_len)) {
+            g_strfreev(read_only_paths);
+            gfal_plugin_mock_report_error(strerror(EPERM), EPERM, err);
+            return -1;
+        }
+    }
+
+    g_strfreev(read_only_paths);
+    return 0;
+}
+
 int gfal_plugin_mock_unlink(plugin_handle plugin_data, const char *url, GError **err)
 {
     struct stat buf;

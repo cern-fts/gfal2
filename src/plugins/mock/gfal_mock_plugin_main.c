@@ -49,7 +49,7 @@ static gboolean gfal_mock_check_url(plugin_handle handle, const char *url, plugi
 
     switch (mode) {
         case GFAL_PLUGIN_ACCESS:
-        //case GFAL_PLUGIN_MKDIR:
+        case GFAL_PLUGIN_MKDIR:
         case GFAL_PLUGIN_STAT:
         case GFAL_PLUGIN_LSTAT:
             //case GFAL_PLUGIN_RMDIR:
@@ -233,6 +233,7 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError **err)
     mock_plugin.statG = &gfal_plugin_mock_stat;
     mock_plugin.lstatG = &gfal_plugin_mock_stat;
     mock_plugin.accessG = &gfal_plugin_mock_access;
+    mock_plugin.mkdirpG = &gfal_plugin_mock_mkdirpG;
     mock_plugin.unlinkG = &gfal_plugin_mock_unlink;
     mock_plugin.getxattrG = &gfal_mock_getxattrG;
     mock_plugin.checksum_calcG = &gfal_mock_checksumG;
