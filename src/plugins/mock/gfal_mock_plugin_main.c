@@ -104,6 +104,39 @@ void gfal_plugin_mock_get_value(const char *url, const char *key, char *value, s
     g_strfreev(args);
 }
 
+GStrv gfal_plugin_mock_get_values(const char *url, const char *key)
+{
+    g_autoptr(GStrvBuilder) builder = g_strv_builder_new();
+    char *query = strchr(url, '?');
+    while (query) {
+        const char *current_key = query + 1;
+        const char *key_delim = strchr(current_key, '=');
+        if (!key_delim)
+            break;
+
+        const size_t key_length = key_delim - current_key;
+        const size_t key_len = strlen(key);
+        query = strchr(key_delim, '&');
+        if (key_length != key_len || strncmp(key, current_key, key_length)) {
+            continue;
+        }
+
+        const char *value = key_delim + 1;
+        const size_t value_len = query ? query - value : strlen(value);
+
+        const char *value_dup = g_strndup(value, value_len);
+        if (!value_dup) {
+            g_strfreev(g_strv_builder_end(builder));
+
+            return NULL;
+        }
+
+        g_strv_builder_add(builder, value_dup);
+    }
+
+    return g_strv_builder_end(builder);
+}
+
 
 long long gfal_plugin_mock_get_int_from_str(const char *buff)
 {

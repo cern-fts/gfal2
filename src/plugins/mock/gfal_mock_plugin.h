@@ -46,6 +46,7 @@ GQuark gfal2_get_plugin_mock_quark();
 void gfal_plugin_mock_report_error(const char *msg, int errn, GError **err);
 
 void gfal_plugin_mock_get_value(const char *url, const char *key, char *value, size_t val_size);
+GStrv gfal_plugin_mock_get_values(const char *url, const char *key);
 
 long long gfal_plugin_mock_get_int_from_str(const char* buff);
 
