@@ -106,35 +106,69 @@ void gfal_plugin_mock_get_value(const char *url, const char *key, char *value, s
 
 GStrv gfal_plugin_mock_get_values(const char *url, const char *key)
 {
-    g_autoptr(GStrvBuilder) builder = g_strv_builder_new();
+    char needle[64] = {0};
+    const unsigned long key_length = strlen(key);
+
+    if (key_length > sizeof(needle) - 1) {
+        return NULL;
+    }
+
+    // Move to query parameters
     char *query = strchr(url, '?');
-    while (query) {
-        const char *current_key = query + 1;
-        const char *key_delim = strchr(current_key, '=');
-        if (!key_delim)
+    if (!query) {
+        return NULL;
+    }
+
+    // Build needle pattern "key="
+    strcpy(needle, key);
+    strcat(needle, "=");
+
+    // Count number key occurences
+    int nb_key = 0;
+    while ((query = strstr(query, needle))) {
+        ++nb_key;
+        ++query;
+    }
+
+    if (!nb_key) {
+        return NULL;
+    }
+
+    char **values = calloc(sizeof(char *), nb_key + 1);
+    if (!values) {
+        return NULL;
+    }
+
+    query = strchr(url, '?');
+    for (int i = 0; query; ) {
+        // Look for a key=value
+        const char *const key_match = strstr(query, needle);
+        if (!key_match)
             break;
 
-        const size_t key_length = key_delim - current_key;
-        const size_t key_len = strlen(key);
-        query = strchr(key_delim, '&');
-        if (key_length != key_len || strncmp(key, current_key, key_length)) {
+        // Save value
+        query = strchr(key_match, '&');
+        const char *const value = key_match + key_length + 1;
+        const size_t value_len = query ? query - value : strlen(value);
+        if (!value_len) {
             continue;
         }
 
-        const char *value = key_delim + 1;
-        const size_t value_len = query ? query - value : strlen(value);
-
-        const char *value_dup = g_strndup(value, value_len);
+        char *const value_dup = g_strndup(value, value_len);
         if (!value_dup) {
-            g_strfreev(g_strv_builder_end(builder));
-
+            g_strfreev(values);
             return NULL;
         }
-
-        g_strv_builder_add(builder, value_dup);
+        values[i] = value_dup;
+        ++i;
     }
 
-    return g_strv_builder_end(builder);
+    if (!values[0]) {
+        g_strfreev(values);
+        return NULL;
+    }
+
+    return values;
 }
 
 
