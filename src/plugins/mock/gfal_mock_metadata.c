@@ -106,6 +106,57 @@ int gfal_plugin_mock_stat(plugin_handle plugin_data, const char *path, struct st
     return 0;
 }
 
+int gfal_plugin_mock_access(plugin_handle plugin_data, const char* url, int mode, GError** err)
+{
+    char arg_buffer[64] = {0};
+
+    gfal_plugin_mock_get_value(url, "access", arg_buffer, sizeof(arg_buffer));
+    if (arg_buffer[0]) {
+        const int has_access = gfal_plugin_mock_get_int_from_str(arg_buffer);
+        if (has_access > 0) {
+            return 1;
+        }
+    }
+
+    gfal_plugin_mock_get_value(url, "exists", arg_buffer, sizeof(arg_buffer));
+    if (arg_buffer[0]) {
+        const int has_access = gfal_plugin_mock_get_int_from_str(arg_buffer);
+        if (has_access > 0) {
+            return 1;
+        }
+    }
+
+    gfal_plugin_mock_get_value(url, "access_errno", arg_buffer, sizeof(arg_buffer));
+    int code = gfal_plugin_mock_get_int_from_str(arg_buffer);
+    if (code > 0) {
+        gfal_plugin_mock_report_error(strerror(code), code, err);
+    } else {
+        gfal_plugin_mock_report_error(strerror(ENOENT), ENOENT, err);
+    }
+
+    return -1;
+}
+
+int gfal_plugin_mock_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode, gboolean rec_flag, GError** err)
+{
+    GStrv read_only_paths = gfal_plugin_mock_get_values(url, "rd_path");
+    if (!read_only_paths) {
+        return 0;
+    }
+
+    for (int i = 0; read_only_paths[i]; ++i) {
+        const char *query = strchr(url, '?');
+        const size_t url_len = query - url;
+        if (!strncmp(url, read_only_paths[i], url_len)) {
+            g_strfreev(read_only_paths);
+            gfal_plugin_mock_report_error(strerror(EPERM), EPERM, err);
+            return -1;
+        }
+    }
+
+    g_strfreev(read_only_paths);
+    return 0;
+}
 
 int gfal_plugin_mock_unlink(plugin_handle plugin_data, const char *url, GError **err)
 {

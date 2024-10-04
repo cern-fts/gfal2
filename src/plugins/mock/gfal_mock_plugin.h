@@ -46,6 +46,7 @@ GQuark gfal2_get_plugin_mock_quark();
 void gfal_plugin_mock_report_error(const char *msg, int errn, GError **err);
 
 void gfal_plugin_mock_get_value(const char *url, const char *key, char *value, size_t val_size);
+GStrv gfal_plugin_mock_get_values(const char *url, const char *key);
 
 long long gfal_plugin_mock_get_int_from_str(const char* buff);
 
@@ -55,8 +56,20 @@ unsigned long long gfal_plugin_mock_get_unsigned_int_from_str(const char* buff);
 int gfal_plugin_mock_stat(plugin_handle plugin_data,
     const char *path, struct stat *buf, GError **err);
 
+/**
+ * @param url    A url to create given "mock://host/path?rd_path=<a uri path>&rd_path=<an other uri path>"
+ *               Every "rd_path" is considered as a read only path, so mkdir will fail.
+ *               e.g. "mock://host/path/a/file?rd_path=mock://host/path/a/"
+ *                 -> mkdir(mock://host/path/)   : OK
+ *                 -> mkdir(mock://host/path/a/) : KO
+ */
+int gfal_plugin_mock_mkdirpG(plugin_handle plugin_data, const char* url, mode_t mode,
+                             gboolean rec_flag, GError** err);
+
 int gfal_plugin_mock_unlink(plugin_handle plugin_data,
     const char *url, GError **err);
+
+int gfal_plugin_mock_access(plugin_handle plugin_data, const char* url, int mode, GError** err);
 
 int gfal_mock_checksumG(plugin_handle plugin_data, const char* url,
     const char* check_type, char * checksum_buffer, size_t buffer_length,

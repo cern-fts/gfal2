@@ -719,19 +719,22 @@ void GfalHttpPluginData::get_swift_params(Davix::RequestParams& params, const Da
 
 void GfalHttpPluginData::get_gcloud_credentials(Davix::RequestParams& params, const Davix::Uri& uri)
 {
-    gchar *gcloud_json_file, *gcloud_json_string;
     std::string group_label("GCLOUD");
-
-    gcloud_json_file = gfal2_get_opt_string(handle, group_label.c_str(), "JSON_AUTH_FILE", NULL);
-    gcloud_json_string = gfal2_get_opt_string(handle, group_label.c_str(), "JSON_AUTH_STRING", NULL);
+    gchar* gcloud_json_file = gfal2_get_opt_string(handle, group_label.c_str(), "JSON_AUTH_FILE", NULL);
+    gchar* gcloud_json_string = gfal2_get_opt_string(handle, group_label.c_str(), "JSON_AUTH_STRING", NULL);
     gcloud::CredentialProvider provider;
 
-    if (gcloud_json_file) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "Using gcloud json credential file");
-        params.setGcloudCredentials(provider.fromFile(std::string(gcloud_json_file)));
-    } else if (gcloud_json_string) {
-        gfal2_log(G_LOG_LEVEL_DEBUG, "Using gcloud json credential string");
-        params.setGcloudCredentials(provider.fromJSONString(std::string(gcloud_json_string)));
+    try
+    {
+        if (gcloud_json_file) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Using gcloud json credential file");
+            params.setGcloudCredentials(provider.fromFile(std::string(gcloud_json_file)));
+        } else if (gcloud_json_string) {
+            gfal2_log(G_LOG_LEVEL_DEBUG, "Using gcloud json credential string");
+            params.setGcloudCredentials(provider.fromJSONString(std::string(gcloud_json_string)));
+        }
+    } catch(const std::exception& e) {
+        gfal2_log(G_LOG_LEVEL_WARNING, "Failed to load configured GCloud credentials: %s", e.what());
     }
 
     g_free(gcloud_json_file);
@@ -744,7 +747,7 @@ void GfalHttpPluginData::get_reva_credentials(Davix::RequestParams &params, cons
     // that are valid across sites (Reva would map them to local identities), i.e. use the token given in the GFAL context.
     // Note that a missing token will not raise exceptions but will obviously make the request fail.
     std::string header = gfal2_get_opt_string_with_default(handle, GFAL_CRED_BEARER, "TOKEN", "");
-    if (header == "") {
+    if (header.empty()) {
         return;
     }
     header = "Bearer " + header;

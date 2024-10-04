@@ -5,13 +5,13 @@
 %bcond_with tests
 
 Name:               gfal2
-Version:            2.23.0
+Version:            2.23.1
 Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 License:            ASL 2.0
 URL:                https://dmc-docs.web.cern.ch/dmc-docs/gfal2/gfal2.html
-# git clone --depth=1 --branch=v2.23.0 https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.23.0
-# tar czf gfal2-2.23.0.tar.gz --exclude-vcs gfal2-2.23.0
+# git clone --depth=1 --branch=v2.23.1 https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.23.1
+# tar czf gfal2-2.23.1.tar.gz --exclude-vcs gfal2-2.23.1
 Source0:            %{name}-%{version}.tar.gz
 
 #main lib dependencies
@@ -285,6 +285,11 @@ fi
 
 
 %changelog
+* Fri Oct  4 2024 Louis Regnier <loregnie at cern.ch> - 2.23.1
+- New upstream release
+- Improve error handling when failing to read GCloud credential file
+- Implementation gfal_mock_access, gfal_mock_mkdirpG and the mock_get_values helper
+
 * Wed Jul 31 2024 Mihai Patrascoiu <mipatras at cern.ch> - 2.23.0-1
 - New upstream release
 - Renamed HTTP COPY "TransferMetadata" to "ArchiveMetadata"

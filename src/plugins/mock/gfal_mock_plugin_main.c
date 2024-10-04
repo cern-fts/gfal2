@@ -48,8 +48,8 @@ static gboolean gfal_mock_check_url(plugin_handle handle, const char *url, plugi
     g_return_val_err_if_fail(url != NULL, EINVAL, err, "[gfal_lfile_path_checker] Invalid url ");
 
     switch (mode) {
-        //case GFAL_PLUGIN_ACCESS:
-        //case GFAL_PLUGIN_MKDIR:
+        case GFAL_PLUGIN_ACCESS:
+        case GFAL_PLUGIN_MKDIR:
         case GFAL_PLUGIN_STAT:
         case GFAL_PLUGIN_LSTAT:
             //case GFAL_PLUGIN_RMDIR:
@@ -102,6 +102,73 @@ void gfal_plugin_mock_get_value(const char *url, const char *key, char *value, s
     }
 
     g_strfreev(args);
+}
+
+GStrv gfal_plugin_mock_get_values(const char *url, const char *key)
+{
+    char needle[64] = {0};
+    const unsigned long key_length = strlen(key);
+
+    if (key_length > sizeof(needle) - 1) {
+        return NULL;
+    }
+
+    // Move to query parameters
+    char *query = strchr(url, '?');
+    if (!query) {
+        return NULL;
+    }
+
+    // Build needle pattern "key="
+    strcpy(needle, key);
+    strcat(needle, "=");
+
+    // Count number key occurences
+    int nb_key = 0;
+    while ((query = strstr(query, needle))) {
+        ++nb_key;
+        ++query;
+    }
+
+    if (!nb_key) {
+        return NULL;
+    }
+
+    char **values = calloc(sizeof(char *), nb_key + 1);
+    if (!values) {
+        return NULL;
+    }
+
+    query = strchr(url, '?');
+    for (int i = 0; query; ) {
+        // Look for a key=value
+        const char *const key_match = strstr(query, needle);
+        if (!key_match)
+            break;
+
+        // Save value
+        query = strchr(key_match, '&');
+        const char *const value = key_match + key_length + 1;
+        const size_t value_len = query ? query - value : strlen(value);
+        if (!value_len) {
+            continue;
+        }
+
+        char *const value_dup = g_strndup(value, value_len);
+        if (!value_dup) {
+            g_strfreev(values);
+            return NULL;
+        }
+        values[i] = value_dup;
+        ++i;
+    }
+
+    if (!values[0]) {
+        g_strfreev(values);
+        return NULL;
+    }
+
+    return values;
 }
 
 
@@ -199,6 +266,8 @@ gfal_plugin_interface gfal_plugin_init(gfal2_context_t handle, GError **err)
 
     mock_plugin.statG = &gfal_plugin_mock_stat;
     mock_plugin.lstatG = &gfal_plugin_mock_stat;
+    mock_plugin.accessG = &gfal_plugin_mock_access;
+    mock_plugin.mkdirpG = &gfal_plugin_mock_mkdirpG;
     mock_plugin.unlinkG = &gfal_plugin_mock_unlink;
     mock_plugin.getxattrG = &gfal_mock_getxattrG;
     mock_plugin.checksum_calcG = &gfal_mock_checksumG;
