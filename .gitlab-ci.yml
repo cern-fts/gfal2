@@ -34,15 +34,15 @@ alma9:
   <<: *build-template_definition
 
 fedora-40:
-  image: fedora:40
+  image: registry.cern.ch/docker.io/library/fedora:40
   <<: *build-template_definition
 
 fedora-41:
-  image: fedora:41
+  image: registry.cern.ch/docker.io/library/fedora:41
   <<: *build-template_definition
 
 fedora-rawhide:
-  image: fedora:rawhide
+  image: registry.cern.ch/docker.io/library/fedora:rawhide
   <<: *build-template_definition
   allow_failure: true
 
@@ -82,13 +82,13 @@ alma9-test:
   <<: *test-template_definition
 
 fedora-40-test:
-  image: fedora:40
+  image: registry.cern.ch/docker.io/library/fedora:40
   needs:
     - job: fedora-40
   <<: *test-template_definition
 
 fedora-41-test:
-  image: fedora:41
+  image: registry.cern.ch/docker.io/library/fedora:41
   needs:
     - job: fedora-41
   <<: *test-template_definition
