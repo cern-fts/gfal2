@@ -85,21 +85,20 @@ namespace tape_rest_api {
 
     // Parse metadata and return 0 if a valid JSON is found. If metadata is not a valid JSON return -1
     int metadata_format_checker(int nbfiles, const char *const *metadata_list, GError** err) {
-        struct json_object* json_metadata = 0;
-
         for (int i = 0; i < nbfiles; i++) {
-
             if ((metadata_list[i] != NULL) && (metadata_list[i][0] != '\0')) {
-                json_metadata = json_tokener_parse(metadata_list[i]);
+                struct json_object* json_metadata = json_tokener_parse(metadata_list[i]);
 
                 if (!json_metadata) {
                     gfal2_set_error(err, http_plugin_domain, EINVAL, __func__, "Invalid metadata format: %s", metadata_list[i]);
                     return -1;
                 }
+
+                // Free the JSON object
+                json_object_put(json_metadata);
             }
-            //Free the JSON object
-            json_object_put(json_metadata);
         }
+
         return 0;
     }
 
