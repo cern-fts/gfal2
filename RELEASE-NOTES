@@ -1,7 +1,17 @@
 GFAL2 RELEASE-NOTES
 ===================
 
-## Fri Oct  4 2024 Louis Regnier <loregnie at cern.ch> - 2.23.1
+## Wed Apr 02 2025 Mihai Patrascoiu <mipatras at cern.ch> - 2.23.2
+###Bug
+- [DMC-1436] - Memory corruption in the HTTP staging metadata verification function
+
+###Task
+- [DMC-1428] - Data Management Clients for Fedora 41
+
+###Improvement
+- [DMC-1433] - CI: Use pull-through cache for Fedora, Ubuntu and Debian images
+
+## Fri Oct 04 2024 Louis Regnier <loregnie at cern.ch> - 2.23.1
 ###Improvement
 - [DMC-1420] - Improve error handling when failing to read GCloud credential file
 

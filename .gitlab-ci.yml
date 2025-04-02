@@ -33,16 +33,16 @@ alma9:
   image: gitlab-registry.cern.ch/linuxsupport/alma9-base
   <<: *build-template_definition
 
-fedora-39:
-  image: fedora:39
+fedora-40:
+  image: registry.cern.ch/docker.io/library/fedora:40
   <<: *build-template_definition
 
-fedora-40:
-  image: fedora:40
+fedora-41:
+  image: registry.cern.ch/docker.io/library/fedora:41
   <<: *build-template_definition
 
 fedora-rawhide:
-  image: fedora:rawhide
+  image: registry.cern.ch/docker.io/library/fedora:rawhide
   <<: *build-template_definition
   allow_failure: true
 
@@ -81,16 +81,16 @@ alma9-test:
     - dnf install -y epel-release
   <<: *test-template_definition
 
-fedora-39-test:
-  image: fedora:39
-  needs:
-    - job: fedora-39
-  <<: *test-template_definition
-
 fedora-40-test:
-  image: fedora:40
+  image: registry.cern.ch/docker.io/library/fedora:40
   needs:
     - job: fedora-40
+  <<: *test-template_definition
+
+fedora-41-test:
+  image: registry.cern.ch/docker.io/library/fedora:41
+  needs:
+    - job: fedora-41
   <<: *test-template_definition
 
 #--------------------------
@@ -103,14 +103,14 @@ rpms:
   dependencies:
     - alma8
     - alma9
-    - fedora-39
     - fedora-40
+    - fedora-41
     - fedora-rawhide
   script:
     - automount
     - cat "${repo_passwd}" | kinit "${repo_user}"
     - |
-      for platform in alma8 alma9 fedora-39 fedora-40 fedora-rawhide; do
+      for platform in alma8 alma9 fedora-40 fedora-41 fedora-rawhide; do
         if [[ "${platform}" == "fedora-rawhide" ]] && [[ ! -d ${platform} ]] ; then
           echo "Skipping ${platform} packages..." ;
           continue ;
