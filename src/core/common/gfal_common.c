@@ -67,12 +67,26 @@ static void gfal_setCredentialLocation(const char *where, gfal2_context_t handle
     gfal2_log(G_LOG_LEVEL_DEBUG, "Private key: %s", key);
 }
 
-static void gfal_setBearerToken(gfal2_context_t handle, const char *token)
+static void gfal_setBearerToken(gfal2_context_t handle, const char *token, const char *token_src_type, const char *token_src)
 {
     GError *error = NULL;
     gfal2_set_opt_string(handle, "BEARER", "TOKEN", token, &error);
     g_clear_error(&error);
-    gfal2_log(G_LOG_LEVEL_DEBUG, "Using BEARER token credentials from the env");
+    gfal2_log(G_LOG_LEVEL_DEBUG, "Using BEARER token credentials from %s (%s)", token_src_type, token_src);
+}
+
+static gboolean gfal_setBearerTokenFile(gfal2_context_t handle, const char *token_filename, gboolean warn_if_unreadable)
+{
+    gchar *token_data = NULL;
+    gboolean token_read = g_file_get_contents(token_filename, &token_data, NULL, NULL);
+    if (token_read) {
+        gfal_setBearerToken(handle, g_strchomp(token_data), "file", token_filename);
+        g_free(token_data);
+        return TRUE;
+    } else {
+        gfal2_log(warn_if_unreadable ? G_LOG_LEVEL_WARNING : G_LOG_LEVEL_DEBUG, "Unable to read bearer token file %s", token_filename);
+    }
+    return FALSE;
 }
 
 // Setup default credentials depending on the environment
@@ -81,9 +95,35 @@ static void gfal_initCredentialLocation(gfal2_context_t handle)
     //check first if BEARER is on the env
     const char *token = getenv("BEARER_TOKEN");
     if (token != NULL) {
-        gfal_setBearerToken(handle, token);
+        gfal_setBearerToken(handle, token, "environment", "BEARER_TOKEN");
         return;
     }
+    //then, check whether BEARER_TOKEN_FILE is set
+    const char *token_filename = getenv("BEARER_TOKEN_FILE");
+    if (token_filename != NULL) {
+        if (gfal_setBearerTokenFile(handle, token_filename, TRUE)) {
+            return;
+        }
+    }
+    //check well-known XDG location
+    const char *xdg_runtime_dir = getenv("XDG_RUNTIME_DIR");
+    if (xdg_runtime_dir != NULL) {
+        GString *xdg_token_filename = g_string_new(xdg_runtime_dir);
+        g_string_append_printf(xdg_token_filename, "/bt_u%d", geteuid());
+        if (gfal_setBearerTokenFile(handle, xdg_token_filename->str, FALSE)) {
+            g_string_free(xdg_token_filename, TRUE);
+            return;
+        }
+        g_string_free(xdg_token_filename, TRUE);
+    }
+    //check /tmp location
+    GString *tmp_token_filename = g_string_new("/tmp");
+    g_string_append_printf(tmp_token_filename, "/bt_u%d", geteuid());
+    if (gfal_setBearerTokenFile(handle, tmp_token_filename->str, FALSE)) {
+        g_string_free(tmp_token_filename, TRUE);
+        return;
+    }
+    g_string_free(tmp_token_filename, TRUE);
     // X509_USER_PROXY
     const char *proxy = getenv("X509_USER_PROXY");
     if (proxy != NULL) {
