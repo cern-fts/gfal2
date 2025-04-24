@@ -252,6 +252,11 @@ char* GfalHttpPluginData::find_se_token(const Davix::Uri& uri, const OP& operati
 
         if (strcmp(cred->type, GFAL_CRED_BEARER) == 0) {
             cred_list->emplace_back(url_prefix, cred->value);
+        } else if (cred->value && strcmp(cred->type, GFAL_CRED_BEARER_FILE) == 0) {
+            char *token_contents;
+            if (0 == gfal2_cred_get_token_from_file(cred->value, &token_contents)) {
+                cred_list->emplace_back(url_prefix, token_contents);
+            }
         }
     };
 
@@ -284,6 +289,12 @@ char* GfalHttpPluginData::find_se_token(const Davix::Uri& uri, const OP& operati
     GError* error = NULL;
     char* token = gfal2_cred_get(handle, GFAL_CRED_BEARER, uri.getHost().c_str(), NULL, &error);
     g_clear_error(&error);
+
+    if (!token) {
+        char *token_file = gfal2_cred_get(handle, GFAL_CRED_BEARER_FILE, uri.getHost().c_str(), NULL, &error);
+        g_clear_error(&error);
+        if (token_file) gfal2_cred_get_token_from_file(token_file, &token);
+    }
 
     return token;
 }

@@ -40,6 +40,12 @@ extern "C"
 #define GFAL_CRED_PASSWD "PASSWORD"
 /// Bearer token-type credential
 #define GFAL_CRED_BEARER "BEARER"
+/// Bearer token-type credential located in a file.
+//  This is different from the BEARER type as the plugins
+//  should never cache the contents of the BEARER_FILE and
+//  reloaded it each time it is needed.  This way, credentials
+//  can be updated outside the process.
+#define GFAL_CRED_BEARER_FILE "BEARER_FILE"
 
 /**
  * Stores a credential value together with its type
@@ -130,6 +136,17 @@ int gfal2_cred_copy(gfal2_context_t dest, const gfal2_context_t src, GError **er
  * @param user_data     To be passed to the callback
  */
 void gfal2_cred_foreach(gfal2_context_t handle, gfal_cred_func_t callback, void *user_data);
+
+/**
+ * Given a filename, read it and return any token that is present.
+ * On success, if value is non-null it will be allocated and set to the
+ * value of the found token.
+ *
+ * @param token_file    The file to search for tokens.
+ * @param value         Output; value of found token.
+ * @return              0 on success, -1 on error.
+ */
+int gfal2_cred_get_token_from_file(const char *token_file, char **value);
 
 #ifdef __cplusplus
 }
