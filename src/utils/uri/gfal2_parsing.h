@@ -36,6 +36,13 @@ gchar* gfal2_utf8escape_string(const char* str, size_t str_len, const char* igno
  */
 char* gfal2_path_collapse_slashes(const char* path);
 
+/*
+ * Given a string, return a new trimmed string.
+ * If the string is empty after the trimming operation, returns NULL.
+ * Note: the caller must handle memory deallocation of the new string
+ */
+char* gfal2_trim_string(const char* str);
+
 #ifdef __cplusplus
 }
 #endif
