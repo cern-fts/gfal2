@@ -26,6 +26,7 @@
 #include <common/gfal_plugin.h>
 #include <gfal_api.h>
 #include "gfal_file_handler_container.h"
+#include "uri/gfal2_parsing.h"
 
 // initialization
 __attribute__((constructor))
@@ -79,15 +80,17 @@ static void gfal_setBearerToken(gfal2_context_t handle, const char *token)
 static void gfal_initCredentialLocation(gfal2_context_t handle)
 {
     //check first if BEARER is on the env
-    const char *token = getenv("BEARER_TOKEN");
+    const char *token = gfal2_trim_string(getenv("BEARER_TOKEN"));
     if (token != NULL) {
         gfal_setBearerToken(handle, token);
+        g_free(token);
         return;
     }
     // X509_USER_PROXY
-    const char *proxy = getenv("X509_USER_PROXY");
+    const char *proxy = gfal2_trim_string(getenv("X509_USER_PROXY"));
     if (proxy != NULL) {
         gfal_setCredentialLocation("X509_USER_PROXY", handle, proxy, proxy);
+        g_free(proxy);
         return;
     }
     // /tmp/x509up_u<uid>
@@ -98,26 +101,34 @@ static void gfal_initCredentialLocation(gfal2_context_t handle)
         return;
     }
     // X509_USER_CERT and X509_USER_KEY
-    const char *cert, *key;
-    cert = getenv("X509_USER_CERT");
-    key = getenv("X509_USER_KEY");
+    const char* cert = gfal2_trim_string(getenv("X509_USER_CERT"));
+    const char* key = gfal2_trim_string(getenv("X509_USER_KEY"));
     if (cert != NULL && key != NULL) {
         gfal_setCredentialLocation("X509_USER_CERT and X509_USER_KEY", handle, cert, key);
+        g_free(cert);
+        g_free(key);
         return;
     }
     // Default certificate location
-    const char *home = getenv("HOME");
+    const char *home = gfal2_trim_string(getenv("HOME"));
     if (home != NULL) {
         char *default_cert = g_strconcat(home, "/.globus/usercert.pem", NULL);
         char *default_key = g_strconcat(home, "/.globus/userkey.pem", NULL);
 
-        int canAccess = (access(default_cert, F_OK) == 0 && access(default_key, F_OK));
-
-        g_free(default_cert);
-        g_free(default_key);
+        int canAccess = (access(default_cert, R_OK) == 0) &&
+                        (access(default_key, R_OK) == 0);
+        gboolean cert_set = FALSE;
 
         if (canAccess) {
             gfal_setCredentialLocation("default certificate location", handle, default_cert, default_key);
+            cert_set = TRUE;
+        }
+
+        g_free(default_cert);
+        g_free(default_key);
+        g_free(home);
+
+        if (cert_set) {
             return;
         }
     }
