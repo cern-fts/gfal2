@@ -5,13 +5,13 @@
 %bcond_with tests
 
 Name:               gfal2
-Version:            2.23.2
+Version:            2.23.3
 Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 License:            ASL 2.0
 URL:                https://dmc-docs.web.cern.ch/dmc-docs/gfal2/gfal2.html
-# git clone --depth=1 --branch=v2.23.2 https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.23.2
-# tar czf gfal2-2.23.2.tar.gz --exclude-vcs gfal2-2.23.2
+# git clone --depth=1 --branch=v2.23.3 https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.23.3
+# tar czf gfal2-2.23.3.tar.gz --exclude-vcs gfal2-2.23.3
 Source0:            %{name}-%{version}.tar.gz
 
 #main lib dependencies
@@ -285,6 +285,9 @@ fi
 
 
 %changelog
+* Tue Aug 19 2025 Louis Regnier <loregnie at cern.ch> - 2.23.3
+- Prevent segfault in archivepoll JSON parsing
+
 * Wed Apr 02 2025 Mihai Patrascoiu <mipatras at cern.ch> - 2.23.2
 - New upstream release
 - Fix memory corruption in staging metadata JSON validation function

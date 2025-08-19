@@ -1,6 +1,13 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Tue Aug 19 2025 Louis Regnier <loregnie at cern.ch> - 2.23.3
+###Improvement
+- [DMC-1437] - Trim and parse "getenv" result to avoid using an empty string when loading Gfal2 credentials
+
+###Bug fix
+- [DMC-1439] - Gfal archivepoll crash when the error field is null
+
 ## Wed Apr 02 2025 Mihai Patrascoiu <mipatras at cern.ch> - 2.23.2
 ###Bug
 - [DMC-1436] - Memory corruption in the HTTP staging metadata verification function
