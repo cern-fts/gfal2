@@ -1,4 +1,9 @@
-fal2 (2.23.2-1) unstable; urgency=low
+gfal2 (2.23.3-1) unstable; urgency=low
+  * New version
+
+ -- DMC Devel <dmc-devel@cern.ch> Tue, Aug 19 2025 16:00
+
+gfal2 (2.23.2-1) unstable; urgency=low
   * New version
 
  -- DMC Devel <dmc-devel@cern.ch> Wed, Apr 02 2025 14:00

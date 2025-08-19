@@ -41,11 +41,6 @@ fedora-41:
   image: registry.cern.ch/docker.io/library/fedora:41
   <<: *build-template_definition
 
-fedora-rawhide:
-  image: registry.cern.ch/docker.io/library/fedora:rawhide
-  <<: *build-template_definition
-  allow_failure: true
-
 #--------------------------
 # Test templates
 #--------------------------
@@ -105,16 +100,11 @@ rpms:
     - alma9
     - fedora-40
     - fedora-41
-    - fedora-rawhide
   script:
     - automount
     - cat "${repo_passwd}" | kinit "${repo_user}"
     - |
-      for platform in alma8 alma9 fedora-40 fedora-41 fedora-rawhide; do
-        if [[ "${platform}" == "fedora-rawhide" ]] && [[ ! -d ${platform} ]] ; then
-          echo "Skipping ${platform} packages..." ;
-          continue ;
-        fi
+      for platform in alma8 alma9 fedora-40 fedora-41; do
         packaging/gfal2-repo-manager.py --action add --base /eos/project-d/dmc/www/repos/ --ref ${CI_COMMIT_REF_NAME} --packages ${platform}/RPMS/*/*.rpm ${platform}/SRPMS/*
       done
     - sleep 30

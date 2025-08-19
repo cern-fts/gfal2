@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <ctype.h>
+
 #include "gfal2_parsing.h"
 
 gchar* gfal2_utf8escape_string(const char* str, size_t str_len, const char* ignore)
@@ -96,4 +98,32 @@ char* gfal2_path_collapse_slashes(const char* path)
     collapsed[pos] = '\0';
     collapsed = g_realloc(collapsed, pos + 1);
     return collapsed;
+}
+
+char* gfal2_trim_string(const char* start)
+{
+    if (start == NULL) {
+        return NULL;
+    }
+
+    while (isspace(*start)) {
+        start++;
+    }
+
+    if (*start == '\0') {
+        return NULL;
+    }
+
+    const char* end = start + strlen(start) - 1;
+    while (end > start && isspace(*end)) {
+        end--;
+    }
+
+    size_t len = end - start + 1;
+    char* result = malloc(len + 1);
+
+    strncpy(result, start, len);
+    result[len] = '\0';
+
+    return result;
 }

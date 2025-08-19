@@ -206,9 +206,11 @@ namespace tape_rest_api {
         bool foundError = json_object_object_get_ex(file, "error", &file_error_text);
 
         if (foundError && !bypass_archive_error) {
-            std::string error_text = json_object_get_string(file_error_text);
-            gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__, "[Tape REST API] %s", error_text.c_str());
-            return locality;
+            const char* error = json_object_get_string(file_error_text);
+            if (error) {
+                gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__, "[Tape REST API] %s", error);
+                return locality;
+            }
         }
 
         // Retrieve "locality" attribute
