@@ -1,6 +1,10 @@
 GFAL2 RELEASE-NOTES
 ===================
 
+## Thu Aug 21 2025 Louis Regnier <loregnie at cern.ch> - 2.23.4
+###Improvement
+- [DMC-1439] - Fail archiveinfo when the error field is null
+
 ## Tue Aug 19 2025 Louis Regnier <loregnie at cern.ch> - 2.23.3
 ###Improvement
 - [DMC-1437] - Trim and parse "getenv" result to avoid using an empty string when loading Gfal2 credentials

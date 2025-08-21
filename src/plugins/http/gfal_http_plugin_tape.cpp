@@ -209,8 +209,10 @@ namespace tape_rest_api {
             const char* error = json_object_get_string(file_error_text);
             if (error) {
                 gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__, "[Tape REST API] %s", error);
-                return locality;
+            } else {
+                gfal2_set_error(err, http_plugin_domain, ENOMSG, __func__, "[Tape REST API] error field is null");
             }
+            return locality;
         }
 
         // Retrieve "locality" attribute
