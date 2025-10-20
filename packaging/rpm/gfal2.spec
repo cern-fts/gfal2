@@ -29,6 +29,7 @@ BuildRequires:      libuuid-devel
 BuildRequires:      zlib-devel
 #srm plugin dependencies
 BuildRequires:      srm-ifce-devel >= 1.23.1
+BuildRequires:      globus-gass-copy-devel
 #http plugin dependencies
 BuildRequires:      davix-devel >= 0.8.4
 BuildRequires:      cryptopp-devel >= 5.6.2
@@ -37,8 +38,6 @@ BuildRequires:      xrootd-client-devel >= 1:5.0.0
 %if 0%{?rhel} != 10
 #dcap plugin dependencies
 BuildRequires:      dcap-devel
-#gridftp plugin dependencies
-BuildRequires:      globus-gass-copy-devel
 # sftp plugin dependencies
 BuildRequires:      libssh2-devel
 %endif
