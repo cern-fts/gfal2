@@ -5,13 +5,13 @@
 %bcond_with tests
 
 Name:               gfal2
-Version:            2.23.4
+Version:            2.23.5
 Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 License:            ASL 2.0
 URL:                https://dmc-docs.web.cern.ch/dmc-docs/gfal2/gfal2.html
-# git clone --depth=1 --branch=v2.23.4 https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.23.4
-# tar czf gfal2-2.23.4.tar.gz --exclude-vcs gfal2-2.23.4
+# git clone --depth=1 --branch=v2.23.5 https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.23.5
+# tar czf gfal2-2.23.5.tar.gz --exclude-vcs gfal2-2.23.5
 Source0:            %{name}-%{version}.tar.gz
 
 #main lib dependencies
@@ -295,6 +295,9 @@ fi
 
 
 %changelog
+* Tue Oct 21 2025 Mihai Patrascoiu <mipatras at cern.ch> - 2.23.5
+- Alma10 build
+
 * Thu Aug 21 2025 Louis Regnier <loregnie at cern.ch> - 2.23.4
 - Fail archiveinfo when the error field is null
 
