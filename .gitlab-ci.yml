@@ -33,8 +33,8 @@ alma9:
   image: gitlab-registry.cern.ch/linuxsupport/alma9-base
   <<: *build-template_definition
 
-fedora-40:
-  image: registry.cern.ch/docker.io/library/fedora:40
+alma10:
+  image: gitlab-registry.cern.ch/linuxsupport/alma10-base
   <<: *build-template_definition
 
 fedora-41:
@@ -76,10 +76,12 @@ alma9-test:
     - dnf install -y epel-release
   <<: *test-template_definition
 
-fedora-40-test:
-  image: registry.cern.ch/docker.io/library/fedora:40
+alma10-test:
+  image: gitlab-registry.cern.ch/linuxsupport/alma10-base
   needs:
-    - job: fedora-40
+    - job: alma10
+  before_script:
+    - dnf install -y epel-release
   <<: *test-template_definition
 
 fedora-41-test:
@@ -98,13 +100,13 @@ rpms:
   dependencies:
     - alma8
     - alma9
-    - fedora-40
+    - alma10
     - fedora-41
   script:
     - automount
     - cat "${repo_passwd}" | kinit "${repo_user}"
     - |
-      for platform in alma8 alma9 fedora-40 fedora-41; do
+      for platform in alma8 alma9 alma10 fedora-41; do
         packaging/gfal2-repo-manager.py --action add --base /eos/project-d/dmc/www/repos/ --ref ${CI_COMMIT_REF_NAME} --packages ${platform}/RPMS/*/*.rpm ${platform}/SRPMS/*
       done
     - sleep 30

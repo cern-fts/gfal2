@@ -5,13 +5,13 @@
 %bcond_with tests
 
 Name:               gfal2
-Version:            2.23.4
+Version:            2.23.5
 Release:            1%{?dist}
 Summary:            Grid file access library 2.0
 License:            ASL 2.0
 URL:                https://dmc-docs.web.cern.ch/dmc-docs/gfal2/gfal2.html
-# git clone --depth=1 --branch=v2.23.4 https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.23.4
-# tar czf gfal2-2.23.4.tar.gz --exclude-vcs gfal2-2.23.4
+# git clone --depth=1 --branch=v2.23.5 https://gitlab.cern.ch/dmc/gfal2.git gfal2-2.23.5
+# tar czf gfal2-2.23.5.tar.gz --exclude-vcs gfal2-2.23.5
 Source0:            %{name}-%{version}.tar.gz
 
 #main lib dependencies
@@ -29,17 +29,18 @@ BuildRequires:      libuuid-devel
 BuildRequires:      zlib-devel
 #srm plugin dependencies
 BuildRequires:      srm-ifce-devel >= 1.23.1
-#dcap plugin dependencies
-BuildRequires:      dcap-devel
-#gridftp plugin dependencies
 BuildRequires:      globus-gass-copy-devel
 #http plugin dependencies
 BuildRequires:      davix-devel >= 0.8.4
 BuildRequires:      cryptopp-devel >= 5.6.2
 #xrootd plugin dependencies
 BuildRequires:      xrootd-client-devel >= 1:5.0.0
+%if 0%{?rhel} != 10
+#dcap plugin dependencies
+BuildRequires:      dcap-devel
 # sftp plugin dependencies
 BuildRequires:      libssh2-devel
+%endif
 #tests dependencies
 BuildRequires:      gtest-devel
 
@@ -82,17 +83,6 @@ The file plugin provides local file operations, as copying from local
 to remote or the other way around.
 
 
-%package plugin-dcap
-Summary:            Provides the support access for %{name}
-Requires:           %{name}%{?_isa} = %{version}-%{release}
-Requires:           dcap-tunnel-gsi%{?_isa}
-
-%description plugin-dcap
-Provides the dcap support (gsidcap://, dcap://) for %{name}.
-The dcap plugin provides the POSIX operations for the dcap \
-URLs, the dcap protocol is used on the DCACHE storage system
-
-
 %package plugin-srm
 Summary:            Provides the srm access for %{name}
 Requires:           %{name}%{?_isa} = %{version}-%{release}
@@ -102,16 +92,6 @@ Requires:           srm-ifce >= 1.23.1
 Provides the srm support (srm://) for %{name}.
 The srm plugin provides the POSIX operations and
 the third party transfer support on the SRM URLs.
-
-
-%package plugin-gridftp
-Summary:            Provides the gridftp support for %{name}
-Requires:           %{name}%{?_isa} = %{version}-%{release}
-
-%description plugin-gridftp
-Provides the gridftp support (gsiftp://) for %{name}.
-The gridftp plugin provides the POSIX operations and
-the third party transfer support on the GSIFTP URLs.
 
 
 %package plugin-http
@@ -136,6 +116,35 @@ access via a variety of protocols. This package contains a plugin for the
 xrootd protocol (root://).
 
 
+%package plugin-mock
+Summary:            Provides a Mock dummy protocol for %{name}
+Requires:           %{name}%{?_isa} = %{version}-%{release}
+
+%description plugin-mock
+Provides a dummy mock:// protocol for %{name}.
+
+%if 0%{?rhel} != 10
+%package plugin-dcap
+Summary:            Provides the support access for %{name}
+Requires:           %{name}%{?_isa} = %{version}-%{release}
+Requires:           dcap-tunnel-gsi%{?_isa}
+
+%description plugin-dcap
+Provides the dcap support (gsidcap://, dcap://) for %{name}.
+The dcap plugin provides the POSIX operations for the dcap \
+URLs, the dcap protocol is used on the DCACHE storage system
+
+
+%package plugin-gridftp
+Summary:            Provides the gridftp support for %{name}
+Requires:           %{name}%{?_isa} = %{version}-%{release}
+
+%description plugin-gridftp
+Provides the gridftp support (gsiftp://) for %{name}.
+The gridftp plugin provides the POSIX operations and
+the third party transfer support on the GSIFTP URLs.
+
+
 %package plugin-sftp
 Summary:            Provide sftp support for GFAL2
 Requires:           %{name}%{?_isa} = %{version}-%{release}
@@ -145,26 +154,20 @@ The Grid File Access Library, GFAL2, provides a simple POSIX-like API for file
 operations in grid and cloud environments. Plug-ins are available to allow
 access via a variety of protocols. This package contains a plugin for the
 sftp protocol (sftp://).
-
-
-%package plugin-mock
-Summary:            Provides a Mock dummy protocol for %{name}
-Requires:           %{name}%{?_isa} = %{version}-%{release}
-
-%description plugin-mock
-Provides a dummy mock:// protocol for %{name}.
-
+%endif
 
 %package all
 Summary:            Meta package for GFAL 2.0 install
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-file%{?_isa} = %{version}-%{release}
-Requires:           %{name}-plugin-dcap%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-srm%{?_isa} = %{version}-%{release}
-Requires:           %{name}-plugin-gridftp%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-http%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-xrootd%{?_isa} = %{version}-%{release}
+%if 0%{?rhel} != 10
+Requires:           %{name}-plugin-dcap%{?_isa} = %{version}-%{release}
+Requires:           %{name}-plugin-gridftp%{?_isa} = %{version}-%{release}
 Requires:           %{name}-plugin-sftp%{?_isa} = %{version}-%{release}
+%endif
 
 %description all
 Meta-package for complete install of GFAL2
@@ -198,6 +201,11 @@ fi
 %cmake3 \
     -DDOC_INSTALL_DIR=%{_pkgdocdir} \
     -DUNIT_TESTS=TRUE \
+    %if 0%{?rhel} == 10
+    -DPLUGIN_DCAP=FALSE \
+    -DPLUGIN_GRIDFTP=FALSE \
+    -DPLUGIN_SFTP=FALSE \
+    %endif
     -DPLUGIN_MOCK=TRUE \
     -DFUNCTIONAL_TESTS=%{?with_tests:ON}%{?!with_tests:OFF}
 
@@ -242,20 +250,10 @@ fi
 %{_libdir}/%{name}-plugins/libgfal_plugin_file.so*
 %{_pkgdocdir}/README_PLUGIN_FILE
 
-%files plugin-dcap
-%{_libdir}/%{name}-plugins/libgfal_plugin_dcap.so*
-%{_pkgdocdir}/README_PLUGIN_DCAP
-%config(noreplace) %{_sysconfdir}/%{name}.d/dcap_plugin.conf
-
 %files plugin-srm
 %{_libdir}/%{name}-plugins/libgfal_plugin_srm.so*
 %{_pkgdocdir}/README_PLUGIN_SRM
 %config(noreplace) %{_sysconfdir}/%{name}.d/srm_plugin.conf
-
-%files plugin-gridftp
-%{_libdir}/%{name}-plugins/libgfal_plugin_gridftp.so*
-%{_pkgdocdir}/README_PLUGIN_GRIDFTP
-%config(noreplace) %{_sysconfdir}/%{name}.d/gsiftp_plugin.conf
 
 %files plugin-http
 %{_libdir}/%{name}-plugins/libgfal_plugin_http.so*
@@ -267,15 +265,27 @@ fi
 %{_pkgdocdir}/README_PLUGIN_XROOTD
 %config(noreplace) %{_sysconfdir}/%{name}.d/xrootd_plugin.conf
 
-%files plugin-sftp
-%{_libdir}/%{name}-plugins/libgfal_plugin_sftp.so*
-%{_pkgdocdir}/README_PLUGIN_SFTP
-%config(noreplace) %{_sysconfdir}/%{name}.d/sftp_plugin.conf
-
 %files plugin-mock
 %{_libdir}/%{name}-plugins/libgfal_plugin_mock.so*
 %{_pkgdocdir}/README_PLUGIN_MOCK
 %config(noreplace) %{_sysconfdir}/%{name}.d/mock_plugin.conf
+
+%if 0%{?rhel} != 10
+%files plugin-dcap
+%{_libdir}/%{name}-plugins/libgfal_plugin_dcap.so*
+%{_pkgdocdir}/README_PLUGIN_DCAP
+%config(noreplace) %{_sysconfdir}/%{name}.d/dcap_plugin.conf
+
+%files plugin-gridftp
+%{_libdir}/%{name}-plugins/libgfal_plugin_gridftp.so*
+%{_pkgdocdir}/README_PLUGIN_GRIDFTP
+%config(noreplace) %{_sysconfdir}/%{name}.d/gsiftp_plugin.conf
+
+%files plugin-sftp
+%{_libdir}/%{name}-plugins/libgfal_plugin_sftp.so*
+%{_pkgdocdir}/README_PLUGIN_SFTP
+%config(noreplace) %{_sysconfdir}/%{name}.d/sftp_plugin.conf
+%endif
 
 %files tests
 %{_bindir}/gfal2-unit-tests
@@ -285,6 +295,9 @@ fi
 
 
 %changelog
+* Tue Oct 21 2025 Mihai Patrascoiu <mipatras at cern.ch> - 2.23.5
+- Alma10 build
+
 * Thu Aug 21 2025 Louis Regnier <loregnie at cern.ch> - 2.23.4
 - Fail archiveinfo when the error field is null
 
